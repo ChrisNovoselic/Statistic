@@ -12,24 +12,25 @@ namespace Statistic
         {
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
 
-            int i, j, k;
+            int i, j, k; //Индексы для ТЭЦ, ГТП, ТГ
             tec = new List<TEC>();
 
             i = j = k = 0;
-            tec.Add(new TEC());
-            tec[i].name = "БТЭЦ";
-            tec[i].GTP.Add(new GTP(tec[i]));
-            tec[i].GTP[j].name = "";
-            tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-            tec[i].GTP[j].TG[k++].name = "ТГ1";
-            tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-            tec[i].GTP[j].TG[k++].name = "ТГ2";
-            tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-            tec[i].GTP[j].TG[k++].name = "ТГ3";
-            tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-            tec[i].GTP[j].TG[k++].name = "ТГ4";
-            tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-            tec[i].GTP[j].TG[k++].name = "ТГ5";
+            tec.Add (new TEC ());
+            tec [i].name = "БТЭЦ";
+            
+            tec [i].GTP.Add (new GTP (tec [i]));
+            tec [i].GTP [j].name = "";
+            tec [i].GTP [j].TG.Add (new TG (tec [i].GTP [j]));
+            tec [i].GTP [j].TG [ k++].name = "ТГ1";
+            tec [i].GTP [j].TG.Add(new TG (tec [i].GTP [j]));
+            tec [i].GTP [j].TG [k ++].name = "ТГ2";
+            tec [i].GTP [j].TG.Add (new TG(tec [i].GTP [j]));
+            tec [i].GTP [j].TG [k ++].name = "ТГ3";
+            tec [i].GTP [j].TG.Add (new TG(tec[i].GTP[j]));
+            tec [i].GTP [j].TG [k ++].name = "ТГ4";
+            tec [i].GTP [j].TG.Add(new TG(tec[i].GTP[j]));
+            tec [i].GTP [j].TG [k ++].name = "ТГ5";
 
             j = k = 0;
             i++;
