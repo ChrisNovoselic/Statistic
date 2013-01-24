@@ -9,6 +9,9 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 
+//???
+//using System.Security.Cryptography;
+
 namespace Statistic
 {
     public delegate void DelegateFunc();
@@ -157,6 +160,13 @@ namespace Statistic
 
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //???
+            //string strPassword = "password";
+            //MD5CryptoServiceProvider md5;
+            //md5 = new MD5CryptoServiceProvider();
+            //StringBuilder strPasswordHashed = new StringBuilder ();
+            //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
+            
             if (!connSettForm.Protected || passwordSettingsForm.ShowDialog() == DialogResult.Yes)
             {
                 DialogResult result;

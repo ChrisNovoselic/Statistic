@@ -225,6 +225,7 @@ namespace Statistic
                     return;
                 }
                 connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "1");
+                //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
                 pos1 = pos2 + 1;
                 i++;
             }
@@ -452,9 +453,9 @@ namespace Statistic
 
             oldSelectedIndex = cbxConnFor.SelectedIndex;
 
-            if (cbxConnFor.SelectedIndex == cbxConnFor.Items.Count - 1)
-                cbxIgnore.Enabled = false;
-            else
+            //if (cbxConnFor.SelectedIndex == cbxConnFor.Items.Count - 1)
+            //    cbxIgnore.Enabled = false;
+            //else
                 cbxIgnore.Enabled = true;
         }
 

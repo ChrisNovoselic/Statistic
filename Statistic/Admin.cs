@@ -1414,6 +1414,9 @@ namespace Statistic
             {
             }
 
+            //???
+            //passResult = Errors.NoError;
+
             delegateStopWait();
             if (passResult != Errors.NoError)
             {
@@ -2042,7 +2045,8 @@ namespace Statistic
 
         public void StartDbInterface()
         {
-            dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 2);
+            //dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 2);
+            dbInterface = new DbInterface(DbInterface.DbInterfaceType.MySQL, 2);
             listenerIdTec = dbInterface.ListenerRegister();
             listenerIdAdmin = dbInterface.ListenerRegister();
             dbInterface.Start();
@@ -2171,10 +2175,12 @@ namespace Statistic
                 case StatesMachine.AdminDates:
                 case StatesMachine.SaveValues:
                 case StatesMachine.GetPass:
+                    return GetResponse(out error, out table, false);
                 case StatesMachine.SetPassInsert:
                 case StatesMachine.SetPassUpdate:
                 case StatesMachine.LayoutGet:
                 case StatesMachine.LayoutSet:
+                default:
                     return GetResponse(out error, out table, true);
             }
 

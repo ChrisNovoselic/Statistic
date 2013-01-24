@@ -35,7 +35,8 @@ namespace Statistic
         {
             server = dbName = userName = password = "";
             port = 1433;
-            ignore = true;
+            //ignore = true;
+            ignore = false;
         }
 
         public ConnectionSettingsError Validate()
