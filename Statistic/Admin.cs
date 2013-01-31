@@ -68,7 +68,11 @@ namespace Statistic
             public int hour_end;
             public string name_in_db;
             public string name;
-            public TecPPBRValues BTEC;
+            //public TecPPBRValues BTEC;
+            public TecPPBRValues BTEC_TG1;
+            public TecPPBRValues BTEC_TG2;
+            public TecPPBRValues BTEC_TG35;
+            public TecPPBRValues BTEC_TG4;
             public TecPPBRValues TEC2;
             public TecPPBRValues TEC3_110;
             public TecPPBRValues TEC3_220;
@@ -87,7 +91,11 @@ namespace Statistic
                 this.hour_end = 0;
                 this.name_in_db = "";
                 this.name = "";
-                this.BTEC = new TecPPBRValues(1);
+                //this.BTEC = new TecPPBRValues(1);
+                this.BTEC_TG1 = new TecPPBRValues(1);
+                this.BTEC_TG2 = new TecPPBRValues(1);
+                this.BTEC_TG35 = new TecPPBRValues(1);
+                this.BTEC_TG4 = new TecPPBRValues(1);
                 this.TEC2 = new TecPPBRValues(1);
                 this.TEC3_110 = new TecPPBRValues(1);
                 this.TEC3_220 = new TecPPBRValues(1);
@@ -104,7 +112,11 @@ namespace Statistic
                 for (int i = 0; i < 24; i++)
                 {
                     existingHours[i] = false;
-                    BTEC.PBR[i] = BTEC.Pmax[i] = BTEC.Pmin[i] = BTEC.SN[i] =
+                    //BTEC.PBR[i] = BTEC.Pmax[i] = BTEC.Pmin[i] = BTEC.SN[i] =
+                    BTEC_TG1.PBR[i] = BTEC_TG1.Pmax[i] = BTEC_TG1.Pmin[i] = BTEC_TG1.SN[i] =
+                    BTEC_TG2.PBR[i] = BTEC_TG2.Pmax[i] = BTEC_TG2.Pmin[i] = BTEC_TG2.SN[i] =
+                    BTEC_TG35.PBR[i] = BTEC_TG35.Pmax[i] = BTEC_TG35.Pmin[i] = BTEC_TG35.SN[i] =
+                    BTEC_TG4.PBR[i] = BTEC_TG4.Pmax[i] = BTEC_TG4.Pmin[i] = BTEC_TG4.SN[i] =
                     TEC2.PBR[i] = TEC2.Pmax[i] = TEC2.Pmin[i] = TEC2.SN[i] =
                     TEC3_110.PBR[i] = TEC3_110.Pmax[i] = TEC3_110.Pmin[i] = TEC3_110.SN[i] =
                     TEC3_220.PBR[i] = TEC3_220.Pmax[i] = TEC3_220.Pmin[i] = TEC3_220.SN[i] =
@@ -112,7 +124,11 @@ namespace Statistic
                     TEC5_110.PBR[i] = TEC5_110.Pmax[i] = TEC5_110.Pmin[i] = TEC5_110.SN[i] =
                     TEC5_220.PBR[i] = TEC5_220.Pmax[i] = TEC5_220.Pmin[i] = TEC5_220.SN[i] = 0.0;
                 }
-                BTEC.PBR[24] = BTEC.SN[24] =
+                //BTEC.PBR[24] = BTEC.SN[24] =
+                BTEC_TG1.PBR[24] = BTEC_TG1.SN[24] =
+                BTEC_TG2.PBR[24] = BTEC_TG2.SN[24] =
+                BTEC_TG35.PBR[24] = BTEC_TG35.SN[24] =
+                BTEC_TG4.PBR[24] = BTEC_TG4.SN[24] =
                 TEC2.PBR[24] = TEC2.SN[24] =
                 TEC3_110.PBR[24] = TEC3_110.SN[24] =
                 TEC3_220.PBR[24] = TEC3_220.SN[24] =
@@ -208,6 +224,9 @@ namespace Statistic
         private volatile List<StatesMachine> states;
 
         public ConnectionSettings connSett;
+
+        public volatile string m_strUsedAdminValues;
+        public volatile string m_strUsedPPBRvsPBR;
 
         private DbInterface dbInterface;
         private int listenerIdTec;
@@ -416,6 +435,9 @@ namespace Statistic
         public Admin(List<TEC> tec, StatusStrip sts)
         {
             InitializeComponents();
+
+            m_strUsedAdminValues = "";
+            m_strUsedPPBRvsPBR = "";
 
             started = false;
 
@@ -915,7 +937,10 @@ namespace Statistic
                     case 4: tecPPBRValues = layoutForLoading.TEC5_110; break;
                     case 41: tecPPBRValues = layoutForLoading.TEC5_220; break;
                     case 42: tecPPBRValues = layoutForLoading.TEC5_110; break;
-                    case 6: tecPPBRValues = layoutForLoading.BTEC; break;
+                    case 6: //HHH
+                        //tecPPBRValues = layoutForLoading.BTEC;
+                        tecPPBRValues = layoutForLoading.BTEC_TG1;
+                        break;
                     default:
                         {
                             sr.Close();
@@ -1543,23 +1568,23 @@ namespace Statistic
                     break;
             }
 
-            string request = @"SELECT ADMINVALUES.DATE AS DATE1, ADMINVALUES." + select1 + @"_REC, " + 
-                             @"ADMINVALUES." + select1 + @"_IS_PER, " + 
-                             @"ADMINVALUES." + select1 + @"_DIVIAT, " +
-                             @"PPBRVSPBR.DATE_TIME AS DATE2, PPBRVSPBR." + select2 +
-                             @" FROM ADMINVALUES LEFT JOIN PPBRVSPBR ON ADMINVALUES.DATE = PPBRVSPBR.DATE_TIME " +
-                             @"WHERE ADMINVALUES.DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND ADMINVALUES.DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+            string request = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " + 
+                             m_strUsedAdminValues + "." + select1 + @"_IS_PER, " + 
+                             m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
+                             m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + m_strUsedPPBRvsPBR + "." + select2 +
+                             @" FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
+                             @"WHERE " + m_strUsedAdminValues + ".DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND " + m_strUsedAdminValues + ".DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"'" +
                              @" UNION " +
-                             @"SELECT ADMINVALUES.DATE AS DATE1, ADMINVALUES." + select1 + @"_REC, " +
-                             @"ADMINVALUES." + select1 + @"_IS_PER, " +
-                             @"ADMINVALUES." + select1 + @"_DIVIAT, " +
-                             @"PPBRVSPBR.DATE_TIME AS DATE2, PPBRVSPBR." + select2 +
-                             @" FROM ADMINVALUES RIGHT JOIN PPBRVSPBR ON ADMINVALUES.DATE = PPBRVSPBR.DATE_TIME " +
-                             @"WHERE PPBRVSPBR.DATE_TIME > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND PPBRVSPBR.DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND MINUTE(PPBRVSPBR.DATE_TIME) = 0 AND ADMINVALUES.DATE IS NULL ORDER BY DATE1, DATE2 ASC";
+                             @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
+                             m_strUsedAdminValues + "." + select1 + @"_IS_PER, " +
+                             m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
+                             m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, PPBRVSPBR." + select2 +
+                             @" FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
+                             @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
 
             Request(request, false);
@@ -1640,7 +1665,7 @@ namespace Statistic
                 date = mcldrDate.SelectionStart.Date;
             }
 
-            request = @"SELECT DATE FROM ADMINVALUES WHERE " + 
+            request = @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " + 
                       @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE ASC";
@@ -1726,7 +1751,7 @@ namespace Statistic
                     // запись для этого часа имеется, модифицируем её
                     if (adminDates[i])
                     {
-                        requestUpdate += @"UPDATE ADMINVALUES SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                        requestUpdate += @"UPDATE " + m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                          @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
                                          @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) + 
                                          @"' WHERE " +
@@ -1748,11 +1773,11 @@ namespace Statistic
             // добавляем все записи, не найденные в базе
             if (requestInsert != "")
             {
-                requestInsert = @"INSERT INTO ADMINVALUES (DATE, " + name + @"_REC" +
+                requestInsert = @"INSERT INTO " + m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
-            string requestDelete = @"DELETE FROM ADMINVALUES WHERE " +
+            string requestDelete = @"DELETE FROM " + m_strUsedAdminValues + " WHERE " +
                                    @"BTEC_REC = 0 AND BTEC_IS_PER = 0 AND BTEC_DIVIAT = 0 AND " +
                                    @"TEC2_REC = 0 AND TEC2_IS_PER = 0 AND TEC2_DIVIAT = 0 AND " +
                                    @"TEC3_110_REC = 0 AND TEC3_110_IS_PER = 0 AND TEC3_110_DIVIAT = 0 AND " +
@@ -1810,10 +1835,10 @@ namespace Statistic
 
         private void GetLayoutRequest(DateTime date)
         {
-            string request = @"SELECT PPBRVSPBR.DATE_TIME, PPBRVSPBR.PBR_NUMBER FROM PPBRVSPBR " +
-                             @"WHERE PPBRVSPBR.DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND PPBRVSPBR.DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND MINUTE(PPBRVSPBR.DATE_TIME) = 0 ORDER BY PPBRVSPBR.DATE_TIME ASC";
+            string request = @"SELECT " + m_strUsedPPBRvsPBR + ".DATE_TIME, " + m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + m_strUsedPPBRvsPBR + " " +
+                             @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 ORDER BY " + m_strUsedPPBRvsPBR + ".DATE_TIME ASC";
             Request(request, false);
         }
 
@@ -1870,17 +1895,29 @@ namespace Statistic
                 {
                     if (layoutForLoading.name == "ППБР")
                     {
-                        requestUpdate += @"UPDATE PPBRVSPBR SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
+                        requestUpdate += @"UPDATE " + m_strUsedPPBRvsPBR + " SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
                                          @", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PPBR_TEC2 = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMAX_TEC2 = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMIN_TEC2 = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', SN_BTEC = '" + layoutForLoading.BTEC.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_BTEC = '" + layoutForLoading.BTEC.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_BTEC = '" + layoutForLoading.BTEC.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_BTEC = '" + layoutForLoading.BTEC.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_BTEC = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PPBR_TEC4 = '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMAX_TEC4 = '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
@@ -1909,17 +1946,30 @@ namespace Statistic
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
                     }
-                    else
-                    {
-                        requestUpdate += @"UPDATE PPBRVSPBR SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
+                    else {
+                        requestUpdate += @"UPDATE " + m_strUsedPPBRvsPBR + " SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
                                          @", PPBR_TEC2 = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMAX_TEC2 = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMIN_TEC2 = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_BTEC = '" + layoutForLoading.BTEC.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_BTEC = '" + layoutForLoading.BTEC.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_BTEC = '" + layoutForLoading.BTEC.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //HHH
+                                         @"', PPBR_BTEC = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PPBR_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMAX_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', PMIN_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //HHH
                                          @"', PPBR_TEC4 = '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMAX_TEC4 = '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', PMIN_TEC4 = '" + layoutForLoading.TEC4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
@@ -1956,10 +2006,24 @@ namespace Statistic
                                      @"', '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //HHH
+                                     @"', '" + layoutForLoading.BTEC_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //HHH
                                      @"', '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
@@ -1990,7 +2054,7 @@ namespace Statistic
 
             if (requestInsert != "")
             {
-                requestInsert = @"INSERT INTO PPBRVSPBR (IS_COMDISP, PBR_NUMBER, DATE_TIME, WR_DATE_TIME, " +
+                requestInsert = @"INSERT INTO " + m_strUsedPPBRvsPBR + " (IS_COMDISP, PBR_NUMBER, DATE_TIME, WR_DATE_TIME, " +
                                 @"SN_TEC2, PPBR_TEC2, PMAX_TEC2, PMIN_TEC2, " +
                                 @"SN_BTEC, PPBR_BTEC, PMAX_BTEC, PMIN_BTEC, " +
                                 @"SN_TEC4, PPBR_TEC4, PMAX_TEC4, PMIN_TEC4, " +

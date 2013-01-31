@@ -2122,8 +2122,7 @@ namespace Statistic
                     break;
             }
 
-            if (gtp < 0)
-            {
+            if (gtp < 0) {
                 foreach (GTP g in tec.GTP)
                 {
                     select1 += ", ";
@@ -2131,27 +2130,27 @@ namespace Statistic
                     switch (g.name)
                     {
                         case "ÃÒÏ 110 êÂ":
-                            select1 += @"ADMINVALUES." + name1 +
-                                       @"_110_REC, ADMINVALUES." + name1 +
-                                       @"_110_IS_PER, ADMINVALUES." + name1 +
+                            select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_110_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_110_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_110_DIVIAT";
-                            select2 += @"PPBRVSPBR." + name2 +
+                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
                                        @"_110";
                             break;
                         case "ÃÒÏ 220 êÂ":
-                            select1 += @"ADMINVALUES." + name1 +
-                                       @"_220_REC, ADMINVALUES." + name1 +
-                                       @"_220_IS_PER, ADMINVALUES." + name1 +
+                            select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_220_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_220_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_220_DIVIAT";
-                            select2 += @"PPBRVSPBR." + name2 +
+                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
                                        @"_220";
                             break;
                         default:
-                            select1 += @"ADMINVALUES." + name1 +
-                                       @"_REC, ADMINVALUES." + name1 +
-                                       @"_IS_PER, ADMINVALUES." + name1 +
+                            select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                       @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_DIVIAT";
-                            select2 += @"PPBRVSPBR." + name2;
+                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2;
                             break;
                     }
                 }
@@ -2163,44 +2162,44 @@ namespace Statistic
                 switch (tec.GTP[gtp].name)
                 {
                     case "ÃÒÏ 110 êÂ":
-                        select1 += @"ADMINVALUES." + name1 +
-                                   @"_110_REC, ADMINVALUES." + name1 +
-                                   @"_110_IS_PER, ADMINVALUES." + name1 +
+                        select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_110_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_110_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_110_DIVIAT";
-                        select2 += @"PPBRVSPBR." + name2 +
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
                                    @"_110";
                         break;
                     case "ÃÒÏ 220 êÂ":
-                        select1 += @"ADMINVALUES." + name1 +
-                                   @"_220_REC, ADMINVALUES." + name1 +
-                                   @"_220_IS_PER, ADMINVALUES." + name1 +
+                        select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_220_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_220_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_220_DIVIAT";
-                        select2 += @"PPBRVSPBR." + name2 +
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
                                    @"_220";
                         break;
                     default:
-                        select1 += @"ADMINVALUES." + name1 +
-                                   @"_REC, ADMINVALUES." + name1 +
-                                   @"_IS_PER, ADMINVALUES." + name1 +
+                        select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                   @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_DIVIAT";
-                        select2 += @"PPBRVSPBR." + name2;
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2;
                         break;
                 }
             }
 
-            string request = @"SELECT ADMINVALUES.DATE AS DATE1, PPBRVSPBR.DATE_TIME AS DATE2, " + select1 + 
+            string request = @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
                              @", " + select2 +
-                             @", PPBRVSPBR.PBR_NUMBER FROM ADMINVALUES LEFT JOIN PPBRVSPBR ON ADMINVALUES.DATE = PPBRVSPBR.DATE_TIME " +
-                             @"WHERE ADMINVALUES.DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND ADMINVALUES.DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " LEFT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
+                             @"WHERE " + admin.m_strUsedAdminValues + ".DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND " + admin.m_strUsedAdminValues + ".DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"'" +
                              @" UNION " +
-                             @"SELECT ADMINVALUES.DATE AS DATE1, PPBRVSPBR.DATE_TIME AS DATE2, " + select1 + 
+                             @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
                              @", " + select2 +
-                             @", PPBRVSPBR.PBR_NUMBER FROM ADMINVALUES RIGHT JOIN PPBRVSPBR ON ADMINVALUES.DATE = PPBRVSPBR.DATE_TIME " +
-                             @"WHERE PPBRVSPBR.DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND PPBRVSPBR.DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND MINUTE(PPBRVSPBR.DATE_TIME) = 0 AND ADMINVALUES.DATE IS NULL ORDER BY DATE1, DATE2 ASC";
+                             @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " RIGHT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
+                             @"WHERE " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND MINUTE(" + admin.m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + admin.m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
             admin.Request(request, true);
         }
