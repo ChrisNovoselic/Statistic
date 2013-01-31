@@ -44,14 +44,14 @@ namespace Statistic
 
         private struct TecPPBRValues
         {
-            public double[] SN;
+            //public double[] SN;
             public double[] PBR;
             public double[] Pmax;
             public double[] Pmin;
 
             public TecPPBRValues(int t)
             {
-                this.SN = new double[25];
+                //this.SN = new double[25];
                 this.PBR = new double[25];
                 this.Pmax = new double[24];
                 this.Pmin = new double[24];
@@ -74,11 +74,14 @@ namespace Statistic
             public TecPPBRValues BTEC_TG35;
             public TecPPBRValues BTEC_TG4;
             public TecPPBRValues TEC2;
-            public TecPPBRValues TEC3_110;
-            public TecPPBRValues TEC3_220;
-            public TecPPBRValues TEC4;
-            public TecPPBRValues TEC5_110;
-            public TecPPBRValues TEC5_220;
+            public TecPPBRValues TEC3_TG1;
+            public TecPPBRValues TEC3_TG712;
+            public TecPPBRValues TEC3_TG5;
+            public TecPPBRValues TEC3_TG1314;
+            public TecPPBRValues TEC4_TG3;
+            public TecPPBRValues TEC4_TG48;
+            public TecPPBRValues TEC5_TG12;
+            public TecPPBRValues TEC5_TG36;
             public bool[] existingHours;
 
             public LayoutData(int t)
@@ -97,11 +100,15 @@ namespace Statistic
                 this.BTEC_TG35 = new TecPPBRValues(1);
                 this.BTEC_TG4 = new TecPPBRValues(1);
                 this.TEC2 = new TecPPBRValues(1);
-                this.TEC3_110 = new TecPPBRValues(1);
-                this.TEC3_220 = new TecPPBRValues(1);
-                this.TEC4 = new TecPPBRValues(1);
-                this.TEC5_110 = new TecPPBRValues(1);
-                this.TEC5_220 = new TecPPBRValues(1);
+                this.TEC3_TG1 = new TecPPBRValues(1);
+                this.TEC3_TG5 = new TecPPBRValues(1);
+                this.TEC3_TG5 = new TecPPBRValues(1);
+                this.TEC3_TG712 = new TecPPBRValues(1);
+                this.TEC3_TG1314 = new TecPPBRValues(1);
+                this.TEC4_TG3 = new TecPPBRValues(1);
+                this.TEC4_TG48 = new TecPPBRValues(1);
+                this.TEC5_TG12 = new TecPPBRValues(1);
+                this.TEC5_TG36 = new TecPPBRValues(1);
                 this.existingHours = new bool[24];
             }
 
@@ -112,29 +119,39 @@ namespace Statistic
                 for (int i = 0; i < 24; i++)
                 {
                     existingHours[i] = false;
-                    //BTEC.PBR[i] = BTEC.Pmax[i] = BTEC.Pmin[i] = BTEC.SN[i] =
-                    BTEC_TG1.PBR[i] = BTEC_TG1.Pmax[i] = BTEC_TG1.Pmin[i] = BTEC_TG1.SN[i] =
-                    BTEC_TG2.PBR[i] = BTEC_TG2.Pmax[i] = BTEC_TG2.Pmin[i] = BTEC_TG2.SN[i] =
-                    BTEC_TG35.PBR[i] = BTEC_TG35.Pmax[i] = BTEC_TG35.Pmin[i] = BTEC_TG35.SN[i] =
-                    BTEC_TG4.PBR[i] = BTEC_TG4.Pmax[i] = BTEC_TG4.Pmin[i] = BTEC_TG4.SN[i] =
-                    TEC2.PBR[i] = TEC2.Pmax[i] = TEC2.Pmin[i] = TEC2.SN[i] =
-                    TEC3_110.PBR[i] = TEC3_110.Pmax[i] = TEC3_110.Pmin[i] = TEC3_110.SN[i] =
-                    TEC3_220.PBR[i] = TEC3_220.Pmax[i] = TEC3_220.Pmin[i] = TEC3_220.SN[i] =
-                    TEC4.PBR[i] = TEC4.Pmax[i] = TEC4.Pmin[i] = TEC4.SN[i] =
-                    TEC5_110.PBR[i] = TEC5_110.Pmax[i] = TEC5_110.Pmin[i] = TEC5_110.SN[i] =
-                    TEC5_220.PBR[i] = TEC5_220.Pmax[i] = TEC5_220.Pmin[i] = TEC5_220.SN[i] = 0.0;
+                    //БТЭЦ
+                    BTEC_TG1.PBR[i] = BTEC_TG1.Pmax[i] = BTEC_TG1.Pmin[i] = 
+                    BTEC_TG2.PBR[i] = BTEC_TG2.Pmax[i] = BTEC_TG2.Pmin[i] = 
+                    BTEC_TG35.PBR[i] = BTEC_TG35.Pmax[i] = BTEC_TG35.Pmin[i] = 
+                    BTEC_TG4.PBR[i] = BTEC_TG4.Pmax[i] = BTEC_TG4.Pmin[i] = 
+                    //ТЭЦ-2
+                    TEC2.PBR[i] = TEC2.Pmax[i] = TEC2.Pmin[i] =
+                    //ТЭЦ-3
+                    TEC3_TG1.PBR[i] = TEC3_TG1.Pmax[i] = TEC3_TG1.Pmin[i] =
+                    TEC3_TG5.PBR[i] = TEC3_TG5.Pmax[i] = TEC3_TG5.Pmin[i] =
+                    TEC3_TG712.PBR[i] = TEC3_TG712.Pmax[i] = TEC3_TG712.Pmin[i] =
+                    TEC3_TG1314.PBR[i] = TEC3_TG1314.Pmax[i] = TEC3_TG1314.Pmin[i] =
+                    //ТЭЦ-4
+                    TEC4_TG3.PBR[i] = TEC4_TG3.Pmax[i] = TEC4_TG3.Pmin[i] =
+                    TEC4_TG48.PBR[i] = TEC4_TG48.Pmax[i] = TEC4_TG48.Pmin[i] =
+                    //ТЭЦ-5
+                    TEC5_TG12.PBR[i] = TEC5_TG12.Pmax[i] = TEC5_TG12.Pmin[i] =
+                    TEC5_TG36.PBR[i] = TEC5_TG36.Pmax[i] = TEC5_TG36.Pmin[i] = 0.0;
                 }
                 //BTEC.PBR[24] = BTEC.SN[24] =
-                BTEC_TG1.PBR[24] = BTEC_TG1.SN[24] =
-                BTEC_TG2.PBR[24] = BTEC_TG2.SN[24] =
-                BTEC_TG35.PBR[24] = BTEC_TG35.SN[24] =
-                BTEC_TG4.PBR[24] = BTEC_TG4.SN[24] =
-                TEC2.PBR[24] = TEC2.SN[24] =
-                TEC3_110.PBR[24] = TEC3_110.SN[24] =
-                TEC3_220.PBR[24] = TEC3_220.SN[24] =
-                TEC4.PBR[24] = TEC4.SN[24] =
-                TEC5_110.PBR[24] = TEC5_110.SN[24] =
-                TEC5_220.PBR[24] = TEC5_220.SN[24] = 0.0;
+                BTEC_TG1.PBR[24] = 
+                BTEC_TG2.PBR[24] = 
+                BTEC_TG35.PBR[24] =
+                BTEC_TG4.PBR[24] = 
+                TEC2.PBR[24] =
+                TEC3_TG1.PBR[24] =
+                TEC3_TG5.PBR[24] =
+                TEC3_TG712.PBR[24] =
+                TEC3_TG1314.PBR[24] =
+                TEC4_TG3.PBR[24] =
+                TEC4_TG48.PBR[24] =
+                TEC5_TG12.PBR[24] =
+                TEC5_TG36.PBR[24] = 0.0;
             }
         }
 
@@ -436,8 +453,8 @@ namespace Statistic
         {
             InitializeComponents();
 
-            m_strUsedAdminValues = "";
-            m_strUsedPPBRvsPBR = "";
+            m_strUsedAdminValues = "AdminValuesNew";
+            m_strUsedPPBRvsPBR = "PPBRvsPBRnew";
 
             started = false;
 
@@ -882,8 +899,7 @@ namespace Statistic
 
                 pos1 = pos2 + 1;
                 pos2 = str.IndexOf("++", pos1);
-                if (pos2 <= 0)
-                {
+                if (pos2 <= 0) {
                     sr.Close();
                     return false;
                 }
@@ -892,11 +908,9 @@ namespace Statistic
                 layoutForLoading.hour_start--;
                 layoutForLoading.hour_end = 24;//layoutForLoading.hour_start + 3;
             }
-            else
-            {
+            else {
                 pos2 = str.IndexOf("++", pos1);
-                if (pos2 <= 0)
-                {
+                if (pos2 <= 0) {
                     sr.Close();
                     return false;
                 }
@@ -906,8 +920,7 @@ namespace Statistic
                 layoutForLoading.hour_end = 24;
             }
 
-            while ((str = sr.ReadLine()) != null)
-            {
+            while ((str = sr.ReadLine()) != null) {
                 pos1 = 0;
                 pos2 = str.IndexOf('(', pos1);
                 if (pos2 < 0)
@@ -917,30 +930,32 @@ namespace Statistic
                 }
                 pos1 = pos2 + 1;
                 pos2 = str.IndexOf(')', pos1);
-                if (pos2 <= 0)
-                {
+                if (pos2 <= 0) {
                     sr.Close();
                     return false;
                 }
-                if (!int.TryParse(str.Substring(pos1, pos2 - pos1), out tmp_int))
-                {
+                if (!int.TryParse(str.Substring(pos1, pos2 - pos1), out tmp_int)) {
                     sr.Close();
                     return false;
                 }
-                switch (tmp_int % 100)
-                { 
+                switch (tmp_int % 100) { 
                     case 1: tecPPBRValues = layoutForLoading.TEC2; break;
-                    case 2: tecPPBRValues = layoutForLoading.TEC3_110; break;
-                    case 21: tecPPBRValues = layoutForLoading.TEC3_110; break;
-                    case 22: tecPPBRValues = layoutForLoading.TEC3_220; break;
-                    case 3: tecPPBRValues = layoutForLoading.TEC4; break;
-                    case 4: tecPPBRValues = layoutForLoading.TEC5_110; break;
-                    case 41: tecPPBRValues = layoutForLoading.TEC5_220; break;
-                    case 42: tecPPBRValues = layoutForLoading.TEC5_110; break;
-                    case 6: //HHH
-                        //tecPPBRValues = layoutForLoading.BTEC;
-                        tecPPBRValues = layoutForLoading.BTEC_TG1;
-                        break;
+                    case 2: tecPPBRValues = layoutForLoading.TEC3_TG1; break;
+                    case 21: tecPPBRValues = layoutForLoading.TEC3_TG1; break;
+                    case 22: tecPPBRValues = layoutForLoading.TEC3_TG5; break;
+                    case 23: tecPPBRValues = layoutForLoading.TEC3_TG712; break;
+                    case 24: tecPPBRValues = layoutForLoading.TEC3_TG1314; break;
+                    case 3: tecPPBRValues = layoutForLoading.TEC4_TG3; break;
+                    case 31: tecPPBRValues = layoutForLoading.TEC4_TG3; break;
+                    case 32: tecPPBRValues = layoutForLoading.TEC4_TG48; break;
+                    case 4: tecPPBRValues = layoutForLoading.TEC5_TG12; break;
+                    case 41: tecPPBRValues = layoutForLoading.TEC5_TG12; break;
+                    case 42: tecPPBRValues = layoutForLoading.TEC5_TG36; break;
+                    case 6: tecPPBRValues = layoutForLoading.BTEC_TG1; break;
+                    case 61: tecPPBRValues = layoutForLoading.BTEC_TG1; break;
+                    case 62: tecPPBRValues = layoutForLoading.BTEC_TG2; break;
+                    case 63: tecPPBRValues = layoutForLoading.BTEC_TG35; break;
+                    case 64: tecPPBRValues = layoutForLoading.BTEC_TG4; break;
                     default:
                         {
                             sr.Close();
@@ -953,7 +968,7 @@ namespace Statistic
                     tmp_int /= 10;
                 switch (tmp_int % 1000)
                 {
-                    case 100: values = tecPPBRValues.SN; break;
+                    case 100: /*values = tecPPBRValues.SN; break;*/
                     case 200: values = tecPPBRValues.PBR; break;
                     case 300: values = tecPPBRValues.Pmax; break;
                     case 400: values = tecPPBRValues.Pmin; break;
@@ -966,32 +981,26 @@ namespace Statistic
                 pos1 = pos2 + 2;
 
                 hour = 0;
-                while((pos2 = str.IndexOf(divider, pos1)) > 0)
-                {
+                while((pos2 = str.IndexOf(divider, pos1)) > 0) {
                     tmp_str = SetNumberSeparator(str.Substring(pos1, pos2 - pos1));
-                    if (!double.TryParse(tmp_str, out values[hour++]))
-                    {
+                    if (! double.TryParse(tmp_str, out values[hour++])) {
                         sr.Close();
                         return false;
                     }
                     pos1 = pos2 + 1;
                 }
 
-                if ((pos2 = str.IndexOf("==", pos1)) > 0)
-                {
+                if ((pos2 = str.IndexOf("==", pos1)) > 0) {
                     tmp_str = SetNumberSeparator(str.Substring(pos1, pos2 - pos1));
-                    if (!double.TryParse(tmp_str, out values[hour++]))
-                    {
+                    if (! double.TryParse(tmp_str, out values[hour++])) {
                         sr.Close();
                         return false;
                     }
                     pos1 = pos2 + 1;
                 }
-                else
-                {
+                else {
                     tmp_str = SetNumberSeparator(str.Substring(pos1, str.Length - pos1));
-                    if (!double.TryParse(tmp_str, out values[hour++]))
-                    {
+                    if (!double.TryParse(tmp_str, out values[hour++])) {
                         sr.Close();
                         return false;
                     }
@@ -1002,16 +1011,13 @@ namespace Statistic
             return true;
         }
 
-        private void btnLoadLayout_Click(object sender, EventArgs e)
-        {
+        private void btnLoadLayout_Click(object sender, EventArgs e) {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Multiselect = false;
             ofd.RestoreDirectory = true;
 
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                if (!ParseLayout(ofd.FileName))
-                {
+            if (ofd.ShowDialog() == DialogResult.OK) {
+                if (!ParseLayout(ofd.FileName)) {
                     MessageBox.Show(this, "Неправильный формат макета. Загрузка невзможна.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
@@ -1532,44 +1538,32 @@ namespace Statistic
             {
                 case "БТЭЦ":
                     select1 = "BTEC";
-                    select2 = "PPBR_BTEC";
                     break;
                 case "ТЭЦ-2":
                     select1 = "TEC2";
-                    select2 = "PPBR_TEC2";
                     break;
                 case "ТЭЦ-3":
                     select1 = "TEC3";
-                    select2 = "PPBR_TEC3";
                     break;
                 case "ТЭЦ-4":
                     select1 = "TEC4";
-                    select2 = "PPBR_TEC4";
                     break;
                 case "ТЭЦ-5":
                     select1 = "TEC5";
-                    select2 = "PPBR_TEC5";
                     break;
                 default:
                     break;
             }
 
-            switch (gtp.name)
-            {
-                case "ГТП 110 кВ":
-                    select1 += "_110";
-                    select2 += "_110";
-                    break;
-                case "ГТП 220 кВ":
-                    select1 += "_220";
-                    select2 += "_220";
-                    break;
-                default:
-                    break;
+            if (gtp.field.Length > 0) {
+                select1 += "_" + gtp.field;
+                select2 += "_" + gtp.field;
+            }
+            else {
             }
 
             string request = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " + 
-                             m_strUsedAdminValues + "." + select1 + @"_IS_PER, " + 
+                             m_strUsedAdminValues + "." + @select1 + @"_IS_PER, " + 
                              m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
                              m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + m_strUsedPPBRvsPBR + "." + select2 +
                              @" FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
@@ -1588,14 +1582,14 @@ namespace Statistic
 
 
             Request(request, false);
-//SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.PPBR_BTEC
+//SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.BTEC_PPBR
 //FROM AdminValues
 //LEFT JOIN PPBRvsPBR ON AdminValues.date = PPBRvsPBR.date_time
 //WHERE 
 //AdminValues.date > '2009-12-08 00:00:00'
 //AND AdminValues.date <= '2009-12-09 00:00:00'
 //UNION
-//SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.PPBR_BTEC
+//SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.BTEC_PPBR
 //FROM AdminValues
 //RIGHT JOIN PPBRvsPBR ON AdminValues.date = PPBRvsPBR.date_time
 //WHERE PPBRvsPBR.date_time > '2009-12-08 00:00:00'
@@ -1731,20 +1725,13 @@ namespace Statistic
                     break;
             }
 
-            switch (gtp.name)
-            {
-                case "ГТП 110 кВ":
-                    name += "_110";
-                    break;
-                case "ГТП 220 кВ":
-                    name += "_220";
-                    break;
-                default:
-                    break;
+            if (gtp.field.Length > 0) {
+                name += "_" + gtp.field;
             }
+            else
+                ;
 
-            for (int i = 0; i < 24; i++)
-            {
+            for (int i = 0; i < 24; i++) {
                 // перематываем записи на текущий час
                 if (i >= currentHour)
                 {
@@ -1888,60 +1875,69 @@ namespace Statistic
             string requestInsert = "";
             string requestUpdate = "";
 
-            for (int i = layoutForLoading.hour_start; i < layoutForLoading.hour_end; i++)
-            {
+            for (int i = layoutForLoading.hour_start; i < layoutForLoading.hour_end; i++) {
                 // запись для этого часа имеется, модифицируем её
-                if (layoutForLoading.existingHours[i])
-                {
-                    if (layoutForLoading.name == "ППБР")
-                    {
+                if (layoutForLoading.existingHours[i]) {
+                    if (layoutForLoading.name == "ППБР") {
                         requestUpdate += @"UPDATE " + m_strUsedPPBRvsPBR + " SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
-                                         @", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC2 = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC2 = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC2 = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_BTEC = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC4 = '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC4 = '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC4 = '" + layoutForLoading.TEC4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', SN_TEC3 = '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3 = '" + (layoutForLoading.TEC3_110.PBR[i] + layoutForLoading.TEC3_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3 = '" + (layoutForLoading.TEC3_110.Pmax[i] + layoutForLoading.TEC3_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3 = '" + (layoutForLoading.TEC3_110.Pmin[i] + layoutForLoading.TEC3_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3_110 = '" + layoutForLoading.TEC3_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3_110 = '" + layoutForLoading.TEC3_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3_110 = '" + layoutForLoading.TEC3_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3_220 = '" + layoutForLoading.TEC3_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3_220 = '" + layoutForLoading.TEC3_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3_220 = '" + layoutForLoading.TEC3_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', SN_TEC5 = '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5 = '" + (layoutForLoading.TEC5_110.PBR[i] + layoutForLoading.TEC5_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5 = '" + (layoutForLoading.TEC5_110.Pmax[i] + layoutForLoading.TEC5_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5 = '" + (layoutForLoading.TEC5_110.Pmin[i] + layoutForLoading.TEC5_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5_110 = '" + layoutForLoading.TEC5_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5_110 = '" + layoutForLoading.TEC5_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5_110 = '" + layoutForLoading.TEC5_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5_220 = '" + layoutForLoading.TEC5_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5_220 = '" + layoutForLoading.TEC5_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5_220 = '" + layoutForLoading.TEC5_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PPBR = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMAX = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMIN = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PPBR = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMAX = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMIN = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC3 = '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PPBR = '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMAX = '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMIN = '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PPBR = '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMAX = '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMIN = '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC5 = '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PPBR = '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMAX = '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMIN = '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"' WHERE " +
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
@@ -1950,47 +1946,62 @@ namespace Statistic
                         requestUpdate += @"UPDATE " + m_strUsedPPBRvsPBR + " SET IS_COMDISP = 1, PBR_NUMBER = '" + layoutForLoading.name +
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
-                                         @", PPBR_TEC2 = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC2 = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC2 = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         //HHH
-                                         @"', PPBR_BTEC = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_BTEC = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG1_BTEC = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG2_BTEC = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG35_BTEC = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TG4_BTEC = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         //HHH
-                                         @"', PPBR_TEC4 = '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC4 = '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC4 = '" + layoutForLoading.TEC4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3 = '" + (layoutForLoading.TEC3_110.PBR[i] + layoutForLoading.TEC3_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3 = '" + (layoutForLoading.TEC3_110.Pmax[i] + layoutForLoading.TEC3_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3 = '" + (layoutForLoading.TEC3_110.Pmin[i] + layoutForLoading.TEC3_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3_110 = '" + layoutForLoading.TEC3_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3_110 = '" + layoutForLoading.TEC3_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3_110 = '" + layoutForLoading.TEC3_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC3_220 = '" + layoutForLoading.TEC3_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC3_220 = '" + layoutForLoading.TEC3_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC3_220 = '" + layoutForLoading.TEC3_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5 = '" + (layoutForLoading.TEC5_110.PBR[i] + layoutForLoading.TEC5_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5 = '" + (layoutForLoading.TEC5_110.Pmax[i] + layoutForLoading.TEC5_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5 = '" + (layoutForLoading.TEC5_110.Pmin[i] + layoutForLoading.TEC5_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5_110 = '" + layoutForLoading.TEC5_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5_110 = '" + layoutForLoading.TEC5_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5_110 = '" + layoutForLoading.TEC5_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PPBR_TEC5_220 = '" + layoutForLoading.TEC5_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMAX_TEC5_220 = '" + layoutForLoading.TEC5_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', PMIN_TEC5_220 = '" + layoutForLoading.TEC5_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PPBR = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMAX = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMIN = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PPBR = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMAX = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMIN = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC3 = '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PPBR = '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMAX = '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMIN = '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PPBR = '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMAX = '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMIN = '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@"', SN_TEC5 = '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PPBR = '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMAX = '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMIN = '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"' WHERE " +
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
@@ -2002,12 +2013,8 @@ namespace Statistic
                     requestInsert += @" (1, '" + layoutForLoading.name +
                                      @"', '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                      @"', now()" +
-                                     @", '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     //HHH
-                                     @"', '" + layoutForLoading.BTEC_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     //HHH БТЭЦ
+                                     //@"', '" + layoutForLoading.BTEC_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
@@ -2024,30 +2031,50 @@ namespace Statistic
                                      @"', '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
                                      @"', '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      //HHH
-                                     @"', '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_110.PBR[i] + layoutForLoading.TEC3_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_110.Pmax[i] + layoutForLoading.TEC3_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_110.Pmin[i] + layoutForLoading.TEC3_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_110.PBR[i] + layoutForLoading.TEC5_220.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_110.Pmax[i] + layoutForLoading.TEC5_220.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_110.Pmin[i] + layoutForLoading.TEC5_220.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_110.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_110.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_110.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_220.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_220.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_220.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //ТЭЦ-2
+                                     //@", '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //ТЭЦ-3
+                                     //@"', '" + layoutForLoading.TEC3_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //ТЭЦ-4
+                                     //@"', '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //ТЭЦ-5
+                                     //@"', '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      @"'),";
                 }
             }
@@ -2055,15 +2082,28 @@ namespace Statistic
             if (requestInsert != "")
             {
                 requestInsert = @"INSERT INTO " + m_strUsedPPBRvsPBR + " (IS_COMDISP, PBR_NUMBER, DATE_TIME, WR_DATE_TIME, " +
-                                @"SN_TEC2, PPBR_TEC2, PMAX_TEC2, PMIN_TEC2, " +
-                                @"SN_BTEC, PPBR_BTEC, PMAX_BTEC, PMIN_BTEC, " +
-                                @"SN_TEC4, PPBR_TEC4, PMAX_TEC4, PMIN_TEC4, " +
-                                @"SN_TEC3, PPBR_TEC3, PMAX_TEC3, PMIN_TEC3, " +
-                                @"PPBR_TEC3_110, PMAX_TEC3_110, PMIN_TEC3_110, " +
-                                @"PPBR_TEC3_220, PMAX_TEC3_220, PMIN_TEC3_220, " +
-                                @"SN_TEC5, PPBR_TEC5, PMAX_TEC5, PMIN_TEC5, " +
-                                @"PPBR_TEC5_110, PMAX_TEC5_110, PMIN_TEC5_110, " +
-                                @"PPBR_TEC5_220, PMAX_TEC5_220, PMIN_TEC5_220" +
+                                //БТЭЦ
+                                @"BTEC_PPBR, BTEC_PMAX, BTEC_PMIN, " +
+                                @"BTEC_TG1_PBR, BTEC_TG1_PMAX, BTEC_TG1_PMIN, " +
+                                @"BTEC_TG2_PPBR, BTEC_TG2_PMAX, BTEC_TG2_PMIN" +
+                                @"BTEC_TG1_PBR, BTEC_TG1_PMAX, BTEC_TG1_PMIN, " +
+                                @"BTEC_TG2_PPBR, BTEC_TG2_PMAX, BTEC_TG2_PMIN" +
+                                //ТЭЦ-2
+                                @"TEC2_PPBR, TEC2_PMAX, TEC2_PMIN, " +
+                                //ТЭЦ-3
+                                @"TEC3_PPBR, TEC3_PMAX, TEC3_PMIN, " +
+                                @"TEC3_TG1_PPBR, TEC3_TG1_PMAX, TEC3_TG1_PMIN, " +
+                                @"TEC3_TG5_PPBR, TEC3_TG5_PMAX, TEC3_TG5_PMIN, " +
+                                @"TEC3_TG712_PPBR, TEC3_TG712_PMAX, TEC3_TG712_PMIN, " +
+                                @"TEC3_TG1314_PPBR, TEC3_TG1314_PMAX, TEC3_TG1314_PMIN, " +
+                                //ТЭЦ-4
+                                @"TEC4_PPBR, TEC4_PMAX, TEC4_PMIN, " +
+                                @"TEC4_TG3_PBR, TEC4_TG3_PMAX, TEC4_TG3_PMIN, " +
+                                @"TEC4_TG48_PPBR, TEC4_TG48_PMAX, TEC4_TG48_PMIN" +
+                                //ТЭЦ-5
+                                @"TEC5_PPBR, TEC5_PMAX, TEC5_PMIN, " +
+                                @"TEC5_TG12_PBR, TEC5_TG12_PMAX, TEC5_TG12_PMIN, " +
+                                @"TEC5_TG12_PPBR, TEC5_TG12_PMAX, TEC5_TG12_PMIN" +
                                 @") VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
 

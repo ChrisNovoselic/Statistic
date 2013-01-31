@@ -2100,65 +2100,50 @@ namespace Statistic
             {
                 case "¡“›÷":
                     name1 = "BTEC";
-                    name2 = "PPBR_BTEC";
                     break;
                 case "“›÷-2":
                     name1 = "TEC2";
-                    name2 = "PPBR_TEC2";
                     break;
                 case "“›÷-3":
                     name1 = "TEC3";
-                    name2 = "PPBR_TEC3";
                     break;
                 case "“›÷-4":
                     name1 = "TEC4";
-                    name2 = "PPBR_TEC4";
                     break;
                 case "“›÷-5":
                     name1 = "TEC5";
-                    name2 = "PPBR_TEC5";
                     break;
                 default:
                     break;
             }
+
+            name2 = name1 + "PBR";
 
             if (gtp < 0) {
                 foreach (GTP g in tec.GTP)
                 {
                     select1 += ", ";
                     select2 += ", ";
-                    switch (g.name)
-                    {
-                        case "√“œ 110 Í¬":
-                            select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_110_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_110_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_110_DIVIAT";
-                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
-                                       @"_110";
-                            break;
-                        case "√“œ 220 Í¬":
-                            select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_220_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_220_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_220_DIVIAT";
-                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
-                                       @"_220";
-                            break;
-                        default:
-                            select1 += admin.m_strUsedAdminValues + "." + name1 +
+                    if (g.field.Length > 0) {
+                        select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                       g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                       g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
+                                       g.field + "_DIVIAT";
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 +
+                                    g.field + "PBR";
+                    }
+                    else {
+                        select1 += admin.m_strUsedAdminValues + "." + name1 +
                                        @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_DIVIAT";
-                            select2 += admin.m_strUsedPPBRvsPBR + "." + name2;
-                            break;
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "PBR";
                     }
                 }
                 select1 = select1.Substring(2);
                 select2 = select2.Substring(2);
             }
-            else
-            {
+            else {
                 switch (tec.GTP[gtp].name)
                 {
                     case "√“œ 110 Í¬":
