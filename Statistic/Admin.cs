@@ -1560,6 +1560,7 @@ namespace Statistic
                 select2 += select1 + "_PBR";
             }
             else {
+                select2 += select1 + "_PBR";
             }
 
             string request = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " + 
