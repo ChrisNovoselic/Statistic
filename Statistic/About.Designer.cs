@@ -32,6 +32,7 @@ namespace Statistic
             this.label1 = new System.Windows.Forms.Label();
             this.llblMailTo = new System.Windows.Forms.LinkLabel();
             this.btnClose = new System.Windows.Forms.Button();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -47,18 +48,17 @@ namespace Statistic
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(66, 12);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(250, 39);
+            this.label1.Size = new System.Drawing.Size(250, 58);
             this.label1.TabIndex = 2;
             this.label1.Text = "Программа \"Статистика\"\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразработчик" +
-                ": Качайло Михаил, e-mail: ";
+    ": Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин Алексей, e-mail:";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(258, 38);
+            this.llblMailTo.Location = new System.Drawing.Point(277, 36);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -68,7 +68,7 @@ namespace Statistic
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(146, 64);
+            this.btnClose.Location = new System.Drawing.Point(161, 69);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -76,11 +76,22 @@ namespace Statistic
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(277, 49);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(106, 13);
+            this.linkLabel1.TabIndex = 3;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "ChrjapinAN@nske.ru";
+            // 
             // About
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(367, 91);
+            this.ClientSize = new System.Drawing.Size(393, 97);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.llblMailTo);
             this.Controls.Add(this.label1);
@@ -103,5 +114,6 @@ namespace Statistic
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.LinkLabel llblMailTo;
         private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
