@@ -164,7 +164,7 @@ namespace Statistic
         private System.Windows.Forms.DataGridViewTextBoxColumn Deviation;
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
-        private System.Windows.Forms.Button btnLoadLayout;
+        //private System.Windows.Forms.Button btnLoadLayout;
         private System.Windows.Forms.DataGridViewButtonColumn ToAll;
         private System.Windows.Forms.ComboBox cbxTec;
         private System.Windows.Forms.GroupBox gbxDivider;
@@ -289,7 +289,7 @@ namespace Statistic
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
-            this.btnLoadLayout = new System.Windows.Forms.Button();
+            //this.btnLoadLayout = new System.Windows.Forms.Button();
             this.dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.DateHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Plan = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -305,7 +305,7 @@ namespace Statistic
 
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
-            this.Controls.Add(this.btnLoadLayout);
+            //this.Controls.Add(this.btnLoadLayout);
             this.Controls.Add(this.dgwAdminTable);
             this.Controls.Add(this.mcldrDate);
             this.Controls.Add(this.cbxTec);
@@ -423,13 +423,13 @@ namespace Statistic
             // 
             // btnLoadLayout
             // 
-            this.btnLoadLayout.Location = new System.Drawing.Point(10, 282);
-            this.btnLoadLayout.Name = "btnLoad";
-            this.btnLoadLayout.Size = new System.Drawing.Size(154, 23);
-            this.btnLoadLayout.TabIndex = 2;
-            this.btnLoadLayout.Text = "Загрузить макет";
-            this.btnLoadLayout.UseVisualStyleBackColor = true;
-            this.btnLoadLayout.Click += new System.EventHandler(this.btnLoadLayout_Click);
+            //this.btnLoadLayout.Location = new System.Drawing.Point(10, 282);
+            //this.btnLoadLayout.Name = "btnLoad";
+            //this.btnLoadLayout.Size = new System.Drawing.Size(154, 23);
+            //this.btnLoadLayout.TabIndex = 2;
+            //this.btnLoadLayout.Text = "Загрузить макет";
+            //this.btnLoadLayout.UseVisualStyleBackColor = true;
+            //this.btnLoadLayout.Click += new System.EventHandler(this.btnLoadLayout_Click);
             // 
             // ToAll
             // 

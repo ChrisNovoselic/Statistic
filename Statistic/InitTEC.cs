@@ -46,7 +46,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1";
-            tec[i].GTP[j].name = "ГТП ТГ№1"; //GNOVOS36
+            tec[i].GTP[j].name = "ГТП ТГ1"; //GNOVOS36
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j++].TG[k++].name = "ТГ1";
@@ -54,7 +54,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG2";
-            tec[i].GTP[j].name = "ГТП ТГ№2"; //GNOVOS37
+            tec[i].GTP[j].name = "ГТП ТГ2"; //GNOVOS37
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j++].TG[k++].name = "ТГ2";
@@ -62,7 +62,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG35"; //GNOVOS38
-            tec[i].GTP[j].name = "ГТП ТГ№35";
+            tec[i].GTP[j].name = "ГТП ТГ3,5";
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ3";
@@ -73,7 +73,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG4";
-            tec[i].GTP[j].name = "ГТП ТГ№4"; //GNOVOS08
+            tec[i].GTP[j].name = "ГТП ТГ4"; //GNOVOS08
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ4";
@@ -107,7 +107,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1";
-            tec[i].GTP[j].name = "ГТП ТГ№1"; //GNOVOS33
+            tec[i].GTP[j].name = "ГТП ТГ1"; //GNOVOS33
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j++].TG[k++].name = "ТГ1";
@@ -115,7 +115,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG5";
-            tec[i].GTP[j].name = "ГТП ТГ№5"; //GNOVOS34
+            tec[i].GTP[j].name = "ГТП ТГ5"; //GNOVOS34
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j++].TG[k++].name = "ТГ5";
@@ -123,7 +123,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG712"; //GNOVOS03
-            tec[i].GTP[j].name = "ГТП ТГ№№7-12";
+            tec[i].GTP[j].name = "ГТП ТГ7-12";
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ7";
@@ -146,7 +146,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1314"; //GNOVOS04
-            tec[i].GTP[j].name = "ГТП ТГ№№13,14";
+            tec[i].GTP[j].name = "ГТП ТГ13,14";
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ13";
@@ -162,7 +162,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG3";
-            tec[i].GTP[j].name = "ГТП TG3"; //GNOVOS35
+            tec[i].GTP[j].name = "ГТП ТГ3"; //GNOVOS35
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j++].TG[k++].name = "ТГ3";
@@ -170,7 +170,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG48";
-            tec[i].GTP[j].name = "ГТП TG48"; //GNOVOS07
+            tec[i].GTP[j].name = "ГТП ТГ4-8"; //GNOVOS07
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ4";
@@ -195,7 +195,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec [i].GTP.Add (new GTP (tec [i]));
             tec[i].GTP[j].field = "TG12";
-            tec[i].GTP[j].name = "ГТП TG12"; //GNOVOS06
+            tec[i].GTP[j].name = "ГТП ТГ1,2"; //GNOVOS06
             //Создание ТГ и добавление к ГТП
             tec [i].GTP [j].TG.Add (new TG (tec [i].GTP [j]));
             tec [i].GTP [j].TG [k ++].name = "ТГ1";
@@ -206,7 +206,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec [i].GTP.Add (new GTP (tec [i]));
             tec[i].GTP[j].field = "TG36";
-            tec[i].GTP[j].name = "ГТП TG36"; //GNOVOS07
+            tec[i].GTP[j].name = "ГТП ТГ3-6"; //GNOVOS07
             //Создание ТГ и добавление к ГТП
             tec [i].GTP [j].TG.Add (new TG (tec [i].GTP [j]));
             tec [i].GTP [j].TG [k ++].name = "ТГ3";
