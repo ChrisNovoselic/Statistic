@@ -1765,13 +1765,18 @@ namespace Statistic
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
             string requestDelete = @"DELETE FROM " + m_strUsedAdminValues + " WHERE " +
-                                   @"BTEC_REC = 0 AND BTEC_IS_PER = 0 AND BTEC_DIVIAT = 0 AND " +
+                                   @"BTEC_TG1_REC = 0 AND BTEC_TG1_IS_PER = 0 AND BTEC_TG1_DIVIAT = 0 AND " +
+                                   @"BTEC_TG2_REC = 0 AND BTEC_TG2_IS_PER = 0 AND BTEC_TG2_DIVIAT = 0 AND " +
+                                   @"BTEC_TG35_REC = 0 AND BTEC_TG35_IS_PER = 0 AND BTEC_TG35_DIVIAT = 0 AND " +
+                                   @"BTEC_TG4_REC = 0 AND BTEC_TG4_IS_PER = 0 AND BTEC_TG4_DIVIAT = 0 AND " +
                                    @"TEC2_REC = 0 AND TEC2_IS_PER = 0 AND TEC2_DIVIAT = 0 AND " +
-                                   @"TEC3_110_REC = 0 AND TEC3_110_IS_PER = 0 AND TEC3_110_DIVIAT = 0 AND " +
-                                   @"TEC3_220_REC = 0 AND TEC3_220_IS_PER = 0 AND TEC3_220_DIVIAT = 0 AND " +
+                                   @"TEC3_TG1_REC = 0 AND TEC3_TG1_IS_PER = 0 AND TEC3_TG1_DIVIAT = 0 AND " +
+                                   @"TEC3_TG5_REC = 0 AND TEC3_TG5_IS_PER = 0 AND TEC3_TG5_DIVIAT = 0 AND " +
+                                   @"TEC3_TG712_REC = 0 AND TEC3_TG712_IS_PER = 0 AND TEC3_TG712_DIVIAT = 0 AND " +
+                                   @"TEC3_TG1314_REC = 0 AND TEC3_TG1314_IS_PER = 0 AND TEC3_TG1314_DIVIAT = 0 AND " +
                                    @"TEC4_REC = 0 AND TEC4_IS_PER = 0 AND TEC4_DIVIAT = 0 AND " +
-                                   @"TEC5_110_REC = 0 AND TEC5_110_IS_PER = 0 AND TEC5_110_DIVIAT = 0 AND " +
-                                   @"TEC5_220_REC = 0 AND TEC5_220_IS_PER = 0 AND TEC5_220_DIVIAT = 0 AND " +
+                                   @"TEC5_TG12_REC = 0 AND TEC5_TG12_IS_PER = 0 AND TEC5_TG12_DIVIAT = 0 AND " +
+                                   @"TEC5_TG36_REC = 0 AND TEC5_TG36_IS_PER = 0 AND TEC5_TG36_DIVIAT = 0 AND " +
                                    @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") + 
                                    @"';";

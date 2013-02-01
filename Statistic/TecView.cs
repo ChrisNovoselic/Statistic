@@ -2087,8 +2087,7 @@ namespace Statistic
             tec.Request(request);
         }
 
-        private void GetAdminValuesRequest()
-        {
+        private void GetAdminValuesRequest () {
             string name1 = "";
             string name2 = "";
             string select1 = "";
@@ -2096,8 +2095,7 @@ namespace Statistic
 
             DateTime date = dtprDate.Value.Date;
 
-            switch (tec.name)
-            {
+            switch (tec.name) {
                 case "ÁÒÝÖ":
                     name1 = "BTEC";
                     break;
@@ -2144,31 +2142,21 @@ namespace Statistic
                 select2 = select2.Substring(2);
             }
             else {
-                switch (tec.GTP[gtp].name)
-                {
-                    case "ÃÒÏ 110 êÂ":
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_110_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_110_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_110_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
-                                   @"_110";
-                        break;
-                    case "ÃÒÏ 220 êÂ":
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_220_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_220_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_220_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2 +
-                                   @"_220";
-                        break;
-                    default:
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
+                GTP g = tec.GTP[gtp];
+                if (g.field.Length > 0) {
+                    select1 += admin.m_strUsedAdminValues + "." + name1 +
+                                   g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 +
+                                   g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
+                                   g.field + "_DIVIAT";
+                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 +
+                                g.field + "PBR";
+                }
+                else  {
+                    select1 += admin.m_strUsedAdminValues + "." + name1 +
                                    @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name2;
-                        break;
+                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "PBR";
                 }
             }
 
