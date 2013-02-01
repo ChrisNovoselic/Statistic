@@ -2115,7 +2115,7 @@ namespace Statistic
                     break;
             }
 
-            name2 = name1 + "PBR";
+            name2 = name1 + "_PBR";
 
             if (gtp < 0) {
                 foreach (GTP g in tec.GTP)
@@ -2123,19 +2123,18 @@ namespace Statistic
                     select1 += ", ";
                     select2 += ", ";
                     if (g.field.Length > 0) {
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                       g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
+                        select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
+                                       g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
+                                       g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
                                        g.field + "_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 +
-                                    g.field + "PBR";
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
                     }
                     else {
                         select1 += admin.m_strUsedAdminValues + "." + name1 +
                                        @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                        @"_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "PBR";
+                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
                     }
                 }
                 select1 = select1.Substring(2);
@@ -2144,19 +2143,18 @@ namespace Statistic
             else {
                 GTP g = tec.GTP[gtp];
                 if (g.field.Length > 0) {
-                    select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                   g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
+                    select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
+                                   g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
+                                   g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
                                    g.field + "_DIVIAT";
-                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 +
-                                g.field + "PBR";
+                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
                 }
                 else  {
                     select1 += admin.m_strUsedAdminValues + "." + name1 +
                                    @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
                                    @"_DIVIAT";
-                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "PBR";
+                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
                 }
             }
 

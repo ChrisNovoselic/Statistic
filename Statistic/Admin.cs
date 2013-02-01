@@ -1557,7 +1557,7 @@ namespace Statistic
 
             if (gtp.field.Length > 0) {
                 select1 += "_" + gtp.field;
-                select2 += "_" + gtp.field;
+                select2 += select1 + "_PBR";
             }
             else {
             }
@@ -1574,7 +1574,7 @@ namespace Statistic
                              @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
                              m_strUsedAdminValues + "." + select1 + @"_IS_PER, " +
                              m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
-                             m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, PPBRVSPBR." + select2 +
+                             m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + m_strUsedPPBRvsPBR + "." + select2 +
                              @" FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                              @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -1774,7 +1774,8 @@ namespace Statistic
                                    @"TEC3_TG5_REC = 0 AND TEC3_TG5_IS_PER = 0 AND TEC3_TG5_DIVIAT = 0 AND " +
                                    @"TEC3_TG712_REC = 0 AND TEC3_TG712_IS_PER = 0 AND TEC3_TG712_DIVIAT = 0 AND " +
                                    @"TEC3_TG1314_REC = 0 AND TEC3_TG1314_IS_PER = 0 AND TEC3_TG1314_DIVIAT = 0 AND " +
-                                   @"TEC4_REC = 0 AND TEC4_IS_PER = 0 AND TEC4_DIVIAT = 0 AND " +
+                                   @"TEC4_TG3_REC = 0 AND TEC4_TG3_IS_PER = 0 AND TEC4_TG3_DIVIAT = 0 AND " +
+                                   @"TEC4_TG48_REC = 0 AND TEC4_TG48_IS_PER = 0 AND TEC4_TG48_DIVIAT = 0 AND " +
                                    @"TEC5_TG12_REC = 0 AND TEC5_TG12_IS_PER = 0 AND TEC5_TG12_DIVIAT = 0 AND " +
                                    @"TEC5_TG36_REC = 0 AND TEC5_TG36_IS_PER = 0 AND TEC5_TG36_DIVIAT = 0 AND " +
                                    @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +

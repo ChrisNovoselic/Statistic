@@ -62,7 +62,7 @@ namespace Statistic
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG35"; //GNOVOS38
-            tec[i].GTP[j].name = "ГТП ТГ№3";
+            tec[i].GTP[j].name = "ГТП ТГ№35";
             //Создание ТГ и добавление к ГТП
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ3";
@@ -83,6 +83,7 @@ namespace Statistic
             tec.Add (new TEC ());
             tec[i].name = "ТЭЦ-2";
             tec[i].GTP.Add(new GTP(tec[i]));
+            tec[i].GTP[j].field = "";
             tec[i].GTP[j].name = "";
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ3";
