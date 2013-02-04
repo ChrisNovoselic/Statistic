@@ -34,7 +34,9 @@ namespace Statistic
             logRotateFiles = logRotateFilesDefault;
             fileNameStart = fileName = name;
             sema = new Semaphore(1, 1);
-            sw = new StreamWriter(fileName, true, Encoding.GetEncoding("windows-1251"));
+            FileInfo f = new FileInfo(fileName);
+            FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
+            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
             fi = new FileInfo(fileName);
             logIndex = 0;
             delegateUpdateLogText = updateLogText;

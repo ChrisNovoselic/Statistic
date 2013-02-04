@@ -4178,10 +4178,8 @@ namespace Statistic
         private void TimerCurrent_Tick(Object stateInfo)
         {
             Invoke(delegateTickTime);
-            if (currHour && isActive)
-            {
-                if (currValuesPeriod++ >= parameters.poll_time)
-                {
+            if (currHour && isActive) {
+                if (((currValuesPeriod++) * 1000) >= parameters.poll_time) {
                     currValuesPeriod = 0;
                     NewDateRefresh();
                 }
