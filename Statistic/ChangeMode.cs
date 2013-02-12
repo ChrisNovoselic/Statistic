@@ -15,6 +15,7 @@ namespace Statistic
         public List<int> gtp_index;
         public List<int> was_checked;
         public bool admin_was_checked;
+        public bool ppbr_was_checked;
         public bool closing;
 
         public ChangeMode(List<TEC> tec)
@@ -49,6 +50,9 @@ namespace Statistic
             }
 
             clbMode.Items.Add("Редактирование ПБР");
+            
+            clbMode.Items.Add("Назначение ПБР");
+            
             closing = false;
         }
 

@@ -44,6 +44,7 @@ namespace Statistic
         private TecView tecView;
         private int oldSelectedIndex;
         private bool prevStateIsAdmin;
+        private bool prevStateIsPPBR;
         private Thread tt;
         public static object lockFile = new object();
         public static string logPath;
@@ -101,6 +102,7 @@ namespace Statistic
             waitCounter = 0;
 
             prevStateIsAdmin = false;
+            prevStateIsPPBR = false;
 
             // создаём все tecview
             foreach (TEC t in tec)

@@ -252,9 +252,12 @@ namespace Statistic
         private enum StatesMachine
         {
             CurrentTime,
-            AdminValues,
-            AdminDates,
-            SaveValues,
+            AdminValues, //Получение административных данных
+            AdminDates, //Получение списка сохранённых часовых значений
+            PPBRDates, 
+            SaveValues, //Сохранение административных данных
+            SaveValuesPPBR, //Сохранение PPBR
+            //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
             GetPass,
             SetPassInsert,
             SetPassUpdate,
@@ -279,6 +282,7 @@ namespace Statistic
         private volatile bool using_date;
 
         private bool[] adminDates;
+        private bool[] PPBRDates;
 
         private bool started;
 
@@ -474,6 +478,7 @@ namespace Statistic
             values = new GtpsAdminStruct(24);
 
             adminDates = new bool[24];
+            PPBRDates = new bool[24];
 
             layoutForLoading = new LayoutData(1);
 
@@ -538,7 +543,11 @@ namespace Statistic
                 states.Clear();
                 states.Add(StatesMachine.CurrentTime);
                 states.Add(StatesMachine.AdminDates);
+                //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
+                //states.Add(StatesMachine.PPBRDates);
                 states.Add(StatesMachine.SaveValues);
+                //states.Add(StatesMachine.SaveValuesPPBR);
+                //states.Add(StatesMachine.UpdateValuesPPBR);
 
                 try
                 {
@@ -1668,10 +1677,33 @@ namespace Statistic
             Request(request, false);
         }
 
+        private void GetPPBRDatesRequest(DateTime date)
+        {
+            string request;
+
+            if (mcldrDate.SelectionStart.Date > date.Date)
+            {
+                date = mcldrDate.SelectionStart.Date;
+            }
+
+            request = @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR + " WHERE " +
+                      @"DATE_TIME > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' AND DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' ORDER BY DATE_TIME ASC";
+
+            Request(request, false);
+        }
+
         private void ClearAdminDates()
         {
             for (int i = 0; i < 24; i++)
                 adminDates[i] = false;
+        }
+
+        private void ClearPPBRDates()
+        {
+            for (int i = 0; i < 24; i++)
+                PPBRDates[i] = false;
         }
 
         private bool GetAdminDatesResponse(DataTable table, DateTime date)
@@ -1692,6 +1724,58 @@ namespace Statistic
             return true;
         }
 
+        private bool GetPPBRDatesResponse(DataTable table, DateTime date)
+        {
+            for (int i = 0, hour; i < table.Rows.Count; i++)
+            {
+                try
+                {
+                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                        hour = 24;
+                    PPBRDates[hour - 1] = true;
+                }
+                catch
+                {
+                }
+            }
+            return true;
+        }
+
+        private string NameFieldOfRequest(TEC t, GTP gtp)
+        {
+            string strRes = @"";
+
+            switch (t.name)
+            {
+                case "БТЭЦ":
+                    strRes = "BTEC";
+                    break;
+                case "ТЭЦ-2":
+                    strRes = "TEC2";
+                    break;
+                case "ТЭЦ-3":
+                    strRes = "TEC3";
+                    break;
+                case "ТЭЦ-4":
+                    strRes = "TEC4";
+                    break;
+                case "ТЭЦ-5":
+                    strRes = "TEC5";
+                    break;
+                default:
+                    break;
+            }
+
+            if (gtp.field.Length > 0) {
+                strRes += "_" + gtp.field;
+            }
+            else
+                ;
+
+            return strRes;
+        }
+
         private void SetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
         {
             int currentHour = serverTime.Hour;
@@ -1703,58 +1787,28 @@ namespace Statistic
 
             string requestUpdate = "", requestInsert = "";
 
-            string name = "";
+            string name = NameFieldOfRequest (t, gtp);
 
-            switch (t.name)
+            for (int i = currentHour; i < 24; i++)
             {
-                case "БТЭЦ":
-                    name = "BTEC";
-                    break;
-                case "ТЭЦ-2":
-                    name = "TEC2";
-                    break;
-                case "ТЭЦ-3":
-                    name = "TEC3";
-                    break;
-                case "ТЭЦ-4":
-                    name = "TEC4";
-                    break;
-                case "ТЭЦ-5":
-                    name = "TEC5";
-                    break;
-                default:
-                    break;
-            }
-
-            if (gtp.field.Length > 0) {
-                name += "_" + gtp.field;
-            }
-            else
-                ;
-
-            for (int i = 0; i < 24; i++) {
-                // перематываем записи на текущий час
-                if (i >= currentHour)
+                // запись для этого часа имеется, модифицируем её
+                if (adminDates[i])
                 {
-                    // запись для этого часа имеется, модифицируем её
-                    if (adminDates[i])
-                    {
-                        requestUpdate += @"UPDATE " + m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                         @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
-                                         @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) + 
-                                         @"' WHERE " +
-                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                         @"'; ";
-                    }
-                    else
-                    {
-                        // запись отсутствует, запоминаем значения
-                        requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                         @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                         @"', " + (values.diviationPercent[i] ? "1" : "0") +
-                                         @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) + 
-                                         @"'),";
-                    }
+                    requestUpdate += @"UPDATE " + m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
+                                        @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) + 
+                                        @"' WHERE " +
+                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'; ";
+                }
+                else
+                {
+                    // запись отсутствует, запоминаем значения
+                    requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + (values.diviationPercent[i] ? "1" : "0") +
+                                        @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) + 
+                                        @"'),";
                 }
             }
 
@@ -1781,6 +1835,126 @@ namespace Statistic
                                    @"TEC5_TG36_REC = 0 AND TEC5_TG36_IS_PER = 0 AND TEC5_TG36_DIVIAT = 0 AND " +
                                    @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") + 
+                                   @"';";
+
+            Request(requestUpdate + requestInsert + requestDelete, false);
+        }
+
+        private int getPBRNumber (int hour) {
+            int iNum = -1;
+
+            switch (hour) {
+                case 0:
+                case 1:
+                    iNum = 1;
+                    break;
+                case 2:
+                case 3:
+                    iNum = 3;
+                    break;
+                case 4:
+                case 5:
+                    iNum = 5;
+                    break;
+                case 6:
+                case 7:
+                    iNum = 7;
+                    break;
+                case 8:
+                case 9:
+                    iNum = 9;
+                    break;
+                case 10:
+                case 11:
+                    iNum = 11;
+                    break;
+                case 12:
+                case 13:
+                    iNum = 13;
+                    break;
+                case 14:
+                case 15:
+                    iNum = 15;
+                    break;
+                case 16:
+                case 17:
+                    iNum = 17;
+                    break;
+                case 18:
+                case 19:
+                    iNum = 19;
+                    break;
+                default:
+                    iNum = 21;
+                    break; 
+            }
+
+            return iNum;
+        }
+
+        private void SetPPBRRequest(TEC t, GTP gtp, DateTime date)
+        {
+            int currentHour = serverTime.Hour;
+
+            date = date.Date;
+
+            if (serverTime.Date < date)
+                currentHour = 0;
+
+            string requestUpdate = "", requestInsert = "";
+
+            string name = NameFieldOfRequest(t, gtp);
+
+            for (int i = currentHour; i < 24; i++)
+            {
+                // запись для этого часа имеется, модифицируем её
+                if (PPBRDates[i])
+                {
+                    requestUpdate += @"UPDATE " + m_strUsedPPBRvsPBR + " SET " + name + @"_PBR='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"' WHERE " +
+                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'; ";
+                }
+                else
+                {
+                    // запись отсутствует, запоминаем значения
+                    requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + "ПБР" + getPBRNumber (i) +
+                                        @"', '" + "0" + 
+                                        @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"'),";
+                }
+            }
+
+            // добавляем все записи, не найденные в базе
+            if (requestInsert != "")
+            {
+                requestInsert = @"INSERT INTO " + m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+            }
+            else
+                ;
+
+            string requestDelete = @"DELETE FROM " + m_strUsedPPBRvsPBR + " WHERE " +
+                                   @"BTEC_PBR = 0 AND BTEC_Pmax = 0 AND BTEC_Pmin = 0 AND " +
+                                   @"BTEC_TG1_PBR = 0 AND BTEC_TG1_Pmax = 0 AND BTEC_TG1_Pmin = 0 AND " +
+                                   @"BTEC_TG2_PBR = 0 AND BTEC_TG2_Pmax = 0 AND BTEC_TG2_Pmin = 0 AND " +
+                                   @"BTEC_TG35_PBR = 0 AND BTEC_TG35_Pmax = 0 AND BTEC_TG35_Pmin = 0 AND " +
+                                   @"BTEC_TG4_PBR = 0 AND BTEC_TG4_Pmax = 0 AND BTEC_TG4_Pmin = 0 AND " +
+                                   @"TEC2_PBR = 0 AND TEC2_Pmax = 0 AND TEC2_Pmin = 0 AND " +
+                                   @"TEC3_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
+                                   @"TEC3_TG1_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
+                                   @"TEC3_TG5_PBR = 0 AND TEC3_TG5_Pmax = 0 AND TEC3_TG5_Pmin = 0 AND " +
+                                   @"TEC3_TG712_PBR = 0 AND TEC3_TG712_Pmax = 0 AND TEC3_TG712_Pmin = 0 AND " +
+                                   @"TEC3_TG1314_PBR = 0 AND TEC3_TG1314_Pmax = 0 AND TEC3_TG1314_Pmin = 0 AND " +
+                                   @"TEC4_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
+                                   @"TEC4_TG3_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
+                                   @"TEC4_TG48_PBR = 0 AND TEC4_TG48_Pmax = 0 AND TEC4_TG48_Pmin = 0 AND " +
+                                   @"TEC5_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
+                                   @"TEC5_TG12_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
+                                   @"TEC5_TG36_PBR = 0 AND TEC5_TG36_Pmax = 0 AND TEC5_TG36_Pmin = 0 AND " +
+                                   @"DATE_TIME > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                                   @"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"';";
 
             Request(requestUpdate + requestInsert + requestDelete, false);
@@ -2239,10 +2413,34 @@ namespace Statistic
                     ActionReport("Получение списка сохранённых часовых значений.");
                     GetAdminDatesRequest(dateForValues);
                     break;
+                case StatesMachine.PPBRDates:
+                    if (serverTime.Date > dateForValues.Date)
+                    {
+                        saveResult = Errors.InvalidValue;
+                        try
+                        {
+                            semaSave.Release(1);
+                        }
+                        catch
+                        {
+                        }
+                        result = false;
+                        break;
+                    }
+                    ActionReport("Получение списка сохранённых часовых значений.");
+                    GetPPBRDatesRequest(dateForValues);
+                    break;
                 case StatesMachine.SaveValues:
                     ActionReport("Сохранение административных данных.");
                     SetAdminValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues);
                     break;
+                case StatesMachine.SaveValuesPPBR:
+                    ActionReport("Сохранение ПЛАНА.");
+                    SetPPBRRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues);
+                    break;
+                //case StatesMachine.UpdateValuesPPBR:
+                //    ActionReport("Обровление ПЛАНА.");
+                //    break;
                 case StatesMachine.GetPass:
                     if (dispatcherPass)
                         ActionReport("Получение пароля диспетчера.");
@@ -2284,20 +2482,22 @@ namespace Statistic
                 case StatesMachine.CurrentTime:
                 case StatesMachine.AdminValues:
                 case StatesMachine.AdminDates:
+                case StatesMachine.PPBRDates:
                 case StatesMachine.SaveValues:
+                case StatesMachine.SaveValuesPPBR:
+                //case StatesMachine.UpdateValuesPPBR:
                 case StatesMachine.GetPass:
                     return GetResponse(out error, out table, false);
                 case StatesMachine.SetPassInsert:
                 case StatesMachine.SetPassUpdate:
                 case StatesMachine.LayoutGet:
                 case StatesMachine.LayoutSet:
-                default:
                     return GetResponse(out error, out table, true);
+                default:
+                    error = true;
+                    table = null;
+                    return false;       
             }
-
-            error = true;
-            table = null;
-            return false;
         }
 
         private bool StateResponse(StatesMachine state, DataTable table)
@@ -2327,6 +2527,13 @@ namespace Statistic
                     {
                     }
                     break;
+                case StatesMachine.PPBRDates:
+                    ClearPPBRDates();
+                    result = GetPPBRDatesResponse(table, dateForValues);
+                    if (result)
+                    {
+                    }
+                    break;
                 case StatesMachine.SaveValues:
                     saveResult = Errors.NoError;
                     try
@@ -2341,6 +2548,34 @@ namespace Statistic
                     {
                     }
                     break;
+                case StatesMachine.SaveValuesPPBR:
+                    saveResult = Errors.NoError;
+                    try
+                    {
+                        semaSave.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                    result = true;
+                    if (result)
+                    {
+                    }
+                    break;
+                //case StatesMachine.UpdateValuesPPBR:
+                //    saveResult = Errors.NoError;
+                //    try
+                //    {
+                //        semaSave.Release(1);
+                //    }
+                //    catch
+                //    {
+                //    }
+                //    result = true;
+                //    if (result)
+                //    {
+                //    }
+                //    break;
                 case StatesMachine.GetPass:
                     result = GetPassResponse(table);
                     if (result)
@@ -2456,12 +2691,12 @@ namespace Statistic
                 case StatesMachine.AdminDates:
                     if (response)
                     {
-                        ErrorReport("Ошибка разбора сохранённых часовых значений. Переход в ожидание.");
+                        ErrorReport("Ошибка разбора сохранённых часовых значений (AdminValues). Переход в ожидание.");
                         saveResult = Errors.ParseError;
                     }
                     else
                     {
-                        ErrorReport("Ошибка получения сохранённых часовых значений. Переход в ожидание.");
+                        ErrorReport("Ошибка получения сохранённых часовых значений (AdminValues). Переход в ожидание.");
                         saveResult = Errors.NoAccess;
                     }
                     try
@@ -2471,6 +2706,25 @@ namespace Statistic
                     catch
                     {
                     } 
+                    break;
+                case StatesMachine.PPBRDates:
+                    if (response)
+                    {
+                        ErrorReport("Ошибка разбора сохранённых часовых значений (PPBR). Переход в ожидание.");
+                        saveResult = Errors.ParseError;
+                    }
+                    else
+                    {
+                        ErrorReport("Ошибка получения сохранённых часовых значений (PPBR). Переход в ожидание.");
+                        saveResult = Errors.NoAccess;
+                    }
+                    try
+                    {
+                        semaSave.Release(1);
+                    }
+                    catch
+                    {
+                    }
                     break;
                 case StatesMachine.SaveValues:
                     ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
@@ -2483,6 +2737,28 @@ namespace Statistic
                     {
                     }
                     break;
+                case StatesMachine.SaveValuesPPBR:
+                    ErrorReport("Ошибка сохранения данных ПЛАНа. Переход в ожидание.");
+                    saveResult = Errors.NoAccess;
+                    try
+                    {
+                        semaSave.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                    break;
+                //case StatesMachine.UpdateValuesPPBR:
+                //    ErrorReport("Ошибка обновления данных ПЛАНа. Переход в ожидание.");
+                //    saveResult = Errors.NoAccess;
+                //    try
+                //    {
+                //        semaSave.Release(1);
+                //    }
+                //    catch
+                //    {
+                //    }
+                //    break;
                 case StatesMachine.GetPass:
                     if (response)
                     {
