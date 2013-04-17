@@ -18,11 +18,21 @@ namespace Statistic
 
         private bool is_connection_error;
         private bool is_data_error;
+
+        //Для особенной ТЭЦ (Бийск)
+        //private object lockValue;
+
+        //private Thread dbThread;
+        private Semaphore sema;
+        //private volatile bool workTread;
         
         private int used;
 
         private DbInterface dbInterface;
         private int listenerId;
+
+        public volatile DbDataInterface dataInterface;
+        public volatile DbDataInterface dataInterfaceAdmin;
 
         public TEC () {
             GTP = new List<GTP>();
@@ -35,6 +45,35 @@ namespace Statistic
         public void Request(string request)
         {
             dbInterface.Request(listenerId, request);
+        }
+
+        public void Request(string request, int gtp)
+        {
+            if (gtp < 0)
+            {
+                lock (dataInterface.lockData)
+                {
+                    dataInterface.request[1] = request;
+                    dataInterface.dataPresent = false;
+                    dataInterface.dataError = false;
+                }
+            }
+            else
+            {
+                lock (GTP[gtp].dataInterface.lockData)
+                {
+                    GTP[gtp].dataInterface.request[1] = request;
+                    GTP[gtp].dataInterface.dataPresent = false;
+                    GTP[gtp].dataInterface.dataError = false;
+                }
+            }
+            try
+            {
+                sema.Release(1);
+            }
+            catch
+            {
+            }
         }
 
         public bool GetResponse(out bool error, out DataTable table)

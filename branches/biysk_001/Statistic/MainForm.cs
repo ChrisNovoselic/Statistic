@@ -41,6 +41,7 @@ namespace Statistic
         private DelegateFunc delegateEvent;
         private DelegateFunc delegateUpdateActiveGui;
         private DelegateFunc delegateHideGraphicsSettings;
+        private DelegateFunc delegateParamsApply;
         private TecView tecView;
         private int oldSelectedIndex;
         private bool prevStateIsAdmin;
@@ -91,7 +92,7 @@ namespace Statistic
             passwordSettingsForm = new PasswordSettings(adminPanel);
             setPasswordSettingsForm = new SetPasswordSettings(adminPanel);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            parametersForm = new Parameters();
+            parametersForm = new Parameters(delegateParamsApply);
 
             adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
             connSettForm = new ConnectionSettingsView(tec, adminPanel);

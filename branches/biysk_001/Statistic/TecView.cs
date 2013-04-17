@@ -172,6 +172,7 @@ namespace Statistic
         private double recomendation;
 
         private volatile string sensorsString = "";
+        private volatile string [] sensorsStrings = {"", ""}; //Только для особенной ТЭЦ (Бийск)
 
         private TG[] sensorId2TG;
 
@@ -2740,6 +2741,74 @@ namespace Statistic
             return true;
         }
 
+        private void GetSensors()
+        {
+            Dictionary<string, int>[] tgs = new Dictionary<string, int>[(int)TG.ID_TIME.COUNT_ID_TIME];
+            tgs [(int) TG.ID_TIME.MINUTES] = new Dictionary<string, int>();
+            tgs[(int)TG.ID_TIME.HOURS] = new Dictionary<string, int>();
+
+            int count_tg = 0;
+            for (int i = 0; i < tec.GTP.Count; i++) {
+                count_tg += tec.GTP[i].TG.Count;
+            }
+            bool bMinutes = true;
+            for (int i = (int) TG.ID_TIME.MINUTES; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++)
+            {
+                if (i > (int)TG.ID_TIME.MINUTES) bMinutes = false; else ;
+                for (int j = 0; j < count_tg; j++)
+                {
+                    tgs[i].Add("ТГ" + (j + 1).ToString(), parameters.ParamsGetTgId(j, bMinutes));
+                }
+            }
+
+            int t = 0;
+            if (gtp < 0)
+            {
+                for (int i = 0; i < tec.GTP.Count; i++)
+                {
+                    for (int j = 0; j < tec.GTP[i].TG.Count; j++)
+                    {
+                        tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int) TG.ID_TIME.MINUTES][tec.GTP[i].TG[j].name];
+                        tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.GTP[i].TG[j].name];
+                        sensorId2TG[t] = tec.GTP[i].TG[j];
+                        //sensorId2TGHours[t] = tec.GTP[i].TG[j];
+                        t++;
+
+                        if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        else
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+
+                        if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                        else
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < tec.GTP[gtp].TG.Count; i++)
+                {
+                    tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.GTP[gtp].TG[i].name];
+                    tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.GTP[gtp].TG[i].name];
+                    sensorId2TG[t] = tec.GTP[gtp].TG[i];
+                    //sensorId2TGHours[t] = tec.GTP[gtp].TG[i];
+                    t++;
+
+                    if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                    else
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+
+                    if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                    else
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.GTP[gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                }
+            }
+        }
+
         private void GetSeason(DateTime date, int db_season, out int season)
         {
             season = db_season - date.Year - date.Year;
@@ -2976,6 +3045,26 @@ namespace Statistic
             return true;
         }
 
+        private void GetHours(DateTime usingDate)
+        {
+
+            string request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+
+            tec.Request(request, gtp);
+        }
+
         private bool GetMinsResponse(DataTable table)
         {
             int i, j = 0, min = 0;
@@ -3136,6 +3225,30 @@ namespace Statistic
             }
 
             return true;
+        }
+
+        private void GetMins(int hour)
+        {
+            if (hour == 24)
+                hour = 23;
+
+            DateTime usingDate = selectedTime.Date.AddHours(hour);
+
+            string request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.MINUTES] +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+
+            tec.Request(request, gtp);
         }
 
         private bool LayoutIsBiggerByName(string l1, string l2)
@@ -3509,6 +3622,100 @@ namespace Statistic
             }
 
             return true;
+        }
+
+        private void GetAdminValues()
+        {
+            string name1 = "";
+            string name2 = "";
+            string select1 = "";
+            string select2 = "";
+
+            DateTime date = dtprDate.Value.Date;
+
+            switch (tec.name)
+            {
+                case "Бийск-ТЭЦ":
+                    name1 = "TEC_BIYSK";
+                    name2 = "PPBR_TEC_BIYSK";
+                    break;
+                default:
+                    break;
+            }
+
+            if (gtp < 0)
+            {
+                foreach (GTP g in tec.GTP)
+                {
+                    select1 += ", ";
+                    select2 += ", ";
+                    switch (g.name)
+                    {
+                        case "ГТП ТГ3-8":
+                            select1 += @"ADMINVALUES." + name1 +
+                                       @"_110_REC, ADMINVALUES." + name1 +
+                                       @"_110_IS_PER, ADMINVALUES." + name1 +
+                                       @"_110_DIVIAT";
+                            select2 += @"PPBRVSPBR." + name2 +
+                                       @"_110";
+                            break;
+                        case "ГТП ТГ1,2":
+                            select1 += @"ADMINVALUES." + name1 +
+                                       @"_35_REC, ADMINVALUES." + name1 +
+                                       @"_35_IS_PER, ADMINVALUES." + name1 +
+                                       @"_35_DIVIAT";
+                            select2 += @"PPBRVSPBR." + name2 +
+                                       @"_35";
+                            break;
+                        default:
+                            select1 += @"ADMINVALUES." + name1 +
+                                       @"_REC, ADMINVALUES." + name1 +
+                                       @"_IS_PER, ADMINVALUES." + name1 +
+                                       @"_DIVIAT";
+                            select2 += @"PPBRVSPBR." + name2;
+                            break;
+                    }
+                }
+                select1 = select1.Substring(2);
+                select2 = select2.Substring(2);
+            }
+            else
+            {
+                switch (tec.GTP[gtp].name)
+                {
+                    case "ГТП ТГ3-8":
+                        select1 += @"ADMINVALUES." + name1 +
+                                   @"_110_REC, ADMINVALUES." + name1 +
+                                   @"_110_IS_PER, ADMINVALUES." + name1 +
+                                   @"_110_DIVIAT";
+                        select2 += @"PPBRVSPBR." + name2 +
+                                   @"_110";
+                        break;
+                    case "ГТП ТГ1,2":
+                        select1 += @"ADMINVALUES." + name1 +
+                                   @"_35_REC, ADMINVALUES." + name1 +
+                                   @"_35_IS_PER, ADMINVALUES." + name1 +
+                                   @"_35_DIVIAT";
+                        select2 += @"PPBRVSPBR." + name2 +
+                                   @"_35";
+                        break;
+                    default:
+                        select1 += @"ADMINVALUES." + name1 +
+                                   @"_REC, ADMINVALUES." + name1 +
+                                   @"_IS_PER, ADMINVALUES." + name1 +
+                                   @"_DIVIAT";
+                        select2 += @"PPBRVSPBR." + name2;
+                        break;
+                }
+            }
+
+            string request = @"SELECT DATE, " + select1 +
+                             @" FROM ADMINVALUES " +
+                             @"WHERE DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' ORDER BY DATE";
+
+            admin.Request(request, tec, gtp);
         }
 
         private void ComputeRecomendation(int hour)
@@ -3923,7 +4130,16 @@ namespace Statistic
             {
                 case StatesMachine.Init:
                     ActionReport("Получение идентификаторов датчиков.");
-                    GetSensorsRequest();
+                    switch (m_type) {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetSensorsRequest();
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetSensors ();
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.CurrentTime:
                     ActionReport("Получение текущего времени сервера.");
@@ -3932,27 +4148,76 @@ namespace Statistic
                 case StatesMachine.CurrentHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    GetHoursRequest(selectedTime.Date);
+                    switch (m_type)
+                    {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetHoursRequest(selectedTime.Date);
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetHours(selectedTime.Date);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.CurrentMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    GetMinsRequest(lastHour);
+                    switch (m_type)
+                    {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetMinsRequest(lastHour);
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetMins(lastHour);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    GetHoursRequest(selectedTime.Date);
+                    switch (m_type)
+                    {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetHoursRequest(selectedTime.Date);
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetHours(selectedTime.Date);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.RetroMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    GetMinsRequest(lastHour);
+                    switch (m_type) {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetMinsRequest(lastHour);
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetMins(lastHour);
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     adminValuesReceived = false;
-                    GetAdminValuesRequest();
+                    switch (m_type)
+                    {
+                        case TEC_VIEW_TYPE.COMMON:
+                            GetAdminValuesRequest();
+                            break;
+                        case TEC_VIEW_TYPE.BIYSK:
+                            GetAdminValues();
+                            break;
+                        default:
+                            break;
+                    }
                     break;
             }
         }

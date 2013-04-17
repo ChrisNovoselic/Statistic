@@ -279,10 +279,16 @@ namespace Statistic
             ParseError,
         }
 
+        private volatile DbDataInterface dataInterface;
+
         private volatile bool using_date;
 
         private bool[] adminDates;
         private bool[] PPBRDates;
+
+        //private Thread dbThread;
+        private Semaphore sema;
+        //private volatile bool workTread;
 
         private bool started;
 
@@ -506,6 +512,8 @@ namespace Statistic
 
             delegateFillData = new DelegateFunctionDate(FillData);
             delegateCalendarSetDate = new DelegateFunctionDate(CalendarSetDate);
+
+            dataInterface = new DbDataInterface();
 
             stsStrip = sts;
 
@@ -2318,6 +2326,47 @@ namespace Statistic
                 dbInterface.Request(listenerIdTec, request);
             else
                 dbInterface.Request(listenerIdAdmin, request);
+        }
+
+        public void Request(string request, TEC t, int gtp)
+        {
+            if (t == null)
+            {
+                lock (dataInterface.lockData)
+                {
+                    dataInterface.request[1] = request;
+                    dataInterface.dataPresent = false;
+                    dataInterface.dataError = false;
+                }
+            }
+            else
+            {
+                if (gtp < 0)
+                {
+                    lock (t.dataInterfaceAdmin.lockData)
+                    {
+                        t.dataInterfaceAdmin.request[1] = request;
+                        t.dataInterfaceAdmin.dataPresent = false;
+                        t.dataInterfaceAdmin.dataError = false;
+                    }
+                }
+                else
+                {
+                    lock (t.GTP[gtp].dataInterfaceAdmin.lockData)
+                    {
+                        t.GTP[gtp].dataInterfaceAdmin.request[1] = request;
+                        t.GTP[gtp].dataInterfaceAdmin.dataPresent = false;
+                        t.GTP[gtp].dataInterfaceAdmin.dataError = false;
+                    }
+                }
+            }
+            try
+            {
+                sema.Release(1);
+            }
+            catch
+            {
+            }
         }
 
         public bool GetResponse(out bool error, out DataTable table, bool tec)
