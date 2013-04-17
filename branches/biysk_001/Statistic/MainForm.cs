@@ -71,7 +71,7 @@ namespace Statistic
             lockEvent = new object();
 
             logPath = System.Environment.CurrentDirectory;
-            log = new Logging(System.Environment.CurrentDirectory + @"\logDB.txt", false, null, null);
+            log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
 
             firstStart = true;
 
@@ -108,7 +108,7 @@ namespace Statistic
             foreach (TEC t in tec)
             {
                 int index_gtp;
-                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                 tecViews.Add(tecView);
                 if (t.GTP.Count > 1)
@@ -116,7 +116,7 @@ namespace Statistic
                     index_gtp = 0;
                     foreach (GTP g in t.GTP)
                     {
-                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
                         tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                         tecViews.Add(tecView);
                         index_gtp++;
@@ -242,14 +242,16 @@ namespace Statistic
                 // отображаем вкладки ТЭЦ
                 for (i = 0; i < changeMode.tec_index.Count; i++)
                 {
-                    t = tec[changeMode.tec_index[i]];
-
                     if ((index = changeMode.was_checked.IndexOf(i)) >= 0)
                     {
-                        if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
+                        t = tec[changeMode.tec_index[i]];
+
+                        if (changeMode.gtp_index[changeMode.was_checked[index]] == -1) {
                             tclTecViews.TabPages.Add(t.name);
+                        }
                         else
                             tclTecViews.TabPages.Add(t.name + " - " + t.GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
 

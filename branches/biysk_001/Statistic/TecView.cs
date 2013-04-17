@@ -17,6 +17,8 @@ namespace Statistic
 {
     public class TecView : Panel
     {
+        public enum TEC_VIEW_TYPE {COMMON, BIYSK};
+        
         private System.Windows.Forms.Panel pnlGraphHours;
         private System.Windows.Forms.Panel pnlGraphMins;
         private System.Windows.Forms.Panel pnlTG;
@@ -108,6 +110,7 @@ namespace Statistic
         private Admin admin;
         private GraphicsSettings graphSettings;
         private Parameters parameters;
+        private TEC_VIEW_TYPE m_type;
 
         private volatile bool currHour;
         private volatile int lastHour;
@@ -793,7 +796,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
+        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par, TEC_VIEW_TYPE type)
         {
             InitializeComponent();
 
@@ -806,6 +809,8 @@ namespace Statistic
             this.admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
+
+            this.m_type = type;
 
             currHour = true;
             lastHour = 0;

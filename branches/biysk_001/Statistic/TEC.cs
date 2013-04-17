@@ -84,5 +84,12 @@ namespace Statistic
                 dbInterface.SetConnectionSettings(connSett);
             }
         }
+
+        public TecView.TEC_VIEW_TYPE GetTypeTecView() {
+            if (name.IndexOf ("Бийск") > -1)
+                return TecView.TEC_VIEW_TYPE.BIYSK;
+            else
+                return TecView.TEC_VIEW_TYPE.COMMON;
+        }
     }
 }

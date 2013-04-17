@@ -21,6 +21,20 @@ techsite
 techsite
 12345
 
+Áèéñê...
+ÁÄ ÀÈÈÑ ÊÓÝ – ïîðò: 1433
+IP: 10.220.2.60
+ÁÄ: SborBiysk
+User: sibeco
+Login: sibeco
+
+ÁÄ ÏÁÐ – ïîðò: 3306
+IP: 10.220.2.64
+ÁÄ: techsite
+User: sibecopbr
+Login: sibeco
+
+
 SELECT DATE_TIME
 FROM PPBRvsPBRnew
 WHERE DATE_TIME >'2013-02-10 00:00:00'
