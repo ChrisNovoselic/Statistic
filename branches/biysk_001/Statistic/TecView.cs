@@ -16,9 +16,7 @@ using GemBox.Spreadsheet;
 namespace Statistic
 {
     public class TecView : Panel
-    {
-        public enum TEC_VIEW_TYPE {COMMON, BIYSK};
-        
+    {        
         private System.Windows.Forms.Panel pnlGraphHours;
         private System.Windows.Forms.Panel pnlGraphMins;
         private System.Windows.Forms.Panel pnlTG;
@@ -102,7 +100,7 @@ namespace Statistic
         private Semaphore sem;
         private volatile bool threadIsWorking;
         private volatile bool newState;
-        private volatile List<StatesMachine> states;
+        private volatile List<StatesMachineCommon> states;
         private int currValuesPeriod = 0;
         private System.Threading.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
@@ -110,7 +108,6 @@ namespace Statistic
         private Admin admin;
         private GraphicsSettings graphSettings;
         private Parameters parameters;
-        private TEC_VIEW_TYPE m_type;
 
         private volatile bool currHour;
         private volatile int lastHour;
@@ -129,7 +126,7 @@ namespace Statistic
         public DateTime last_time_action;
         public volatile bool actioned_state;
 
-        private enum StatesMachine
+        private enum StatesMachineCommon
         { 
             Init,
             CurrentTime,
@@ -139,6 +136,38 @@ namespace Statistic
             RetroMins,
             AdminValues,
         }
+
+        //Для особенной ТЭЦ (Бийск)
+        private enum StatesMachineBiysk
+        {
+            Idle,
+            Init,
+            CurrentTime,
+            CurrentHours,
+            CurrentMins,
+            RetroHours,
+            RetroMins,
+            AdminValues,
+        }
+
+        private System.Threading.Timer timer;
+
+        private enum StateActionsBiysk
+        {
+            Request,
+            Data,
+        }
+
+        private volatile StatesMachineBiysk state;
+        private volatile StatesMachineBiysk prevState;
+        private volatile StateActionsBiysk action;
+        private volatile DbDataInterface dataInterface;
+        private volatile DbDataInterface dataInterfaceAdmin;
+        private int tryes;
+        private int wait_times;
+        private const int RETRY_TIME = 500;
+        private const int WAIT_TIME = 50;
+        private int MAX_WAIT_TIME = 1000; // сделать защиту от залипания когда нет данных и не выставлен признак ошибки
 
         private enum seasonJumpE
         {
@@ -797,7 +826,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par, TEC_VIEW_TYPE type)
+        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
         {
             InitializeComponent();
 
@@ -810,8 +839,6 @@ namespace Statistic
             this.admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
-
-            this.m_type = type;
 
             currHour = true;
             lastHour = 0;
@@ -893,6 +920,17 @@ namespace Statistic
                         this.pnlTG.Controls.Add(lblValue);
                     }
                 }
+
+                switch (tec.type ()) {
+                    case TEC.TEC_TYPE.COMMON:
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        dataInterface = tec.dataInterface;
+                        dataInterfaceAdmin = tec.dataInterfaceAdmin;
+                        break;
+                    default:
+                        break;
+                }
             }
             else
             {
@@ -934,6 +972,18 @@ namespace Statistic
                     this.pnlTG.Controls.Add(lblName);
                     this.pnlTG.Controls.Add(lblValue);
                 }
+
+                switch (tec.type())
+                {
+                    case TEC.TEC_TYPE.COMMON:
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        dataInterface = tec.GTP[gtp].dataInterface;
+                        dataInterfaceAdmin = tec.GTP[gtp].dataInterfaceAdmin;
+                        break;
+                    default:
+                        break;
+                }
             }
 
             sensorId2TG = new TG[countTG];
@@ -958,9 +1008,22 @@ namespace Statistic
 
             delegateShowValues = new DelegateStringFunc(ShowValues);
 
-            delegateTickTime = new DelegateFunc(TickTime);
+            switch (tec.type ()) {
+                case TEC.TEC_TYPE.COMMON:
+                    delegateTickTime = new DelegateFunc(TickTime);
 
-            states = new List<StatesMachine>();
+                    states = new List<StatesMachineCommon>();
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    state = StatesMachineBiysk.Idle;
+                    action = StateActionsBiysk.Request;
+
+                    TimerCallback timerCallback = new TimerCallback(timer_Tick);
+                    timer = new System.Threading.Timer(timerCallback, null, 0, Timeout.Infinite);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -1581,21 +1644,34 @@ namespace Statistic
                         }
                         else
                             lastHour = index;
+
                     ClearValuesMins();
 
-                    newState = true;
-                    states.Clear();
-                    states.Add(StatesMachine.RetroMins);
-                    states.Add(StatesMachine.AdminValues);
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            newState = true;
+                            states.Clear();
+                            states.Add(StatesMachineCommon.RetroMins);
+                            states.Add(StatesMachineCommon.AdminValues);
 
-                    try
-                    {
-                        sem.Release(1);
+                            try
+                            {
+                                sem.Release(1);
+                            }
+                            catch
+                            {
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            state = StatesMachineBiysk.RetroMins;
+                            action = StateActionsBiysk.Request;
+                            tryes = 0;
+                            wait_times = 0;
+                            timer.Change(0, Timeout.Infinite);
+                            break;
+                        default:
+                            break;
                     }
-                    catch
-                    {
-                    }
-
                 }
                 delegateStopWait();
             }
@@ -2060,7 +2136,7 @@ namespace Statistic
                              @"' AND " +
                              @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
                              @"' " +
-                             @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                             @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsStrings [(int) TG.ID_TIME.HOURS] +
                              @") " +
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
 
@@ -2739,6 +2815,11 @@ namespace Statistic
                 }
             }
             return true;
+        }
+
+        private void GetTime()
+        {
+            tec.Request("SELECT getdate()", gtp);
         }
 
         private void GetSensors()
@@ -3759,43 +3840,72 @@ namespace Statistic
             delegateStartWait();
             lock (lockValue)
             {
-                newState = true;
-                states.Clear();
+                switch (tec.type ()) {
+                    case TEC.TEC_TYPE.COMMON:
+                        newState = true;
+                        states.Clear();
 
-                if (sensorsString != "")
-                {
-                    if (currHour)
-                    {
-                        states.Add(StatesMachine.CurrentTime);
-                        states.Add(StatesMachine.CurrentHours);
-                        states.Add(StatesMachine.CurrentMins);
-                        states.Add(StatesMachine.AdminValues);
-                    }
-                    else
-                    {
-                        states.Add(StatesMachine.RetroHours);
-                        states.Add(StatesMachine.RetroMins);
-                        states.Add(StatesMachine.AdminValues);
-                        selectedTime = dtprDate.Value.Date;
-                    }
-                }
-                else
-                {
-                    states.Add(StatesMachine.Init);
-                    states.Add(StatesMachine.CurrentTime);
-                    states.Add(StatesMachine.CurrentHours);
-                    states.Add(StatesMachine.CurrentMins);
-                    states.Add(StatesMachine.AdminValues);
-                }
+                        if (sensorsString != "")
+                        {
+                            if (currHour)
+                            {
+                                states.Add(StatesMachineCommon.CurrentTime);
+                                states.Add(StatesMachineCommon.CurrentHours);
+                                states.Add(StatesMachineCommon.CurrentMins);
+                                states.Add(StatesMachineCommon.AdminValues);
+                            }
+                            else
+                            {
+                                states.Add(StatesMachineCommon.RetroHours);
+                                states.Add(StatesMachineCommon.RetroMins);
+                                states.Add(StatesMachineCommon.AdminValues);
+                                selectedTime = dtprDate.Value.Date;
+                            }
+                        }
+                        else
+                        {
+                            states.Add(StatesMachineCommon.Init);
+                            states.Add(StatesMachineCommon.CurrentTime);
+                            states.Add(StatesMachineCommon.CurrentHours);
+                            states.Add(StatesMachineCommon.CurrentMins);
+                            states.Add(StatesMachineCommon.AdminValues);
+                        }
 
-                try
-                {
-                    sem.Release(1);
+                        try
+                        {
+                            sem.Release(1);
+                        }
+                        catch
+                        {
+                        }
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        if (sensorsStrings[(int)TG.ID_TIME.HOURS] != "" && sensorsStrings[(int)TG.ID_TIME.MINUTES] != "")
+                        {
+                            if (currHour)
+                                state = StatesMachineBiysk.CurrentTime;
+                            else
+                            {
+                                state = StatesMachineBiysk.RetroHours;
+                                selectedTime = dtprDate.Value.Date;
+                            }
+                            action = StateActionsBiysk.Request;
+                            tryes = 0;
+                            wait_times = 0;
+                            timer.Change(0, Timeout.Infinite);
+                        }
+                        else
+                        {
+                            state = StatesMachineBiysk.Init;
+                            action = StateActionsBiysk.Request;
+                            tryes = 0;
+                            wait_times = 0;
+                            timer.Change(0, Timeout.Infinite);
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                catch
-                {
-                }
-
             }
             delegateStopWait();
         }
@@ -3840,60 +3950,98 @@ namespace Statistic
 
         public void Activate(bool active)
         {
-            if (active)
-            {
-                isActive = true;
-                currValuesPeriod = 0;
-                lock (lockValue)
-                {
-                    newState = true;
-                    states.Clear();
+                switch (tec.type ()) {
+                    case TEC.TEC_TYPE.COMMON:
+                        if (active) {
+                            isActive = true;
+                            currValuesPeriod = 0;
+                            lock (lockValue)
+                            {
+                                newState = true;
+                                states.Clear();
 
-                    if (sensorsString != "")
-                    {
-                        if (currHour)
-                        {
-                            states.Add(StatesMachine.CurrentTime);
-                            states.Add(StatesMachine.CurrentHours);
-                            states.Add(StatesMachine.CurrentMins);
-                            states.Add(StatesMachine.AdminValues);
+                                if (sensorsString != "")
+                                {
+                                    if (currHour)
+                                    {
+                                        states.Add(StatesMachineCommon.CurrentTime);
+                                        states.Add(StatesMachineCommon.CurrentHours);
+                                        states.Add(StatesMachineCommon.CurrentMins);
+                                        states.Add(StatesMachineCommon.AdminValues);
+                                    }
+                                    else
+                                    {
+                                        states.Add(StatesMachineCommon.RetroHours);
+                                        states.Add(StatesMachineCommon.RetroMins);
+                                        states.Add(StatesMachineCommon.AdminValues);
+                                        selectedTime = dtprDate.Value.Date;
+                                    }
+                                }
+                                else
+                                {
+                                    states.Add(StatesMachineCommon.Init);
+                                    states.Add(StatesMachineCommon.CurrentTime);
+                                    states.Add(StatesMachineCommon.CurrentHours);
+                                    states.Add(StatesMachineCommon.CurrentMins);
+                                    states.Add(StatesMachineCommon.AdminValues);
+                                }
+
+                                try
+                                {
+                                    sem.Release(1);
+                                }
+                                catch
+                                {
+                                }
+                            }
                         }
                         else
                         {
-                            states.Add(StatesMachine.RetroHours);
-                            states.Add(StatesMachine.RetroMins);
-                            states.Add(StatesMachine.AdminValues);
-                            selectedTime = dtprDate.Value.Date;
+                            isActive = false;
+                            lock (lockValue)
+                            {
+                                newState = true;
+                                states.Clear();
+                                errored_state = actioned_state = false;
+                            }
                         }
-                    }
-                    else
-                    {
-                        states.Add(StatesMachine.Init);
-                        states.Add(StatesMachine.CurrentTime);
-                        states.Add(StatesMachine.CurrentHours);
-                        states.Add(StatesMachine.CurrentMins);
-                        states.Add(StatesMachine.AdminValues);
-                    }
-
-                    try
-                    {
-                        sem.Release(1);
-                    }
-                    catch
-                    {
-                    }
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        if (active)
+                        {
+                            isActive = true;
+                            lock (lockValue)
+                            {
+                                if (sensorsStrings[(int)TG.ID_TIME.HOURS] != "" && sensorsStrings[(int)TG.ID_TIME.MINUTES] != "")
+                                {
+                                    if (currHour)
+                                        state = StatesMachineBiysk.CurrentTime;
+                                    else
+                                        state = StatesMachineBiysk.RetroHours;
+                                }
+                                else
+                                {
+                                    state = StatesMachineBiysk.Init;
+                                }
+                                action = StateActionsBiysk.Request;
+                                tryes = 0;
+                                wait_times = 0;
+                                timer.Change(0, Timeout.Infinite);
+                            }
+                        }
+                        else
+                        {
+                            isActive = false;
+                            lock (lockValue)
+                            {
+                                state = StatesMachineBiysk.Idle;
+                                errored_state = actioned_state = false;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                 }
-            }
-            else
-            {
-                isActive = false;
-                lock (lockValue)
-                {
-                    newState = true;
-                    states.Clear();
-                    errored_state = actioned_state = false;
-                }
-            }
         }
 
         private void ErrorReport(string error_string)
@@ -4124,95 +4272,105 @@ namespace Statistic
             }
         }
 
-        private void StateRequest(StatesMachine state)
+        private void StateRequest(StatesMachineCommon state)
         {
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachineCommon.Init:
                     ActionReport("Получение идентификаторов датчиков.");
-                    switch (m_type) {
-                        case TEC_VIEW_TYPE.COMMON:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
                             GetSensorsRequest();
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetSensors ();
                             break;
                         default:
                             break;
                     }
                     break;
-                case StatesMachine.CurrentTime:
+                case StatesMachineCommon.CurrentTime:
                     ActionReport("Получение текущего времени сервера.");
-                    GetCurrentTimeRequest();
+                    switch (tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            GetCurrentTimeRequest();
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            GetTime();
+                            break;
+                        default:
+                            break;
+                    }
                     break;
-                case StatesMachine.CurrentHours:
+                case StatesMachineCommon.CurrentHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetHoursRequest(selectedTime.Date);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetHours(selectedTime.Date);
                             break;
                         default:
                             break;
                     }
                     break;
-                case StatesMachine.CurrentMins:
+                case StatesMachineCommon.CurrentMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetMinsRequest(lastHour);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetMins(lastHour);
                             break;
                         default:
                             break;
                     }
                     break;
-                case StatesMachine.RetroHours:
+                case StatesMachineCommon.RetroHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetHoursRequest(selectedTime.Date);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetHours(selectedTime.Date);
                             break;
                         default:
                             break;
                     }
                     break;
-                case StatesMachine.RetroMins:
+                case StatesMachineCommon.RetroMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (m_type) {
-                        case TEC_VIEW_TYPE.COMMON:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
                             GetMinsRequest(lastHour);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetMins(lastHour);
                             break;
                         default:
                             break;
                     }
                     break;
-                case StatesMachine.AdminValues:
+                case StatesMachineCommon.AdminValues:
                     ActionReport("Получение административных данных.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetAdminValuesRequest();
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetAdminValues();
                             break;
                         default:
@@ -4222,89 +4380,192 @@ namespace Statistic
             }
         }
 
-        private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
+        private bool StateCheckResponse(StatesMachineCommon state, out bool error, out DataTable table)
         { 
+            bool bRes = false;
+
+            error = false;
+            table = null;
+            
             switch (state)
             {
-                case StatesMachine.Init:
-                case StatesMachine.CurrentTime:
-                case StatesMachine.CurrentHours:
-                case StatesMachine.CurrentMins:
-                case StatesMachine.RetroHours:
-                case StatesMachine.RetroMins:
-                    return tec.GetResponse(out error, out table);
-                case StatesMachine.AdminValues:
-                    return admin.GetResponse(out error, out table, true);
+                case StatesMachineCommon.Init:
+                case StatesMachineCommon.CurrentTime:
+                case StatesMachineCommon.CurrentHours:
+                case StatesMachineCommon.CurrentMins:
+                case StatesMachineCommon.RetroHours:
+                case StatesMachineCommon.RetroMins:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            bRes = tec.GetResponse(out error, out table);
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            bRes = true;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case StatesMachineCommon.AdminValues:
+                    switch (tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            bRes = admin.GetResponse(out error, out table, true);
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            bRes = true;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
             }
 
-            error = true;
-            table = null;
-            return false;
+            if (bRes == false) {
+                error = true;
+                table = null;
+            }
+            else
+                ;
+
+            return bRes;
         }
 
-        private bool StateResponse(StatesMachine state, DataTable table)
+        private bool StateResponse(StatesMachineCommon state, DataTable table)
         {
             bool result = false;
             switch (state)
             {
-                case StatesMachine.Init:
-                    result = GetSensorsResponse(table);
-                    if (result)
-                    {
+                case StatesMachineCommon.Init:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetSensorsResponse(table);
+                            if (result)
+                            {
+                            }
+                            else
+                                ;
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.CurrentTime:
-                    result = GetCurrentTimeReponse(table);
-                    if (result)
-                    {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
-                        selectedTime = selectedTime.AddSeconds(-parameters.error_delay);
-                        this.BeginInvoke(delegateSetNowDate, true);
+                case StatesMachineCommon.CurrentTime:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetCurrentTimeReponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.CurrentTime");
+                                selectedTime = selectedTime.AddSeconds(-parameters.error_delay);
+                                this.BeginInvoke(delegateSetNowDate, true);
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.CurrentHours:
-                    ClearValues();
-                    //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    result = GetHoursResponse(table);
-                    if (result)
+                case StatesMachineCommon.CurrentHours:
+                    switch (tec.type())
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentHours");
+                        case TEC.TEC_TYPE.COMMON:
+                            ClearValues();
+                            //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
+                            result = GetHoursResponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.CurrentHours");
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.CurrentMins:
-                    //GenerateMinsTable(seasonJumpE.None, 5, table);
-                    result = GetMinsResponse(table);
-                    if (result)
+                case StatesMachineCommon.CurrentMins:
+                    switch (tec.type())
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentMins");
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        case TEC.TEC_TYPE.COMMON:
+                            //GenerateMinsTable(seasonJumpE.None, 5, table);
+                            result = GetMinsResponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.CurrentMins");
+                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.RetroHours:
-                    ClearValues();
-                    result = GetHoursResponse(table);
-                    if (result)
+                case StatesMachineCommon.RetroHours:
+                    switch (tec.type())
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroHours");
+                        case TEC.TEC_TYPE.COMMON:
+                            ClearValues();
+                            result = GetHoursResponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.RetroHours");
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.RetroMins:
-                    result = GetMinsResponse(table);
-                    if (result)
+                case StatesMachineCommon.RetroMins:
+                    switch (tec.type())
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroMins");
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetMinsResponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.RetroMins");
+                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
-                case StatesMachine.AdminValues:
-                    ClearAdminValues();
-                    result = GetAdminValuesResponse(table);
-                    if (result)
+                case StatesMachineCommon.AdminValues:
+                    switch (tec.type())
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
-                        ComputeRecomendation(lastHour);
-                        adminValuesReceived = true;
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        case TEC.TEC_TYPE.COMMON:
+                            ClearAdminValues();
+                            result = GetAdminValuesResponse(table);
+                            if (result)
+                            {
+                                //this.BeginInvoke(delegateShowValues, "StatesMachineCommon.AdminValues");
+                                ComputeRecomendation(lastHour);
+                                adminValuesReceived = true;
+                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                            }
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                        default:
+                            break;
                     }
                     break;
             }
@@ -4315,47 +4576,47 @@ namespace Statistic
             return result;
         }
 
-        private void StateErrors(StatesMachine state, bool response)
+        private void StateErrors(StatesMachineCommon state, bool response)
         {
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachineCommon.Init:
                     if (response)
                         ErrorReport("Ошибка разбора идентификаторов датчиков. Переход в ожидание.");
                     else
                         ErrorReport("Ошибка получения идентификаторов датчиков. Переход в ожидание.");
                     break;
-                case StatesMachine.CurrentTime:
+                case StatesMachineCommon.CurrentTime:
                     if (response)
                         ErrorReport("Ошибка разбора текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     else
                         ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     break;
-                case StatesMachine.CurrentHours:
+                case StatesMachineCommon.CurrentHours:
                     if (response)
                         ErrorReport("Ошибка разбора получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     else
                         ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     break;
-                case StatesMachine.CurrentMins:
+                case StatesMachineCommon.CurrentMins:
                     if (response)
                         ErrorReport("Ошибка разбора трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     else
                         ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
                     break;
-                case StatesMachine.RetroHours:
+                case StatesMachineCommon.RetroHours:
                     if (response)
                         ErrorReport("Ошибка разбора получасовых значений. Переход в ожидание.");
                     else
                         ErrorReport("Ошибка получения получасовых значений. Переход в ожидание.");
                     break;
-                case StatesMachine.RetroMins:
+                case StatesMachineCommon.RetroMins:
                     if (response)
                         ErrorReport("Ошибка разбора трёхминутных значений. Переход в ожидание.");
                     else
                         ErrorReport("Ошибка получения трёхминутных значений. Переход в ожидание.");
                     break;
-                case StatesMachine.AdminValues:
+                case StatesMachineCommon.AdminValues:
                     if (response)
                         ErrorReport("Ошибка разбора административных данных.");
                     else
@@ -4367,7 +4628,7 @@ namespace Statistic
         private void TecView_ThreadFunction(object data)
         {
             int index;
-            StatesMachine currentState;
+            StatesMachineCommon currentState;
 
             while (threadIsWorking)
             {
@@ -4455,6 +4716,1561 @@ namespace Statistic
                 }
             }
             timerCurrent.Change(1000, Timeout.Infinite);
+        }
+
+        private bool UpdateTime(DataTable table)
+        {
+            if (table.Rows.Count == 1)
+            {
+                try
+                {
+                    selectedTime = (DateTime)table.Rows[0][0];
+                    serverTime = selectedTime;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                //selectedTime = System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
+                //ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void timer_Tick(Object stateInfo)
+        {
+            lock (lockValue)
+            {
+                if (isActive || state == StatesMachineBiysk.Init)
+                {
+                    switch (state)
+                    {
+                        case StatesMachineBiysk.Idle:
+                            break;
+
+                        case StatesMachineBiysk.Init:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachine.Init");
+                                    if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "" || sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                                    {
+                                        ActionReport("Получение идентификаторов датчиков.");
+                                        GetSensors();
+                                    }
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachine.Init");
+                                    if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "" || sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                                    {
+                                        if (dataInterface.dataPresent)
+                                        {
+                                            if (UpdateSensors(dataInterface.tableData))
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                timer.Change(0, Timeout.Infinite);
+
+                                                errored_state = actioned_state = false;
+                                            }
+                                            else
+                                            {
+                                                sensorsStrings[(int)TG.ID_TIME.HOURS] = sensorsStrings[(int)TG.ID_TIME.MINUTES] = "";
+                                                tryes++;
+                                                if (tryes < parameters.max_tryes)
+                                                {
+                                                    ErrorReport("Ошибка разбора идентификаторов датчиков. Повторная попытка.");
+                                                    action = StateActionsBiysk.Request;
+                                                    timer.Change(RETRY_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.Init");
+                                                    ErrorReport("Ошибка разбора идентификаторов датчиков. Переход в ожидание.");
+                                                    prevState = state;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    state = StatesMachineBiysk.Idle;
+                                                    action = StateActionsBiysk.Request;
+                                                }
+                                            }
+                                        }
+                                        else
+                                            if (dataInterface.dataError)
+                                            {
+                                                tryes++;
+                                                if (tryes < parameters.max_tryes)
+                                                {
+                                                    ErrorReport("Ошибка получения идентификаторов датчиков. Повторная попытка.");
+                                                    action = StateActionsBiysk.Request;
+                                                    timer.Change(RETRY_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.Init");
+                                                    ErrorReport("Ошибка получения идентификаторов датчиков. Переход в ожидание.");
+                                                    prevState = state;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    state = StatesMachineBiysk.Idle;
+                                                    action = StateActionsBiysk.Request;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                wait_times++;
+                                                if (wait_times < MAX_WAIT_TIME)
+                                                {
+                                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.Init");
+                                                    ErrorReport("Ошибка получения идентификаторов датчиков. Переход в ожидание.");
+                                                    prevState = state;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    state = StatesMachineBiysk.Idle;
+                                                    action = StateActionsBiysk.Request;
+                                                }
+                                            }
+                                    }
+                                    else
+                                    {
+                                        prevState = state;
+                                        state = StatesMachineBiysk.CurrentTime;
+                                        action = StateActionsBiysk.Request;
+                                        timer.Change(0, Timeout.Infinite);
+                                    }
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.CurrentTime:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentTime");
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение текущего времени сервера.");
+                                    GetTime();
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    //if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "" || sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                                    //{
+                                        if (dataInterface.dataPresent)
+                                        {
+                                            if (UpdateTime(dataInterface.tableData))
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentTime");
+                                                selectedTime = selectedTime.AddSeconds(-parameters.error_delay);
+                                                this.BeginInvoke(delegateSetNowDate, true);
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentHours;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                timer.Change(0, Timeout.Infinite);
+
+                                                errored_state = actioned_state = false;
+                                            }
+                                            else
+                                            {
+                                                tryes++;
+                                                if (tryes < parameters.max_tryes)
+                                                {
+                                                    ErrorReport("Ошибка получения текущего времени сервера. Повторная попытка.");
+                                                    action = StateActionsBiysk.Request;
+                                                    timer.Change(RETRY_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentTime");
+                                                    ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    prevState = state;
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                            }
+                                        }
+                                        else
+                                            if (dataInterface.dataError)
+                                            {
+                                                tryes++;
+                                                if (tryes < parameters.max_tryes)
+                                                {
+                                                    ErrorReport("Ошибка получения текущего времени сервера. Повторная попытка.");
+                                                    action = StateActionsBiysk.Request;
+                                                    timer.Change(RETRY_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentTime");
+                                                    ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    prevState = state;
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                wait_times++;
+                                                if (wait_times < MAX_WAIT_TIME)
+                                                {
+                                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    tec.ClearFlags(gtp);
+                                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentTime");
+                                                    ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    prevState = state;
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                            }
+                                    //}
+                                    //else {
+                                    //    prevState = state;
+                                    //    state = StatesMachineBiysk.CurrentTime;
+                                    //    action = StateActionsBiysk.Request;
+                                    //    timer.Change(0, Timeout.Infinite);
+                                    //}
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.CurrentHours:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentHours");
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение получасовых значений.");
+                                    GetHours(selectedTime.Date);
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    if (dataInterface.dataPresent)
+                                    {
+                                        ClearValues();
+
+                                        //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, dataInterface.tableData);
+
+                                        if (UpdateHours(dataInterface.tableData))
+                                        {
+                                            tec.ClearFlags(gtp);
+                                            //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentHours");
+                                            prevState = state;
+                                            state = StatesMachineBiysk.CurrentMins;
+                                            action = StateActionsBiysk.Request;
+                                            tryes = 0;
+                                            timer.Change(0, Timeout.Infinite);
+
+                                            errored_state = actioned_state = false;
+                                        }
+                                        else
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка разбора получасовых значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentHours");
+                                                ErrorReport("Ошибка разбора получасовых значений. Ожидание 30 секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                    }
+                                    else
+                                        if (dataInterface.dataError)
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка получения получасовых значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentHours");
+                                                ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wait_times++;
+                                            if (wait_times < MAX_WAIT_TIME)
+                                            {
+                                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentHours");
+                                                ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.CurrentMins:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentMins");
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение трёхминутных значений.");
+                                    GetMins(lastHour);
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    if (dataInterface.dataPresent)
+                                    {
+                                        //GenerateMinsTable(seasonJumpE.None, 5, dataInterface.tableData);
+
+                                        if (UpdateMins(dataInterface.tableData))
+                                        {
+                                            tec.ClearFlags(gtp);
+                                            //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentMins");
+                                            this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                                            prevState = state;
+                                            state = StatesMachineBiysk.AdminValues;
+                                            action = StateActionsBiysk.Request;
+                                            tryes = 0;
+                                            timer.Change(0, Timeout.Infinite);
+
+                                            errored_state = actioned_state = false;
+                                        }
+                                        else
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка разбора трёхминутных значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentMins");
+                                                ErrorReport("Ошибка разбора трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                    }
+                                    else
+                                        if (dataInterface.dataError)
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка получения трёхминутных значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentMins");
+                                                ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wait_times++;
+                                            if (wait_times < MAX_WAIT_TIME)
+                                            {
+                                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.CurrentMins");
+                                                ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                prevState = state;
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                        }
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.RetroHours:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroHours");
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение получасовых значений.");
+                                    GetHours(selectedTime.Date);
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    if (dataInterface.dataPresent)
+                                    {
+                                        //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroHours");
+                                        ClearValues();
+
+                                        if (UpdateHours(dataInterface.tableData))
+                                        {
+                                            tec.ClearFlags(gtp);
+                                            prevState = state;
+                                            state = StatesMachineBiysk.RetroMins;
+                                            action = StateActionsBiysk.Request;
+                                            tryes = 0;
+                                            timer.Change(0, Timeout.Infinite);
+
+                                            errored_state = actioned_state = false;
+                                        }
+                                        else
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка разбора получасовых значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroHours");
+                                                ErrorReport("Ошибка разбора получасовых значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                    }
+                                    else
+                                        if (dataInterface.dataError)
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка получения получасовых значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroHours");
+                                                ErrorReport("Ошибка получения получасовых значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wait_times++;
+                                            if (wait_times < MAX_WAIT_TIME)
+                                            {
+                                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroHours");
+                                                ErrorReport("Ошибка получения получасовых значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.RetroMins:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение трёхминутных значений.");
+                                    GetMins(lastHour);
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    if (dataInterface.dataPresent)
+                                    {
+                                        if (UpdateMins(dataInterface.tableData))
+                                        {
+                                            tec.ClearFlags(gtp);
+                                            //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroMins");
+                                            this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                                            prevState = state;
+                                            state = StatesMachineBiysk.AdminValues;
+                                            action = StateActionsBiysk.Request;
+                                            tryes = 0;
+                                            timer.Change(0, Timeout.Infinite);
+
+                                            errored_state = actioned_state = false;
+                                        }
+                                        else
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка разбора трёхминутных значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroMins");
+                                                ErrorReport("Ошибка разбора трёхминутных значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                    }
+                                    else
+                                        if (dataInterface.dataError)
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка получения трёхминутных значений. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroMins");
+                                                ErrorReport("Ошибка получения трёхминутных значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wait_times++;
+                                            if (wait_times < MAX_WAIT_TIME)
+                                            {
+                                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.RetroMins");
+                                                ErrorReport("Ошибка получения трёхминутных значений. Переход в ожидание.");
+                                                prevState = state;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                state = StatesMachineBiysk.Idle;
+                                                this.BeginInvoke(delegateUpdateGUI, 0, 0);
+                                            }
+                                        }
+                                    break;
+                            }
+                            break;
+
+                        case StatesMachineBiysk.AdminValues:
+                            switch (action)
+                            {
+                                case StateActionsBiysk.Request:
+                                    //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.AdminValues");
+                                    adminValuesReceived = false;
+                                    ActionReport("Получение административных данных.");
+                                    GetAdminValues();
+                                    action = StateActionsBiysk.Data;
+                                    timer.Change(WAIT_TIME, Timeout.Infinite);
+                                    break;
+                                case StateActionsBiysk.Data:
+                                    if (dataInterfaceAdmin.dataPresent)
+                                    {
+                                        ClearAdminValues();
+
+                                        if (UpdateAdminValues(dataInterfaceAdmin.tableData))
+                                        {
+                                            tec.ClearFlags(gtp);
+                                            //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.AdminValues");
+                                            ComputeRecomendation(lastHour);
+
+                                            adminValuesReceived = true;
+                                            this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+
+                                            if (prevState == StatesMachineBiysk.CurrentMins)
+                                            {
+                                                state = StatesMachineBiysk.CurrentTime;
+                                                action = StateActionsBiysk.Request;
+                                                tryes = 0;
+                                                wait_times = 0;
+                                                timer.Change(parameters.poll_time, Timeout.Infinite);
+                                            }
+                                            else
+                                                state = StatesMachineBiysk.Idle;
+                                            prevState = state;
+
+                                            errored_state = actioned_state = false;
+                                        }
+                                        else
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка разбора административных данных. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.AdminValues");
+                                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                                                if (prevState == StatesMachineBiysk.CurrentMins)
+                                                {
+                                                    ErrorReport("Ошибка разбора административных данных. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
+                                                    state = StatesMachineBiysk.Idle;
+                                                    wait_times = 0;
+                                                }
+                                                prevState = state;
+                                            }
+                                        }
+                                    }
+                                    else
+                                        if (dataInterfaceAdmin.dataError)
+                                        {
+                                            tryes++;
+                                            if (tryes < parameters.max_tryes)
+                                            {
+                                                ErrorReport("Ошибка получения административных данных. Повторная попытка.");
+                                                action = StateActionsBiysk.Request;
+                                                timer.Change(RETRY_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.AdminValues");
+                                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                                                if (prevState == StatesMachineBiysk.CurrentMins)
+                                                {
+                                                    ErrorReport("Ошибка получения административных данных. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                                    state = StatesMachineBiysk.Idle;
+                                                    wait_times = 0;
+                                                }
+                                                prevState = state;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            wait_times++;
+                                            if (wait_times < MAX_WAIT_TIME)
+                                            {
+                                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                            }
+                                            else
+                                            {
+                                                tec.ClearFlags(gtp);
+                                                //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.AdminValues");
+                                                this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                                                if (prevState == StatesMachineBiysk.CurrentMins)
+                                                {
+                                                    ErrorReport("Ошибка получения административных данных. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                                                    state = StatesMachineBiysk.CurrentTime;
+                                                    action = StateActionsBiysk.Request;
+                                                    tryes = 0;
+                                                    wait_times = 0;
+                                                    timer.Change(parameters.poll_time, Timeout.Infinite);
+                                                }
+                                                else
+                                                {
+                                                    ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                                    state = StatesMachineBiysk.Idle;
+                                                    wait_times = 0;
+                                                }
+                                                prevState = state;
+                                            }
+                                        }
+                                    break;
+                            }
+                            break;
+
+                        default:
+                            tec.ClearFlags(gtp);
+                            //this.BeginInvoke(delegateShowValues, "StatesMachineBiysk.Unknown");
+                            ErrorReport("Нейзвестное состояние. Переход в ожидание.");
+                            state = StatesMachineBiysk.Idle;
+                            break;
+                    }
+                }
+            }
+        }
+
+        private bool UpdateSensors(DataTable table)
+        {
+            return true;
+        }
+
+        private bool UpdateHours(DataTable table)
+        {
+            int i, j, half, hour = 0, halfAddon;
+            double hourVal = 0, halfVal = 0, value, hourValAddon = 0;
+            double[] oldValuesTG = new double[countTG];
+            int[] oldIdTG = new int[countTG];
+            int id;
+            TG tgTmp;
+            bool end = false;
+            DateTime dt, dtNeeded;
+            int season = 0, prev_season = 0;
+            bool jump_forward = false, jump_backward = false;
+
+            lastHour = lastReceivedHour = 0;
+            half = 0;
+            halfAddon = 0;
+
+            /*Form2 f2 = new Form2();
+            f2.FillHourTable(table);*/
+
+            lastHourHalfError = lastHourError = false;
+
+            foreach (GTP g in tec.GTP)
+            {
+                foreach (TG t in g.TG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.receivedHourHalf1[i] = t.receivedHourHalf2[i] = false;
+                    }
+                }
+            }
+
+            if (table.Rows.Count > 0)
+            {
+                if (!DateTime.TryParse(table.Rows[0][5].ToString(), out dt))
+                    return false;
+                if (!int.TryParse(table.Rows[0][6].ToString(), out season))
+                    return false;
+                GetSeason(dt, season, out season);
+                prev_season = season;
+                hour = dt.Hour;
+                dtNeeded = dt;
+                if (dt.Minute == 0)
+                    half++;
+            }
+            else
+            {
+                if (currHour)
+                {
+                    if (selectedTime.Hour != 0)
+                    {
+                        lastHour = lastReceivedHour = selectedTime.Hour;
+                        lastHourError = true;
+                    }
+                }
+                /*f2.FillHourValues(lastHour, selectedTime, valuesHours.valuesFact);
+                f2.ShowDialog();*/
+                return true;
+            }
+
+            for (i = 0; hour < 24 && !end; )
+            {
+                if (half == 2 || halfAddon == 2) // прошёл один час
+                {
+                    if (!jump_backward)
+                    {
+                        if (jump_forward)
+                            valuesHours.hourAddon = hour; // уточнить
+                        valuesHours.valuesFact[hour] = hourVal / 2000;
+                        hour++;
+                        half = 0;
+                        hourVal = 0;
+                    }
+                    else
+                    {
+                        valuesHours.valuesFactAddon = hourValAddon / 2000;
+                        valuesHours.hourAddon = hour - 1;
+                        hourValAddon = 0;
+                        prev_season = season;
+                        halfAddon++;
+                    }
+                    lastHour = lastReceivedHour = hour;
+                }
+
+                halfVal = 0;
+
+                jump_forward = false;
+                jump_backward = false;
+
+                for (j = 0; j < countTG; j++, i++)
+                {
+                    if (i >= table.Rows.Count)
+                    {
+                        end = true;
+                        break;
+                    }
+
+                    if (!DateTime.TryParse(table.Rows[i][5].ToString(), out dt))
+                        return false;
+
+                    if (!int.TryParse(table.Rows[i][6].ToString(), out season))
+                        return false;
+
+                    if (dt.CompareTo(dtNeeded) != 0)
+                    {
+                        GetSeason(dt, season, out season);
+                        if (dt.CompareTo(dtNeeded.AddMinutes(-30)) == 0 && prev_season == 1 && season == 2)
+                        {
+                            dtNeeded = dtNeeded.AddMinutes(-30);
+                            jump_backward = true;
+                        }
+                        else
+                            if (dt.CompareTo(dtNeeded.AddMinutes(30)) == 0 && prev_season == 0 && season == 1)
+                            {
+                                jump_forward = true;
+                                break;
+                            }
+                            else
+                                break;
+                    }
+
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
+                        return false;
+
+                    tgTmp = FindTGByIdHours(id);
+
+                    if (tgTmp == null)
+                        return false;
+
+                    if (!double.TryParse(table.Rows[i][4].ToString(), out value))
+                        return false;
+
+                    value *= 2;
+
+                    halfVal += value;
+                    if (!jump_backward)
+                    {
+                        if (half == 0)
+                            tgTmp.receivedHourHalf1[hour] = true;
+                        else
+                            tgTmp.receivedHourHalf2[hour] = true;
+                    }
+                    else
+                    {
+                        if (halfAddon == 0)
+                            tgTmp.receivedHourHalf1Addon = true;
+                        else
+                            tgTmp.receivedHourHalf2Addon = true;
+                    }
+                }
+
+                dtNeeded = dtNeeded.AddMinutes(30);
+
+                if (!jump_backward)
+                {
+                    if (jump_forward)
+                        valuesHours.season = seasonJumpE.WinterToSummer;
+
+                    if (!end)
+                        half++;
+
+                    hourVal += halfVal;
+                }
+                else
+                {
+                    valuesHours.season = seasonJumpE.SummerToWinter;
+                    valuesHours.addonValues = true;
+
+                    if (!end)
+                        halfAddon++;
+
+                    hourValAddon += halfVal;
+                }
+            }
+
+            /*f2.FillHourValues(lastHour, selectedTime, valuesHours.valuesFact);
+            f2.ShowDialog();*/
+
+            if (currHour)
+            {
+                if (lastHour < selectedTime.Hour)
+                {
+                    lastHourError = true;
+                    lastHour = selectedTime.Hour;
+                }
+                else
+                {
+                    if (selectedTime.Hour == 0 && lastHour != 24 && dtNeeded.Date != selectedTime.Date)
+                    {
+                        lastHourError = true;
+                        lastHour = 24;
+                    }
+                    else
+                    {
+                        if (lastHour != 0)
+                        {
+                            for (i = 0; i < sensorId2TG.Length; i++)
+                            {
+                                if ((half & 1) == 1)
+                                {
+                                    //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h1 " + sensorId2TG[i].receivedHourHalf1[lastHour - 1].ToString());
+                                    if (!sensorId2TG[i].receivedHourHalf1[lastHour - 1])
+                                    {
+                                        lastHourHalfError = true;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h2 " + sensorId2TG[i].receivedHourHalf2[lastHour - 1].ToString());
+                                    if (!sensorId2TG[i].receivedHourHalf2[lastHour - 1])
+                                    {
+                                        lastHourHalfError = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            lastReceivedHour = lastHour;
+
+            return true;
+        }
+
+        private bool UpdateMins(DataTable table)
+        {
+            int i, j = 0, min = 0;
+            double minVal = 0, value;
+            TG tgTmp;
+            int id;
+            bool end = false;
+            DateTime dt, dtNeeded;
+            int season = 0, need_season = 0, max_season = 0;
+            bool jump = false;
+
+            lastMinError = false;
+
+            /*Form2 f2 = new Form2();
+            f2.FillMinTable(table);*/
+
+            foreach (GTP g in tec.GTP)
+            {
+                foreach (TG t in g.TG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.power[i] = 0;
+                        t.receivedMin[i] = false;
+                    }
+                }
+            }
+
+            lastMin = 0;
+
+            if (table.Rows.Count > 0)
+            {
+                if (!DateTime.TryParse(table.Rows[0][5].ToString(), out dt))
+                    return false;
+                if (!int.TryParse(table.Rows[0][6].ToString(), out season))
+                    return false;
+                season = 0;
+                need_season = max_season = season;
+                min = (int)(dt.Minute / 3);
+                dtNeeded = dt;
+            }
+            else
+            {
+                if (currHour)
+                {
+                    if ((selectedTime.Minute / 3) != 0)
+                    {
+                        lastMinError = true;
+                        lastMin = ((selectedTime.Minute) / 3) + 1;
+                    }
+                }
+                /*f2.FillMinValues(lastMin, selectedTime, valuesMins.valuesFact);
+                f2.ShowDialog();*/
+                return true;
+            }
+
+            for (i = 0; i < table.Rows.Count; i++)
+            {
+                if (!int.TryParse(table.Rows[i][6].ToString(), out season))
+                    return false;
+                season = 0;
+                if (season > max_season)
+                    max_season = season;
+            }
+
+            if (currHour)
+            {
+                if (need_season != max_season)
+                {
+                    valuesHours.addonValues = true;
+                    valuesHours.hourAddon = lastHour - 1;
+                    need_season = max_season;
+                }
+            }
+            else
+            {
+                if (valuesHours.addonValues)
+                {
+                    need_season = max_season;
+                }
+            }
+
+            for (i = 0; !end && min < 21; min++)
+            {
+                if (jump)
+                {
+                    min--;
+                }
+                else
+                {
+                    valuesMins.valuesFact[min] = 0;
+                    minVal = 0;
+                }
+
+                /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
+                                 ", table.Rows.Count " + table.Rows.Count.ToString());*/
+                jump = false;
+                for (j = 0; j < countTG; j++, i++)
+                {
+                    if (i >= table.Rows.Count)
+                    {
+                        end = true;
+                        break;
+                    }
+
+                    if (!DateTime.TryParse(table.Rows[i][5].ToString(), out dt))
+                        return false;
+                    if (!int.TryParse(table.Rows[i][6].ToString(), out season))
+                        return false;
+                    season = 0;
+
+                    if (season != need_season)
+                    {
+                        jump = true;
+                        i++;
+                        break;
+                    }
+
+                    if (dt.CompareTo(dtNeeded) != 0)
+                    {
+                        break;
+                    }
+
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
+                        return false;
+
+                    tgTmp = FindTGByIdMins(id);
+
+                    if (tgTmp == null)
+                        return false;
+
+                    if (!double.TryParse(table.Rows[i][4].ToString(), out value))
+                        return false;
+
+                    value *= 20;
+
+                    minVal += value;
+                    tgTmp.power[min] = value / 1000;
+                    tgTmp.receivedMin[min] = true;
+                }
+
+                if (!jump)
+                {
+                    dtNeeded = dtNeeded.AddMinutes(3);
+
+                    //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
+
+                    if (!end)
+                    {
+                        valuesMins.valuesFact[min] = minVal / 1000;
+                        lastMin = min + 1;
+                    }
+                }
+            }
+
+            /*f2.FillMinValues(lastMin, selectedTime, valuesMins.valuesFact);
+            f2.ShowDialog();*/
+
+            if (lastMin <= ((selectedTime.Minute - 1) / 3))
+            {
+                lastMinError = true;
+                lastMin = ((selectedTime.Minute - 1) / 3) + 1;
+            }
+
+            return true;
+        }
+
+        private bool UpdateAdminValues(DataTable table)
+        {
+            DateTime date = dtprDate.Value.Date;
+            int hour;
+
+            lastLayout = "---";
+
+            if (gtp < 0)
+            {
+                double currPBRe;
+                int offsetPrev = -1;
+                int offsetUDG, offsetPlan, offsetLayout;
+                offsetUDG = 1;
+                //offsetPlan = offsetUDG + 3 * tec.GTP.Count;
+                //offsetLayout = offsetPlan + tec.GTP.Count;
+
+                double[,] valuesPBR = new double[tec.GTP.Count, 25];
+                double[,] valuesREC = new double[tec.GTP.Count, 25];
+                int[,] valuesISPER = new int[tec.GTP.Count, 25];
+                double[,] valuesDIV = new double[tec.GTP.Count, 25];
+
+                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                {
+                    if (!(table.Rows[i][0] is System.DBNull))
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                                int j = 0;
+                                foreach (GTP g in tec.GTP)
+                                {
+                                    valuesPBR[j, 24] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
+                                    j++;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                // разбор остальных значений
+                for (int i = 0; i < table.Rows.Count; i++)
+                {
+                    if (i == offsetPrev)
+                        continue;
+
+                    if (!(table.Rows[i][0] is System.DBNull))
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+
+                            int j = 0;
+                            foreach (GTP g in tec.GTP)
+                            {
+                                try
+                                {
+                                    /*if (!(table.Rows[i][offsetPlan + j] is System.DBNull))*/
+                                    valuesPBR[j, hour - 1] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
+                                    if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                        valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                    if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                        valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                    if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                        valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                }
+                                catch
+                                {
+                                }
+                                j++;
+                            }
+                            /*string tmp = "";
+                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                tmp = (string)table.Rows[i][offsetLayout];
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;*/
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+
+                            int j = 0;
+                            foreach (GTP g in tec.GTP)
+                            {
+                                try
+                                {
+                                    valuesPBR[j, hour - 1] = 0;
+                                    if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                        valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                    if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                        valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                    if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                        valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                }
+                                catch
+                                {
+                                }
+                                j++;
+                            }
+                            /*string tmp = "";
+                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                tmp = (string)table.Rows[i][offsetLayout];
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;*/
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                for (int i = 0; i < 24; i++)
+                {
+                    for (int j = 0; j < tec.GTP.Count; j++)
+                    {
+                        /*valuesHours.valuesPBR[i] += valuesPBR[j, i];
+                        if (i == 0)
+                        {
+                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
+                            valuesHours.valuesPBRe[i] += currPBRe;
+                        }
+                        else
+                        {
+                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
+                            valuesHours.valuesPBRe[i] += currPBRe;
+                        }*/
+                        currPBRe = 0;
+
+                        valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+
+                        if (valuesISPER[j, i] == 1)
+                            valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                        else
+                            valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                    }
+                    /*valuesHours.valuesPBR[i] = 0.20;
+                    valuesHours.valuesPBRe[i] = 0.20;
+                    valuesHours.valuesUDGe[i] = 0.20;
+                    valuesHours.valuesDiviation[i] = 0.05;*/
+                }
+                if (valuesHours.season == seasonJumpE.SummerToWinter)
+                {
+                    valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                    valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                    valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                    valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                }
+            }
+            else
+            {
+                double currPBRe;
+                int offsetPrev = -1;
+                int offsetUDG, offsetPlan, offsetLayout;
+                offsetUDG = 1;
+                /*offsetPlan = offsetUDG + 3;
+                offsetLayout = offsetPlan + 1;*/
+                double[] valuesPBR = new double[25];
+                double[] valuesREC = new double[25];
+                int[] valuesISPER = new int[25];
+                double[] valuesDIV = new double[25];
+
+                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                {
+                    if (!(table.Rows[i][0] is System.DBNull))
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                                valuesPBR[24] = 0/*(double)table.Rows[i][offsetPlan]*/;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                // разбор остальных значений
+                for (int i = 0; i < table.Rows.Count; i++)
+                {
+                    if (i == offsetPrev)
+                        continue;
+
+                    if (!(table.Rows[i][0] is System.DBNull))
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+
+                            /*if (!(table.Rows[i][offsetPlan] is System.DBNull))*/
+                            valuesPBR[hour - 1] = 0/*(double)table.Rows[i][offsetPlan]*/;
+                            if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                            if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                            if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                            /*string tmp = "";
+                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                tmp = (string)table.Rows[i][offsetLayout];
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;*/
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table.Rows[i][0]).Hour;
+                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+
+                            valuesPBR[hour - 1] = 0;
+                            if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                            if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                            if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+
+                            /*string tmp = "";
+                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                tmp = (string)table.Rows[i][offsetLayout];
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;*/
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                for (int i = 0; i < 24; i++)
+                {
+                    /*valuesHours.valuesPBR[i] = valuesPBR[i];
+                    if (i == 0)
+                    {
+                        currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
+                        valuesHours.valuesPBRe[i] = currPBRe;
+                    }
+                    else
+                    {
+                        currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
+                        valuesHours.valuesPBRe[i] = currPBRe;
+                    }*/
+                    currPBRe = 0;
+
+                    valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+
+                    if (valuesISPER[i] == 1)
+                        valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                    else
+                        valuesHours.valuesDiviation[i] = valuesDIV[i];
+                }
+
+                if (valuesHours.season == seasonJumpE.SummerToWinter)
+                {
+                    valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                    valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                    valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                    valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                }
+            }
+
+            hour = lastHour;
+            if (hour == 24)
+                hour = 23;
+
+            for (int i = 0; i < 21; i++)
+            {
+                valuesMins.valuesPBR[i] = valuesHours.valuesPBR[hour];
+                valuesMins.valuesPBRe[i] = valuesHours.valuesPBRe[hour];
+                valuesMins.valuesUDGe[i] = valuesHours.valuesUDGe[hour];
+                valuesMins.valuesDiviation[i] = valuesHours.valuesDiviation[hour];
+            }
+
+            return true;
+        }
+
+        private TG FindTGByIdMins(int id)
+        {
+            for (int i = 0; i < sensorId2TG.Length; i++)
+                if (sensorId2TG[i].ids[(int)TG.ID_TIME.MINUTES] == id)
+                    return sensorId2TG[i];
+
+            return null;
+        }
+
+        private TG FindTGByIdHours(int id)
+        {
+            for (int i = 0; i < sensorId2TG.Length; i++)
+                if (sensorId2TG[i].ids[(int)TG.ID_TIME.HOURS] == id)
+                    return sensorId2TG[i];
+
+            return null;
         }
     }
 }

@@ -109,7 +109,7 @@ namespace Statistic
             foreach (TEC t in tec)
             {
                 int index_gtp;
-                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
+                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                 tecViews.Add(tecView);
                 if (t.GTP.Count > 1)
@@ -117,7 +117,7 @@ namespace Statistic
                     index_gtp = 0;
                     foreach (GTP g in t.GTP)
                     {
-                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
+                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                         tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                         tecViews.Add(tecView);
                         index_gtp++;

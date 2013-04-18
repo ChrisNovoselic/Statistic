@@ -18,8 +18,7 @@ namespace Statistic
             i = j = k = 0; //Обнуление индекса ТЭЦ, ГТП, ТГ
 
             //Создание объекта ТЭЦ (i = 0, Б)
-            tec.Add(new TEC());
-            tec[i].name = "БТЭЦ";
+            tec.Add(new TEC( "БТЭЦ"));
             
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
@@ -58,8 +57,7 @@ namespace Statistic
 
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i ++; //Инкрементируем индекс ТЭЦ
-            tec.Add (new TEC ());
-            tec[i].name = "ТЭЦ-2";
+            tec.Add(new TEC("ТЭЦ-2"));
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "";
             tec[i].GTP[j].name = "";
@@ -80,8 +78,7 @@ namespace Statistic
 
             j = k = 0;
             i++;
-            tec.Add(new TEC());
-            tec[i].name = "ТЭЦ-3";
+            tec.Add(new TEC("ТЭЦ-3"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1";
@@ -135,8 +132,7 @@ namespace Statistic
             j = k = 0;
             i++;
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC());
-            tec[i].name = "ТЭЦ-4";
+            tec.Add(new TEC("ТЭЦ-4"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG3";
@@ -168,8 +164,7 @@ namespace Statistic
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i ++; //Инкрементируем индекс ТЭЦ
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add (new TEC ());
-            tec [i].name = "ТЭЦ-5";
+            tec.Add(new TEC("ТЭЦ-5"));
             //Создание ГТП и добавление к ТЭЦ
             tec [i].GTP.Add (new GTP (tec [i]));
             tec[i].GTP[j].field = "TG12";
@@ -201,8 +196,7 @@ namespace Statistic
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i++; //Инкрементируем индекс ТЭЦ
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC());
-            tec[i].name = "Бийск-ТЭЦ";
+            tec.Add(new TEC("Бийск-ТЭЦ"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG12";

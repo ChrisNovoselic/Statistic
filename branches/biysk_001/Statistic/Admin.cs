@@ -265,7 +265,7 @@ namespace Statistic
             LayoutSet,
         }
 
-        private enum StateActions
+        private enum StateActionsBiysk
         {
             Request,
             Data,
@@ -510,12 +510,22 @@ namespace Statistic
             semaSetPass = new Semaphore(1, 1);
             semaLoadLayout = new Semaphore(1, 1);
 
+            //Для особенной ТЭЦ (Бийск) поток чтения административных данных
+            sema = new Semaphore(1, 1);
+            dbThread = new Thread(new ParameterizedThreadStart(dbThread_Function));
+
             delegateFillData = new DelegateFunctionDate(FillData);
             delegateCalendarSetDate = new DelegateFunctionDate(CalendarSetDate);
 
             dataInterface = new DbDataInterface();
-
             stsStrip = sts;
+
+            state = StatesMachine.Idle;
+            nextState = StatesMachine.Idle;
+            action = StateActions.Request;
+
+            TimerCallback timerCallback = new TimerCallback(timer_Tick);
+            timer = new System.Threading.Timer(timerCallback, null, 0, Timeout.Infinite);
 
             this.dgwAdminTable.Rows.Add(24);
 
