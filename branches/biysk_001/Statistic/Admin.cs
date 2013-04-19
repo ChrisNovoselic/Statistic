@@ -202,6 +202,12 @@ namespace Statistic
         private volatile int oldTecIndex;
         private volatile List<TEC> tec;
 
+        //Для особенной ТЭЦ (Бийск)
+        public ConnectionSettings connSett;
+        public MySqlConnection connection;
+        public MySqlCommand command;
+        public MySqlDataAdapter adapter;
+
         private bool is_connection_error;
         private bool is_data_error;
 
@@ -265,6 +271,23 @@ namespace Statistic
             LayoutSet,
         }
 
+        //Для особенной ТЭЦ (Бийск)
+        private System.Threading.Timer timer;
+
+        private enum StatesMachineBiysk
+        {
+            Idle,
+            CurrentTime,
+            AdminValues,
+            AdminDates,
+            SaveValues,
+            GetPass,
+            SetPassInsert,
+            SetPassUpdate,
+            LayoutGet,
+            LayoutSet,
+        }
+
         private enum StateActionsBiysk
         {
             Request,
@@ -279,16 +302,25 @@ namespace Statistic
             ParseError,
         }
 
-        private volatile DbDataInterface dataInterface;
-
         private volatile bool using_date;
 
         private bool[] adminDates;
         private bool[] PPBRDates;
 
-        //private Thread dbThread;
-        private Semaphore sema;
-        //private volatile bool workTread;
+        private volatile StatesMachineBiysk state;
+        private volatile StatesMachineBiysk nextState;
+        private volatile StateActionsBiysk action;
+        private volatile DbDataInterface dataInterface;
+        private int tryes;
+        private int wait_times;
+        private const int MAX_TRYES = 1;
+        private const int RETRY_TIME = 500;
+        private const int WAIT_TIME = 50;
+        private int MAX_WAIT_TIME = 1000; // сделать защиту от залипания когда нет данных и не выставлен признак ошибки
+
+        private Thread dbThread;
+        private Semaphore semaMain;
+        private volatile bool workTread;
 
         private bool started;
 
@@ -511,7 +543,7 @@ namespace Statistic
             semaLoadLayout = new Semaphore(1, 1);
 
             //Для особенной ТЭЦ (Бийск) поток чтения административных данных
-            sema = new Semaphore(1, 1);
+            semaMain = new Semaphore(1, 1);
             dbThread = new Thread(new ParameterizedThreadStart(dbThread_Function));
 
             delegateFillData = new DelegateFunctionDate(FillData);
@@ -520,9 +552,9 @@ namespace Statistic
             dataInterface = new DbDataInterface();
             stsStrip = sts;
 
-            state = StatesMachine.Idle;
-            nextState = StatesMachine.Idle;
-            action = StateActions.Request;
+            state = StatesMachineBiysk.Idle;
+            nextState = StatesMachineBiysk.Idle;
+            action = StateActionsBiysk.Request;
 
             TimerCallback timerCallback = new TimerCallback(timer_Tick);
             timer = new System.Threading.Timer(timerCallback, null, 0, Timeout.Infinite);
@@ -1256,6 +1288,20 @@ namespace Statistic
                 {
                 }
             }
+
+            semaMain.WaitOne();
+            {
+                oldTecIndex = 0;
+                using_date = true;
+                cbxTec.SelectedIndex = oldTecIndex;
+                state = StatesMachineBiysk.CurrentTime;
+                action = StateActionsBiysk.Request;
+                nextState = StatesMachineBiysk.AdminValues;
+                tryes = 0;
+                wait_times = 0;
+                timer.Change(0, Timeout.Infinite);
+            }
+            semaMain.Release(1);
         }
 
         public void Reinit()
@@ -1282,6 +1328,19 @@ namespace Statistic
                 {
                 }
             }
+
+            semaMain.WaitOne();
+            {
+                dateForValues = mcldrDate.SelectionStart;
+                saving = false;
+                state = StatesMachineBiysk.CurrentTime;
+                action = StateActionsBiysk.Request;
+                nextState = StatesMachineBiysk.Idle;
+                tryes = 0;
+                wait_times = 0;
+                timer.Change(0, Timeout.Infinite);
+            }
+            semaMain.Release(1);
         }
 
         public void Stop()
@@ -1290,6 +1349,13 @@ namespace Statistic
                 return;
 
             started = false;
+
+            semaMain.WaitOne();
+            {
+                state = StatesMachineBiysk.Idle;
+                errored_state = false;
+            }
+            semaMain.Release(1);
         }
 
         public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -2372,7 +2438,7 @@ namespace Statistic
             }
             try
             {
-                sema.Release(1);
+                semaMain.Release(1);
             }
             catch
             {
@@ -2983,6 +3049,1050 @@ namespace Statistic
             catch
             {
             }
+        }
+
+        private void dbThread_Function(object data)
+        {
+            Admin a = (Admin)data;
+            bool result;
+            while (a.workTread)
+            {
+                a.semaMain.WaitOne();
+
+                lock (a.dataInterface.lockData)
+                {
+                    a.dataInterface.request[0] = a.dataInterface.request[1];
+                }
+
+                if (a.dataInterface.request[0] != "")
+                {
+                    try
+                    {
+                        result = a.GetData(a.dataInterface.tableData, a.dataInterface.request[0]);
+                    }
+                    catch
+                    {
+                        result = false;
+                    }
+
+                    lock (a.dataInterface.lockData)
+                    {
+                        if (a.dataInterface.request[0] == a.dataInterface.request[1])
+                        {
+                            if (result)
+                            {
+                                a.dataInterface.dataPresent = true;
+                            }
+                            else
+                            {
+                                a.dataInterface.dataError = true;
+                            }
+                            a.dataInterface.request[1] = "";
+                        }
+                    }
+                }
+
+                foreach (TEC t in a.tec)
+                {
+                    lock (t.dataInterfaceAdmin.lockData)
+                    {
+                        t.dataInterfaceAdmin.request[0] = t.dataInterfaceAdmin.request[1];
+                    }
+
+                    if (t.dataInterfaceAdmin.request[0] != "")
+                    {
+                        try
+                        {
+                            result = a.GetData(t.dataInterfaceAdmin.tableData, t.dataInterfaceAdmin.request[0]);
+                        }
+                        catch
+                        {
+                            result = false;
+                        }
+
+                        lock (t.dataInterfaceAdmin.lockData)
+                        {
+                            if (t.dataInterfaceAdmin.request[0] == t.dataInterfaceAdmin.request[1])
+                            {
+                                if (result)
+                                {
+                                    t.dataInterfaceAdmin.dataPresent = true;
+                                }
+                                else
+                                {
+                                    t.dataInterfaceAdmin.dataError = true;
+                                }
+                                t.dataInterfaceAdmin.request[1] = "";
+                            }
+                        }
+                    }
+
+                    if (t.GTP.Count > 1)
+                    {
+                        foreach (GTP g in t.GTP)
+                        {
+                            lock (g.dataInterfaceAdmin.lockData)
+                            {
+                                g.dataInterfaceAdmin.request[0] = g.dataInterfaceAdmin.request[1];
+                            }
+
+                            if (g.dataInterfaceAdmin.request[0] != "")
+                            {
+                                try
+                                {
+                                    result = a.GetData(g.dataInterfaceAdmin.tableData, g.dataInterfaceAdmin.request[0]);
+                                }
+                                catch
+                                {
+                                    result = false;
+                                }
+
+                                lock (g.dataInterfaceAdmin.lockData)
+                                {
+                                    if (g.dataInterfaceAdmin.request[0] == g.dataInterfaceAdmin.request[1])
+                                    {
+                                        if (result)
+                                        {
+                                            g.dataInterfaceAdmin.dataPresent = true;
+                                        }
+                                        else
+                                        {
+                                            g.dataInterfaceAdmin.dataError = true;
+                                        }
+                                        g.dataInterfaceAdmin.request[1] = "";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            try
+            {
+                a.semaMain.Release(1);
+            }
+            catch
+            {
+            }
+        }
+
+        private void timer_Tick(Object stateInfo)
+        {
+            semaMain.WaitOne();
+            {
+                switch (state)
+                {
+                    case StatesMachineBiysk.Idle:
+                        break;
+
+                    case StatesMachineBiysk.CurrentTime:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                ActionReport("Получение текущего времени сервера.");
+                                GetDataTime();
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    if (UpdateTime(dataInterface.tableData))
+                                    {
+                                        state = nextState;
+                                        action = StateActionsBiysk.Request;
+                                        tryes = 0;
+                                        wait_times = 0;
+                                        if (using_date)
+                                        {
+                                            dateForValues = serverTime;
+                                        }
+                                        timer.Change(0, Timeout.Infinite);
+
+                                        errored_state = actioned_state = false;
+                                    }
+                                    else
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка получения текущего времени сервера. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка получения текущего времени сервера. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            if (saving)
+                                            {
+                                                saveResult = Errors.ParseError;
+                                                try
+                                                {
+                                                    semaSave.Release(1);
+                                                }
+                                                catch
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка получения текущего времени сервера. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка получения текущего времени сервера. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            if (saving)
+                                            {
+                                                saveResult = Errors.NoAccess;
+                                                try
+                                                {
+                                                    semaSave.Release(1);
+                                                }
+                                                catch
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка получения текущего времени сервера. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            if (saving)
+                                            {
+                                                saveResult = Errors.NoAccess;
+                                                try
+                                                {
+                                                    semaSave.Release(1);
+                                                }
+                                                catch
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.AdminValues:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                ActionReport("Получение значений ПБР.");
+                                GetDataAdminValues(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues.Date);
+
+                                oldDate = dateForValues.Date;
+                                this.BeginInvoke(delegateCalendarSetDate, oldDate);
+
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    if (UpdateAdminValues(dataInterface.tableData, dateForValues))
+                                    {
+                                        this.BeginInvoke(delegateFillData, oldDate);
+
+                                        state = StatesMachineBiysk.Idle;
+                                        action = StateActionsBiysk.Request;
+                                        timer.Change(0, Timeout.Infinite);
+
+                                        errored_state = actioned_state = false;
+                                    }
+                                    else
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка разбора административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                        }
+                                    }
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка получения административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.AdminDates:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                if (serverTime.Date > dateForValues.Date)
+                                {
+                                    saveResult = Errors.InvalidValue;
+                                    try
+                                    {
+                                        semaSave.Release(1);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    state = StatesMachineBiysk.Idle;
+                                    break;
+                                }
+
+                                ActionReport("Получение списка сохранённых часовых значений.");
+                                GetDataAdminDates(dateForValues);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    ClearAdminDates();
+                                    if (UpdateAdminDates(dataInterface.tableData, dateForValues))
+                                    {
+                                        state = StatesMachineBiysk.SaveValues;
+                                        action = StateActionsBiysk.Request;
+                                        tryes = 0;
+                                        wait_times = 0;
+                                        timer.Change(0, Timeout.Infinite);
+
+                                        errored_state = actioned_state = false;
+                                    }
+                                    else
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка разбора сохранённых часовых значений. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка разбора сохранённых часовых значений. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            saveResult = Errors.ParseError;
+                                            try
+                                            {
+                                                semaSave.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка получения сохранённых часовых значений. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка получения сохранённых часовых значений. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            saveResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSave.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка получения сохранённых часовых значений. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            saveResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSave.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.SaveValues:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                ActionReport("Сохранение данных.");
+                                SetDataAdminValues(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    saveResult = Errors.NoError;
+                                    try
+                                    {
+                                        semaSave.Release(1);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    state = StatesMachineBiysk.Idle;
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка сохранения административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            saveResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSave.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            saveResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSave.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.GetPass:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                if (dispatcherPass)
+                                    ActionReport("Получение пароля диспетчера.");
+                                else
+                                    ActionReport("Получение пароля администратора.");
+                                GetDataAdminPass(dispatcherPass);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    if (UpdateAdminPass(dataInterface.tableData))
+                                    {
+                                        passResult = Errors.NoError;
+                                        state = StatesMachineBiysk.Idle;
+                                        errored_state = actioned_state = false;
+                                        try
+                                        {
+                                            semaGetPass.Release(1);
+                                        }
+                                        catch
+                                        {
+                                        }
+                                    }
+                                    else
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка получения пароля диспетчера. Повторная попытка.");
+                                            else
+                                                ErrorReport("Ошибка получения пароля администратора. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка получения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка получения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.ParseError;
+                                            try
+                                            {
+                                                semaGetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка получения пароля диспетчера. Повторная попытка.");
+                                            else
+                                                ErrorReport("Ошибка получения пароля администратора. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка получения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка получения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaGetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка получения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка получения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaGetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.SetPassInsert:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                if (dispatcherPass)
+                                    ActionReport("Сохранение пароля диспетчера.");
+                                else
+                                    ActionReport("Сохранение пароля администратора.");
+                                SetDataAdminPass(passReceive, dispatcherPass, true);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    state = StatesMachineBiysk.Idle;
+                                    passResult = Errors.NoError;
+                                    try
+                                    {
+                                        semaSetPass.Release(1);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    errored_state = actioned_state = false;
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Повторная попытка.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.SetPassUpdate:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                if (dispatcherPass)
+                                    ActionReport("Сохранение пароля диспетчера.");
+                                else
+                                    ActionReport("Сохранение пароля администратора.");
+                                SetDataAdminPass(passReceive, dispatcherPass, false);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    state = StatesMachineBiysk.Idle;
+                                    passResult = Errors.NoError;
+                                    try
+                                    {
+                                        semaSetPass.Release(1);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    errored_state = actioned_state = false;
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Повторная попытка.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            if (dispatcherPass)
+                                                ErrorReport("Ошибка сохранения пароля диспетчера. Переход в ожидание.");
+                                            else
+                                                ErrorReport("Ошибка сохранения пароля администратора. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            passResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaSetPass.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.LayoutGet:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                ActionReport("Получение административных данных.");
+                                GetDataLayout(dateForValues);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    if (UpdateLayoutValues(dataInterface.tableData, dateForValues))
+                                    {
+                                        loadLayoutResult = Errors.NoError;
+                                        state = StatesMachineBiysk.Idle;
+                                        errored_state = actioned_state = false;
+                                        try
+                                        {
+                                            semaLoadLayout.Release(1);
+                                        }
+                                        catch
+                                        {
+                                        }
+                                    }
+                                    else
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка разбора административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            loadLayoutResult = Errors.ParseError;
+                                            try
+                                            {
+                                                semaLoadLayout.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка получения административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            loadLayoutResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaLoadLayout.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            loadLayoutResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaLoadLayout.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    case StatesMachineBiysk.LayoutSet:
+                        switch (action)
+                        {
+                            case StateActionsBiysk.Request:
+                                ActionReport("Сохранение административных данных.");
+                                SetDataLayout(dateForValues);
+                                action = StateActionsBiysk.Data;
+                                timer.Change(WAIT_TIME, Timeout.Infinite);
+                                break;
+                            case StateActionsBiysk.Data:
+                                if (dataInterface.dataPresent)
+                                {
+                                    state = StatesMachineBiysk.Idle;
+                                    loadLayoutResult = Errors.NoError;
+                                    try
+                                    {
+                                        semaLoadLayout.Release(1);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    errored_state = actioned_state = false;
+                                }
+                                else
+                                    if (dataInterface.dataError)
+                                    {
+                                        tryes++;
+                                        if (tryes < MAX_TRYES)
+                                        {
+                                            ErrorReport("Ошибка сохранения административных данных. Повторная попытка.");
+                                            action = StateActionsBiysk.Request;
+                                            timer.Change(RETRY_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            loadLayoutResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaLoadLayout.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        wait_times++;
+                                        if (wait_times < MAX_WAIT_TIME)
+                                        {
+                                            timer.Change(WAIT_TIME, Timeout.Infinite);
+                                        }
+                                        else
+                                        {
+                                            tryes = 0;
+                                            wait_times = 0;
+                                            ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
+                                            state = StatesMachineBiysk.Idle;
+                                            loadLayoutResult = Errors.NoAccess;
+                                            try
+                                            {
+                                                semaLoadLayout.Release(1);
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                    }
+                                break;
+                        }
+                        break;
+
+                    default:
+                        ErrorReport("Нейзвестное состояние. Переход в ожидание.");
+                        state = StatesMachineBiysk.Idle;
+                        break;
+                }
+            }
+            semaMain.Release(1);
+        }
+
+        public bool GetData(DataTable table, string query)
+        {
+            bool result = true;
+
+            if (!Connect())
+                return false;
+
+            if (connection.State == ConnectionState.Open)
+            {
+                lock (lockValue)
+                {
+                    command.CommandText = query;
+
+                    table.Reset();
+                    table.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+                    try
+                    {
+                        adapter.Fill(table);
+                        is_data_error = false;
+                    }
+                    catch (MySqlException e)
+                    {
+                        string s;
+                        int pos;
+                        pos = adapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
+                        if (pos < 0)
+                            s = adapter.SelectCommand.Connection.ConnectionString;
+                        else
+                            s = adapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
+
+                        MainForm.log.LogToFile("Ошибка получения данных: " + s, true, true, false);
+                        MainForm.log.LogToFile("Запрос " + adapter.SelectCommand.CommandText, false, false, false);
+                        MainForm.log.LogToFile("Ошибка " + e.Message, false, false, false);
+                        MainForm.log.LogToFile(e.ToString(), false, false, false);
+
+                        //if (!is_data_error)
+                        //    MessageBox.Show("Ошибка получения административных данных.\nПроверьте правильность настроек и состояние сети.\n\nДанные об ошибке сохранены в файл logDB.txt", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        is_data_error = true;
+                        result = false;
+                    }
+                    catch
+                    {
+                        string s;
+                        int pos;
+                        pos = adapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
+                        if (pos < 0)
+                            s = adapter.SelectCommand.Connection.ConnectionString;
+                        else
+                            s = adapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
+
+                        MainForm.log.LogToFile("Ошибка получения данных: " + s, true, true, false);
+                        MainForm.log.LogToFile("Запрос " + adapter.SelectCommand.CommandText, false, false, false);
+
+                        //if (!is_data_error)
+                        //    MessageBox.Show("Ошибка получения административных данных.\nПроверьте правильность настроек и состояние сети.\n\nДанные об ошибке сохранены в файл logDB.txt", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        is_data_error = true;
+                        result = false;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
