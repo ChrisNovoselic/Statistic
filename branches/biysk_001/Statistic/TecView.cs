@@ -2136,9 +2136,19 @@ namespace Statistic
                              @"' AND " +
                              @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
                              @"' " +
-                             @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsStrings [(int) TG.ID_TIME.HOURS] +
-                             @") " +
-                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                             @"WHERE DATA.PARNUMBER = 12 AND (";
+            switch (tec.type ()) {
+                case TEC.TEC_TYPE.COMMON:
+                    request += sensorsString;
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    request += sensorsStrings[(int)TG.ID_TIME.HOURS];
+                    break;
+                default:
+                    break;
+            }
+            request += @") " +
+                        @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
 
             tec.Request(request);
         }
@@ -2162,9 +2172,20 @@ namespace Statistic
                              @"' AND " +
                              @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
                              @"' " +
-                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString +
-                             @") " +
-                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                             @"WHERE DATA.PARNUMBER = 2 AND (";
+            switch (tec.type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    request += sensorsString;
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    request += sensorsStrings[(int)TG.ID_TIME.MINUTES];
+                    break;
+                default:
+                    break;
+            }
+            request += @") " +
+                        @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
 
             tec.Request(request);
         }
@@ -4398,6 +4419,9 @@ namespace Statistic
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
                             bRes = tec.GetResponse(out error, out table);
+                            //MainForm.log.LogLock ();
+                            //MainForm.log.LogToFile ("");
+                            //MainForm.log.LogUnlock();
                             break;
                         case TEC.TEC_TYPE.BIYSK:
                             bRes = true;

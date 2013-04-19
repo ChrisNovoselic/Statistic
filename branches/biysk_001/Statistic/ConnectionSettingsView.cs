@@ -337,16 +337,25 @@ namespace Statistic
                 t.connSett = connectionSettings[connectionSettings.Count - 1];
             }
 
-            cbxConnFor.Items.Add("Редактирование ПБР");
+            cbxConnFor.Items.Add("Редактирование ПБР (Общий)");
             connectionSettingsEdit.Add(new ConnectionSettings());
             connectionSettings.Add(new ConnectionSettings());
             connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
             connectionSettings[connectionSettings.Count - 1].port = 3306;
-            admin.connSett = connectionSettings[connectionSettings.Count - 1];
+            
+
+            cbxConnFor.Items.Add("Редактирование ПБР (Бийск)");
+            connectionSettingsEdit.Add(new ConnectionSettings());
+            connectionSettings.Add(new ConnectionSettings());
+            connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
+            connectionSettings[connectionSettings.Count - 1].port = 3306;
 
             cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
             closing = false;
             ParseSettingsFile();
+
+            admin.connSettCommon = connectionSettings[connectionSettings.Count - 2];
+            admin.connSettBiysk = connectionSettings[connectionSettings.Count - 1];
 
             tbxServer.Text = connectionSettingsEdit[0].server;
             nudnPort.Value = connectionSettingsEdit[0].port;

@@ -192,16 +192,21 @@ namespace Statistic
 
         public bool GetResponse(int listenerId, out bool error, out DataTable table)
         {
-            if (listenerId >= maxListeners || listenerId < 0)
-            {
+            bool bRes = true;
+
+            if (listenerId >= maxListeners || listenerId < 0) {
                 error = true;
                 table = null;
+                
                 return false;
             }
-
+            
             error = listeners[listenerId].dataError;
             table = listeners[listenerId].dataTable;
-            return listeners[listenerId].dataPresent;
+            
+            return listeners[listenerId].dataPresent; 
+
+            //return bRes;
         }
 
         public void SetConnectionSettings(ConnectionSettings cs)

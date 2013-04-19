@@ -59,7 +59,7 @@ namespace Statistic
 
         private object lockEvent;
 
-        public static int MAX_RETRY = 2;
+        public static int MAX_RETRY = 3;
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 100;
 

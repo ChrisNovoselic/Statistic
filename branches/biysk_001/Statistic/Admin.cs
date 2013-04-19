@@ -58,6 +58,9 @@ namespace Statistic
             }
         }
 
+        public enum INDEX_TEC_PBR_VALUES {BTEC_TG1, BTEC_TG2, BTEC_TG35, BTEC_TG4, TEC2, TEC3_TG1, TEC3_TG712, TEC3_TG5, TEC3_TG1314, TEC4_TG3, TEC4_TG48, TEC5_TG12, TEC5_TG36,
+                                            COUNT_TEC_PBR_VALUES};
+        
         private struct LayoutData
         {
             public int number;
@@ -68,20 +71,7 @@ namespace Statistic
             public int hour_end;
             public string name_in_db;
             public string name;
-            //public TecPPBRValues BTEC;
-            public TecPPBRValues BTEC_TG1;
-            public TecPPBRValues BTEC_TG2;
-            public TecPPBRValues BTEC_TG35;
-            public TecPPBRValues BTEC_TG4;
-            public TecPPBRValues TEC2;
-            public TecPPBRValues TEC3_TG1;
-            public TecPPBRValues TEC3_TG712;
-            public TecPPBRValues TEC3_TG5;
-            public TecPPBRValues TEC3_TG1314;
-            public TecPPBRValues TEC4_TG3;
-            public TecPPBRValues TEC4_TG48;
-            public TecPPBRValues TEC5_TG12;
-            public TecPPBRValues TEC5_TG36;
+            public TecPPBRValues[] m_arGTPs;
             public bool[] existingHours;
 
             public LayoutData(int t)
@@ -95,20 +85,7 @@ namespace Statistic
                 this.name_in_db = "";
                 this.name = "";
                 //this.BTEC = new TecPPBRValues(1);
-                this.BTEC_TG1 = new TecPPBRValues(1);
-                this.BTEC_TG2 = new TecPPBRValues(1);
-                this.BTEC_TG35 = new TecPPBRValues(1);
-                this.BTEC_TG4 = new TecPPBRValues(1);
-                this.TEC2 = new TecPPBRValues(1);
-                this.TEC3_TG1 = new TecPPBRValues(1);
-                this.TEC3_TG5 = new TecPPBRValues(1);
-                this.TEC3_TG5 = new TecPPBRValues(1);
-                this.TEC3_TG712 = new TecPPBRValues(1);
-                this.TEC3_TG1314 = new TecPPBRValues(1);
-                this.TEC4_TG3 = new TecPPBRValues(1);
-                this.TEC4_TG48 = new TecPPBRValues(1);
-                this.TEC5_TG12 = new TecPPBRValues(1);
-                this.TEC5_TG36 = new TecPPBRValues(1);
+                this.m_arGTPs = new TecPPBRValues[(int) INDEX_TEC_PBR_VALUES.COUNT_TEC_PBR_VALUES];
                 this.existingHours = new bool[24];
             }
 
@@ -116,42 +93,15 @@ namespace Statistic
             {
                 hour_start = 0;
                 hour_end = 0;
-                for (int i = 0; i < 24; i++)
+                for (int i = 0; i < (int) INDEX_TEC_PBR_VALUES.COUNT_TEC_PBR_VALUES; i++)
                 {
-                    existingHours[i] = false;
-                    //БТЭЦ
-                    BTEC_TG1.PBR[i] = BTEC_TG1.Pmax[i] = BTEC_TG1.Pmin[i] = 
-                    BTEC_TG2.PBR[i] = BTEC_TG2.Pmax[i] = BTEC_TG2.Pmin[i] = 
-                    BTEC_TG35.PBR[i] = BTEC_TG35.Pmax[i] = BTEC_TG35.Pmin[i] = 
-                    BTEC_TG4.PBR[i] = BTEC_TG4.Pmax[i] = BTEC_TG4.Pmin[i] = 
-                    //ТЭЦ-2
-                    TEC2.PBR[i] = TEC2.Pmax[i] = TEC2.Pmin[i] =
-                    //ТЭЦ-3
-                    TEC3_TG1.PBR[i] = TEC3_TG1.Pmax[i] = TEC3_TG1.Pmin[i] =
-                    TEC3_TG5.PBR[i] = TEC3_TG5.Pmax[i] = TEC3_TG5.Pmin[i] =
-                    TEC3_TG712.PBR[i] = TEC3_TG712.Pmax[i] = TEC3_TG712.Pmin[i] =
-                    TEC3_TG1314.PBR[i] = TEC3_TG1314.Pmax[i] = TEC3_TG1314.Pmin[i] =
-                    //ТЭЦ-4
-                    TEC4_TG3.PBR[i] = TEC4_TG3.Pmax[i] = TEC4_TG3.Pmin[i] =
-                    TEC4_TG48.PBR[i] = TEC4_TG48.Pmax[i] = TEC4_TG48.Pmin[i] =
-                    //ТЭЦ-5
-                    TEC5_TG12.PBR[i] = TEC5_TG12.Pmax[i] = TEC5_TG12.Pmin[i] =
-                    TEC5_TG36.PBR[i] = TEC5_TG36.Pmax[i] = TEC5_TG36.Pmin[i] = 0.0;
+                    for (int j = 0; j < 24; j++)
+                    {
+                        existingHours[j] = false;
+                        m_arGTPs[i].PBR[j] = m_arGTPs[i].Pmax[j] = m_arGTPs[i].Pmin[j] = 0.0;
+                    }
+                    m_arGTPs [i].PBR[24] = 0.0;
                 }
-                //BTEC.PBR[24] = BTEC.SN[24] =
-                BTEC_TG1.PBR[24] = 
-                BTEC_TG2.PBR[24] = 
-                BTEC_TG35.PBR[24] =
-                BTEC_TG4.PBR[24] = 
-                TEC2.PBR[24] =
-                TEC3_TG1.PBR[24] =
-                TEC3_TG5.PBR[24] =
-                TEC3_TG712.PBR[24] =
-                TEC3_TG1314.PBR[24] =
-                TEC4_TG3.PBR[24] =
-                TEC4_TG48.PBR[24] =
-                TEC5_TG12.PBR[24] =
-                TEC5_TG36.PBR[24] = 0.0;
             }
         }
 
@@ -203,7 +153,7 @@ namespace Statistic
         private volatile List<TEC> tec;
 
         //Для особенной ТЭЦ (Бийск)
-        public ConnectionSettings connSett;
+        public ConnectionSettings connSettBiysk;
         public MySqlConnection connection;
         public MySqlCommand command;
         public MySqlDataAdapter adapter;
@@ -223,6 +173,8 @@ namespace Statistic
 
         private DateTime serverTime;
         private DateTime dateForValues;
+
+        private Semaphore semaMain;
 
         private Semaphore semaSave;
         private volatile Errors saveResult;
@@ -246,7 +198,7 @@ namespace Statistic
         private volatile bool newState;
         private volatile List<StatesMachine> states;
 
-        public ConnectionSettings connSett;
+        public ConnectionSettings connSettCommon;
 
         public volatile string m_strUsedAdminValues;
         public volatile string m_strUsedPPBRvsPBR;
@@ -318,9 +270,9 @@ namespace Statistic
         private const int WAIT_TIME = 50;
         private int MAX_WAIT_TIME = 1000; // сделать защиту от залипания когда нет данных и не выставлен признак ошибки
 
-        private Thread dbThread;
-        private Semaphore semaMain;
-        private volatile bool workTread;
+        private Thread dbThreadBiysk;
+        private Semaphore semaDBThreadBiysk;
+        private volatile bool workDBTreadBiysk;
 
         private bool started;
 
@@ -507,6 +459,16 @@ namespace Statistic
 
             md5 = new MD5CryptoServiceProvider();
 
+            //Для особенной ТЭЦ (Бийск)
+            connection = new MySqlConnection();
+
+            command = new MySqlCommand();
+            command.Connection = connection;
+            command.CommandType = CommandType.Text;
+
+            adapter = new MySqlDataAdapter();
+            adapter.SelectCommand = command;
+
             is_data_error = is_connection_error = false;
 
             isActive = false;
@@ -537,14 +499,16 @@ namespace Statistic
 
             lockValue = new Object();
 
+            semaMain = new Semaphore(1, 1);
+            
             semaSave = new Semaphore(1, 1);
             semaGetPass = new Semaphore(1, 1);
             semaSetPass = new Semaphore(1, 1);
-            semaLoadLayout = new Semaphore(1, 1);
+            semaLoadLayout = new Semaphore(1, 1);            
 
             //Для особенной ТЭЦ (Бийск) поток чтения административных данных
-            semaMain = new Semaphore(1, 1);
-            dbThread = new Thread(new ParameterizedThreadStart(dbThread_Function));
+            semaDBThreadBiysk = new Semaphore(1, 1);
+            dbThreadBiysk = new Thread(new ParameterizedThreadStart(dbThread_Function));
 
             delegateFillData = new DelegateFunctionDate(FillData);
             delegateCalendarSetDate = new DelegateFunctionDate(CalendarSetDate);
@@ -998,23 +962,23 @@ namespace Statistic
                     return false;
                 }
                 switch (tmp_int % 100) { 
-                    case 1: tecPPBRValues = layoutForLoading.TEC2; break;
-                    case 2: tecPPBRValues = layoutForLoading.TEC3_TG1; break;
-                    case 21: tecPPBRValues = layoutForLoading.TEC3_TG1; break;
-                    case 22: tecPPBRValues = layoutForLoading.TEC3_TG5; break;
-                    case 23: tecPPBRValues = layoutForLoading.TEC3_TG712; break;
-                    case 24: tecPPBRValues = layoutForLoading.TEC3_TG1314; break;
-                    case 3: tecPPBRValues = layoutForLoading.TEC4_TG3; break;
-                    case 31: tecPPBRValues = layoutForLoading.TEC4_TG3; break;
-                    case 32: tecPPBRValues = layoutForLoading.TEC4_TG48; break;
-                    case 4: tecPPBRValues = layoutForLoading.TEC5_TG12; break;
-                    case 41: tecPPBRValues = layoutForLoading.TEC5_TG12; break;
-                    case 42: tecPPBRValues = layoutForLoading.TEC5_TG36; break;
-                    case 6: tecPPBRValues = layoutForLoading.BTEC_TG1; break;
-                    case 61: tecPPBRValues = layoutForLoading.BTEC_TG1; break;
-                    case 62: tecPPBRValues = layoutForLoading.BTEC_TG2; break;
-                    case 63: tecPPBRValues = layoutForLoading.BTEC_TG35; break;
-                    case 64: tecPPBRValues = layoutForLoading.BTEC_TG4; break;
+                    case 1: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2]; break;
+                    case 2: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1]; break;
+                    case 21: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1]; break;
+                    case 22: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5]; break;
+                    case 23: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712]; break;
+                    case 24: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314]; break;
+                    case 3: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3]; break;
+                    case 31: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3]; break;
+                    case 32: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48]; break;
+                    case 4: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12]; break;
+                    case 41: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12]; break;
+                    case 42: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36]; break;
+                    case 6: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1]; break;
+                    case 61: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1]; break;
+                    case 62: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2]; break;
+                    case 63: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35]; break;
+                    case 64: tecPPBRValues = layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4]; break;
                     default:
                         {
                             sr.Close();
@@ -1309,7 +1273,7 @@ namespace Statistic
             if (!started)
                 return;
 
-            dbInterface.SetConnectionSettings(connSett);
+            dbInterface.SetConnectionSettings(connSettCommon);
             
             lock (lockValue)
             {
@@ -2139,6 +2103,7 @@ namespace Statistic
         {
             string requestInsert = "";
             string requestUpdate = "";
+            string str_btec_tg1 = INDEX_TEC_PBR_VALUES.BTEC_TG1.ToString ();
 
             for (int i = layoutForLoading.hour_start; i < layoutForLoading.hour_end; i++) {
                 // запись для этого часа имеется, модифицируем её
@@ -2148,61 +2113,61 @@ namespace Statistic
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
                                          //@"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PPBR = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PMAX = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PMIN = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         //@", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PPBR = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PMAX = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PMIN = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@", SN_TEC2 = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC3 = '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PPBR = '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PMAX = '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PMIN = '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PPBR = '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PMAX = '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PMIN = '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC5 = '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PPBR = '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PMAX = '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PMIN = '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"' WHERE " +
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
@@ -2212,61 +2177,61 @@ namespace Statistic
                                          @"', DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"', WR_DATE_TIME = now()" +
                                          //@"', SN_BTEC = '" + "0".ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PPBR = '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PMAX = '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_PMIN = '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         //@", SN_TEC2 = '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PPBR = '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PMAX = '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC2_PMIN = '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG1_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG2_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG35_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', BTEC_TG4_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         //@", SN_TEC2 = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].SN[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC2_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC3 = '" + layoutForLoading.TEC3_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PPBR = '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PMAX = '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_PMIN = '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG5_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG712_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC3_TG1314_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC4 = '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PPBR = '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PMAX = '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_PMIN = '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG3_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC4_TG48_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          //@"', SN_TEC5 = '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PPBR = '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PMAX = '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_PMIN = '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PPBR = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMAX = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_PMIN = '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG12_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PPBR = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMAX = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"' WHERE " +
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
@@ -2279,67 +2244,67 @@ namespace Statistic
                                      @"', '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                      @"', now()" +
                                      //HHH БТЭЦ
-                                     //@"', '" + layoutForLoading.BTEC_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.BTEC_TG1.PBR[i] + layoutForLoading.BTEC_TG2.PBR[i] + layoutForLoading.BTEC_TG35.PBR[i] + layoutForLoading.BTEC_TG4.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.BTEC_TG1.Pmax[i] + layoutForLoading.BTEC_TG2.Pmax[i] + layoutForLoading.BTEC_TG35.Pmax[i] + layoutForLoading.BTEC_TG4.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.BTEC_TG1.Pmin[i] + layoutForLoading.BTEC_TG2.Pmin[i] + layoutForLoading.BTEC_TG35.Pmin[i] + layoutForLoading.BTEC_TG4.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG35.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG35.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG35.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG4.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG4.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.BTEC_TG4.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //@"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG35].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.BTEC_TG4].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      //HHH
                                      //ТЭЦ-2
-                                     //@", '" + layoutForLoading.TEC2.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC2.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //@", '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC2].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      //ТЭЦ-3
-                                     //@"', '" + layoutForLoading.TEC3_TG1.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_TG1.PBR[i] + layoutForLoading.TEC3_TG5.PBR[i] + layoutForLoading.TEC3_TG712.PBR[i] + layoutForLoading.TEC3_TG1314.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_TG1.Pmax[i] + layoutForLoading.TEC3_TG5.Pmax[i] + layoutForLoading.TEC3_TG712.Pmax[i] + layoutForLoading.TEC3_TG1314.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC3_TG1.Pmin[i] + layoutForLoading.TEC3_TG5.Pmin[i] + layoutForLoading.TEC3_TG712.Pmin[i] + layoutForLoading.TEC3_TG1314.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG5.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG5.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG5.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG712.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG712.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG712.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1314.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1314.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC3_TG1314.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     //@"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].SN[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG5].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG712].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC3_TG1314].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      //ТЭЦ-4
                                      //@"', '" + layoutForLoading.TEC4.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC4_TG3.PBR[i] + layoutForLoading.TEC4_TG48.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC4_TG3.Pmax[i] + layoutForLoading.TEC4_TG48.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC4_TG3.Pmin[i] + layoutForLoading.TEC4_TG48.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG3.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG3.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG3.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG48.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG48.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC4_TG48.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG3].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC4_TG48].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      //ТЭЦ-5
                                      //@"', '" + layoutForLoading.TEC5_110.SN[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_TG12.PBR[i] + layoutForLoading.TEC5_TG36.PBR[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_TG12.Pmax[i] + layoutForLoading.TEC5_TG36.Pmax[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + (layoutForLoading.TEC5_TG12.Pmin[i] + layoutForLoading.TEC5_TG36.Pmin[i]).ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG12.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG12.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG12.Pmin[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG36.PBR[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG36.Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                     @"', '" + layoutForLoading.TEC5_TG36.Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + (layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i] + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i]).ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i].ToString(CultureInfo.InvariantCulture) +
+                                     @"', '" + layoutForLoading.m_arGTPs [(int) INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                      @"'),";
                 }
             }
@@ -2438,7 +2403,7 @@ namespace Statistic
             }
             try
             {
-                semaMain.Release(1);
+                semaDBThreadBiysk.Release(1);
             }
             catch
             {
@@ -2461,7 +2426,7 @@ namespace Statistic
             listenerIdAdmin = dbInterface.ListenerRegister();
             dbInterface.Start();
 
-            dbInterface.SetConnectionSettings(connSett);
+            dbInterface.SetConnectionSettings(connSettCommon);
 
             threadIsWorking = true;
 
@@ -2473,6 +2438,40 @@ namespace Statistic
 
             sem.WaitOne();
             taskThread.Start();
+
+            //Для особенной ТЭЦ (Бийск)
+            lock (dataInterface.lockData)
+            {
+                dataInterface.dataPresent = false;
+                dataInterface.request[1] = "";
+            }
+            foreach (TEC t in tec)
+            {
+                if (t.name.Contains ("Бийск") == true) {
+                    lock (t.dataInterfaceAdmin.lockData)
+                    {
+                        t.dataInterfaceAdmin.dataPresent = false;
+                        t.dataInterfaceAdmin.request[1] = "";
+                    }
+
+                    foreach (GTP g in t.GTP)
+                    {
+                        lock (g.dataInterfaceAdmin.lockData)
+                        {
+                            g.dataInterfaceAdmin.dataPresent = false;
+                            g.dataInterfaceAdmin.request[1] = "";
+                        }
+                    }
+                }
+                else
+                    ; //Не особенная ТЭЦ (Бийск)
+            }
+            workDBTreadBiysk = true;
+            semaDBThreadBiysk.WaitOne();
+            dbThreadBiysk = new Thread(new ParameterizedThreadStart(dbThread_Function));
+            dbThreadBiysk.Name = "РедактированиеПБР (Бийск)";
+            dbThreadBiysk.IsBackground = true;
+            dbThreadBiysk.Start(this);
         }
 
         public void StopDbInterface()
@@ -2504,6 +2503,48 @@ namespace Statistic
             dbInterface.Stop();
             dbInterface.ListenerUnregister(listenerIdTec);
             dbInterface.ListenerUnregister(listenerIdAdmin);
+
+            //bool joined;
+            workDBTreadBiysk = false;
+            lock (dataInterface.lockData)
+            {
+                dataInterface.request[1] = "";
+            }
+            foreach (TEC t in tec)
+            {
+                if (t.type () == TEC.TEC_TYPE.BIYSK) {
+                    lock (t.dataInterfaceAdmin.lockData)
+                    {
+                        t.dataInterfaceAdmin.request[1] = "";
+                    }
+
+                    foreach (GTP g in t.GTP)
+                    {
+                        lock (g.dataInterfaceAdmin.lockData)
+                        {
+                            g.dataInterfaceAdmin.request[1] = "";
+                        }
+                    }
+                }
+                else
+                    ; //Не Бийск
+            }
+            if (dbThreadBiysk.IsAlive)
+            {
+                try
+                {
+                    semaDBThreadBiysk.Release(1);
+                }
+                catch
+                {
+                }
+
+                joined = dbThreadBiysk.Join(5000);
+                if (!joined)
+                    dbThreadBiysk.Abort();
+                else
+                    ;
+            }
         }
 
         private bool StateRequest(StatesMachine state)
@@ -3055,9 +3096,9 @@ namespace Statistic
         {
             Admin a = (Admin)data;
             bool result;
-            while (a.workTread)
+            while (a.workDBTreadBiysk)
             {
-                a.semaMain.WaitOne();
+                a.semaDBThreadBiysk.WaitOne();
 
                 lock (a.dataInterface.lockData)
                 {
@@ -3094,82 +3135,92 @@ namespace Statistic
 
                 foreach (TEC t in a.tec)
                 {
-                    lock (t.dataInterfaceAdmin.lockData)
-                    {
-                        t.dataInterfaceAdmin.request[0] = t.dataInterfaceAdmin.request[1];
-                    }
-
-                    if (t.dataInterfaceAdmin.request[0] != "")
-                    {
-                        try
-                        {
-                            result = a.GetData(t.dataInterfaceAdmin.tableData, t.dataInterfaceAdmin.request[0]);
-                        }
-                        catch
-                        {
-                            result = false;
-                        }
-
+                    if (t.type () == TEC.TEC_TYPE.BIYSK) {
                         lock (t.dataInterfaceAdmin.lockData)
                         {
-                            if (t.dataInterfaceAdmin.request[0] == t.dataInterfaceAdmin.request[1])
+                            t.dataInterfaceAdmin.request[0] = t.dataInterfaceAdmin.request[1];
+                        }
+
+                        if (t.dataInterfaceAdmin.request[0] != "")
+                        {
+                            try
                             {
-                                if (result)
+                                result = a.GetData(t.dataInterfaceAdmin.tableData, t.dataInterfaceAdmin.request[0]);
+                            }
+                            catch
+                            {
+                                result = false;
+                            }
+
+                            lock (t.dataInterfaceAdmin.lockData)
+                            {
+                                if (t.dataInterfaceAdmin.request[0] == t.dataInterfaceAdmin.request[1])
                                 {
-                                    t.dataInterfaceAdmin.dataPresent = true;
+                                    if (result)
+                                    {
+                                        t.dataInterfaceAdmin.dataPresent = true;
+                                    }
+                                    else
+                                    {
+                                        t.dataInterfaceAdmin.dataError = true;
+                                    }
+                                    t.dataInterfaceAdmin.request[1] = "";
                                 }
-                                else
-                                {
-                                    t.dataInterfaceAdmin.dataError = true;
-                                }
-                                t.dataInterfaceAdmin.request[1] = "";
                             }
                         }
-                    }
+                        else
+                            ;
 
-                    if (t.GTP.Count > 1)
-                    {
-                        foreach (GTP g in t.GTP)
+                        if (t.GTP.Count > 1)
                         {
-                            lock (g.dataInterfaceAdmin.lockData)
+                            foreach (GTP g in t.GTP)
                             {
-                                g.dataInterfaceAdmin.request[0] = g.dataInterfaceAdmin.request[1];
-                            }
-
-                            if (g.dataInterfaceAdmin.request[0] != "")
-                            {
-                                try
-                                {
-                                    result = a.GetData(g.dataInterfaceAdmin.tableData, g.dataInterfaceAdmin.request[0]);
-                                }
-                                catch
-                                {
-                                    result = false;
-                                }
-
                                 lock (g.dataInterfaceAdmin.lockData)
                                 {
-                                    if (g.dataInterfaceAdmin.request[0] == g.dataInterfaceAdmin.request[1])
+                                    g.dataInterfaceAdmin.request[0] = g.dataInterfaceAdmin.request[1];
+                                }
+
+                                if (g.dataInterfaceAdmin.request[0] != "")
+                                {
+                                    try
                                     {
-                                        if (result)
+                                        result = a.GetData(g.dataInterfaceAdmin.tableData, g.dataInterfaceAdmin.request[0]);
+                                    }
+                                    catch
+                                    {
+                                        result = false;
+                                    }
+
+                                    lock (g.dataInterfaceAdmin.lockData)
+                                    {
+                                        if (g.dataInterfaceAdmin.request[0] == g.dataInterfaceAdmin.request[1])
                                         {
-                                            g.dataInterfaceAdmin.dataPresent = true;
+                                            if (result)
+                                            {
+                                                g.dataInterfaceAdmin.dataPresent = true;
+                                            }
+                                            else
+                                            {
+                                                g.dataInterfaceAdmin.dataError = true;
+                                            }
+                                            g.dataInterfaceAdmin.request[1] = "";
                                         }
-                                        else
-                                        {
-                                            g.dataInterfaceAdmin.dataError = true;
-                                        }
-                                        g.dataInterfaceAdmin.request[1] = "";
                                     }
                                 }
+                                else
+                                    ; //Пустой запрос
                             }
                         }
+                        else
+                            ; //Один ГТП
                     }
+                    else
+                        ; //Не Бийск
                 }
             }
             try
             {
-                a.semaMain.Release(1);
+                a.semaDBThreadBiysk.Release(1);
             }
             catch
             {
@@ -4092,6 +4143,509 @@ namespace Statistic
                 }
             }
 
+            return result;
+        }
+
+        private void GetDataTime()
+        {
+            Request("SELECT now()", null, 0);
+        }
+
+        private bool UpdateTime(DataTable table)
+        {
+            if (table.Rows.Count == 1)
+            {
+                serverTime = (DateTime)table.Rows[0][0];
+            }
+            else
+            {
+                DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
+                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
+                else
+                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+            }
+
+            return true;
+        }
+
+        private void GetDataAdminValues(TEC t, GTP gtp, DateTime date)
+        {
+            string select1 = "";
+            string select2 = "";
+
+            switch (t.name)
+            {
+                //case "БТЭЦ":
+                //    select1 = "BTEC";
+                //    select2 = "PPBR_BTEC";
+                //    break;
+                //case "ТЭЦ-2":
+                //    select1 = "TEC2";
+                //    select2 = "PPBR_TEC2";
+                //    break;
+                //case "ТЭЦ-3":
+                //    select1 = "TEC3";
+                //    select2 = "PPBR_TEC3";
+                //    break;
+                //case "ТЭЦ-4":
+                //    select1 = "TEC4";
+                //    select2 = "PPBR_TEC4";
+                //    break;
+                //case "ТЭЦ-5":
+                //    select1 = "TEC5";
+                //    select2 = "PPBR_TEC5";
+                //    break;
+                case "Бийск-ТЭЦ":
+                    select1 = "TEC_BIYSK";
+                    select2 = "PPBR_TEC_BIYSK";
+                    break;
+                default:
+                    break;
+            }
+
+            switch (gtp.name)
+            {
+                case "ГТП ТГ1,2":
+                    select1 += "_110";
+                    select2 += "_110";
+                    break;
+                case "ГТП ТГ3-8":
+                    select1 += "_35";
+                    select2 += "_35";
+                    break;
+                default:
+                    break;
+            }
+
+            string request = @"SELECT DATE, " + select1 + @"_REC, " + select1 + @"_IS_PER, " + select1 + @"_DIVIAT " +
+                             @" FROM ADMINVALUES " +
+                             @"WHERE DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' ORDER BY DATE";
+
+            Request(request, null, 0);
+        }
+
+        private bool UpdateAdminValues(DataTable table, DateTime date)
+        {
+            for (int i = 0, hour; i < table.Rows.Count; i++)
+            {
+                if (table.Rows[i][0] is System.DBNull)
+                {
+                    try
+                    {
+                        hour = ((DateTime)table.Rows[i][0]).Hour;
+                        if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                            hour = 24;
+                        else
+                            if (hour == 0)
+                                continue;
+
+                        values.plan[hour - 1] = 0/*(double)table.Rows[i][5]*/;
+                        values.recommendations[hour - 1] = 0;
+                        values.diviationPercent[hour - 1] = false;
+                        values.diviation[hour - 1] = 0;
+                    }
+                    catch
+                    {
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        hour = ((DateTime)table.Rows[i][0]).Hour;
+                        if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                            hour = 24;
+                        else
+                            if (hour == 0)
+                                continue;
+
+                        values.recommendations[hour - 1] = (double)table.Rows[i][1];
+                        values.diviationPercent[hour - 1] = (int)table.Rows[i][2] == 1;
+                        values.diviation[hour - 1] = (double)table.Rows[i][3];
+                        /*if (!(table.Rows[i][4] is System.DBNull))
+                            values.plan[hour - 1] = (double)table.Rows[i][5];
+                        else*/
+                        values.plan[hour - 1] = 0;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            return true;
+        }
+
+        private void GetDataAdminDates(DateTime date)
+        {
+            string request;
+
+            if (mcldrDate.SelectionStart.Date > date.Date)
+            {
+                date = mcldrDate.SelectionStart.Date;
+            }
+
+            request = @"SELECT DATE FROM ADMINVALUES WHERE " +
+                      @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' ORDER BY DATE ASC";
+
+            Request(request, null, 0);
+        }
+
+        private bool UpdateAdminDates(DataTable table, DateTime date)
+        {
+            for (int i = 0, hour; i < table.Rows.Count; i++)
+            {
+                try
+                {
+                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                        hour = 24;
+                    adminDates[hour - 1] = true;
+                }
+                catch
+                {
+                }
+            }
+            return true;
+        }
+
+        private void SetDataAdminValues(TEC t, GTP gtp, DateTime date)
+        {
+            int currentHour = serverTime.Hour;
+
+            date = date.Date;
+
+            if (serverTime.Date < date)
+                currentHour = 0;
+
+            string requestUpdate = "", requestInsert = "";
+
+            string name = "";
+
+            switch (t.name)
+            {
+                //case "БТЭЦ":
+                //    name = "BTEC";
+                //    break;
+                //case "ТЭЦ-2":
+                //    name = "TEC2";
+                //    break;
+                //case "ТЭЦ-3":
+                //    name = "TEC3";
+                //    break;
+                //case "ТЭЦ-4":
+                //    name = "TEC4";
+                //    break;
+                //case "ТЭЦ-5":
+                //    name = "TEC5";
+                //    break;
+                case "Бийск-ТЭЦ":
+                    name = "TEC_BIYSK";
+                    break;
+                default:
+                    break;
+            }
+
+            switch (gtp.name)
+            {
+                case "ГТП ТГ3-8":
+                    name += "_110";
+                    break;
+                case "ГТП ТГ1,2":
+                    name += "_35";
+                    break;
+                default:
+                    break;
+            }
+
+            for (int i = 0; i < 24; i++)
+            {
+                // перематываем записи на текущий час
+                if (i >= currentHour)
+                {
+                    // запись для этого часа имеется, модифицируем её
+                    if (adminDates[i])
+                    {
+                        requestUpdate += @"UPDATE ADMINVALUES SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                         @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
+                                         @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                         @"' WHERE " +
+                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                         @"'; ";
+                    }
+                    else
+                    {
+                        // запись отсутствует, запоминаем значения
+                        requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                         @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                         @"', " + (values.diviationPercent[i] ? "1" : "0") +
+                                         @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                         @"'),";
+                    }
+                }
+            }
+
+            // добавляем все записи, не найденные в базе
+            if (requestInsert != "")
+            {
+                requestInsert = @"INSERT INTO ADMINVALUES (DATE, " + name + @"_REC" +
+                                @", " + name + "_IS_PER" +
+                                @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+            }
+            string requestDelete = @"DELETE FROM ADMINVALUES WHERE " +
+                /*@"BTEC_REC = 0 AND BTEC_IS_PER = 0 AND BTEC_DIVIAT = 0 AND " +
+                @"TEC2_REC = 0 AND TEC2_IS_PER = 0 AND TEC2_DIVIAT = 0 AND " +
+                @"TEC3_110_REC = 0 AND TEC3_110_IS_PER = 0 AND TEC3_110_DIVIAT = 0 AND " +
+                @"TEC3_220_REC = 0 AND TEC3_220_IS_PER = 0 AND TEC3_220_DIVIAT = 0 AND " +
+                @"TEC4_REC = 0 AND TEC4_IS_PER = 0 AND TEC4_DIVIAT = 0 AND " +
+                @"TEC5_110_REC = 0 AND TEC5_110_IS_PER = 0 AND TEC5_110_DIVIAT = 0 AND " +
+                @"TEC5_220_REC = 0 AND TEC5_220_IS_PER = 0 AND TEC5_220_DIVIAT = 0 AND " +*/
+                                   @"TEC_BIYSK_35_REC = 0 AND TEC_BIYSK_35_IS_PER = 0 AND TEC_BIYSK_35_DIVIAT = 0 AND " +
+                                   @"TEC_BIYSK_110_REC = 0 AND TEC_BIYSK_110_IS_PER = 0 AND TEC_BIYSK_110_DIVIAT = 0 AND " +
+                                   @"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                                   @"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                   @"';";
+
+            Request(requestUpdate + requestInsert + requestDelete, null, 0);
+        }
+
+        private void GetDataAdminPass(bool disp)
+        {
+            if (disp)
+                Request("SELECT PASSWORD_DISP FROM TOOLS", null, 0);
+            else
+                Request("SELECT PASSWORD_ADMIN FROM TOOLS", null, 0);
+        }
+
+        private bool UpdateAdminPass(DataTable table)
+        {
+            if (table.Rows.Count != 0)
+                try
+                {
+                    if (table.Rows[0][0] is System.DBNull)
+                        passReceive = "";
+                    else
+                        passReceive = (string)table.Rows[0][0];
+                }
+                catch
+                {
+                    return false;
+                }
+            else
+                passReceive = null;
+            return true;
+        }
+
+        private void SetDataAdminPass(string password, bool disp, bool insert)
+        {
+            if (insert)
+                if (disp)
+                    Request("INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')", null, 0);
+                else
+                    Request("INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')", null, 0);
+            else
+                if (disp)
+                    Request("UPDATE TOOLS SET PASSWORD_DISP='" + password + "'", null, 0);
+                else
+                    Request("UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'", null, 0);
+        }
+
+        private void GetDataLayout(DateTime date)
+        {
+            string request = @"SELECT PPBRVSPBR.DATE_TIME, PPBRVSPBR.PBR_NUMBER FROM PPBRVSPBR " +
+                             @"WHERE PPBRVSPBR.DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND PPBRVSPBR.DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                             @"' AND MINUTE(PPBRVSPBR.DATE_TIME) = 0 ORDER BY PPBRVSPBR.DATE_TIME ASC";
+            Request(request, null, 0);
+        }
+
+        private bool UpdateLayoutValues(DataTable table, DateTime date)
+        {
+            int num = 0;
+            layoutForLoading.hour_start_in_db = 0;
+            layoutForLoading.name_in_db = "";
+            string name;
+            for (int i = 0, hour; i < table.Rows.Count; i++)
+            {
+                try
+                {
+                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                        hour = 24;
+                    layoutForLoading.existingHours[hour - 1] = true;
+                    name = (string)table.Rows[i][1];
+                    switch (name)
+                    {
+                        case "ППБР": num = 0; break;
+                        case "ПБР1": num = 0; break;
+                        case "ПБР4": num = 3; break;
+                        case "ПБР7": num = 6; break;
+                        case "ПБР10": num = 9; break;
+                        case "ПБР13": num = 12; break;
+                        case "ПБР16": num = 15; break;
+                        case "ПБР19": num = 18; break;
+                        case "ПБР22": num = 21; break;
+                        default: num = 0; break;
+                    }
+
+                    if (layoutForLoading.hour_start_in_db < num)
+                    {
+                        layoutForLoading.hour_start_in_db = num;
+                        layoutForLoading.name_in_db = name;
+                    }
+                }
+                catch
+                {
+                }
+            }
+            return true;
+        }
+
+        private void SetDataLayout(DateTime date)
+        {
+            string requestInsert = "";
+            string requestUpdate = "";
+
+            for (int i = layoutForLoading.hour_start; i < layoutForLoading.hour_end; i++)
+            {
+                // запись для этого часа имеется, модифицируем её
+                if (layoutForLoading.existingHours[i])
+                {
+                    if (layoutForLoading.name == "ППБР")
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                    // запись отсутствует, запоминаем значения
+                }
+            }
+
+            if (requestInsert != "")
+            {
+
+            }
+
+            //Request(requestInsert + requestUpdate, null, 0);
+        }
+
+        public bool Connect()
+        {
+            bool result = true;
+            string connectionStringNew = @"Server=" + connSettBiysk.server +
+                                         @";Database=" + connSettBiysk.dbName +
+                                         @";User Id=" + connSettBiysk.userName +
+                                         @";Password=" + connSettBiysk.password + @";";
+            string connectionStringOld;
+
+            //connectionStringNew = @"Server=localhost;Database=Statistic;User id=root;Password=;";
+
+            if (connectionStringNew != connection.ConnectionString)
+            {
+                if (!Disconnect())
+                    return false;
+
+                lock (lockValue)
+                {
+                    connectionStringOld = connection.ConnectionString;
+                    connection.ConnectionString = connectionStringNew;
+
+                    try
+                    {
+                        connection.Open();
+                        is_connection_error = false;
+                    }
+                    catch (MySqlException e)
+                    {
+                        MainForm.log.LogLock();
+                        string s;
+                        int pos;
+                        pos = connectionStringNew.IndexOf("Password");
+                        if (pos < 0)
+                            s = connectionStringNew;
+                        else
+                            s = connectionStringNew.Substring(0, pos);
+
+                        MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
+                        MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
+                        MainForm.log.LogToFile("Ошибка " + e.Message, false, false, false);
+                        MainForm.log.LogToFile(e.ToString(), false, false, false);
+                        MainForm.log.LogUnlock();
+
+                        //if (!is_connection_error)
+                        //    MessageBox.Show("Не удаётся соединиться с базой административных данных.\nПроверьте настройки подключения и состояние сети.\n\nДанные об ошибке сохранены в файл logDB.txt", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        is_connection_error = true;
+                        connection.ConnectionString = connectionStringOld;
+                        result = false;
+                    }
+                    catch
+                    {
+                        MainForm.log.LogLock();
+                        string s;
+                        int pos;
+                        pos = connectionStringNew.IndexOf("Password");
+                        if (pos < 0)
+                            s = connectionStringNew;
+                        else
+                            s = connectionStringNew.Substring(0, pos);
+
+                        MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
+                        MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
+                        MainForm.log.LogUnlock();
+
+                        //if (!is_connection_error)
+                        //    MessageBox.Show("Не удаётся соединиться с базой административных данных.\nПроверьте настройки подключения и состояние сети.\n\nДанные об ошибке сохранены в файл logDB.txt", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        is_connection_error = true;
+                        connection.ConnectionString = connectionStringOld;
+                        result = false;
+                    }
+                }
+            }
+            return result;
+        }
+
+        public bool Disconnect()
+        {
+            bool result = true;
+            if (connection.State == ConnectionState.Open)
+            {
+                lock (lockValue)
+                {
+                    try
+                    {
+                        connection.Close();
+                    }
+                    catch (MySqlException e)
+                    {
+                        MainForm.log.LogLock();
+                        MainForm.log.LogToFile("Ошибка закрытия соединения: " + e.Message, true, true, false);
+                        MainForm.log.LogToFile(e.ToString(), false, false, false);
+                        MainForm.log.LogUnlock();
+
+                        //MessageBox.Show("Не удаётся закрыть соединение с базой административных данных.\n\nДанные об ошибке сохранены в файл logDB.txt.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        result = false;
+                    }
+                    catch
+                    {
+                        MainForm.log.LogLock();
+                        MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
+                        MainForm.log.LogUnlock();
+
+                        //MessageBox.Show("Не удаётся закрыть соединение с базой административных данных.\n\nДанные об ошибке сохранены в файл logDB.txt.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        result = false;
+                    }
+                }
+                is_data_error = is_connection_error = false;
+                errored_state = false;
+            }
             return result;
         }
     }
