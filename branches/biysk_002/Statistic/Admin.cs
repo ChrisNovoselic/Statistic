@@ -58,9 +58,19 @@ namespace Statistic
             }
         }
 
+        public enum INDEX_TEC
+        {
+            BTEC, TEC2, TEC3, TEC4, TEC5,
+            COUNT_INDEX_TEC
+        }
+
         public enum INDEX_TEC_PBR_VALUES
         {
-            BTEC_TG1, BTEC_TG2, BTEC_TG35, BTEC_TG4, TEC2, TEC3_TG1, TEC3_TG712, TEC3_TG5, TEC3_TG1314, TEC4_TG3, TEC4_TG48, TEC5_TG12, TEC5_TG36,
+            BTEC_TG1, BTEC_TG2, BTEC_TG35, BTEC_TG4,
+            TEC2,
+            TEC3_TG1, TEC3_TG712, TEC3_TG5, TEC3_TG1314,
+            TEC4_TG3, TEC4_TG48,
+            TEC5_TG12, TEC5_TG36,
             COUNT_TEC_PBR_VALUES
         };
 
@@ -87,7 +97,7 @@ namespace Statistic
                 this.hour_end = 0;
                 this.name_in_db = "";
                 this.name = "";
-                //this.BTEC = new TecPPBRValues(1);
+
                 this.m_arGTPs = new TecPPBRValues[(int)INDEX_TEC_PBR_VALUES.COUNT_TEC_PBR_VALUES];
                 this.existingHours = new bool[24];
             }
@@ -234,16 +244,18 @@ namespace Statistic
             ParseError,
         }
 
-        private volatile DbDataInterface dataInterface;
-
         private volatile bool using_date;
 
         private bool[] adminDates;
         private bool[] PPBRDates;
 
+        //Для особкнной ТЭЦ (Бийск)
+        private volatile DbDataInterface dataInterface;
+        
         //private Thread dbThread;
         private Semaphore sema;
         //private volatile bool workTread;
+        //-------------------------
 
         private bool started;
 
@@ -468,7 +480,7 @@ namespace Statistic
             delegateFillData = new DelegateFunctionDate(FillData);
             delegateCalendarSetDate = new DelegateFunctionDate(CalendarSetDate);
 
-            dataInterface = new DbDataInterface();
+            //dataInterface = new DbDataInterface();
 
             stsStrip = sts;
 
@@ -2170,7 +2182,7 @@ namespace Statistic
                                          @"', TEC5_TG12_PMIN = '" + layoutForLoading.m_arGTPs[(int)INDEX_TEC_PBR_VALUES.TEC5_TG12].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', TEC5_TG36_PPBR = '" + layoutForLoading.m_arGTPs[(int)INDEX_TEC_PBR_VALUES.TEC5_TG36].PBR[i].ToString(CultureInfo.InvariantCulture) +
                                          @"', TEC5_TG36_PMAX = '" + layoutForLoading.m_arGTPs[(int)INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmax[i].ToString(CultureInfo.InvariantCulture) +
-                                         @"', TEC5_TG36_PMIN = '" + layoutForLoading.m_arGTPs[(int)INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i].ToString(CultureInfo.InvariantCulture) +
+                                         @"', " + INDEX_TEC_PBR_VALUES.TEC5_TG36.ToString () + "_PMIN = '" + layoutForLoading.m_arGTPs[(int)INDEX_TEC_PBR_VALUES.TEC5_TG36].Pmin[i].ToString(CultureInfo.InvariantCulture) +
                                          @"' WHERE " +
                                          @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                          @"'; ";
@@ -2349,9 +2361,9 @@ namespace Statistic
             }
         }
 
-        public bool GetResponse(out bool error, out DataTable table, bool tec)
+        public bool GetResponse(out bool error, out DataTable table, bool isTec)
         {
-            if (tec)
+            if (isTec)
                 return dbInterface.GetResponse(listenerIdTec, out error, out table);
             else
                 return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
@@ -2893,7 +2905,11 @@ namespace Statistic
                             requestIsOk = StateRequest(currentState);
                             if (!requestIsOk)
                                 break;
+                            else
+                                ;
                         }
+                        else
+                            ;
 
                         error = false;
                         for (int j = 0; j < MainForm.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
@@ -2906,31 +2922,39 @@ namespace Statistic
                     if (requestIsOk)
                     {
                         bool responseIsOk = true;
-                        if (dataPresent && !error && !newState)
+                        if ((dataPresent == true) && (error == false) && (newState == false))
                             responseIsOk = StateResponse(currentState, table);
+                        else
+                            ;
 
-                        if ((!responseIsOk || !dataPresent || error) && !newState)
+                        if (((responseIsOk == false) || (dataPresent == false) || (error == true)) && (newState == false))
                         {
                             StateErrors(currentState, !responseIsOk);
                             lock (lockValue)
                             {
-                                if (!newState)
+                                if (newState == false)
                                 {
                                     states.Clear();
                                     break;
                                 }
+                                else
+                                    ;
                             }
                         }
+                        else
+                            ;
                     }
                     else
                     {
                         lock (lockValue)
                         {
-                            if (!newState)
+                            if (newState == false)
                             {
                                 states.Clear();
                                 break;
                             }
+                            else
+                                ;
                         }
                     }
 
@@ -2940,8 +2964,13 @@ namespace Statistic
                     {
                         if (index == states.Count)
                             break;
+                        else
+                            ;
+
                         if (newState)
                             break;
+                        else
+                            ;
                         currentState = states[index];
                     }
                 }

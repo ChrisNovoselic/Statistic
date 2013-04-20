@@ -2,24 +2,70 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using System.Data;
+using MySql.Data.MySqlClient;
+
 namespace Statistic
 {
     public class InitTEC
     {
         public List<TEC> tec;
 
-        public InitTEC()
+        public InitTEC(ConnectionSettings connSett)
         {
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
 
+            bool err = false, bRes = false;
+            DataTable dataTableConnectSettings = new DataTable();
+
+            //ConnectionSettings connSett = new ConnectionSettings();
+            //connSett.server = "127.0.0.1";
+            //connSett.port = 3306;
+            //connSett.dbName = "techsite";
+            //connSett.userName = "techsite";
+            //connSett.password = "12345";
+            //connSett.ignore = false;
+
+            MySqlConnection connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
+
+            MySqlCommand commandMySQL = new MySqlCommand();
+            commandMySQL.Connection = connectionMySQL;
+            commandMySQL.CommandType = CommandType.Text;
+
+            MySqlDataAdapter adapterMySQL = new MySqlDataAdapter();
+            adapterMySQL.SelectCommand = commandMySQL;
+
+            commandMySQL.CommandText = "SELECT * FROM connect";
+
+            dataTableConnectSettings.Reset();
+            dataTableConnectSettings.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+            connectionMySQL.Open();
+
+            if (connectionMySQL.State != ConnectionState.Open)
+            {
+                try
+                {
+                    adapterMySQL.Fill(dataTableConnectSettings);
+                    bRes = true;
+                }
+                catch (MySqlException e)
+                {
+                }
+            }
+            else
+                ; //
+
+            connectionMySQL.Close();
+
+            /*
             int i, j, k; //Индексы для ТЭЦ, ГТП, ТГ
             tec = new List<TEC>();
 
             i = j = k = 0; //Обнуление индекса ТЭЦ, ГТП, ТГ
 
             //Создание объекта ТЭЦ (i = 0, Б)
-            tec.Add(new TEC());
-            tec[i].name = "БТЭЦ";
+            tec.Add(new TEC("БТЭЦ"));
             
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
@@ -58,8 +104,7 @@ namespace Statistic
 
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i ++; //Инкрементируем индекс ТЭЦ
-            tec.Add (new TEC ());
-            tec[i].name = "ТЭЦ-2";
+            tec.Add(new TEC("ТЭЦ-2"));
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "";
             tec[i].GTP[j].name = "";
@@ -80,8 +125,7 @@ namespace Statistic
 
             j = k = 0;
             i++;
-            tec.Add(new TEC());
-            tec[i].name = "ТЭЦ-3";
+            tec.Add(new TEC("ТЭЦ-3"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1";
@@ -135,8 +179,7 @@ namespace Statistic
             j = k = 0;
             i++;
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC());
-            tec[i].name = "ТЭЦ-4";
+            tec.Add(new TEC("ТЭЦ-4"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG3";
@@ -168,8 +211,7 @@ namespace Statistic
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i ++; //Инкрементируем индекс ТЭЦ
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add (new TEC ());
-            tec [i].name = "ТЭЦ-5";
+            tec.Add(new TEC("ТЭЦ-5"));
             //Создание ГТП и добавление к ТЭЦ
             tec [i].GTP.Add (new GTP (tec [i]));
             tec[i].GTP[j].field = "TG12";
@@ -201,8 +243,7 @@ namespace Statistic
             j = k = 0; //Обнуление индекса ГТП, ТГ
             i++; //Инкрементируем индекс ТЭЦ
             //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC());
-            tec[i].name = "Бийск-ТЭЦ";
+            tec.Add(new TEC("Бийск-ТЭЦ"));
             //Создание ГТП и добавление к ТЭЦ
             tec[i].GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG12";
@@ -228,6 +269,7 @@ namespace Statistic
             tec[i].GTP[j].TG[k++].name = "ТГ7";
             tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
             tec[i].GTP[j].TG[k++].name = "ТГ8";
+            */
         }
     }
 }

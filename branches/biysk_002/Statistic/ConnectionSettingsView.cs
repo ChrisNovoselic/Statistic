@@ -66,11 +66,11 @@ namespace Statistic
         private string settingsFile = "settings.ini";
         private bool mayToProtected;
 
-        private void ParseSettingsFile()
+        private bool ParseSettingsFile()
         {
+            bool bRes = true;
+
             mayToProtected = false;
-            if (!File.Exists(settingsFile))
-                return;
 
             char[] file = new char[1024];
             int count;
@@ -141,95 +141,133 @@ namespace Statistic
                     if (magic != MAGIC)
                     {
                         MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
+                        bRes = false;
                     }
                 }
             }
 
-            int pos1 = 0, pos2, port;
-            bool valid;
-            string st = sb.ToString(), ignore;
 
-            i = 0;
-            foreach (ConnectionSettings cs in connectionSettings)
+            if (bRes == true)
             {
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
-                {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].server = cs.server = st.Substring(pos1, pos2 - pos1);
-                pos1 = pos2 + 1;
+                int pos1 = 0, pos2, port;
+                bool valid;
+                string st = sb.ToString(), ignore;
 
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
+                i = 0;
+                //foreach (ConnectionSettings cs in connectionSettings)
+                while (bRes)
                 {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                valid = int.TryParse(st.Substring(pos1, pos2 - pos1), out port);
-                if (!valid)
-                {
-                    MessageBox.Show(this, "В файле настроек неправильно задан порт!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].port = cs.port = port;
-                pos1 = pos2 + 1;
+                    connectionSettingsEdit.Add(new ConnectionSettings());
 
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
-                {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].dbName = cs.dbName = st.Substring(pos1, pos2 - pos1);
-                pos1 = pos2 + 1;
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].server =
+                        //cs.server =
+                    st.Substring(pos1, pos2 - pos1);
+                    pos1 = pos2 + 1;
 
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
-                {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].userName = cs.userName = st.Substring(pos1, pos2 - pos1);
-                pos1 = pos2 + 1;
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    valid = int.TryParse(st.Substring(pos1, pos2 - pos1), out port);
+                    if (!valid)
+                    {
+                        MessageBox.Show(this, "В файле настроек неправильно задан порт!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].port =
+                        //cs.port =
+                    port;
+                    pos1 = pos2 + 1;
 
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
-                {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].password = cs.password = st.Substring(pos1, pos2 - pos1);
-                pos1 = pos2 + 1;
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].dbName =
+                        //cs.dbName =
+                    st.Substring(pos1, pos2 - pos1);
+                    pos1 = pos2 + 1;
 
-                pos2 = st.IndexOf(';', pos1);
-                if (pos2 < 0)
-                {
-                    MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].userName =
+                        //cs.userName =
+                    st.Substring(pos1, pos2 - pos1);
+                    pos1 = pos2 + 1;
+
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].password =
+                        //cs.password =
+                    st.Substring(pos1, pos2 - pos1);
+                    pos1 = pos2 + 1;
+
+                    pos2 = st.IndexOf(';', pos1);
+                    if (pos2 < 0)
+                    {
+                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    ignore = st.Substring(pos1, pos2 - pos1);
+                    if (ignore != "1" && ignore != "0")
+                    {
+                        MessageBox.Show(this, "В файле настроек неправильно задано игнорирование!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ClearSettings();
+                        bRes = false;
+                        break;
+                    }
+                    connectionSettingsEdit[i].ignore =
+                        //cs.ignore =
+                    (ignore == "1");
+
+                    //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
+
+                    pos1 = pos2 + 1;
+
+                    i++;
                 }
-                ignore = st.Substring(pos1, pos2 - pos1);
-                if (ignore != "1" && ignore != "0")
-                {
-                    MessageBox.Show(this, "В файле настроек неправильно задано игнорирование!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearSettings();
-                    return;
-                }
-                connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "1");
-                //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
-                pos1 = pos2 + 1;
-                i++;
             }
-            mayToProtected = true;
+            else
+                ;
+
+            if (bRes == true)
+                mayToProtected = true;
+            else
+                ;
+
+            return bRes;
         }
 
         private void ClearSettings()
@@ -319,7 +357,8 @@ namespace Statistic
             mayToProtected = true;
         }
 
-        public ConnectionSettingsView(List<TEC> tec, Admin admin)
+        //public ConnectionSettingsView(List<TEC> tec)
+        public ConnectionSettingsView()
         {
             InitializeComponent();
 
@@ -329,32 +368,39 @@ namespace Statistic
 
             cbxConnFor.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            foreach (TEC t in tec)
-            {
-                cbxConnFor.Items.Add(t.name);
-                connectionSettingsEdit.Add(new ConnectionSettings());
-                connectionSettings.Add(new ConnectionSettings());
-                t.connSett = connectionSettings[connectionSettings.Count - 1];
-            }
+            //foreach (TEC t in tec)
+            //{
+            //    cbxConnFor.Items.Add(t.name);
+            //    connectionSettingsEdit.Add(new ConnectionSettings());
+            //    connectionSettings.Add(new ConnectionSettings());
+            //    t.connSett = connectionSettings[connectionSettings.Count - 1];
+            //}
 
             cbxConnFor.Items.Add("Редактирование ПБР");
             connectionSettingsEdit.Add(new ConnectionSettings());
             connectionSettings.Add(new ConnectionSettings());
             connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
             connectionSettings[connectionSettings.Count - 1].port = 3306;
-            admin.connSett = connectionSettings[connectionSettings.Count - 1];
 
             cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
             closing = false;
-            ParseSettingsFile();
-
-            tbxServer.Text = connectionSettingsEdit[0].server;
-            nudnPort.Value = connectionSettingsEdit[0].port;
-            tbxDataBase.Text = connectionSettingsEdit[0].dbName;
-            tbxUserId.Text = connectionSettingsEdit[0].userName;
-            mtbxPass.Text = connectionSettingsEdit[0].password;
-            cbxIgnore.Checked = connectionSettingsEdit[0].ignore;
+            if (!File.Exists(settingsFile))
+                return;
+            else
+                if (ParseSettingsFile())
+                {
+                    tbxServer.Text = connectionSettingsEdit[0].server;
+                    nudnPort.Value = connectionSettingsEdit[0].port;
+                    tbxDataBase.Text = connectionSettingsEdit[0].dbName;
+                    tbxUserId.Text = connectionSettingsEdit[0].userName;
+                    mtbxPass.Text = connectionSettingsEdit[0].password;
+                    cbxIgnore.Checked = connectionSettingsEdit[0].ignore;
+                }
+                else
+                    ;
         }
+
+        public ConnectionSettings getConnSett() { return connectionSettings[connectionSettings.Count - 1]; }
 
         private void btnOk_Click(object sender, EventArgs e)
         {

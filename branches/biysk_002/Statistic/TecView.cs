@@ -17,8 +17,6 @@ namespace Statistic
 {
     public class TecView : Panel
     {
-        public enum TEC_VIEW_TYPE {COMMON, BIYSK};
-        
         private System.Windows.Forms.Panel pnlGraphHours;
         private System.Windows.Forms.Panel pnlGraphMins;
         private System.Windows.Forms.Panel pnlTG;
@@ -110,7 +108,6 @@ namespace Statistic
         private Admin admin;
         private GraphicsSettings graphSettings;
         private Parameters parameters;
-        private TEC_VIEW_TYPE m_type;
 
         private volatile bool currHour;
         private volatile int lastHour;
@@ -797,7 +794,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par, TEC_VIEW_TYPE type)
+        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
         {
             InitializeComponent();
 
@@ -810,8 +807,6 @@ namespace Statistic
             this.admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
-
-            this.m_type = type;
 
             currHour = true;
             lastHour = 0;
@@ -4130,11 +4125,11 @@ namespace Statistic
             {
                 case StatesMachine.Init:
                     ActionReport("Получение идентификаторов датчиков.");
-                    switch (m_type) {
-                        case TEC_VIEW_TYPE.COMMON:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
                             GetSensorsRequest();
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetSensors ();
                             break;
                         default:
@@ -4148,12 +4143,12 @@ namespace Statistic
                 case StatesMachine.CurrentHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetHoursRequest(selectedTime.Date);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetHours(selectedTime.Date);
                             break;
                         default:
@@ -4163,12 +4158,12 @@ namespace Statistic
                 case StatesMachine.CurrentMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetMinsRequest(lastHour);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetMins(lastHour);
                             break;
                         default:
@@ -4178,12 +4173,12 @@ namespace Statistic
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetHoursRequest(selectedTime.Date);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetHours(selectedTime.Date);
                             break;
                         default:
@@ -4193,11 +4188,11 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (m_type) {
-                        case TEC_VIEW_TYPE.COMMON:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
                             GetMinsRequest(lastHour);
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetMins(lastHour);
                             break;
                         default:
@@ -4207,12 +4202,12 @@ namespace Statistic
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     adminValuesReceived = false;
-                    switch (m_type)
+                    switch (tec.type ())
                     {
-                        case TEC_VIEW_TYPE.COMMON:
+                        case TEC.TEC_TYPE.COMMON:
                             GetAdminValuesRequest();
                             break;
-                        case TEC_VIEW_TYPE.BIYSK:
+                        case TEC.TEC_TYPE.BIYSK:
                             GetAdminValues();
                             break;
                         default:

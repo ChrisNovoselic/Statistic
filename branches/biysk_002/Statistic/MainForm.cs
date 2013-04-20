@@ -63,11 +63,9 @@ namespace Statistic
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 100;
 
-        public MainForm(List<TEC> tec)
+        public MainForm()
         {
-            this.tec = tec;
             InitializeComponent();
-            oldSelectedIndex = 0;
 
             lockEvent = new object();
 
@@ -75,6 +73,22 @@ namespace Statistic
             log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
 
             firstStart = true;
+
+            connSettForm = new ConnectionSettingsView();
+            if (connSettForm.Protected == false)
+            {
+            }
+            else
+            {
+                InitTEC initTec = new InitTEC(connSettForm.connectionSettings [0]);
+                InitializeComponent(initTec.tec);
+            }
+        }
+
+        private bool InitializeComponent(List <TEC> tec)
+        {
+            this.tec = tec;
+            oldSelectedIndex = 0;
 
             delegateStartWait = new DelegateFunc(StartWait);
             delegateStopWait = new DelegateFunc(StopWait);
@@ -86,6 +100,8 @@ namespace Statistic
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
             adminPanel = new Admin(tec, stsStrip);
+            adminPanel.connSett = connSettForm.getConnSett();
+
             changeMode = new ChangeMode(tec);
             passwordForm = new Password(adminPanel);
             setPasswordForm = new SetPassword(adminPanel);
@@ -95,7 +111,6 @@ namespace Statistic
             parametersForm = new Parameters(delegateParamsApply);
 
             adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-            connSettForm = new ConnectionSettingsView(tec, adminPanel);
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
@@ -109,7 +124,7 @@ namespace Statistic
             foreach (TEC t in tec)
             {
                 int index_gtp;
-                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
+                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                 tecViews.Add(tecView);
                 if (t.GTP.Count > 1)
@@ -117,7 +132,7 @@ namespace Statistic
                     index_gtp = 0;
                     foreach (GTP g in t.GTP)
                     {
-                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm, t.GetTypeTecView ());
+                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                         tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                         tecViews.Add(tecView);
                         index_gtp++;
@@ -129,6 +144,8 @@ namespace Statistic
             //f.Show();
 
             timer.Start();
+
+            return true;
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -144,15 +161,19 @@ namespace Statistic
             }
             else
             {
-                if (changeMode.admin_was_checked)
+                if ((! (changeMode == null)) && changeMode.admin_was_checked)
                 {
                     if (!adminPanel.MayToClose())
                         e.Cancel = true;
+                    else
+                        ;
                 }
+                else
+                    ;
 
                 timer.Stop();
 
-                if (!e.Cancel)
+                if ((e.Cancel == false) && (! (tec == null)))
                 {
                     foreach (TEC t in tec)
                         t.StopDbInterfaceForce();
@@ -169,7 +190,7 @@ namespace Statistic
             //md5 = new MD5CryptoServiceProvider();
             //StringBuilder strPasswordHashed = new StringBuilder ();
             //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
-            
+
             if (!connSettForm.Protected || passwordSettingsForm.ShowDialog() == DialogResult.Yes)
             {
                 DialogResult result;
@@ -185,6 +206,8 @@ namespace Statistic
                     adminPanel.Reinit();
                 }
             }
+            else
+                ;
         }
 
         public void StartWait()
@@ -230,86 +253,98 @@ namespace Statistic
 
         private void сменитьРежимToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int i;
-            TEC t;
-            int index;
-            // выбираем список отображаемых вкладок
-            if (changeMode.ShowDialog() == DialogResult.OK)
+            if (connSettForm.Protected == true)
             {
-                StartWait();
-                tclTecViews.TabPages.Clear();
-                selectedTecViews.Clear();
-
-                // отображаем вкладки ТЭЦ
-                for (i = 0; i < changeMode.tec_index.Count; i++)
+                int i;
+                TEC t;
+                int index;
+                // выбираем список отображаемых вкладок
+                if (changeMode.ShowDialog() == DialogResult.OK)
                 {
-                    if ((index = changeMode.was_checked.IndexOf(i)) >= 0)
-                    {
-                        t = tec[changeMode.tec_index[i]];
+                    StartWait();
+                    tclTecViews.TabPages.Clear();
+                    selectedTecViews.Clear();
 
-                        if (changeMode.gtp_index[changeMode.was_checked[index]] == -1) {
-                            tclTecViews.TabPages.Add(t.name);
+                    // отображаем вкладки ТЭЦ
+                    for (i = 0; i < changeMode.tec_index.Count; i++)
+                    {
+                        if ((index = changeMode.was_checked.IndexOf(i)) >= 0)
+                        {
+                            t = tec[changeMode.tec_index[i]];
+
+                            if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
+                            {
+                                tclTecViews.TabPages.Add(t.name);
+                            }
+                            else
+                                tclTecViews.TabPages.Add(t.name + " - " + t.GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+
+                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
+                            selectedTecViews.Add(tecViews[i]);
+
+                            tecViews[i].Activate(false);
+                            tecViews[i].Start();
                         }
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
-
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
-                        selectedTecViews.Add(tecViews[i]);
-
-                        tecViews[i].Activate(false);
-                        tecViews[i].Start();
+                        {
+                            tecViews[i].Stop();
+                        }
                     }
-                    else
-                    {
-                        tecViews[i].Stop();
-                    }
-                }
 
-                StopWait();
-                if (changeMode.admin_was_checked)
-                {
-                    if (prevStateIsAdmin || passwordForm.ShowDialog() == DialogResult.Yes)
-                    {
-                        StartWait();
-                        tclTecViews.TabPages.Add("Редактирование ПБР");
-
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
-
-                        adminPanel.Start();
-                        StopWait();
-                    }
-                    else
-                        changeMode.admin_was_checked = false;
-                }
-
-                prevStateIsAdmin = changeMode.admin_was_checked;
-
-                if (selectedTecViews.Count > 0)
-                {
-                    oldSelectedIndex = 0;
-                    selectedTecViews[oldSelectedIndex].Activate(true);
-                    adminPanel.Activate(false);
-                }
-                else
+                    StopWait();
                     if (changeMode.admin_was_checked)
-                        adminPanel.Activate(true);
+                    {
+                        if (prevStateIsAdmin || passwordForm.ShowDialog() == DialogResult.Yes)
+                        {
+                            StartWait();
+                            tclTecViews.TabPages.Add("Редактирование ПБР");
+
+                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
+
+                            adminPanel.Start();
+                            StopWait();
+                        }
+                        else
+                            changeMode.admin_was_checked = false;
+                    }
+
+                    prevStateIsAdmin = changeMode.admin_was_checked;
+
+                    if (selectedTecViews.Count > 0)
+                    {
+                        oldSelectedIndex = 0;
+                        selectedTecViews[oldSelectedIndex].Activate(true);
+                        adminPanel.Activate(false);
+                    }
+                    else
+                        if (changeMode.admin_was_checked)
+                            adminPanel.Activate(true);
+                }
             }
+            else
+                ; //Нет соединения с конфигурационной БД
         }
 
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (passwordForm.ShowDialog() == DialogResult.Yes)
-            {
-                setPasswordForm.ShowDialog();
-            }
+            if (connSettForm.Protected == true)
+                if (passwordForm.ShowDialog() == DialogResult.Yes)
+                    setPasswordForm.ShowDialog();
+                else
+                    ;
+            else
+                ;
         }
 
         private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (passwordSettingsForm.ShowDialog() == DialogResult.Yes)
-            {
-                setPasswordSettingsForm.ShowDialog();
-            }
+            if (connSettForm.Protected == true)
+                if (passwordSettingsForm.ShowDialog() == DialogResult.Yes)
+                    setPasswordSettingsForm.ShowDialog();
+                else
+                    ;
+            else
+                ;
         }
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)
@@ -455,10 +490,16 @@ namespace Statistic
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (панельГрафическихToolStripMenuItem.Checked)
-                graphicsSettingsForm.Show();
+            if (connSettForm.Protected == true)
+            {
+                if (панельГрафическихToolStripMenuItem.Checked)
+                    graphicsSettingsForm.Show();
+                else
+                    graphicsSettingsForm.Hide();
+            }
             else
-                graphicsSettingsForm.Hide();
+                ;
+
         }
 
         public void HideGraphicsSettings()
@@ -500,7 +541,10 @@ namespace Statistic
 
         private void параметрыToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            parametersForm.ShowDialog();
+            if (connSettForm.Protected == true)
+                parametersForm.ShowDialog();
+            else
+                ;
         }
     }
 }

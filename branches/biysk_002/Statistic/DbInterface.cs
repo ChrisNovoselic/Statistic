@@ -230,7 +230,7 @@ namespace Statistic
         {
             string request;
             bool result;
-            bool reconnection;
+            bool reconnection/* = false*/;
 
             while (threadIsWorking)
             {
@@ -335,12 +335,45 @@ namespace Statistic
 
         private bool ConnectMySQL()
         {
-            if (connectionMySQL.State == ConnectionState.Open)
-                return true;
-            if (connectionMySQL.State != ConnectionState.Closed)
-                return false;
+            bool result =false, bRes = false;
 
-            bool result = false;
+            if (connectionMySQL.State == ConnectionState.Open)
+                bRes = true;
+            else
+                ;
+
+            try
+            {
+                if (bRes == true)
+                    return bRes;
+                else
+                    bRes = true;
+            }
+            catch (Exception e)
+            {
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("Исключение обращения к переменной", true, true, false);
+                MainForm.log.LogToFile("Исключение " + e.Message, false, false, false);
+                MainForm.log.LogToFile(e.ToString(), false, false, false);
+                MainForm.log.LogUnlock();
+            }
+            catch
+            {
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("Исключение обращения к переменной", true, true, false);
+                MainForm.log.LogUnlock();
+            }
+
+
+            if (connectionMySQL.State != ConnectionState.Closed)
+                bRes = false;
+            else
+                ;
+
+            if (bRes == false)
+                return bRes;
+            else
+                ;
 
             lock (lockConnectionSettings)
             {
@@ -363,8 +396,10 @@ namespace Statistic
                     s = connectionMySQL.ConnectionString;
                 else
                     s = connectionMySQL.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, true);
 
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, true);
+                MainForm.log.LogUnlock();
             }
             catch (MySqlException e)
             {

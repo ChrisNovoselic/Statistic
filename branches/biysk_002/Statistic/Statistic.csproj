@@ -79,7 +79,9 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
-    <Compile Include="DbDataInterface.cs" />
+    <Compile Include="DbDataInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DbInterface.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Parameters.cs">

@@ -11,8 +11,12 @@ namespace Statistic
 {
     public class TEC
     {
+        public enum TEC_TYPE { COMMON, BIYSK };
+
         public string name;
         public List<GTP> GTP;
+
+        public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings connSett;
 
@@ -34,8 +38,10 @@ namespace Statistic
         public volatile DbDataInterface dataInterface;
         public volatile DbDataInterface dataInterfaceAdmin;
 
-        public TEC () {
+        public TEC (string name) {
             GTP = new List<GTP>();
+
+            this.name = name;
 
             is_data_error = is_connection_error = false;
 
@@ -122,13 +128,8 @@ namespace Statistic
             {
                 dbInterface.SetConnectionSettings(connSett);
             }
-        }
-
-        public TecView.TEC_VIEW_TYPE GetTypeTecView() {
-            if (name.IndexOf ("Бийск") > -1)
-                return TecView.TEC_VIEW_TYPE.BIYSK;
             else
-                return TecView.TEC_VIEW_TYPE.COMMON;
+                ;
         }
     }
 }
