@@ -72,6 +72,15 @@ namespace Statistic
             logPath = System.Environment.CurrentDirectory;
             log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
 
+            delegateStartWait = new DelegateFunc(StartWait);
+            delegateStopWait = new DelegateFunc(StopWait);
+
+            waitForm = new WaitForm();
+            delegateStopWaitForm = new DelegateFunc(waitForm.StopWaitForm);
+            delegateEvent = new DelegateFunc(EventRaised);
+            delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
+            delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
+
             firstStart = true;
 
             connSettForm = new ConnectionSettingsView();
@@ -90,17 +99,10 @@ namespace Statistic
             this.tec = tec;
             oldSelectedIndex = 0;
 
-            delegateStartWait = new DelegateFunc(StartWait);
-            delegateStopWait = new DelegateFunc(StopWait);
-
-            waitForm = new WaitForm();
-            delegateStopWaitForm = new DelegateFunc(waitForm.StopWaitForm);
-            delegateEvent = new DelegateFunc(EventRaised);
-            delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
-            delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
-
             adminPanel = new Admin(tec, stsStrip);
-            adminPanel.connSett = connSettForm.getConnSett();
+            //adminPanel.connSett = connSettForm.getConnSett();
+
+            adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
             changeMode = new ChangeMode(tec);
             passwordForm = new Password(adminPanel);
@@ -109,8 +111,6 @@ namespace Statistic
             setPasswordSettingsForm = new SetPasswordSettings(adminPanel);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             parametersForm = new Parameters(delegateParamsApply);
-
-            adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
@@ -372,7 +372,7 @@ namespace Statistic
             lblError.Text = lblDateError.Text = "";
             for (int i = 0; i < selectedTecViews.Count; i++)
             {
-                if (selectedTecViews[i].actioned_state && !selectedTecViews[i].tec.connSett.ignore)
+                if (selectedTecViews[i].actioned_state && !selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA].ignore)
                 {
                     if (selectedTecViews[i].isActive)
                     {
@@ -381,7 +381,7 @@ namespace Statistic
                     }
                 }
 
-                if (selectedTecViews[i].errored_state && !selectedTecViews[i].tec.connSett.ignore)
+                if (selectedTecViews[i].errored_state && !selectedTecViews[i].tec.connSetts[(int)CONN_SETT_TYPE.DATA].ignore)
                 {
                     have_eror = true;
                     if (selectedTecViews[i].isActive)

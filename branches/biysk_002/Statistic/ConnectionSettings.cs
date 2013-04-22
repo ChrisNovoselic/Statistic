@@ -4,8 +4,17 @@ using System.Text;
 using System.Net;
 using System.Windows.Forms;
 
+using MySql.Data.MySqlClient; //Для 'IsConnect'
+using System.Data;
+
 namespace Statistic
 {
+    public enum CONN_SETT_TYPE
+    {
+        DATA, ADMIN, PBR,
+        COUNT_CONN_SETT_TYPE
+    };
+
     public class ConnectionSettings
     {
         public volatile string server;
@@ -24,6 +33,7 @@ namespace Statistic
             IllegalSymbolDbName,
             IllegalSymbolUserName,
             IllegalSymbolPassword,
+            NotConnect
         }
 
         public ConnectionSettings()
@@ -107,6 +117,11 @@ namespace Statistic
                 //MessageBox.Show("Недопустимый символ в пароле пользователя.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return ConnectionSettingsError.IllegalSymbolPassword;
             }
+
+            //if (DbInterface.Request(this, "SELECT * FROM TEC_LIST").Rows.Count > 0)
+            //    return ConnectionSettingsError.NotConnect;
+            //else
+            //    ;
 
             return ConnectionSettingsError.NoError;
         }

@@ -250,10 +250,10 @@ namespace Statistic
         private bool[] PPBRDates;
 
         //Для особкнной ТЭЦ (Бийск)
-        private volatile DbDataInterface dataInterface;
+        //private volatile DbDataInterface dataInterface;
         
         //private Thread dbThread;
-        private Semaphore sema;
+        //private Semaphore sema;
         //private volatile bool workTread;
         //-------------------------
 
@@ -436,6 +436,8 @@ namespace Statistic
             started = false;
 
             this.tec = tec;
+
+            connSett = tec [0].connSetts [(int) CONN_SETT_TYPE.ADMIN];
 
             allGtps = new List<GTP>();
             oldValues = new OldValuesStruct[24];
@@ -1534,26 +1536,7 @@ namespace Statistic
             string select1 = "";
             string select2 = "";
 
-            switch (t.name)
-            {
-                case "БТЭЦ":
-                    select1 = "BTEC";
-                    break;
-                case "ТЭЦ-2":
-                    select1 = "TEC2";
-                    break;
-                case "ТЭЦ-3":
-                    select1 = "TEC3";
-                    break;
-                case "ТЭЦ-4":
-                    select1 = "TEC4";
-                    break;
-                case "ТЭЦ-5":
-                    select1 = "TEC5";
-                    break;
-                default:
-                    break;
-            }
+            select1 = t.field;
 
             if (gtp.field.Length > 0)
             {
@@ -1737,28 +1720,7 @@ namespace Statistic
 
         private string NameFieldOfRequest(TEC t, GTP gtp)
         {
-            string strRes = @"";
-
-            switch (t.name)
-            {
-                case "БТЭЦ":
-                    strRes = "BTEC";
-                    break;
-                case "ТЭЦ-2":
-                    strRes = "TEC2";
-                    break;
-                case "ТЭЦ-3":
-                    strRes = "TEC3";
-                    break;
-                case "ТЭЦ-4":
-                    strRes = "TEC4";
-                    break;
-                case "ТЭЦ-5":
-                    strRes = "TEC5";
-                    break;
-                default:
-                    break;
-            }
+            string strRes = @"" + t.field;
 
             if (gtp.field.Length > 0)
             {
@@ -2318,47 +2280,6 @@ namespace Statistic
                 dbInterface.Request(listenerIdTec, request);
             else
                 dbInterface.Request(listenerIdAdmin, request);
-        }
-
-        public void Request(string request, TEC t, int gtp)
-        {
-            if (t == null)
-            {
-                lock (dataInterface.lockData)
-                {
-                    dataInterface.request[1] = request;
-                    dataInterface.dataPresent = false;
-                    dataInterface.dataError = false;
-                }
-            }
-            else
-            {
-                if (gtp < 0)
-                {
-                    lock (t.dataInterfaceAdmin.lockData)
-                    {
-                        t.dataInterfaceAdmin.request[1] = request;
-                        t.dataInterfaceAdmin.dataPresent = false;
-                        t.dataInterfaceAdmin.dataError = false;
-                    }
-                }
-                else
-                {
-                    lock (t.GTP[gtp].dataInterfaceAdmin.lockData)
-                    {
-                        t.GTP[gtp].dataInterfaceAdmin.request[1] = request;
-                        t.GTP[gtp].dataInterfaceAdmin.dataPresent = false;
-                        t.GTP[gtp].dataInterfaceAdmin.dataError = false;
-                    }
-                }
-            }
-            try
-            {
-                sema.Release(1);
-            }
-            catch
-            {
-            }
         }
 
         public bool GetResponse(out bool error, out DataTable table, bool isTec)

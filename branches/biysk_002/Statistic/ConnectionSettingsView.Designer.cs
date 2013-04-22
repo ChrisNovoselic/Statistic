@@ -164,7 +164,7 @@ namespace Statistic
             this.nudnPort.TabIndex = 2;
             this.nudnPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.nudnPort.Value = new decimal(new int[] {
-            1433,
+            3306, //1433,
             0,
             0,
             0});
@@ -181,7 +181,7 @@ namespace Statistic
             // cbxIgnore
             // 
             this.cbxIgnore.AutoSize = true;
-            this.cbxIgnore.Checked = true;
+            this.cbxIgnore.Checked = false;
             this.cbxIgnore.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbxIgnore.Location = new System.Drawing.Point(130, 175);
             this.cbxIgnore.Name = "cbxIgnore";

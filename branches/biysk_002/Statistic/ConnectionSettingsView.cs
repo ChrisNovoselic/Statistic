@@ -79,7 +79,9 @@ namespace Statistic
             sr.Close();
 
             StringBuilder sb = new StringBuilder(1024);
-            int i = 0, j = 0, k = 3;
+            int i = 0, j = 0, k = 3,
+                countParts = 0;
+
             uint magic;
             while (i < count)
             {
@@ -149,115 +151,126 @@ namespace Statistic
 
             if (bRes == true)
             {
-                int pos1 = 0, pos2, port;
+                int pos1 = 0, pos2 = 0, port;
                 bool valid;
                 string st = sb.ToString(), ignore;
 
                 i = 0;
-                //foreach (ConnectionSettings cs in connectionSettings)
-                while (bRes)
-                {
-                    connectionSettingsEdit.Add(new ConnectionSettings());
 
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
+                pos1 = st.IndexOf('#', 0);
+                if (pos1 > 0) {
+                    countParts = System.Int32.Parse (st.Substring(0, pos1));
+                    pos1 ++;
+
+                    //foreach (ConnectionSettings cs in connectionSettings)
+                    while (i < countParts)
                     {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    connectionSettingsEdit[i].server =
-                        //cs.server =
-                    st.Substring(pos1, pos2 - pos1);
-                    pos1 = pos2 + 1;
+                        connectionSettingsEdit.Add(new ConnectionSettings());
+                        connectionSettings.Add(new ConnectionSettings());
+                    
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            //MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
 
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
-                    {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    valid = int.TryParse(st.Substring(pos1, pos2 - pos1), out port);
-                    if (!valid)
-                    {
-                        MessageBox.Show(this, "В файле настроек неправильно задан порт!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    connectionSettingsEdit[i].port =
-                        //cs.port =
-                    port;
-                    pos1 = pos2 + 1;
+                        connectionSettingsEdit[i].server =
+                        connectionSettings[i].server =
+                        st.Substring(pos1, pos2 - pos1);
+                        pos1 = pos2 + 1;
 
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
-                    {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            //MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        valid = int.TryParse(st.Substring(pos1, pos2 - pos1), out port);
+                        if (!valid)
+                        {
+                            //MessageBox.Show(this, "В файле настроек неправильно задан порт!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        connectionSettingsEdit[i].port =
+                        connectionSettings[i].port =
+                        port;
+                        pos1 = pos2 + 1;
+
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            //MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        connectionSettingsEdit[i].dbName =
+                        connectionSettings[i].dbName =
+                        st.Substring(pos1, pos2 - pos1);
+                        pos1 = pos2 + 1;
+
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            //MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        connectionSettingsEdit[i].userName =
+                        connectionSettings[i].userName =
+                        st.Substring(pos1, pos2 - pos1);
+                        pos1 = pos2 + 1;
+
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        connectionSettingsEdit[i].password =
+                        connectionSettings[i].password =
+                        st.Substring(pos1, pos2 - pos1);
+                        pos1 = pos2 + 1;
+
+                        pos2 = st.IndexOf(';', pos1);
+                        if (pos2 < 0)
+                        {
+                            MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        ignore = st.Substring(pos1, pos2 - pos1);
+                        if (ignore != "1" && ignore != "0")
+                        {
+                            MessageBox.Show(this, "В файле настроек неправильно задано игнорирование!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ClearSettings();
+                            bRes = false;
+                            break;
+                        }
+                        connectionSettingsEdit[i].ignore =
+                        connectionSettings[i].ignore =
+                        (ignore == "1");
+
+                        //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
+
+                        pos1 = pos2 + 1;
+
+                        i++;
                     }
-                    connectionSettingsEdit[i].dbName =
-                        //cs.dbName =
-                    st.Substring(pos1, pos2 - pos1);
-                    pos1 = pos2 + 1;
-
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
-                    {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    connectionSettingsEdit[i].userName =
-                        //cs.userName =
-                    st.Substring(pos1, pos2 - pos1);
-                    pos1 = pos2 + 1;
-
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
-                    {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    connectionSettingsEdit[i].password =
-                        //cs.password =
-                    st.Substring(pos1, pos2 - pos1);
-                    pos1 = pos2 + 1;
-
-                    pos2 = st.IndexOf(';', pos1);
-                    if (pos2 < 0)
-                    {
-                        MessageBox.Show(this, "Файл с насртойками имеет неправильный формат!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    ignore = st.Substring(pos1, pos2 - pos1);
-                    if (ignore != "1" && ignore != "0")
-                    {
-                        MessageBox.Show(this, "В файле настроек неправильно задано игнорирование!\nОбратитесь к поставщику программы.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        ClearSettings();
-                        bRes = false;
-                        break;
-                    }
-                    connectionSettingsEdit[i].ignore =
-                        //cs.ignore =
-                    (ignore == "1");
-
-                    //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
-
-                    pos1 = pos2 + 1;
-
-                    i++;
                 }
+                else
+                    ; //Не найдено количество блоков соединений
             }
             else
                 ;
@@ -282,6 +295,8 @@ namespace Statistic
 
             StringBuilder sb = new StringBuilder(1024);
 
+            sb.Append(connectionSettings.Count.ToString () + '#');
+            
             foreach (ConnectionSettings cs in connectionSettings)
             {
                 sb.Append(cs.server + ";");
@@ -377,15 +392,14 @@ namespace Statistic
             //}
 
             cbxConnFor.Items.Add("Редактирование ПБР");
-            connectionSettingsEdit.Add(new ConnectionSettings());
-            connectionSettings.Add(new ConnectionSettings());
-            connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
-            connectionSettings[connectionSettings.Count - 1].port = 3306;
 
-            cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
             closing = false;
-            if (!File.Exists(settingsFile))
-                return;
+            if (!File.Exists(settingsFile)) {
+                connectionSettingsEdit.Add(new ConnectionSettings());
+                connectionSettings.Add(new ConnectionSettings());
+                connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
+                connectionSettings[connectionSettings.Count - 1].port = 3306;
+            }
             else
                 if (ParseSettingsFile())
                 {
@@ -398,9 +412,15 @@ namespace Statistic
                 }
                 else
                     ;
+
+            cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
         }
 
         public ConnectionSettings getConnSett() { return connectionSettings[connectionSettings.Count - 1]; }
+
+        public ConnectionSettings getConnSett(int id_source) {
+            return connectionSettings[connectionSettings.Count - 1];
+        }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
@@ -417,27 +437,33 @@ namespace Statistic
             {
                 if ((error = connectionSettingsEdit[i].Validate()) != ConnectionSettings.ConnectionSettingsError.NoError)
                 {
+                    string msgError = string.Empty;
                     switch (error)
                     {
                         case ConnectionSettings.ConnectionSettingsError.WrongIp:
-                            MessageBox.Show(this, "Неправильный ip-адрес.\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            msgError = "Недопустимый IP-адрес";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.WrongPort:
-                            MessageBox.Show(this, "Порт должен лежать в пределах [0:65535].\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                           msgError = "Порт должен лежать в пределах [0:65535].";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.WrongDbName:
-                            MessageBox.Show(this, "Не задано имя базы данных.\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            msgError = "Не задано имя базы данных.";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.IllegalSymbolDbName:
-                            MessageBox.Show(this, "Недопустимый символ в имени базы.\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            msgError = "Недопустимый символ в имени базы.";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.IllegalSymbolUserName:
-                            MessageBox.Show(this, "Недопустимый символ в имени пользователя.\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            msgError = "Недопустимый символ в имени пользователя.";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.IllegalSymbolPassword:
-                            MessageBox.Show(this, "Недопустимый символ в пароле пользователя.\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            msgError = "Недопустимый символ в пароле пользователя.";
+                            break;
+                        case ConnectionSettings.ConnectionSettingsError.NotConnect:
+                            msgError = "Недопустимый символ в пароле пользователя.";
                             break;
                     }
+                    msgError += "\nПроверьте правильность настроек для соединения \"" + cbxConnFor.Items[i].ToString() + "\".";
+                    MessageBox.Show(this, msgError, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     closing = false;
                     return;
                 }

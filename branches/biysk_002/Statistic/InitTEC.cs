@@ -13,10 +13,36 @@ namespace Statistic
 
         public InitTEC(ConnectionSettings connSett)
         {
+            tec = new List<TEC> ();
+            
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
+            DataTable list_tec = DbInterface.Request (connSett, "SELECT * FROM TEC_LIST"),
+                    list_gtp = null, list_tg = null;
 
-            bool err = false, bRes = false;
-            DataTable dataTableConnectSettings = new DataTable();
+            for (int i = 0; i < list_tec.Rows.Count; i ++) {
+                //Создание объекта ТЭЦ
+                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString())); //"NAME_SHR"
+                tec[i].field = list_tec.Rows[i]["PREFIX"].ToString();
+
+                tec[i].connSettings (DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int)CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int)CONN_SETT_TYPE.PBR);
+
+                list_gtp = DbInterface.Request(connSett, "SELECT * FROM GTP_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString ());
+                for (int j = 0; j < list_gtp.Rows.Count; j ++) {
+                    tec[i].GTP.Add(new GTP(tec[i]));
+                    tec[i].GTP[j].field = list_gtp.Rows [j]["PREFIX"].ToString ();
+                    tec[i].GTP[j].name = list_gtp.Rows[j]["NAME"].ToString(); //list_gtp.Rows[j]["NAME_GNOVOS"]
+                    
+                    list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_GTP = " + list_gtp.Rows[j]["ID"].ToString());
+
+                    for (int k = 0; k < list_tg.Rows.Count; k++)
+                    {
+                        tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
+                        tec[i].GTP[j].TG[k].name = list_tg.Rows [k]["NAME"].ToString ();
+                    }
+                }
+            }
 
             //ConnectionSettings connSett = new ConnectionSettings();
             //connSett.server = "127.0.0.1";
@@ -25,38 +51,6 @@ namespace Statistic
             //connSett.userName = "techsite";
             //connSett.password = "12345";
             //connSett.ignore = false;
-
-            MySqlConnection connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            MySqlCommand commandMySQL = new MySqlCommand();
-            commandMySQL.Connection = connectionMySQL;
-            commandMySQL.CommandType = CommandType.Text;
-
-            MySqlDataAdapter adapterMySQL = new MySqlDataAdapter();
-            adapterMySQL.SelectCommand = commandMySQL;
-
-            commandMySQL.CommandText = "SELECT * FROM connect";
-
-            dataTableConnectSettings.Reset();
-            dataTableConnectSettings.Locale = System.Globalization.CultureInfo.InvariantCulture;
-
-            connectionMySQL.Open();
-
-            if (connectionMySQL.State != ConnectionState.Open)
-            {
-                try
-                {
-                    adapterMySQL.Fill(dataTableConnectSettings);
-                    bRes = true;
-                }
-                catch (MySqlException e)
-                {
-                }
-            }
-            else
-                ; //
-
-            connectionMySQL.Close();
 
             /*
             int i, j, k; //Индексы для ТЭЦ, ГТП, ТГ

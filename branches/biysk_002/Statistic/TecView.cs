@@ -2042,22 +2042,47 @@ namespace Statistic
         private void GetHoursRequest(DateTime date)
         {
             DateTime usingDate = date;
+            string request;
 
-            string request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
-                             @"DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                             @"FROM DEVICES " +
-                             @"INNER JOIN SENSORS ON " +
-                             @"DEVICES.ID = SENSORS.STATIONID " +
-                             @"INNER JOIN DATA ON " +
-                             @"DEVICES.CODE = DATA.OBJECT AND " +
-                             @"SENSORS.CODE = DATA.ITEM AND " +
-                             @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+            switch (tec.type ())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                                @"FROM DEVICES " +
+                                @"INNER JOIN SENSORS ON " +
+                                @"DEVICES.ID = SENSORS.STATIONID " +
+                                @"INNER JOIN DATA ON " +
+                                @"DEVICES.CODE = DATA.OBJECT AND " +
+                                @"SENSORS.CODE = DATA.ITEM AND " +
+                                @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+                                @"' AND " +
+                                @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                                @"' " +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                                @") " +
+                                @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
                              @"' AND " +
-                             @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                             @"' " +
-                             @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
                              @") " +
-                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                             @"ORDER BY IZM_TII.TIME";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
 
             tec.Request(request);
         }
@@ -2066,10 +2091,16 @@ namespace Statistic
         {
             if (hour == 24)
                 hour = 23;
+            else
+                ;
 
             DateTime usingDate = selectedTime.Date.AddHours(hour);
+            string request = string.Empty;
 
-            string request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
+            switch (tec.type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
                              @"DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
                              @"FROM DEVICES " +
                              @"INNER JOIN SENSORS ON " +
@@ -2084,6 +2115,26 @@ namespace Statistic
                              @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString +
                              @") " +
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.MINUTES] +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
 
             tec.Request(request);
         }
@@ -2096,26 +2147,8 @@ namespace Statistic
 
             DateTime date = dtprDate.Value.Date;
 
-            switch (tec.name) {
-                case "БТЭЦ":
-                    name1 = "BTEC";
-                    break;
-                case "ТЭЦ-2":
-                    name1 = "TEC2";
-                    break;
-                case "ТЭЦ-3":
-                    name1 = "TEC3";
-                    break;
-                case "ТЭЦ-4":
-                    name1 = "TEC4";
-                    break;
-                case "ТЭЦ-5":
-                    name1 = "TEC5";
-                    break;
-                default:
-                    break;
-            }
-
+            name1 = tec.field;
+            
             name2 = name1 + "_PBR";
 
             if (gtp < 0) {
@@ -2849,9 +2882,11 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                if (!DateTime.TryParse(table.Rows[0][1].ToString(), out dt))
                     return false;
-                if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[0][2].ToString(), out season))
                     return false;
                 GetSeason(dt, season, out season);
                 prev_season = season;
@@ -2912,10 +2947,10 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][6].ToString(), out dt))
+                    if (!DateTime.TryParse(table.Rows[i][1].ToString(), out dt))
                         return false;
 
-                    if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                    if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                         return false;
 
                     if (dt.CompareTo(dtNeeded) != 0)
@@ -2936,7 +2971,8 @@ namespace Statistic
                                 break;
                     }
 
-                    if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    //if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
                     tgTmp = FindTGById(id);
@@ -2944,7 +2980,8 @@ namespace Statistic
                     if (tgTmp == null)
                         return false;
 
-                    if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (!double.TryParse(table.Rows[i][3].ToString(), out value))
                         return false;
 
                     halfVal += value;
@@ -3038,26 +3075,6 @@ namespace Statistic
             lastReceivedHour = lastHour;
 
             return true;
-        }
-
-        private void GetHours(DateTime usingDate)
-        {
-
-            string request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                             @"FROM IZM_TII " +
-                             @"INNER JOIN CHANNELS ON " +
-                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                             @"INNER JOIN DEVICES ON " +
-                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
-                             @"' AND " +
-                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
-                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
-                             @") " +
-                             @"ORDER BY IZM_TII.TIME";
-
-            tec.Request(request, gtp);
         }
 
         private bool GetMinsResponse(DataTable table)
@@ -3220,30 +3237,6 @@ namespace Statistic
             }
 
             return true;
-        }
-
-        private void GetMins(int hour)
-        {
-            if (hour == 24)
-                hour = 23;
-
-            DateTime usingDate = selectedTime.Date.AddHours(hour);
-
-            string request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                             @"FROM IZM_TII " +
-                             @"INNER JOIN CHANNELS ON " +
-                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                             @"INNER JOIN DEVICES ON " +
-                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
-                             @"' AND " +
-                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
-                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.MINUTES] +
-                             @") " +
-                             @"ORDER BY IZM_TII.TIME";
-
-            tec.Request(request, gtp);
         }
 
         private bool LayoutIsBiggerByName(string l1, string l2)
@@ -3628,15 +3621,8 @@ namespace Statistic
 
             DateTime date = dtprDate.Value.Date;
 
-            switch (tec.name)
-            {
-                case "Бийск-ТЭЦ":
-                    name1 = "TEC_BIYSK";
-                    name2 = "PPBR_TEC_BIYSK";
-                    break;
-                default:
-                    break;
-            }
+            name1 = tec.field;
+            name2 = "PPBR_" + name1;
 
             if (gtp < 0)
             {
@@ -3710,7 +3696,7 @@ namespace Statistic
                              @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' ORDER BY DATE";
 
-            admin.Request(request, tec, gtp);
+            //admin.Request(request, tec, gtp);
         }
 
         private void ComputeRecomendation(int hour)
@@ -4143,61 +4129,22 @@ namespace Statistic
                 case StatesMachine.CurrentHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (tec.type ())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            GetHoursRequest(selectedTime.Date);
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            GetHours(selectedTime.Date);
-                            break;
-                        default:
-                            break;
-                    }
+                    GetHoursRequest(selectedTime.Date);
                     break;
                 case StatesMachine.CurrentMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (tec.type ())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            GetMinsRequest(lastHour);
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            GetMins(lastHour);
-                            break;
-                        default:
-                            break;
-                    }
+                    GetMinsRequest(lastHour);
                     break;
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
-                    switch (tec.type ())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            GetHoursRequest(selectedTime.Date);
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            GetHours(selectedTime.Date);
-                            break;
-                        default:
-                            break;
-                    }
+                    GetHoursRequest(selectedTime.Date);
                     break;
                 case StatesMachine.RetroMins:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
-                    switch (tec.type ()) {
-                        case TEC.TEC_TYPE.COMMON:
-                            GetMinsRequest(lastHour);
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            GetMins(lastHour);
-                            break;
-                        default:
-                            break;
-                    }
+                    GetMinsRequest(lastHour);
                     break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
@@ -4218,10 +4165,20 @@ namespace Statistic
         }
 
         private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
-        { 
+        {
+            error = false;
+            table = null;
+            
             switch (state)
             {
                 case StatesMachine.Init:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            return tec.GetResponse(out error, out table);
+                        case TEC.TEC_TYPE.BIYSK:
+                            return true;
+                    }
+                    break;
                 case StatesMachine.CurrentTime:
                 case StatesMachine.CurrentHours:
                 case StatesMachine.CurrentMins:
@@ -4233,7 +4190,7 @@ namespace Statistic
             }
 
             error = true;
-            table = null;
+
             return false;
         }
 
@@ -4243,7 +4200,14 @@ namespace Statistic
             switch (state)
             {
                 case StatesMachine.Init:
-                    result = GetSensorsResponse(table);
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetSensorsResponse(table);
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                    }
                     if (result)
                     {
                     }

@@ -398,7 +398,7 @@ namespace Statistic
                     s = connectionMySQL.ConnectionString.Substring(0, pos);
 
                 MainForm.log.LogLock();
-                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, true);
+                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
                 MainForm.log.LogUnlock();
             }
             catch (MySqlException e)
@@ -455,7 +455,7 @@ namespace Statistic
                     s = connectionMySQL.ConnectionString;
                 else
                     s = connectionMySQL.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, true);
+                MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
 
             }
             catch (MySqlException e)
@@ -468,7 +468,7 @@ namespace Statistic
             }
             catch
             {
-                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, true);
+                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
             }
             
             return result;
@@ -558,7 +558,7 @@ namespace Statistic
                     s = connectionMSSQL.ConnectionString;
                 else
                     s = connectionMSSQL.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, true);
+                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
             }
             catch (SqlException e)
             {
@@ -614,7 +614,7 @@ namespace Statistic
                     s = connectionMSSQL.ConnectionString;
                 else
                     s = connectionMSSQL.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, true);
+                MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
             }
             catch (SqlException e)
             {
@@ -626,7 +626,7 @@ namespace Statistic
             }
             catch
             {
-                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, true);
+                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
             }
 
             return result;
@@ -686,6 +686,47 @@ namespace Statistic
             }
 
             return result;
+        }
+
+        public static DataTable Request (ConnectionSettings connSett, string query) {
+            MySqlConnection m_connectionMySQL;
+            MySqlCommand m_commandMySQL;
+            MySqlDataAdapter m_adapterMySQL;
+
+            DataTable dataTableRes = new DataTable ();
+
+            m_connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
+
+            m_commandMySQL = new MySqlCommand();
+            m_commandMySQL.Connection = m_connectionMySQL;
+            m_commandMySQL.CommandType = CommandType.Text;
+
+            m_adapterMySQL = new MySqlDataAdapter();
+            m_adapterMySQL.SelectCommand = m_commandMySQL;
+
+            m_commandMySQL.CommandText = query;
+
+            dataTableRes.Reset();
+            dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+            m_connectionMySQL.Open();
+
+            if (m_connectionMySQL.State == ConnectionState.Open)
+            {
+                try
+                {
+                    m_adapterMySQL.Fill(dataTableRes);
+                }
+                catch (MySqlException e)
+                {
+                }
+            }
+            else
+                ; //
+
+            m_connectionMySQL.Close();
+
+            return dataTableRes;
         }
     }
 }
