@@ -16,16 +16,26 @@ namespace Statistic
             MSSQL
         }
 
-        private struct DbInterfaceListener
+        private class DbInterfaceListener
         {
             public volatile bool listenerActive; 
             public volatile bool dataPresent;
             public volatile bool dataError;
             public volatile string requestDB;
             public volatile DataTable dataTable;
+
+            public DbInterfaceListener () {
+                listenerActive =
+                dataPresent =
+                dataError =
+                false;
+
+                requestDB = string.Empty;
+                dataTable = new DataTable ();
+            }
         }
-        private DbInterfaceListener[] listeners;
-        private int maxListeners;
+        private List <DbInterfaceListener> m_listListeners;
+        //private int maxListeners;
 
         private object lockListeners;
         private object lockConnectionSettings;
@@ -40,27 +50,20 @@ namespace Statistic
         private SqlCommand commandMSSQL;
         private SqlDataAdapter adapterMSSQL;
 
-        private ConnectionSettings connectionSettings;
+        public ConnectionSettings connectionSettings;
         private bool needReconnect;
         private DbInterfaceType connectionType;
         private bool connected;
 
-        public DbInterface(DbInterfaceType type, int maxListenersAllowed)
+        public DbInterface(DbInterfaceType type)
         {
-            maxListeners = maxListenersAllowed;
+            //maxListeners = maxListenersAllowed;
             connectionType = type;
             lockListeners = new object();
             lockConnectionSettings = new object();
-            listeners = new DbInterfaceListener[maxListeners];
-            for (int i = 0; i < maxListeners; i++)
-            {
-                listeners[i] = new DbInterfaceListener();
-                listeners[i].dataTable = new DataTable();
-                listeners[i].listenerActive = false;
-                listeners[i].dataPresent = false;
-                listeners[i].dataError = false;
-                listeners[i].requestDB = "";
-            }
+            
+            //listeners = new DbInterfaceListener[maxListeners];
+            m_listListeners = new List <DbInterfaceListener> ();
 
             connected = false;
             needReconnect = false;
@@ -105,33 +108,22 @@ namespace Statistic
         {
             lock (lockListeners)
             {
-                for (int i = 0; i < maxListeners; i++)
-                {
-                    if (!listeners[i].listenerActive)
-                    {
-                        listeners[i].listenerActive = true;
-                        listeners[i].dataPresent = false;
-                        listeners[i].dataError = false; 
-                        listeners[i].requestDB = "";
-                        return i;
-                    }
-                }
+                m_listListeners.Add (new DbInterfaceListener ());
+                m_listListeners [m_listListeners.Count - 1].listenerActive = true;
+                return m_listListeners.Count - 1;
             }
 
-            return -1;
+            //return -1;
         }
 
         public void ListenerUnregister(int listenerId)
         {
-            if (listenerId >= maxListeners || listenerId < 0)
+            if ((! (listenerId < m_listListeners.Count)) || listenerId < 0)
                 return;
 
             lock (lockListeners)
             {
-                listeners[listenerId].listenerActive = false;
-                listeners[listenerId].dataPresent = false;
-                listeners[listenerId].dataError = false;
-                listeners[listenerId].requestDB = "";
+                m_listListeners.RemoveAt(listenerId);
             }
         }
 
@@ -148,9 +140,9 @@ namespace Statistic
             threadIsWorking = false;
             lock (lockListeners)
             {
-                for (int i = 0; i < maxListeners; i++)
+                for (int i = 0; i < m_listListeners.Count; i++)
                 {
-                    listeners[i].requestDB = "";
+                    m_listListeners [i].requestDB = "";
                 }
             }
             if (dbThread.IsAlive)
@@ -171,14 +163,14 @@ namespace Statistic
         
         public void Request(int listenerId, string request)
         {
-            if (listenerId >= maxListeners || listenerId < 0)
+            if ((! (listenerId < m_listListeners.Count)) || listenerId < 0)
                 return;
 
             lock (lockListeners)
             {
-                listeners[listenerId].requestDB = request;
-                listeners[listenerId].dataPresent = false;
-                listeners[listenerId].dataError = false;
+                m_listListeners[listenerId].requestDB = request;
+                m_listListeners[listenerId].dataPresent = false;
+                m_listListeners[listenerId].dataError = false;
             }
 
             try
@@ -192,16 +184,17 @@ namespace Statistic
 
         public bool GetResponse(int listenerId, out bool error, out DataTable table)
         {
-            if (listenerId >= maxListeners || listenerId < 0)
+            if ((!(listenerId < m_listListeners.Count)) || listenerId < 0)
             {
                 error = true;
                 table = null;
                 return false;
             }
 
-            error = listeners[listenerId].dataError;
-            table = listeners[listenerId].dataTable;
-            return listeners[listenerId].dataPresent;
+            error = m_listListeners[listenerId].dataError;
+            table = m_listListeners[listenerId].dataTable;
+
+            return m_listListeners[listenerId].dataPresent;
         }
 
         public void SetConnectionSettings(ConnectionSettings cs)
@@ -255,20 +248,20 @@ namespace Statistic
                 if (!connected) // не удалось подключиться - не пытаемся получить данные
                     continue;
 
-                for (int i = 0; i < maxListeners; i++)
+                for (int i = 0; i < m_listListeners.Count; i++)
                 {
                     lock (lockListeners)
                     {
-                        if (!listeners[i].listenerActive)
+                        if (! m_listListeners [i].listenerActive)
                             continue;
-                        request = listeners[i].requestDB;
+                        request = m_listListeners [i].requestDB;
                         if (request == "")
                             continue;
                     }
 
                     try
                     {
-                        result = GetData(listeners[i].dataTable, request);
+                        result = GetData(m_listListeners [i].dataTable, request);
                     }
                     catch
                     {
@@ -277,20 +270,20 @@ namespace Statistic
 
                     lock (lockListeners)
                     {
-                        if (!listeners[i].listenerActive)
+                        if (!m_listListeners[i].listenerActive)
                             continue;
 
-                        if (request == listeners[i].requestDB)
+                        if (request == m_listListeners[i].requestDB)
                         {
                             if (result)
                             {
-                                listeners[i].dataPresent = true;
+                                m_listListeners[i].dataPresent = true;
                             }
                             else
                             {
-                                listeners[i].dataError = true;
+                                m_listListeners[i].dataError = true;
                             }
-                            listeners[i].requestDB = "";
+                            m_listListeners[i].requestDB = "";
                         }
                     }
                 }

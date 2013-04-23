@@ -24,6 +24,42 @@ namespace Statistic
         public volatile int port;
         public volatile bool ignore;
 
+        bool Equals(ConnectionSettings cs)
+        {
+            return true;
+        }
+
+        public static bool operator ==(ConnectionSettings csLeft, ConnectionSettings csRight)
+        {
+            bool bRes = false;
+
+            if ((csLeft.server == csRight.server) &&
+                (csLeft.dbName == csRight.dbName) &&
+                (csLeft.userName == csRight.userName) &&
+                (csLeft.password == csRight.password) &&
+                (csLeft.port == csRight.port))
+                bRes = true;
+            else
+                ;
+
+            return bRes;
+        }
+
+        public static bool operator != (ConnectionSettings csLeft, ConnectionSettings csRight) {
+            bool bRes = false;
+
+            if ((! (csLeft.server == csRight.server)) ||
+                (! (csLeft.dbName == csRight.dbName)) ||
+                (! (csLeft.userName == csRight.userName)) ||
+                (! (csLeft.password == csRight.password)) ||
+                (! (csLeft.port == csRight.port)))
+                bRes = true;
+            else
+                ;
+
+            return bRes;
+        }
+
         public enum ConnectionSettingsError
         { 
             NoError,

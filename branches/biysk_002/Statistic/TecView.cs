@@ -1948,8 +1948,8 @@ namespace Statistic
 
             serverTime = selectedTime;
 
-            TimerCallback timerCallbackCurrent = new TimerCallback(TimerCurrent_Tick);
-            timerCurrent = new System.Threading.Timer(timerCallbackCurrent, null, 0, Timeout.Infinite);
+            //TimerCallback timerCallbackCurrent = new TimerCallback(TimerCurrent_Tick);
+            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), null, 0, Timeout.Infinite);
 
             update = false;
             SetNowDate(true);
@@ -2207,7 +2207,7 @@ namespace Statistic
                              @"' AND " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND MINUTE(" + admin.m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + admin.m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
-            admin.Request(tec.listenerAdmin, request);
+            admin.Request(tec.m_indxDbInterface, tec.listenerAdmin, request);
         }
 
         private void FillGridMins(int hour)
@@ -4214,7 +4214,7 @@ namespace Statistic
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.AdminValues:
                     //return admin.GetResponse(out error, out table, true);
-                    return admin.GetResponse(tec.listenerAdmin, out error, out table);
+                    return admin.GetResponse(tec.m_indxDbInterface, tec.listenerAdmin, out error, out table);
             }
 
             error = true;

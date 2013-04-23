@@ -21,24 +21,15 @@ namespace Statistic
 
         public ConnectionSettings [] connSetts;
         public int listenerAdmin;
+        public int m_indxDbInterface;
 
         private bool is_connection_error;
         private bool is_data_error;
-
-        //Для особенной ТЭЦ (Бийск)
-        //private object lockValue;
-
-        //private Thread dbThread;
-        private Semaphore sema;
-        //private volatile bool workTread;
         
         private int used;
 
         private DbInterface dbInterface;
         private int listenerId;
-
-        //public volatile DbDataInterface dataInterface;
-        //public volatile DbDataInterface dataInterfaceAdmin;
 
         public TEC (string name, string field) {
             GTP = new List<GTP>();
@@ -49,6 +40,7 @@ namespace Statistic
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             listenerAdmin = -1;
+            m_indxDbInterface = -1;
 
             is_data_error = is_connection_error = false;
 
@@ -69,7 +61,7 @@ namespace Statistic
         {
             if (used == 0)
             {
-                dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 1);
+                dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL);
                 listenerId = dbInterface.ListenerRegister();
                 dbInterface.Start();
                 dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);

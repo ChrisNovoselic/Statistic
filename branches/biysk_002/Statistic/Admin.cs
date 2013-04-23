@@ -210,9 +210,12 @@ namespace Statistic
         public volatile string m_strUsedAdminValues;
         public volatile string m_strUsedPPBRvsPBR;
 
-        private DbInterface dbInterface;
-        private int m_listenerIdCurrent;
-        private int listenerIdAdmin;
+        private List <DbInterface> m_listDbInterfaces;
+        private List <int> m_listListenerIdCurrent;
+        private int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
+
+        int m_indxDbInterfaceCommon,
+            m_listenerIdCommon;
 
         private enum StatesMachine
         {
@@ -432,6 +435,9 @@ namespace Statistic
 
             m_strUsedAdminValues = "AdminValuesNew";
             m_strUsedPPBRvsPBR = "PPBRvsPBRnew";
+
+            m_listDbInterfaces = new List <DbInterface> ();
+            m_listListenerIdCurrent = new List <int> ();
 
             started = false;
 
@@ -1235,8 +1241,10 @@ namespace Statistic
         {
             if (!started)
                 return;
+            else
+                ;
 
-            dbInterface.SetConnectionSettings(connSett);
+            InitDbInterfaces ();
 
             lock (lockValue)
             {
@@ -1507,7 +1515,7 @@ namespace Statistic
 
         private void GetCurrentTimeRequest()
         {
-            Request(listenerIdAdmin, "SELECT now()");
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
         }
 
         private bool GetCurrentTimeResponse(DataTable table)
@@ -1565,7 +1573,7 @@ namespace Statistic
                              @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
 
-            Request(listenerIdAdmin, request);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
             //SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.BTEC_PPBR
             //FROM AdminValues
             //LEFT JOIN PPBRvsPBR ON AdminValues.date = PPBRvsPBR.date_time
@@ -1648,7 +1656,7 @@ namespace Statistic
                       @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE ASC";
 
-            Request(listenerIdAdmin, request);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -1665,7 +1673,7 @@ namespace Statistic
                       @"' AND DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE_TIME ASC";
 
-            Request(listenerIdAdmin, request);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
         }
 
         private void ClearAdminDates()
@@ -1791,7 +1799,7 @@ namespace Statistic
                                    @"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"';";
 
-            Request(listenerIdAdmin, requestUpdate + requestInsert + requestDelete);
+            Request(m_indxDbInterfaceCommon, m_listListenerIdCurrent [0], requestUpdate + requestInsert + requestDelete);
         }
 
         private int getPBRNumber(int hour)
@@ -1913,7 +1921,7 @@ namespace Statistic
                                    @"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"';";
 
-            Request(listenerIdAdmin, requestUpdate + requestInsert + requestDelete);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
         }
 
         private void GetPassRequest(bool disp)
@@ -1927,7 +1935,7 @@ namespace Statistic
 
             
             request += " FROM TOOLS";
-            Request(listenerIdAdmin, request);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
         }
 
         private bool GetPassResponse(DataTable table)
@@ -1953,14 +1961,14 @@ namespace Statistic
         {
             if (insert)
                 if (disp)
-                    Request(listenerIdAdmin, "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')");
+                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')");
                 else
-                    Request(listenerIdAdmin, "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')");
+                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')");
             else
                 if (disp)
-                    Request(listenerIdAdmin, "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'");
+                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'");
                 else
-                    Request(listenerIdAdmin, "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'");
+                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'");
         }
 
         private void GetLayoutRequest(DateTime date)
@@ -1969,7 +1977,7 @@ namespace Statistic
                              @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 ORDER BY " + m_strUsedPPBRvsPBR + ".DATE_TIME ASC";
-            Request(listenerIdAdmin, request);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
         }
 
         private bool GetLayoutResponse(DataTable table, DateTime date)
@@ -2254,7 +2262,7 @@ namespace Statistic
                                 @") VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
 
-            Request(listenerIdAdmin, requestInsert + requestUpdate);
+            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestInsert + requestUpdate);
         }
 
         private void ErrorReport(string error_string)
@@ -2278,44 +2286,86 @@ namespace Statistic
             isActive = active;
         }
 
-        public void Request(int listenerId, string request)
+        public void Request(int indxDbInterface, int listenerId, string request)
         {
-            m_listenerIdCurrent = listenerId;
-            dbInterface.Request(m_listenerIdCurrent, request);
+            m_indxDbInterfaceCurrent = indxDbInterface;
+            m_listListenerIdCurrent[indxDbInterface] = listenerId;
+            m_listDbInterfaces[indxDbInterface].Request(m_listListenerIdCurrent[indxDbInterface], request);
         }
 
-        public bool GetResponse(int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
-            return dbInterface.GetResponse(listenerId, out error, out table);
-            m_listenerIdCurrent = -1;
+            if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (!(m_indxDbInterfaceCurrent < 0))) {
+                m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
+                m_indxDbInterfaceCurrent = -1;
+            }
+            else
+                ;
+
+            return m_listDbInterfaces[indxDbInterface].GetResponse(listenerId, out error, out table);
+            
             //if (isTec)
             //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
             //else
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
+        private void InitDbInterfaces () {
+            m_listDbInterfaces.Clear ();
+
+            m_listListenerIdCurrent.Clear();
+            m_indxDbInterfaceCurrent = -1;
+
+            m_indxDbInterfaceCommon = -1;
+            m_listenerIdCommon = -1;
+
+            foreach (TEC t in tec) {
+                bool isAlready = false;
+                foreach (DbInterface dbi in m_listDbInterfaces) {
+                    if (! (dbi.connectionSettings.Equals (t.connSetts [(int) CONN_SETT_TYPE.ADMIN]) == true))
+                    //if (! (t.connSetts [0] == cs))
+                    {
+                        isAlready = true;
+
+                        t.m_indxDbInterface = m_listDbInterfaces.IndexOf (dbi);
+                        t.listenerAdmin = m_listDbInterfaces [m_listDbInterfaces.Count - 1].ListenerRegister ();
+
+                        break;
+                    }
+                    else
+                        ;
+                }
+
+                if (isAlready == false) {
+                    m_listDbInterfaces.Add (new DbInterface (DbInterface.DbInterfaceType.MySQL));
+                    m_listListenerIdCurrent.Add (-1);
+
+                    t.m_indxDbInterface = m_listDbInterfaces.Count - 1;
+                    t.listenerAdmin = m_listDbInterfaces [m_listDbInterfaces.Count - 1].ListenerRegister ();
+
+                    if (m_indxDbInterfaceCommon < 0) {
+                        m_indxDbInterfaceCommon = m_listDbInterfaces.Count - 1;
+                        m_listenerIdCommon = m_listDbInterfaces[m_indxDbInterfaceCommon].ListenerRegister();
+                    }
+                    else
+                        ;
+
+                    m_listDbInterfaces [m_listDbInterfaces.Count - 1].SetConnectionSettings (t.connSetts [(int) CONN_SETT_TYPE.ADMIN]);
+
+                    m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
+                }
+                else
+                    ;
+            }
+        }
+
         public void StartDbInterface()
         {
-            m_listenerIdCurrent = -1;
-            
-            //dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 2);
-            dbInterface = new DbInterface(DbInterface.DbInterfaceType.MySQL, tec.Count + 1);
-            listenerIdAdmin = dbInterface.ListenerRegister();
-            
-            //int i = 0;
-            foreach (TEC t in tec) {
-                t.listenerAdmin = dbInterface.ListenerRegister();
-            }
-
-            dbInterface.Start();
-
-            connSett = tec[0].connSetts[(int)CONN_SETT_TYPE.ADMIN];
-
-            dbInterface.SetConnectionSettings(connSett);
+            InitDbInterfaces ();
 
             threadIsWorking = true;
 
-            taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
+            taskThread = new Thread (new ParameterizedThreadStart(TecView_ThreadFunction));
             taskThread.Name = "Интерфейс к данным";
             taskThread.IsBackground = true;
 
@@ -2351,13 +2401,19 @@ namespace Statistic
                     taskThread.Abort();
             }
 
-            dbInterface.Stop();
-            //dbInterface.ListenerUnregister(listenerIdTec);
+            m_listDbInterfaces [m_indxDbInterfaceCommon].ListenerUnregister (m_listenerIdCommon);
+            m_indxDbInterfaceCommon = -1;
+            m_listenerIdCommon = -1;
+
             foreach (TEC t in tec)
             {
-                dbInterface.ListenerUnregister(t.listenerAdmin);
+                m_listDbInterfaces [t.m_indxDbInterface].ListenerUnregister(t.listenerAdmin);
             }
-            dbInterface.ListenerUnregister(listenerIdAdmin);
+
+            foreach (DbInterface dbi in m_listDbInterfaces)
+            {
+                dbi.Stop ();
+            }
         }
 
         private bool StateRequest(StatesMachine state)
@@ -2456,26 +2512,38 @@ namespace Statistic
 
         private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
         {
-            switch (state)
+            if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (! (m_indxDbInterfaceCurrent < 0)))
             {
-                case StatesMachine.CurrentTime:
-                case StatesMachine.AdminValues:
-                case StatesMachine.AdminDates:
-                case StatesMachine.PPBRDates:
-                case StatesMachine.SaveValues:
-                case StatesMachine.SaveValuesPPBR:
-                //case StatesMachine.UpdateValuesPPBR:
-                case StatesMachine.GetPass:
-                    return GetResponse(m_listenerIdCurrent, out error, out table/*, false*/);
-                case StatesMachine.SetPassInsert:
-                case StatesMachine.SetPassUpdate:
-                case StatesMachine.LayoutGet:
-                case StatesMachine.LayoutSet:
-                    return GetResponse(m_listenerIdCurrent,  out error, out table/*, true*/);
-                default:
-                    error = true;
-                    table = null;
-                    return false;
+                switch (state)
+                {
+                    case StatesMachine.CurrentTime:
+                    case StatesMachine.AdminValues:
+                    case StatesMachine.AdminDates:
+                    case StatesMachine.PPBRDates:
+                    case StatesMachine.SaveValues:
+                    case StatesMachine.SaveValuesPPBR:
+                    //case StatesMachine.UpdateValuesPPBR:
+                    case StatesMachine.GetPass:
+                        return GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                    case StatesMachine.SetPassInsert:
+                    case StatesMachine.SetPassUpdate:
+                    case StatesMachine.LayoutGet:
+                    case StatesMachine.LayoutSet:
+                        return GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
+                    default:
+                        error = true;
+                        table = null;
+                        
+                        return false;
+                }
+            }
+            else {
+                //Ошибка???
+
+                error = true;
+                table = null;
+
+                return false;
             }
         }
 
