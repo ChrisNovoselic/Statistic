@@ -20,6 +20,7 @@ namespace Statistic
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
+        public int listenerAdmin;
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -39,12 +40,15 @@ namespace Statistic
         //public volatile DbDataInterface dataInterface;
         //public volatile DbDataInterface dataInterfaceAdmin;
 
-        public TEC (string name) {
+        public TEC (string name, string field) {
             GTP = new List<GTP>();
 
             this.name = name;
+            this.field = field;
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            listenerAdmin = -1;
 
             is_data_error = is_connection_error = false;
 

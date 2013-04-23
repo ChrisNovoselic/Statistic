@@ -437,8 +437,6 @@ namespace Statistic
 
             this.tec = tec;
 
-            connSett = tec [0].connSetts [(int) CONN_SETT_TYPE.ADMIN];
-
             allGtps = new List<GTP>();
             oldValues = new OldValuesStruct[24];
 
@@ -2292,6 +2290,13 @@ namespace Statistic
 
         public void StartDbInterface()
         {
+            int i = 0;
+            foreach (TEC t in tec) {
+                t.listenerAdmin = ++ i;
+            }
+            
+            connSett = tec[0].connSetts[(int)CONN_SETT_TYPE.ADMIN];
+            
             //dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 2);
             dbInterface = new DbInterface(DbInterface.DbInterfaceType.MySQL, 2);
             listenerIdTec = dbInterface.ListenerRegister();

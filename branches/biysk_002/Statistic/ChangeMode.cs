@@ -15,7 +15,7 @@ namespace Statistic
         public List<int> gtp_index;
         public List<int> was_checked;
         public bool admin_was_checked;
-        public bool ppbr_was_checked;
+        //public bool ppbr_was_checked;
         public bool closing;
 
         public ChangeMode(List<TEC> tec)
@@ -51,7 +51,7 @@ namespace Statistic
 
             clbMode.Items.Add("Редактирование ПБР");
             
-            clbMode.Items.Add("Назначение ПБР");
+            //clbMode.Items.Add("Назначение ПБР");
             
             closing = false;
         }
@@ -103,11 +103,16 @@ namespace Statistic
             btnOk.Focus();
         }
 
-        private void btnClearAll_Click(object sender, EventArgs e)
+        public void btnClearAll_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < clbMode.Items.Count; i++)
                 clbMode.SetItemChecked(i, false);
             btnOk.Focus();
+        }
+
+        private void ChangeMode_Shown(object sender, EventArgs e)
+        {
+            clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
         }
     }
 }

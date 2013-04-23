@@ -15,7 +15,7 @@ namespace Statistic
         public bool[] receivedHourHalf2;
         public bool receivedHourHalf1Addon;
         public bool receivedHourHalf2Addon;
-        public int id;
+        //public int id;
         public int [] ids; //Для особенной ТЭЦ (Бийск)
         public GTP gtp;
 

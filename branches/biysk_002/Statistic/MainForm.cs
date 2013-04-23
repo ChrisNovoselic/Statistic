@@ -184,6 +184,34 @@ namespace Statistic
 
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (tclTecViews.TabPages.Count > 0)
+                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return ; //e.Cancel = true;
+                }
+                else
+                {
+                    StartWait();
+                    tclTecViews.TabPages.Clear();
+                    selectedTecViews.Clear();
+                    
+                    for (int i = 0; i < changeMode.tec_index.Count; i++)
+                    {
+                        tecViews [i].Stop ();
+                    }
+
+                    changeMode.btnClearAll_Click(changeMode, new EventArgs ());
+
+                    changeMode.admin_was_checked = false;
+                    prevStateIsAdmin = changeMode.admin_was_checked;
+
+                    StopWait();
+
+                    this.Focus ();
+                }
+            else
+                ;
+
             //???
             //string strPassword = "password";
             //MD5CryptoServiceProvider md5;
@@ -195,9 +223,15 @@ namespace Statistic
             {
                 DialogResult result;
                 result = connSettForm.ShowDialog();
-
                 if (result == DialogResult.Yes)
                 {
+                    tecViews.Clear ();
+                    
+                    timer.Stop();
+                    adminPanel.StopDbInterface();
+
+                    InitializeComponent(new InitTEC(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]).tec);
+
                     foreach (TecView t in tecViews)
                     {
                         t.Reinit();

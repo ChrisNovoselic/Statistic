@@ -13,7 +13,7 @@ namespace Statistic
     {
         private List<ConnectionSettings> connectionSettingsEdit;
         public List<ConnectionSettings> connectionSettings;
-        public List<TEC> tec;
+        //public List<TEC> tec;
 
         private bool closing;
         private int oldSelectedIndex;
@@ -377,7 +377,7 @@ namespace Statistic
         {
             InitializeComponent();
 
-            this.tec = tec;
+            //this.tec = tec;
             connectionSettingsEdit = new List<ConnectionSettings>();
             connectionSettings = new List<ConnectionSettings>();
 
@@ -391,7 +391,7 @@ namespace Statistic
             //    t.connSett = connectionSettings[connectionSettings.Count - 1];
             //}
 
-            cbxConnFor.Items.Add("Редактирование ПБР");
+            cbxConnFor.Items.Add("БД конфигурации");
 
             closing = false;
             if (!File.Exists(settingsFile)) {

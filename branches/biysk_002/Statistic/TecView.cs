@@ -2100,8 +2100,8 @@ namespace Statistic
             switch (tec.type())
             {
                 case TEC.TEC_TYPE.COMMON:
-                    request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
-                             @"DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
                              @"FROM DEVICES " +
                              @"INNER JOIN SENSORS ON " +
                              @"DEVICES.ID = SENSORS.STATIONID " +
@@ -2117,7 +2117,8 @@ namespace Statistic
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
                              @"FROM IZM_TII " +
                              @"INNER JOIN CHANNELS ON " +
                              @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
@@ -2642,10 +2643,10 @@ namespace Statistic
                 valuesMins.valuesUDGe[i] = 0;
         }
 
-        private TG FindTGById(int id)
+        private TG FindTGById(int id, int id_type)
         {
             for (int i = 0; i < sensorId2TG.Length; i++)
-                if (sensorId2TG[i].id == id)
+                if (sensorId2TG[i].ids [id_type] == id)
                     return sensorId2TG[i];
 
             return null;
@@ -2720,7 +2721,9 @@ namespace Statistic
                             if (tec.GTP[j].TG[k].name == s)
                             {
                                 found = true;
-                                tec.GTP[j].TG[k].id = int.Parse(table.Rows[i][1].ToString());
+                                tec.GTP[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
+                                tec.GTP[j].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                                int.Parse(table.Rows[i][1].ToString());
                                 sensorId2TG[t] = tec.GTP[j].TG[k];
                                 t++;
                                 break;
@@ -2734,7 +2737,9 @@ namespace Statistic
                     {
                         if (tec.GTP[gtp].TG[k].name == s)
                         {
-                            tec.GTP[gtp].TG[k].id = int.Parse(table.Rows[i][1].ToString());
+                            tec.GTP[gtp].TG[k].ids[(int) TG.ID_TIME.MINUTES] =
+                            tec.GTP[gtp].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                            int.Parse(table.Rows[i][1].ToString());
                             sensorId2TG[t] = tec.GTP[gtp].TG[k];
                             t++;
                             break;
@@ -2749,11 +2754,11 @@ namespace Statistic
                 {
                     if (sensorsString == "")
                     {
-                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].id.ToString();
+                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                     else
                     {
-                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].id.ToString();
+                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                 }
                 else
@@ -2975,7 +2980,7 @@ namespace Statistic
                     if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id);
+                    tgTmp = FindTGById(id, (int) TG.ID_TIME.HOURS);
 
                     if (tgTmp == null)
                         return false;
@@ -3109,9 +3114,9 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                if (!DateTime.TryParse(table.Rows[0][1].ToString(), out dt))
                     return false;
-                if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[0][2].ToString(), out season))
                     return false;
                 need_season = max_season = season;
                 min = (int)(dt.Minute / 3);
@@ -3134,7 +3139,7 @@ namespace Statistic
 
             for (i = 0; i < table.Rows.Count; i++)
             {
-                if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                     return false;
                 if (season > max_season)
                     max_season = season;
@@ -3180,9 +3185,9 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][6].ToString(), out dt))
+                    if (!DateTime.TryParse(table.Rows[i][1].ToString(), out dt))
                         return false;
-                    if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                    if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                         return false;
 
                     if (season != need_season)
@@ -3197,15 +3202,15 @@ namespace Statistic
                         break;
                     }
 
-                    if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id);
+                    tgTmp = FindTGById(id, (int) TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
 
-                    if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (!double.TryParse(table.Rows[i][3].ToString(), out value))
                         return false;
 
                     minVal += value;
@@ -3903,6 +3908,51 @@ namespace Statistic
             MessageBox.Show(this, "", caption, MessageBoxButtons.OK);
         }
 
+        object[] generateValues(DateTime dt, int indx_tg, int indx_halfhours, int indx_id_time, int season)
+        {
+            //Согласно структуры запросов 'GetHoursRequest' и 'GetMinsRequest'
+            int indx_season = 2; //8
+            object [] resValues = new object [9];
+
+            //resValues[0] = "ТГ-" + indx_tg;
+            //resValues[1] = 0;
+            //resValues[2] = 0;
+            //resValues[3] = 0;
+            //resValues[4] = 0;
+            //resValues[5] = 30 + indx_halfhours * 2;
+            //resValues[6] = dt;
+            //resValues[7] = sensorId2TG[indx_tg].ids[indx_id_time];
+
+            resValues[0] = sensorId2TG[indx_tg].ids[indx_id_time];
+            resValues[1] = dt;
+            //2 - season
+            resValues[3] = 30 + indx_halfhours * 2;
+            resValues[4] = "ТГ-" + indx_tg;
+            resValues[5] = 0;
+            resValues[6] = 0;
+            resValues[7] = 0;
+            resValues[8] = 0;
+
+            if (season == 0) //Нет перехода на зимнее/летнее время
+                resValues[indx_season] = dt.Year * 2 + 1;
+            else
+                if (season == -1) //С переходом на зимнее время
+                    if (indx_halfhours < 6)
+                        resValues[indx_season] = dt.Year * 2 + 1;
+                    else
+                        resValues[indx_season] = dt.Year * 2 + 2;
+                else
+                    if (season == 1) //С переходом на летнее время
+                        if (indx_halfhours < 4)
+                            resValues[indx_season] = dt.Year * 2;
+                        else
+                            resValues[indx_season] = dt.Year * 2 + 1;
+                    else
+                        ;                
+
+            return resValues;
+        }
+        
         void GenerateHoursTable(seasonJumpE season, int hours, DataTable table)
         {
             int count = hours * 2;
@@ -3917,17 +3967,7 @@ namespace Statistic
                 {
                     for (int j = 0; j < countTG; j++)
                     {
-                        object[] values = new object[9];
-                        values[0] = "ТГ-" + j;
-                        values[1] = 0;
-                        values[2] = 0;
-                        values[3] = 0;
-                        values[4] = 0;
-                        values[5] = 30 + i * 2;
-                        values[6] = date;
-                        values[7] = sensorId2TG[j].id;
-                        values[8] = date.Year * 2 + 1;
-                        table.Rows.Add(values);
+                        table.Rows.Add(generateValues (date, j, i, (int) TG.ID_TIME.HOURS, 0));
                     }
 
                     date = date.AddMinutes(30);
@@ -3942,36 +3982,23 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            if (i < 6)
-                                values[8] = date.Year * 2 + 1;
-                            else
-                                values[8] = date.Year * 2 + 2;
-                            table.Rows.Add(values);
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                         }
                         if (i == 4 || i == 5)
                         {
                             for (int j = 0; j < countTG; j++)
                             {
-                                object[] values = new object[9];
-                                values[0] = "ТГ-" + j;
-                                values[1] = 0;
-                                values[2] = 0;
-                                values[3] = 0;
-                                values[4] = 0;
-                                values[5] = 30 + i * 2;
-                                values[6] = date;
-                                values[7] = sensorId2TG[j].id;
-                                values[8] = date.Year * 2 + 2;
-                                table.Rows.Add(values);
+                                //object[] values = new object[9];
+                                //values[0] = "ТГ-" + j;
+                                //values[1] = 0;
+                                //values[2] = 0;
+                                //values[3] = 0;
+                                //values[4] = 0;
+                                //values[5] = 30 + i * 2;
+                                //values[6] = date;
+                                //values[7] = sensorId2TG[j].id;
+                                //values[8] = date.Year * 2 + 2;
+                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                             }
                         }
 
@@ -3987,20 +4014,20 @@ namespace Statistic
                         {
                             for (int j = 0; j < countTG; j++)
                             {
-                                object[] values = new object[9];
-                                values[0] = "ТГ-" + j;
-                                values[1] = 0;
-                                values[2] = 0;
-                                values[3] = 0;
-                                values[4] = 0;
-                                values[5] = 30 + i * 2;
-                                values[6] = date;
-                                values[7] = sensorId2TG[j].id;
-                                if (i < 4)
-                                    values[8] = date.Year * 2;
-                                else
-                                    values[8] = date.Year * 2 + 1;
-                                table.Rows.Add(values);
+                                //object[] values = new object[9];
+                                //values[0] = "ТГ-" + j;
+                                //values[1] = 0;
+                                //values[2] = 0;
+                                //values[3] = 0;
+                                //values[4] = 0;
+                                //values[5] = 30 + i * 2;
+                                //values[6] = date;
+                                //values[7] = sensorId2TG[j].id;
+                                //if (i < 4)
+                                //    values[8] = date.Year * 2;
+                                //else
+                                //    values[8] = date.Year * 2 + 1;
+                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, 1));
                             }
                         }
 
@@ -4024,17 +4051,17 @@ namespace Statistic
                 {
                     for (int j = 0; j < countTG; j++)
                     {
-                        object[] values = new object[9];
-                        values[0] = "ТГ-" + j;
-                        values[1] = 0;
-                        values[2] = 0;
-                        values[3] = 0;
-                        values[4] = 0;
-                        values[5] = 30 + i * 2;
-                        values[6] = date;
-                        values[7] = sensorId2TG[j].id;
-                        values[8] = date.Year * 2 + 1;
-                        table.Rows.Add(values);
+                        //object[] values = new object[9];
+                        //values[0] = "ТГ-" + j;
+                        //values[1] = 0;
+                        //values[2] = 0;
+                        //values[3] = 0;
+                        //values[4] = 0;
+                        //values[5] = 30 + i * 2;
+                        //values[6] = date;
+                        //values[7] = sensorId2TG[j].id;
+                        //values[8] = date.Year * 2 + 1;
+                        table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 0));
                     }
 
                     date = date.AddMinutes(3);
@@ -4049,31 +4076,31 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 1;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 2;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 2;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
 
                         date = date.AddMinutes(3);
@@ -4086,17 +4113,17 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 1;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 1));
                         }
 
                         date = date.AddMinutes(3);

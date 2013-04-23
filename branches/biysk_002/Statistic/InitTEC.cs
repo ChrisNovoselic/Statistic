@@ -14,19 +14,36 @@ namespace Statistic
         public InitTEC(ConnectionSettings connSett)
         {
             tec = new List<TEC> ();
-            
+
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
-            DataTable list_tec = DbInterface.Request (connSett, "SELECT * FROM TEC_LIST"),
+            DataTable list_tec= null, // = DbInterface.Request(connSett, "SELECT * FROM TEC_LIST"),
                     list_gtp = null, list_tg = null;
+
+            //Использование методов объекта
+            //int listenerId = -1;
+            //bool err = false;
+            //DbInterface dbInterface = new DbInterface (DbInterface.DbInterfaceType.MySQL, 1);
+            //listenerId = dbInterface.ListenerRegister();
+            //dbInterface.Start ();
+
+            //dbInterface.SetConnectionSettings(connSett);
+
+            //dbInterface.Request(listenerId, "SELECT * FROM TEC_LIST");
+            //dbInterface.GetResponse(listenerId, out err, out list_tec);
+
+            //dbInterface.Stop();
+            //dbInterface.ListenerUnregister(listenerId);
+
+            //Использование статической функции
+            list_tec= DbInterface.Request(connSett, "SELECT * FROM TEC_LIST");
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
-                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString())); //"NAME_SHR"
-                tec[i].field = list_tec.Rows[i]["PREFIX"].ToString();
+                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString(), list_tec.Rows[i]["PREFIX"].ToString())); //"NAME_SHR"
 
                 tec[i].connSettings (DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int)CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int)CONN_SETT_TYPE.PBR);
+                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int) CONN_SETT_TYPE.PBR);
 
                 list_gtp = DbInterface.Request(connSett, "SELECT * FROM GTP_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString ());
                 for (int j = 0; j < list_gtp.Rows.Count; j ++) {
