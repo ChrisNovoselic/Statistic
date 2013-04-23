@@ -211,7 +211,7 @@ namespace Statistic
         public volatile string m_strUsedPPBRvsPBR;
 
         private DbInterface dbInterface;
-        private int listenerIdTec;
+        private int m_listenerIdCurrent;
         private int listenerIdAdmin;
 
         private enum StatesMachine
@@ -1507,7 +1507,7 @@ namespace Statistic
 
         private void GetCurrentTimeRequest()
         {
-            Request("SELECT now()", false);
+            Request(listenerIdAdmin, "SELECT now()");
         }
 
         private bool GetCurrentTimeResponse(DataTable table)
@@ -1565,7 +1565,7 @@ namespace Statistic
                              @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
 
-            Request(request, false);
+            Request(listenerIdAdmin, request);
             //SELECT AdminValues.date as date1, AdminValues.BTEC_REC, AdminValues.BTEC_IS_PER, AdminValues.BTEC_DIVIAT, PPBRvsPBR.date_time as date2, PPBRvsPBR.BTEC_PPBR
             //FROM AdminValues
             //LEFT JOIN PPBRvsPBR ON AdminValues.date = PPBRvsPBR.date_time
@@ -1648,7 +1648,7 @@ namespace Statistic
                       @"' AND DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE ASC";
 
-            Request(request, false);
+            Request(listenerIdAdmin, request);
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -1665,7 +1665,7 @@ namespace Statistic
                       @"' AND DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE_TIME ASC";
 
-            Request(request, false);
+            Request(listenerIdAdmin, request);
         }
 
         private void ClearAdminDates()
@@ -1791,7 +1791,7 @@ namespace Statistic
                                    @"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"';";
 
-            Request(requestUpdate + requestInsert + requestDelete, false);
+            Request(listenerIdAdmin, requestUpdate + requestInsert + requestDelete);
         }
 
         private int getPBRNumber(int hour)
@@ -1913,15 +1913,21 @@ namespace Statistic
                                    @"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    @"';";
 
-            Request(requestUpdate + requestInsert + requestDelete, false);
+            Request(listenerIdAdmin, requestUpdate + requestInsert + requestDelete);
         }
 
         private void GetPassRequest(bool disp)
         {
+            string request = "SELECT PASSWORD_";
+
             if (disp)
-                Request("SELECT PASSWORD_DISP FROM TOOLS", false);
+                request += "DISP";
             else
-                Request("SELECT PASSWORD_ADMIN FROM TOOLS", false);
+                request += "ADMIN";
+
+            
+            request += " FROM TOOLS";
+            Request(listenerIdAdmin, request);
         }
 
         private bool GetPassResponse(DataTable table)
@@ -1947,14 +1953,14 @@ namespace Statistic
         {
             if (insert)
                 if (disp)
-                    Request("INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')", false);
+                    Request(listenerIdAdmin, "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')");
                 else
-                    Request("INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')", false);
+                    Request(listenerIdAdmin, "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')");
             else
                 if (disp)
-                    Request("UPDATE TOOLS SET PASSWORD_DISP='" + password + "'", false);
+                    Request(listenerIdAdmin, "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'");
                 else
-                    Request("UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'", false);
+                    Request(listenerIdAdmin, "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'");
         }
 
         private void GetLayoutRequest(DateTime date)
@@ -1963,7 +1969,7 @@ namespace Statistic
                              @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 ORDER BY " + m_strUsedPPBRvsPBR + ".DATE_TIME ASC";
-            Request(request, false);
+            Request(listenerIdAdmin, request);
         }
 
         private bool GetLayoutResponse(DataTable table, DateTime date)
@@ -2248,7 +2254,7 @@ namespace Statistic
                                 @") VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
 
-            Request(requestInsert + requestUpdate, false);
+            Request(listenerIdAdmin, requestInsert + requestUpdate);
         }
 
         private void ErrorReport(string error_string)
@@ -2272,36 +2278,38 @@ namespace Statistic
             isActive = active;
         }
 
-        public void Request(string request, bool tec)
+        public void Request(int listenerId, string request)
         {
-            if (tec)
-                dbInterface.Request(listenerIdTec, request);
-            else
-                dbInterface.Request(listenerIdAdmin, request);
+            m_listenerIdCurrent = listenerId;
+            dbInterface.Request(m_listenerIdCurrent, request);
         }
 
-        public bool GetResponse(out bool error, out DataTable table, bool isTec)
+        public bool GetResponse(int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
-            if (isTec)
-                return dbInterface.GetResponse(listenerIdTec, out error, out table);
-            else
-                return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
+            return dbInterface.GetResponse(listenerId, out error, out table);
+            m_listenerIdCurrent = -1;
+            //if (isTec)
+            //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
+            //else
+            //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
         public void StartDbInterface()
         {
-            int i = 0;
-            foreach (TEC t in tec) {
-                t.listenerAdmin = ++ i;
-            }
-            
-            connSett = tec[0].connSetts[(int)CONN_SETT_TYPE.ADMIN];
+            m_listenerIdCurrent = -1;
             
             //dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, 2);
-            dbInterface = new DbInterface(DbInterface.DbInterfaceType.MySQL, 2);
-            listenerIdTec = dbInterface.ListenerRegister();
+            dbInterface = new DbInterface(DbInterface.DbInterfaceType.MySQL, tec.Count + 1);
             listenerIdAdmin = dbInterface.ListenerRegister();
+            
+            //int i = 0;
+            foreach (TEC t in tec) {
+                t.listenerAdmin = dbInterface.ListenerRegister();
+            }
+
             dbInterface.Start();
+
+            connSett = tec[0].connSetts[(int)CONN_SETT_TYPE.ADMIN];
 
             dbInterface.SetConnectionSettings(connSett);
 
@@ -2344,7 +2352,11 @@ namespace Statistic
             }
 
             dbInterface.Stop();
-            dbInterface.ListenerUnregister(listenerIdTec);
+            //dbInterface.ListenerUnregister(listenerIdTec);
+            foreach (TEC t in tec)
+            {
+                dbInterface.ListenerUnregister(t.listenerAdmin);
+            }
             dbInterface.ListenerUnregister(listenerIdAdmin);
         }
 
@@ -2454,12 +2466,12 @@ namespace Statistic
                 case StatesMachine.SaveValuesPPBR:
                 //case StatesMachine.UpdateValuesPPBR:
                 case StatesMachine.GetPass:
-                    return GetResponse(out error, out table, false);
+                    return GetResponse(m_listenerIdCurrent, out error, out table/*, false*/);
                 case StatesMachine.SetPassInsert:
                 case StatesMachine.SetPassUpdate:
                 case StatesMachine.LayoutGet:
                 case StatesMachine.LayoutSet:
-                    return GetResponse(out error, out table, true);
+                    return GetResponse(m_listenerIdCurrent,  out error, out table/*, true*/);
                 default:
                     error = true;
                     table = null;

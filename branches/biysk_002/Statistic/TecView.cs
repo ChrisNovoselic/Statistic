@@ -2207,7 +2207,7 @@ namespace Statistic
                              @"' AND " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND MINUTE(" + admin.m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + admin.m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
 
-            admin.Request(request, true);
+            admin.Request(tec.listenerAdmin, request);
         }
 
         private void FillGridMins(int hour)
@@ -4213,7 +4213,8 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.AdminValues:
-                    return admin.GetResponse(out error, out table, true);
+                    //return admin.GetResponse(out error, out table, true);
+                    return admin.GetResponse(tec.listenerAdmin, out error, out table);
             }
 
             error = true;
