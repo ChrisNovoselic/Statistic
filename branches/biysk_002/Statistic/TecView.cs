@@ -2141,81 +2141,7 @@ namespace Statistic
         }
 
         private void GetAdminValuesRequest () {
-            string name1 = string.Empty, name2 = string.Empty,
-                    select1 = string.Empty, select2 = string.Empty,
-                    request = string.Empty;
-
-            DateTime date = dtprDate.Value.Date;
-
-            name1 = tec.field;
-            
-            name2 = name1 + "_PBR";
-
-            switch (tec.type ()) {
-                case TEC.TEC_TYPE.COMMON:
-                if (num_gtp < 0) {
-                    foreach (GTP g in tec.list_GTP)
-                    {
-                        select1 += ", ";
-                        select2 += ", ";
-                        if (g.field.Length > 0) {
-                            select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.field + "_DIVIAT";
-                            select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
-                        }
-                        else {
-                            select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                           @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                           @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                           @"_DIVIAT";
-                            select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
-                        }
-                    }
-                    select1 = select1.Substring(2);
-                    select2 = select2.Substring(2);
-                }
-                else {
-                    GTP g = tec.list_GTP[num_gtp];
-                    if (g.field.Length > 0) {
-                        select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
-                    }
-                    else  {
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
-                    }
-                }
-
-                request = @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
-                            @", " + select2 +
-                            @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " LEFT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                            @"WHERE " + admin.m_strUsedAdminValues + ".DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' AND " + admin.m_strUsedAdminValues + ".DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"'" +
-                            @" UNION " +
-                            @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
-                            @", " + select2 +
-                            @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " RIGHT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                            @"WHERE " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' AND " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' AND MINUTE(" + admin.m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + admin.m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
-                    break;
-                case TEC.TEC_TYPE.BIYSK:
-                    request = GetAdminValuesBiysk ();
-                    break;
-                default:
-                    break;
-            }
-
-            admin.Request(tec.m_indxDbInterface, tec.listenerAdmin, request);
+            admin.Request(tec.m_indxDbInterface, tec.listenerAdmin, tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
         }
 
         private void FillGridMins(int hour)
@@ -3659,14 +3585,14 @@ namespace Statistic
             return true;
         }
 
-        private string GetAdminValuesBiysk()
+        private string GetAdminValuesQuery()
         {
             string name1 = string.Empty, name2 = string.Empty,
                 select1 = string.Empty, select2 = string.Empty;
                 
             DateTime date = dtprDate.Value.Date;
 
-            name1 = tec.field;
+            name1 = tec.prefix_admin; //prefix_admin ??? prefix_pbr
             name2 = "PPBR_" + name1;
 
             if (num_gtp < 0)
@@ -3756,8 +3682,7 @@ namespace Statistic
             {
                 double currPBRe;
                 int offsetPrev = -1;
-                int offsetUDG, offsetPlan, offsetLayout;
-                offsetUDG = 1;
+                int offsetUDG = 1; //, offsetPlan, offsetLayout;
                 //offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
                 //offsetLayout = offsetPlan + tec.list_GTP.Count;
 
@@ -3933,8 +3858,7 @@ namespace Statistic
             {
                 double currPBRe;
                 int offsetPrev = -1;
-                int offsetUDG, offsetPlan, offsetLayout;
-                offsetUDG = 1;
+                int offsetUDG = 1; //, offsetPlan, offsetLayout;
                 /*offsetPlan = offsetUDG + 3;
                 offsetLayout = offsetPlan + 1;*/
                 double[] valuesPBR = new double[25];
@@ -3955,6 +3879,8 @@ namespace Statistic
                                 offsetPrev = i;
                                 valuesPBR[24] = 0/*(double)table.Rows[i][offsetPlan]*/;
                             }
+                            else
+                                ;
                         }
                         catch
                         {

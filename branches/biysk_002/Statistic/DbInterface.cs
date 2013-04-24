@@ -355,13 +355,6 @@ namespace Statistic
                 MainForm.log.LogToFile(e.ToString(), false, false, false);
                 MainForm.log.LogUnlock();
             }
-            catch
-            {
-                MainForm.log.LogLock();
-                MainForm.log.LogToFile("Исключение обращения к переменной", true, true, false);
-                MainForm.log.LogUnlock();
-            }
-
 
             if (connectionMySQL.State != ConnectionState.Closed)
                 bRes = false;

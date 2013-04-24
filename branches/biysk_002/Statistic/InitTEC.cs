@@ -39,7 +39,11 @@ namespace Statistic
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
-                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString(), list_tec.Rows[i]["PREFIX"].ToString())); //"NAME_SHR"
+                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
+                                list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
+                                list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
+                                list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
+                                list_tec.Rows[i]["PREFIX_PBR"].ToString()));
 
                 tec[i].connSettings (DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
@@ -48,7 +52,7 @@ namespace Statistic
                 list_gtp = DbInterface.Request(connSett, "SELECT * FROM GTP_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString ());
                 for (int j = 0; j < list_gtp.Rows.Count; j ++) {
                     tec[i].list_GTP.Add(new GTP(tec[i]));
-                    tec[i].list_GTP[j].field = list_gtp.Rows [j]["PREFIX"].ToString ();
+                    tec[i].list_GTP[j].prefix = list_gtp.Rows [j]["PREFIX"].ToString ();
                     tec[i].list_GTP[j].name = list_gtp.Rows[j]["NAME"].ToString(); //list_gtp.Rows[j]["NAME_GNOVOS"]
                     
                     list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_GTP = " + list_gtp.Rows[j]["ID"].ToString());

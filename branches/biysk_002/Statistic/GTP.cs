@@ -7,7 +7,7 @@ namespace Statistic
     public class GTP
     {
         public string name;
-        public string field;
+        public string prefix;
         public List<TG> TG;
         public TEC tec;
 
