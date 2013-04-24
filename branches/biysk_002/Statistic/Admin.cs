@@ -463,8 +463,8 @@ namespace Statistic
 
             foreach (TEC t in tec)
             {
-                if (t.GTP.Count > 1)
-                    foreach (GTP g in t.GTP)
+                if (t.list_GTP.Count > 1)
+                    foreach (GTP g in t.list_GTP)
                     {
                         cbxTec.Items.Add(t.name + " - " + g.name);
                         allGtps.Add(g);
@@ -472,7 +472,7 @@ namespace Statistic
                 else
                 {
                     cbxTec.Items.Add(t.name);
-                    allGtps.Add(t.GTP[0]);
+                    allGtps.Add(t.list_GTP[0]);
                 }
             }
 
@@ -2296,8 +2296,9 @@ namespace Statistic
         public bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
             if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (!(m_indxDbInterfaceCurrent < 0))) {
-                m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
-                m_indxDbInterfaceCurrent = -1;
+                //m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
+                //m_indxDbInterfaceCurrent = -1;
+                ;
             }
             else
                 ;
@@ -2322,13 +2323,15 @@ namespace Statistic
             foreach (TEC t in tec) {
                 bool isAlready = false;
                 foreach (DbInterface dbi in m_listDbInterfaces) {
-                    if (! (dbi.connectionSettings.Equals (t.connSetts [(int) CONN_SETT_TYPE.ADMIN]) == true))
                     //if (! (t.connSetts [0] == cs))
+                    //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
+                    if (dbi.connectionSettings == t.connSetts[(int)CONN_SETT_TYPE.ADMIN])
+                    //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
                     {
                         isAlready = true;
 
                         t.m_indxDbInterface = m_listDbInterfaces.IndexOf (dbi);
-                        t.listenerAdmin = m_listDbInterfaces [m_listDbInterfaces.Count - 1].ListenerRegister ();
+                        t.listenerAdmin = m_listDbInterfaces[t.m_indxDbInterface].ListenerRegister();
 
                         break;
                     }
@@ -2350,9 +2353,9 @@ namespace Statistic
                     else
                         ;
 
-                    m_listDbInterfaces [m_listDbInterfaces.Count - 1].SetConnectionSettings (t.connSetts [(int) CONN_SETT_TYPE.ADMIN]);
-
                     m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
+
+                    m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]);
                 }
                 else
                     ;
@@ -2401,19 +2404,23 @@ namespace Statistic
                     taskThread.Abort();
             }
 
-            m_listDbInterfaces [m_indxDbInterfaceCommon].ListenerUnregister (m_listenerIdCommon);
-            m_indxDbInterfaceCommon = -1;
-            m_listenerIdCommon = -1;
+            if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceCommon < 0)) && (! (m_listenerIdCommon < 0))) {
+                m_listDbInterfaces [m_indxDbInterfaceCommon].ListenerUnregister (m_listenerIdCommon);
+                m_indxDbInterfaceCommon = -1;
+                m_listenerIdCommon = -1;
 
-            foreach (TEC t in tec)
-            {
-                m_listDbInterfaces [t.m_indxDbInterface].ListenerUnregister(t.listenerAdmin);
-            }
+                foreach (TEC t in tec)
+                {
+                    m_listDbInterfaces [t.m_indxDbInterface].ListenerUnregister(t.listenerAdmin);
+                }
 
-            foreach (DbInterface dbi in m_listDbInterfaces)
-            {
-                dbi.Stop ();
+                foreach (DbInterface dbi in m_listDbInterfaces)
+                {
+                    dbi.Stop ();
+                }
             }
+            else
+                ;
         }
 
         private bool StateRequest(StatesMachine state)

@@ -15,7 +15,7 @@ namespace Statistic
 
         public string name;
         public string field;
-        public List<GTP> GTP;
+        public List<GTP> list_GTP;
 
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
@@ -32,7 +32,7 @@ namespace Statistic
         private int listenerId;
 
         public TEC (string name, string field) {
-            GTP = new List<GTP>();
+            list_GTP = new List<GTP>();
 
             this.name = name;
             this.field = field;
@@ -67,8 +67,8 @@ namespace Statistic
                 dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
             }
             used++;
-            if (used > GTP.Count)
-                used = GTP.Count;
+            if (used > list_GTP.Count)
+                used = list_GTP.Count;
             else
                 ;
         }

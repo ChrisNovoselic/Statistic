@@ -24,12 +24,19 @@ namespace Statistic
         public volatile int port;
         public volatile bool ignore;
 
-        bool Equals(ConnectionSettings cs)
-        {
-            return true;
+        override public bool Equals(object obj) {
+            if ((Statistic.ConnectionSettings) obj == this)
+                return true;
+            else
+                return false;
         }
 
-        public static bool operator ==(ConnectionSettings csLeft, ConnectionSettings csRight)
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator == (ConnectionSettings csLeft, ConnectionSettings csRight)
         {
             bool bRes = false;
 
@@ -48,11 +55,7 @@ namespace Statistic
         public static bool operator != (ConnectionSettings csLeft, ConnectionSettings csRight) {
             bool bRes = false;
 
-            if ((! (csLeft.server == csRight.server)) ||
-                (! (csLeft.dbName == csRight.dbName)) ||
-                (! (csLeft.userName == csRight.userName)) ||
-                (! (csLeft.password == csRight.password)) ||
-                (! (csLeft.port == csRight.port)))
+            if (! (csLeft == csRight))
                 bRes = true;
             else
                 ;

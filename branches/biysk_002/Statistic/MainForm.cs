@@ -81,8 +81,6 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            firstStart = true;
-
             connSettForm = new ConnectionSettingsView();
             if (connSettForm.Protected == false)
             {
@@ -96,6 +94,8 @@ namespace Statistic
 
         private bool InitializeComponent(List <TEC> tec)
         {
+            firstStart = true;
+
             this.tec = tec;
             oldSelectedIndex = 0;
 
@@ -127,10 +127,10 @@ namespace Statistic
                 tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                 tecViews.Add(tecView);
-                if (t.GTP.Count > 1)
+                if (t.list_GTP.Count > 1)
                 {
                     index_gtp = 0;
-                    foreach (GTP g in t.GTP)
+                    foreach (GTP g in t.list_GTP)
                     {
                         tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                         tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
@@ -179,6 +179,8 @@ namespace Statistic
                         t.StopDbInterfaceForce();
                     adminPanel.StopDbInterface();
                 }
+                else
+                    ;
             }
         }
 
@@ -225,20 +227,22 @@ namespace Statistic
                 result = connSettForm.ShowDialog();
                 if (result == DialogResult.Yes)
                 {
-                    tecViews.Clear ();
+                    if (! (tecViews == null)) tecViews.Clear (); else ;
                     
-                    timer.Stop();
-                    adminPanel.StopDbInterface();
+                    if (timer.Enabled) timer.Stop(); else ;
+                    if (! (adminPanel == null)) adminPanel.StopDbInterface(); else ;
 
                     InitializeComponent(new InitTEC(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]).tec);
 
-                    foreach (TecView t in tecViews)
-                    {
-                        t.Reinit();
-                    }
+                    //foreach (TecView t in tecViews)
+                    //{
+                    //    t.Reinit();
+                    //}
 
-                    adminPanel.Reinit();
+                    //adminPanel.Reinit();
                 }
+                else
+                    ;
             }
             else
                 ;
@@ -258,6 +262,9 @@ namespace Statistic
                     tt.IsBackground = true;
                     tt.Start(waitForm);
                 }
+                else
+                    ;
+
                 waitCounter++;
             }
         }
@@ -282,6 +289,8 @@ namespace Statistic
                     while(!waitForm.IsHandleCreated);
                     waitForm.Invoke(delegateStopWaitForm);
                 }
+                else
+                    ;
             }
         }
 
@@ -311,7 +320,7 @@ namespace Statistic
                                 tclTecViews.TabPages.Add(t.name);
                             }
                             else
-                                tclTecViews.TabPages.Add(t.name + " - " + t.GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+                                tclTecViews.TabPages.Add(t.name + " - " + t.list_GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
 
                             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                             selectedTecViews.Add(tecViews[i]);
@@ -354,6 +363,8 @@ namespace Statistic
                         if (changeMode.admin_was_checked)
                             adminPanel.Activate(true);
                 }
+                else
+                    ; //Отмена выбора закладок
             }
             else
                 ; //Нет соединения с конфигурационной БД
@@ -397,6 +408,8 @@ namespace Statistic
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
                     adminPanel.Activate(true);
+                else
+                    ;
             }
         }
 
@@ -414,6 +427,8 @@ namespace Statistic
                         lblError.Text = selectedTecViews[i].last_action;
                     }
                 }
+                else
+                    ;
 
                 if (selectedTecViews[i].errored_state && !selectedTecViews[i].tec.connSetts[(int)CONN_SETT_TYPE.DATA].ignore)
                 {
@@ -424,6 +439,8 @@ namespace Statistic
                         lblError.Text = selectedTecViews[i].last_error;
                     }
                 }
+                else
+                    ;
             }
 
             if (adminPanel.actioned_state && adminPanel.isActive)
@@ -431,6 +448,8 @@ namespace Statistic
                 lblDateError.Text = adminPanel.last_time_action.ToString();
                 lblError.Text = adminPanel.last_action;
             }
+            else
+                ;
 
             if (adminPanel.errored_state)
             {
@@ -438,6 +457,8 @@ namespace Statistic
                 lblDateError.Text = adminPanel.last_time_error.ToString();
                 lblError.Text = adminPanel.last_error;
             }
+            else
+                ;
 
             return have_eror;
         }
@@ -469,7 +490,7 @@ namespace Statistic
                         if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
                             tclTecViews.TabPages.Add(t.name);
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+                            tclTecViews.TabPages.Add(t.name + " - " + t.list_GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
 
@@ -477,6 +498,8 @@ namespace Statistic
                         tecViews[i].Activate(false);
                         tecViews[i].Start();
                     }
+                    else
+                        ;
                 }
 
                 if (selectedTecViews.Count > 0)
@@ -484,6 +507,8 @@ namespace Statistic
                     oldSelectedIndex = 0;
                     selectedTecViews[oldSelectedIndex].Activate(true);
                 }
+                else
+                    ;
 
                 if (changeMode.admin_was_checked)
                 {
@@ -496,6 +521,8 @@ namespace Statistic
                         adminPanel.Start();
                     }
                 }
+                else
+                    ;
 
                 firstStart = false;
             }
@@ -506,9 +533,13 @@ namespace Statistic
 
                 if (have_eror)
                     lblMainState.Text = "ОШИБКА";
+                else
+                    ;
 
                 if (!have_eror || !show_error_alert)
                     lblMainState.Text = "";
+                else
+                    ;
 
                 show_error_alert = !show_error_alert;
                 lblError.Invalidate();

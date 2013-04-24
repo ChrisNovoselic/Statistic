@@ -35,10 +35,10 @@ namespace Statistic
                 clbMode.Items.Add(t.name);
                 tec_index.Add(index_tec);
                 gtp_index.Add(-1);
-                if (t.GTP.Count > 1)
+                if (t.list_GTP.Count > 1)
                 {
                     index_gtp = 0;
-                    foreach (GTP g in t.GTP)
+                    foreach (GTP g in t.list_GTP)
                     {
                         clbMode.Items.Add(t.name + " - " + g.name);
                         tec_index.Add(index_tec);

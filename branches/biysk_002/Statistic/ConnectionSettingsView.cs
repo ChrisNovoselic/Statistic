@@ -526,9 +526,9 @@ namespace Statistic
             oldSelectedIndex = cbxConnFor.SelectedIndex;
 
             //if (cbxConnFor.SelectedIndex == cbxConnFor.Items.Count - 1)
-            //    cbxIgnore.Enabled = false;
+                cbxIgnore.Enabled = false;
             //else
-                cbxIgnore.Enabled = true;
+            //    cbxIgnore.Enabled = true;
         }
 
         private void ConnectionSettings_FormClosing(object sender, FormClosingEventArgs e)
@@ -542,6 +542,11 @@ namespace Statistic
         public bool Protected
         {
             get { return mayToProtected; }
+        }
+
+        private void component_Changed(object sender, EventArgs e)
+        {
+
         }
     }
 }

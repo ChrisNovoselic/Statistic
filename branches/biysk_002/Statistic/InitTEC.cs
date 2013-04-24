@@ -47,16 +47,16 @@ namespace Statistic
 
                 list_gtp = DbInterface.Request(connSett, "SELECT * FROM GTP_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString ());
                 for (int j = 0; j < list_gtp.Rows.Count; j ++) {
-                    tec[i].GTP.Add(new GTP(tec[i]));
-                    tec[i].GTP[j].field = list_gtp.Rows [j]["PREFIX"].ToString ();
-                    tec[i].GTP[j].name = list_gtp.Rows[j]["NAME"].ToString(); //list_gtp.Rows[j]["NAME_GNOVOS"]
+                    tec[i].list_GTP.Add(new GTP(tec[i]));
+                    tec[i].list_GTP[j].field = list_gtp.Rows [j]["PREFIX"].ToString ();
+                    tec[i].list_GTP[j].name = list_gtp.Rows[j]["NAME"].ToString(); //list_gtp.Rows[j]["NAME_GNOVOS"]
                     
                     list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_GTP = " + list_gtp.Rows[j]["ID"].ToString());
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
-                        tec[i].GTP[j].TG.Add(new TG(tec[i].GTP[j]));
-                        tec[i].GTP[j].TG[k].name = list_tg.Rows [k]["NAME"].ToString ();
+                        tec[i].list_GTP[j].TG.Add(new TG(tec[i].list_GTP[j]));
+                        tec[i].list_GTP[j].TG[k].name = list_tg.Rows [k]["NAME"].ToString ();
                     }
                 }
             }
@@ -79,7 +79,7 @@ namespace Statistic
             tec.Add(new TEC("БТЭЦ"));
             
             //Создание ГТП и добавление к ТЭЦ
-            tec[i].GTP.Add(new GTP(tec[i]));
+            tec[i].list_GTP.Add(new GTP(tec[i]));
             tec[i].GTP[j].field = "TG1";
             tec[i].GTP[j].name = "ГТП ТГ1"; //GNOVOS36
             //Создание ТГ и добавление к ГТП

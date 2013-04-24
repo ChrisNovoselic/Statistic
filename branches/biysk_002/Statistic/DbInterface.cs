@@ -214,8 +214,13 @@ namespace Statistic
             {
                 sem.Release(1);
             }
-            catch
+            catch (Exception e)
             {
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("Исключение обращения к переменной (sem.Release ())", true, true, false);
+                MainForm.log.LogToFile("Исключение " + e.Message, false, false, false);
+                MainForm.log.LogToFile(e.ToString(), false, false, false);
+                MainForm.log.LogUnlock();
             }
         }
 
@@ -682,42 +687,53 @@ namespace Statistic
         }
 
         public static DataTable Request (ConnectionSettings connSett, string query) {
-            MySqlConnection m_connectionMySQL;
-            MySqlCommand m_commandMySQL;
-            MySqlDataAdapter m_adapterMySQL;
+            MySqlConnection connectionMySQL;
+            MySqlCommand commandMySQL;
+            MySqlDataAdapter adapterMySQL;
 
             DataTable dataTableRes = new DataTable ();
 
-            m_connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
+            connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
 
-            m_commandMySQL = new MySqlCommand();
-            m_commandMySQL.Connection = m_connectionMySQL;
-            m_commandMySQL.CommandType = CommandType.Text;
+            commandMySQL = new MySqlCommand();
+            commandMySQL.Connection = connectionMySQL;
+            commandMySQL.CommandType = CommandType.Text;
 
-            m_adapterMySQL = new MySqlDataAdapter();
-            m_adapterMySQL.SelectCommand = m_commandMySQL;
+            adapterMySQL = new MySqlDataAdapter();
+            adapterMySQL.SelectCommand = commandMySQL;
 
-            m_commandMySQL.CommandText = query;
+            commandMySQL.CommandText = query;
 
             dataTableRes.Reset();
             dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
 
-            m_connectionMySQL.Open();
+            try {
+                connectionMySQL.Open();
 
-            if (m_connectionMySQL.State == ConnectionState.Open)
-            {
-                try
+                if (connectionMySQL.State == ConnectionState.Open)
                 {
-                    m_adapterMySQL.Fill(dataTableRes);
+                    adapterMySQL.Fill(dataTableRes);
                 }
-                catch (MySqlException e)
-                {
-                }
+                else
+                    ; //
             }
-            else
-                ; //
+            catch (MySqlException e)
+            {
+                MainForm.log.LogLock();
+                string s;
+                int pos;
+                pos = connectionMySQL.ConnectionString.IndexOf("Password");
+                if (pos < 0)
+                    s = connectionMySQL.ConnectionString;
+                else
+                    s = connectionMySQL.ConnectionString.Substring(0, pos);
 
-            m_connectionMySQL.Close();
+                MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
+                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
+                MainForm.log.LogUnlock();
+            }
+
+            connectionMySQL.Close();
 
             return dataTableRes;
         }
