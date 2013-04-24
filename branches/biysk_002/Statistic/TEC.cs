@@ -315,5 +315,19 @@ namespace Statistic
 
             return strRes;
         }
+
+        public string GetAdminDatesQuery (DateTime dt) {
+            return @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " +
+                      @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' ORDER BY DATE ASC";
+        }
+
+        public string GetPBRDatesQuery (DateTime dt) {
+            return @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR + " WHERE " +
+                      @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                      @"' ORDER BY DATE_TIME ASC";
+        }
     }
 }
