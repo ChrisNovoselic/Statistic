@@ -56,7 +56,7 @@ namespace Statistic
             0});
             this.nudnDelayTime.Name = "nudnDelayTime";
             this.nudnDelayTime.Size = new System.Drawing.Size(45, 20);
-            this.nudnDelayTime.TabIndex = 0;
+            this.nudnDelayTime.TabIndex = 3;
             this.nudnDelayTime.Value = new decimal(new int[] {
             60,
             0,
@@ -69,7 +69,7 @@ namespace Statistic
             this.lblDelayTime.Location = new System.Drawing.Point(12, 35);
             this.lblDelayTime.Name = "lblDelayTime";
             this.lblDelayTime.Size = new System.Drawing.Size(157, 13);
-            this.lblDelayTime.TabIndex = 1;
+            this.lblDelayTime.TabIndex = 2;
             this.lblDelayTime.Text = "Задержка ошибки в секундах";
             // 
             // lblRequeryCount
@@ -78,7 +78,7 @@ namespace Statistic
             this.lblRequeryCount.Location = new System.Drawing.Point(12, 61);
             this.lblRequeryCount.Name = "lblRequeryCount";
             this.lblRequeryCount.Size = new System.Drawing.Size(175, 13);
-            this.lblRequeryCount.TabIndex = 3;
+            this.lblRequeryCount.TabIndex = 4;
             this.lblRequeryCount.Text = "Количество переспросов данных";
             // 
             // nudnRequeryCount
@@ -96,7 +96,7 @@ namespace Statistic
             0});
             this.nudnRequeryCount.Name = "nudnRequeryCount";
             this.nudnRequeryCount.Size = new System.Drawing.Size(45, 20);
-            this.nudnRequeryCount.TabIndex = 2;
+            this.nudnRequeryCount.TabIndex = 5;
             this.nudnRequeryCount.Value = new decimal(new int[] {
             1,
             0,
@@ -109,7 +109,7 @@ namespace Statistic
             this.lblQueryPeriod.Location = new System.Drawing.Point(12, 9);
             this.lblQueryPeriod.Name = "lblQueryPeriod";
             this.lblQueryPeriod.Size = new System.Drawing.Size(142, 13);
-            this.lblQueryPeriod.TabIndex = 5;
+            this.lblQueryPeriod.TabIndex = 0;
             this.lblQueryPeriod.Text = "Период опроса в секундах";
             // 
             // nudnQueryPeriod
@@ -127,7 +127,7 @@ namespace Statistic
             0});
             this.nudnQueryPeriod.Name = "nudnQueryPeriod";
             this.nudnQueryPeriod.Size = new System.Drawing.Size(45, 20);
-            this.nudnQueryPeriod.TabIndex = 4;
+            this.nudnQueryPeriod.TabIndex = 1;
             this.nudnQueryPeriod.Value = new decimal(new int[] {
             30,
             0,

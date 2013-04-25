@@ -169,6 +169,7 @@ namespace Statistic
         private double recomendation;
 
         private volatile string sensorsString = "";
+        private volatile string [] sensorsStrings = {"", ""}; //Только для особенной ТЭЦ (Бийск)
 
         private TG[] sensorId2TG;
 
@@ -176,7 +177,7 @@ namespace Statistic
         private List<System.Windows.Forms.Label> tgsValue;
 
         public volatile TEC tec;
-        private volatile int gtp;
+        private volatile int num_gtp;
 
         private volatile int countTG;
         private bool update;
@@ -793,7 +794,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
+        public TecView(TEC tec, int num_gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
         {
             InitializeComponent();
 
@@ -839,14 +840,14 @@ namespace Statistic
             tgsName = new List<System.Windows.Forms.Label>();
             tgsValue = new List<System.Windows.Forms.Label>();
             this.tec = tec;
-            this.gtp = gtp;
+            this.num_gtp = num_gtp;
 
             int positionXName = 15, positionXValue = 4, positionYName = 6, positionYValue = 19;
             float value = 0;
             countTG = 0;
-            if (gtp < 0) // значит этот view будет суммарным для всех ГТП
+            if (num_gtp < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (GTP g in tec.GTP)
+                foreach (GTP g in tec.list_GTP)
                 {
                     foreach (TG t in g.TG)
                     {
@@ -890,7 +891,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.GTP[gtp].TG)
+                foreach (TG t in tec.list_GTP[num_gtp].TG)
                 {
                     countTG++;
                     System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
@@ -1678,20 +1679,20 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("Трёхминутные данные");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (gtp < 0)
+                    if (num_gtp < 0)
                     {
-                        if (tec.GTP.Count == 1)
+                        if (tec.list_GTP.Count == 1)
                             ws.Cells[0, 0].Value = tec.name;
                         else
                         {
                             ws.Cells[0, 0].Value = tec.name;
-                            foreach (GTP g in tec.GTP)
+                            foreach (GTP g in tec.list_GTP)
                                 ws.Cells[0, 0].Value += ", " + g.name;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.GTP[gtp].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_GTP[num_gtp].name;
                     }
 
                     if (valuesHours.addonValues && hour == valuesHours.hourAddon)
@@ -1820,20 +1821,20 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("Часовые данные");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (gtp < 0)
+                    if (num_gtp < 0)
                     {
-                        if (tec.GTP.Count == 1)
+                        if (tec.list_GTP.Count == 1)
                             ws.Cells[0, 0].Value = tec.name;
                         else
                         {
                             ws.Cells[0, 0].Value = tec.name;
-                            foreach (GTP g in tec.GTP)
+                            foreach (GTP g in tec.list_GTP)
                                 ws.Cells[0, 0].Value += ", " + g.name;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.GTP[gtp].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_GTP[num_gtp].name;
                     }
                     
                     ws.Cells[1, 0].Value = "Мощность на " + dtprDate.Value.ToShortDateString();
@@ -1947,8 +1948,8 @@ namespace Statistic
 
             serverTime = selectedTime;
 
-            TimerCallback timerCallbackCurrent = new TimerCallback(TimerCurrent_Tick);
-            timerCurrent = new System.Threading.Timer(timerCallbackCurrent, null, 0, Timeout.Infinite);
+            //TimerCallback timerCallbackCurrent = new TimerCallback(TimerCurrent_Tick);
+            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), null, 0, Timeout.Infinite);
 
             update = false;
             SetNowDate(true);
@@ -2041,22 +2042,48 @@ namespace Statistic
         private void GetHoursRequest(DateTime date)
         {
             DateTime usingDate = date;
+            string request;
 
-            string request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
-                             @"DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                             @"FROM DEVICES " +
-                             @"INNER JOIN SENSORS ON " +
-                             @"DEVICES.ID = SENSORS.STATIONID " +
-                             @"INNER JOIN DATA ON " +
-                             @"DEVICES.CODE = DATA.OBJECT AND " +
-                             @"SENSORS.CODE = DATA.ITEM AND " +
-                             @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+            switch (tec.type ())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                                @"FROM DEVICES " +
+                                @"INNER JOIN SENSORS ON " +
+                                @"DEVICES.ID = SENSORS.STATIONID " +
+                                @"INNER JOIN DATA ON " +
+                                @"DEVICES.CODE = DATA.OBJECT AND " +
+                                @"SENSORS.CODE = DATA.ITEM AND " +
+                                @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+                                @"' AND " +
+                                @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                                @"' " +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                                @") " +
+                                @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
                              @"' AND " +
-                             @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                             @"' " +
-                             @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
                              @") " +
-                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                             //@"ORDER BY IZM_TII.TIME";
+                             @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
 
             tec.Request(request);
         }
@@ -2065,11 +2092,17 @@ namespace Statistic
         {
             if (hour == 24)
                 hour = 23;
+            else
+                ;
 
             DateTime usingDate = selectedTime.Date.AddHours(hour);
+            string request = string.Empty;
 
-            string request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, " +
-                             @"DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+            switch (tec.type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
                              @"FROM DEVICES " +
                              @"INNER JOIN SENSORS ON " +
                              @"DEVICES.ID = SENSORS.STATIONID " +
@@ -2083,96 +2116,33 @@ namespace Statistic
                              @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString +
                              @") " +
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.MINUTES] +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
 
             tec.Request(request);
         }
 
         private void GetAdminValuesRequest () {
-            string name1 = "";
-            string name2 = "";
-            string select1 = "";
-            string select2 = "";
-
-            DateTime date = dtprDate.Value.Date;
-
-            switch (tec.name) {
-                case "БТЭЦ":
-                    name1 = "BTEC";
-                    break;
-                case "ТЭЦ-2":
-                    name1 = "TEC2";
-                    break;
-                case "ТЭЦ-3":
-                    name1 = "TEC3";
-                    break;
-                case "ТЭЦ-4":
-                    name1 = "TEC4";
-                    break;
-                case "ТЭЦ-5":
-                    name1 = "TEC5";
-                    break;
-                default:
-                    break;
-            }
-
-            name2 = name1 + "_PBR";
-
-            if (gtp < 0) {
-                foreach (GTP g in tec.GTP)
-                {
-                    select1 += ", ";
-                    select2 += ", ";
-                    if (g.field.Length > 0) {
-                        select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                       g.field + "_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
-                    }
-                    else {
-                        select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                       @"_DIVIAT";
-                        select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
-                    }
-                }
-                select1 = select1.Substring(2);
-                select2 = select2.Substring(2);
-            }
-            else {
-                GTP g = tec.GTP[gtp];
-                if (g.field.Length > 0) {
-                    select1 += admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                   g.field + "_REC, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                   g.field + "_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 + "_" +
-                                   g.field + "_DIVIAT";
-                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_" + g.field + "_PBR";
-                }
-                else  {
-                    select1 += admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_REC, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_IS_PER, " + admin.m_strUsedAdminValues + "." + name1 +
-                                   @"_DIVIAT";
-                    select2 += admin.m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
-                }
-            }
-
-            string request = @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
-                             @", " + select2 +
-                             @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " LEFT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                             @"WHERE " + admin.m_strUsedAdminValues + ".DATE >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND " + admin.m_strUsedAdminValues + ".DATE <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"'" +
-                             @" UNION " +
-                             @"SELECT " + admin.m_strUsedAdminValues + ".DATE AS DATE1, " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 + 
-                             @", " + select2 +
-                             @", " + admin.m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + admin.m_strUsedAdminValues + " RIGHT JOIN " + admin.m_strUsedPPBRvsPBR + " ON " + admin.m_strUsedAdminValues + ".DATE = " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                             @"WHERE " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND " + admin.m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + date.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                             @"' AND MINUTE(" + admin.m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + admin.m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
-
-            admin.Request(request, true);
+            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
         }
 
         private void FillGridMins(int hour)
@@ -2420,9 +2390,9 @@ namespace Statistic
                 min--;
 
             int i = 0;
-            if (gtp < 0) // значит этот view будет суммарным для всех ГТП
+            if (num_gtp < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (GTP g in tec.GTP)
+                foreach (GTP g in tec.list_GTP)
                 {
                     foreach (TG t in g.TG)
                     {
@@ -2445,7 +2415,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.GTP[gtp].TG)
+                foreach (TG t in tec.list_GTP[num_gtp].TG)
                 {
                     if (t.receivedMin[min])
                     {
@@ -2608,10 +2578,10 @@ namespace Statistic
                 valuesMins.valuesUDGe[i] = 0;
         }
 
-        private TG FindTGById(int id)
+        private TG FindTGById(int id, int id_type)
         {
             for (int i = 0; i < sensorId2TG.Length; i++)
-                if (sensorId2TG[i].id == id)
+                if (sensorId2TG[i].ids [id_type] == id)
                     return sensorId2TG[i];
 
             return null;
@@ -2675,19 +2645,21 @@ namespace Statistic
 
                 s = "ТГ" + s;
 
-                if (gtp < 0)
+                if (num_gtp < 0)
                 {
                     bool found = false;
                     int j, k;
-                    for (j = 0; j < tec.GTP.Count && !found; j++)
+                    for (j = 0; j < tec.list_GTP.Count && !found; j++)
                     {
-                        for (k = 0; k < tec.GTP[j].TG.Count; k++)
+                        for (k = 0; k < tec.list_GTP[j].TG.Count; k++)
                         {
-                            if (tec.GTP[j].TG[k].name == s)
+                            if (tec.list_GTP[j].TG[k].name == s)
                             {
                                 found = true;
-                                tec.GTP[j].TG[k].id = int.Parse(table.Rows[i][1].ToString());
-                                sensorId2TG[t] = tec.GTP[j].TG[k];
+                                tec.list_GTP[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
+                                tec.list_GTP[j].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                                int.Parse(table.Rows[i][1].ToString());
+                                sensorId2TG[t] = tec.list_GTP[j].TG[k];
                                 t++;
                                 break;
                             }
@@ -2696,12 +2668,14 @@ namespace Statistic
                 }
                 else
                 {
-                    for (int k = 0; k < tec.GTP[gtp].TG.Count; k++)
+                    for (int k = 0; k < tec.list_GTP[num_gtp].TG.Count; k++)
                     {
-                        if (tec.GTP[gtp].TG[k].name == s)
+                        if (tec.list_GTP[num_gtp].TG[k].name == s)
                         {
-                            tec.GTP[gtp].TG[k].id = int.Parse(table.Rows[i][1].ToString());
-                            sensorId2TG[t] = tec.GTP[gtp].TG[k];
+                            tec.list_GTP[num_gtp].TG[k].ids[(int) TG.ID_TIME.MINUTES] =
+                            tec.list_GTP[num_gtp].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                            int.Parse(table.Rows[i][1].ToString());
+                            sensorId2TG[t] = tec.list_GTP[num_gtp].TG[k];
                             t++;
                             break;
                         }
@@ -2715,11 +2689,11 @@ namespace Statistic
                 {
                     if (sensorsString == "")
                     {
-                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].id.ToString();
+                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                     else
                     {
-                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].id.ToString();
+                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                 }
                 else
@@ -2733,6 +2707,74 @@ namespace Statistic
                 }
             }
             return true;
+        }
+
+        private void GetSensors()
+        {
+            Dictionary<string, int>[] tgs = new Dictionary<string, int>[(int)TG.ID_TIME.COUNT_ID_TIME];
+            tgs [(int) TG.ID_TIME.MINUTES] = new Dictionary<string, int>();
+            tgs[(int)TG.ID_TIME.HOURS] = new Dictionary<string, int>();
+
+            int count_tg = 0;
+            for (int i = 0; i < tec.list_GTP.Count; i++) {
+                count_tg += tec.list_GTP[i].TG.Count;
+            }
+            bool bMinutes = true;
+            for (int i = (int) TG.ID_TIME.MINUTES; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++)
+            {
+                if (i > (int)TG.ID_TIME.MINUTES) bMinutes = false; else ;
+                for (int j = 0; j < count_tg; j++)
+                {
+                    tgs[i].Add("ТГ" + (j + 1).ToString(), parameters.ParamsGetTgId(j, bMinutes));
+                }
+            }
+
+            int t = 0;
+            if (num_gtp < 0)
+            {
+                for (int i = 0; i < tec.list_GTP.Count; i++)
+                {
+                    for (int j = 0; j < tec.list_GTP[i].TG.Count; j++)
+                    {
+                        tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int) TG.ID_TIME.MINUTES][tec.list_GTP[i].TG[j].name];
+                        tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_GTP[i].TG[j].name];
+                        sensorId2TG[t] = tec.list_GTP[i].TG[j];
+                        //sensorId2TGHours[t] = tec.list_GTP[i].TG[j];
+                        t++;
+
+                        if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        else
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+
+                        if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                        else
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < tec.list_GTP[num_gtp].TG.Count; i++)
+                {
+                    tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_GTP[num_gtp].TG[i].name];
+                    tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_GTP[num_gtp].TG[i].name];
+                    sensorId2TG[t] = tec.list_GTP[num_gtp].TG[i];
+                    //sensorId2TGHours[t] = tec.list_GTP[num_gtp].TG[i];
+                    t++;
+
+                    if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                    else
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+
+                    if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                    else
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                }
+            }
         }
 
         private void GetSeason(DateTime date, int db_season, out int season)
@@ -2767,7 +2809,7 @@ namespace Statistic
 
             lastHourHalfError = lastHourError = false;
 
-            foreach (GTP g in tec.GTP)
+            foreach (GTP g in tec.list_GTP)
             {
                 foreach (TG t in g.TG)
                 {
@@ -2780,9 +2822,11 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                if (!DateTime.TryParse(table.Rows[0][1].ToString(), out dt))
                     return false;
-                if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[0][2].ToString(), out season))
                     return false;
                 GetSeason(dt, season, out season);
                 prev_season = season;
@@ -2843,10 +2887,10 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][6].ToString(), out dt))
+                    if (!DateTime.TryParse(table.Rows[i][1].ToString(), out dt))
                         return false;
 
-                    if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                    if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                         return false;
 
                     if (dt.CompareTo(dtNeeded) != 0)
@@ -2867,16 +2911,30 @@ namespace Statistic
                                 break;
                     }
 
-                    if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    //if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id);
+                    tgTmp = FindTGById(id, (int) TG.ID_TIME.HOURS);
 
                     if (tgTmp == null)
                         return false;
 
-                    if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (!double.TryParse(table.Rows[i][3].ToString(), out value))
                         return false;
+                    else
+                        ;
+
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            value *= 2;
+                            break;
+                        default:
+                            break;
+                    }
 
                     halfVal += value;
                     if (!jump_backward)
@@ -2987,7 +3045,7 @@ namespace Statistic
             /*Form2 f2 = new Form2();
             f2.FillMinTable(table);*/
 
-            foreach (GTP g in tec.GTP)
+            foreach (GTP g in tec.list_GTP)
             {
                 foreach (TG t in g.TG)
                 {
@@ -3003,9 +3061,9 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                if (!DateTime.TryParse(table.Rows[0][1].ToString(), out dt))
                     return false;
-                if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[0][2].ToString(), out season))
                     return false;
                 need_season = max_season = season;
                 min = (int)(dt.Minute / 3);
@@ -3028,7 +3086,7 @@ namespace Statistic
 
             for (i = 0; i < table.Rows.Count; i++)
             {
-                if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                     return false;
                 if (season > max_season)
                     max_season = season;
@@ -3074,9 +3132,9 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][6].ToString(), out dt))
+                    if (!DateTime.TryParse(table.Rows[i][1].ToString(), out dt))
                         return false;
-                    if (!int.TryParse(table.Rows[i][8].ToString(), out season))
+                    if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                         return false;
 
                     if (season != need_season)
@@ -3091,16 +3149,29 @@ namespace Statistic
                         break;
                     }
 
-                    if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id);
+                    tgTmp = FindTGById(id, (int) TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
 
-                    if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (!double.TryParse(table.Rows[i][3].ToString(), out value))
                         return false;
+                    else
+                        ;
+
+                    switch (tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            value *= 20;
+                            break;
+                        default:
+                            break;
+                    }
 
                     minVal += value;
                     tgTmp.power[min] = value / 1000;
@@ -3171,324 +3242,653 @@ namespace Statistic
 
             lastLayout = "---";
 
-            if (gtp < 0)
-            {
-                double currPBRe;
-                int offsetPrev = -1;
-                int offsetUDG, offsetPlan, offsetLayout;
-                offsetUDG = 2;
-                offsetPlan = offsetUDG + 3 * tec.GTP.Count;
-                offsetLayout = offsetPlan + tec.GTP.Count;
-
-                double[,] valuesPBR = new double[tec.GTP.Count, 25];
-                double[,] valuesREC = new double[tec.GTP.Count, 25];
-                int[,] valuesISPER = new int[tec.GTP.Count, 25];
-                double[,] valuesDIV = new double[tec.GTP.Count, 25];
-
-                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
-                {
-                    if (!(table.Rows[i][1] is System.DBNull))
+            switch (tec.type ()) {
+                case TEC.TEC_TYPE.COMMON:
+                    if (num_gtp < 0)
                     {
-                        try
-                        {
-                            hour = ((DateTime)table.Rows[i][1]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
-                            {
-                                offsetPrev = i;
-                                int j = 0;
-                                foreach (GTP g in tec.GTP)
-                                {
-                                    valuesPBR[j, 24] = (double)table.Rows[i][offsetPlan + j];
-                                    j++;
-                                }
-                            }
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table.Rows[i][0]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
-                            {
-                                offsetPrev = i;
-                            }
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
+                        double currPBRe;
+                        int offsetPrev = -1;
+                        int offsetUDG, offsetPlan, offsetLayout;
+                        offsetUDG = 2;
+                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
+                        offsetLayout = offsetPlan + tec.list_GTP.Count;
 
-                // разбор остальных значений
-                for (int i = 0; i < table.Rows.Count; i++)
-                {
-                    if (i == offsetPrev)
-                        continue;
+                        double[,] valuesPBR = new double[tec.list_GTP.Count, 25];
+                        double[,] valuesREC = new double[tec.list_GTP.Count, 25];
+                        int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
+                        double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
 
-                    if (!(table.Rows[i][1] is System.DBNull))
-                    {
-                        try
+                        // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            hour = ((DateTime)table.Rows[i][1]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
-                                hour = 24;
-                            else
-                                if (hour == 0)
-                                    continue;
-
-                            int j = 0;
-                            foreach (GTP g in tec.GTP)
+                            if (!(table.Rows[i][1] is System.DBNull))
                             {
                                 try
                                 {
-                                    if (!(table.Rows[i][offsetPlan + j] is System.DBNull))
-                                        valuesPBR[j, hour - 1] = (double)table.Rows[i][offsetPlan + j];
-                                    if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                        valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                    if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                        valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                    if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                        valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                    hour = ((DateTime)table.Rows[i][1]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                        int j = 0;
+                                        foreach (GTP g in tec.list_GTP)
+                                        {
+                                            valuesPBR[j, 24] = (double)table.Rows[i][offsetPlan + j];
+                                            j++;
+                                        }
+                                    }
                                 }
                                 catch
                                 {
                                 }
-                                j++;
                             }
-                            string tmp = "";
-                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                tmp = (string)table.Rows[i][offsetLayout];
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
-                                lastLayout = tmp;
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table.Rows[i][0]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
-                                hour = 24;
                             else
-                                if (hour == 0)
-                                    continue;
-
-                            int j = 0;
-                            foreach (GTP g in tec.GTP)
                             {
                                 try
                                 {
-                                    valuesPBR[j, hour - 1] = 0;
-                                    if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                        valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                    if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                        valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                    if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                        valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                    }
                                 }
                                 catch
                                 {
                                 }
-                                j++;
                             }
-                            string tmp = "";
-                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                tmp = (string)table.Rows[i][offsetLayout];
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
-                                lastLayout = tmp;
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
-
-                for (int i = 0; i < 24; i++)
-                {
-                    for (int j = 0; j < tec.GTP.Count; j++)
-                    {
-                        valuesHours.valuesPBR[i] += valuesPBR[j, i];
-                        if (i == 0)
-                        {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
-                            valuesHours.valuesPBRe[i] += currPBRe;
-                        }
-                        else
-                        {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
-                            valuesHours.valuesPBRe[i] += currPBRe;
                         }
 
-                        valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
-
-                        if (valuesISPER[j, i] == 1)
-                            valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
-                        else
-                            valuesHours.valuesDiviation[i] += valuesDIV[j, i];
-                    }
-                    /*valuesHours.valuesPBR[i] = 0.20;
-                    valuesHours.valuesPBRe[i] = 0.20;
-                    valuesHours.valuesUDGe[i] = 0.20;
-                    valuesHours.valuesDiviation[i] = 0.05;*/
-                }
-                if (valuesHours.season == seasonJumpE.SummerToWinter)
-                {
-                    valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-                    valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-                    valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-                    valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
-                }
-            }
-            else
-            {
-                double currPBRe;
-                int offsetPrev = -1;
-                int offsetUDG, offsetPlan, offsetLayout;
-                offsetUDG = 2;
-                offsetPlan = offsetUDG + 3;
-                offsetLayout = offsetPlan + 1;
-                double[] valuesPBR = new double[25];
-                double[] valuesREC = new double[25];
-                int[] valuesISPER = new int[25];
-                double[] valuesDIV = new double[25];
-
-                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
-                {
-                    if (!(table.Rows[i][1] is System.DBNull))
-                    {
-                        try
+                        // разбор остальных значений
+                        for (int i = 0; i < table.Rows.Count; i++)
                         {
-                            hour = ((DateTime)table.Rows[i][1]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
+                            if (i == offsetPrev)
+                                continue;
+
+                            if (!(table.Rows[i][1] is System.DBNull))
                             {
-                                offsetPrev = i;
-                                valuesPBR[24] = (double)table.Rows[i][offsetPlan];
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][1]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    int j = 0;
+                                    foreach (GTP g in tec.list_GTP)
+                                    {
+                                        try
+                                        {
+                                            if (!(table.Rows[i][offsetPlan + j] is System.DBNull))
+                                                valuesPBR[j, hour - 1] = (double)table.Rows[i][offsetPlan + j];
+                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                        }
+                                        catch
+                                        {
+                                        }
+                                        j++;
+                                    }
+                                    string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;
+                                }
+                                catch
+                                {
+                                }
                             }
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table.Rows[i][0]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                            else
                             {
-                                offsetPrev = i;
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    int j = 0;
+                                    foreach (GTP g in tec.list_GTP)
+                                    {
+                                        try
+                                        {
+                                            valuesPBR[j, hour - 1] = 0;
+                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                        }
+                                        catch
+                                        {
+                                        }
+                                        j++;
+                                    }
+                                    string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;
+                                }
+                                catch
+                                {
+                                }
                             }
                         }
-                        catch
+
+                        for (int i = 0; i < 24; i++)
                         {
+                            for (int j = 0; j < tec.list_GTP.Count; j++)
+                            {
+                                valuesHours.valuesPBR[i] += valuesPBR[j, i];
+                                if (i == 0)
+                                {
+                                    currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
+                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                }
+                                else
+                                {
+                                    currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
+                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                }
+
+                                valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+
+                                if (valuesISPER[j, i] == 1)
+                                    valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                                else
+                                    valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                            }
+                            /*valuesHours.valuesPBR[i] = 0.20;
+                            valuesHours.valuesPBRe[i] = 0.20;
+                            valuesHours.valuesUDGe[i] = 0.20;
+                            valuesHours.valuesDiviation[i] = 0.05;*/
+                        }
+                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        {
+                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
                         }
                     }
-                }
-
-                // разбор остальных значений
-                for (int i = 0; i < table.Rows.Count; i++)
-                {
-                    if (i == offsetPrev)
-                        continue;
-
-                    if (!(table.Rows[i][1] is System.DBNull))
+                    else
                     {
-                        try
+                        double currPBRe;
+                        int offsetPrev = -1;
+                        int offsetUDG, offsetPlan, offsetLayout;
+                        offsetUDG = 2;
+                        offsetPlan = offsetUDG + 3;
+                        offsetLayout = offsetPlan + 1;
+                        double[] valuesPBR = new double[25];
+                        double[] valuesREC = new double[25];
+                        int[] valuesISPER = new int[25];
+                        double[] valuesDIV = new double[25];
+
+                        // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            hour = ((DateTime)table.Rows[i][1]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
-                                hour = 24;
+                            if (!(table.Rows[i][1] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][1]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                        valuesPBR[24] = (double)table.Rows[i][offsetPlan];
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
                             else
-                                if (hour == 0)
-                                    continue;
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
 
-                            if (!(table.Rows[i][offsetPlan] is System.DBNull))
-                                valuesPBR[hour - 1] = (double)table.Rows[i][offsetPlan];
-                            if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                            if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                            if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
-                            string tmp = "";
-                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                tmp = (string)table.Rows[i][offsetLayout];
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
-                                lastLayout = tmp;
-                        }
-                        catch
+                        // разбор остальных значений
+                        for (int i = 0; i < table.Rows.Count; i++)
                         {
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table.Rows[i][0]).Hour;
-                            if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
-                                hour = 24;
+                            if (i == offsetPrev)
+                                continue;
+
+                            if (!(table.Rows[i][1] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][1]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    if (!(table.Rows[i][offsetPlan] is System.DBNull))
+                                        valuesPBR[hour - 1] = (double)table.Rows[i][offsetPlan];
+                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;
+                                }
+                                catch
+                                {
+                                }
+                            }
                             else
-                                if (hour == 0)
-                                    continue;
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
 
-                            valuesPBR[hour - 1] = 0;
-                            if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                            if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                            if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    valuesPBR[hour - 1] = 0;
+                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
 
-                            string tmp = "";
-                            if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                tmp = (string)table.Rows[i][offsetLayout];
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
-                                lastLayout = tmp;
+                                    string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;
+                                }
+                                catch
+                                {
+                                }
+                            }
                         }
-                        catch
+
+                        for (int i = 0; i < 24; i++)
                         {
+                            valuesHours.valuesPBR[i] = valuesPBR[i];
+                            if (i == 0)
+                            {
+                                currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
+                                valuesHours.valuesPBRe[i] = currPBRe;
+                            }
+                            else
+                            {
+                                currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
+                                valuesHours.valuesPBRe[i] = currPBRe;
+                            }
+
+                            valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+
+                            if (valuesISPER[i] == 1)
+                                valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                            else
+                                valuesHours.valuesDiviation[i] = valuesDIV[i];
+                        }
+
+                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        {
+                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
                         }
                     }
-                }
-
-                for (int i = 0; i < 24; i++)
-                {
-                    valuesHours.valuesPBR[i] = valuesPBR[i];
-                    if (i == 0)
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    if (num_gtp < 0)
                     {
-                        currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
-                        valuesHours.valuesPBRe[i] = currPBRe;
+                        double currPBRe;
+                        int offsetPrev = -1;
+                        int offsetUDG = 1; //, offsetPlan, offsetLayout;
+                        //offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
+                        //offsetLayout = offsetPlan + tec.list_GTP.Count;
+
+                        double[,] valuesPBR = new double[tec.list_GTP.Count, 25];
+                        double[,] valuesREC = new double[tec.list_GTP.Count, 25];
+                        int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
+                        double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
+
+                        // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        {
+                            if (!(table.Rows[i][0] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                        int j = 0;
+                                        foreach (GTP g in tec.list_GTP)
+                                        {
+                                            valuesPBR[j, 24] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
+                                            j++;
+                                        }
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
+
+                        // разбор остальных значений
+                        for (int i = 0; i < table.Rows.Count; i++)
+                        {
+                            if (i == offsetPrev)
+                                continue;
+
+                            if (!(table.Rows[i][0] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    int j = 0;
+                                    foreach (GTP g in tec.list_GTP)
+                                    {
+                                        try
+                                        {
+                                            /*if (!(table.Rows[i][offsetPlan + j] is System.DBNull))*/
+                                            valuesPBR[j, hour - 1] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
+                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                        }
+                                        catch
+                                        {
+                                        }
+                                        j++;
+                                    }
+                                    /*string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;*/
+                                }
+                                catch
+                                {
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    int j = 0;
+                                    foreach (GTP g in tec.list_GTP)
+                                    {
+                                        try
+                                        {
+                                            valuesPBR[j, hour - 1] = 0;
+                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
+                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                        }
+                                        catch
+                                        {
+                                        }
+                                        j++;
+                                    }
+                                    /*string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;*/
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < 24; i++)
+                        {
+                            for (int j = 0; j < tec.list_GTP.Count; j++)
+                            {
+                                /*valuesHours.valuesPBR[i] += valuesPBR[j, i];
+                                if (i == 0)
+                                {
+                                    currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
+                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                }
+                                else
+                                {
+                                    currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
+                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                }*/
+                                currPBRe = 0;
+
+                                valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+
+                                if (valuesISPER[j, i] == 1)
+                                    valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                                else
+                                    valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                            }
+                            /*valuesHours.valuesPBR[i] = 0.20;
+                            valuesHours.valuesPBRe[i] = 0.20;
+                            valuesHours.valuesUDGe[i] = 0.20;
+                            valuesHours.valuesDiviation[i] = 0.05;*/
+                        }
+                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        {
+                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                        }
                     }
                     else
                     {
-                        currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
-                        valuesHours.valuesPBRe[i] = currPBRe;
+                        double currPBRe;
+                        int offsetPrev = -1;
+                        int offsetUDG = 1; //, offsetPlan, offsetLayout;
+                        /*offsetPlan = offsetUDG + 3;
+                        offsetLayout = offsetPlan + 1;*/
+                        double[] valuesPBR = new double[25];
+                        double[] valuesREC = new double[25];
+                        int[] valuesISPER = new int[25];
+                        double[] valuesDIV = new double[25];
+
+                        // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        {
+                            if (!(table.Rows[i][0] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                        valuesPBR[24] = 0/*(double)table.Rows[i][offsetPlan]*/;
+                                    }
+                                    else
+                                        ;
+                                }
+                                catch
+                                {
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    {
+                                        offsetPrev = i;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
+
+                        // разбор остальных значений
+                        for (int i = 0; i < table.Rows.Count; i++)
+                        {
+                            if (i == offsetPrev)
+                                continue;
+
+                            if (!(table.Rows[i][0] is System.DBNull))
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    /*if (!(table.Rows[i][offsetPlan] is System.DBNull))*/
+                                    valuesPBR[hour - 1] = 0/*(double)table.Rows[i][offsetPlan]*/;
+                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    /*string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;*/
+                                }
+                                catch
+                                {
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                        hour = 24;
+                                    else
+                                        if (hour == 0)
+                                            continue;
+
+                                    valuesPBR[hour - 1] = 0;
+                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
+                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
+                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+
+                                    /*string tmp = "";
+                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (LayoutIsBiggerByName(lastLayout, tmp))
+                                        lastLayout = tmp;*/
+                                }
+                                catch
+                                {
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < 24; i++)
+                        {
+                            /*valuesHours.valuesPBR[i] = valuesPBR[i];
+                            if (i == 0)
+                            {
+                                currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
+                                valuesHours.valuesPBRe[i] = currPBRe;
+                            }
+                            else
+                            {
+                                currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
+                                valuesHours.valuesPBRe[i] = currPBRe;
+                            }*/
+                            currPBRe = 0;
+
+                            valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+
+                            if (valuesISPER[i] == 1)
+                                valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                            else
+                                valuesHours.valuesDiviation[i] = valuesDIV[i];
+                        }
+
+                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        {
+                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
+                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
+                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
+                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                        }
                     }
-
-                    valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
-
-                    if (valuesISPER[i] == 1)
-                        valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
-                    else
-                        valuesHours.valuesDiviation[i] = valuesDIV[i];
-                }
-
-                if (valuesHours.season == seasonJumpE.SummerToWinter)
-                {
-                    valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-                    valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-                    valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-                    valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
-                }
+                    break;
+                default:
+                    break;
             }
             
             hour = lastHour;
@@ -3505,7 +3905,7 @@ namespace Statistic
 
             return true;
         }
-
+        
         private void ComputeRecomendation(int hour)
         {
             if (hour == 24)
@@ -3710,6 +4110,51 @@ namespace Statistic
             MessageBox.Show(this, "", caption, MessageBoxButtons.OK);
         }
 
+        object[] generateValues(DateTime dt, int indx_tg, int indx_halfhours, int indx_id_time, int season)
+        {
+            //Согласно структуры запросов 'GetHoursRequest' и 'GetMinsRequest'
+            int indx_season = 2; //8
+            object [] resValues = new object [9];
+
+            //resValues[0] = "ТГ-" + indx_tg;
+            //resValues[1] = 0;
+            //resValues[2] = 0;
+            //resValues[3] = 0;
+            //resValues[4] = 0;
+            //resValues[5] = 30 + indx_halfhours * 2;
+            //resValues[6] = dt;
+            //resValues[7] = sensorId2TG[indx_tg].ids[indx_id_time];
+
+            resValues[0] = sensorId2TG[indx_tg].ids[indx_id_time];
+            resValues[1] = dt;
+            //2 - season
+            resValues[3] = 30 + indx_halfhours * 2;
+            resValues[4] = "ТГ-" + indx_tg;
+            resValues[5] = 0;
+            resValues[6] = 0;
+            resValues[7] = 0;
+            resValues[8] = 0;
+
+            if (season == 0) //Нет перехода на зимнее/летнее время
+                resValues[indx_season] = dt.Year * 2 + 1;
+            else
+                if (season == -1) //С переходом на зимнее время
+                    if (indx_halfhours < 6)
+                        resValues[indx_season] = dt.Year * 2 + 1;
+                    else
+                        resValues[indx_season] = dt.Year * 2 + 2;
+                else
+                    if (season == 1) //С переходом на летнее время
+                        if (indx_halfhours < 4)
+                            resValues[indx_season] = dt.Year * 2;
+                        else
+                            resValues[indx_season] = dt.Year * 2 + 1;
+                    else
+                        ;                
+
+            return resValues;
+        }
+        
         void GenerateHoursTable(seasonJumpE season, int hours, DataTable table)
         {
             int count = hours * 2;
@@ -3724,17 +4169,7 @@ namespace Statistic
                 {
                     for (int j = 0; j < countTG; j++)
                     {
-                        object[] values = new object[9];
-                        values[0] = "ТГ-" + j;
-                        values[1] = 0;
-                        values[2] = 0;
-                        values[3] = 0;
-                        values[4] = 0;
-                        values[5] = 30 + i * 2;
-                        values[6] = date;
-                        values[7] = sensorId2TG[j].id;
-                        values[8] = date.Year * 2 + 1;
-                        table.Rows.Add(values);
+                        table.Rows.Add(generateValues (date, j, i, (int) TG.ID_TIME.HOURS, 0));
                     }
 
                     date = date.AddMinutes(30);
@@ -3749,36 +4184,23 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            if (i < 6)
-                                values[8] = date.Year * 2 + 1;
-                            else
-                                values[8] = date.Year * 2 + 2;
-                            table.Rows.Add(values);
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                         }
                         if (i == 4 || i == 5)
                         {
                             for (int j = 0; j < countTG; j++)
                             {
-                                object[] values = new object[9];
-                                values[0] = "ТГ-" + j;
-                                values[1] = 0;
-                                values[2] = 0;
-                                values[3] = 0;
-                                values[4] = 0;
-                                values[5] = 30 + i * 2;
-                                values[6] = date;
-                                values[7] = sensorId2TG[j].id;
-                                values[8] = date.Year * 2 + 2;
-                                table.Rows.Add(values);
+                                //object[] values = new object[9];
+                                //values[0] = "ТГ-" + j;
+                                //values[1] = 0;
+                                //values[2] = 0;
+                                //values[3] = 0;
+                                //values[4] = 0;
+                                //values[5] = 30 + i * 2;
+                                //values[6] = date;
+                                //values[7] = sensorId2TG[j].id;
+                                //values[8] = date.Year * 2 + 2;
+                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                             }
                         }
 
@@ -3794,20 +4216,20 @@ namespace Statistic
                         {
                             for (int j = 0; j < countTG; j++)
                             {
-                                object[] values = new object[9];
-                                values[0] = "ТГ-" + j;
-                                values[1] = 0;
-                                values[2] = 0;
-                                values[3] = 0;
-                                values[4] = 0;
-                                values[5] = 30 + i * 2;
-                                values[6] = date;
-                                values[7] = sensorId2TG[j].id;
-                                if (i < 4)
-                                    values[8] = date.Year * 2;
-                                else
-                                    values[8] = date.Year * 2 + 1;
-                                table.Rows.Add(values);
+                                //object[] values = new object[9];
+                                //values[0] = "ТГ-" + j;
+                                //values[1] = 0;
+                                //values[2] = 0;
+                                //values[3] = 0;
+                                //values[4] = 0;
+                                //values[5] = 30 + i * 2;
+                                //values[6] = date;
+                                //values[7] = sensorId2TG[j].id;
+                                //if (i < 4)
+                                //    values[8] = date.Year * 2;
+                                //else
+                                //    values[8] = date.Year * 2 + 1;
+                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, 1));
                             }
                         }
 
@@ -3831,17 +4253,17 @@ namespace Statistic
                 {
                     for (int j = 0; j < countTG; j++)
                     {
-                        object[] values = new object[9];
-                        values[0] = "ТГ-" + j;
-                        values[1] = 0;
-                        values[2] = 0;
-                        values[3] = 0;
-                        values[4] = 0;
-                        values[5] = 30 + i * 2;
-                        values[6] = date;
-                        values[7] = sensorId2TG[j].id;
-                        values[8] = date.Year * 2 + 1;
-                        table.Rows.Add(values);
+                        //object[] values = new object[9];
+                        //values[0] = "ТГ-" + j;
+                        //values[1] = 0;
+                        //values[2] = 0;
+                        //values[3] = 0;
+                        //values[4] = 0;
+                        //values[5] = 30 + i * 2;
+                        //values[6] = date;
+                        //values[7] = sensorId2TG[j].id;
+                        //values[8] = date.Year * 2 + 1;
+                        table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 0));
                     }
 
                     date = date.AddMinutes(3);
@@ -3856,31 +4278,31 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 1;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 2;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 2;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
 
                         date = date.AddMinutes(3);
@@ -3893,17 +4315,17 @@ namespace Statistic
                     {
                         for (int j = 0; j < countTG; j++)
                         {
-                            object[] values = new object[9];
-                            values[0] = "ТГ-" + j;
-                            values[1] = 0;
-                            values[2] = 0;
-                            values[3] = 0;
-                            values[4] = 0;
-                            values[5] = 30 + i * 2;
-                            values[6] = date;
-                            values[7] = sensorId2TG[j].id;
-                            values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(values);
+                            //object[] values = new object[9];
+                            //values[0] = "ТГ-" + j;
+                            //values[1] = 0;
+                            //values[2] = 0;
+                            //values[3] = 0;
+                            //values[4] = 0;
+                            //values[5] = 30 + i * 2;
+                            //values[6] = date;
+                            //values[7] = sensorId2TG[j].id;
+                            //values[8] = date.Year * 2 + 1;
+                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 1));
                         }
 
                         date = date.AddMinutes(3);
@@ -3918,7 +4340,16 @@ namespace Statistic
             {
                 case StatesMachine.Init:
                     ActionReport("Получение идентификаторов датчиков.");
-                    GetSensorsRequest();
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            GetSensorsRequest();
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            GetSensors ();
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case StatesMachine.CurrentTime:
                     ActionReport("Получение текущего времени сервера.");
@@ -3947,16 +4378,36 @@ namespace Statistic
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     adminValuesReceived = false;
-                    GetAdminValuesRequest();
+                    //switch (tec.type ())
+                    //{
+                    //    case TEC.TEC_TYPE.COMMON:
+                            GetAdminValuesRequest();
+                    //        break;
+                    //    case TEC.TEC_TYPE.BIYSK:
+                    //        GetAdminValues();
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
                     break;
             }
         }
 
         private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
-        { 
+        {
+            error = false;
+            table = null;
+            
             switch (state)
             {
                 case StatesMachine.Init:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            return tec.GetResponse(out error, out table);
+                        case TEC.TEC_TYPE.BIYSK:
+                            return true;
+                    }
+                    break;
                 case StatesMachine.CurrentTime:
                 case StatesMachine.CurrentHours:
                 case StatesMachine.CurrentMins:
@@ -3964,11 +4415,12 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.AdminValues:
-                    return admin.GetResponse(out error, out table, true);
+                    //return admin.GetResponse(out error, out table, true);
+                    return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
             }
 
             error = true;
-            table = null;
+
             return false;
         }
 
@@ -3978,7 +4430,14 @@ namespace Statistic
             switch (state)
             {
                 case StatesMachine.Init:
-                    result = GetSensorsResponse(table);
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetSensorsResponse(table);
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                    }
                     if (result)
                     {
                     }
@@ -4184,7 +4643,17 @@ namespace Statistic
                     NewDateRefresh();
                 }
             }
-            timerCurrent.Change(1000, Timeout.Infinite);
+            try {
+                timerCurrent.Change(1000, Timeout.Infinite);
+            }
+            catch (Exception e) {
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
+                MainForm.log.LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
+                MainForm.log.LogToFile("Исключение " + e.Message, false, false, false);
+                MainForm.log.LogToFile(e.ToString(), false, false, false);
+                MainForm.log.LogUnlock();
+            }
         }
     }
 }

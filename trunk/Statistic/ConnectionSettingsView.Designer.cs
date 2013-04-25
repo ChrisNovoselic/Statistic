@@ -62,6 +62,7 @@ namespace Statistic
             this.tbxServer.Name = "tbxServer";
             this.tbxServer.Size = new System.Drawing.Size(189, 20);
             this.tbxServer.TabIndex = 1;
+            this.tbxServer.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxDataBase
             // 
@@ -69,6 +70,7 @@ namespace Statistic
             this.tbxDataBase.Name = "tbxDataBase";
             this.tbxDataBase.Size = new System.Drawing.Size(189, 20);
             this.tbxDataBase.TabIndex = 3;
+            this.tbxDataBase.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxUserId
             // 
@@ -76,6 +78,7 @@ namespace Statistic
             this.tbxUserId.Name = "tbxUserId";
             this.tbxUserId.Size = new System.Drawing.Size(189, 20);
             this.tbxUserId.TabIndex = 4;
+            this.tbxUserId.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // mtbxPass
             // 
@@ -84,6 +87,7 @@ namespace Statistic
             this.mtbxPass.PasswordChar = '#';
             this.mtbxPass.Size = new System.Drawing.Size(189, 20);
             this.mtbxPass.TabIndex = 5;
+            this.mtbxPass.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // lblConnFor
             // 
@@ -164,10 +168,12 @@ namespace Statistic
             this.nudnPort.TabIndex = 2;
             this.nudnPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.nudnPort.Value = new decimal(new int[] {
-            1433,
+            3306,
             0,
             0,
             0});
+            this.nudnPort.ValueChanged += new System.EventHandler(this.component_Changed);
+            this.nudnPort.Enabled = false;
             // 
             // lblPort
             // 
@@ -181,8 +187,7 @@ namespace Statistic
             // cbxIgnore
             // 
             this.cbxIgnore.AutoSize = true;
-            this.cbxIgnore.Checked = true;
-            this.cbxIgnore.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbxIgnore.CheckState = System.Windows.Forms.CheckState.Unchecked;
             this.cbxIgnore.Location = new System.Drawing.Point(130, 175);
             this.cbxIgnore.Name = "cbxIgnore";
             this.cbxIgnore.Size = new System.Drawing.Size(15, 14);

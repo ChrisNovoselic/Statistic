@@ -114,6 +114,7 @@ namespace Statistic
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ChangeMode_FormClosing);
+            this.Shown += new System.EventHandler(this.ChangeMode_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

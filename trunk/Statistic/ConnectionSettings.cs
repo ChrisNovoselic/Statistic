@@ -4,8 +4,17 @@ using System.Text;
 using System.Net;
 using System.Windows.Forms;
 
+using MySql.Data.MySqlClient; //Для 'IsConnect'
+using System.Data;
+
 namespace Statistic
 {
+    public enum CONN_SETT_TYPE
+    {
+        DATA, ADMIN, PBR,
+        COUNT_CONN_SETT_TYPE
+    };
+
     public class ConnectionSettings
     {
         public volatile string server;
@@ -14,6 +23,45 @@ namespace Statistic
         public volatile string password;
         public volatile int port;
         public volatile bool ignore;
+
+        override public bool Equals(object obj) {
+            if ((Statistic.ConnectionSettings) obj == this)
+                return true;
+            else
+                return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator == (ConnectionSettings csLeft, ConnectionSettings csRight)
+        {
+            bool bRes = false;
+
+            if ((csLeft.server == csRight.server) &&
+                (csLeft.dbName == csRight.dbName) &&
+                (csLeft.userName == csRight.userName) &&
+                (csLeft.password == csRight.password) &&
+                (csLeft.port == csRight.port))
+                bRes = true;
+            else
+                ;
+
+            return bRes;
+        }
+
+        public static bool operator != (ConnectionSettings csLeft, ConnectionSettings csRight) {
+            bool bRes = false;
+
+            if (! (csLeft == csRight))
+                bRes = true;
+            else
+                ;
+
+            return bRes;
+        }
 
         public enum ConnectionSettingsError
         { 
@@ -24,6 +72,7 @@ namespace Statistic
             IllegalSymbolDbName,
             IllegalSymbolUserName,
             IllegalSymbolPassword,
+            NotConnect
         }
 
         public ConnectionSettings()
@@ -107,6 +156,11 @@ namespace Statistic
                 //MessageBox.Show("Недопустимый символ в пароле пользователя.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return ConnectionSettingsError.IllegalSymbolPassword;
             }
+
+            //if (DbInterface.Request(this, "SELECT * FROM TEC_LIST").Rows.Count > 0)
+            //    return ConnectionSettingsError.NotConnect;
+            //else
+            //    ;
 
             return ConnectionSettingsError.NoError;
         }
