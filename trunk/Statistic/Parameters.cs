@@ -64,7 +64,7 @@ namespace Statistic
             Close();
         }
 
-        private void btnDefault_Click(object sender, EventArgs e)
+        private void btnReset_Click(object sender, EventArgs e)
         {
             poll_time = POLL_TIME * 1000;
             error_delay = ERROR_DELAY;

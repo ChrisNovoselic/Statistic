@@ -39,7 +39,7 @@ namespace Statistic
             this.lblUserId = new System.Windows.Forms.Label();
             this.lblPass = new System.Windows.Forms.Label();
             this.btnOk = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
+            this.параметрыПриложения = new System.Windows.Forms.Button();
             this.nudnPort = new System.Windows.Forms.NumericUpDown();
             this.lblPort = new System.Windows.Forms.Label();
             this.cbxIgnore = new System.Windows.Forms.CheckBox();
@@ -144,16 +144,16 @@ namespace Statistic
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
-            // btnCancel
+            // параметрыПриложения
             // 
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(170, 204);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 8;
-            this.btnCancel.Text = "Отмена";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.параметрыПриложения.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.параметрыПриложения.Location = new System.Drawing.Point(170, 204);
+            this.параметрыПриложения.Name = "параметрыПриложения";
+            this.параметрыПриложения.Size = new System.Drawing.Size(75, 23);
+            this.параметрыПриложения.TabIndex = 8;
+            this.параметрыПриложения.Text = "Отмена";
+            this.параметрыПриложения.UseVisualStyleBackColor = true;
+            this.параметрыПриложения.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // nudnPort
             // 
@@ -207,13 +207,13 @@ namespace Statistic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.btnCancel;
+            this.CancelButton = this.параметрыПриложения;
             this.ClientSize = new System.Drawing.Size(334, 238);
             this.Controls.Add(this.lblIgnore);
             this.Controls.Add(this.cbxIgnore);
             this.Controls.Add(this.lblPort);
             this.Controls.Add(this.nudnPort);
-            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.параметрыПриложения);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.lblPass);
             this.Controls.Add(this.lblUserId);
@@ -251,7 +251,7 @@ namespace Statistic
         private System.Windows.Forms.Label lblUserId;
         private System.Windows.Forms.Label lblPass;
         private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button параметрыПриложения;
         private System.Windows.Forms.NumericUpDown nudnPort;
         private System.Windows.Forms.Label lblPort;
         private System.Windows.Forms.CheckBox cbxIgnore;

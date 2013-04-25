@@ -30,8 +30,8 @@ namespace Statistic
         {
             this.tbxPassword = new System.Windows.Forms.TextBox();
             this.lblPassword = new System.Windows.Forms.Label();
-            this.bntOk = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnOk = new System.Windows.Forms.Button();
+            this.параметрыПриложения = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tbxPassword
@@ -53,33 +53,33 @@ namespace Statistic
             this.lblPassword.TabIndex = 3;
             this.lblPassword.Text = "Введите пароль администратора";
             // 
-            // bntOk
+            // btnOk
             // 
-            this.bntOk.Location = new System.Drawing.Point(68, 49);
-            this.bntOk.Name = "bntOk";
-            this.bntOk.Size = new System.Drawing.Size(75, 23);
-            this.bntOk.TabIndex = 1;
-            this.bntOk.Text = "Ок";
-            this.bntOk.UseVisualStyleBackColor = true;
-            this.bntOk.Click += new System.EventHandler(this.bntOk_Click);
+            this.btnOk.Location = new System.Drawing.Point(68, 49);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(75, 23);
+            this.btnOk.TabIndex = 1;
+            this.btnOk.Text = "Ок";
+            this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.bntOk_Click);
             // 
-            // btnCancel
+            // параметрыПриложения
             // 
-            this.btnCancel.Location = new System.Drawing.Point(149, 49);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 2;
-            this.btnCancel.Text = "Отмена";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.параметрыПриложения.Location = new System.Drawing.Point(149, 49);
+            this.параметрыПриложения.Name = "параметрыПриложения";
+            this.параметрыПриложения.Size = new System.Drawing.Size(75, 23);
+            this.параметрыПриложения.TabIndex = 2;
+            this.параметрыПриложения.Text = "Отмена";
+            this.параметрыПриложения.UseVisualStyleBackColor = true;
+            this.параметрыПриложения.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // Password
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 77);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.bntOk);
+            this.Controls.Add(this.параметрыПриложения);
+            this.Controls.Add(this.btnOk);
             this.Controls.Add(this.lblPassword);
             this.Controls.Add(this.tbxPassword);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -99,7 +99,7 @@ namespace Statistic
 
         private System.Windows.Forms.TextBox tbxPassword;
         private System.Windows.Forms.Label lblPassword;
-        private System.Windows.Forms.Button bntOk;
-        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button параметрыПриложения;
     }
 }

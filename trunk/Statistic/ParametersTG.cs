@@ -73,11 +73,11 @@ namespace Statistic {
                 }
             }
 
-            buttonCancel.Location = new System.Drawing.Point(buttonCancel.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            btnCancel.Location = new System.Drawing.Point(btnCancel.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
             btnOk.Location = new System.Drawing.Point(btnOk.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
-            btnDefault.Location = new System.Drawing.Point(btnDefault.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            btnReset.Location = new System.Drawing.Point(btnReset.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
 
-            this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, btnDefault.Location.Y + btnDefault.Size.Height + 9);
+            this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, btnReset.Location.Y + btnReset.Size.Height + 9);
 
             loadParam();
             mayClose = false;
@@ -141,12 +141,20 @@ namespace Statistic {
             }
 
             saveParam();
+            
             //delegateParamsApply();
+            
             mayClose = true;
+
+            if (m_State > 0)
+                m_State--;
+            else
+                ;
+            
             Close();
         }
 
-        private void btnDefault_Click(object sender, EventArgs e)
+        private void btnReset_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < COUNT_TG; i++)
             {
@@ -159,6 +167,17 @@ namespace Statistic {
                 m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i].ToString();
                 m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id_default[(int)TG.ID_TIME.HOURS, i].ToString();
             }
+
+            m_State ++;
+        }
+
+        override public void buttonCancel_Click(object sender, EventArgs e)
+        {
+            loadParam ();
+            
+            m_State = 0;
+
+            base.buttonCancel_Click(sender, e);
         }
 
         public int ParamsGetTgId(int sensor, bool mins)
