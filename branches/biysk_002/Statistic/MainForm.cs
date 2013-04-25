@@ -100,7 +100,7 @@ namespace Statistic
             oldSelectedIndex = 0;
 
             adminPanel = new Admin(tec, stsStrip);
-            //adminPanel.connSett = connSettForm.getConnSett();
+            adminPanel.connSettConfigDB = connSettForm.getConnSett();
 
             adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 

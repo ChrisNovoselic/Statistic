@@ -22,16 +22,15 @@ namespace Statistic
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
-        public int listenerAdmin;
-        public int m_indxDbInterface;
+        public int[] m_arListenerIds; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'Admin.cs' для 'AdminValues', 'PBR'
+        public int[] m_arIndxDbInterfaces; //Индексы 'DbInterface' в 'Admin.cs' для 'AdminValues', 'PBR' (1-ый элемент ВСЕГДА = -1, т.е. не используется, т.к. для 'Data' есть 'm_dbInterface')
 
         private bool is_connection_error;
         private bool is_data_error;
         
         private int used;
 
-        private DbInterface dbInterface;
-        private int listenerId;
+        private DbInterface m_dbInterface; //Для данных (SQL сервер)
 
         public TEC (string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
             list_GTP = new List<GTP>();
@@ -42,8 +41,14 @@ namespace Statistic
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            listenerAdmin = -1;
-            m_indxDbInterface = -1;
+            m_arListenerIds = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            m_arIndxDbInterfaces = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            for (int i = (int)CONN_SETT_TYPE.DATA; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+                m_arListenerIds [i] =
+                m_arIndxDbInterfaces [i] =
+                -1;
+            }
 
             is_data_error = is_connection_error = false;
 
@@ -52,22 +57,22 @@ namespace Statistic
 
         public void Request(string request)
         {
-            dbInterface.Request(listenerId, request);
+            m_dbInterface.Request(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], request);
         }
 
         public bool GetResponse(out bool error, out DataTable table)
         {
-            return dbInterface.GetResponse(listenerId, out error, out table);
+            return m_dbInterface.GetResponse(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], out error, out table);
         }
 
         public void StartDbInterface()
         {
             if (used == 0)
             {
-                dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL);
-                listenerId = dbInterface.ListenerRegister();
-                dbInterface.Start();
-                dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                m_dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL);
+                m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
+                m_dbInterface.Start();
+                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
             }
             used++;
             if (used > list_GTP.Count)
@@ -81,8 +86,8 @@ namespace Statistic
             used--;
             if (used == 0)
             {
-                dbInterface.Stop();
-                dbInterface.ListenerUnregister(listenerId);
+                m_dbInterface.Stop();
+                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
             }
             if (used < 0)
                 used = 0;
@@ -92,8 +97,8 @@ namespace Statistic
         {
             if (used > 0)
             {
-                dbInterface.Stop();
-                dbInterface.ListenerUnregister(listenerId);
+                m_dbInterface.Stop();
+                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
             }
         }
 
@@ -101,7 +106,7 @@ namespace Statistic
         {
             if (used > 0)
             {
-                dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
             }
             else
                 ;
@@ -181,18 +186,16 @@ namespace Statistic
                             select2 += ", ";
                             if (g.prefix.Length > 0)
                             {
-                                select1 += m_strUsedAdminValues + "." + name1 + "_" +
-                                               g.prefix + "_REC, " + m_strUsedAdminValues + "." + name1 + "_" +
-                                               g.prefix + "_IS_PER, " + m_strUsedAdminValues + "." + name1 + "_" +
-                                               g.prefix + "_DIVIAT";
+                                select1 += m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_DIVIAT";
                                 select2 += m_strUsedPPBRvsPBR + "." + name1 + "_" + g.prefix + "_PBR";
                             }
                             else
                             {
-                                select1 += m_strUsedAdminValues + "." + name1 +
-                                               @"_REC, " + m_strUsedAdminValues + "." + name1 +
-                                               @"_IS_PER, " + m_strUsedAdminValues + "." + name1 +
-                                               @"_DIVIAT";
+                                select1 += m_strUsedAdminValues + "." + name1 + @"_REC, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
                                 select2 += m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
                             }
                         }
@@ -204,18 +207,16 @@ namespace Statistic
                         GTP g = list_GTP[num_gtp];
                         if (g.prefix.Length > 0)
                         {
-                            select1 += m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.prefix + "_REC, " + m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.prefix + "_IS_PER, " + m_strUsedAdminValues + "." + name1 + "_" +
-                                           g.prefix + "_DIVIAT";
+                            select1 += m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_REC, " +
+                                        m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_IS_PER, " +
+                                        m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_DIVIAT";
                             select2 += m_strUsedPPBRvsPBR + "." + name1 + "_" + g.prefix + "_PBR";
                         }
                         else
                         {
-                            select1 += m_strUsedAdminValues + "." + name1 +
-                                           @"_REC, " + m_strUsedAdminValues + "." + name1 +
-                                           @"_IS_PER, " + m_strUsedAdminValues + "." + name1 +
-                                           @"_DIVIAT";
+                            select1 += m_strUsedAdminValues + "." + name1 + @"_REC, " +
+                                        m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
+                                        m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
                             select2 += m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
                         }
                     }
@@ -246,27 +247,24 @@ namespace Statistic
                             switch (g.name)
                             {
                                 case "ГТП ТГ3-8":
-                                    select1 += @"ADMINVALUES." + name1 +
-                                               @"_110_REC, ADMINVALUES." + name1 +
-                                               @"_110_IS_PER, ADMINVALUES." + name1 +
-                                               @"_110_DIVIAT";
-                                    select2 += @"PPBRVSPBR." + name2 +
+                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_" + g.prefix + "_REC, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_IS_PER, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_DIVIAT";
+                                    select2 += m_strUsedPPBRvsPBR + @"." + name2 +
                                                @"_110";
                                     break;
                                 case "ГТП ТГ1,2":
-                                    select1 += @"ADMINVALUES." + name1 +
-                                               @"_35_REC, ADMINVALUES." + name1 +
-                                               @"_35_IS_PER, ADMINVALUES." + name1 +
-                                               @"_35_DIVIAT";
+                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_" + g.prefix + "_REC, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_IS_PER, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_DIVIAT";
                                     select2 += @"PPBRVSPBR." + name2 +
                                                @"_35";
                                     break;
                                 default:
-                                    select1 += @"ADMINVALUES." + name1 +
-                                               @"_REC, ADMINVALUES." + name1 +
-                                               @"_IS_PER, ADMINVALUES." + name1 +
-                                               @"_DIVIAT";
-                                    select2 += @"PPBRVSPBR." + name2;
+                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_REC, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
+                                                m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
+                                    select2 += m_strUsedPPBRvsPBR + @"." + name2;
                                     break;
                             }
                         }
@@ -278,33 +276,30 @@ namespace Statistic
                         switch (list_GTP[num_gtp].name)
                         {
                             case "ГТП ТГ3-8":
-                                select1 += @"ADMINVALUES." + name1 +
-                                           @"_110_REC, ADMINVALUES." + name1 +
-                                           @"_110_IS_PER, ADMINVALUES." + name1 +
-                                           @"_110_DIVIAT";
-                                select2 += @"PPBRVSPBR." + name2 +
+                                select1 += m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
+                                select2 += m_strUsedPPBRvsPBR + @"." + name2 +
                                            @"_110";
                                 break;
                             case "ГТП ТГ1,2":
-                                select1 += @"ADMINVALUES." + name1 +
-                                           @"_35_REC, ADMINVALUES." + name1 +
-                                           @"_35_IS_PER, ADMINVALUES." + name1 +
-                                           @"_35_DIVIAT";
-                                select2 += @"PPBRVSPBR." + name2 +
+                                select1 += m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
+                                select2 += m_strUsedPPBRvsPBR + @"." + name2 +
                                            @"_35";
                                 break;
                             default:
-                                select1 += @"ADMINVALUES." + name1 +
-                                           @"_REC, ADMINVALUES." + name1 +
-                                           @"_IS_PER, ADMINVALUES." + name1 +
-                                           @"_DIVIAT";
-                                select2 += @"PPBRVSPBR." + name2;
+                                select1 += m_strUsedAdminValues + @"." + name1 + @"_REC, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
+                                            m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
+                                select2 += m_strUsedPPBRvsPBR + @"." + name2;
                                 break;
                         }
                     }
 
                     strRes = @"SELECT DATE, " + select1 +
-                             @" FROM ADMINVALUES " +
+                             @" FROM " + m_strUsedAdminValues + " " +
                              @"WHERE DATE >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' ORDER BY DATE";

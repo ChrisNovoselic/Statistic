@@ -173,6 +173,7 @@ namespace Statistic
             0,
             0});
             this.nudnPort.ValueChanged += new System.EventHandler(this.component_Changed);
+            this.nudnPort.Enabled = false;
             // 
             // lblPort
             // 

@@ -17,7 +17,7 @@ namespace Statistic
 
         private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("mailto:" + llblMailTo.Text);
+            System.Diagnostics.Process.Start("mailto:" + ((LinkLabel)sender).Text);
             btnClose.Select();
         }
 

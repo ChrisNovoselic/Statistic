@@ -165,7 +165,7 @@ namespace Statistic
         private DateTime oldDate;
         private volatile List<GTP> allGtps;
         private volatile int oldTecIndex;
-        private volatile List<TEC> tec;
+        private volatile List<TEC> m_list_tec;
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -205,17 +205,13 @@ namespace Statistic
         private volatile bool newState;
         private volatile List<StatesMachine> states;
 
-        public ConnectionSettings connSett;
-
-        //public volatile string m_strUsedAdminValues;
-        //public volatile string m_strUsedPPBRvsPBR;
-
         private List <DbInterface> m_listDbInterfaces;
         private List <int> m_listListenerIdCurrent;
         private int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
 
-        int m_indxDbInterfaceCommon,
-            m_listenerIdCommon;
+        public ConnectionSettings connSettConfigDB;
+        int m_indxDbInterfaceConfigDB,
+            m_listenerIdConfigDB;
 
         private enum StatesMachine
         {
@@ -441,7 +437,7 @@ namespace Statistic
 
             started = false;
 
-            this.tec = tec;
+            this.m_list_tec = tec;
 
             allGtps = new List<GTP>();
             oldValues = new OldValuesStruct[24];
@@ -449,6 +445,8 @@ namespace Statistic
             md5 = new MD5CryptoServiceProvider();
 
             is_data_error = is_connection_error = false;
+
+            //TecView tecView = MainForm.selectedTecViews [MainForm.stclTecViews.SelectedIndex];
 
             isActive = false;
 
@@ -1515,7 +1513,8 @@ namespace Statistic
 
         private void GetCurrentTimeRequest()
         {
-            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
+            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
+            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
         }
 
         private bool GetCurrentTimeResponse(DataTable table)
@@ -1539,7 +1538,7 @@ namespace Statistic
 
         private void GetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
         {
-            Request(t.m_indxDbInterface, t.listenerAdmin, t.GetAdminValueQuery(gtp, date));
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(gtp, date));
         }
 
         private bool GetAdminValuesResponse(DataTable table, DateTime date)
@@ -1602,7 +1601,8 @@ namespace Statistic
             else
                 ;
 
-            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetAdminDatesQuery(date));
+            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetAdminDatesQuery(date));
+            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.GetAdminDatesQuery(date));
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -1611,8 +1611,11 @@ namespace Statistic
             {
                 date = mcldrDate.SelectionStart.Date;
             }
+            else
+                ;
 
-            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetPBRDatesQuery(date));
+//            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetPBRDatesQuery(date));
+            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.GetPBRDatesQuery(date));
         }
 
         private void ClearAdminDates()
@@ -1739,7 +1742,7 @@ namespace Statistic
                                    //@"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
 
-            Request(m_indxDbInterfaceCommon, m_listListenerIdCurrent [0], requestUpdate + requestInsert + requestDelete);
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
 
         private int getPBRNumber(int hour)
@@ -1863,7 +1866,7 @@ namespace Statistic
                                    //@"';";
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_indxDbInterface, t.listenerAdmin, requestUpdate + requestInsert + requestDelete);
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
 
         private void GetPassRequest(bool disp)
@@ -1877,7 +1880,7 @@ namespace Statistic
 
             
             request += " FROM TOOLS";
-            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, request);
+            Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, request);
         }
 
         private bool GetPassResponse(DataTable table)
@@ -1901,16 +1904,20 @@ namespace Statistic
 
         private void SetPassRequest(string password, bool disp, bool insert)
         {
+            string query = string.Empty;
+            
             if (insert)
                 if (disp)
-                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')");
+                    query = "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')";
                 else
-                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')");
+                    query = "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')";
             else
                 if (disp)
-                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'");
+                    query =  "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'";
                 else
-                    Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'");
+                    query = "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'";
+
+            Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, query);
         }
 
         //private void GetLayoutRequest(DateTime date)
@@ -2259,48 +2266,60 @@ namespace Statistic
             m_listListenerIdCurrent.Clear();
             m_indxDbInterfaceCurrent = -1;
 
-            m_indxDbInterfaceCommon = -1;
-            m_listenerIdCommon = -1;
+            m_listDbInterfaces.Add(new DbInterface(DbInterface.DbInterfaceType.MySQL));
+            m_listListenerIdCurrent.Add(-1);
 
-            foreach (TEC t in tec) {
-                bool isAlready = false;
-                foreach (DbInterface dbi in m_listDbInterfaces) {
-                    //if (! (t.connSetts [0] == cs))
-                    //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
-                    if (dbi.connectionSettings == t.connSetts[(int)CONN_SETT_TYPE.ADMIN])
-                    //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
-                    {
-                        isAlready = true;
+            m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
+            m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
 
-                        t.m_indxDbInterface = m_listDbInterfaces.IndexOf (dbi);
-                        t.listenerAdmin = m_listDbInterfaces[t.m_indxDbInterface].ListenerRegister();
+            m_listDbInterfaces[m_listDbInterfaces.Count - 1].Start();
 
-                        break;
+            m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(connSettConfigDB);
+
+            Int16 connSettType = -1; 
+            foreach (TEC t in m_list_tec)
+            {
+                for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
+                    bool isAlready = false;
+                    
+                    foreach (DbInterface dbi in m_listDbInterfaces) {
+                        //if (! (t.connSetts [0] == cs))
+                        //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
+                        if (dbi.connectionSettings == t.connSetts[connSettType])
+                        //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
+                        {
+                            isAlready = true;
+
+                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.IndexOf(dbi);
+                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[t.m_arIndxDbInterfaces[connSettType]].ListenerRegister();
+
+                            break;
+                        }
+                        else
+                            ;
+                    }
+
+                    if (isAlready == false) {
+                        m_listDbInterfaces.Add (new DbInterface (DbInterface.DbInterfaceType.MySQL));
+                        m_listListenerIdCurrent.Add (-1);
+
+                        t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
+                        t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
+
+                        if (m_indxDbInterfaceConfigDB < 0) {
+                            m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
+                            m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
+                        }
+                        else
+                            ;
+
+                        m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
+
+                        m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
                     }
                     else
                         ;
                 }
-
-                if (isAlready == false) {
-                    m_listDbInterfaces.Add (new DbInterface (DbInterface.DbInterfaceType.MySQL));
-                    m_listListenerIdCurrent.Add (-1);
-
-                    t.m_indxDbInterface = m_listDbInterfaces.Count - 1;
-                    t.listenerAdmin = m_listDbInterfaces [m_listDbInterfaces.Count - 1].ListenerRegister ();
-
-                    if (m_indxDbInterfaceCommon < 0) {
-                        m_indxDbInterfaceCommon = m_listDbInterfaces.Count - 1;
-                        m_listenerIdCommon = m_listDbInterfaces[m_indxDbInterfaceCommon].ListenerRegister();
-                    }
-                    else
-                        ;
-
-                    m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
-
-                    m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]);
-                }
-                else
-                    ;
             }
         }
 
@@ -2346,14 +2365,17 @@ namespace Statistic
                     taskThread.Abort();
             }
 
-            if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceCommon < 0)) && (! (m_listenerIdCommon < 0))) {
-                m_listDbInterfaces [m_indxDbInterfaceCommon].ListenerUnregister (m_listenerIdCommon);
-                m_indxDbInterfaceCommon = -1;
-                m_listenerIdCommon = -1;
+            if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceConfigDB < 0)) && (!(m_listenerIdConfigDB < 0)))
+            {
+                m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerUnregister(m_listenerIdConfigDB);
+                m_indxDbInterfaceConfigDB = -1;
+                m_listenerIdConfigDB = -1;
 
-                foreach (TEC t in tec)
+                foreach (TEC t in m_list_tec)
                 {
-                    m_listDbInterfaces [t.m_indxDbInterface].ListenerUnregister(t.listenerAdmin);
+                    for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {
+                        m_listDbInterfaces[t.m_arIndxDbInterfaces[(int)connSettType]].ListenerUnregister(t.m_arListenerIds[(int)connSettType]);
+                    }
                 }
 
                 foreach (DbInterface dbi in m_listDbInterfaces)

@@ -2077,7 +2077,8 @@ namespace Statistic
                              @"' WHERE IZM_TII.PERIOD = 1800 AND " +
                              @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
                              @") " +
-                             @"ORDER BY IZM_TII.TIME";
+                             //@"ORDER BY IZM_TII.TIME";
+                             @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
                     break;
                 default:
                     request = string.Empty;
@@ -2141,7 +2142,7 @@ namespace Statistic
         }
 
         private void GetAdminValuesRequest () {
-            admin.Request(tec.m_indxDbInterface, tec.listenerAdmin, tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
+            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
         }
 
         private void FillGridMins(int hour)
@@ -4415,7 +4416,7 @@ namespace Statistic
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.AdminValues:
                     //return admin.GetResponse(out error, out table, true);
-                    return admin.GetResponse(tec.m_indxDbInterface, tec.listenerAdmin, out error, out table);
+                    return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
             }
 
             error = true;
