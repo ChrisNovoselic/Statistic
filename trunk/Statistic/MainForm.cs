@@ -51,6 +51,7 @@ namespace Statistic
         public static string logPath;
         public GraphicsSettings graphicsSettingsForm;
         public Parameters parametersForm;
+        //public ParametersTG parametersTGForm;
         public static Logging log;
 
         private bool show_error_alert = false;
@@ -110,7 +111,7 @@ namespace Statistic
             passwordSettingsForm = new PasswordSettings(adminPanel);
             setPasswordSettingsForm = new SetPasswordSettings(adminPanel);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            parametersForm = new Parameters(delegateParamsApply);
+            parametersForm = new Parameters();
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
@@ -308,11 +309,19 @@ namespace Statistic
                     tclTecViews.TabPages.Clear();
                     selectedTecViews.Clear();
 
+                    Int16 parametrsTGBiysk = 0;
                     // отображаем вкладки ТЭЦ
                     for (i = 0; i < changeMode.tec_index.Count; i++)
                     {
-                        if ((index = changeMode.was_checked.IndexOf(i)) >= 0)
+                        index = changeMode.was_checked.IndexOf(i);
+                        
+                        if (! (index < 0))
                         {
+                            if ((tecViews[i].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                                parametrsTGBiysk ++;
+                            else
+                                ;
+
                             t = tec[changeMode.tec_index[i]];
 
                             if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
@@ -333,6 +342,8 @@ namespace Statistic
                             tecViews[i].Stop();
                         }
                     }
+
+                    параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
 
                     StopWait();
                     if (changeMode.admin_was_checked)
@@ -604,10 +615,26 @@ namespace Statistic
             }
         }
 
-        private void параметрыToolStripMenuItem_Click(object sender, EventArgs e)
+        private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (connSettForm.Protected == true)
                 parametersForm.ShowDialog();
+            else
+                ;
+        }
+
+        private void параметрыТГБийскToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (connSettForm.Protected == true) {
+                foreach (TecView tv in tecViews) {
+                    if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
+                        tv.tec.parametersTGForm.ShowDialog();
+                        break;
+                    }
+                    else
+                        ;
+                }
+            }
             else
                 ;
         }

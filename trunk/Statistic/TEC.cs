@@ -32,6 +32,8 @@ namespace Statistic
 
         private DbInterface m_dbInterface; //Для данных (SQL сервер)
 
+        public ParametersTG parametersTGForm;
+
         public TEC (string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
             list_GTP = new List<GTP>();
 
@@ -49,6 +51,11 @@ namespace Statistic
                 m_arIndxDbInterfaces [i] =
                 -1;
             }
+
+            if (type () == TEC_TYPE.BIYSK)
+                parametersTGForm = new ParametersTG ();
+            else
+                ;
 
             is_data_error = is_connection_error = false;
 

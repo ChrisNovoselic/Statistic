@@ -107,7 +107,7 @@ namespace Statistic
 
         private Admin admin;
         private GraphicsSettings graphSettings;
-        private Parameters parameters;
+        private Parameters parameters;        
 
         private volatile bool currHour;
         private volatile int lastHour;
@@ -807,6 +807,11 @@ namespace Statistic
             this.admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
+
+            if (tec.type () == TEC.TEC_TYPE.BIYSK)
+                ; //this.parameters = MainForm.papar;
+            else
+                ;
 
             currHour = true;
             lastHour = 0;
@@ -2725,7 +2730,7 @@ namespace Statistic
                 if (i > (int)TG.ID_TIME.MINUTES) bMinutes = false; else ;
                 for (int j = 0; j < count_tg; j++)
                 {
-                    tgs[i].Add("าร" + (j + 1).ToString(), parameters.ParamsGetTgId(j, bMinutes));
+                    tgs[i].Add("าร" + (j + 1).ToString(), tec.parametersTGForm.ParamsGetTgId(j, bMinutes));
                 }
             }
 

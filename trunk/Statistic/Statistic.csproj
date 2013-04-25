@@ -93,6 +93,15 @@
     <Compile Include="GraphicsSettings.Designer.cs">
       <DependentUpon>GraphicsSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="ParametersTG.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ParametersTG.designer.cs">
+      <DependentUpon>ParametersTG.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ParametrsBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PasswordSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -160,6 +169,9 @@
     <EmbeddedResource Include="Parameters.resx">
       <SubType>Designer</SubType>
       <DependentUpon>Parameters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ParametersTG.resx">
+      <DependentUpon>ParametersTG.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Password.resx">
       <SubType>Designer</SubType>

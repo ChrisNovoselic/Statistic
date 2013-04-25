@@ -172,7 +172,7 @@ namespace Statistic
             this.MinimizeBox = false;
             this.Name = "Parameters";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Параметры";
+            this.Text = "Параметры приложения";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Parameters_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.nudnDelayTime)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudnRequeryCount)).EndInit();
@@ -190,7 +190,5 @@ namespace Statistic
         private System.Windows.Forms.NumericUpDown nudnRequeryCount;
         private System.Windows.Forms.Label lblQueryPeriod;
         private System.Windows.Forms.NumericUpDown nudnQueryPeriod;
-        private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button btnDefault;
     }
 }
