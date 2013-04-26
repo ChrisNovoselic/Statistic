@@ -46,15 +46,15 @@ namespace Statistic
         {
             //public double[] SN;
             public double[] PBR;
-            public double[] Pmax;
-            public double[] Pmin;
+            //public double[] Pmax;
+            //public double[] Pmin;
 
             public TecPPBRValues(int t)
             {
                 //this.SN = new double[25];
                 this.PBR = new double[25];
-                this.Pmax = new double[24];
-                this.Pmin = new double[24];
+                //this.Pmax = new double[24];
+                //this.Pmin = new double[24];
             }
         }
 
@@ -1560,13 +1560,16 @@ namespace Statistic
         {
             bool bRes = true;
 
-            m_tablePPBRValuesResponse = table.Clone ();
+            m_tablePPBRValuesResponse = table.Copy ();
 
             return true;
         }
 
-        private bool GetAdminValuesResponse(DataTable table, DateTime date)
+        private bool GetAdminValuesResponse(DataTable table_in, DateTime date)
         {
+            DataTable table = table_in.Clone ();
+            table.Merge(m_tablePPBRValuesResponse, false);
+            
             for (int i = 0, hour; i < table.Rows.Count; i++)
             {
                 if (table.Rows[i][0] is System.DBNull)

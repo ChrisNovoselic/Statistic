@@ -157,7 +157,7 @@ namespace Statistic
 
             strRes = @"SELECT " + strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
                     @" FROM " + strUsedPPBRvsPBR +
-                    @"WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @" WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                     @"' AND " + strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                     @"' AND MINUTE(" + strUsedPPBRvsPBR + ".DATE_TIME) = 0 " + "ORDER BY DATE_PBR ASC";
 
@@ -189,20 +189,19 @@ namespace Statistic
             strRes = @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
                     strUsedAdminValues + "." + selectAdmin + @"_REC, " +
                     strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT" +
                     @" FROM " + strUsedAdminValues +
-                    @"WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"'" +
+                    @" WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                    @" AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                     @" UNION " +
                     @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
                     strUsedAdminValues + "." + selectAdmin + @"_REC, " +
                     strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT" +
                     @" FROM " + strUsedAdminValues +
-                    @"WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN ASC";
+                    @" WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                    @" AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                    @" AND " + strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN ASC";
 
             return strRes;
         }
@@ -291,21 +290,18 @@ namespace Statistic
                             selectAdmin += ", ";
                             selectPBR += ", ";
 
-                            switch (g.name)
+                            if (g.prefix.Length > 0)
                             {
-                                case "√“œ “√3-8":
-                                case "√“œ “√1,2":
-                                    selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix + "_REC, " +
-                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_IS_PER, " +
-                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_DIVIAT";
-                                    selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + g.prefix;
-                                    break;
-                                default:
-                                    selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_DIVIAT";
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + g.prefix;
+                            }
+                            else {
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
                                                 m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
                                                 m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
-                                    selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
-                                    break;
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                             }
                         }
                         selectAdmin = selectAdmin.Substring(2);
@@ -313,21 +309,19 @@ namespace Statistic
                     }
                     else
                     {
-                        switch (list_GTP[num_gtp].name)
+                        GTP g = list_GTP[num_gtp];
+                        if (g.prefix.Length > 0)
                         {
-                            case "√“œ “√3-8":
-                            case "√“œ “√1,2":
-                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
-                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix;
-                                break;
-                            default:
-                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
+                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
+                                        m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
+                            selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix;
+                        }
+                        else {
+                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
                                             m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
                                             m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
-                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
-                                break;
+                            selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                         }
                     }
 
