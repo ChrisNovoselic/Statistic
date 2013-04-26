@@ -217,6 +217,7 @@ namespace Statistic
         {
             CurrentTime,
             AdminValues, //Получение административных данных
+            PPBRValues,
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
             SaveValues, //Сохранение административных данных
@@ -606,6 +607,7 @@ namespace Statistic
 
                             newState = true;
                             states.Clear();
+                            states.Add(StatesMachine.PPBRValues);
                             states.Add(StatesMachine.AdminValues);
 
                             try
@@ -636,6 +638,7 @@ namespace Statistic
 
                         newState = true;
                         states.Clear();
+                        states.Add(StatesMachine.PPBRValues);
                         states.Add(StatesMachine.AdminValues);
 
                         try
@@ -681,6 +684,7 @@ namespace Statistic
                             newState = true;
                             states.Clear();
                             states.Add(StatesMachine.CurrentTime);
+                            states.Add(StatesMachine.PPBRValues);
                             states.Add(StatesMachine.AdminValues);
 
                             try
@@ -713,6 +717,7 @@ namespace Statistic
                         newState = true;
                         states.Clear();
                         states.Add(StatesMachine.CurrentTime);
+                        states.Add(StatesMachine.PPBRValues);
                         states.Add(StatesMachine.AdminValues);
 
                         try
@@ -745,6 +750,7 @@ namespace Statistic
                     newState = true;
                     states.Clear();
                     states.Add(StatesMachine.CurrentTime);
+                    states.Add(StatesMachine.PPBRValues);
                     states.Add(StatesMachine.AdminValues);
 
                     try
@@ -775,6 +781,7 @@ namespace Statistic
 
                 newState = true;
                 states.Clear();
+                states.Add(StatesMachine.PPBRValues);
                 states.Add(StatesMachine.AdminValues);
 
                 try
@@ -1223,6 +1230,7 @@ namespace Statistic
                 newState = true;
                 states.Clear();
                 states.Add(StatesMachine.CurrentTime);
+                states.Add(StatesMachine.PPBRValues);
                 states.Add(StatesMachine.AdminValues);
 
                 try
@@ -1536,14 +1544,21 @@ namespace Statistic
             return true;
         }
 
-        private void GetPBRValuesRequest(TEC t, GTP gtp, DateTime date)
+        private void GetPPBRValuesRequest(TEC t, GTP gtp, DateTime date)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetAdminValueQuery(gtp, date));
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(gtp, date));
         }
 
         private void GetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
         {
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(gtp, date));
+        }
+
+        private bool GetPPBRValuesResponse(DataTable table, DateTime date)
+        {
+            bool bRes = true;
+
+            return true;
         }
 
         private bool GetAdminValuesResponse(DataTable table, DateTime date)
@@ -2401,28 +2416,15 @@ namespace Statistic
                     ActionReport("Получение текущего времени сервера.");
                     GetCurrentTimeRequest();
                     break;
+                case StatesMachine.PPBRValues:
+                    ActionReport("Получение данных плана.");
+                    GetPPBRValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues.Date);
+                    break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     GetAdminValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues.Date);
                     oldDate = dateForValues.Date;
                     this.BeginInvoke(delegateCalendarSetDate, oldDate);
-                    break;
-                case StatesMachine.AdminDates:
-                    if (serverTime.Date > dateForValues.Date)
-                    {
-                        saveResult = Errors.InvalidValue;
-                        try
-                        {
-                            semaSave.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                        result = false;
-                        break;
-                    }
-                    ActionReport("Получение списка сохранённых часовых значений.");
-                    GetAdminDatesRequest(dateForValues);
                     break;
                 case StatesMachine.PPBRDates:
                     if (serverTime.Date > dateForValues.Date)
@@ -2440,6 +2442,23 @@ namespace Statistic
                     }
                     ActionReport("Получение списка сохранённых часовых значений.");
                     GetPPBRDatesRequest(dateForValues);
+                    break;
+                case StatesMachine.AdminDates:
+                    if (serverTime.Date > dateForValues.Date)
+                    {
+                        saveResult = Errors.InvalidValue;
+                        try
+                        {
+                            semaSave.Release(1);
+                        }
+                        catch
+                        {
+                        }
+                        result = false;
+                        break;
+                    }
+                    ActionReport("Получение списка сохранённых часовых значений.");
+                    GetAdminDatesRequest(dateForValues);
                     break;
                 case StatesMachine.SaveValues:
                     ActionReport("Сохранение административных данных.");
@@ -2493,9 +2512,10 @@ namespace Statistic
                 switch (state)
                 {
                     case StatesMachine.CurrentTime:
+                    case StatesMachine.PPBRValues:
                     case StatesMachine.AdminValues:
-                    case StatesMachine.AdminDates:
                     case StatesMachine.PPBRDates:
+                    case StatesMachine.AdminDates:                    
                     case StatesMachine.SaveValues:
                     case StatesMachine.SaveValuesPPBR:
                     //case StatesMachine.UpdateValuesPPBR:
@@ -2536,23 +2556,35 @@ namespace Statistic
                             dateForValues = serverTime;
                     }
                     break;
+                case StatesMachine.PPBRValues:
+                    result = GetPPBRValuesResponse(table, dateForValues);
+                    if (result)
+                    {
+                    }
+                    else
+                        ;
+                    break;
                 case StatesMachine.AdminValues:
                     result = GetAdminValuesResponse(table, dateForValues);
                     if (result)
                     {
                         this.BeginInvoke(delegateFillData, oldDate);
                     }
-                    break;
-                case StatesMachine.AdminDates:
-                    ClearAdminDates();
-                    result = GetAdminDatesResponse(table, dateForValues);
-                    if (result)
-                    {
-                    }
+                    else
+                        ;
                     break;
                 case StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, dateForValues);
+                    if (result)
+                    {
+                    }
+                    else
+                        ;
+                    break;
+                case StatesMachine.AdminDates:
+                    ClearAdminDates();
+                    result = GetAdminDatesResponse(table, dateForValues);
                     if (result)
                     {
                     }
@@ -2705,30 +2737,17 @@ namespace Statistic
                         }
                     }
                     break;
+                case StatesMachine.PPBRValues:
+                    if (response)
+                        ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
+                    else
+                        ErrorReport("Ошибка получения данных плана. Переход в ожидание.");
+                    break;
                 case StatesMachine.AdminValues:
                     if (response)
                         ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
                     else
                         ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
-                    break;
-                case StatesMachine.AdminDates:
-                    if (response)
-                    {
-                        ErrorReport("Ошибка разбора сохранённых часовых значений (AdminValues). Переход в ожидание.");
-                        saveResult = Errors.ParseError;
-                    }
-                    else
-                    {
-                        ErrorReport("Ошибка получения сохранённых часовых значений (AdminValues). Переход в ожидание.");
-                        saveResult = Errors.NoAccess;
-                    }
-                    try
-                    {
-                        semaSave.Release(1);
-                    }
-                    catch
-                    {
-                    }
                     break;
                 case StatesMachine.PPBRDates:
                     if (response)
@@ -2739,6 +2758,25 @@ namespace Statistic
                     else
                     {
                         ErrorReport("Ошибка получения сохранённых часовых значений (PPBR). Переход в ожидание.");
+                        saveResult = Errors.NoAccess;
+                    }
+                    try
+                    {
+                        semaSave.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                    break;
+                case StatesMachine.AdminDates:
+                    if (response)
+                    {
+                        ErrorReport("Ошибка разбора сохранённых часовых значений (AdminValues). Переход в ожидание.");
+                        saveResult = Errors.ParseError;
+                    }
+                    else
+                    {
+                        ErrorReport("Ошибка получения сохранённых часовых значений (AdminValues). Переход в ожидание.");
                         saveResult = Errors.NoAccess;
                     }
                     try

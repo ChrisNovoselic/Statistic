@@ -136,40 +136,18 @@ namespace Statistic
         public string GetPBRValueQuery (GTP gtp, DateTime dt) {
             string strRes = string.Empty;
 
-            string select1, select2;
-            select1 = select2 =
-            string.Empty;
+            string /*selectAdmin,*/ selectPBR,
+                    /*strUsedAdminValues,*/ strUsedPPBRvsPBR;
 
-            select1 = prefix_admin;
-
-            if (gtp.prefix.Length > 0)
-            {
-                select1 += "_" + gtp.prefix;
-                select2 += select1 + "_PBR";
-            }
-            else
-            {
-                select2 += select1 + "_PBR";
-            }
-
-            return strRes;
-        }
-
-        public string GetAdminValueQuery (GTP gtp, DateTime dt) {
-            string strRes = string.Empty;
-
-            string selectAdmin, selectPBR, strUsedAdminValues,
-                strUsedPPBRvsPBR;
-
-            selectAdmin = prefix_admin;
+            //selectAdmin = prefix_admin;
             selectPBR = prefix_pbr;
 
-            strUsedAdminValues = m_strUsedAdminValues;
+            //strUsedAdminValues = m_strUsedAdminValues;
             strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
 
             if (gtp.prefix.Length > 0)
             {
-                selectAdmin += "_" + gtp.prefix;
+                //selectAdmin += "_" + gtp.prefix;
                 selectPBR += "_" + gtp.prefix + "_PBR";
             }
             else
@@ -177,23 +155,54 @@ namespace Statistic
                 selectPBR += "_PBR";
             }
 
-            strRes = @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " + strUsedAdminValues + "." + selectAdmin + @"_REC, " +
+            strRes = @"SELECT " + strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
+                    @" FROM " + strUsedPPBRvsPBR +
+                    @"WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND " + strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND MINUTE(" + strUsedPPBRvsPBR + ".DATE_TIME) = 0 " + "ORDER BY DATE_PBR ASC";
+
+            return strRes;
+        }
+
+        public string GetAdminValueQuery (GTP gtp, DateTime dt) {
+            string strRes = string.Empty;
+
+            string selectAdmin/*, selectPBR*/,
+                    strUsedAdminValues/*, strUsedPPBRvsPBR*/;
+
+            selectAdmin = prefix_admin;
+            //selectPBR = prefix_pbr;
+
+            strUsedAdminValues = m_strUsedAdminValues;
+            //strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
+
+            if (gtp.prefix.Length > 0)
+            {
+                selectAdmin += "_" + gtp.prefix;
+                //selectPBR += "_" + gtp.prefix + "_PBR";
+            }
+            else
+            {
+                //selectPBR += "_PBR";
+            }
+
+            strRes = @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_REC, " +
                     strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
                     strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
-                    strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
-                    @" FROM " + strUsedAdminValues + " LEFT JOIN " + strUsedPPBRvsPBR + " ON " + strUsedAdminValues + ".DATE = " + strUsedPPBRvsPBR + ".DATE_TIME " +
+                    @" FROM " + strUsedAdminValues +
                     @"WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                     @"' AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                     @"'" +
                     @" UNION " +
-                    @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " + strUsedAdminValues + "." + selectAdmin + @"_REC, " +
+                    @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_REC, " +
                     strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
                     strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
-                    strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
-                    @" FROM " + strUsedAdminValues + " RIGHT JOIN " + strUsedPPBRvsPBR + " ON " + strUsedAdminValues + ".DATE = " + strUsedPPBRvsPBR + ".DATE_TIME " +
-                    @"WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND MINUTE(" + strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
+                    @" FROM " + strUsedAdminValues +
+                    @"WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN ASC";
 
             return strRes;
         }
