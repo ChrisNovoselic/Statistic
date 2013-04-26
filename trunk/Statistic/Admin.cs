@@ -213,6 +213,8 @@ namespace Statistic
         int m_indxDbInterfaceConfigDB,
             m_listenerIdConfigDB;
 
+        DataTable m_tablePPBRValuesResponse;
+
         private enum StatesMachine
         {
             CurrentTime,
@@ -1557,6 +1559,8 @@ namespace Statistic
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             bool bRes = true;
+
+            m_tablePPBRValuesResponse = table.Clone ();
 
             return true;
         }
