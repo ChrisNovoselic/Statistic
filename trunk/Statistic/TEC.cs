@@ -151,23 +151,23 @@ namespace Statistic
                 select2 += select1 + "_PBR";
             }
 
-            strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
+            strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
                     m_strUsedAdminValues + "." + @select1 + @"_IS_PER, " +
                     m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
-                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + m_strUsedPPBRvsPBR + "." + select2 +
+                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + m_strUsedPPBRvsPBR + "." + select2 +
                     @" FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                     @"WHERE " + m_strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                     @"' AND " + m_strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                     @"'" +
                     @" UNION " +
-                    @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
+                    @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
                     m_strUsedAdminValues + "." + select1 + @"_IS_PER, " +
                     m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
-                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + m_strUsedPPBRvsPBR + "." + select2 +
+                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + m_strUsedPPBRvsPBR + "." + select2 +
                     @" FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                     @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                     @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
+                    @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
 
             return strRes;
         }
@@ -228,19 +228,19 @@ namespace Statistic
                         }
                     }
 
-                    strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 +
+                    strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + select1 +
                                 @", " + select2 +
                                 @", " + m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                                 @"WHERE " + m_strUsedAdminValues + ".DATE >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"' AND " + m_strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"'" +
                                 @" UNION " +
-                                @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE1, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE2, " + select1 +
+                                @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + select1 +
                                 @", " + select2 +
                                 @", " + m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                                 @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE1, DATE2 ASC";
+                                @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
                     break;
                 case TEC.TEC_TYPE.BIYSK:
                     name2 = "_PBR" + name1;

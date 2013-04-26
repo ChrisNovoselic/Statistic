@@ -134,6 +134,7 @@ namespace Statistic
             CurrentMins,
             RetroHours,
             RetroMins,
+            PBRValues,
             AdminValues,
         }
 
@@ -165,6 +166,8 @@ namespace Statistic
         private valuesS valuesHours;
         private DateTime selectedTime;
         private DateTime serverTime;
+
+        DataTable m_tablePBRResponse;
 
         private double recomendation;
 
@@ -1586,6 +1589,7 @@ namespace Statistic
                     newState = true;
                     states.Clear();
                     states.Add(StatesMachine.RetroMins);
+                    states.Add(StatesMachine.PBRValues);
                     states.Add(StatesMachine.AdminValues);
 
                     try
@@ -2146,6 +2150,9 @@ namespace Statistic
             tec.Request(request);
         }
 
+        private void GetPBRValuesRequest () {
+        }
+        
         private void GetAdminValuesRequest () {
             admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
         }
@@ -2561,6 +2568,9 @@ namespace Statistic
             valuesHours.season = seasonJumpE.None;
             valuesHours.hourAddon = 0;
             valuesHours.addonValues = false;
+        }
+
+        private void ClearPBRValues () {
         }
 
         private void ClearAdminValues()
@@ -3240,28 +3250,43 @@ namespace Statistic
             return false;
         }
 
+        private bool GetPBRValuesResponse(DataTable table)
+        {
+            bool bRes = true;
+
+            if (! (table == null))
+                m_tablePBRResponse = table.Clone();
+            else
+                ;
+
+            return bRes;
+        }
+
         private bool GetAdminValuesResponse(DataTable table)
         {
             DateTime date = dtprDate.Value.Date;
             int hour;
 
+            double currPBRe;
+            int offsetPrev = -1;
+            int offsetUDG, offsetPlan, offsetLayout;
+
             lastLayout = "---";
 
             switch (tec.type ()) {
                 case TEC.TEC_TYPE.COMMON:
+                    offsetPrev = -1;
+
                     if (num_gtp < 0)
                     {
-                        double currPBRe;
-                        int offsetPrev = -1;
-                        int offsetUDG, offsetPlan, offsetLayout;
-                        offsetUDG = 2;
-                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
-                        offsetLayout = offsetPlan + tec.list_GTP.Count;
-
                         double[,] valuesPBR = new double[tec.list_GTP.Count, 25];
                         double[,] valuesREC = new double[tec.list_GTP.Count, 25];
                         int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
                         double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
+
+                        offsetUDG = 2;
+                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
+                        offsetLayout = offsetPlan + tec.list_GTP.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
@@ -3377,11 +3402,17 @@ namespace Statistic
                                         }
                                         j++;
                                     }
+                                    
                                     string tmp = "";
                                     if (!(table.Rows[i][offsetLayout] is System.DBNull))
                                         tmp = (string)table.Rows[i][offsetLayout];
+                                    else
+                                        ;
+
                                     if (LayoutIsBiggerByName(lastLayout, tmp))
                                         lastLayout = tmp;
+                                    else
+                                        ;
                                 }
                                 catch
                                 {
@@ -3427,16 +3458,14 @@ namespace Statistic
                     }
                     else
                     {
-                        double currPBRe;
-                        int offsetPrev = -1;
-                        int offsetUDG, offsetPlan, offsetLayout;
-                        offsetUDG = 2;
-                        offsetPlan = offsetUDG + 3;
-                        offsetLayout = offsetPlan + 1;
                         double[] valuesPBR = new double[25];
                         double[] valuesREC = new double[25];
                         int[] valuesISPER = new int[25];
                         double[] valuesDIV = new double[25];
+
+                        offsetUDG = 2;
+                        offsetPlan = offsetUDG + 3;
+                        offsetLayout = offsetPlan + 1;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
@@ -3572,9 +3601,8 @@ namespace Statistic
                 case TEC.TEC_TYPE.BIYSK:
                     if (num_gtp < 0)
                     {
-                        double currPBRe;
-                        int offsetPrev = -1;
-                        int offsetUDG = 1; //, offsetPlan, offsetLayout;
+                        offsetPrev = -1;
+                        offsetUDG = 1; //, offsetPlan, offsetLayout;
                         //offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
                         //offsetLayout = offsetPlan + tec.list_GTP.Count;
 
@@ -3748,11 +3776,11 @@ namespace Statistic
                     }
                     else
                     {
-                        double currPBRe;
-                        int offsetPrev = -1;
-                        int offsetUDG = 1; //, offsetPlan, offsetLayout;
+                        offsetPrev = -1;
+                        offsetUDG = 1; //, offsetPlan, offsetLayout;
                         /*offsetPlan = offsetUDG + 3;
                         offsetLayout = offsetPlan + 1;*/
+                        
                         double[] valuesPBR = new double[25];
                         double[] valuesREC = new double[25];
                         int[] valuesISPER = new int[25];
@@ -3952,34 +3980,7 @@ namespace Statistic
             delegateStartWait();
             lock (lockValue)
             {
-                newState = true;
-                states.Clear();
-
-                if (sensorsString != "")
-                {
-                    if (currHour)
-                    {
-                        states.Add(StatesMachine.CurrentTime);
-                        states.Add(StatesMachine.CurrentHours);
-                        states.Add(StatesMachine.CurrentMins);
-                        states.Add(StatesMachine.AdminValues);
-                    }
-                    else
-                    {
-                        states.Add(StatesMachine.RetroHours);
-                        states.Add(StatesMachine.RetroMins);
-                        states.Add(StatesMachine.AdminValues);
-                        selectedTime = dtprDate.Value.Date;
-                    }
-                }
-                else
-                {
-                    states.Add(StatesMachine.Init);
-                    states.Add(StatesMachine.CurrentTime);
-                    states.Add(StatesMachine.CurrentHours);
-                    states.Add(StatesMachine.CurrentMins);
-                    states.Add(StatesMachine.AdminValues);
-                }
+                ChangeState ();
 
                 try
                 {
@@ -4031,6 +4032,33 @@ namespace Statistic
             DrawGraphMins(lastHour);
         }
 
+        private void ChangeState () {
+            newState = true;
+            states.Clear();
+
+            if (sensorsString != "")
+            {
+                if (currHour)
+                {
+                    states.Add(StatesMachine.CurrentTime);
+                }
+                else
+                {
+                    selectedTime = dtprDate.Value.Date;
+                }
+            }
+            else
+            {
+                states.Add(StatesMachine.Init);
+                states.Add(StatesMachine.CurrentTime);
+            }
+
+            states.Add(StatesMachine.CurrentHours);
+            states.Add(StatesMachine.CurrentMins);
+            states.Add(StatesMachine.PBRValues);
+            states.Add(StatesMachine.AdminValues);
+        }
+
         public void Activate(bool active)
         {
             if (active)
@@ -4039,34 +4067,7 @@ namespace Statistic
                 currValuesPeriod = 0;
                 lock (lockValue)
                 {
-                    newState = true;
-                    states.Clear();
-
-                    if (sensorsString != "")
-                    {
-                        if (currHour)
-                        {
-                            states.Add(StatesMachine.CurrentTime);
-                            states.Add(StatesMachine.CurrentHours);
-                            states.Add(StatesMachine.CurrentMins);
-                            states.Add(StatesMachine.AdminValues);
-                        }
-                        else
-                        {
-                            states.Add(StatesMachine.RetroHours);
-                            states.Add(StatesMachine.RetroMins);
-                            states.Add(StatesMachine.AdminValues);
-                            selectedTime = dtprDate.Value.Date;
-                        }
-                    }
-                    else
-                    {
-                        states.Add(StatesMachine.Init);
-                        states.Add(StatesMachine.CurrentTime);
-                        states.Add(StatesMachine.CurrentHours);
-                        states.Add(StatesMachine.CurrentMins);
-                        states.Add(StatesMachine.AdminValues);
-                    }
+                    ChangeState();
 
                     try
                     {
@@ -4380,6 +4381,10 @@ namespace Statistic
                     adminValuesReceived = false;
                     GetMinsRequest(lastHour);
                     break;
+                case StatesMachine.PBRValues:
+                    ActionReport("Получение данных плана.");
+                    GetPBRValuesRequest();
+                    break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     adminValuesReceived = false;
@@ -4419,6 +4424,9 @@ namespace Statistic
                 case StatesMachine.RetroHours:
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
+                case StatesMachine.PBRValues:
+                    //return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
                     //return admin.GetResponse(out error, out table, true);
                     return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
@@ -4490,6 +4498,15 @@ namespace Statistic
                         this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
                     }
                     break;
+                case StatesMachine.PBRValues:
+                    ClearPBRValues();
+                    result = GetPBRValuesResponse(table);
+                    if (result)
+                    {
+                    }
+                    else
+                        ;
+                    break;
                 case StatesMachine.AdminValues:
                     ClearAdminValues();
                     result = GetAdminValuesResponse(table);
@@ -4500,6 +4517,8 @@ namespace Statistic
                         adminValuesReceived = true;
                         this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
                     }
+                    else
+                        ;
                     break;
             }
 
@@ -4548,6 +4567,12 @@ namespace Statistic
                         ErrorReport("Ошибка разбора трёхминутных значений. Переход в ожидание.");
                     else
                         ErrorReport("Ошибка получения трёхминутных значений. Переход в ожидание.");
+                    break;
+                case StatesMachine.PBRValues:
+                    if (response)
+                        ErrorReport("Ошибка разбора данных плана.");
+                    else
+                        ErrorReport("Ошибка получения данных плана.");
                     break;
                 case StatesMachine.AdminValues:
                     if (response)
