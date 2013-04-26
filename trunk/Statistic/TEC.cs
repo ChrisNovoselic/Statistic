@@ -133,11 +133,12 @@ namespace Statistic
             return iRes;
         }
 
-        public string GetAdminValueQuery (GTP gtp, DateTime dt) {
+        public string GetPBRValueQuery (GTP gtp, DateTime dt) {
             string strRes = string.Empty;
 
-            string select1 = "";
-            string select2 = "";
+            string select1, select2;
+            select1 = select2 =
+            string.Empty;
 
             select1 = prefix_admin;
 
@@ -151,23 +152,54 @@ namespace Statistic
                 select2 += select1 + "_PBR";
             }
 
-            strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
-                    m_strUsedAdminValues + "." + @select1 + @"_IS_PER, " +
-                    m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
-                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + m_strUsedPPBRvsPBR + "." + select2 +
-                    @" FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                    @"WHERE " + m_strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + m_strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+            return strRes;
+        }
+
+        public string GetAdminValueQuery (GTP gtp, DateTime dt) {
+            string strRes = string.Empty;
+
+            string selectAdmin, selectPBR, strUsedAdminValues,
+                strUsedPPBRvsPBR;
+
+            selectAdmin = prefix_admin;
+            selectPBR = prefix_pbr;
+
+            strUsedAdminValues = m_strUsedAdminValues;
+            strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
+
+            if (gtp.prefix.Length > 0)
+            {
+                selectAdmin += "_" + gtp.prefix;
+                selectPBR += "_" + gtp.prefix + "_PBR";
+            }
+            else
+            {
+                selectPBR += "_PBR";
+            }
+
+            strRes = @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " + strUsedAdminValues + "." + selectAdmin + @"_REC, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
+                    strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
+                    @" FROM " + strUsedAdminValues + " LEFT JOIN " + strUsedPPBRvsPBR + " ON " + strUsedAdminValues + ".DATE = " + strUsedPPBRvsPBR + ".DATE_TIME " +
+                    @"WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                     @"'" +
                     @" UNION " +
-                    @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedAdminValues + "." + select1 + @"_REC, " +
-                    m_strUsedAdminValues + "." + select1 + @"_IS_PER, " +
-                    m_strUsedAdminValues + "." + select1 + @"_DIVIAT, " +
-                    m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + m_strUsedPPBRvsPBR + "." + select2 +
-                    @" FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
-                    @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
+                    @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " + strUsedAdminValues + "." + selectAdmin + @"_REC, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
+                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT, " +
+                    strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
+                    @" FROM " + strUsedAdminValues + " RIGHT JOIN " + strUsedPPBRvsPBR + " ON " + strUsedAdminValues + ".DATE = " + strUsedPPBRvsPBR + ".DATE_TIME " +
+                    @"WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND " + strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND MINUTE(" + strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
+
+            return strRes;
+        }
+
+        public string GetPBRValueQuery (int num_gtp, DateTime dt) {
+            string strRes = string.Empty;
 
             return strRes;
         }
@@ -175,137 +207,122 @@ namespace Statistic
         public string GetAdminValueQuery (int num_gtp, DateTime dt) {
             string strRes = string.Empty;
 
-            string name1 = string.Empty, name2 = string.Empty,
-                    select1 = string.Empty, select2 = string.Empty;
+            string nameAdmin = string.Empty, namePBR = string.Empty,
+                    selectAdmin = string.Empty, selectPBR = string.Empty;
 
-            name1 = prefix_admin;
+            nameAdmin = prefix_admin;
+            namePBR = prefix_pbr;
 
             switch (type())
             {
                 case TEC.TEC_TYPE.COMMON:
-                    name2 = name1 + "_PBR";
-
                     if (num_gtp < 0)
                     {
                         foreach (GTP g in list_GTP)
                         {
-                            select1 += ", ";
-                            select2 += ", ";
+                            selectAdmin += ", ";
+                            selectPBR += ", ";
+
                             if (g.prefix.Length > 0)
                             {
-                                select1 += m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_DIVIAT";
-                                select2 += m_strUsedPPBRvsPBR + "." + name1 + "_" + g.prefix + "_PBR";
+                                selectAdmin += m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_DIVIAT";
+                                selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + g.prefix + "_PBR";
                             }
                             else
                             {
-                                select1 += m_strUsedAdminValues + "." + name1 + @"_REC, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
-                                select2 += m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
+                                selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_REC, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
+                                            m_strUsedAdminValues + "." + namePBR + @"_DIVIAT";
+                                selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_PBR";
                             }
                         }
-                        select1 = select1.Substring(2);
-                        select2 = select2.Substring(2);
+                        selectAdmin = selectAdmin.Substring(2);
+                        selectPBR = selectPBR.Substring(2);
                     }
                     else
                     {
                         GTP g = list_GTP[num_gtp];
                         if (g.prefix.Length > 0)
                         {
-                            select1 += m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_REC, " +
-                                        m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_IS_PER, " +
-                                        m_strUsedAdminValues + "." + name1 + "_" + g.prefix + "_DIVIAT";
-                            select2 += m_strUsedPPBRvsPBR + "." + name1 + "_" + g.prefix + "_PBR";
+                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_REC, " +
+                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_IS_PER, " +
+                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_DIVIAT";
+                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + g.prefix + "_PBR";
                         }
                         else
                         {
-                            select1 += m_strUsedAdminValues + "." + name1 + @"_REC, " +
-                                        m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
-                                        m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
-                            select2 += m_strUsedPPBRvsPBR + "." + name1 + "_PBR";
+                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_REC, " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
+                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_PBR";
                         }
                     }
 
-                    strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + select1 +
-                                @", " + select2 +
+                    strRes = @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + selectAdmin +
+                                @", " + selectPBR +
                                 @", " + m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + m_strUsedAdminValues + " LEFT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                                 @"WHERE " + m_strUsedAdminValues + ".DATE >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"' AND " + m_strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"'" +
                                 @" UNION " +
-                                @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + select1 +
-                                @", " + select2 +
+                                @"SELECT " + m_strUsedAdminValues + ".DATE AS DATE_ADMIN, " + m_strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + selectAdmin +
+                                @", " + selectPBR +
                                 @", " + m_strUsedPPBRvsPBR + ".PBR_NUMBER FROM " + m_strUsedAdminValues + " RIGHT JOIN " + m_strUsedPPBRvsPBR + " ON " + m_strUsedAdminValues + ".DATE = " + m_strUsedPPBRvsPBR + ".DATE_TIME " +
                                 @"WHERE " + m_strUsedPPBRvsPBR + ".DATE_TIME >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"' AND " + m_strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                 @"' AND MINUTE(" + m_strUsedPPBRvsPBR + ".DATE_TIME) = 0 AND " + m_strUsedAdminValues + ".DATE IS NULL ORDER BY DATE_ADMIN, DATE_PBR ASC";
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    name2 = "_PBR" + name1;
-
                     if (num_gtp < 0)
                     {
                         foreach (GTP g in list_GTP)
                         {
-                            select1 += ", ";
-                            select2 += ", ";
+                            selectAdmin += ", ";
+                            selectPBR += ", ";
+
                             switch (g.name)
                             {
                                 case "ÃÒÏ ÒÃ3-8":
-                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_" + g.prefix + "_REC, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_IS_PER, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_DIVIAT";
-                                    select2 += m_strUsedPPBRvsPBR + @"." + name2 +
-                                               @"_110";
-                                    break;
                                 case "ÃÒÏ ÒÃ1,2":
-                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_" + g.prefix + "_REC, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_IS_PER, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_" + g.prefix + "_DIVIAT";
-                                    select2 += @"PPBRVSPBR." + name2 +
-                                               @"_35";
+                                    selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix + "_REC, " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_IS_PER, " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_DIVIAT";
+                                    selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + g.prefix;
                                     break;
                                 default:
-                                    select1 += m_strUsedAdminValues + @"." + name1 + @"_REC, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
-                                                m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
-                                    select2 += m_strUsedPPBRvsPBR + @"." + name2;
+                                    selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
+                                    selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                                     break;
                             }
                         }
-                        select1 = select1.Substring(2);
-                        select2 = select2.Substring(2);
+                        selectAdmin = selectAdmin.Substring(2);
+                        selectPBR = selectPBR.Substring(2);
                     }
                     else
                     {
                         switch (list_GTP[num_gtp].name)
                         {
                             case "ÃÒÏ ÒÃ3-8":
-                                select1 += m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
-                                select2 += m_strUsedPPBRvsPBR + @"." + name2 +
-                                           @"_110";
-                                break;
                             case "ÃÒÏ ÒÃ1,2":
-                                select1 += m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + @"." + name1 + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
-                                select2 += m_strUsedPPBRvsPBR + @"." + name2 +
-                                           @"_35";
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
+                                            m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix;
                                 break;
                             default:
-                                select1 += m_strUsedAdminValues + @"." + name1 + @"_REC, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_IS_PER, " +
-                                            m_strUsedAdminValues + "." + name1 + @"_DIVIAT";
-                                select2 += m_strUsedPPBRvsPBR + @"." + name2;
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                                 break;
                         }
                     }
 
-                    strRes = @"SELECT DATE, " + select1 +
+                    strRes = @"SELECT DATE, " + selectAdmin +
                              @" FROM " + m_strUsedAdminValues + " " +
                              @"WHERE DATE >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                              @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +

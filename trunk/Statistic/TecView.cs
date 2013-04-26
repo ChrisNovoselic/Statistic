@@ -2151,6 +2151,7 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
+            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_gtp, dtprDate.Value.Date));
         }
         
         private void GetAdminValuesRequest () {

@@ -1536,6 +1536,11 @@ namespace Statistic
             return true;
         }
 
+        private void GetPBRValuesRequest(TEC t, GTP gtp, DateTime date)
+        {
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetAdminValueQuery(gtp, date));
+        }
+
         private void GetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
         {
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(gtp, date));
