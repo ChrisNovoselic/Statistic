@@ -1693,20 +1693,6 @@ namespace Statistic
             return true;
         }
 
-        private string NameFieldOfRequest(TEC t, GTP gtp)
-        {
-            string strRes = @"" + t.prefix_admin;
-
-            if (gtp.prefix.Length > 0)
-            {
-                strRes += "_" + gtp.prefix;
-            }
-            else
-                ;
-
-            return strRes;
-        }
-
         private void SetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
         {
             int currentHour = serverTime.Hour;
@@ -1718,7 +1704,7 @@ namespace Statistic
 
             string requestUpdate = "", requestInsert = "";
 
-            string name = NameFieldOfRequest(t, gtp);
+            string name = t.NameFieldOfAdminRequest(gtp);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1750,6 +1736,9 @@ namespace Statistic
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
             }
+            else
+                ;
+
             string requestDelete = string.Empty;
                                    //@"DELETE FROM " + t.m_strUsedAdminValues + " WHERE " +
                                    //@"BTEC_TG1_REC = 0 AND BTEC_TG1_IS_PER = 0 AND BTEC_TG1_DIVIAT = 0 AND " +
@@ -1837,14 +1826,14 @@ namespace Statistic
 
             string requestUpdate = "", requestInsert = "";
 
-            string name = NameFieldOfRequest(t, gtp);
+            string name = t.NameFieldOfPBRRequest(gtp);
 
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
                 if (PPBRDates[i])
                 {
-                    requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_PBR='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                    requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.REC] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";

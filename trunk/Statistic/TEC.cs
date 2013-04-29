@@ -11,11 +11,15 @@ namespace Statistic
 {
     public class TEC
     {
+        public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
+                                        PBR_DATETIME, PBR, 
+                                        COUNT_INDEX_NAME_FIELD};
         public enum TEC_TYPE { COMMON, BIYSK };
 
         public string name,
                     prefix_admin, prefix_pbr,
                     m_strUsedAdminValues, m_strUsedPPBRvsPBR;
+        public List <string> m_strNamesField;
 
         public List<GTP> list_GTP;
 
@@ -52,6 +56,8 @@ namespace Statistic
                 -1;
             }
 
+            m_strNamesField = new List<string> ();
+
             if (type () == TEC_TYPE.BIYSK)
                 parametersTGForm = new ParametersTG ();
             else
@@ -60,6 +66,17 @@ namespace Statistic
             is_data_error = is_connection_error = false;
 
             used = 0;
+        }
+
+        public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
+                                    string pbr_datetime, string ppbr_vs_pbr) {
+            m_strNamesField.Add(admin_datetime); //INDEX_NAME_FIELD.ADMIN_DATETIME
+            m_strNamesField.Add(admin_rec); //INDEX_NAME_FIELD.REC
+            m_strNamesField.Add(admin_is_per); //INDEX_NAME_FIELD.IS_PER
+            m_strNamesField.Add(admin_diviat); //INDEX_NAME_FIELD.DIVIAT
+
+            m_strNamesField.Add(pbr_datetime); //INDEX_NAME_FIELD.PBR_DATETIME
+            m_strNamesField.Add(ppbr_vs_pbr); //INDEX_NAME_FIELD.PBR
         }
 
         public void Request(string request)
@@ -96,8 +113,13 @@ namespace Statistic
                 m_dbInterface.Stop();
                 m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
             }
+            else
+                ;
+
             if (used < 0)
                 used = 0;
+            else
+                ;
         }
 
         public void StopDbInterfaceForce()
@@ -107,6 +129,8 @@ namespace Statistic
                 m_dbInterface.Stop();
                 m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
             }
+            else
+                ;
         }
 
         public void RefreshConnectionSettings()
@@ -145,21 +169,21 @@ namespace Statistic
             //strUsedAdminValues = m_strUsedAdminValues;
             strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
 
-            if (gtp.prefix.Length > 0)
+            if (gtp.prefix_pbr.Length > 0)
             {
                 //selectAdmin += "_" + gtp.prefix;
-                selectPBR += "_" + gtp.prefix + "_PBR";
+                selectPBR += "_" + gtp.prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
             else
             {
                 selectPBR += "_PBR";
             }
 
-            strRes = @"SELECT " + strUsedPPBRvsPBR + ".DATE_TIME AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR +
+            strRes = @"SELECT " + strUsedPPBRvsPBR + "." + m_strNamesField [(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR, " + strUsedPPBRvsPBR + "." + selectPBR + " AS PBR" + 
                     @" FROM " + strUsedPPBRvsPBR +
-                    @" WHERE " + strUsedPPBRvsPBR + ".DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND " + strUsedPPBRvsPBR + ".DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND MINUTE(" + strUsedPPBRvsPBR + ".DATE_TIME) = 0 " + "ORDER BY DATE_PBR ASC";
+                    @" WHERE " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    @"' AND MINUTE(" + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0 " + "ORDER BY DATE_PBR ASC";
 
             return strRes;
         }
@@ -176,9 +200,9 @@ namespace Statistic
             strUsedAdminValues = m_strUsedAdminValues;
             //strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
 
-            if (gtp.prefix.Length > 0)
+            if (gtp.prefix_admin.Length > 0)
             {
-                selectAdmin += "_" + gtp.prefix;
+                selectAdmin += "_" + gtp.prefix_admin;
                 //selectPBR += "_" + gtp.prefix + "_PBR";
             }
             else
@@ -187,17 +211,17 @@ namespace Statistic
             }
 
             strRes = @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_REC, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT" +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] +
                     @" FROM " + strUsedAdminValues +
                     @" WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                     @" AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                     @" UNION " +
                     @"SELECT " + strUsedAdminValues + ".DATE AS DATE_ADMIN, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_REC, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_IS_PER, " +
-                    strUsedAdminValues + "." + selectAdmin + @"_DIVIAT" +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                    strUsedAdminValues + "." + selectAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] +
                     @" FROM " + strUsedAdminValues +
                     @" WHERE " + strUsedAdminValues + ".DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                     @" AND " + strUsedAdminValues + ".DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
@@ -231,19 +255,19 @@ namespace Statistic
                             selectAdmin += ", ";
                             selectPBR += ", ";
 
-                            if (g.prefix.Length > 0)
+                            if (g.prefix_admin.Length > 0)
                             {
-                                selectAdmin += m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_DIVIAT";
-                                selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + g.prefix + "_PBR";
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                            m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                            m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
                             }
                             else
                             {
-                                selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_REC, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
-                                            m_strUsedAdminValues + "." + namePBR + @"_DIVIAT";
-                                selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_PBR";
+                                selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                            m_strUsedAdminValues + "." + namePBR + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                                selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
                             }
                         }
                         selectAdmin = selectAdmin.Substring(2);
@@ -252,19 +276,19 @@ namespace Statistic
                     else
                     {
                         GTP g = list_GTP[num_gtp];
-                        if (g.prefix.Length > 0)
+                        if (g.prefix_admin.Length > 0)
                         {
-                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_REC, " +
-                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_IS_PER, " +
-                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix + "_DIVIAT";
-                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + g.prefix + "_PBR";
+                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                        m_strUsedAdminValues + "." + nameAdmin + "_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.DIVIAT];
+                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.PBR];
                         }
                         else
                         {
-                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_REC, " +
-                                        m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
-                                        m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
-                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_PBR";
+                            selectAdmin += m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                            selectPBR += m_strUsedPPBRvsPBR + "." + namePBR + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
                         }
                     }
 
@@ -290,17 +314,17 @@ namespace Statistic
                             selectAdmin += ", ";
                             selectPBR += ", ";
 
-                            if (g.prefix.Length > 0)
+                            if (g.prefix_admin.Length > 0)
                             {
-                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix + "_REC, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_IS_PER, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix + "_DIVIAT";
-                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + g.prefix;
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                                selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + g.prefix_pbr;
                             }
                             else {
-                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
-                                                m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
-                                                m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
+                                selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                                m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
                                 selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                             }
                         }
@@ -310,17 +334,17 @@ namespace Statistic
                     else
                     {
                         GTP g = list_GTP[num_gtp];
-                        if (g.prefix.Length > 0)
+                        if (g.prefix_admin.Length > 0)
                         {
-                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_REC, " +
-                                        m_strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_IS_PER, " +
-                                        m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix + "_DIVIAT";
-                            selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix;
+                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                        m_strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                        m_strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                            selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix_pbr;
                         }
                         else {
-                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_REC, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_IS_PER, " +
-                                            m_strUsedAdminValues + "." + nameAdmin + @"_DIVIAT";
+                            selectAdmin += m_strUsedAdminValues + @"." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                                            m_strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
                             selectPBR += m_strUsedPPBRvsPBR + @"." + namePBR;
                         }
                     }
@@ -350,6 +374,34 @@ namespace Statistic
                       @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                       @"' ORDER BY DATE_TIME ASC";
+        }
+
+        public string NameFieldOfAdminRequest(GTP gtp)
+        {
+            string strRes = @"" + this.prefix_admin;
+
+            if (gtp.prefix_admin.Length > 0)
+            {
+                strRes += "_" + gtp.prefix_admin;
+            }
+            else
+                ;
+
+            return strRes;
+        }
+
+        public string NameFieldOfPBRRequest(GTP gtp)
+        {
+            string strRes = @"" + this.prefix_pbr;
+
+            if (gtp.prefix_pbr.Length > 0)
+            {
+                strRes += "_" + gtp.prefix_pbr;
+            }
+            else
+                ;
+
+            return strRes;
         }
     }
 }

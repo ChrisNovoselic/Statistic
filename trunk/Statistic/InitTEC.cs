@@ -45,14 +45,23 @@ namespace Statistic
                                 list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
                                 list_tec.Rows[i]["PREFIX_PBR"].ToString()));
 
+                //List <string> listNamesField;
+                //listNamesField = new List<string> ();
+                //listNamesField.Add ();
+                tec[i].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
+                                    list_tec.Rows[i]["ADMIN_REC"].ToString(),
+                                    list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
+                                    list_tec.Rows[i]["ADMIN_DIVIAT"].ToString(),
+                                    list_tec.Rows[i]["PBR_DATETIME"].ToString(),
+                                    list_tec.Rows[i]["PPBRvsPBR"].ToString());
+
                 tec[i].connSettings (DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int) CONN_SETT_TYPE.PBR);
 
                 list_gtp = DbInterface.Request(connSett, "SELECT * FROM GTP_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString ());
                 for (int j = 0; j < list_gtp.Rows.Count; j ++) {
-                    tec[i].list_GTP.Add(new GTP(tec[i]));
-                    tec[i].list_GTP[j].prefix = list_gtp.Rows [j]["PREFIX"].ToString ();
+                    tec[i].list_GTP.Add(new GTP(tec[i], list_gtp.Rows [j]["PREFIX_ADMIN"].ToString (), list_gtp.Rows [j]["PREFIX_PBR"].ToString ()));
                     tec[i].list_GTP[j].name = list_gtp.Rows[j]["NAME"].ToString(); //list_gtp.Rows[j]["NAME_GNOVOS"]
                     
                     list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_GTP = " + list_gtp.Rows[j]["ID"].ToString());

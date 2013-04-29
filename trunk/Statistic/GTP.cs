@@ -7,20 +7,17 @@ namespace Statistic
     public class GTP
     {
         public string name;
-        public string prefix;
+        public string prefix_admin, prefix_pbr;
         public List<TG> TG;
         public TEC tec;
 
-        //Для особенной ТЭЦ (Бийск)
-        //public DbDataInterface dataInterface;
-        //public DbDataInterface dataInterfaceAdmin;
-
-        public GTP(TEC tec)
+        public GTP(TEC tec, string prefix_admin, string prefix_pbr)
         {
             this.tec = tec;
             TG = new List<TG>();
-            //dataInterface = new DbDataInterface();
-            //dataInterfaceAdmin = new DbDataInterface();
+
+            this.prefix_admin = prefix_admin;
+            this.prefix_pbr = prefix_pbr;
         }
     }
 }

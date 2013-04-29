@@ -3296,8 +3296,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][1]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         int j = 0;
