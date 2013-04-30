@@ -3256,15 +3256,18 @@ namespace Statistic
             bool bRes = true;
 
             if (! (table == null))
-                m_tablePBRResponse = table.Clone();
+                m_tablePBRResponse = table.Copy();
             else
                 ;
 
             return bRes;
         }
 
-        private bool GetAdminValuesResponse(DataTable table)
+        private bool GetAdminValuesResponse(DataTable table_in)
         {
+            DataTable table = table_in.Clone();
+            table.Merge(m_tablePBRResponse, false);
+            
             DateTime date = dtprDate.Value.Date;
             int hour;
 
@@ -3285,14 +3288,14 @@ namespace Statistic
                         int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
                         double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
 
-                        offsetUDG = 2;
+                        offsetUDG = 1;
                         offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
                         offsetLayout = offsetPlan + tec.list_GTP.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i][1] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
@@ -3316,8 +3319,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3334,12 +3337,12 @@ namespace Statistic
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i][1] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][1]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3378,8 +3381,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3471,12 +3474,12 @@ namespace Statistic
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i][1] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][1]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         valuesPBR[24] = (double)table.Rows[i][offsetPlan];
@@ -3490,8 +3493,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3508,12 +3511,12 @@ namespace Statistic
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i][1] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][1]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][1]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3541,8 +3544,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3615,12 +3618,12 @@ namespace Statistic
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i][0] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         int j = 0;
@@ -3639,8 +3642,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3657,12 +3660,12 @@ namespace Statistic
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i][0] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3701,8 +3704,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3790,12 +3793,12 @@ namespace Statistic
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i][0] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         valuesPBR[24] = 0/*(double)table.Rows[i][offsetPlan]*/;
@@ -3811,8 +3814,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day == date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3829,12 +3832,12 @@ namespace Statistic
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i][0] is System.DBNull))
+                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3862,8 +3865,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -4426,8 +4429,8 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.PBRValues:
-                    //return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
-                    return true; //Имитация получения данных плана
+                    return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    //return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
                     //return admin.GetResponse(out error, out table, true);
                     return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
