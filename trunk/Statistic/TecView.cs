@@ -3325,6 +3325,8 @@ namespace Statistic
                                     {
                                         offsetPrev = i;
                                     }
+                                    else
+                                        ;
                                 }
                                 catch
                                 {
@@ -3379,6 +3381,7 @@ namespace Statistic
                                         }
                                         j++;
                                     }
+
                                     string tmp = "";
                                     if (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull))
                                         tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
@@ -3488,8 +3491,8 @@ namespace Statistic
                         int[] valuesISPER = new int[25];
                         double[] valuesDIV = new double[25];
 
-                        offsetUDG = 2;
-                        offsetPlan = offsetUDG + 3;
+                        offsetUDG = 1;
+                        offsetPlan = 1;
                         offsetLayout = offsetPlan + 1;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
