@@ -3265,14 +3265,15 @@ namespace Statistic
 
         private bool GetAdminValuesResponse(DataTable table_in)
         {
-            DataTable table = table_in.Clone();
-            table.Merge(m_tablePBRResponse, false);
+            //DataTable table = table_in.Copy();
+            //table.Merge(m_tablePBRResponse, false);
             
             DateTime date = dtprDate.Value.Date;
             int hour;
 
             double currPBRe;
-            int offsetPrev = -1;
+            int offsetPrev = -1,
+            tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
             int offsetUDG, offsetPlan, offsetLayout;
 
             lastLayout = "---";
@@ -3289,24 +3290,24 @@ namespace Statistic
                         double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
 
                         offsetUDG = 1;
-                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count + 1;
+                        offsetPlan = /*offsetUDG + 3 * tec.list_GTP.Count +*/ 1;
                         offsetLayout = offsetPlan + tec.list_GTP.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                            if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)
+                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         int j = 0;
                                         foreach (GTP g in tec.list_GTP)
                                         {
-                                            valuesPBR[j, 24] = (double)table.Rows[i][offsetPlan + j];
+                                            valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
                                             j++;
                                         }
                                     }
@@ -3319,8 +3320,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3332,17 +3333,17 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < table.Rows.Count; i++)
+                        for (int i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                            if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
+                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3353,14 +3354,25 @@ namespace Statistic
                                     {
                                         try
                                         {
-                                            if (!(table.Rows[i][offsetPlan + j] is System.DBNull))
-                                                valuesPBR[j, hour - 1] = (double)table.Rows[i][offsetPlan + j];
-                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                            if (!(m_tablePBRResponse.Rows[i][offsetPlan + j] is System.DBNull))
+                                                valuesPBR[j, hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            else
+                                                ;
                                         }
                                         catch
                                         {
@@ -3368,10 +3380,15 @@ namespace Statistic
                                         j++;
                                     }
                                     string tmp = "";
-                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
+                                    else
+                                        ;
+                                    
                                     if (LayoutIsBiggerByName(lastLayout, tmp))
                                         lastLayout = tmp;
+                                    else
+                                        ;
                                 }
                                 catch
                                 {
@@ -3381,12 +3398,14 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
                                     int j = 0;
                                     foreach (GTP g in tec.list_GTP)
@@ -3394,12 +3413,14 @@ namespace Statistic
                                         try
                                         {
                                             valuesPBR[j, hour - 1] = 0;
-                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            
+                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            
+                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
                                         }
                                         catch
                                         {
@@ -3408,8 +3429,8 @@ namespace Statistic
                                     }
                                     
                                     string tmp = "";
-                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
                                     else
                                         ;
 
@@ -3472,17 +3493,17 @@ namespace Statistic
                         offsetLayout = offsetPlan + 1;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                            if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)
+                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
-                                        valuesPBR[24] = (double)table.Rows[i][offsetPlan];
+                                        valuesPBR[24] = (double)m_tablePBRResponse.Rows[i][offsetPlan];
                                     }
                                 }
                                 catch
@@ -3493,8 +3514,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3506,35 +3527,52 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < table.Rows.Count; i++)
+                        for (int i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                            if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
+                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
                                             continue;
 
-                                    if (!(table.Rows[i][offsetPlan] is System.DBNull))
-                                        valuesPBR[hour - 1] = (double)table.Rows[i][offsetPlan];
-                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    if (!(m_tablePBRResponse.Rows[i][offsetPlan] is System.DBNull))
+                                        valuesPBR[hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan];
+                                    else
+                                        ;
+                                    
+                                    if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG];
+                                    else
+                                        ;
+                                    
+                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                    else
+                                        ;
+                                    
+                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                    else
+                                        ;
+                                    
                                     string tmp = "";
-                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
+                                    else
+                                        ;
+
                                     if (LayoutIsBiggerByName(lastLayout, tmp))
                                         lastLayout = tmp;
+                                    else
+                                        ;
                                 }
                                 catch
                                 {
@@ -3544,26 +3582,41 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
                                     valuesPBR[hour - 1] = 0;
-                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG];
+                                    else
+                                        ;
+
+                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                    else
+                                        ;
+                                    
+                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                    else
+                                        ;
 
                                     string tmp = "";
-                                    if (!(table.Rows[i][offsetLayout] is System.DBNull))
-                                        tmp = (string)table.Rows[i][offsetLayout];
+                                    if (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull))
+                                        tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
+                                    else
+                                        ;
+
                                     if (LayoutIsBiggerByName(lastLayout, tmp))
                                         lastLayout = tmp;
+                                    else
+                                        ;
                                 }
                                 catch
                                 {
@@ -3616,14 +3669,14 @@ namespace Statistic
                         double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
+                            if (!(table_in.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         int j = 0;
@@ -3642,8 +3695,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3655,17 +3708,17 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < table.Rows.Count; i++)
+                        for (int i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
+                            if (!(table_in.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3678,12 +3731,20 @@ namespace Statistic
                                         {
                                             /*if (!(table.Rows[i][offsetPlan + j] is System.DBNull))*/
                                             valuesPBR[j, hour - 1] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
-                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            else
+                                                ;
                                         }
                                         catch
                                         {
@@ -3704,12 +3765,14 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
                                     int j = 0;
                                     foreach (GTP g in tec.list_GTP)
@@ -3717,12 +3780,20 @@ namespace Statistic
                                         try
                                         {
                                             valuesPBR[j, hour - 1] = 0;
-                                            if (!(table.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                                valuesREC[j, hour - 1] = (double)table.Rows[i][offsetUDG + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table.Rows[i][offsetUDG + 1 + j * 3];
-                                            if (!(table.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table.Rows[i][offsetUDG + 2 + j * 3];
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            else
+                                                ;
+
+                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            else
+                                                ;
                                         }
                                         catch
                                         {
@@ -3791,14 +3862,14 @@ namespace Statistic
                         double[] valuesDIV = new double[25];
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < table.Rows.Count && offsetPrev < 0; i++)
+                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
-                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
+                            if (!(table_in.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                         valuesPBR[24] = 0/*(double)table.Rows[i][offsetPlan]*/;
@@ -3814,8 +3885,8 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
                                     }
@@ -3827,17 +3898,17 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < table.Rows.Count; i++)
+                        for (int i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
 
-                            if (!(table.Rows[i]["DATE_ADMIN"] is System.DBNull))
+                            if (!(table_in.Rows[i]["DATE_ADMIN"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3845,12 +3916,21 @@ namespace Statistic
 
                                     /*if (!(table.Rows[i][offsetPlan] is System.DBNull))*/
                                     valuesPBR[hour - 1] = 0/*(double)table.Rows[i][offsetPlan]*/;
-                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG];
+                                    else
+                                        ;
+
+                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                    else
+                                        ;
+                                    
+                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                    else
+                                        ;
+
                                     /*string tmp = "";
                                     if (!(table.Rows[i][offsetLayout] is System.DBNull))
                                         tmp = (string)table.Rows[i][offsetLayout];
@@ -3865,20 +3945,30 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                                    if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                    hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                                    if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                                         hour = 24;
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
                                     valuesPBR[hour - 1] = 0;
-                                    if (!(table.Rows[i][offsetUDG] is System.DBNull))
-                                        valuesREC[hour - 1] = (double)table.Rows[i][offsetUDG];
-                                    if (!(table.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table.Rows[i][offsetUDG + 1];
-                                    if (!(table.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table.Rows[i][offsetUDG + 2];
+                                    if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
+                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG];
+                                    else
+                                        ;
+
+                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                    else
+                                        ;
+
+                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                    else
+                                        ;
 
                                     /*string tmp = "";
                                     if (!(table.Rows[i][offsetLayout] is System.DBNull))
