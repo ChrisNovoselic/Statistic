@@ -3289,7 +3289,7 @@ namespace Statistic
                         double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
 
                         offsetUDG = 1;
-                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
+                        offsetPlan = offsetUDG + 3 * tec.list_GTP.Count + 1;
                         offsetLayout = offsetPlan + tec.list_GTP.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
