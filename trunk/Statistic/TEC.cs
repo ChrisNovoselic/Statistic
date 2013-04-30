@@ -12,7 +12,7 @@ namespace Statistic
     public class TEC
     {
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
-                                        PBR_DATETIME, PBR, 
+                                        PBR_DATETIME, PBR, PBR_NUMBER, 
                                         COUNT_INDEX_NAME_FIELD};
         public enum TEC_TYPE { COMMON, BIYSK };
 
@@ -69,7 +69,7 @@ namespace Statistic
         }
 
         public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
-                                    string pbr_datetime, string ppbr_vs_pbr) {
+                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
             m_strNamesField.Add(admin_datetime); //INDEX_NAME_FIELD.ADMIN_DATETIME
             m_strNamesField.Add(admin_rec); //INDEX_NAME_FIELD.REC
             m_strNamesField.Add(admin_is_per); //INDEX_NAME_FIELD.IS_PER
@@ -77,6 +77,8 @@ namespace Statistic
 
             m_strNamesField.Add(pbr_datetime); //INDEX_NAME_FIELD.PBR_DATETIME
             m_strNamesField.Add(ppbr_vs_pbr); //INDEX_NAME_FIELD.PBR
+
+            m_strNamesField.Add(pbr_number); //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
         public void Request(string request)
@@ -294,9 +296,12 @@ namespace Statistic
                 //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                 strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                 //        selectAdmin +
-                @", " + selectPBR +
-                @", " + strUsedPPBRvsPBR + ".PBR_NUMBER " +
-                @"FROM " +
+                @", " + selectPBR;
+            if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                strRes += @", " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
+            else
+                ;
+            strRes += @" " + @"FROM " +
                 /*strUsedAdminValues*/ strUsedPPBRvsPBR +
                 @" WHERE " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                 @" AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +

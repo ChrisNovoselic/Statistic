@@ -53,7 +53,8 @@ namespace Statistic
                                     list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
                                     list_tec.Rows[i]["ADMIN_DIVIAT"].ToString(),
                                     list_tec.Rows[i]["PBR_DATETIME"].ToString(),
-                                    list_tec.Rows[i]["PPBRvsPBR"].ToString());
+                                    list_tec.Rows[i]["PPBRvsPBR"].ToString(),
+                                    list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
                 tec[i].connSettings (DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
