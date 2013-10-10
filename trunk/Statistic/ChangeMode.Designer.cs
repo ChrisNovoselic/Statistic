@@ -34,11 +34,13 @@ namespace Statistic
             this.clbMode = new System.Windows.Forms.CheckedListBox();
             this.btnSetAll = new System.Windows.Forms.Button();
             this.btnClearAll = new System.Windows.Forms.Button();
+            this.comboBoxModeTEC = new System.Windows.Forms.ComboBox();
+            this.labelModeTEC = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(5, 253);
+            this.btnOk.Location = new System.Drawing.Point(5, 295);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(95, 23);
             this.btnOk.TabIndex = 1;
@@ -49,7 +51,7 @@ namespace Statistic
             // параметрыПриложения
             // 
             this.параметрыПриложения.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.параметрыПриложения.Location = new System.Drawing.Point(106, 253);
+            this.параметрыПриложения.Location = new System.Drawing.Point(106, 295);
             this.параметрыПриложения.Name = "параметрыПриложения";
             this.параметрыПриложения.Size = new System.Drawing.Size(95, 23);
             this.параметрыПриложения.TabIndex = 2;
@@ -70,9 +72,9 @@ namespace Statistic
             // 
             this.clbMode.CheckOnClick = true;
             this.clbMode.FormattingEnabled = true;
-            this.clbMode.Location = new System.Drawing.Point(5, 48);
+            this.clbMode.Location = new System.Drawing.Point(5, 75);
             this.clbMode.Name = "clbMode";
-            this.clbMode.Size = new System.Drawing.Size(197, 199);
+            this.clbMode.Size = new System.Drawing.Size(197, 214);
             this.clbMode.TabIndex = 4;
             // 
             // btnSetAll
@@ -95,12 +97,38 @@ namespace Statistic
             this.btnClearAll.UseVisualStyleBackColor = true;
             this.btnClearAll.Click += new System.EventHandler(this.btnClearAll_Click);
             // 
+            // comboBoxModeTEC
+            // 
+            this.comboBoxModeTEC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxModeTEC.FormattingEnabled = true;
+            this.comboBoxModeTEC.Items.AddRange(new object[] {
+            "ГТП",
+            "ЩУ"});
+            this.comboBoxModeTEC.Location = new System.Drawing.Point(106, 48);
+            this.comboBoxModeTEC.Name = "comboBoxModeTEC";
+            this.comboBoxModeTEC.Size = new System.Drawing.Size(95, 21);
+            this.comboBoxModeTEC.TabIndex = 7;
+            this.comboBoxModeTEC.SelectedIndex = 0;
+            this.comboBoxModeTEC.SelectedIndexChanged += new System.EventHandler(this.comboBoxModeTEC_SelectedIndexChanged);
+            // 
+            // labelModeTEC
+            // 
+            this.labelModeTEC.AutoSize = true;
+            this.labelModeTEC.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelModeTEC.Location = new System.Drawing.Point(6, 48);
+            this.labelModeTEC.Name = "labelModeTEC";
+            this.labelModeTEC.Size = new System.Drawing.Size(74, 15);
+            this.labelModeTEC.TabIndex = 8;
+            this.labelModeTEC.Text = "По составу:";
+            // 
             // ChangeMode
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.параметрыПриложения;
-            this.ClientSize = new System.Drawing.Size(206, 278);
+            this.ClientSize = new System.Drawing.Size(206, 322);
+            this.Controls.Add(this.labelModeTEC);
+            this.Controls.Add(this.comboBoxModeTEC);
             this.Controls.Add(this.btnClearAll);
             this.Controls.Add(this.btnSetAll);
             this.Controls.Add(this.clbMode);
@@ -128,5 +156,7 @@ namespace Statistic
         private System.Windows.Forms.CheckedListBox clbMode;
         private System.Windows.Forms.Button btnSetAll;
         private System.Windows.Forms.Button btnClearAll;
+        private System.Windows.Forms.ComboBox comboBoxModeTEC;
+        private System.Windows.Forms.Label labelModeTEC;
     }
 }

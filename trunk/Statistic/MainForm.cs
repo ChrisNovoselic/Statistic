@@ -88,16 +88,16 @@ namespace Statistic
             }
             else
             {
-                InitTEC initTec = new InitTEC(connSettForm.connectionSettings [0]);
-                InitializeComponent(initTec.tec);
+                Initialize();
             }
         }
 
-        private bool InitializeComponent(List <TEC> tec)
+        private bool Initialize()
         {
             firstStart = true;
 
-            this.tec = tec;
+            changeMode = new ChangeMode(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
+            this.tec = changeMode.tec;
             oldSelectedIndex = 0;
 
             adminPanel = new Admin(tec, stsStrip);
@@ -105,7 +105,7 @@ namespace Statistic
 
             adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
-            changeMode = new ChangeMode(tec);
+            //changeMode = new ChangeMode();
             passwordForm = new Password(adminPanel);
             setPasswordForm = new SetPassword(adminPanel);
             passwordSettingsForm = new PasswordSettings(adminPanel);
@@ -229,11 +229,12 @@ namespace Statistic
                 if (result == DialogResult.Yes)
                 {
                     if (! (tecViews == null)) tecViews.Clear (); else ;
-                    
+
                     if (timer.Enabled) timer.Stop(); else ;
                     if (! (adminPanel == null)) adminPanel.StopDbInterface(); else ;
 
-                    InitializeComponent(new InitTEC(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]).tec);
+                    changeMode.InitTEC (connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
+                    Initialize();
 
                     //foreach (TecView t in tecViews)
                     //{
@@ -314,7 +315,7 @@ namespace Statistic
                     for (i = 0; i < changeMode.tec_index.Count; i++)
                     {
                         index = changeMode.was_checked.IndexOf(i);
-                        
+
                         if (! (index < 0))
                         {
                             if ((tecViews[i].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)

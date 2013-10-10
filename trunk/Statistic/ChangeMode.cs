@@ -18,19 +18,32 @@ namespace Statistic
         //public bool ppbr_was_checked;
         public bool closing;
 
-        public ChangeMode(List<TEC> tec)
+        public ChangeMode(ConnectionSettings connSet)
         {
-            int index_tec = 0, index_gtp = 0;
-            this.tec = tec;
-
             InitializeComponent();
+            
+            InitTEC (connSet);
+
+            clbMode.Items.Add("Редактирование ПБР");
+            
+            //clbMode.Items.Add("Назначение ПБР");
+            
+            closing = false;
+        }
+
+        public void InitTEC (ConnectionSettings connSet) {
+            int index_tec = 0, index_gtp = 0;
+
+            clbMode.Items.Clear ();
+            
+            this.tec = new InitTEC(connSet, (short)comboBoxModeTEC.SelectedIndex).tec;
 
             tec_index = new List<int>();
             gtp_index = new List<int>();
             was_checked = new List<int>();
             admin_was_checked = false;
 
-            foreach (TEC t in tec)
+            foreach (TEC t in this.tec)
             {
                 clbMode.Items.Add(t.name);
                 tec_index.Add(index_tec);
@@ -48,12 +61,6 @@ namespace Statistic
                 }
                 index_tec++;
             }
-
-            clbMode.Items.Add("Редактирование ПБР");
-            
-            //clbMode.Items.Add("Назначение ПБР");
-            
-            closing = false;
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -113,6 +120,11 @@ namespace Statistic
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
+        }
+
+        private void comboBoxModeTEC_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            closing = false;
         }
     }
 }

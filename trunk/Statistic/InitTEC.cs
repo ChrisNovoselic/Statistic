@@ -11,7 +11,7 @@ namespace Statistic
     {
         public List<TEC> tec;
 
-        public InitTEC(ConnectionSettings connSett)
+        public InitTEC(ConnectionSettings connSett, Int16 indx)
         {
             tec = new List<TEC> ();
 
@@ -35,7 +35,7 @@ namespace Statistic
             //dbInterface.ListenerUnregister(listenerId);
 
             //Использование статической функции
-            list_tec= DbInterface.Request(connSett, "SELECT * FROM TEC_LIST");
+            list_tec= DbInterface.Request(connSett, "SELECT * FROM TEC_LIST WHERE INUSE=TRUE");
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
