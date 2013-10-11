@@ -88,6 +88,7 @@ namespace Statistic
             }
             else
             {
+                changeMode = new ChangeMode(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
                 Initialize();
             }
         }
@@ -96,7 +97,6 @@ namespace Statistic
         {
             firstStart = true;
 
-            changeMode = new ChangeMode(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
             this.tec = changeMode.tec;
             oldSelectedIndex = 0;
 
@@ -120,29 +120,6 @@ namespace Statistic
 
             prevStateIsAdmin = false;
             prevStateIsPPBR = false;
-
-            // создаём все tecview
-            foreach (TEC t in tec)
-            {
-                int index_gtp;
-                tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
-                tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                tecViews.Add(tecView);
-                if (t.list_GTP.Count > 1)
-                {
-                    index_gtp = 0;
-                    foreach (GTP g in t.list_GTP)
-                    {
-                        tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
-                        tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                        tecViews.Add(tecView);
-                        index_gtp++;
-                    }
-                }
-            }
-
-            //Form1 f = new Form1();
-            //f.Show();
 
             timer.Start();
 
@@ -301,11 +278,50 @@ namespace Statistic
             if (connSettForm.Protected == true)
             {
                 int i;
-                TEC t;
                 int index;
+                Int16 prevModeComponent = changeMode.getModeTEC ();
                 // выбираем список отображаемых вкладок
                 if (changeMode.ShowDialog() == DialogResult.OK)
                 {
+                    if ((! (prevModeComponent == changeMode.getModeTEC()))) {
+                        this.tec = changeMode.tec;
+
+                        tecViews.Clear ();
+                        selectedTecViews.Clear ();
+                    }
+                    else {
+                        
+                    }
+
+                    if (tecViews.Count == 0) {
+                        adminPanel.StopDbInterface ();
+
+                        adminPanel.InitTEC (changeMode.tec);
+                        adminPanel.StartDbInterface ();
+
+                        // создаём все tecview
+                        foreach (TEC t in changeMode.tec)
+                        {
+                            int index_gtp;
+                            tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                            tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                            tecViews.Add(tecView);
+                            if (t.list_TECComponents.Count > 1)
+                            {
+                                index_gtp = 0;
+                                foreach (TECComponent g in t.list_TECComponents)
+                                {
+                                    tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                                    tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                                    tecViews.Add(tecView);
+                                    index_gtp++;
+                                }
+                            }
+                        }
+                    }
+                    else
+                        ;
+
                     StartWait();
                     tclTecViews.TabPages.Clear();
                     selectedTecViews.Clear();
@@ -316,21 +332,19 @@ namespace Statistic
                     {
                         index = changeMode.was_checked.IndexOf(i);
 
-                        if (! (index < 0))
+                        if (!(index < 0))
                         {
                             if ((tecViews[i].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
-                                parametrsTGBiysk ++;
+                                parametrsTGBiysk++;
                             else
                                 ;
 
-                            t = tec[changeMode.tec_index[i]];
-
-                            if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
+                            if (changeMode.TECComponent_index[changeMode.was_checked[index]] == -1)
                             {
-                                tclTecViews.TabPages.Add(t.name);
+                                tclTecViews.TabPages.Add(tec[changeMode.tec_index[i]].name);
                             }
                             else
-                                tclTecViews.TabPages.Add(t.name + " - " + t.list_GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+                                tclTecViews.TabPages.Add(tec[changeMode.tec_index[i]].name + " - " + tec[changeMode.tec_index[i]].list_TECComponents[changeMode.TECComponent_index[changeMode.was_checked[index]]].name);
 
                             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                             selectedTecViews.Add(tecViews[i]);
@@ -499,10 +513,10 @@ namespace Statistic
 
                     if ((index = changeMode.was_checked.IndexOf(i)) >= 0)
                     {
-                        if (changeMode.gtp_index[changeMode.was_checked[index]] == -1)
+                        if (changeMode.TECComponent_index[changeMode.was_checked[index]] == -1)
                             tclTecViews.TabPages.Add(t.name);
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.list_GTP[changeMode.gtp_index[changeMode.was_checked[index]]].name);
+                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[changeMode.TECComponent_index[changeMode.was_checked[index]]].name);
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
 
@@ -514,7 +528,7 @@ namespace Statistic
                         ;
                 }
 
-                if (selectedTecViews.Count > 0)
+                if ((! (selectedTecViews == null)) && (selectedTecViews.Count > 0))
                 {
                     oldSelectedIndex = 0;
                     selectedTecViews[oldSelectedIndex].Activate(true);

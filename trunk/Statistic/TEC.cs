@@ -21,7 +21,7 @@ namespace Statistic
                     m_strUsedAdminValues, m_strUsedPPBRvsPBR;
         public List <string> m_strNamesField;
 
-        public List<GTP> list_GTP;
+        public List<TECComponent> list_TECComponents;
 
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
@@ -39,7 +39,7 @@ namespace Statistic
         public ParametersTG parametersTGForm;
 
         public TEC (string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
-            list_GTP = new List<GTP>();
+            list_TECComponents = new List<TECComponent>();
 
             this.name = name;
             this.m_strUsedAdminValues = table_name_admin; this.m_strUsedPPBRvsPBR = table_name_pbr;
@@ -101,8 +101,8 @@ namespace Statistic
                 m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
             }
             used++;
-            if (used > list_GTP.Count)
-                used = list_GTP.Count;
+            if (used > list_TECComponents.Count)
+                used = list_TECComponents.Count;
             else
                 ;
         }
@@ -159,7 +159,7 @@ namespace Statistic
             return iRes;
         }
 
-        public string GetPBRValueQuery (GTP gtp, DateTime dt) {
+        public string GetPBRValueQuery (TECComponent comp, DateTime dt) {
             string strRes = string.Empty;
 
             string /*selectAdmin,*/ selectPBR,
@@ -171,10 +171,10 @@ namespace Statistic
             //strUsedAdminValues = m_strUsedAdminValues;
             strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
 
-            if (gtp.prefix_pbr.Length > 0)
+            if (comp.prefix_pbr.Length > 0)
             {
-                //selectAdmin += "_" + gtp.prefix;
-                selectPBR += "_" + gtp.prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                //selectAdmin += "_" + comp.prefix;
+                selectPBR += "_" + comp.prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
             else
             {
@@ -190,7 +190,7 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminValueQuery (GTP gtp, DateTime dt) {
+        public string GetAdminValueQuery (TECComponent comp, DateTime dt) {
             string strRes = string.Empty;
 
             string selectAdmin/*, selectPBR*/,
@@ -202,10 +202,10 @@ namespace Statistic
             strUsedAdminValues = m_strUsedAdminValues;
             //strUsedPPBRvsPBR = m_strUsedPPBRvsPBR;
 
-            if (gtp.prefix_admin.Length > 0)
+            if (comp.prefix_admin.Length > 0)
             {
-                selectAdmin += "_" + gtp.prefix_admin;
-                //selectPBR += "_" + gtp.prefix + "_PBR";
+                selectAdmin += "_" + comp.prefix_admin;
+                //selectPBR += "_" + comp.prefix + "_PBR";
             }
             else
             {
@@ -232,7 +232,7 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetPBRValueQuery (int num_gtp, DateTime dt) {
+        public string GetPBRValueQuery (int num_comp, DateTime dt) {
             string strRes = string.Empty;
 
             string /*nameAdmin = string.Empty, */namePBR = string.Empty,
@@ -248,9 +248,9 @@ namespace Statistic
             //switch (type())
             //{
             //    case TEC.TEC_TYPE.COMMON:
-            if (num_gtp < 0)
+            if (num_comp < 0)
             {
-                foreach (GTP g in list_GTP)
+                foreach (TECComponent g in list_TECComponents)
                 {
                     //selectAdmin += ", ";
                     selectPBR += ", ";
@@ -275,7 +275,7 @@ namespace Statistic
             }
             else
             {
-                GTP g = list_GTP[num_gtp];
+                TECComponent g = list_TECComponents[num_comp];
                 if (g.prefix_admin.Length > 0)
                 {
                     //selectAdmin += strUsedAdminValues + "." + nameAdmin + "_" + g.prefix_admin + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
@@ -313,7 +313,7 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminValueQuery (int num_gtp, DateTime dt) {
+        public string GetAdminValueQuery (int num_comp, DateTime dt) {
             string strRes = string.Empty;
 
             string nameAdmin = string.Empty, /*namePBR = string.Empty,*/
@@ -328,9 +328,9 @@ namespace Statistic
             //switch (type())
             //{
             //    case TEC.TEC_TYPE.COMMON:
-                    if (num_gtp < 0)
+                    if (num_comp < 0)
                     {
-                        foreach (GTP g in list_GTP)
+                        foreach (TECComponent g in list_TECComponents)
                         {
                             selectAdmin += ", ";
                             //selectPBR += ", ";
@@ -355,7 +355,7 @@ namespace Statistic
                     }
                     else
                     {
-                        GTP g = list_GTP[num_gtp];
+                        TECComponent g = list_TECComponents[num_comp];
                         if (g.prefix_admin.Length > 0)
                         {
                             selectAdmin += strUsedAdminValues + "." + nameAdmin + "_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
@@ -409,9 +409,9 @@ namespace Statistic
                                 @" " + @"ASC";
             //        break;
             //    case TEC.TEC_TYPE.BIYSK:
-            //        if (num_gtp < 0)
+            //        if (num_comp < 0)
             //        {
-            //            foreach (GTP g in list_GTP)
+            //            foreach (TECComponent g in list_TECComponents)
             //            {
             //                selectAdmin += ", ";
             //                //selectPBR += ", ";
@@ -435,13 +435,13 @@ namespace Statistic
             //        }
             //        else
             //        {
-            //            GTP g = list_GTP[num_gtp];
+            //            TECComponent g = list_TECComponents[num_comp];
             //            if (g.prefix_admin.Length > 0)
             //            {
-            //                selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
-            //                            strUsedAdminValues + "." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-            //                            strUsedAdminValues + @"." + nameAdmin + @"_" + list_GTP[num_gtp].prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-            //                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + list_GTP[num_gtp].prefix_pbr;
+            //                selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
+            //                            strUsedAdminValues + "." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+            //                            strUsedAdminValues + @"." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+            //                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + list_TECComponents[num_comp].prefix_pbr;
             //            }
             //            else {
             //                selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
@@ -479,13 +479,13 @@ namespace Statistic
                     @"' ORDER BY DATE_TIME ASC";
         }
 
-        public string NameFieldOfAdminRequest(GTP gtp)
+        public string NameFieldOfAdminRequest(TECComponent comp)
         {
             string strRes = @"" + this.prefix_admin;
 
-            if (gtp.prefix_admin.Length > 0)
+            if (comp.prefix_admin.Length > 0)
             {
-                strRes += "_" + gtp.prefix_admin;
+                strRes += "_" + comp.prefix_admin;
             }
             else
                 ;
@@ -493,13 +493,13 @@ namespace Statistic
             return strRes;
         }
 
-        public string NameFieldOfPBRRequest(GTP gtp)
+        public string NameFieldOfPBRRequest(TECComponent comp)
         {
             string strRes = @"" + this.prefix_pbr;
 
-            if (gtp.prefix_pbr.Length > 0)
+            if (comp.prefix_pbr.Length > 0)
             {
-                strRes += "_" + gtp.prefix_pbr;
+                strRes += "_" + comp.prefix_pbr;
             }
             else
                 ;

@@ -17,11 +17,11 @@ namespace Statistic
         public bool receivedHourHalf2Addon;
         //public int id;
         public int [] ids; //Для особенной ТЭЦ (Бийск)
-        public GTP gtp;
+        public TECComponent comp;
 
-        public TG(GTP gtp)
+        public TG(TECComponent comp)
         {
-            this.gtp = gtp;
+            this.comp = comp;
             power = new double[21];
             receivedMin = new bool[21];
             receivedHourHalf1 = new bool[24];

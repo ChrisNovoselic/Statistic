@@ -103,7 +103,8 @@ namespace Statistic
             this.comboBoxModeTEC.FormattingEnabled = true;
             this.comboBoxModeTEC.Items.AddRange(new object[] {
             "ГТП",
-            "ЩУ"});
+            "ЩУ",
+            "Поблочно"});
             this.comboBoxModeTEC.Location = new System.Drawing.Point(106, 48);
             this.comboBoxModeTEC.Name = "comboBoxModeTEC";
             this.comboBoxModeTEC.Size = new System.Drawing.Size(95, 21);

@@ -12,34 +12,38 @@ namespace Statistic
     {
         public List<TEC> tec;
         public List<int> tec_index;
-        public List<int> gtp_index;
+        public List<int> TECComponent_index;
         public List<int> was_checked;
         public bool admin_was_checked;
         //public bool ppbr_was_checked;
         public bool closing;
+
+        private ConnectionSettings m_connSet;
 
         public ChangeMode(ConnectionSettings connSet)
         {
             InitializeComponent();
             
             InitTEC (connSet);
-
-            clbMode.Items.Add("Редактирование ПБР");
             
             //clbMode.Items.Add("Назначение ПБР");
             
             closing = false;
         }
 
+        public Int16 getModeTEC () { return (Int16) comboBoxModeTEC.SelectedIndex; }
+
         public void InitTEC (ConnectionSettings connSet) {
+            m_connSet = connSet;
+
             int index_tec = 0, index_gtp = 0;
 
             clbMode.Items.Clear ();
-            
-            this.tec = new InitTEC(connSet, (short)comboBoxModeTEC.SelectedIndex).tec;
+
+            this.tec = new InitTEC(m_connSet, (short) getModeTEC ()).tec;
 
             tec_index = new List<int>();
-            gtp_index = new List<int>();
+            TECComponent_index = new List<int>();
             was_checked = new List<int>();
             admin_was_checked = false;
 
@@ -47,20 +51,22 @@ namespace Statistic
             {
                 clbMode.Items.Add(t.name);
                 tec_index.Add(index_tec);
-                gtp_index.Add(-1);
-                if (t.list_GTP.Count > 1)
+                TECComponent_index.Add(-1);
+                if (t.list_TECComponents.Count > 1)
                 {
                     index_gtp = 0;
-                    foreach (GTP g in t.list_GTP)
+                    foreach (TECComponent g in t.list_TECComponents)
                     {
                         clbMode.Items.Add(t.name + " - " + g.name);
                         tec_index.Add(index_tec);
-                        gtp_index.Add(index_gtp);
+                        TECComponent_index.Add(index_gtp);
                         index_gtp++;
                     }
                 }
                 index_tec++;
             }
+
+            clbMode.Items.Add("Редактирование ПБР");
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -124,6 +130,8 @@ namespace Statistic
 
         private void comboBoxModeTEC_SelectedIndexChanged(object sender, EventArgs e)
         {
+            this.InitTEC (m_connSet);
+
             closing = false;
         }
     }

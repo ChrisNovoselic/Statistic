@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Statistic
 {
-    public class GTP
+    public class TECComponent
     {
         public string name;
         public string prefix_admin, prefix_pbr;
         public List<TG> TG;
         public TEC tec;
 
-        public GTP(TEC tec, string prefix_admin, string prefix_pbr)
+        public TECComponent(TEC tec, string prefix_admin, string prefix_pbr)
         {
             this.tec = tec;
             TG = new List<TG>();

@@ -26,14 +26,14 @@ namespace Statistic
             public double deviation;
         }
 
-        public struct GtpsAdminStruct
+        public struct TECComponentsAdminStruct
         {
             public double[] recommendations;
             public double[] plan;
             public double[] diviation;
             public bool[] diviationPercent;
 
-            public GtpsAdminStruct(int count)
+            public TECComponentsAdminStruct(int count)
             {
                 this.recommendations = new double[count];
                 this.plan = new double[count];
@@ -161,9 +161,9 @@ namespace Statistic
         private const int toAllIndex = 5;
 
         private volatile OldValuesStruct[] oldValues;
-        private GtpsAdminStruct values;
+        private TECComponentsAdminStruct values;
         private DateTime oldDate;
-        private volatile List<GTP> allGtps;
+        private volatile List<TECComponent> allTECComponents;
         private volatile int oldTecIndex;
         private volatile List<TEC> m_list_tec;
 
@@ -440,9 +440,6 @@ namespace Statistic
 
             started = false;
 
-            this.m_list_tec = tec;
-
-            allGtps = new List<GTP>();
             oldValues = new OldValuesStruct[24];
 
             md5 = new MD5CryptoServiceProvider();
@@ -455,27 +452,15 @@ namespace Statistic
 
             using_date = false;
 
-            values = new GtpsAdminStruct(24);
+            values = new TECComponentsAdminStruct(24);
 
             adminDates = new bool[24];
             PPBRDates = new bool[24];
 
             //layoutForLoading = new LayoutData(1);
 
-            foreach (TEC t in tec)
-            {
-                if (t.list_GTP.Count > 1)
-                    foreach (GTP g in t.list_GTP)
-                    {
-                        cbxTec.Items.Add(t.name + " - " + g.name);
-                        allGtps.Add(g);
-                    }
-                else
-                {
-                    cbxTec.Items.Add(t.name);
-                    allGtps.Add(t.list_GTP[0]);
-                }
-            }
+            allTECComponents = new List <TECComponent> ();
+            InitTEC (tec);
 
             lockValue = new Object();
 
@@ -1524,7 +1509,7 @@ namespace Statistic
         private void GetCurrentTimeRequest()
         {
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
+            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
         }
 
         private bool GetCurrentTimeResponse(DataTable table)
@@ -1546,14 +1531,14 @@ namespace Statistic
             return true;
         }
 
-        private void GetPPBRValuesRequest(TEC t, GTP gtp, DateTime date)
+        private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(gtp, date));
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date));
         }
 
-        private void GetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
+        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(gtp, date));
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date));
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -1628,8 +1613,8 @@ namespace Statistic
             else
                 ;
 
-            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetAdminDatesQuery(date));
-            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.GetAdminDatesQuery(date));
+            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
+            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -1641,8 +1626,8 @@ namespace Statistic
             else
                 ;
 
-//            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allGtps[oldTecIndex].tec.GetPBRDatesQuery(date));
-            Request(allGtps[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allGtps[oldTecIndex].tec.GetPBRDatesQuery(date));
+//            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
+            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
         }
 
         private void ClearAdminDates()
@@ -1693,7 +1678,7 @@ namespace Statistic
             return true;
         }
 
-        private void SetAdminValuesRequest(TEC t, GTP gtp, DateTime date)
+        private void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             int currentHour = serverTime.Hour;
 
@@ -1704,7 +1689,7 @@ namespace Statistic
 
             string requestUpdate = "", requestInsert = "";
 
-            string name = t.NameFieldOfAdminRequest(gtp);
+            string name = t.NameFieldOfAdminRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1815,7 +1800,7 @@ namespace Statistic
             return iNum;
         }
 
-        private void SetPPBRRequest(TEC t, GTP gtp, DateTime date)
+        private void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             int currentHour = serverTime.Hour;
 
@@ -1826,7 +1811,7 @@ namespace Statistic
 
             string requestUpdate = "", requestInsert = "";
 
-            string name = t.NameFieldOfPBRRequest(gtp);
+            string name = t.NameFieldOfPBRRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -2276,6 +2261,28 @@ namespace Statistic
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
+        public void InitTEC (List <TEC> tec) {
+            this.m_list_tec = tec;
+
+            cbxTec.Items.Clear ();
+            allTECComponents.Clear ();
+
+            foreach (TEC t in tec)
+            {
+                if (t.list_TECComponents.Count > 1)
+                    foreach (TECComponent g in t.list_TECComponents)
+                    {
+                        cbxTec.Items.Add(t.name + " - " + g.name);
+                        allTECComponents.Add(g);
+                    }
+                else
+                {
+                    cbxTec.Items.Add(t.name);
+                    allTECComponents.Add(t.list_TECComponents[0]);
+                }
+            }
+        }
+
         private void InitDbInterfaces () {
             m_listDbInterfaces.Clear ();
 
@@ -2414,11 +2421,11 @@ namespace Statistic
                     break;
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues.Date);
+                    GetPPBRValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues.Date);
                     break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
-                    GetAdminValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues.Date);
+                    GetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues.Date);
                     oldDate = dateForValues.Date;
                     this.BeginInvoke(delegateCalendarSetDate, oldDate);
                     break;
@@ -2458,11 +2465,11 @@ namespace Statistic
                     break;
                 case StatesMachine.SaveValues:
                     ActionReport("Сохранение административных данных.");
-                    SetAdminValuesRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues);
+                    SetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues);
                     break;
                 case StatesMachine.SaveValuesPPBR:
                     ActionReport("Сохранение ПЛАНА.");
-                    SetPPBRRequest(allGtps[oldTecIndex].tec, allGtps[oldTecIndex], dateForValues);
+                    SetPPBRRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues);
                     break;
                 //case StatesMachine.UpdateValuesPPBR:
                 //    ActionReport("Обровление ПЛАНА.");

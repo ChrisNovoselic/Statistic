@@ -180,12 +180,12 @@ namespace Statistic
         private List<System.Windows.Forms.Label> tgsValue;
 
         public volatile TEC tec;
-        private volatile int num_gtp;
+        private volatile int num_TECComponent;
 
         private volatile int countTG;
         private bool update;
 
-        private Admin.GtpsAdminStruct adminValues;
+        private Admin.TECComponentsAdminStruct adminValues;
 
         public volatile bool isActive;
 
@@ -797,7 +797,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_gtp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
+        public TecView(TEC tec, int num_comp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
         {
             InitializeComponent();
 
@@ -827,7 +827,7 @@ namespace Statistic
 
             lockValue = new object();
 
-            adminValues = new Admin.GtpsAdminStruct(24);
+            adminValues = new Admin.TECComponentsAdminStruct(24);
 
             valuesMins = new valuesS();
             valuesMins.valuesFact = new double[21];
@@ -848,14 +848,14 @@ namespace Statistic
             tgsName = new List<System.Windows.Forms.Label>();
             tgsValue = new List<System.Windows.Forms.Label>();
             this.tec = tec;
-            this.num_gtp = num_gtp;
+            this.num_TECComponent = num_comp;
 
             int positionXName = 15, positionXValue = 4, positionYName = 6, positionYValue = 19;
             float value = 0;
             countTG = 0;
-            if (num_gtp < 0) // значит этот view будет суммарным для всех ГТП
+            if (num_comp < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (GTP g in tec.list_GTP)
+                foreach (TECComponent g in tec.list_TECComponents)
                 {
                     foreach (TG t in g.TG)
                     {
@@ -899,7 +899,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.list_GTP[num_gtp].TG)
+                foreach (TG t in tec.list_TECComponents[num_comp].TG)
                 {
                     countTG++;
                     System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
@@ -1688,20 +1688,20 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("Трёхминутные данные");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (num_gtp < 0)
+                    if (num_TECComponent < 0)
                     {
-                        if (tec.list_GTP.Count == 1)
+                        if (tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = tec.name;
                         else
                         {
                             ws.Cells[0, 0].Value = tec.name;
-                            foreach (GTP g in tec.list_GTP)
+                            foreach (TECComponent g in tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_GTP[num_gtp].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name;
                     }
 
                     if (valuesHours.addonValues && hour == valuesHours.hourAddon)
@@ -1830,20 +1830,20 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("Часовые данные");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (num_gtp < 0)
+                    if (num_TECComponent < 0)
                     {
-                        if (tec.list_GTP.Count == 1)
+                        if (tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = tec.name;
                         else
                         {
                             ws.Cells[0, 0].Value = tec.name;
-                            foreach (GTP g in tec.list_GTP)
+                            foreach (TECComponent g in tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_GTP[num_gtp].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name;
                     }
                     
                     ws.Cells[1, 0].Value = "Мощность на " + dtprDate.Value.ToShortDateString();
@@ -2151,11 +2151,11 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_gtp, dtprDate.Value.Date));
+            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date));
         }
         
         private void GetAdminValuesRequest () {
-            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_gtp, dtprDate.Value.Date));
+            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date));
         }
 
         private void FillGridMins(int hour)
@@ -2403,9 +2403,9 @@ namespace Statistic
                 min--;
 
             int i = 0;
-            if (num_gtp < 0) // значит этот view будет суммарным для всех ГТП
+            if (num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (GTP g in tec.list_GTP)
+                foreach (TECComponent g in tec.list_TECComponents)
                 {
                     foreach (TG t in g.TG)
                     {
@@ -2428,7 +2428,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.list_GTP[num_gtp].TG)
+                foreach (TG t in tec.list_TECComponents[num_TECComponent].TG)
                 {
                     if (t.receivedMin[min])
                     {
@@ -2661,21 +2661,21 @@ namespace Statistic
 
                 s = "ТГ" + s;
 
-                if (num_gtp < 0)
+                if (num_TECComponent < 0)
                 {
                     bool found = false;
                     int j, k;
-                    for (j = 0; j < tec.list_GTP.Count && !found; j++)
+                    for (j = 0; j < tec.list_TECComponents.Count && !found; j++)
                     {
-                        for (k = 0; k < tec.list_GTP[j].TG.Count; k++)
+                        for (k = 0; k < tec.list_TECComponents[j].TG.Count; k++)
                         {
-                            if (tec.list_GTP[j].TG[k].name == s)
+                            if (tec.list_TECComponents[j].TG[k].name == s)
                             {
                                 found = true;
-                                tec.list_GTP[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
-                                tec.list_GTP[j].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                                tec.list_TECComponents[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
+                                tec.list_TECComponents[j].TG[k].ids[(int)TG.ID_TIME.HOURS] =
                                 int.Parse(table.Rows[i][1].ToString());
-                                sensorId2TG[t] = tec.list_GTP[j].TG[k];
+                                sensorId2TG[t] = tec.list_TECComponents[j].TG[k];
                                 t++;
                                 break;
                             }
@@ -2684,14 +2684,14 @@ namespace Statistic
                 }
                 else
                 {
-                    for (int k = 0; k < tec.list_GTP[num_gtp].TG.Count; k++)
+                    for (int k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
                     {
-                        if (tec.list_GTP[num_gtp].TG[k].name == s)
+                        if (tec.list_TECComponents[num_TECComponent].TG[k].name == s)
                         {
-                            tec.list_GTP[num_gtp].TG[k].ids[(int) TG.ID_TIME.MINUTES] =
-                            tec.list_GTP[num_gtp].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                            tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
+                            tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.HOURS] =
                             int.Parse(table.Rows[i][1].ToString());
-                            sensorId2TG[t] = tec.list_GTP[num_gtp].TG[k];
+                            sensorId2TG[t] = tec.list_TECComponents[num_TECComponent].TG[k];
                             t++;
                             break;
                         }
@@ -2732,8 +2732,8 @@ namespace Statistic
             tgs[(int)TG.ID_TIME.HOURS] = new Dictionary<string, int>();
 
             int count_tg = 0;
-            for (int i = 0; i < tec.list_GTP.Count; i++) {
-                count_tg += tec.list_GTP[i].TG.Count;
+            for (int i = 0; i < tec.list_TECComponents.Count; i++) {
+                count_tg += tec.list_TECComponents[i].TG.Count;
             }
             bool bMinutes = true;
             for (int i = (int) TG.ID_TIME.MINUTES; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++)
@@ -2746,49 +2746,49 @@ namespace Statistic
             }
 
             int t = 0;
-            if (num_gtp < 0)
+            if (num_TECComponent < 0)
             {
-                for (int i = 0; i < tec.list_GTP.Count; i++)
+                for (int i = 0; i < tec.list_TECComponents.Count; i++)
                 {
-                    for (int j = 0; j < tec.list_GTP[i].TG.Count; j++)
+                    for (int j = 0; j < tec.list_TECComponents[i].TG.Count; j++)
                     {
-                        tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int) TG.ID_TIME.MINUTES][tec.list_GTP[i].TG[j].name];
-                        tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_GTP[i].TG[j].name];
-                        sensorId2TG[t] = tec.list_GTP[i].TG[j];
-                        //sensorId2TGHours[t] = tec.list_GTP[i].TG[j];
+                        tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int) TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name];
+                        tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name];
+                        sensorId2TG[t] = tec.list_TECComponents[i].TG[j];
+                        //sensorId2TGHours[t] = tec.list_TECComponents[i].TG[j];
                         t++;
 
                         if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
 
                         if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_GTP[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
                     }
                 }
             }
             else
             {
-                for (int i = 0; i < tec.list_GTP[num_gtp].TG.Count; i++)
+                for (int i = 0; i < tec.list_TECComponents[num_TECComponent].TG.Count; i++)
                 {
-                    tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_GTP[num_gtp].TG[i].name];
-                    tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_GTP[num_gtp].TG[i].name];
-                    sensorId2TG[t] = tec.list_GTP[num_gtp].TG[i];
-                    //sensorId2TGHours[t] = tec.list_GTP[num_gtp].TG[i];
+                    tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[num_TECComponent].TG[i].name];
+                    tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[num_TECComponent].TG[i].name];
+                    sensorId2TG[t] = tec.list_TECComponents[num_TECComponent].TG[i];
+                    //sensorId2TGHours[t] = tec.list_TECComponents[num_gtp].TG[i];
                     t++;
 
                     if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
 
                     if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_GTP[num_gtp].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
                 }
             }
         }
@@ -2825,7 +2825,7 @@ namespace Statistic
 
             lastHourHalfError = lastHourError = false;
 
-            foreach (GTP g in tec.list_GTP)
+            foreach (TECComponent g in tec.list_TECComponents)
             {
                 foreach (TG t in g.TG)
                 {
@@ -3061,7 +3061,7 @@ namespace Statistic
             /*Form2 f2 = new Form2();
             f2.FillMinTable(table);*/
 
-            foreach (GTP g in tec.list_GTP)
+            foreach (TECComponent g in tec.list_TECComponents)
             {
                 foreach (TG t in g.TG)
                 {
@@ -3282,16 +3282,16 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-                    if (num_gtp < 0)
+                    if (num_TECComponent < 0)
                     {
-                        double[,] valuesPBR = new double[tec.list_GTP.Count, 25];
-                        double[,] valuesREC = new double[tec.list_GTP.Count, 25];
-                        int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
-                        double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
+                        double[,] valuesPBR = new double[tec.list_TECComponents.Count, 25];
+                        double[,] valuesREC = new double[tec.list_TECComponents.Count, 25];
+                        int[,] valuesISPER = new int[tec.list_TECComponents.Count, 25];
+                        double[,] valuesDIV = new double[tec.list_TECComponents.Count, 25];
 
                         offsetUDG = 1;
-                        offsetPlan = /*offsetUDG + 3 * tec.list_GTP.Count +*/ 1;
-                        offsetLayout = offsetPlan + tec.list_GTP.Count;
+                        offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1;
+                        offsetLayout = offsetPlan + tec.list_TECComponents.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
@@ -3305,15 +3305,14 @@ namespace Statistic
                                     {
                                         offsetPrev = i;
                                         int j = 0;
-                                        foreach (GTP g in tec.list_GTP)
+                                        foreach (TECComponent g in tec.list_TECComponents)
                                         {
                                             valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
                                             j++;
                                         }
                                     }
                                 }
-                                catch
-                                {
+                                catch {
                                 }
                             }
                             else
@@ -3352,7 +3351,7 @@ namespace Statistic
                                             continue;
 
                                     int j = 0;
-                                    foreach (GTP g in tec.list_GTP)
+                                    foreach (TECComponent g in tec.list_TECComponents)
                                     {
                                         try
                                         {
@@ -3413,7 +3412,7 @@ namespace Statistic
                                             ;
 
                                     int j = 0;
-                                    foreach (GTP g in tec.list_GTP)
+                                    foreach (TECComponent g in tec.list_TECComponents)
                                     {
                                         try
                                         {
@@ -3459,7 +3458,7 @@ namespace Statistic
 
                         for (int i = 0; i < 24; i++)
                         {
-                            for (int j = 0; j < tec.list_GTP.Count; j++)
+                            for (int j = 0; j < tec.list_TECComponents.Count; j++)
                             {
                                 valuesHours.valuesPBR[i] += valuesPBR[j, i];
                                 if (i == 0)
@@ -3676,13 +3675,13 @@ namespace Statistic
             //        {
             //            offsetPrev = -1;
             //            offsetUDG = 1; //, offsetPlan, offsetLayout;
-            //            //offsetPlan = offsetUDG + 3 * tec.list_GTP.Count;
-            //            //offsetLayout = offsetPlan + tec.list_GTP.Count;
+            //            //offsetPlan = offsetUDG + 3 * tec.list_TECComponents.Count;
+            //            //offsetLayout = offsetPlan + tec.list_TECComponents.Count;
 
-            //            double[,] valuesPBR = new double[tec.list_GTP.Count, 25];
-            //            double[,] valuesREC = new double[tec.list_GTP.Count, 25];
-            //            int[,] valuesISPER = new int[tec.list_GTP.Count, 25];
-            //            double[,] valuesDIV = new double[tec.list_GTP.Count, 25];
+            //            double[,] valuesPBR = new double[tec.list_TECComponents.Count, 25];
+            //            double[,] valuesREC = new double[tec.list_TECComponents.Count, 25];
+            //            int[,] valuesISPER = new int[tec.list_TECComponents.Count, 25];
+            //            double[,] valuesDIV = new double[tec.list_TECComponents.Count, 25];
 
             //            // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
             //            for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
@@ -3696,7 +3695,7 @@ namespace Statistic
             //                        {
             //                            offsetPrev = i;
             //                            int j = 0;
-            //                            foreach (GTP g in tec.list_GTP)
+            //                            foreach (TECComponent g in tec.list_TECComponents)
             //                            {
             //                                valuesPBR[j, 24] = 0/*(double)table.Rows[i][offsetPlan + j]*/;
             //                                j++;
@@ -3741,7 +3740,7 @@ namespace Statistic
             //                                continue;
 
             //                        int j = 0;
-            //                        foreach (GTP g in tec.list_GTP)
+            //                        foreach (TECComponent g in tec.list_TECComponents)
             //                        {
             //                            try
             //                            {
@@ -3791,7 +3790,7 @@ namespace Statistic
             //                                ;
 
             //                        int j = 0;
-            //                        foreach (GTP g in tec.list_GTP)
+            //                        foreach (TECComponent g in tec.list_TECComponents)
             //                        {
             //                            try
             //                            {
@@ -3830,7 +3829,7 @@ namespace Statistic
 
             //            for (int i = 0; i < 24; i++)
             //            {
-            //                for (int j = 0; j < tec.list_GTP.Count; j++)
+            //                for (int j = 0; j < tec.list_TECComponents.Count; j++)
             //                {
             //                    /*valuesHours.valuesPBR[i] += valuesPBR[j, i];
             //                    if (i == 0)
