@@ -1689,40 +1689,88 @@ namespace Statistic
 
             if (serverTime.Date < date)
                 currentHour = 0;
+            else
+                ;
 
-            string requestUpdate = "", requestInsert = "";
-
-            string name = t.NameFieldOfAdminRequest(comp);
+            string strUsedAdminValues = "AdminValuesOfID",
+                    requestUpdate = string.Empty,
+                    requestInsert = string.Empty,
+                    name = t.NameFieldOfAdminRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
                 if (adminDates[i])
                 {
-                    requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                    switch (m_modeTECComponent) {
+                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                            //name = t.NameFieldOfAdminRequest(comp);
+                            
+                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
                                         @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
+                            break;
+                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + @"REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + @"IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
+                                        @", " + "DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"' WHERE " +
+                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'" +
+                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 else
                 {
                     // запись отсутствует, запоминаем значения
-                    requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    switch (m_modeTECComponent) {
+                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                            requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (values.diviationPercent[i] ? "1" : "0") +
                                         @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"'),";
+                            break;
+                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                            requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + (values.diviationPercent[i] ? "1" : "0") +
+                                        @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + (comp.m_id) +
+                                        @"),";
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
             // добавляем все записи, не найденные в базе
             if (requestInsert != "")
             {
-                requestInsert = @"INSERT INTO " + t.m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
+                switch (m_modeTECComponent)
+                {
+                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        requestInsert = @"INSERT INTO " + t.m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        break;
+                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                        requestInsert = @"INSERT INTO " + strUsedAdminValues + " (DATE, " + @"REC" +
+                                @", " + "IS_PER" +
+                                @", " + "DIVIAT" +
+                                @", " + "ID_COMPONENT" +
+                                @") VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        break;
+                    default:
+                        break;
+                }
             }
             else
                 ;
@@ -2560,7 +2608,11 @@ namespace Statistic
                     {
                         if (using_date)
                             dateForValues = serverTime;
+                        else
+                            ;
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.PPBRValues:
                     result = GetPPBRValuesResponse(table, dateForValues);
