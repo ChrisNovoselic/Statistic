@@ -142,23 +142,26 @@ namespace Statistic
         private DelegateFunctionDate delegateFillData;
         private DelegateFunctionDate delegateCalendarSetDate;
 
+        ChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
+        public int mode(int new_mode = (int) ChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+        {
+            int prev_mode = (int) m_modeTECComponent;
+
+            if (new_mode == (int) ChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+                ;
+            else
+                m_modeTECComponent = (ChangeMode.MODE_TECCOMPONENT) new_mode;
+
+            return prev_mode;
+        }
+
         private const double maxRecomendationValue = 1500;
         private const double maxDeviationValue = 1500;
         private const double maxDeviationPercentValue = 100;
 
-        private const string dateHourStringIndex = "DateHour";
-        private const string planStringIndex = "Plan";
-        private const string recomendationStringIndex = "Recomendation";
-        private const string deviationTypeStringIndex = "DeviationType";
-        private const string deviationStringIndex = "Deviation";
-        private const string toAllStringIndex = "ToAll";
-
-        private const int dateHourIndex = 0;
-        private const int planIndex = 1;
-        private const int recomendationIndex = 2;
-        private const int diviationTypeIndex = 3;
-        private const int diviationIndex = 4;
-        private const int toAllIndex = 5;
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL };
+        private string [] arDescStringIndex = {"DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll"};
+        private string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
         private volatile OldValuesStruct[] oldValues;
         private TECComponentsAdminStruct values;
@@ -340,35 +343,35 @@ namespace Statistic
             // 
             this.DateHour.Frozen = true;
             this.DateHour.HeaderText = "Дата, Час";
-            this.DateHour.Name = dateHourStringIndex;
+            this.DateHour.Name = arDescStringIndex [(int) Admin.DESC_INDEX.DATE_HOUR];
             this.DateHour.ReadOnly = true;
             this.DateHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Plan
             // 
             this.Plan.Frozen = true;
-            this.Plan.HeaderText = "План";
-            this.Plan.Name = planStringIndex;
+            this.Plan.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.PLAN];
+            this.Plan.Name = arDescStringIndex[(int)Admin.DESC_INDEX.PLAN];
             this.Plan.ReadOnly = true;
             this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.Plan.Width = 70;
             // 
             // Recommendation
             // 
-            this.Recommendation.HeaderText = "Рекомендация";
-            this.Recommendation.Name = recomendationStringIndex;
+            this.Recommendation.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.RECOMENDATION];
+            this.Recommendation.Name = arDescStringIndex[(int)Admin.DESC_INDEX.RECOMENDATION];
             this.Recommendation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationType
             // 
-            this.DeviationType.HeaderText = "Отклонение в процентах";
-            this.DeviationType.Name = deviationTypeStringIndex;
+            this.DeviationType.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.DIVIATION_TYPE];
+            this.DeviationType.Name = arDescStringIndex[(int)Admin.DESC_INDEX.DIVIATION_TYPE];
             this.DeviationType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Deviation
             // 
-            this.Deviation.HeaderText = "Величина максимального отклонения";
-            this.Deviation.Name = deviationStringIndex;
+            this.Deviation.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.DIVIATION];
+            this.Deviation.Name = arDescStringIndex[(int)Admin.DESC_INDEX.DIVIATION];
             this.Deviation.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.Deviation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
@@ -412,8 +415,8 @@ namespace Statistic
             // 
             // ToAll
             // 
-            this.ToAll.HeaderText = "Дозаполнить";
-            this.ToAll.Name = toAllStringIndex;
+            this.ToAll.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.TO_ALL];
+            this.ToAll.Name = arDescStringIndex [(int) Admin.DESC_INDEX.TO_ALL];
             // 
             // cbxTec
             // 
@@ -485,11 +488,11 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                if (oldValues[i].recomendation != values.recommendations[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[recomendationIndex].Value.ToString())*/)
+                if (oldValues[i].recomendation != values.recommendations[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value.ToString())*/)
                     return true;
-                if (oldValues[i].deviationType != values.diviationPercent[i] /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[diviationTypeIndex].Value.ToString())*/)
+                if (oldValues[i].deviationType != values.diviationPercent[i] /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString())*/)
                     return true;
-                if (oldValues[i].deviation != values.diviation[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[diviationIndex].Value.ToString())*/)
+                if (oldValues[i].deviation != values.diviation[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value.ToString())*/)
                     return true;
             }
             return false;
@@ -553,11 +556,11 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[dateHourIndex].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                this.dgwAdminTable.Rows[i].Cells[planIndex].Value = values.plan[i].ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[recomendationIndex].Value = values.recommendations[i].ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[diviationTypeIndex].Value = values.diviationPercent[i].ToString();
-                this.dgwAdminTable.Rows[i].Cells[diviationIndex].Value = values.diviation[i].ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int) Admin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = values.plan[i].ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = values.recommendations[i].ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = values.diviationPercent[i].ToString();
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = values.diviation[i].ToString("F2");
             }
 
             FillOldValues();
@@ -1137,32 +1140,32 @@ namespace Statistic
 
             switch (e.ColumnIndex)
             {
-                case recomendationIndex: // Рекомендация
+                case (int) DESC_INDEX.RECOMENDATION: // Рекомендация
                     {
-                        valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[recomendationIndex].Value, out value);
+                        valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
                         if (!valid || value > maxRecomendationValue)
                         {
                             values.recommendations[e.RowIndex] = 0;
-                            this.dgwAdminTable.Rows[e.RowIndex].Cells[recomendationIndex].Value = 0.ToString("F2");
+                            this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
                         }
                         else
                         {
                             values.recommendations[e.RowIndex] = value;
-                            this.dgwAdminTable.Rows[e.RowIndex].Cells[recomendationIndex].Value = value.ToString("F2");
+                            this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
                         }
                         break;
                     }
-                case diviationTypeIndex:
+                case (int)DESC_INDEX.DIVIATION_TYPE:
                     {
-                        values.diviationPercent[e.RowIndex] = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationTypeIndex].Value.ToString());
+                        values.diviationPercent[e.RowIndex] = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString());
                         break;
                     }
-                case diviationIndex: // Максимальное отклонение
+                case (int)DESC_INDEX.DIVIATION: // Максимальное отклонение
                     {
-                        valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationIndex].Value, out value);
-                        bool isPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationTypeIndex].Value.ToString());
+                        valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value, out value);
+                        bool isPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString());
                         double maxValue;
-                        double recom = double.Parse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[recomendationIndex].Value);
+                        double recom = double.Parse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value);
 
                         if (isPercent)
                             maxValue = maxDeviationPercentValue;
@@ -1172,12 +1175,12 @@ namespace Statistic
                         if (!valid || value < 0 || value > maxValue)
                         {
                             values.diviation[e.RowIndex] = 0;
-                            this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationIndex].Value = 0.ToString("F2");
+                            this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value = 0.ToString("F2");
                         }
                         else
                         {
                             values.diviation[e.RowIndex] = value;
-                            this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationIndex].Value = value.ToString("F2");
+                            this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value = value.ToString("F2");
                         }
                         break;
                     }
@@ -1186,7 +1189,7 @@ namespace Statistic
 
         private void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == toAllIndex && e.RowIndex >= 0) // кнопка применение для всех
+            if (e.ColumnIndex == (int)DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
             {
                 for (int i = e.RowIndex + 1; i < 24; i++)
                 {
@@ -1194,9 +1197,9 @@ namespace Statistic
                     values.diviationPercent[i] = values.diviationPercent[e.RowIndex];
                     values.diviation[i] = values.diviation[e.RowIndex];
 
-                    this.dgwAdminTable.Rows[i].Cells[recomendationIndex].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[recomendationIndex].Value;
-                    this.dgwAdminTable.Rows[i].Cells[diviationTypeIndex].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationTypeIndex].Value;
-                    this.dgwAdminTable.Rows[i].Cells[diviationIndex].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[diviationIndex].Value;
+                    this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value;
+                    this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value;
+                    this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value;
                 }
             }
         }
@@ -1498,11 +1501,11 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[dateHourIndex].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[planIndex].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[recomendationIndex].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[diviationTypeIndex].Value = "false";
-                this.dgwAdminTable.Rows[i].Cells[diviationIndex].Value = "";
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = "";
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = "";
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = "";
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = "false";
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = "";
             }
         }
 
@@ -1533,12 +1536,11 @@ namespace Statistic
 
         private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date));
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, m_modeTECComponent));
         }
 
-        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
-        {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date));
+        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date) {
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, m_modeTECComponent));
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -1547,7 +1549,7 @@ namespace Statistic
 
             m_tablePPBRValuesResponse = table.Copy ();
 
-            return true;
+            return bRes;
         }
 
         private bool GetAdminValuesResponse(DataTable table_in, DateTime date)
@@ -1601,6 +1603,7 @@ namespace Statistic
                     }
                 }
             }
+
             return true;
         }
 

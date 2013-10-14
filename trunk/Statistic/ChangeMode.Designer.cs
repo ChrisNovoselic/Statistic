@@ -34,7 +34,7 @@ namespace Statistic
             this.clbMode = new System.Windows.Forms.CheckedListBox();
             this.btnSetAll = new System.Windows.Forms.Button();
             this.btnClearAll = new System.Windows.Forms.Button();
-            this.comboBoxModeTEC = new System.Windows.Forms.ComboBox();
+            this.comboBoxModeTECComponent = new System.Windows.Forms.ComboBox();
             this.labelModeTEC = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -97,20 +97,20 @@ namespace Statistic
             this.btnClearAll.UseVisualStyleBackColor = true;
             this.btnClearAll.Click += new System.EventHandler(this.btnClearAll_Click);
             // 
-            // comboBoxModeTEC
+            // comboBoxModeTECComponent
             // 
-            this.comboBoxModeTEC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxModeTEC.FormattingEnabled = true;
-            this.comboBoxModeTEC.Items.AddRange(new object[] {
-            "ГТП",
-            "ЩУ",
-            "Поблочно"});
-            this.comboBoxModeTEC.Location = new System.Drawing.Point(106, 48);
-            this.comboBoxModeTEC.Name = "comboBoxModeTEC";
-            this.comboBoxModeTEC.Size = new System.Drawing.Size(95, 21);
-            this.comboBoxModeTEC.TabIndex = 7;
-            this.comboBoxModeTEC.SelectedIndex = 0;
-            this.comboBoxModeTEC.SelectedIndexChanged += new System.EventHandler(this.comboBoxModeTEC_SelectedIndexChanged);
+            this.comboBoxModeTECComponent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxModeTECComponent.FormattingEnabled = true;
+            //this.comboBoxModeTECComponent.Items.AddRange(new object[] { "ГТП", "ЩУ", "Поблочно"});
+            for (int i = (int) MODE_TECCOMPONENT.GTP; i < (int) MODE_TECCOMPONENT.UNKNOWN; i ++) {
+                this.comboBoxModeTECComponent.Items.Add (getNameMode ((short) i));
+            }
+            this.comboBoxModeTECComponent.Location = new System.Drawing.Point(106, 48);
+            this.comboBoxModeTECComponent.Name = "comboBoxModeTECComponent";
+            this.comboBoxModeTECComponent.Size = new System.Drawing.Size(95, 21);
+            this.comboBoxModeTECComponent.TabIndex = 7;
+            this.comboBoxModeTECComponent.SelectedIndex = 0;
+            this.comboBoxModeTECComponent.SelectedIndexChanged += new System.EventHandler(this.comboBoxModeTEC_SelectedIndexChanged);
             // 
             // labelModeTEC
             // 
@@ -129,7 +129,7 @@ namespace Statistic
             this.CancelButton = this.параметрыПриложения;
             this.ClientSize = new System.Drawing.Size(206, 322);
             this.Controls.Add(this.labelModeTEC);
-            this.Controls.Add(this.comboBoxModeTEC);
+            this.Controls.Add(this.comboBoxModeTECComponent);
             this.Controls.Add(this.btnClearAll);
             this.Controls.Add(this.btnSetAll);
             this.Controls.Add(this.clbMode);
@@ -157,7 +157,7 @@ namespace Statistic
         private System.Windows.Forms.CheckedListBox clbMode;
         private System.Windows.Forms.Button btnSetAll;
         private System.Windows.Forms.Button btnClearAll;
-        private System.Windows.Forms.ComboBox comboBoxModeTEC;
+        private System.Windows.Forms.ComboBox comboBoxModeTECComponent;
         private System.Windows.Forms.Label labelModeTEC;
     }
 }

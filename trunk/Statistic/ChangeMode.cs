@@ -15,10 +15,11 @@ namespace Statistic
         public List<int> TECComponent_index;
         public List<int> was_checked;
         public bool admin_was_checked;
-        //public bool ppbr_was_checked;
         public bool closing;
 
         private ConnectionSettings m_connSet;
+
+        public enum MODE_TECCOMPONENT : ushort { GTP, PC, /*, BLOCK*/ UNKNOWN };
 
         public ChangeMode(ConnectionSettings connSet)
         {
@@ -31,7 +32,19 @@ namespace Statistic
             closing = false;
         }
 
-        public Int16 getModeTEC () { return (Int16) comboBoxModeTEC.SelectedIndex; }
+        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex; }
+
+        public string getNameMode (Int16 indx) {
+            string [] nameModes = {"ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};
+
+            return nameModes[indx];
+        }
+        
+        public string getNameAdminValues (Int16 indx) {
+            string[] arNameAdminValues = { "Диспетчер", "ДИС" };
+
+            return @"ПБР - " + arNameAdminValues[indx];
+        }
 
         public void InitTEC (ConnectionSettings connSet) {
             m_connSet = connSet;
@@ -40,7 +53,7 @@ namespace Statistic
 
             clbMode.Items.Clear ();
 
-            this.tec = new InitTEC(m_connSet, (short) getModeTEC ()).tec;
+            this.tec = new InitTEC(m_connSet, (short) getModeTECComponent ()).tec;
 
             tec_index = new List<int>();
             TECComponent_index = new List<int>();
@@ -66,7 +79,8 @@ namespace Statistic
                 index_tec++;
             }
 
-            clbMode.Items.Add("Редактирование ПБР");
+            //clbMode.Items.Add("Редактирование ПБР");
+            clbMode.Items.Add(getNameAdminValues ((short) comboBoxModeTECComponent.SelectedIndex));
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -81,8 +95,7 @@ namespace Statistic
             was_checked.Clear();
             admin_was_checked = false;
 
-            for (i = 0; i < clbMode.CheckedIndices.Count; i++)
-            {
+            for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
                 if (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1)
                     admin_was_checked = true;
                 else

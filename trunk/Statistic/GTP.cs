@@ -8,6 +8,7 @@ namespace Statistic
     {
         public string name;
         public string prefix_admin, prefix_pbr;
+        public int m_id;
         public List<TG> TG;
         public TEC tec;
 

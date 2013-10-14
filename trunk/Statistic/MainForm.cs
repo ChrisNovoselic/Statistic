@@ -279,11 +279,11 @@ namespace Statistic
             {
                 int i;
                 int index;
-                Int16 prevModeComponent = changeMode.getModeTEC ();
+                int prevModeComponent = changeMode.getModeTECComponent ();
                 // выбираем список отображаемых вкладок
                 if (changeMode.ShowDialog() == DialogResult.OK)
                 {
-                    if ((! (prevModeComponent == changeMode.getModeTEC()))) {
+                    if ((! (prevModeComponent == changeMode.getModeTECComponent()))) {
                         this.tec = changeMode.tec;
 
                         tecViews.Clear ();
@@ -295,8 +295,10 @@ namespace Statistic
 
                     if (tecViews.Count == 0) {
                         adminPanel.StopDbInterface ();
+                        adminPanel.Stop();
 
                         adminPanel.InitTEC (changeMode.tec);
+                        adminPanel.mode(changeMode.getModeTECComponent ());
                         adminPanel.StartDbInterface ();
 
                         // создаём все tecview
@@ -366,7 +368,7 @@ namespace Statistic
                         if (prevStateIsAdmin || passwordForm.ShowDialog() == DialogResult.Yes)
                         {
                             StartWait();
-                            tclTecViews.TabPages.Add("Редактирование ПБР");
+                            tclTecViews.TabPages.Add(changeMode.getNameAdminValues((short) changeMode.getModeTECComponent ()));
 
                             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
 
@@ -517,6 +519,7 @@ namespace Statistic
                             tclTecViews.TabPages.Add(t.name);
                         else
                             tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[changeMode.TECComponent_index[changeMode.was_checked[index]]].name);
+
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
 
@@ -540,7 +543,7 @@ namespace Statistic
                 {
                     //if (passwordForm.ShowDialog() == DialogResult.Yes)
                     {
-                        tclTecViews.TabPages.Add("Редактирование ПБР");
+                        tclTecViews.TabPages.Add(changeMode.getNameAdminValues (1));
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
 

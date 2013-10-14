@@ -66,6 +66,7 @@ namespace Statistic
                 for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
                     tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
                     tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
+                    tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
 
                     list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + arPREFIX_COMPONENT[indx] + " = " + list_TECComponents.Rows[j]["ID"].ToString());
 
@@ -73,6 +74,7 @@ namespace Statistic
                     {
                         tec[i].list_TECComponents[j].TG.Add(new TG(tec[i].list_TECComponents[j]));
                         tec[i].list_TECComponents[j].TG[k].name = list_tg.Rows [k]["NAME"].ToString ();
+                        tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32 (list_tg.Rows[k]["ID"]);
                     }
                 }
             }

@@ -9,6 +9,7 @@ namespace Statistic
         public enum ID_TIME : int { MINUTES, HOURS, COUNT_ID_TIME };
 
         public string name;
+        public int m_id;
         public double[] power;
         public bool[] receivedMin;
         public bool[] receivedHourHalf1;
@@ -17,11 +18,11 @@ namespace Statistic
         public bool receivedHourHalf2Addon;
         //public int id;
         public int [] ids; //Для особенной ТЭЦ (Бийск)
-        public TECComponent comp;
+        public TECComponent m_owner;
 
         public TG(TECComponent comp)
         {
-            this.comp = comp;
+            this.m_owner = comp;
             power = new double[21];
             receivedMin = new bool[21];
             receivedHourHalf1 = new bool[24];
