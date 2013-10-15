@@ -20,7 +20,7 @@ namespace Statistic
 
         private struct OldValuesStruct
         {
-            //public double plan;
+            public double plan;
             public double recomendation;
             public bool deviationType;
             public double deviation;
@@ -28,15 +28,15 @@ namespace Statistic
 
         public struct TECComponentsAdminStruct
         {
-            public double[] recommendations;
             public double[] plan;
+            public double[] recommendations;            
             public double[] diviation;
             public bool[] diviationPercent;
 
             public TECComponentsAdminStruct(int count)
             {
-                this.recommendations = new double[count];
                 this.plan = new double[count];
+                this.recommendations = new double[count];                
                 this.diviation = new double[count];
                 this.diviationPercent = new bool[count];
             }
@@ -155,6 +155,7 @@ namespace Statistic
             return prev_mode;
         }
 
+        private const double maxPlanValue = 1500;
         private const double maxRecomendationValue = 1500;
         private const double maxDeviationValue = 1500;
         private const double maxDeviationPercentValue = 100;
@@ -225,8 +226,8 @@ namespace Statistic
             PPBRValues,
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
-            SaveValues, //Сохранение административных данных
-            SaveValuesPPBR, //Сохранение PPBR
+            SaveAdminValues, //Сохранение административных данных
+            SavePPBRValues, //Сохранение PPBR
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
             GetPass,
             SetPassInsert,
@@ -352,7 +353,7 @@ namespace Statistic
             this.Plan.Frozen = true;
             this.Plan.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.PLAN];
             this.Plan.Name = arDescStringIndex[(int)Admin.DESC_INDEX.PLAN];
-            this.Plan.ReadOnly = true;
+            this.Plan.ReadOnly = false;
             this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.Plan.Width = 70;
             // 
@@ -488,12 +489,22 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
+                if (oldValues[i].plan != values.plan[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value.ToString())*/)
+                    return true;
+                else
+                    ;
                 if (oldValues[i].recomendation != values.recommendations[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value.ToString())*/)
                     return true;
+                else
+                    ;
                 if (oldValues[i].deviationType != values.diviationPercent[i] /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString())*/)
                     return true;
+                else
+                    ;
                 if (oldValues[i].deviation != values.diviation[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value.ToString())*/)
                     return true;
+                else
+                    ;
             }
             return false;
         }
@@ -514,9 +525,9 @@ namespace Statistic
                 states.Add(StatesMachine.CurrentTime);
                 states.Add(StatesMachine.AdminDates);
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                //states.Add(StatesMachine.PPBRDates);
-                states.Add(StatesMachine.SaveValues);
-                //states.Add(StatesMachine.SaveValuesPPBR);
+                states.Add(StatesMachine.PPBRDates);
+                states.Add(StatesMachine.SaveAdminValues);
+                states.Add(StatesMachine.SavePPBRValues);
                 //states.Add(StatesMachine.UpdateValuesPPBR);
 
                 try
@@ -546,6 +557,7 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
+                oldValues[i].plan = values.plan[i];
                 oldValues[i].recomendation = values.recommendations[i];
                 oldValues[i].deviationType = values.diviationPercent[i];
                 oldValues[i].deviation = values.diviation[i];
@@ -1133,6 +1145,26 @@ namespace Statistic
         //    }
         //}
 
+        /*
+        private void cellValidated(int rowIndx, int colIndx)
+        {
+            double value;
+            bool valid;
+
+            valid = double.TryParse((string)this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value, out value);
+            if (!valid || value > maxRecomendationValue)
+            {
+                values.recommendations[rowIndx] = 0;
+                this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = 0.ToString("F2");
+            }
+            else
+            {
+                values.recommendations[rowIndx] = value;
+                this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = value.ToString("F2");
+            }
+        }
+        */
+
         private void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
@@ -1140,8 +1172,25 @@ namespace Statistic
 
             switch (e.ColumnIndex)
             {
+                case (int)DESC_INDEX.PLAN: // План
+                    //cellValidated(e.RowIndex, (int)DESC_INDEX.PLAN);
+
+                    valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value, out value);
+                    if (!valid || value > maxRecomendationValue)
+                    {
+                        values.plan[e.RowIndex] = 0;
+                        this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = 0.ToString("F2");
+                    }
+                    else
+                    {
+                        values.plan[e.RowIndex] = value;
+                        this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = value.ToString("F2");
+                    }
+                    break;
                 case (int) DESC_INDEX.RECOMENDATION: // Рекомендация
                     {
+                        //cellValidated(e.RowIndex, (int)DESC_INDEX.RECOMENDATION);
+
                         valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
                         if (!valid || value > maxRecomendationValue)
                         {
@@ -1193,15 +1242,19 @@ namespace Statistic
             {
                 for (int i = e.RowIndex + 1; i < 24; i++)
                 {
+                    values.plan[i] = values.plan[e.RowIndex];
                     values.recommendations[i] = values.recommendations[e.RowIndex];
                     values.diviationPercent[i] = values.diviationPercent[e.RowIndex];
                     values.diviation[i] = values.diviation[e.RowIndex];
 
+                    this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value;
                     this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value;
                     this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value;
                     this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value;
                 }
             }
+            else
+                ;
         }
 
         public void Start()
@@ -1552,25 +1605,65 @@ namespace Statistic
             return bRes;
         }
 
-        private bool GetAdminValuesResponse(DataTable table_in, DateTime date)
+        private bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
-            DataTable table = table_in.Clone ();
-            table.Merge(m_tablePPBRValuesResponse, false);
-            
-            for (int i = 0, hour; i < table.Rows.Count; i++)
+            DataTable table = null;
+            DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
+            int [] arIndexTables = {0, 1};
+
+            int i = -1, j = -1, k = -1,
+                hour = -1;
+
+            //if (tableAdminValuesResponse.Rows.Count == m_tablePPBRValuesResponse.Rows.Count) {
+            //     table = tableAdminValuesResponse.Copy();
+            //     table.Merge(m_tablePPBRValuesResponse, true);
+            //}
+            //else {
+            if (arTable[0].Rows.Count > arTable[1].Rows.Count)
+                {
+                }
+                else
+                {
+                    arIndexTables [0] = 1;
+                    arIndexTables [1] = 0;
+                }
+            //}
+
+            table = arTable[arIndexTables [0]].Copy();
+            table.Merge(arTable[arIndexTables[1]], true);
+
+            for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
+            {
+                for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
+                {
+                    if (arTable[arIndexTables[0]].Rows[i][0].Equals (arTable[arIndexTables[1]].Rows[j][0])) {
+                        for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
+                        {
+                            table.Rows [i] [arTable[arIndexTables[1]].Columns [k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
+                        }
+                    }
+                    else
+                        ;
+                }
+            }
+
+            //0 - DATE_ADMIN, 1 - REC, 2 - IS_PER, 3 - DIVIAT, 4 - DATE_PBR, 5 - PBR, 6 - PBR_NUMBER
+            for (i = 0; i < table.Rows.Count; i++)
             {
                 if (table.Rows[i][0] is System.DBNull)
                 {
                     try
                     {
-                        hour = ((DateTime)table.Rows[i][4]).Hour;
-                        if (hour == 0 && ((DateTime)table.Rows[i][4]).Day != date.Day)
+                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
                             hour = 24;
                         else
                             if (hour == 0)
                                 continue;
+                            else
+                                ;
 
-                        values.plan[hour - 1] = (double)table.Rows[i][5];
+                        values.plan[hour - 1] = (double)table.Rows[i]["PBR"];
                         values.recommendations[hour - 1] = 0;
                         values.diviationPercent[hour - 1] = false;
                         values.diviation[hour - 1] = 0;
@@ -1583,18 +1676,18 @@ namespace Statistic
                 {
                     try
                     {
-                        hour = ((DateTime)table.Rows[i][0]).Hour;
-                        if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
+                        hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
                             hour = 24;
                         else
                             if (hour == 0)
                                 continue;
 
-                        values.recommendations[hour - 1] = (double)table.Rows[i][1];
-                        values.diviationPercent[hour - 1] = (int)table.Rows[i][2] == 1;
-                        values.diviation[hour - 1] = (double)table.Rows[i][3];
-                        if (!(table.Rows[i][4] is System.DBNull))
-                            values.plan[hour - 1] = (double)table.Rows[i][5];
+                        values.recommendations[hour - 1] = (double)table.Rows[i]["REC"];
+                        values.diviationPercent[hour - 1] = (int)table.Rows[i]["IS_PER"] == 1;
+                        values.diviation[hour - 1] = (double)table.Rows[i]["DIVIAT"];
+                        if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                            values.plan[hour - 1] = (double)table.Rows[i]["PBR"];
                         else
                             values.plan[hour - 1] = 0;
                     }
@@ -1617,7 +1710,7 @@ namespace Statistic
                 ;
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
-            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
+            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -1630,7 +1723,7 @@ namespace Statistic
                 ;
 
 //            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
-            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
+            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
         }
 
         private void ClearAdminDates()
@@ -1714,7 +1807,7 @@ namespace Statistic
                                         @"'; ";
                             break;
                         case ChangeMode.MODE_TECCOMPONENT.PC:
-                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + @"REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
                                         @", " + "DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
@@ -1859,8 +1952,11 @@ namespace Statistic
 
             if (serverTime.Date < date)
                 currentHour = 0;
+            else
+                ;
 
-            string requestUpdate = "", requestInsert = "";
+            string strUsedPPBRvsPBR = "PPBRvsPBROfID",
+                    requestUpdate = "", requestInsert = "";
 
             string name = t.NameFieldOfPBRRequest(comp);
 
@@ -1869,27 +1965,71 @@ namespace Statistic
                 // запись для этого часа имеется, модифицируем её
                 if (PPBRDates[i])
                 {
-                    requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.REC] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                    switch (m_modeTECComponent)
+                    {
+                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                            /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"' WHERE " +
+                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'; ";*/
+                            requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
+                            break;
+                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                            requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + values.plan[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"' WHERE " +
+                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'" +
+                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 else
                 {
                     // запись отсутствует, запоминаем значения
-                    requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                    switch (m_modeTECComponent)
+                    {
+                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                            requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
                                         @"', '" + "0" +
                                         @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
+                            break;
+                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                            requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"', '" + "ПБР" + getPBRNumber(i) +
+                                        @"', " + comp.m_id +
+                                        @", '" + "0" +
+                                        @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"'),";
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
 
             // добавляем все записи, не найденные в базе
             if (requestInsert != "")
             {
-                requestInsert = @"INSERT INTO " + t.m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                switch (m_modeTECComponent)
+                {
+                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        requestInsert = @"INSERT INTO " + t.m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        break;
+                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                        requestInsert = @"INSERT INTO " + strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        break;
+                    default:
+                        break;
+                }
             }
             else
                 ;
@@ -2514,11 +2654,11 @@ namespace Statistic
                     ActionReport("Получение списка сохранённых часовых значений.");
                     GetAdminDatesRequest(dateForValues);
                     break;
-                case StatesMachine.SaveValues:
+                case StatesMachine.SaveAdminValues:
                     ActionReport("Сохранение административных данных.");
                     SetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues);
                     break;
-                case StatesMachine.SaveValuesPPBR:
+                case StatesMachine.SavePPBRValues:
                     ActionReport("Сохранение ПЛАНА.");
                     SetPPBRRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues);
                     break;
@@ -2570,8 +2710,8 @@ namespace Statistic
                     case StatesMachine.AdminValues:
                     case StatesMachine.PPBRDates:
                     case StatesMachine.AdminDates:                    
-                    case StatesMachine.SaveValues:
-                    case StatesMachine.SaveValuesPPBR:
+                    case StatesMachine.SaveAdminValues:
+                    case StatesMachine.SavePPBRValues:
                     //case StatesMachine.UpdateValuesPPBR:
                     case StatesMachine.GetPass:
                         return GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
@@ -2647,7 +2787,7 @@ namespace Statistic
                     {
                     }
                     break;
-                case StatesMachine.SaveValues:
+                case StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
                     try
                     {
@@ -2661,7 +2801,7 @@ namespace Statistic
                     {
                     }
                     break;
-                case StatesMachine.SaveValuesPPBR:
+                case StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;
                     try
                     {
@@ -2845,7 +2985,7 @@ namespace Statistic
                     {
                     }
                     break;
-                case StatesMachine.SaveValues:
+                case StatesMachine.SaveAdminValues:
                     ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
                     saveResult = Errors.NoAccess;
                     try
@@ -2856,7 +2996,7 @@ namespace Statistic
                     {
                     }
                     break;
-                case StatesMachine.SaveValuesPPBR:
+                case StatesMachine.SavePPBRValues:
                     ErrorReport("Ошибка сохранения данных ПЛАНа. Переход в ожидание.");
                     saveResult = Errors.NoAccess;
                     try

@@ -2153,7 +2153,7 @@ namespace Statistic
         private void GetPBRValuesRequest () {
             admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, (ChangeMode.MODE_TECCOMPONENT) admin.mode()));
         }
-        
+
         private void GetAdminValuesRequest () {
             admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, (ChangeMode.MODE_TECCOMPONENT) admin.mode ()));
         }

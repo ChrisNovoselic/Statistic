@@ -329,8 +329,13 @@ namespace Statistic
 
                                 @" " + @"FROM " + strUsedAdminValues +
 
-                                @" " + @"WHERE " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                                @" " + @"AND " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                                @" " + @"WHERE" +
+                                @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
+
+                                @" " + @"AND " +
+                                strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                                @" " + @"AND " +
+                                strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
 
                                 @" " + @"UNION " +
                                 @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
@@ -339,7 +344,8 @@ namespace Statistic
 
                                 @" " + @"FROM " + strUsedAdminValues +
 
-                                @" " + @"WHERE ID_COMPONENT IN (" + selectAdmin.Split (';') [1] + ")" +
+                                @" " + @"WHERE" +
+                                @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
 
                                 @" " + @"AND " +
                                 strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " IS NULL" +
@@ -544,19 +550,60 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminDatesQuery (DateTime dt) {
-            return @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " +
-                      @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                      @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                      @"' ORDER BY DATE ASC";
+        public string GetAdminDatesQuery(DateTime dt, ChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
+        {
+            string strUsedAdminValues = "AdminValuesOfID",
+                    strRes = string.Empty;
+
+            switch (mode)
+            {
+                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    strRes = @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " +
+                          @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' ORDER BY DATE ASC";
+                    break;
+                case ChangeMode.MODE_TECCOMPONENT.PC:
+                    strRes = @"SELECT DATE FROM " + strUsedAdminValues + " WHERE" +
+                            @" ID_COMPONENT = " + comp.m_id +
+                          @" AND DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' ORDER BY DATE ASC";
+                    break;
+                default:
+                    break;
+            }
+
+            return strRes;
         }
 
-        public string GetPBRDatesQuery (DateTime dt) {
-            return @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR +
-                    @" WHERE " +
-                    @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                    @"' ORDER BY DATE_TIME ASC";
+        public string GetPBRDatesQuery(DateTime dt, ChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
+        {
+            string strUsedPPBRvsPBR = "PPBRvsPBROfID",
+                    strRes = string.Empty;
+
+            switch (mode)
+            {
+                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    strRes = @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR +
+                            @" WHERE " +
+                            @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' ORDER BY DATE_TIME ASC";
+                    break;
+                case ChangeMode.MODE_TECCOMPONENT.PC:
+                    strRes = @"SELECT DATE_TIME FROM " + strUsedPPBRvsPBR +
+                            @" WHERE" +
+                            @" ID_COMPONENT = " + comp.m_id + "" + 
+                            @" AND DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' ORDER BY DATE_TIME ASC";
+                    break;
+                default:
+                    break;
+            }
+
+            return strRes;
         }
 
         public string NameFieldOfAdminRequest(TECComponent comp)
