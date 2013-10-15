@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Statistic", "Statistic\Statistic.csproj", "{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticBiysk", "..\StatisticBiysk\StatisticBiysk\StatisticBiysk.csproj", "{4E07D0EB-809A-41EF-894E-ED59B4286483}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,10 +13,6 @@ Global
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4E07D0EB-809A-41EF-894E-ED59B4286483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4E07D0EB-809A-41EF-894E-ED59B4286483}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4E07D0EB-809A-41EF-894E-ED59B4286483}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4E07D0EB-809A-41EF-894E-ED59B4286483}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

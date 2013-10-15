@@ -522,6 +522,11 @@ namespace Statistic
 
                 newState = true;
                 states.Clear();
+
+                MainForm.log.LogLock();
+                MainForm.log.LogToFile("SaveChanges () - states.Clear()", true, true, false);
+                MainForm.log.LogUnlock();
+
                 states.Add(StatesMachine.CurrentTime);
                 states.Add(StatesMachine.AdminDates);
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
@@ -1630,7 +1635,7 @@ namespace Statistic
             //}
 
             table = arTable[arIndexTables [0]].Copy();
-            table.Merge(arTable[arIndexTables[1]], true);
+            table.Merge(arTable[arIndexTables[1]].Clone (), false);
 
             for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
             {
@@ -2007,8 +2012,8 @@ namespace Statistic
                                         @"', '" + "ПБР" + getPBRNumber(i) +
                                         @"', " + comp.m_id +
                                         @", '" + "0" +
-                                        @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
-                                        @"'),";
+                                        @"', " + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"),";
                             break;
                         default:
                             break;
@@ -2057,6 +2062,10 @@ namespace Statistic
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
 
+            MainForm.log.LogLock();
+            MainForm.log.LogToFile("SetPPBRRequest", true, true, false);
+            MainForm.log.LogUnlock();
+            
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
@@ -2070,7 +2079,6 @@ namespace Statistic
             else
                 request += "ADMIN";
 
-            
             request += " FROM TOOLS";
             Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, request);
         }
