@@ -1619,20 +1619,12 @@ namespace Statistic
             int i = -1, j = -1, k = -1,
                 hour = -1;
 
-            //if (tableAdminValuesResponse.Rows.Count == m_tablePPBRValuesResponse.Rows.Count) {
-            //     table = tableAdminValuesResponse.Copy();
-            //     table.Merge(m_tablePPBRValuesResponse, true);
-            //}
-            //else {
-            if (arTable[0].Rows.Count > arTable[1].Rows.Count)
-                {
-                }
-                else
-                {
-                    arIndexTables [0] = 1;
-                    arIndexTables [1] = 0;
-                }
-            //}
+            if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
+                arIndexTables[0] = 1;
+                arIndexTables[1] = 0;
+            }
+            else {
+            }
 
             table = arTable[arIndexTables [0]].Copy();
             table.Merge(arTable[arIndexTables[1]].Clone (), false);
@@ -1668,14 +1660,12 @@ namespace Statistic
                             else
                                 ;
 
-                        values.plan[hour - 1] = (double)table.Rows[i]["PBR"];
+                        values.plan[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 4 + 1/*"PBR"*/];
                         values.recommendations[hour - 1] = 0;
                         values.diviationPercent[hour - 1] = false;
                         values.diviation[hour - 1] = 0;
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
                 else
                 {
@@ -1687,18 +1677,18 @@ namespace Statistic
                         else
                             if (hour == 0)
                                 continue;
+                            else
+                                ;
 
-                        values.recommendations[hour - 1] = (double)table.Rows[i]["REC"];
-                        values.diviationPercent[hour - 1] = (int)table.Rows[i]["IS_PER"] == 1;
-                        values.diviation[hour - 1] = (double)table.Rows[i]["DIVIAT"];
+                        values.recommendations[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 3 + 1/*"REC"*/];
+                        values.diviationPercent[hour - 1] = (int)table.Rows[i][arIndexTables[1] * 3 + 2/*"IS_PER"*/] == 1;
+                        values.diviation[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 3 + 3/*"DIVIAT"*/];
                         if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
-                            values.plan[hour - 1] = (double)table.Rows[i]["PBR"];
+                            values.plan[hour - 1] = (double)table.Rows[i][arIndexTables[0] * 4 + 1/*"PBR"*/];
                         else
                             values.plan[hour - 1] = 0;
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
 
@@ -1752,11 +1742,12 @@ namespace Statistic
                     hour = ((DateTime)table.Rows[i][0]).Hour;
                     if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
                         hour = 24;
+                    else
+                        ;
+
                     adminDates[hour - 1] = true;
                 }
-                catch
-                {
-                }
+                catch { }
             }
             return true;
         }
@@ -1770,11 +1761,12 @@ namespace Statistic
                     hour = ((DateTime)table.Rows[i][0]).Hour;
                     if (hour == 0 && ((DateTime)table.Rows[i][0]).Day != date.Day)
                         hour = 24;
+                    else
+                        ;
+
                     PPBRDates[hour - 1] = true;
                 }
-                catch
-                {
-                }
+                catch { }
             }
             return true;
         }
@@ -2797,17 +2789,11 @@ namespace Statistic
                     break;
                 case StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
-                    try
-                    {
-                        semaSave.Release(1);
-                    }
-                    catch
-                    {
-                    }
+                    //try { semaSave.Release(1); }
+                    //catch { }
                     result = true;
-                    if (result)
-                    {
-                    }
+                    if (result) { }
+                    else ;
                     break;
                 case StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;

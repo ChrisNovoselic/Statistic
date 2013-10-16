@@ -631,6 +631,8 @@ namespace Statistic
                 graphicsSettingsForm.Left, graphicsSettingsForm.Top, graphicsSettingsForm.Width, graphicsSettingsForm.Height,
                 SWP_NOACTIVATE);
             }
+            else
+                ;
         }
 
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
@@ -655,6 +657,11 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

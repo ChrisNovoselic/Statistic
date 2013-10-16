@@ -3542,6 +3542,8 @@ namespace Statistic
                         {
                             if (i == offsetPrev)
                                 continue;
+                            else
+                                ;
 
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
@@ -3553,28 +3555,30 @@ namespace Statistic
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
                                     if (!(m_tablePBRResponse.Rows[i][offsetPlan] is System.DBNull))
                                         valuesPBR[hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan];
                                     else
                                         ;
-                                    
+
                                     //if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
                                     if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
                                         valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
                                     else
                                         valuesREC[hour - 1] = 0;
-                                    
+
                                     if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
                                         valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
                                     else
                                         ;
-                                    
+
                                     if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
                                         valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
                                     else
                                         ;
-                                    
+
                                     string tmp = "";
                                     if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull)))
                                         tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
@@ -3614,7 +3618,7 @@ namespace Statistic
                                         valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
                                     else
                                         ;
-                                    
+
                                     if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
                                         valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
                                     else
