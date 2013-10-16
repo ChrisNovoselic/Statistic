@@ -24,17 +24,17 @@ namespace Statistic
         public ChangeMode(ConnectionSettings connSet)
         {
             InitializeComponent();
-            
+
             InitTEC (connSet);
-            
+
             //clbMode.Items.Add("Назначение ПБР");
-            
+
             closing = false;
         }
 
         public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex; }
 
-        public string getNameMode (Int16 indx) {
+        public static string getNameMode (Int16 indx) {
             string [] nameModes = {"ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};
 
             return nameModes[indx];

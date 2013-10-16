@@ -43,6 +43,8 @@
             // 
             // listBoxItem
             // 
+            this.listBoxItem.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.listBoxItem.FormattingEnabled = true;
             this.listBoxItem.Location = new System.Drawing.Point(12, 52);
             this.listBoxItem.Name = "listBoxItem";
@@ -52,6 +54,11 @@
             // dataGridViewProp
             // 
             this.dataGridViewProp.AllowUserToOrderColumns = true;
+            this.dataGridViewProp.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewProp.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.dataGridViewProp.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewProp.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewProp.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ColumnTG,
@@ -68,6 +75,7 @@
             this.ColumnTG.HeaderText = "Эн./блок";
             this.ColumnTG.Name = "ColumnTG";
             this.ColumnTG.ReadOnly = true;
+            this.ColumnTG.Width = 77;
             // 
             // ColumnProp1
             // 
@@ -75,6 +83,7 @@
             this.ColumnProp1.HeaderText = "ГТП";
             this.ColumnProp1.Name = "ColumnProp1";
             this.ColumnProp1.ReadOnly = true;
+            this.ColumnProp1.Width = 38;
             // 
             // ColumnProp2
             // 
@@ -82,17 +91,21 @@
             this.ColumnProp2.HeaderText = "ЩУ";
             this.ColumnProp2.Name = "ColumnProp2";
             this.ColumnProp2.ReadOnly = true;
+            this.ColumnProp2.Width = 38;
             // 
             // comboBoxMode
             // 
+            this.comboBoxMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxMode.FormattingEnabled = true;
             this.comboBoxMode.Location = new System.Drawing.Point(12, 13);
             this.comboBoxMode.Name = "comboBoxMode";
             this.comboBoxMode.Size = new System.Drawing.Size(136, 21);
             this.comboBoxMode.TabIndex = 4;
+            this.comboBoxMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxMode_SelectedIndexChanged);
             // 
             // buttonAdd
             // 
+            this.buttonAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonAdd.Location = new System.Drawing.Point(12, 218);
             this.buttonAdd.Name = "buttonAdd";
             this.buttonAdd.Size = new System.Drawing.Size(66, 23);
@@ -102,6 +115,7 @@
             // 
             // buttonDel
             // 
+            this.buttonDel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonDel.Location = new System.Drawing.Point(84, 218);
             this.buttonDel.Name = "buttonDel";
             this.buttonDel.Size = new System.Drawing.Size(66, 23);
@@ -111,27 +125,32 @@
             // 
             // buttonOk
             // 
+            this.buttonOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOk.Location = new System.Drawing.Point(240, 251);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(89, 23);
             this.buttonOk.TabIndex = 7;
             this.buttonOk.Text = "Принять";
             this.buttonOk.UseVisualStyleBackColor = true;
+            this.buttonOk.Click += new System.EventHandler(this.buttonOk_Click);
             // 
             // buttonCancel
             // 
+            this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.Location = new System.Drawing.Point(338, 251);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(89, 23);
             this.buttonCancel.TabIndex = 8;
             this.buttonCancel.Text = "Отмена";
             this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // FormTECComponent
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 282);
+            this.ControlBox = false;
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.Controls.Add(this.buttonDel);
@@ -139,7 +158,10 @@
             this.Controls.Add(this.comboBoxMode);
             this.Controls.Add(this.dataGridViewProp);
             this.Controls.Add(this.listBoxItem);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "FormTECComponent";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Настройка состава ТЭЦ, ГТП, ЩУ";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewProp)).EndInit();
             this.ResumeLayout(false);

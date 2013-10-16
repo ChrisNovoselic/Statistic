@@ -80,6 +80,12 @@
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
     <Compile Include="DbInterface.cs" />
+    <Compile Include="FormTECComponent.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormTECComponent.Designer.cs">
+      <DependentUpon>FormTECComponent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logging.cs" />
     <Compile Include="Parameters.cs">
       <SubType>Form</SubType>
@@ -157,6 +163,9 @@
     <EmbeddedResource Include="About.resx">
       <SubType>Designer</SubType>
       <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormTECComponent.resx">
+      <DependentUpon>FormTECComponent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GraphicsSettings.resx">
       <SubType>Designer</SubType>

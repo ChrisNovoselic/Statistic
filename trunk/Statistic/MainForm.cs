@@ -661,7 +661,11 @@ namespace Statistic
 
         private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FormTECComponent tecComponent = new FormTECComponent(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
+            if (tecComponent.ShowDialog () == DialogResult.OK) {
+            }
+            else
+                ;
         }
     }
 }
