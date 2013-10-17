@@ -11,6 +11,32 @@ namespace Statistic
     {
         public List<TEC> tec;
 
+        public static string getPrefixTECComponent (int i) {
+            String[] arPREFIX_COMPONENT = { "GTP", "PC" , "TG" };
+
+            return arPREFIX_COMPONENT [i];
+        }
+
+        public static DataTable getListTEC(ConnectionSettings connSett, bool bAll = false)
+        {
+            string req = string.Empty;
+            req = "SELECT * FROM TEC_LIST";
+
+            if (!bAll) req += " WHERE INUSE=TRUE"; else ;
+
+            return DbInterface.Request(connSett, req);
+        }
+
+        public static DataTable getListTECComponent(ConnectionSettings connSett, string prefix, int id_tec)
+        {
+            return DbInterface.Request(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString());
+        }
+
+        public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id_tec)
+        {
+            return DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id_tec.ToString());
+        }
+        
         public InitTEC(ConnectionSettings connSett, Int16 indx)
         {
             tec = new List<TEC> ();
@@ -35,7 +61,7 @@ namespace Statistic
             //dbInterface.ListenerUnregister(listenerId);
 
             //Использование статической функции
-            list_tec= DbInterface.Request(connSett, "SELECT * FROM TEC_LIST WHERE INUSE=TRUE");
+            list_tec = getListTEC(connSett);
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
@@ -60,20 +86,18 @@ namespace Statistic
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int) CONN_SETT_TYPE.PBR);
 
-                String[] arPREFIX_COMPONENT = { "GTP", "PC" , "TG" };
-
-                list_TECComponents = DbInterface.Request(connSett, "SELECT * FROM " + arPREFIX_COMPONENT [indx] + "_LIST WHERE ID_TEC = " + list_tec.Rows[i]["ID"].ToString());
+                list_TECComponents = getListTECComponent(connSett, getPrefixTECComponent(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
                 for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
                     tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
-                    tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
+                    tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                     tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
 
-                    list_tg = DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + arPREFIX_COMPONENT[indx] + " = " + list_TECComponents.Rows[j]["ID"].ToString());
+                    list_tg = getListTG(connSett, getPrefixTECComponent(indx), Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]));
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
                         tec[i].list_TECComponents[j].TG.Add(new TG(tec[i].list_TECComponents[j]));
-                        tec[i].list_TECComponents[j].TG[k].name = list_tg.Rows [k]["NAME"].ToString ();
+                        tec[i].list_TECComponents[j].TG[k].name = list_tg.Rows[k]["NAME_SHR"].ToString();
                         tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32 (list_tg.Rows[k]["ID"]);
                     }
                 }

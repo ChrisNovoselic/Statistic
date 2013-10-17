@@ -19,7 +19,7 @@ namespace Statistic
 
         private ConnectionSettings m_connSet;
 
-        public enum MODE_TECCOMPONENT : ushort { GTP, PC, /*, BLOCK*/ UNKNOWN };
+        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, /*, BLOCK*/ UNKNOWN };
 
         public ChangeMode(ConnectionSettings connSet)
         {
@@ -35,7 +35,7 @@ namespace Statistic
         public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex; }
 
         public static string getNameMode (Int16 indx) {
-            string [] nameModes = {"ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};
+            string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};
 
             return nameModes[indx];
         }

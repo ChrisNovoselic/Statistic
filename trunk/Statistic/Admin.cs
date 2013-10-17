@@ -2566,18 +2566,16 @@ namespace Statistic
 
             if (taskThread.IsAlive)
             {
-                try
-                {
-                    sem.Release(1);
-                }
-                catch
-                {
-                }
+                try { sem.Release(1); }
+                catch { }
 
                 joined = taskThread.Join(1000);
                 if (!joined)
                     taskThread.Abort();
+                else
+                    ;
             }
+            else ;
 
             if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceConfigDB < 0)) && (!(m_listenerIdConfigDB < 0)))
             {
