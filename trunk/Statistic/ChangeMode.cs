@@ -32,7 +32,14 @@ namespace Statistic
             closing = false;
         }
 
-        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex; }
+        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex + (int)MODE_TECCOMPONENT.GTP; }
+
+        public static string getPrefixMode(int indx)
+        {
+            String[] arPREFIX_COMPONENT = { "TEC", "GTP", "PC", "TG" };
+
+            return arPREFIX_COMPONENT[indx];
+        }
 
         public static string getNameMode (Int16 indx) {
             string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};

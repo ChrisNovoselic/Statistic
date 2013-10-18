@@ -11,12 +11,6 @@ namespace Statistic
     {
         public List<TEC> tec;
 
-        public static string getPrefixTECComponent (int i) {
-            String[] arPREFIX_COMPONENT = { "GTP", "PC" , "TG" };
-
-            return arPREFIX_COMPONENT [i];
-        }
-
         public static DataTable getListTEC(ConnectionSettings connSett, bool bAll = false)
         {
             string req = string.Empty;
@@ -86,13 +80,13 @@ namespace Statistic
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int) CONN_SETT_TYPE.PBR);
 
-                list_TECComponents = getListTECComponent(connSett, getPrefixTECComponent(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
+                list_TECComponents = getListTECComponent(connSett, ChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
                 for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
                     tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
                     tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                     tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
 
-                    list_tg = getListTG(connSett, getPrefixTECComponent(indx), Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]));
+                    list_tg = getListTG(connSett, ChangeMode.getPrefixMode(indx), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {

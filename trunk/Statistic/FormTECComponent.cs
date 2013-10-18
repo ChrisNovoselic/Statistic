@@ -68,8 +68,7 @@ namespace Statistic
             m_list_TECComponents_original = new DataTable[(int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN - 1, m_list_tec_original.Rows.Count];
             m_list_tg_original = new DataTable[m_list_tec_original.Rows.Count];
 
-            comboBoxMode.Items.Add("ТЭЦ");
-            for (int i = (int)ChangeMode.MODE_TECCOMPONENT.GTP; i < (int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+            for (int i = (int)ChangeMode.MODE_TECCOMPONENT.TEC; i < (int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
             {
                 comboBoxMode.Items.Add(ChangeMode.getNameMode((short)i));
             }
@@ -127,14 +126,14 @@ namespace Statistic
             {
                 for (int i = 0; i < (int)UI_CONTROL_ITEM.COUNT_UI_CONTROL_ITEM; i++)
                     if (!(m_arUIControlItem[i].Enabled == m_arUIControlItemEnabled[i]))
-                        {
-                            m_arUIControlItem[i].Enabled = m_arUIControlItemEnabled[i];
+                    {
+                        m_arUIControlItem[i].Enabled = m_arUIControlItemEnabled[i];
 
-                            if ((i == (int)UI_CONTROL_ITEM.LISTBOX_ITEM) && (m_arUIControlItemEnabled[i] == false))
-                                listBoxItem.Items.Clear();
-                            else ;
-                        }
+                        if ((i == (int)UI_CONTROL_ITEM.LISTBOX_ITEM) && (m_arUIControlItemEnabled[i] == false))
+                            listBoxItem.Items.Clear();
                         else ;
+                    }
+                    else ;
             }
         }
 
@@ -153,6 +152,20 @@ namespace Statistic
             catch { }
         }
 
+        private int getIndexTEC (int id) {
+            int iResIndx = -1;
+
+            for (int i = 0; (i < m_list_tec_original.Rows.Count) && (iResIndx < 0); i++)
+            {
+                if (Convert.ToInt32 (m_list_tec_original.Rows [i]["ID"]) == id)
+                    iResIndx = i;
+                else
+                    ;
+            }
+
+            return iResIndx;
+        }
+
         private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             listBoxTEC_SelectedIndexChanged(null, null);
@@ -160,27 +173,55 @@ namespace Statistic
 
         private void listBoxTEC_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBoxMode.SelectedIndex > 0)
-            {                
-                m_list_TECComponents = InitTEC.getListTECComponent(m_connectionSetttings, InitTEC.getPrefixTECComponent(comboBoxMode.SelectedIndex - 1), Convert.ToInt32(m_list_tec.Rows[listBoxTEC.SelectedIndex]["ID"]));
+            if (comboBoxMode.SelectedIndex > -1) {
+                int id_tec = Convert.ToInt32(m_list_tec_original.Rows[listBoxTEC.SelectedIndex]["ID"]),
+                    indx_tec = getIndexTEC (id_tec);
 
-                fillListBox(listBoxItem, m_list_TECComponents);
+                if (comboBoxMode.SelectedIndex > 0)
+                {
+                    m_list_TECComponents = InitTEC.getListTECComponent(m_connectionSetttings, ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex), id_tec);
+
+                    if (m_list_TECComponents_original[comboBoxMode.SelectedIndex - 1, indx_tec] == null)
+                        m_list_TECComponents_original[comboBoxMode.SelectedIndex - 1, indx_tec] = m_list_TECComponents;
+                    else ;                    
+
+                    fillListBox(listBoxItem, m_list_TECComponents);
+                }
+                else
+                {
+                    m_list_tg = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex), id_tec);
+
+                    if (m_list_tg_original[indx_tec] == null)
+                        m_list_tg_original[indx_tec] = m_list_tg;
+                    else ;
+
+                    fillListBox(listBoxTG, m_list_tg);
+                }
+
+                checkBoxTECInUse.CheckedChanged -= checkBoxTECInUse_CheckedChanged;
+                checkBoxTECInUse.Checked = Convert.ToBoolean (m_list_tec.Rows[listBoxTEC.SelectedIndex]["InUse"]);
+                checkBoxTECInUse.CheckedChanged += checkBoxTECInUse_CheckedChanged;
             }
             else
-            {
-                m_list_tg = InitTEC.getListTG(m_connectionSetttings, "TEC", Convert.ToInt32(m_list_tec.Rows[listBoxTEC.SelectedIndex]["ID"]));
-
-                fillListBox(listBoxTG, m_list_tg);
-            }
-
-            checkBoxTECInUse.Checked = Convert.ToBoolean (m_list_tec.Rows[listBoxTEC.SelectedIndex]["InUse"]);
+                ;
         }
 
         private void listBoxItem_SelectedIndexChanged(object sender, EventArgs e)
         {
-            m_list_tg = InitTEC.getListTG(m_connectionSetttings, InitTEC.getPrefixTECComponent(comboBoxMode.SelectedIndex - 1), Convert.ToInt32(m_list_TECComponents.Rows[listBoxItem.SelectedIndex]["ID"]));
+            if (comboBoxMode.SelectedIndex > -1) {
+                int id_tec = Convert.ToInt32(m_list_tec_original.Rows[listBoxTEC.SelectedIndex]["ID"]),
+                    indx_tec = getIndexTEC(id_tec);
+                
+                m_list_tg = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex), Convert.ToInt32(m_list_TECComponents.Rows[listBoxItem.SelectedIndex]["ID"]));
 
-            fillListBox(listBoxTG, m_list_tg);
+                if (m_list_tg_original[indx_tec] == null)
+                    m_list_tg_original[indx_tec] = m_list_tg;
+                else ;
+
+                fillListBox(listBoxTG, m_list_tg);
+            }
+            else
+                ;
         }
 
         private static void fillListBox(ListBox listBox, DataTable data)

@@ -47,8 +47,8 @@
             // 
             // listBoxTEC
             // 
-            this.listBoxTEC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.listBoxTEC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.listBoxTEC.FormattingEnabled = true;
             this.listBoxTEC.Location = new System.Drawing.Point(12, 13);
             this.listBoxTEC.Name = "listBoxTEC";
@@ -112,8 +112,8 @@
             // 
             // listBoxItem
             // 
-            this.listBoxItem.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.listBoxItem.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.listBoxItem.FormattingEnabled = true;
             this.listBoxItem.Location = new System.Drawing.Point(164, 39);
             this.listBoxItem.Name = "listBoxItem";
@@ -167,11 +167,13 @@
             // 
             // listBoxTG
             // 
-            this.listBoxTG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.listBoxTG.AllowDrop = true;
+            this.listBoxTG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.listBoxTG.FormattingEnabled = true;
             this.listBoxTG.Location = new System.Drawing.Point(319, 12);
             this.listBoxTG.Name = "listBoxTG";
+            this.listBoxTG.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBoxTG.Size = new System.Drawing.Size(136, 199);
             this.listBoxTG.TabIndex = 12;
             // 
