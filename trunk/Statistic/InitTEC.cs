@@ -26,9 +26,9 @@ namespace Statistic
             return DbInterface.Request(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString());
         }
 
-        public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id_tec)
+        public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id)
         {
-            return DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id_tec.ToString());
+            return DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString());
         }
         
         public InitTEC(ConnectionSettings connSett, Int16 indx)

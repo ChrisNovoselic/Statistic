@@ -29,32 +29,31 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.listBoxTEC = new System.Windows.Forms.ListBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTECComponent));
             this.comboBoxMode = new System.Windows.Forms.ComboBox();
-            this.buttonTECAdd = new System.Windows.Forms.Button();
-            this.buttonTECDel = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
-            this.listBoxItem = new System.Windows.Forms.ListBox();
-            this.buttonItemDel = new System.Windows.Forms.Button();
-            this.buttonItemAdd = new System.Windows.Forms.Button();
-            this.buttonTGDel = new System.Windows.Forms.Button();
+            this.dataGridViewTEC = new System.Windows.Forms.DataGridView();
+            this.ColumnCheckBoxTECInUse = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.ColumnTextBoxTECName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnButtonTECDel = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTECComponent = new System.Windows.Forms.DataGridView();
+            this.ColumnTECComponentName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnButtonTECComponentDel = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dataGridViewTG = new System.Windows.Forms.DataGridView();
+            this.ColumnTGName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnTGDel = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.comboBoxTGAdd = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.buttonTGAdd = new System.Windows.Forms.Button();
-            this.listBoxTG = new System.Windows.Forms.ListBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             this.timerUIControl = new System.Windows.Forms.Timer(this.components);
-            this.checkBoxTECInUse = new System.Windows.Forms.CheckBox();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTEC)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTECComponent)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTG)).BeginInit();
             this.SuspendLayout();
-            // 
-            // listBoxTEC
-            // 
-            this.listBoxTEC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.listBoxTEC.FormattingEnabled = true;
-            this.listBoxTEC.Location = new System.Drawing.Point(12, 13);
-            this.listBoxTEC.Name = "listBoxTEC";
-            this.listBoxTEC.Size = new System.Drawing.Size(136, 173);
-            this.listBoxTEC.TabIndex = 0;
-            this.listBoxTEC.SelectedIndexChanged += new System.EventHandler(this.listBoxTEC_SelectedIndexChanged);
             // 
             // comboBoxMode
             // 
@@ -65,28 +64,6 @@
             this.comboBoxMode.Size = new System.Drawing.Size(136, 21);
             this.comboBoxMode.TabIndex = 4;
             this.comboBoxMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxMode_SelectedIndexChanged);
-            // 
-            // buttonTECAdd
-            // 
-            this.buttonTECAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTECAdd.Location = new System.Drawing.Point(12, 218);
-            this.buttonTECAdd.Name = "buttonTECAdd";
-            this.buttonTECAdd.Size = new System.Drawing.Size(66, 23);
-            this.buttonTECAdd.TabIndex = 5;
-            this.buttonTECAdd.Text = "Добавить";
-            this.buttonTECAdd.UseVisualStyleBackColor = true;
-            this.buttonTECAdd.Click += new System.EventHandler(this.buttonTECAdd_Click);
-            // 
-            // buttonTECDel
-            // 
-            this.buttonTECDel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTECDel.Location = new System.Drawing.Point(84, 218);
-            this.buttonTECDel.Name = "buttonTECDel";
-            this.buttonTECDel.Size = new System.Drawing.Size(66, 23);
-            this.buttonTECDel.TabIndex = 6;
-            this.buttonTECDel.Text = "Удалить";
-            this.buttonTECDel.UseVisualStyleBackColor = true;
-            this.buttonTECDel.Click += new System.EventHandler(this.buttonTECDel_Click);
             // 
             // buttonOk
             // 
@@ -110,112 +87,196 @@
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // listBoxItem
+            // dataGridViewTEC
             // 
-            this.listBoxItem.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.listBoxItem.FormattingEnabled = true;
-            this.listBoxItem.Location = new System.Drawing.Point(164, 39);
-            this.listBoxItem.Name = "listBoxItem";
-            this.listBoxItem.Size = new System.Drawing.Size(136, 173);
-            this.listBoxItem.TabIndex = 9;
-            this.listBoxItem.SelectedIndexChanged += new System.EventHandler(this.listBoxItem_SelectedIndexChanged);
+            this.dataGridViewTEC.AllowUserToAddRows = false;
+            this.dataGridViewTEC.AllowUserToDeleteRows = false;
+            this.dataGridViewTEC.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewTEC.ColumnHeadersVisible = false;
+            this.dataGridViewTEC.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ColumnCheckBoxTECInUse,
+            this.ColumnTextBoxTECName,
+            this.ColumnButtonTECDel});
+            this.dataGridViewTEC.Location = new System.Drawing.Point(12, 12);
+            this.dataGridViewTEC.MultiSelect = false;
+            this.dataGridViewTEC.Name = "dataGridViewTEC";
+            this.dataGridViewTEC.RowHeadersVisible = false;
+            this.dataGridViewTEC.Size = new System.Drawing.Size(138, 195);
+            this.dataGridViewTEC.TabIndex = 16;
+            this.dataGridViewTEC.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTEC_CellClick);
             // 
-            // buttonItemDel
+            // ColumnCheckBoxTECInUse
             // 
-            this.buttonItemDel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonItemDel.Location = new System.Drawing.Point(236, 218);
-            this.buttonItemDel.Name = "buttonItemDel";
-            this.buttonItemDel.Size = new System.Drawing.Size(66, 23);
-            this.buttonItemDel.TabIndex = 11;
-            this.buttonItemDel.Text = "Удалить";
-            this.buttonItemDel.UseVisualStyleBackColor = true;
-            this.buttonItemDel.Click += new System.EventHandler(this.buttonItemDel_Click);
+            this.ColumnCheckBoxTECInUse.Frozen = true;
+            this.ColumnCheckBoxTECInUse.HeaderText = "Используется";
+            this.ColumnCheckBoxTECInUse.Name = "ColumnCheckBoxTECInUse";
+            this.ColumnCheckBoxTECInUse.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnCheckBoxTECInUse.Width = 23;
             // 
-            // buttonItemAdd
+            // ColumnTextBoxTECName
             // 
-            this.buttonItemAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonItemAdd.Location = new System.Drawing.Point(164, 218);
-            this.buttonItemAdd.Name = "buttonItemAdd";
-            this.buttonItemAdd.Size = new System.Drawing.Size(66, 23);
-            this.buttonItemAdd.TabIndex = 10;
-            this.buttonItemAdd.Text = "Добавить";
-            this.buttonItemAdd.UseVisualStyleBackColor = true;
-            this.buttonItemAdd.Click += new System.EventHandler(this.buttonItemAdd_Click);
+            this.ColumnTextBoxTECName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.ColumnTextBoxTECName.Frozen = true;
+            this.ColumnTextBoxTECName.HeaderText = "Наименование";
+            this.ColumnTextBoxTECName.Name = "ColumnTextBoxTECName";
+            this.ColumnTextBoxTECName.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnTextBoxTECName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
-            // buttonTGDel
+            // ColumnButtonTECDel
             // 
-            this.buttonTGDel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTGDel.Location = new System.Drawing.Point(391, 217);
-            this.buttonTGDel.Name = "buttonTGDel";
-            this.buttonTGDel.Size = new System.Drawing.Size(66, 23);
-            this.buttonTGDel.TabIndex = 14;
-            this.buttonTGDel.Text = "Удалить";
-            this.buttonTGDel.UseVisualStyleBackColor = true;
-            this.buttonTGDel.Click += new System.EventHandler(this.buttonTGDel_Click);
+            this.ColumnButtonTECDel.Frozen = true;
+            this.ColumnButtonTECDel.HeaderText = "Действие";
+            this.ColumnButtonTECDel.Name = "ColumnButtonTECDel";
+            this.ColumnButtonTECDel.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnButtonTECDel.Width = 23;
+            // 
+            // dataGridViewTECComponent
+            // 
+            this.dataGridViewTECComponent.AllowUserToAddRows = false;
+            this.dataGridViewTECComponent.AllowUserToDeleteRows = false;
+            this.dataGridViewTECComponent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewTECComponent.ColumnHeadersVisible = false;
+            this.dataGridViewTECComponent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ColumnTECComponentName,
+            this.ColumnButtonTECComponentDel});
+            this.dataGridViewTECComponent.Location = new System.Drawing.Point(164, 39);
+            this.dataGridViewTECComponent.MultiSelect = false;
+            this.dataGridViewTECComponent.Name = "dataGridViewTECComponent";
+            this.dataGridViewTECComponent.RowHeadersVisible = false;
+            this.dataGridViewTECComponent.Size = new System.Drawing.Size(136, 168);
+            this.dataGridViewTECComponent.TabIndex = 17;
+            this.dataGridViewTECComponent.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTECComponent_CellClick);
+            // 
+            // ColumnTECComponentName
+            // 
+            this.ColumnTECComponentName.FillWeight = 66F;
+            this.ColumnTECComponentName.HeaderText = "Наименование";
+            this.ColumnTECComponentName.MaxInputLength = 16;
+            this.ColumnTECComponentName.Name = "ColumnTECComponentName";
+            this.ColumnTECComponentName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.ColumnTECComponentName.ToolTipText = "Наименование";
+            // 
+            // ColumnButtonTECComponentDel
+            // 
+            this.ColumnButtonTECComponentDel.HeaderText = "Действие";
+            this.ColumnButtonTECComponentDel.Name = "ColumnButtonTECComponentDel";
+            this.ColumnButtonTECComponentDel.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnButtonTECComponentDel.Width = 23;
+            // 
+            // dataGridViewTG
+            // 
+            this.dataGridViewTG.AllowUserToAddRows = false;
+            this.dataGridViewTG.AllowUserToDeleteRows = false;
+            this.dataGridViewTG.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewTG.ColumnHeadersVisible = false;
+            this.dataGridViewTG.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ColumnTGName,
+            this.ColumnTGDel});
+            this.dataGridViewTG.Location = new System.Drawing.Point(319, 12);
+            this.dataGridViewTG.MultiSelect = false;
+            this.dataGridViewTG.Name = "dataGridViewTG";
+            this.dataGridViewTG.RowHeadersVisible = false;
+            this.dataGridViewTG.Size = new System.Drawing.Size(136, 195);
+            this.dataGridViewTG.TabIndex = 18;
+            this.dataGridViewTG.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTG_CellClick);
+            this.dataGridViewTG.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTG_CellEndEdit);
+            // 
+            // ColumnTGName
+            // 
+            this.ColumnTGName.HeaderText = "Наименование";
+            this.ColumnTGName.Name = "ColumnTGName";
+            this.ColumnTGName.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
+            // ColumnTGDel
+            // 
+            this.ColumnTGDel.HeaderText = "Действие";
+            this.ColumnTGDel.Name = "ColumnTGDel";
+            this.ColumnTGDel.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnTGDel.Width = 23;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(12, 220);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(108, 20);
+            this.textBox1.TabIndex = 19;
+            // 
+            // comboBoxTGAdd
+            // 
+            this.comboBoxTGAdd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTGAdd.FormattingEnabled = true;
+            this.comboBoxTGAdd.Location = new System.Drawing.Point(319, 220);
+            this.comboBoxTGAdd.Name = "comboBoxTGAdd";
+            this.comboBoxTGAdd.Size = new System.Drawing.Size(110, 21);
+            this.comboBoxTGAdd.TabIndex = 24;
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.SystemColors.Control;
+            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.button1.Location = new System.Drawing.Point(124, 219);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(26, 23);
+            this.button1.TabIndex = 22;
+            this.button1.Text = "+";
+            this.button1.UseVisualStyleBackColor = false;
+            // 
+            // button2
+            // 
+            this.button2.BackColor = System.Drawing.SystemColors.Control;
+            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.button2.Location = new System.Drawing.Point(274, 219);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(26, 23);
+            this.button2.TabIndex = 25;
+            this.button2.Text = "+";
+            this.button2.UseVisualStyleBackColor = false;
             // 
             // buttonTGAdd
             // 
-            this.buttonTGAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTGAdd.Location = new System.Drawing.Point(319, 217);
+            this.buttonTGAdd.BackColor = System.Drawing.SystemColors.Control;
+            this.buttonTGAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.buttonTGAdd.Location = new System.Drawing.Point(432, 219);
             this.buttonTGAdd.Name = "buttonTGAdd";
-            this.buttonTGAdd.Size = new System.Drawing.Size(66, 23);
-            this.buttonTGAdd.TabIndex = 13;
-            this.buttonTGAdd.Text = "Добавить";
-            this.buttonTGAdd.UseVisualStyleBackColor = true;
-            this.buttonTGAdd.Click += new System.EventHandler(this.buttonTGAdd_Click);
+            this.buttonTGAdd.Size = new System.Drawing.Size(26, 23);
+            this.buttonTGAdd.TabIndex = 26;
+            this.buttonTGAdd.Text = "+";
+            this.buttonTGAdd.UseVisualStyleBackColor = false;
             // 
-            // listBoxTG
+            // textBox2
             // 
-            this.listBoxTG.AllowDrop = true;
-            this.listBoxTG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.listBoxTG.FormattingEnabled = true;
-            this.listBoxTG.Location = new System.Drawing.Point(319, 12);
-            this.listBoxTG.Name = "listBoxTG";
-            this.listBoxTG.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.listBoxTG.Size = new System.Drawing.Size(136, 199);
-            this.listBoxTG.TabIndex = 12;
-            // 
-            // timerUIControl
-            // 
-            this.timerUIControl.Tick += new System.EventHandler(this.timerUIControl_Tick);
-            // 
-            // checkBoxTECInUse
-            // 
-            this.checkBoxTECInUse.AutoSize = true;
-            this.checkBoxTECInUse.Location = new System.Drawing.Point(12, 195);
-            this.checkBoxTECInUse.Name = "checkBoxTECInUse";
-            this.checkBoxTECInUse.Size = new System.Drawing.Size(99, 17);
-            this.checkBoxTECInUse.TabIndex = 15;
-            this.checkBoxTECInUse.Text = "Использовать";
-            this.checkBoxTECInUse.UseVisualStyleBackColor = true;
-            this.checkBoxTECInUse.CheckedChanged += new System.EventHandler(this.checkBoxTECInUse_CheckedChanged);
+            this.textBox2.Location = new System.Drawing.Point(163, 220);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(108, 20);
+            this.textBox2.TabIndex = 27;
             // 
             // FormTECComponent
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(467, 282);
             this.ControlBox = false;
-            this.Controls.Add(this.checkBoxTECInUse);
-            this.Controls.Add(this.buttonTGDel);
+            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.buttonTGAdd);
-            this.Controls.Add(this.listBoxTG);
-            this.Controls.Add(this.buttonItemDel);
-            this.Controls.Add(this.buttonItemAdd);
-            this.Controls.Add(this.listBoxItem);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.comboBoxTGAdd);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.dataGridViewTG);
+            this.Controls.Add(this.dataGridViewTECComponent);
+            this.Controls.Add(this.dataGridViewTEC);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
-            this.Controls.Add(this.buttonTECDel);
-            this.Controls.Add(this.buttonTECAdd);
             this.Controls.Add(this.comboBoxMode);
-            this.Controls.Add(this.listBoxTEC);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FormTECComponent";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Настройка состава ТЭЦ, ГТП, ЩУ";
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTEC)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTECComponent)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTG)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -223,19 +284,25 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox listBoxTEC;
         private System.Windows.Forms.ComboBox comboBoxMode;
-        private System.Windows.Forms.Button buttonTECAdd;
-        private System.Windows.Forms.Button buttonTECDel;
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.ListBox listBoxItem;
-        private System.Windows.Forms.Button buttonItemDel;
-        private System.Windows.Forms.Button buttonItemAdd;
-        private System.Windows.Forms.Button buttonTGDel;
+        private System.Windows.Forms.DataGridView dataGridViewTEC;
+        private System.Windows.Forms.DataGridView dataGridViewTECComponent;
+        private System.Windows.Forms.DataGridView dataGridViewTG;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox comboBoxTGAdd;
+        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button buttonTGAdd;
-        private System.Windows.Forms.ListBox listBoxTG;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTECComponentName;
+        private System.Windows.Forms.DataGridViewButtonColumn ColumnButtonTECComponentDel;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTGName;
+        private System.Windows.Forms.DataGridViewButtonColumn ColumnTGDel;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnCheckBoxTECInUse;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTextBoxTECName;
+        private System.Windows.Forms.DataGridViewButtonColumn ColumnButtonTECDel;
         private System.Windows.Forms.Timer timerUIControl;
-        private System.Windows.Forms.CheckBox checkBoxTECInUse;
     }
 }
