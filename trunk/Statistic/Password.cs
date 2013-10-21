@@ -25,19 +25,9 @@ namespace Statistic
         public void SetIdPass (uint id) {
             m_idPass = id;
 
-            string errMsg = string.Empty;
-            switch (m_idPass) {
-                case 1:
-                    errMsg = "коммерческого диспетчера";
-                    break;
-                case 2:
-                    errMsg = "администратора";
-                    break;
-                default:
-                    break;
-            }
+            string[] ownersPass = { "коммерческого диспетчера", "администратора", "ДИСа" };
 
-            labelOwnerPassword.Text = errMsg;
+            labelOwnerPassword.Text = ownersPass[m_idPass - 1];
         }
 
         public uint GetIdPass() { return m_idPass; }
@@ -46,26 +36,41 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (admin.ComparePassword(tbxPassword.Text, m_idPass))
+                switch (admin.ComparePassword(tbxPassword.Text, m_idPass))
                 {
-                    this.DialogResult = DialogResult.Yes;
-                    tbxPassword.Text = "";
-                    closing = true;
-                    Close();
-                }
-                else
-                {
-                    if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
-                    {
+                    case Admin.Errors.NoAccess:
                         tbxPassword.Text = "";
-                    }
-                    else
-                    {
+                        if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                        {
+                            this.DialogResult = DialogResult.Retry;
+                            closing = true;
+                            Close();
+                        }
+                        else
+                        {
+                        }
+                        break;
+                    case Admin.Errors.InvalidValue:
+                    case Admin.Errors.ParseError:
                         tbxPassword.Text = "";
-                        this.DialogResult = DialogResult.No;
+                        if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                        {
+                        }
+                        else
+                        {
+                            this.DialogResult = DialogResult.No;
+                            closing = true;
+                            Close();
+                        }
+                        break;
+                    case Admin.Errors.NoError:
+                        tbxPassword.Text = "";
+                        this.DialogResult = DialogResult.Yes;
                         closing = true;
                         Close();
-                    }
+                        break;
+                    default:
+                        break;
                 }
             }
         }

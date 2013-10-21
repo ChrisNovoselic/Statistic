@@ -35,6 +35,9 @@ namespace Statistic
                 case 2:
                     errMsg = "Администратор";
                     break;
+                case 3:
+                    errMsg = "ДИС";
+                    break;
                 default:
                     break;
             }

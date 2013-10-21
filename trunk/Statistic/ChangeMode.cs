@@ -48,7 +48,7 @@ namespace Statistic
         }
         
         public string getNameAdminValues (Int16 indx) {
-            string[] arNameAdminValues = { "Диспетчер", "ДИС" };
+            string[] arNameAdminValues = { "ДИС", "Диспетчер", "ДИС" };
 
             return @"ПБР - " + arNameAdminValues[indx];
         }
@@ -72,7 +72,7 @@ namespace Statistic
                 clbMode.Items.Add(t.name);
                 tec_index.Add(index_tec);
                 TECComponent_index.Add(-1);
-                if (t.list_TECComponents.Count > 1)
+                if (t.list_TECComponents.Count > 0)
                 {
                     index_gtp = 0;
                     foreach (TECComponent g in t.list_TECComponents)
@@ -87,7 +87,7 @@ namespace Statistic
             }
 
             //clbMode.Items.Add("Редактирование ПБР");
-            clbMode.Items.Add(getNameAdminValues ((short) comboBoxModeTECComponent.SelectedIndex));
+            clbMode.Items.Add(getNameAdminValues((short)getModeTECComponent()));
         }
 
         private void btnOk_Click(object sender, EventArgs e)

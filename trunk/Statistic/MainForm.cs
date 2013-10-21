@@ -305,7 +305,7 @@ namespace Statistic
                             tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
-                            if (t.list_TECComponents.Count > 1)
+                            if (t.list_TECComponents.Count > 0)
                             {
                                 index_gtp = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
@@ -362,8 +362,37 @@ namespace Statistic
                     StopWait();
                     if (changeMode.admin_was_checked)
                     {
-                        passwordForm.SetIdPass(1); //???
-                        if (prevStateIsAdmin || passwordForm.ShowDialog() == DialogResult.Yes)
+                        switch (changeMode.getModeTECComponent ()) {
+                            case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                                break;
+                            case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                                passwordForm.SetIdPass(1);
+                                break;
+                            case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                                passwordForm.SetIdPass(3);
+                                break;
+                        }
+
+                        bool bAdminPanelUse = false;
+                        if (prevStateIsAdmin == false)
+                            switch (passwordForm.ShowDialog()) {
+                                case DialogResult.Yes:
+                                    bAdminPanelUse = true;
+                                    break;
+                                case DialogResult.Retry:
+                                    setPasswordForm.SetIdPass (passwordForm.GetIdPass ());
+                                    if (setPasswordForm.ShowDialog() == DialogResult.Yes)
+                                        bAdminPanelUse = true;
+                                    else
+                                        ;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        else
+                            bAdminPanelUse = true;
+
+                        if (bAdminPanelUse)
                         {
                             StartWait();
                             tclTecViews.TabPages.Add(changeMode.getNameAdminValues((short) changeMode.getModeTECComponent ()));

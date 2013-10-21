@@ -77,7 +77,7 @@ namespace Statistic
             // labelOwnerPassword
             // 
             this.labelOwnerPassword.AutoSize = true;
-            this.labelOwnerPassword.Location = new System.Drawing.Point(125, 4);
+            this.labelOwnerPassword.Location = new System.Drawing.Point(125, 3);
             this.labelOwnerPassword.Name = "labelOwnerPassword";
             this.labelOwnerPassword.Size = new System.Drawing.Size(0, 13);
             this.labelOwnerPassword.TabIndex = 4;

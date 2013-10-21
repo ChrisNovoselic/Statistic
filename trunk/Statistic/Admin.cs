@@ -155,6 +155,23 @@ namespace Statistic
             return prev_mode;
         }
 
+        public string getOwnerPass () {
+            string strRes = string.Empty;
+            switch (m_idPass)
+            {
+                case 1:
+                    strRes = "диспетчера";
+                    break;
+                case 2:
+                    strRes = "администратора";
+                    break;
+                default:
+                    break;
+            }
+            
+            return strRes;            
+        }
+
         private const double maxPlanValue = 1500;
         private const double maxRecomendationValue = 1500;
         private const double maxDeviationValue = 1500;
@@ -242,7 +259,7 @@ namespace Statistic
             Data,
         }
 
-        private enum Errors
+        public enum Errors
         {
             NoError,
             InvalidValue,
@@ -1413,18 +1430,8 @@ namespace Statistic
             if (passResult != Errors.NoError)
             {
                 delegateStopWait();
-                string errMsg = string.Empty;
-                switch (m_idPass) {
-                    case 1:
-                        errMsg = "диспетчера";
-                        break;
-                    case 2:
-                        errMsg = "администратора";
-                        break;
-                    default:
-                        break;
-                }
-                MessageBox.Show(this, "Ошибка получения пароля " + errMsg + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 
                 return false;
             }
@@ -1466,18 +1473,7 @@ namespace Statistic
 
             if (passResult != Errors.NoError)
             {
-                string errMsg = string.Empty;
-                switch (m_idPass) {
-                    case 1:
-                        errMsg = "диспетчера";
-                        break;
-                    case 2:
-                        errMsg = "администратора";
-                        break;
-                    default:
-                        break;
-                }
-                MessageBox.Show(this, "Ошибка сохранения пароля " + errMsg + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Ошибка сохранения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 
                 return false;
             }
@@ -1485,8 +1481,17 @@ namespace Statistic
             return true;
         }
 
-        public bool ComparePassword(string password, uint id)
+        public Errors ComparePassword(string password, uint id)
         {
+            if (password.Length < 1)
+            {
+                MessageBox.Show(this, "Длина пароля меньше допустимой.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                return Errors.InvalidValue;
+            }
+            else
+                ;
+            
             m_idPass = id;
 
             string hashFromForm = "";
@@ -1530,46 +1535,30 @@ namespace Statistic
 
             delegateStopWait();
             if (passResult != Errors.NoError)
-            {
-                string errMsg = string.Empty;
-                switch (m_idPass) {
-                    case 1:
-                        errMsg = "диспетчера";
-                        break;
-                    case 2:
-                        errMsg = "администратора";
-                        break;
-                    default:
-                        break;
-                }
+            {                
+                MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 
-                MessageBox.Show(this, "Ошибка получения пароля " + errMsg + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
-                return false;
+                return Errors.ParseError;
             }
 
             if (passReceive == null)
             {
-                if (password != "")
-                {
-                    MessageBox.Show(this, "Пароль введён неверно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-                else
-                    return true;
+                MessageBox.Show(this, "Пароль не установлен.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    
+                return Errors.NoAccess;
             }
             else
             {
-                if (password != "")
-                    hashFromForm = hashedString.ToString();
-
+                hashFromForm = hashedString.ToString();
+             
                 if (hashFromForm != passReceive)
                 {
                     MessageBox.Show(this, "Пароль введён неверно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
+                    
+                    return Errors.InvalidValue;
                 }
                 else
-                    return true;
+                    return Errors.NoError;
             }
         }
 
@@ -2092,10 +2081,7 @@ namespace Statistic
 
         private void GetPassRequest(uint id)
         {
-            string request = "SELECT HASH";
-            request += " FROM passwords";
-            request += " WHERE ID_ROLE=";
-            request += id;
+            string request = "SELECT HASH FROM passwords WHERE ID_ROLE=" + id;
             
             Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, request);
         }
@@ -2116,6 +2102,7 @@ namespace Statistic
                 }
             else
                 passReceive = null;
+
             return true;
         }
 
@@ -2131,6 +2118,9 @@ namespace Statistic
                     case 2:
                         query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
                         break;
+                    case 3:
+                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
+                        break;
                     default:
                         break;
                 }
@@ -2141,6 +2131,9 @@ namespace Statistic
                         query = "UPDATE passwords SET HASH='" + password + "'";
                         break;
                     case 2:
+                        query = "UPDATE passwords SET HASH='" + password + "'";
+                        break;
+                    case 3:
                         query = "UPDATE passwords SET HASH='" + password + "'";
                         break;
                     default:
@@ -2501,7 +2494,7 @@ namespace Statistic
 
             foreach (TEC t in tec)
             {
-                if (t.list_TECComponents.Count > 1)
+                if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
                     {
                         cbxTec.Items.Add(t.name + " - " + g.name);
@@ -2643,7 +2636,6 @@ namespace Statistic
         private bool StateRequest(StatesMachine state)
         {
             bool result = true;
-            string errMsg = string.Empty;
             switch (state)
             {
                 case StatesMachine.CurrentTime:
@@ -2706,50 +2698,17 @@ namespace Statistic
                 //    ActionReport("Обровление ПЛАНА.");
                 //    break;
                 case StatesMachine.GetPass:
-                    switch (m_idPass) {
-                        case 1:
-                            errMsg = "диспетчера";
-                            break;
-                        case 2:
-                            errMsg = "администратора";
-                            break;
-                        default:
-                            break;
-                    }
-
-                    ActionReport("Получение пароля " + errMsg + ".");
+                    ActionReport("Получение пароля " + getOwnerPass () + ".");
 
                     GetPassRequest(m_idPass);
                     break;
                 case StatesMachine.SetPassInsert:
-                    switch (m_idPass) {
-                        case 1:
-                            errMsg = "диспетчера";
-                            break;
-                        case 2:
-                            errMsg = "администратора";
-                            break;
-                        default:
-                            break;
-                    }
-
-                    ActionReport("Сохранение пароля " + errMsg + ".");
+                    ActionReport("Сохранение пароля " + getOwnerPass() + ".");
                     
                     SetPassRequest(passReceive, m_idPass, true);
                     break;
                 case StatesMachine.SetPassUpdate:
-                    switch (m_idPass) {
-                        case 1:
-                            errMsg = "диспетчера";
-                            break;
-                        case 2:
-                            errMsg = "администратора";
-                            break;
-                        default:
-                            break;
-                    }
-
-                    ActionReport("Сохранение пароля " + errMsg + ".");
+                    ActionReport("Обновление пароля " + getOwnerPass() + ".");
 
                     SetPassRequest(passReceive, m_idPass, false);
                     break;
@@ -2970,7 +2929,6 @@ namespace Statistic
 
         private void StateErrors(StatesMachine state, bool response)
         {
-            string errMsg = string.Empty;
             switch (state)
             {
                 case StatesMachine.CurrentTime:
@@ -3083,37 +3041,13 @@ namespace Statistic
                 case StatesMachine.GetPass:
                     if (response)
                     {
-                        switch (m_idPass)
-                        {
-                            case 1:
-                                errMsg = "диспетчера";
-                                break;
-                            case 2:
-                                errMsg = "администратора";
-                                break;
-                            default:
-                                break;
-                        }
-
-                        ErrorReport("Ошибка разбора пароля " + errMsg + ". Переход в ожидание.");
+                        ErrorReport("Ошибка разбора пароля " + getOwnerPass() + ". Переход в ожидание.");
 
                         passResult = Errors.ParseError;
                     }
                     else
                     {
-                        switch (m_idPass)
-                        {
-                            case 1:
-                                errMsg = "диспетчера";
-                                break;
-                            case 2:
-                                errMsg = "администратора";
-                                break;
-                            default:
-                                break;
-                        }
-
-                        ErrorReport("Ошибка получения пароля " + errMsg + ". Переход в ожидание.");
+                        ErrorReport("Ошибка получения пароля " + getOwnerPass() + ". Переход в ожидание.");
 
                         passResult = Errors.NoAccess;
                     }
@@ -3127,19 +3061,7 @@ namespace Statistic
                     break;
                 case StatesMachine.SetPassInsert:
                 case StatesMachine.SetPassUpdate:
-                    switch (m_idPass)
-                    {
-                        case 1:
-                            errMsg = "диспетчера";
-                            break;
-                        case 2:
-                            errMsg = "администратора";
-                            break;
-                        default:
-                            break;
-                    }
-
-                    ErrorReport("Ошибка сохранения пароля "+ errMsg + ". Переход в ожидание.");
+                    ErrorReport("Ошибка сохранения пароля " + getOwnerPass() + ". Переход в ожидание.");
 
                     passResult = Errors.NoAccess;
                     try
