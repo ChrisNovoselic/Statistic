@@ -26,23 +26,9 @@ namespace Statistic
         {
             m_idPass = id;
 
-            string errMsg = string.Empty;
-            switch (m_idPass)
-            {
-                case 1:
-                    errMsg = "Коммерческий диспетчер";
-                    break;
-                case 2:
-                    errMsg = "Администратор";
-                    break;
-                case 3:
-                    errMsg = "ДИС";
-                    break;
-                default:
-                    break;
-            }
+            string[] ownersPass = { "Коммерческий диспетчер", "Администратор", "ДИС" };
 
-            this.Text = errMsg;
+            this.Text = ownersPass[m_idPass - 1];
         }
 
         public uint GetIdPass() { return m_idPass; }

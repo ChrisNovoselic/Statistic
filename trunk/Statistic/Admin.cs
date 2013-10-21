@@ -156,20 +156,9 @@ namespace Statistic
         }
 
         public string getOwnerPass () {
-            string strRes = string.Empty;
-            switch (m_idPass)
-            {
-                case 1:
-                    strRes = "диспетчера";
-                    break;
-                case 2:
-                    strRes = "администратора";
-                    break;
-                default:
-                    break;
-            }
-            
-            return strRes;            
+            string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
+
+            return ownersPass [m_idPass - 1];            
         }
 
         private const double maxPlanValue = 1500;

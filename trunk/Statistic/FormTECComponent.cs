@@ -32,7 +32,7 @@ namespace Statistic
         //Текущие 
         private List<System.Windows.Forms.Control> m_list_UIControl = null;
 
-        private enum ID_ACTION : short { UPDATE, INSERT, DELETE };
+        private enum ID_ACTION : short { UPDATE, ADD, DELETE };
         private struct Action
         {
             public short id_tec;
@@ -386,7 +386,7 @@ namespace Statistic
                                     ;
                             }
                             break;
-                        case ID_ACTION.INSERT:
+                        case ID_ACTION.ADD:
                             break;
                         case ID_ACTION.UPDATE:
                             for (j = 0; j < dataTableRes.Rows.Count; j++)
@@ -531,7 +531,7 @@ namespace Statistic
                                         break;
                                 }
                                 break;
-                            case ID_ACTION.INSERT:
+                            case ID_ACTION.ADD:
                                 break;
                             default:
                                 break;
@@ -621,15 +621,33 @@ namespace Statistic
         {
             if ((!(sender == null)) && (!(e == null))) dataGridView_CellClick(sender, e); else ;
 
-            switch (comboBoxMode.SelectedIndex)
-            {
-                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                    //Только в режиме ТЭЦ             
-                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                    //Только в режимах ГТП, ЩУ
-                    fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
-                    fillComboBoxTGAdd();
+            switch (((DataGridView)sender).Columns[e.ColumnIndex].GetType().Name) {
+                case "DataGridViewTextBoxColumn":
+                    switch (comboBoxMode.SelectedIndex)
+                    {
+                        case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                        //Только в режиме ТЭЦ             
+                        case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                        case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                            //Только в режимах ГТП, ЩУ
+                            fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
+                            fillComboBoxTGAdd();
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case "DataGridViewButtonColumn":
+                    Action action = new Action ();
+                    action.mode = (short)comboBoxMode.SelectedIndex;
+                    action.id_tec = (short)getIdSelectedTEC ();
+                    action.id_teccomp = (short)getIdSelectedTECComponent ();
+                    action.id_tg = -1;
+                    action.act = ID_ACTION.DELETE;
+
+                    m_list_action.Add(action);
+
+                    fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
                     break;
                 default:
                     break;
@@ -661,14 +679,19 @@ namespace Statistic
                 ;
         }
 
+        private void dataGridViewTECComponent_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
         private void dataGridViewTG_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             if (dataGridViewTG.Columns[e.ColumnIndex].GetType().Name == "DataGridViewTextBoxColumn")
             {
-                Action action = new Action ();
+                Action action = new Action();
                 action.mode = (short)comboBoxMode.SelectedIndex;
-                action.id_tec = (short)getIdSelectedTEC ();
-                action.id_teccomp = (short)getIdSelectedTECComponent ();
+                action.id_tec = (short)getIdSelectedTEC();
+                action.id_teccomp = (short)getIdSelectedTECComponent();
                 action.id_tg = (short)getIdSelectedTG();
                 action.act = ID_ACTION.UPDATE;
 
