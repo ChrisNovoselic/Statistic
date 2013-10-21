@@ -10,6 +10,8 @@ namespace Statistic
 {
     public partial class SetPassword : Form
     {
+        private uint m_idPass;
+
         private Admin admin;
         private bool closing;
 
@@ -20,11 +22,33 @@ namespace Statistic
             closing = false;
         }
 
+        public void SetIdPass(uint id)
+        {
+            m_idPass = id;
+
+            string errMsg = string.Empty;
+            switch (m_idPass)
+            {
+                case 1:
+                    errMsg = "Коммерческий диспетчер";
+                    break;
+                case 2:
+                    errMsg = "Администратор";
+                    break;
+                default:
+                    break;
+            }
+
+            this.Text = errMsg;
+        }
+
+        public uint GetIdPass() { return m_idPass; }
+
         private void btnOk_Click(object sender, EventArgs e)
         {
             if (tbxNewPassword.Text == tbxNewPasswordAgain.Text)
             {
-                admin.SetPassword(tbxNewPassword.Text, true);
+                admin.SetPassword(tbxNewPassword.Text, m_idPass);
                 closing = true;
                 Close();
             }

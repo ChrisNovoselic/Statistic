@@ -11,7 +11,10 @@ namespace Statistic
 {
     public partial class FormTECComponent : Form
     {
-        private enum INDEX_DATAGRIDVIEW : ushort { TEC, TEC_COMPONENT, TG, COUNT_DATAGRIDVIEW };
+        private enum INDEX_UICONTROL : ushort { DATAGRIDVIEW_TEC, DATAGRIDVIEW_TEC_COMPONENT, DATAGRIDVIEW_TG,
+                                                TEXTBOX_TEC_ADD, BUTTON_TEC_ADD,
+                                                TEXTBOX_TECCOMPONENT_ADD, BUTTON_TECCOMPONENT_ADD,
+                                                COMBOBOX_TG_ADD, BUTTON_TG_ADD };
 
         private ConnectionSettings m_connectionSetttings;
 
@@ -27,7 +30,7 @@ namespace Statistic
         private DataTable [,] m_list_TECComponents_original = null;
         private DataTable m_tg_original = null;
         //Текущие 
-        private DataGridView[] m_list_datagridviews = null;
+        private List<System.Windows.Forms.Control> m_list_UIControl = null;
 
         private enum ID_ACTION : short { UPDATE, INSERT, DELETE };
         private struct Action
@@ -35,7 +38,7 @@ namespace Statistic
             public short id_tec;
             public short mode;
             public short id_teccomp;
-            public short id_tg;
+            public int id_tg;
             public ID_ACTION act;
             public string val;
         };
@@ -48,14 +51,27 @@ namespace Statistic
 
             InitializeComponent();
 
-            m_list_datagridviews = new DataGridView[(int)INDEX_DATAGRIDVIEW.COUNT_DATAGRIDVIEW];
-            m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TEC] = dataGridViewTEC;
-            m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT] = dataGridViewTECComponent;
-            m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TG] = dataGridViewTG;
+            m_list_UIControl = new List <System.Windows.Forms.Control> ();
+            m_list_UIControl.Add(dataGridViewTEC); //INDEX_UICONTROL.TEC
+            m_list_UIControl.Add(dataGridViewTECComponent); //INDEX_UICONTROL.TEC_COMPONENT
+            m_list_UIControl.Add(dataGridViewTG); //INDEX_UICONTROL.TG
 
-            this.ColumnTextBoxTECName.Width = m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TEC].Width - (2 * (23 + 1));
-            this.ColumnTECComponentName.Width = m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT].Width - (1 * (23 + 1) + 1);
-            this.ColumnTGName.Width = m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TG].Width - (1 * (23 + 1) + 1);
+            this.ColumnTextBoxTECName.Width = m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Width - (2 * (23 + 1));
+            //Пока добавлять/удалять ТЭЦ нельзя
+            this.ColumnTextBoxTECName.Width = m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Width - (1 * (23 + 1) + 2);
+            this.ColumnButtonTECDel.Visible = false;
+
+            this.ColumnTECComponentName.Width = m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Width - (1 * (23 + 1) + 2);
+            this.ColumnTGName.Width = m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Width - (1 * (23 + 1) + 2);
+
+            m_list_UIControl.Add (textBoxTECAdd);
+            m_list_UIControl.Add(buttonTECAdd);
+
+            m_list_UIControl.Add(textBoxTECComponentAdd);
+            m_list_UIControl.Add(buttonTECComponentAdd);
+
+            m_list_UIControl.Add(comboBoxTGAdd);
+            m_list_UIControl.Add(buttonTGAdd);
 
             m_lockObj = new Object();
 
@@ -69,11 +85,13 @@ namespace Statistic
             }
 
             //Пока добавлять/удалять ТЭЦ нельзя
+            m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TEC_ADD].Enabled = false;
+            m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TEC_ADD].Enabled = false;
 
-            fillListBox(INDEX_DATAGRIDVIEW.TEC);
+            fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC);
 
             m_list_TECComponents_original = new DataTable[(int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN - 1, m_list_tec_original.Rows.Count];
-            
+
             for (int i = (int)ChangeMode.MODE_TECCOMPONENT.TEC; i < (int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
             {
                 comboBoxMode.Items.Add(ChangeMode.getNameMode((short)i));
@@ -130,6 +148,31 @@ namespace Statistic
         {
             lock (m_lockObj)
             {
+                switch (comboBoxMode.SelectedIndex)
+                {
+                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                        //Только в режиме ТЭЦ
+                        if (m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled == true) m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled = false; else ;
+                        if (! (m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TECCOMPONENT_ADD].Enabled == m_list_UIControl[(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled))
+                            m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TECCOMPONENT_ADD].Enabled = m_list_UIControl[(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled;
+                        else
+                            ;
+                        break;
+                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                        //Только в режимах ГТП, ЩУ
+                        if (m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled == false) m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled = true; else ;
+                        if ((m_list_UIControl[(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled == true) &&
+                            (m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text.Length > 0))
+                            if (! (m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TECCOMPONENT_ADD].Enabled == m_list_UIControl[(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled))
+                                m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TECCOMPONENT_ADD].Enabled = m_list_UIControl[(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Enabled;
+                            else
+                                ;
+                        else ;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -177,7 +220,7 @@ namespace Statistic
                 indx_tec = getIndexTEC(getIdSelectedTEC());
 
             if (indx_mode > -1)
-                return Convert.ToInt32(m_list_TECComponents_original[indx_mode, indx_tec].Rows[m_list_datagridviews[(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT].SelectedRows[0].Index]["ID"]);
+                return Convert.ToInt32(m_list_TECComponents_original[indx_mode, indx_tec].Rows[((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT]).SelectedRows[0].Index]["ID"]);
             else
                 return indx_mode;
         }
@@ -217,7 +260,7 @@ namespace Statistic
         {
             int indx_tec = getIndexTEC(getIdSelectedTEC());
 
-            return Convert.ToInt32(m_tg_original.Rows[m_list_datagridviews [(int)INDEX_DATAGRIDVIEW.TG].SelectedRows[0].Index]["ID"]);
+            return Convert.ToInt32(m_tg_original.Rows[((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG]).SelectedRows[0].Index]["ID"]);
         }
 
         private Int32 getIdTG(int indx)
@@ -270,29 +313,32 @@ namespace Statistic
             return dataTableRes;
         }
 
-        private DataTable getListTG()
+        private DataTable getListTG(ChangeMode.MODE_TECCOMPONENT mode = ChangeMode.MODE_TECCOMPONENT.UNKNOWN, int id = -1)
         {
             DataTable dataTableRes = null;
-            int id = -1;
 
-            switch (comboBoxMode.SelectedIndex)
-            {
-                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                    id = getIdSelectedTEC();
-                    break;
-                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                    id = getIdSelectedTECComponent();
-                    break;
-                default:
-                    break;
+            if (mode == ChangeMode.MODE_TECCOMPONENT.UNKNOWN) mode = (ChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex; else ;
+            
+            if (id < 0) {
+                switch (comboBoxMode.SelectedIndex)
+                {
+                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                        id = getIdSelectedTEC();
+                        break;
+                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                        id = getIdSelectedTECComponent();
+                        break;
+                    default:
+                        break;
+                }
             }
+            else
+                ;
 
-            m_tg_original = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex), id);
+            m_tg_original = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode((int)mode), id);
 
             dataTableRes = m_tg_original;
-
-            if (comboBoxTGAdd.Enabled == true) comboBoxTGAdd.Items.Clear(); else ;
 
             for (int i = 0; (! (m_list_action == null)) && (i < m_list_action.Count); i++)
             {
@@ -332,12 +378,6 @@ namespace Statistic
 
                                 if (bDelete == true)
                                 {
-                                    if ((m_list_action[i].mode > 0)
-                                        && (m_list_action[i].mode == comboBoxMode.SelectedIndex))
-                                        comboBoxTGAdd.Items.Add(dataTableRes.Rows[j]["NAME_SHR"]);
-                                    else
-                                        ;
-
                                     dataTableRes.Rows.RemoveAt(j);
 
                                     break;
@@ -367,18 +407,6 @@ namespace Statistic
                 else
                     ;
             }
-
-            if (comboBoxTGAdd.Items.Count > 0)
-            {
-                if (comboBoxTGAdd.Enabled == false) comboBoxTGAdd.Enabled = true; else ;
-                comboBoxTGAdd.SelectedIndex = 0;
-            }
-            else
-            {
-                if (comboBoxTGAdd.Enabled == true) comboBoxTGAdd.Enabled = false; else ;
-            }
-
-            buttonTGAdd.Enabled = comboBoxTGAdd.Enabled;
             
             return dataTableRes;
         }
@@ -392,20 +420,20 @@ namespace Statistic
             }
         }
 
-        private /*static*/ void fillListBox(INDEX_DATAGRIDVIEW indx_datagridview)
+        private /*static*/ void fillDataGridView(INDEX_UICONTROL indx_datagridview)
         {
-            DataGridView dataGridView = m_list_datagridviews [(int)indx_datagridview];
+            DataGridView dataGridView = ((DataGridView)m_list_UIControl [(int)indx_datagridview]);
             DataTable data = null;
 
             switch (indx_datagridview)
             {
-                case INDEX_DATAGRIDVIEW.TEC:
+                case INDEX_UICONTROL.DATAGRIDVIEW_TEC:
                     data = getListTEC();
                     break;
-                case INDEX_DATAGRIDVIEW.TEC_COMPONENT:
+                case INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
                     data = getListTECComponent(getIdSelectedTEC());
                     break;
-                case INDEX_DATAGRIDVIEW.TG:
+                case INDEX_UICONTROL.DATAGRIDVIEW_TG:
                     data = getListTG();
                     break;
                 default:
@@ -413,15 +441,18 @@ namespace Statistic
             }
 
             dataGridView.Rows.Clear();
-            dataGridView.Rows.Add(data.Rows.Count);
 
-            System.Collections.IEnumerator enumColumns = dataGridView.Columns.GetEnumerator();
-            while (enumColumns.MoveNext())
+            System.Collections.IEnumerator enumColumns = null;
+            object col = null;
+            for (int i = 0; i < data.Rows.Count; i++)
             {
-                object col = enumColumns.Current;
+                dataGridView.Rows.Add();
 
-                for (int i = 0; i < data.Rows.Count; i++)
+                enumColumns = dataGridView.Columns.GetEnumerator();
+
+                while (enumColumns.MoveNext())
                 {
+                    col = enumColumns.Current;
                     switch (col.GetType ().Name)
                     {
                         case "DataGridViewCheckBoxColumn":
@@ -431,7 +462,7 @@ namespace Statistic
                             dataGridView.Rows[i].Cells[((DataGridViewTextBoxColumn)col).Index].Value = data.Rows[i]["NAME_SHR"].ToString();
                             break;
                         case "DataGridViewButtonColumn":
-                            dataGridView.Rows[i].Cells[((DataGridViewButtonColumn)col).Index].Value = "-";
+                            dataGridView.Rows[i].Cells[((DataGridViewButtonColumn)col).Index].Value = "-"; //global::Statistic.Properties.Resources.btnDel
                             break;
                         default:
                             break;
@@ -449,7 +480,7 @@ namespace Statistic
                 enumColumns = dataGridView.Columns.GetEnumerator();
                 while (enumColumns.MoveNext())
                 {
-                    object col = enumColumns.Current;
+                    col = enumColumns.Current;
                     switch (col.GetType().Name)
                     {
                         case "DataGridViewButtonColumn":
@@ -462,6 +493,72 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private void fillComboBoxTGAdd()
+        {
+            int i = -1, j = -1, k = -1;
+            DataTable data = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode((int)ChangeMode.MODE_TECCOMPONENT.TEC), getIdSelectedTEC());
+            List <DataRow>listDataRowComboBoxAddTG = new List <DataRow> ();
+
+            if (comboBoxTGAdd.Enabled == true) comboBoxTGAdd.Items.Clear(); else ;
+
+            for (i = 0; i < m_list_action.Count; i ++) {
+                for (j = 0; j < data.Rows.Count; j ++) {
+                    if (m_list_action[i].id_tg == Convert.ToInt32 (data.Rows[j]["ID"])) {
+                        switch (m_list_action[i].act)
+                        {
+                            case ID_ACTION.DELETE:
+                                switch (m_list_action[i].mode)
+                                {
+                                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                                        for (k = 0; k < listDataRowComboBoxAddTG.Count; k ++) {
+                                            if (Convert.ToInt32 (listDataRowComboBoxAddTG[k]["ID"]) == m_list_action[i].id_tg)
+                                                listDataRowComboBoxAddTG.RemoveAt (k);
+                                            else
+                                                ;
+                                        }
+                                        break;
+                                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                                        if (m_list_action[i].mode == comboBoxMode.SelectedIndex) {
+                                            listDataRowComboBoxAddTG.Add(data.Rows[j]);
+                                        }
+                                        else
+                                            ;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            case ID_ACTION.INSERT:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                        ;
+                }
+            }
+
+            if (listDataRowComboBoxAddTG.Count > 0)
+            {
+                if (comboBoxTGAdd.Enabled == false) comboBoxTGAdd.Enabled = true; else ;
+
+                for (k = 0; k < listDataRowComboBoxAddTG.Count; k++)
+                {
+                    comboBoxTGAdd.Items.Add(listDataRowComboBoxAddTG [k]["NAME_SHR"]);
+                }
+
+                comboBoxTGAdd.SelectedIndex = 0;
+            }
+            else
+            {
+                if (comboBoxTGAdd.Enabled == true) comboBoxTGAdd.Enabled = false; else ;
+            }
+
+            buttonTGAdd.Enabled = comboBoxTGAdd.Enabled;
         }
 
         private void buttonOk_Click(object sender, EventArgs e)
@@ -485,22 +582,6 @@ namespace Statistic
 
         private void timerUIControl_Tick(object sender, EventArgs e)
         {
-            lock (m_lockObj)
-            {
-                switch (comboBoxMode.SelectedIndex)
-                {
-                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                        //Только в режиме ТЭЦ
-                        break;
-                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                        //Только в режимах ГТП, ЩУ
-                        break;
-                    default:
-                        break;
-                }
-            }
-
             EnabledUIControl();
         }
 
@@ -517,16 +598,17 @@ namespace Statistic
             {
                 case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
                     //Только в режиме ТЭЦ
-                    m_list_datagridviews [(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT].Rows.Clear();
-                    m_list_datagridviews [(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT].Enabled = false;
+                    ((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT]).Rows.Clear();
+                    m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Enabled = false;
 
-                    fillListBox(INDEX_DATAGRIDVIEW.TG);
+                    fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
+                    fillComboBoxTGAdd();
                     break;
                 case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
                 case (int)ChangeMode.MODE_TECCOMPONENT.PC:
                     //Только в режимах ГТП, ЩУ
-                    m_list_datagridviews [(int)INDEX_DATAGRIDVIEW.TEC_COMPONENT].Enabled = true;
-                    fillListBox(INDEX_DATAGRIDVIEW.TEC_COMPONENT);
+                    m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Enabled = true;
+                    fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
 
                     dataGridViewTECComponent_CellClick(null, null);
                     break;
@@ -546,7 +628,8 @@ namespace Statistic
                 case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
                 case (int)ChangeMode.MODE_TECCOMPONENT.PC:
                     //Только в режимах ГТП, ЩУ
-                    fillListBox(INDEX_DATAGRIDVIEW.TG);
+                    fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
+                    fillComboBoxTGAdd();
                     break;
                 default:
                     break;
@@ -571,7 +654,8 @@ namespace Statistic
 
                 m_list_action.Add(action);
 
-                fillListBox(INDEX_DATAGRIDVIEW.TG);
+                fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
+                fillComboBoxTGAdd();
             }
             else
                 ;

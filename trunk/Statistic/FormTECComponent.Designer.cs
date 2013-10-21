@@ -43,12 +43,12 @@
             this.dataGridViewTG = new System.Windows.Forms.DataGridView();
             this.ColumnTGName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnTGDel = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBoxTECAdd = new System.Windows.Forms.TextBox();
             this.comboBoxTGAdd = new System.Windows.Forms.ComboBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.buttonTECAdd = new System.Windows.Forms.Button();
+            this.buttonTECComponentAdd = new System.Windows.Forms.Button();
             this.buttonTGAdd = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.textBoxTECComponentAdd = new System.Windows.Forms.TextBox();
             this.timerUIControl = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTEC)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewTECComponent)).BeginInit();
@@ -194,12 +194,12 @@
             this.ColumnTGDel.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.ColumnTGDel.Width = 23;
             // 
-            // textBox1
+            // textBoxTECAdd
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 220);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(108, 20);
-            this.textBox1.TabIndex = 19;
+            this.textBoxTECAdd.Location = new System.Drawing.Point(12, 220);
+            this.textBoxTECAdd.Name = "textBoxTECAdd";
+            this.textBoxTECAdd.Size = new System.Drawing.Size(108, 20);
+            this.textBoxTECAdd.TabIndex = 19;
             // 
             // comboBoxTGAdd
             // 
@@ -210,27 +210,27 @@
             this.comboBoxTGAdd.Size = new System.Drawing.Size(110, 21);
             this.comboBoxTGAdd.TabIndex = 24;
             // 
-            // button1
+            // buttonTECAdd
             // 
-            this.button1.BackColor = System.Drawing.SystemColors.Control;
-            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.button1.Location = new System.Drawing.Point(124, 219);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(26, 23);
-            this.button1.TabIndex = 22;
-            this.button1.Text = "+";
-            this.button1.UseVisualStyleBackColor = false;
+            this.buttonTECAdd.BackColor = System.Drawing.SystemColors.Control;
+            this.buttonTECAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.buttonTECAdd.Location = new System.Drawing.Point(124, 219);
+            this.buttonTECAdd.Name = "buttonTECAdd";
+            this.buttonTECAdd.Size = new System.Drawing.Size(26, 23);
+            this.buttonTECAdd.TabIndex = 22;
+            this.buttonTECAdd.Text = "+";
+            this.buttonTECAdd.UseVisualStyleBackColor = false;
             // 
-            // button2
+            // buttonTECComponentAdd
             // 
-            this.button2.BackColor = System.Drawing.SystemColors.Control;
-            this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.button2.Location = new System.Drawing.Point(274, 219);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(26, 23);
-            this.button2.TabIndex = 25;
-            this.button2.Text = "+";
-            this.button2.UseVisualStyleBackColor = false;
+            this.buttonTECComponentAdd.BackColor = System.Drawing.SystemColors.Control;
+            this.buttonTECComponentAdd.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.buttonTECComponentAdd.Location = new System.Drawing.Point(274, 219);
+            this.buttonTECComponentAdd.Name = "buttonTECComponentAdd";
+            this.buttonTECComponentAdd.Size = new System.Drawing.Size(26, 23);
+            this.buttonTECComponentAdd.TabIndex = 25;
+            this.buttonTECComponentAdd.Text = "+";
+            this.buttonTECComponentAdd.UseVisualStyleBackColor = false;
             // 
             // buttonTGAdd
             // 
@@ -243,24 +243,28 @@
             this.buttonTGAdd.Text = "+";
             this.buttonTGAdd.UseVisualStyleBackColor = false;
             // 
-            // textBox2
+            // textBoxTECComponentAdd
             // 
-            this.textBox2.Location = new System.Drawing.Point(163, 220);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(108, 20);
-            this.textBox2.TabIndex = 27;
+            this.textBoxTECComponentAdd.Location = new System.Drawing.Point(163, 220);
+            this.textBoxTECComponentAdd.Name = "textBoxTECComponentAdd";
+            this.textBoxTECComponentAdd.Size = new System.Drawing.Size(108, 20);
+            this.textBoxTECComponentAdd.TabIndex = 27;
+            // 
+            // timerUIControl
+            // 
+            this.timerUIControl.Tick += new System.EventHandler(this.timerUIControl_Tick);
             // 
             // FormTECComponent
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(467, 282);
             this.ControlBox = false;
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.textBoxTECComponentAdd);
             this.Controls.Add(this.buttonTGAdd);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.buttonTECComponentAdd);
             this.Controls.Add(this.comboBoxTGAdd);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.buttonTECAdd);
+            this.Controls.Add(this.textBoxTECAdd);
             this.Controls.Add(this.dataGridViewTG);
             this.Controls.Add(this.dataGridViewTECComponent);
             this.Controls.Add(this.dataGridViewTEC);
@@ -290,14 +294,14 @@
         private System.Windows.Forms.DataGridView dataGridViewTEC;
         private System.Windows.Forms.DataGridView dataGridViewTECComponent;
         private System.Windows.Forms.DataGridView dataGridViewTG;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TextBox textBoxTECAdd;
+        private System.Windows.Forms.Button buttonTECAdd;
         private System.Windows.Forms.ComboBox comboBoxTGAdd;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button buttonTECComponentAdd;
         private System.Windows.Forms.Button buttonTGAdd;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTECComponentName;
         private System.Windows.Forms.DataGridViewButtonColumn ColumnButtonTECComponentDel;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox textBoxTECComponentAdd;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTGName;
         private System.Windows.Forms.DataGridViewButtonColumn ColumnTGDel;
         private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnCheckBoxTECInUse;

@@ -32,8 +32,6 @@ namespace Statistic
         private int waitCounter;
         private Password passwordForm;
         private SetPassword setPasswordForm;
-        private PasswordSettings passwordSettingsForm;
-        private SetPasswordSettings setPasswordSettingsForm;
         private ChangeMode changeMode;
         private DelegateFunc delegateStartWait;
         private DelegateFunc delegateStopWait;
@@ -108,8 +106,6 @@ namespace Statistic
             //changeMode = new ChangeMode();
             passwordForm = new Password(adminPanel);
             setPasswordForm = new SetPassword(adminPanel);
-            passwordSettingsForm = new PasswordSettings(adminPanel);
-            setPasswordSettingsForm = new SetPasswordSettings(adminPanel);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             parametersForm = new Parameters();
 
@@ -199,7 +195,8 @@ namespace Statistic
             //StringBuilder strPasswordHashed = new StringBuilder ();
             //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
 
-            if (!connSettForm.Protected || passwordSettingsForm.ShowDialog() == DialogResult.Yes)
+            passwordForm.SetIdPass(2);
+            if (!connSettForm.Protected || passwordForm.ShowDialog() == DialogResult.Yes)
             {
                 DialogResult result;
                 result = connSettForm.ShowDialog();
@@ -365,6 +362,7 @@ namespace Statistic
                     StopWait();
                     if (changeMode.admin_was_checked)
                     {
+                        passwordForm.SetIdPass(1); //???
                         if (prevStateIsAdmin || passwordForm.ShowDialog() == DialogResult.Yes)
                         {
                             StartWait();
@@ -390,6 +388,8 @@ namespace Statistic
                     else
                         if (changeMode.admin_was_checked)
                             adminPanel.Activate(true);
+                        else
+                            ;
                 }
                 else
                     ; //Отмена выбора закладок
@@ -400,22 +400,31 @@ namespace Statistic
 
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (connSettForm.Protected == true)
-                if (passwordForm.ShowDialog() == DialogResult.Yes)
+            if (connSettForm.Protected == true) {
+                passwordForm.SetIdPass(1);
+                if (passwordForm.ShowDialog() == DialogResult.Yes) {
+                    setPasswordForm.SetIdPass(passwordForm.GetIdPass ());
                     setPasswordForm.ShowDialog();
+                }
                 else
                     ;
+            }
             else
                 ;
         }
 
         private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (connSettForm.Protected == true)
-                if (passwordSettingsForm.ShowDialog() == DialogResult.Yes)
-                    setPasswordSettingsForm.ShowDialog();
+            if (connSettForm.Protected == true) {
+                passwordForm.SetIdPass(2);
+                if (passwordForm.ShowDialog() == DialogResult.Yes)
+                {
+                    setPasswordForm.SetIdPass(passwordForm.GetIdPass());
+                    setPasswordForm.ShowDialog();
+                }
                 else
                     ;
+            }
             else
                 ;
         }
@@ -661,8 +670,14 @@ namespace Statistic
 
         private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormTECComponent tecComponent = new FormTECComponent(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
-            if (tecComponent.ShowDialog () == DialogResult.OK) {
+            passwordForm.SetIdPass(2);
+            if (passwordForm.ShowDialog() == DialogResult.Yes)
+            {
+                FormTECComponent tecComponent = new FormTECComponent(connSettForm.connectionSettings[connSettForm.connectionSettings.Count - 1]);
+                if (tecComponent.ShowDialog () == DialogResult.OK) {
+                }
+                else
+                    ;
             }
             else
                 ;

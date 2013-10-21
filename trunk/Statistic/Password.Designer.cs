@@ -32,6 +32,7 @@ namespace Statistic
             this.lblPassword = new System.Windows.Forms.Label();
             this.btnOk = new System.Windows.Forms.Button();
             this.параметрыѕриложени€ = new System.Windows.Forms.Button();
+            this.labelOwnerPassword = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // tbxPassword
@@ -49,9 +50,9 @@ namespace Statistic
             this.lblPassword.AutoSize = true;
             this.lblPassword.Location = new System.Drawing.Point(30, 3);
             this.lblPassword.Name = "lblPassword";
-            this.lblPassword.Size = new System.Drawing.Size(232, 13);
+            this.lblPassword.Size = new System.Drawing.Size(94, 13);
             this.lblPassword.TabIndex = 3;
-            this.lblPassword.Text = "¬ведите пароль коммерческого диспетчера";
+            this.lblPassword.Text = "¬ведите пароль: ";
             // 
             // btnOk
             // 
@@ -73,11 +74,20 @@ namespace Statistic
             this.параметрыѕриложени€.UseVisualStyleBackColor = true;
             this.параметрыѕриложени€.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // labelOwnerPassword
+            // 
+            this.labelOwnerPassword.AutoSize = true;
+            this.labelOwnerPassword.Location = new System.Drawing.Point(125, 4);
+            this.labelOwnerPassword.Name = "labelOwnerPassword";
+            this.labelOwnerPassword.Size = new System.Drawing.Size(0, 13);
+            this.labelOwnerPassword.TabIndex = 4;
+            // 
             // Password
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 77);
+            this.Controls.Add(this.labelOwnerPassword);
             this.Controls.Add(this.параметрыѕриложени€);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.lblPassword);
@@ -88,8 +98,8 @@ namespace Statistic
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Shown += new System.EventHandler(this.Password_Shown);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Password_FormClosing);
+            this.Shown += new System.EventHandler(this.Password_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -101,5 +111,6 @@ namespace Statistic
         private System.Windows.Forms.Label lblPassword;
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button параметрыѕриложени€;
+        private System.Windows.Forms.Label labelOwnerPassword;
     }
 }

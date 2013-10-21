@@ -10,6 +10,8 @@ namespace Statistic
 {
     public partial class Password : Form
     {
+        private uint m_idPass;
+
         private Admin admin;
         private bool closing;
 
@@ -20,11 +22,31 @@ namespace Statistic
             closing = false;
         }
 
+        public void SetIdPass (uint id) {
+            m_idPass = id;
+
+            string errMsg = string.Empty;
+            switch (m_idPass) {
+                case 1:
+                    errMsg = "коммерческого диспетчера";
+                    break;
+                case 2:
+                    errMsg = "администратора";
+                    break;
+                default:
+                    break;
+            }
+
+            labelOwnerPassword.Text = errMsg;
+        }
+
+        public uint GetIdPass() { return m_idPass; }
+
         private void tbxPassword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (admin.ComparePassword(tbxPassword.Text, true))
+                if (admin.ComparePassword(tbxPassword.Text, m_idPass))
                 {
                     this.DialogResult = DialogResult.Yes;
                     tbxPassword.Text = "";

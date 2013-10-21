@@ -195,7 +195,7 @@ namespace Statistic
         private Semaphore semaSetPass;
         private volatile Errors passResult;
         private volatile string passReceive;
-        private volatile bool dispatcherPass;
+        private volatile uint m_idPass;
 
         //private Semaphore semaLoadLayout;
         //private volatile Errors loadLayoutResult;
@@ -1372,9 +1372,9 @@ namespace Statistic
             return false;
         }
 
-        public bool SetPassword(string password, bool disp)
+        public bool SetPassword(string password, uint idPass)
         {
-            dispatcherPass = disp;
+            m_idPass = idPass;
 
             byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
 
@@ -1413,10 +1413,19 @@ namespace Statistic
             if (passResult != Errors.NoError)
             {
                 delegateStopWait();
-                if (dispatcherPass)
-                    MessageBox.Show(this, "Ошибка получения пароля диспетчера. Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else
-                    MessageBox.Show(this, "Ошибка получения пароля администратора. Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string errMsg = string.Empty;
+                switch (m_idPass) {
+                    case 1:
+                        errMsg = "диспетчера";
+                        break;
+                    case 2:
+                        errMsg = "администратора";
+                        break;
+                    default:
+                        break;
+                }
+                MessageBox.Show(this, "Ошибка получения пароля " + errMsg + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
                 return false;
             }
 
@@ -1457,19 +1466,28 @@ namespace Statistic
 
             if (passResult != Errors.NoError)
             {
-                if (dispatcherPass)
-                    MessageBox.Show(this, "Ошибка сохранения пароля диспетчера. Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else
-                    MessageBox.Show(this, "Ошибка сохранения пароля администратора. Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string errMsg = string.Empty;
+                switch (m_idPass) {
+                    case 1:
+                        errMsg = "диспетчера";
+                        break;
+                    case 2:
+                        errMsg = "администратора";
+                        break;
+                    default:
+                        break;
+                }
+                MessageBox.Show(this, "Ошибка сохранения пароля " + errMsg + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
                 return false;
             }
 
             return true;
         }
 
-        public bool ComparePassword(string password, bool disp)
+        public bool ComparePassword(string password, uint id)
         {
-            dispatcherPass = disp;
+            m_idPass = id;
 
             string hashFromForm = "";
             byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
@@ -1513,10 +1531,20 @@ namespace Statistic
             delegateStopWait();
             if (passResult != Errors.NoError)
             {
-                if (dispatcherPass)
-                    MessageBox.Show(this, "Ошибка получения пароля диспетчера.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else
-                    MessageBox.Show(this, "Ошибка получения пароля администратора.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string errMsg = string.Empty;
+                switch (m_idPass) {
+                    case 1:
+                        errMsg = "диспетчера";
+                        break;
+                    case 2:
+                        errMsg = "администратора";
+                        break;
+                    default:
+                        break;
+                }
+                
+                MessageBox.Show(this, "Ошибка получения пароля " + errMsg + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
                 return false;
             }
 
@@ -2062,16 +2090,13 @@ namespace Statistic
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
 
-        private void GetPassRequest(bool disp)
+        private void GetPassRequest(uint id)
         {
-            string request = "SELECT PASSWORD_";
-
-            if (disp)
-                request += "DISP";
-            else
-                request += "ADMIN";
-
-            request += " FROM TOOLS";
+            string request = "SELECT HASH";
+            request += " FROM passwords";
+            request += " WHERE ID_ROLE=";
+            request += id;
+            
             Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, request);
         }
 
@@ -2094,20 +2119,36 @@ namespace Statistic
             return true;
         }
 
-        private void SetPassRequest(string password, bool disp, bool insert)
+        private void SetPassRequest(string password, uint id, bool insert)
         {
             string query = string.Empty;
             
             if (insert)
-                if (disp)
-                    query = "INSERT INTO TOOLS (PASSWORD_DISP) VALUES ('" + password + "')";
-                else
-                    query = "INSERT INTO TOOLS (PASSWORD_ADMIN) VALUES ('" + password + "')";
-            else
-                if (disp)
-                    query =  "UPDATE TOOLS SET PASSWORD_DISP='" + password + "'";
-                else
-                    query = "UPDATE TOOLS SET PASSWORD_ADMIN='" + password + "'";
+                switch (m_idPass) {
+                    case 1:
+                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
+                        break;
+                    case 2:
+                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
+                        break;
+                    default:
+                        break;
+                }
+            else {
+                switch (m_idPass)
+                {
+                    case 1:
+                        query = "UPDATE passwords SET HASH='" + password + "'";
+                        break;
+                    case 2:
+                        query = "UPDATE passwords SET HASH='" + password + "'";
+                        break;
+                    default:
+                        break;
+                }
+
+                query += " WHERE ID_USER=ID_ROLE AND ID_ROLE=" + id;
+            }
 
             Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, query);
         }
@@ -2602,6 +2643,7 @@ namespace Statistic
         private bool StateRequest(StatesMachine state)
         {
             bool result = true;
+            string errMsg = string.Empty;
             switch (state)
             {
                 case StatesMachine.CurrentTime:
@@ -2664,25 +2706,52 @@ namespace Statistic
                 //    ActionReport("Обровление ПЛАНА.");
                 //    break;
                 case StatesMachine.GetPass:
-                    if (dispatcherPass)
-                        ActionReport("Получение пароля диспетчера.");
-                    else
-                        ActionReport("Получение пароля администратора.");
-                    GetPassRequest(dispatcherPass);
+                    switch (m_idPass) {
+                        case 1:
+                            errMsg = "диспетчера";
+                            break;
+                        case 2:
+                            errMsg = "администратора";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    ActionReport("Получение пароля " + errMsg + ".");
+
+                    GetPassRequest(m_idPass);
                     break;
                 case StatesMachine.SetPassInsert:
-                    if (dispatcherPass)
-                        ActionReport("Сохранение пароля диспетчера.");
-                    else
-                        ActionReport("Сохранение пароля администратора.");
-                    SetPassRequest(passReceive, dispatcherPass, true);
+                    switch (m_idPass) {
+                        case 1:
+                            errMsg = "диспетчера";
+                            break;
+                        case 2:
+                            errMsg = "администратора";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    ActionReport("Сохранение пароля " + errMsg + ".");
+                    
+                    SetPassRequest(passReceive, m_idPass, true);
                     break;
                 case StatesMachine.SetPassUpdate:
-                    if (dispatcherPass)
-                        ActionReport("Сохранение пароля диспетчера.");
-                    else
-                        ActionReport("Сохранение пароля администратора.");
-                    SetPassRequest(passReceive, dispatcherPass, false);
+                    switch (m_idPass) {
+                        case 1:
+                            errMsg = "диспетчера";
+                            break;
+                        case 2:
+                            errMsg = "администратора";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    ActionReport("Сохранение пароля " + errMsg + ".");
+
+                    SetPassRequest(passReceive, m_idPass, false);
                     break;
                 //case StatesMachine.LayoutGet:
                 //    ActionReport("Получение административных данных макета.");
@@ -2901,6 +2970,7 @@ namespace Statistic
 
         private void StateErrors(StatesMachine state, bool response)
         {
+            string errMsg = string.Empty;
             switch (state)
             {
                 case StatesMachine.CurrentTime:
@@ -3013,18 +3083,38 @@ namespace Statistic
                 case StatesMachine.GetPass:
                     if (response)
                     {
-                        if (dispatcherPass)
-                            ErrorReport("Ошибка разбора пароля диспетчера. Переход в ожидание.");
-                        else
-                            ErrorReport("Ошибка разбора пароля администратора. Переход в ожидание.");
+                        switch (m_idPass)
+                        {
+                            case 1:
+                                errMsg = "диспетчера";
+                                break;
+                            case 2:
+                                errMsg = "администратора";
+                                break;
+                            default:
+                                break;
+                        }
+
+                        ErrorReport("Ошибка разбора пароля " + errMsg + ". Переход в ожидание.");
+
                         passResult = Errors.ParseError;
                     }
                     else
                     {
-                        if (dispatcherPass)
-                            ErrorReport("Ошибка получения пароля диспетчера. Переход в ожидание.");
-                        else
-                            ErrorReport("Ошибка получения пароля администратора. Переход в ожидание.");
+                        switch (m_idPass)
+                        {
+                            case 1:
+                                errMsg = "диспетчера";
+                                break;
+                            case 2:
+                                errMsg = "администратора";
+                                break;
+                            default:
+                                break;
+                        }
+
+                        ErrorReport("Ошибка получения пароля " + errMsg + ". Переход в ожидание.");
+
                         passResult = Errors.NoAccess;
                     }
                     try
@@ -3037,10 +3127,20 @@ namespace Statistic
                     break;
                 case StatesMachine.SetPassInsert:
                 case StatesMachine.SetPassUpdate:
-                    if (dispatcherPass)
-                        ErrorReport("Ошибка сохранения пароля диспетчера. Переход в ожидание.");
-                    else
-                        ErrorReport("Ошибка сохранения пароля администратора. Переход в ожидание.");
+                    switch (m_idPass)
+                    {
+                        case 1:
+                            errMsg = "диспетчера";
+                            break;
+                        case 2:
+                            errMsg = "администратора";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    ErrorReport("Ошибка сохранения пароля "+ errMsg + ". Переход в ожидание.");
+
                     passResult = Errors.NoAccess;
                     try
                     {
