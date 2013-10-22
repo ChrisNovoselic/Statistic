@@ -221,6 +221,7 @@
             this.buttonTECAdd.TabIndex = 22;
             this.buttonTECAdd.Text = "+";
             this.buttonTECAdd.UseVisualStyleBackColor = false;
+            this.buttonTECAdd.Click += new System.EventHandler(this.buttonTECAdd_Click);
             // 
             // buttonTECComponentAdd
             // 
@@ -232,6 +233,7 @@
             this.buttonTECComponentAdd.TabIndex = 25;
             this.buttonTECComponentAdd.Text = "+";
             this.buttonTECComponentAdd.UseVisualStyleBackColor = false;
+            this.buttonTECComponentAdd.Click += new System.EventHandler(this.buttonTECComponentAdd_Click);
             // 
             // buttonTGAdd
             // 
@@ -243,6 +245,7 @@
             this.buttonTGAdd.TabIndex = 26;
             this.buttonTGAdd.Text = "+";
             this.buttonTGAdd.UseVisualStyleBackColor = false;
+            this.buttonTGAdd.Click += new System.EventHandler(this.buttonTGAdd_Click);
             // 
             // textBoxTECComponentAdd
             // 
