@@ -24,41 +24,14 @@ namespace Statistic
         private Semaphore m_semUIControl;
         private volatile bool m_bThreadUIControlIsWorking;
 
-        private System.Windows.Forms.Button m_btnDelete;
+        private DataTable[] m_list_data_original = null,
+                            m_list_data = null;
+        private List <DataRow[]> m_list_dataRow = null;
 
-        private DataTable m_list_tec_original = null;
-        private DataTable [,] m_list_TECComponents_original = null;
-        private DataTable m_list_tg_original = null;
-        private DataTable[] m_list_data = new DataTable[INDEX_UICONTROL.DATAGRIDVIEW_TG - INDEX_UICONTROL.DATAGRIDVIEW_TEC + 1];
-        //Текущие 
+        //Текущие элементы управления
         private List<System.Windows.Forms.Control> m_list_UIControl = null;
 
-        List<DataRow> m_listDataRowComboBoxAddTG = new List<DataRow>();
-
-        private enum ID_ACTION : short { UPDATE, ADD, DELETE };
-        private class Action
-        {
-            public short mode;
-            private short[] ids;
-            public List <ID_ACTION> list_act;
-            public DataRow val;
-
-            public Action () {
-                ids = new short[INDEX_UICONTROL.DATAGRIDVIEW_TG - INDEX_UICONTROL.DATAGRIDVIEW_TEC + 1];
-                list_act = new List <ID_ACTION> ();
-            }
-
-            public void Ids (INDEX_UICONTROL indx, short val) {
-                ids[(int)(indx - INDEX_UICONTROL.DATAGRIDVIEW_TEC)] = val;
-            }
-
-            public short Ids(INDEX_UICONTROL indx)
-            {
-                return ids[(int)(indx - INDEX_UICONTROL.DATAGRIDVIEW_TEC)];
-            }
-        };
-        
-        private List <Action> m_list_action;
+        private DataRow[] m_list_dataRow_comboBoxAddTG;
 
         public FormTECComponent(ConnectionSettings connSett)
         {
@@ -89,12 +62,7 @@ namespace Statistic
             m_list_UIControl.Add(buttonTGAdd);
 
             m_lockObj = new Object();
-
-            m_list_action = new List<Action>();
-
-            m_btnDelete = new System.Windows.Forms.Button();
-            m_btnDelete.Text = "Удалить";
-
+            
             lock (m_lockObj)
             {
             }
@@ -103,11 +71,29 @@ namespace Statistic
             m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TEC_ADD].Enabled = false;
             m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TEC_ADD].Enabled = false;
 
+            // + 1 для ТГ
+            m_list_data_original = new DataTable[(int)(ChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1)];
+            m_list_data = new DataTable[(int)(ChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1)];
+            
+            int i = -1;
+            for (i = (int)(ChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(ChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1); i++)
+            {
+                if (m_list_data_original[i] == null)
+                    m_list_data_original[i] = DbInterface.Request(m_connectionSetttings, "SELECT * FROM " + ChangeMode.getPrefixMode (i) + "_LIST");
+                else ;
+
+                m_list_data[i] = m_list_data_original[i].Copy ();
+            }
+
+            m_list_dataRow = new List <DataRow[]> (); //[(int)(INDEX_UICONTROL.DATAGRIDVIEW_TG - INDEX_UICONTROL.DATAGRIDVIEW_TEC + 1)];
+            for (i = (int)(INDEX_UICONTROL.DATAGRIDVIEW_TEC - INDEX_UICONTROL.DATAGRIDVIEW_TEC); i < (int)(INDEX_UICONTROL.DATAGRIDVIEW_TG - INDEX_UICONTROL.DATAGRIDVIEW_TEC + 1); i++)
+            {
+                m_list_dataRow.Add(null);
+            }
+
             fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC);
 
-            m_list_TECComponents_original = new DataTable[(int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN - 1, m_list_tec_original.Rows.Count];
-
-            for (int i = (int)ChangeMode.MODE_TECCOMPONENT.TEC; i < (int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+            for (i = (int)ChangeMode.MODE_TECCOMPONENT.TEC; i < (int)ChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
             {
                 comboBoxMode.Items.Add(ChangeMode.getNameMode((short)i));
             }
@@ -214,334 +200,120 @@ namespace Statistic
             catch { }
         }
 
-        private Int32 getIdSelectedTEC () {
-            return Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Rows[dataGridViewTEC.SelectedRows[0].Index]["ID"]);
-        }
-
-        private Int32 getIdTEC(int indx)
+        private Int32 getIdSelectedDataRow(INDEX_UICONTROL indx_list_dataRow)
         {
-            return Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Rows[indx]["ID"]);
+            return getIdDataRow(indx_list_dataRow, ((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).SelectedRows[0].Index);
         }
 
-        private int getIndexTEC (int id) {
-            int iResIndx = -1;
-
-            for (int i = 0; (i < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Rows.Count) && (iResIndx < 0); i++)
-            {
-                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC].Rows[i]["ID"]) == id)
-                    iResIndx = i;
-                else
-                    ;
-            }
-
-            return iResIndx;
-        }
-
-        private Int32 getIdSelectedTECComponent()
-        {
-            int indx_mode = comboBoxMode.SelectedIndex - 1,
-                id_tec = getIdSelectedTEC(), indx_tec = getIndexTEC(id_tec),
-                indx_teccomponent = -1,
-                iRes = -1;
-
-            if (((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT]).Rows.Count > 0) {
-                indx_teccomponent = ((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT]).SelectedRows[0].Index;
-                
-                if (indx_mode > -1)
-                    if (indx_teccomponent < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Count)
-                        iRes = Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx_teccomponent]["ID"]);
-                    else
-                        ;
-                else
-                    ;
-            }
-            else
-                ;
-
-            return iRes;
-        }
-
-        private Int32 getIdTECComponent(int indx)
-        {
-            int indx_mode = comboBoxMode.SelectedIndex - 1,
-                indx_tec = getIndexTEC(getIdSelectedTEC());
-
-            if (indx_mode > -1)
-                return Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx]["ID"]);
-            else
-                return indx_mode;
-        }
-
-        private int getIndexTECComponent(int id)
+        private Int32 getIdDataRow(INDEX_UICONTROL indx_list_dataRow, int indx)
         {
             int iRes = -1,
-                indx_mode = comboBoxMode.SelectedIndex - 1,
-                indx_tec = getIndexTEC(getIdSelectedTEC());
+                indx_mode = -1;
 
-            if (indx_mode > -1)
-                for (int i = 0; (i < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Count) && (iRes < 0); i++)
-                {
-                    if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[i]["ID"]) == id)
-                        iRes = i;
+            switch (comboBoxMode.SelectedIndex)
+            {
+                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                    indx_mode = comboBoxMode.SelectedIndex;
+                    break;
+                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                    indx_mode = comboBoxMode.SelectedIndex - 1;
+                    break;
+                default:
+                    break;
+            }
+
+            if (((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).Rows.Count > 0)
+                if (indx_mode > -1)
+                    if (indx < m_list_dataRow[(int)indx_list_dataRow].Length)
+                        iRes = Convert.ToInt32(m_list_dataRow[(int)indx_list_dataRow][indx]["ID"]);
                     else
                         ;
-                }
+                else
+                    ;
             else
                 ;
 
             return iRes;
         }
 
-        private Int32 getIdSelectedTG()
+        private int getIndexDataRow(INDEX_UICONTROL indx_list_dataRow, int id)
         {
-            int indx_tec = getIndexTEC(getIdSelectedTEC());
+            int iRes = -1,
+                indx_mode = - 1;
 
-            return Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[((DataGridView)m_list_UIControl[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG]).SelectedRows[0].Index]["ID"]);
-        }
-
-        private Int32 getIdTG(int indx)
-        {
-            int indx_tec = getIndexTEC(getIdSelectedTEC());
-
-            return Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[indx]["ID"]);
-        }
-
-        private int getIndexTG(int id)
-        {
-            int iResIndx = -1,
-                indx_tec = getIndexTEC(getIdSelectedTEC());
-
-            for (int i = 0; (i < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count) && (iResIndx < 0); i++)
+            switch (comboBoxMode.SelectedIndex)
             {
-                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[i]["ID"]) == id)
-                    iResIndx = i;
-                else
-                    ;
+                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                    indx_mode = comboBoxMode.SelectedIndex;
+                    break;
+                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                    indx_mode = comboBoxMode.SelectedIndex - 1;
+                    break;
+                default:
+                    break;
             }
 
-            return iResIndx;
+            if (((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).Rows.Count > 0)
+                if (indx_mode > -1)
+                    for (int i = 0; (i < m_list_dataRow[(int)indx_list_dataRow].Length) && (iRes < 0); i++)
+                    {
+                        if (Convert.ToInt32(m_list_dataRow[(int)indx_list_dataRow][i]["ID"]) == id)
+                            iRes = i;
+                        else
+                            ;
+                    }
+                else
+                    ;
+            else
+                ;
+
+            return iRes;
         }
 
         private void getListTEC()
         {
-            if (m_list_tec_original == null)
-                m_list_tec_original = InitTEC.getListTEC(m_connectionSetttings, true);
-            else ;
-
-            m_list_data [(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC] = m_list_tec_original.Copy ();
+            m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC] = m_list_data[(int)ChangeMode.MODE_TECCOMPONENT.TEC].Select ("");
         }
 
-        private void getListTECComponent(int id_tec)
+        private void getListTECComponent()
         {
-            int indx_tec = getIndexTEC(id_tec);
+            int id_tec = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC),
+                indx_tec = getIndexDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC, id_tec);
 
-            if (m_list_TECComponents_original[comboBoxMode.SelectedIndex - 1, indx_tec] == null)
-                m_list_TECComponents_original[comboBoxMode.SelectedIndex - 1, indx_tec] = InitTEC.getListTECComponent(m_connectionSetttings, ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex), id_tec);
-            else ;
-
-            m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT] = m_list_TECComponents_original[comboBoxMode.SelectedIndex - 1, indx_tec].Copy();
-
-            for (int i = 0; (! (m_list_action == null)) && (i < m_list_action.Count); i++)
+            m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT] = null;
+            switch (comboBoxMode.SelectedIndex)
             {
-                if ((m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC) == (short)getIdSelectedTEC())
-                    //&& (m_list_action[i].mode == comboBoxMode.SelectedIndex)
-                    // && (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT) == getIdSelectedTECComponent())
-                    && (! (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG) > -1))
-                    && (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT) > -1)
-                    )
-                {
-                    int j = -1;
-                    switch (m_list_action[i].list_act[m_list_action[i].list_act.Count - 1])
-                    {
-                        case ID_ACTION.DELETE:
-                            bool bDelete = false;
-
-                            for (j = 0; (j < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Count) && (bDelete == false); j++)
-                            {
-                                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[j]["ID"]) == m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT))
-                                {
-                                    switch (m_list_action[i].mode)
-                                    {
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                                            bDelete = true;
-                                            break;
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                                            if (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC) == getIdSelectedTEC())
-                                                bDelete = true;
-                                            else
-                                                ;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                                else
-                                    ;
-
-                                if (bDelete == true)
-                                {
-                                    m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.RemoveAt(j);
-
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                            break;
-                        case ID_ACTION.ADD:
-                            if (m_list_action[i].mode == comboBoxMode.SelectedIndex)
-                            {
-                                m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Add();
-
-                                int indx = m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Count - 1;
-                                m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx]["ID"] = m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
-                                m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx]["ID_TEC"] = m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC);
-
-                                m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx]["NAME_SHR"] =
-                                //m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[indx]["NAME_FUTURE"] =
-                                m_list_action[i].val ["NAME_SHR"];
-                            }
-                            else
-                                ;
-                            break;
-                        case ID_ACTION.UPDATE:
-                            for (j = 0; j < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows.Count; j++)
-                            {
-                                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[j]["ID"]) == m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT))
-                                {
-                                    m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows[j]["NAME_SHR"] = m_list_action[i].val;
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                    ;
+                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                    break;
+                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                    m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT] = m_list_data[comboBoxMode.SelectedIndex].Select("ID_TEC=" + id_tec);
+                    break;
+                default:
+                    break;
             }
         }
 
-        private void getListTG(ChangeMode.MODE_TECCOMPONENT mode = ChangeMode.MODE_TECCOMPONENT.UNKNOWN, int id = -1)
+        private void getListTG()
         {
-            if (mode == ChangeMode.MODE_TECCOMPONENT.UNKNOWN) mode = (ChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex; else ;
-            
-            if (id < 0) {
-                switch (comboBoxMode.SelectedIndex)
-                {
-                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                        id = getIdSelectedTEC();
-                        break;
-                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                        id = getIdSelectedTECComponent();
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else
-                ;
+            int id_tec = getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC),
+                id_teccomp = -1;
 
-            m_list_tg_original = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode((int)mode), id);
-
-            m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG] = m_list_tg_original.Copy();
-
-            for (int i = 0; (! (m_list_action == null)) && (i < m_list_action.Count); i++)
+            m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG] = null;
+            switch (comboBoxMode.SelectedIndex)
             {
-                if ((m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC) == getIdSelectedTEC())
-                    //&& (m_list_action[i].mode == comboBoxMode.SelectedIndex)
-                    // && (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT) == getIdSelectedTECComponent())
-                    && (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG) > -1)
-                    )
-                {
-                    int j = -1;
-                    switch (m_list_action[i].list_act[m_list_action[i].list_act.Count - 1])
-                    {
-                        case ID_ACTION.DELETE:
-                            bool bDelete = false;
-
-                            for (j = 0; (j < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count) && (bDelete == false); j++)
-                            {
-                                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[j]["ID"]) == m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG))
-                                {
-                                    switch (m_list_action[i].mode)
-                                    {
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                                            bDelete = true;
-                                            break;
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                                        case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                                            if (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT) == getIdSelectedTECComponent())
-                                                bDelete = true;
-                                            else
-                                                ;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                                else
-                                    ;
-
-                                if (bDelete == true)
-                                {
-                                    m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.RemoveAt(j);
-
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                            break;
-                        case ID_ACTION.ADD:
-                            if (m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT) == getIdSelectedTECComponent())
-                            {
-                                m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Add ();
-                                //m_list_action[i].val.ItemArray.(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count -1].ItemArray, 0);
-                                //for (j = 0; j < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count -1].ItemArray.Length; j++)
-                                for (j = 0; j < m_list_action[i].val.ItemArray.Length; j++)
-                                {
-                                    m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count -1][j] = m_list_action[i].val[j];
-                                }
-                                switch (comboBoxMode.SelectedIndex/*m_list_action[i].mode*/) {
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                                        break;
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                                        m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count - 1]["ID_" + ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex)] = getIdSelectedTECComponent();
-                                        break;
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                                        m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count - 1]["ID_" + ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex)] = getIdSelectedTECComponent();
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            else
-                                ;
-                            break;
-                        case ID_ACTION.UPDATE:
-                            for (j = 0; j < m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows.Count; j++)
-                            {
-                                if (Convert.ToInt32(m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[j]["ID"]) == m_list_action[i].Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG))
-                                {
-                                    m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows[j]["NAME_SHR"] = m_list_action[i].val;
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                    ;
+                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                    m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG] = m_list_data[comboBoxMode.Items.Count].Select("ID_TEC=" + id_tec);
+                    break;
+                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                    id_teccomp = getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
+                    m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG] = m_list_data[comboBoxMode.Items.Count].Select("ID_TEC=" + id_tec + " AND ID_" + ChangeMode.getPrefixMode (comboBoxMode.SelectedIndex) + "=" + id_teccomp);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -566,7 +338,9 @@ namespace Statistic
         private /*static*/ void fillDataGridView(INDEX_UICONTROL indx_datagridview)
         {
             DataGridView dataGridView = ((DataGridView)m_list_UIControl [(int)indx_datagridview]);
-            DataTable data = null;
+            DataRow []dataRow = null;
+            System.Collections.IEnumerator enumColumns = null;
+            object col = null;
 
             switch (indx_datagridview)
             {
@@ -574,7 +348,7 @@ namespace Statistic
                     getListTEC();
                     break;
                 case INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
-                    getListTECComponent(getIdSelectedTEC());
+                    getListTECComponent();
                     break;
                 case INDEX_UICONTROL.DATAGRIDVIEW_TG:
                     getListTG();
@@ -583,37 +357,40 @@ namespace Statistic
                     break;
             }
 
-            data = m_list_data[(int)indx_datagridview];
+            dataRow = m_list_dataRow[(int)indx_datagridview];
 
             dataGridView.Rows.Clear();
 
-            System.Collections.IEnumerator enumColumns = null;
-            object col = null;
-            for (int i = 0; i < data.Rows.Count; i++)
+            if (!(dataRow == null))
             {
-                dataGridView.Rows.Add();
-
-                enumColumns = dataGridView.Columns.GetEnumerator();
-
-                while (enumColumns.MoveNext())
+                for (int i = 0; i < dataRow.Length; i++)
                 {
-                    col = enumColumns.Current;
-                    switch (col.GetType ().Name)
+                    dataGridView.Rows.Add();
+
+                    enumColumns = dataGridView.Columns.GetEnumerator();
+
+                    while (enumColumns.MoveNext())
                     {
-                        case "DataGridViewCheckBoxColumn":
-                            dataGridView.Rows[i].Cells[((DataGridViewCheckBoxColumn)col).Index].Value = data.Rows[i]["InUse"];
-                            break;
-                        case "DataGridViewTextBoxColumn":
-                            dataGridView.Rows[i].Cells[((DataGridViewTextBoxColumn)col).Index].Value = data.Rows[i]["NAME_SHR"].ToString();
-                            break;
-                        case "DataGridViewButtonColumn":
-                            dataGridView.Rows[i].Cells[((DataGridViewButtonColumn)col).Index].Value = "-"; //global::Statistic.Properties.Resources.btnDel
-                            break;
-                        default:
-                            break;
+                        col = enumColumns.Current;
+                        switch (col.GetType().Name)
+                        {
+                            case "DataGridViewCheckBoxColumn":
+                                dataGridView.Rows[i].Cells[((DataGridViewCheckBoxColumn)col).Index].Value = dataRow[i]["InUse"];
+                                break;
+                            case "DataGridViewTextBoxColumn":
+                                dataGridView.Rows[i].Cells[((DataGridViewTextBoxColumn)col).Index].Value = dataRow[i]["NAME_SHR"].ToString();
+                                break;
+                            case "DataGridViewButtonColumn":
+                                dataGridView.Rows[i].Cells[((DataGridViewButtonColumn)col).Index].Value = "-"; //global::Statistic.Properties.Resources.btnDel
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
+            else
+                ;
 
             if (dataGridView.Rows.Count > 0)
             {
@@ -642,73 +419,29 @@ namespace Statistic
 
         private void fillComboBoxTGAdd()
         {
-            int i = -1, j = -1, k = -1;
-            DataTable data = InitTEC.getListTG(m_connectionSetttings, ChangeMode.getPrefixMode((int)ChangeMode.MODE_TECCOMPONENT.TEC), getIdSelectedTEC());
-            //List <DataRow>listDataRowComboBoxAddTG = new List <DataRow> ();
-            m_listDataRowComboBoxAddTG.Clear ();
+            int i = 1,
+                id_tec = getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC);
+
+            switch (comboBoxMode.SelectedIndex)
+            {
+                case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC:
+             
+                    break;
+                case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
+                case (int)INDEX_UICONTROL.DATAGRIDVIEW_TG:
+                    m_list_dataRow_comboBoxAddTG = m_list_data [comboBoxMode.Items.Count].Select ("ID_TEC=" + id_tec + " AND ID_" + ChangeMode.getPrefixMode (comboBoxMode.SelectedIndex) + "=" + 0);
+                    break;
+                default:
+                    break;
+            }
 
             if (comboBoxTGAdd.Enabled == true) comboBoxTGAdd.Items.Clear(); else ;
 
-            for (i = 0; i < m_list_action.Count; i ++) {
-                for (j = 0; j < data.Rows.Count; j ++) {
-                    if (m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG) == Convert.ToInt32 (data.Rows[j]["ID"])) {
-                        switch (m_list_action[i].list_act[m_list_action[i].list_act.Count - 1])
-                        {
-                            case ID_ACTION.DELETE:
-                                switch (m_list_action[i].mode)
-                                {
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                                        for (k = 0; k < m_listDataRowComboBoxAddTG.Count; k ++) {
-                                            if (Convert.ToInt32 (m_listDataRowComboBoxAddTG[k]["ID"]) == m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG))
-                                                m_listDataRowComboBoxAddTG.RemoveAt (k);
-                                            else
-                                                ;
-                                        }
-                                        break;
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                                        if (m_list_action[i].mode == comboBoxMode.SelectedIndex) {
-                                            m_listDataRowComboBoxAddTG.Add(data.Rows[j]);
-                                        }
-                                        else
-                                            ;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            case ID_ACTION.ADD:
-                                switch (m_list_action[i].mode)
-                                {
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
-                                        break;
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
-                                    case (int)ChangeMode.MODE_TECCOMPONENT.PC:
-                                        for (k = 0; k < m_listDataRowComboBoxAddTG.Count; k ++) {
-                                            if (Convert.ToInt32 (m_listDataRowComboBoxAddTG[k]["ID"]) == m_list_action[i].Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG)
-                                                && (m_list_action[i].mode == comboBoxMode.SelectedIndex))
-                                                m_listDataRowComboBoxAddTG.RemoveAt (k);
-                                            else
-                                                ;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                        ;
-                }
-            }
-
-            if (m_listDataRowComboBoxAddTG.Count > 0) {
-                for (k = 0; k < m_listDataRowComboBoxAddTG.Count; k++)
+            if ((!(m_list_dataRow_comboBoxAddTG == null)) && (m_list_dataRow_comboBoxAddTG.Length > 0))
+            {
+                for (i = 0; i < m_list_dataRow_comboBoxAddTG.Length; i++)
                 {
-                    comboBoxTGAdd.Items.Add(m_listDataRowComboBoxAddTG [k]["NAME_SHR"]);
+                    comboBoxTGAdd.Items.Add(m_list_dataRow_comboBoxAddTG[i]["NAME_SHR"]);
                 }
 
                 comboBoxTGAdd.SelectedIndex = 0;
@@ -785,25 +518,11 @@ namespace Statistic
                     case "DataGridViewTextBoxColumn":
                         break;
                     case "DataGridViewButtonColumn":
-                        Action action = new Action();
-                        action.mode = (short)comboBoxMode.SelectedIndex;
-                        action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC, (short)getIdSelectedTEC());
-                        action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdSelectedTECComponent());
-                        action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG, -1);
-                        action.list_act.Add (ID_ACTION.DELETE);
-
-                        m_list_action.Add(action);
+                        //Удаление GTP/PC
 
                         fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
 
-                        //Необходимо сохранить предыдущую таблицу с ТГ ???
-                        getListTG ((ChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex, action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT));
-                        DataTable list_tg = m_list_data[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Copy ();
-                        //Необходимо возвратить исходную таблицу с ТГ ???
-
-                        for (int i = 0; i < list_tg.Rows.Count; i ++) {
-                            deleteTG((short)(Convert.ToInt32 (list_tg.Rows[i]["ID"])));
-                        }
+                        //Установка в '0' всех соответствующих GTP/PC ТГ
                         break;
                     default:
                         break;
@@ -837,7 +556,7 @@ namespace Statistic
                 case "DataGridViewTextBoxColumn":
                     break;
                 case "DataGridViewButtonColumn":
-                    deleteTG((short)getIdSelectedTG());
+                    deleteTG((short)getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TG));
 
                     fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
                     fillComboBoxTGAdd();
@@ -848,19 +567,7 @@ namespace Statistic
         }
 
         private void deleteTG (short id_tg) {
-            Action action = new Action();
-            action.mode = (short)comboBoxMode.SelectedIndex;
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC, (short)getIdSelectedTEC());
-            if (action.mode > 0)
-                action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdSelectedTECComponent());
-            else
-                action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, -1);
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG, id_tg);
-            action.list_act.Add (ID_ACTION.DELETE);
-
-            action.val = m_list_data [(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Rows [getIndexTG (getIdSelectedTG ())];
-
-            m_list_action.Add(action);
+            //Установка в '0' поля в соответствии с 'comboBoxMode.SelectedIndex'
         }
 
         private void dataGridViewTEC_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -883,50 +590,36 @@ namespace Statistic
             if (((DataGridView)m_list_UIControl[indx_uicontrol]).Columns[e.ColumnIndex].GetType().Name == "DataGridViewTextBoxColumn")
             //if (((DataGridView)sender).Columns[e.ColumnIndex].GetType().Name == "DataGridViewTextBoxColumn")
             {
-                Action action = new Action();
-                action.mode = (short)comboBoxMode.SelectedIndex;
-                action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC, (short)getIdSelectedTEC());
-
                 switch (indx_uicontrol)
                 {
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC:
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, -1);
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG, -1);
+                        
                         break;
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdSelectedTECComponent());
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG, -1);
+                        
                         break;
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TG:
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdSelectedTECComponent());
-                        action.Ids (INDEX_UICONTROL.DATAGRIDVIEW_TG, (short)getIdSelectedTG());
+                        
                         break;
                     default:
                         break;
                 }
-
-                action.list_act.Add (ID_ACTION.UPDATE);
 
                 int indx_row = -1;
                 switch (indx_uicontrol) {
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC:
-                        indx_row = getIndexTEC(getIdSelectedTEC());
+                        indx_row = getIndexDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC, getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC));
                         break;
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
-                        indx_row = getIndexTECComponent (getIdSelectedTECComponent ());
+                        indx_row = getIndexDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT));
                         break;
                     case (int)INDEX_UICONTROL.DATAGRIDVIEW_TG:
-                        indx_row = getIndexTG(getIdSelectedTG());
+                        indx_row = getIndexDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TG, getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TG));
                         break;
                     default:
                         break;
                 }
 
-                //action.val = ((DataGridView)m_list_UIControl[indx_uicontrol])[e.ColumnIndex, e.RowIndex].Value.ToString();
-                action.val = m_list_data [indx_uicontrol].Rows [indx_row];
-                //action.val = ((DataGridView)sender)[e.ColumnIndex, e.RowIndex].Value.ToString();
-
-                m_list_action.Add(action);
             }
             else
                 ;
@@ -939,46 +632,12 @@ namespace Statistic
 
         private void buttonTECComponentAdd_Click(object sender, EventArgs e)
         {
-            Action action = new Action();
-            action.mode = (short)comboBoxMode.SelectedIndex;
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC, (short)getIdSelectedTEC());
-
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdNext((ChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex));
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG, -1);
-
-            action.list_act.Add (ID_ACTION.ADD);
-
-            //action.val = textBoxTECComponentAdd.Text;
-            action.val = m_list_data [(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Rows [getIndexTECComponent (getIdSelectedTECComponent ())];
-            action.val["ID"] = action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
-            action.val["NAME_SHR"] = textBoxTECComponentAdd.Text;
-            textBoxTECComponentAdd.Text = string.Empty;
-            //Очитстить поля NAME_GNOVOS (NAME_FUTURE), PREFIX_ADMIN, PREFIX_PBR
-            //action.val["NAME_GNOVOS"] = 
-            //action.val["NAME_FUTURE"] =
-            //action.val["PREFIX_ADMIN"] =
-            //action.val["PREFIX_PBR"] = string.Empty;
-
-            m_list_action.Add(action);
-
+            
             fillDataGridView (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
         }
 
         private void buttonTGAdd_Click(object sender, EventArgs e)
         {
-            Action action = new Action();
-            action.mode = (short)comboBoxMode.SelectedIndex;
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC, (short)getIdSelectedTEC());
-            if (action.mode > 0)
-                action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, (short)getIdSelectedTECComponent());
-            else
-                action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT, -1);
-            action.Ids(INDEX_UICONTROL.DATAGRIDVIEW_TG, (short)Convert.ToInt32 (m_listDataRowComboBoxAddTG [comboBoxTGAdd.SelectedIndex]["ID"]));
-            action.list_act.Add(ID_ACTION.ADD);
-
-            action.val = m_listDataRowComboBoxAddTG [comboBoxTGAdd.SelectedIndex];
-
-            m_list_action.Add(action);
 
             fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
             fillComboBoxTGAdd();
