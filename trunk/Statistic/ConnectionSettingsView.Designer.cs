@@ -157,6 +157,7 @@ namespace Statistic
             // 
             // nudnPort
             // 
+            this.nudnPort.Enabled = false;
             this.nudnPort.Location = new System.Drawing.Point(130, 71);
             this.nudnPort.Maximum = new decimal(new int[] {
             65535,
@@ -173,7 +174,6 @@ namespace Statistic
             0,
             0});
             this.nudnPort.ValueChanged += new System.EventHandler(this.component_Changed);
-            this.nudnPort.Enabled = false;
             // 
             // lblPort
             // 
@@ -187,8 +187,7 @@ namespace Statistic
             // cbxIgnore
             // 
             this.cbxIgnore.AutoSize = true;
-            this.cbxIgnore.CheckState = System.Windows.Forms.CheckState.Unchecked;
-            this.cbxIgnore.Location = new System.Drawing.Point(130, 175);
+            this.cbxIgnore.Location = new System.Drawing.Point(130, 180);
             this.cbxIgnore.Name = "cbxIgnore";
             this.cbxIgnore.Size = new System.Drawing.Size(15, 14);
             this.cbxIgnore.TabIndex = 6;
@@ -197,7 +196,7 @@ namespace Statistic
             // lblIgnore
             // 
             this.lblIgnore.AutoSize = true;
-            this.lblIgnore.Location = new System.Drawing.Point(12, 175);
+            this.lblIgnore.Location = new System.Drawing.Point(12, 180);
             this.lblIgnore.Name = "lblIgnore";
             this.lblIgnore.Size = new System.Drawing.Size(79, 13);
             this.lblIgnore.TabIndex = 15;

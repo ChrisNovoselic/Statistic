@@ -182,5 +182,24 @@ namespace Statistic
                    @";User Id=" + userName +
                    @";Password=" + password + @";";
         }
+
+        public static string GetConnectionStringExcel(string path)
+        {
+            string var1 = @"Provider=Microsoft.ACE.OLEDB.12.0;" +
+                        //@"Persist Security Info=false;" +
+                        //@"Extended Properties=Excel 12.0 Xml;HDR=YES;" +
+                        @"Extended Properties=Excel 12.0 Xml;" +
+                        @"Data Source=" + path + ";",
+                    var2 = @"Provider=Microsoft.Jet.OLEDB.4.0;"  +
+                    //@"Extended Properties=Excel 8.0;HDR=YES;Mode=Read;ReadOnly=true;" +
+                    //@"Extended Properties=Excel 8.0;HDR=YES;IMEX=1;Mode=Read;ReadOnly=true;" +
+                    //@"Extended Properties=Excel 8.0;HDR=YES;IMEX=1;" +
+                    //@"Extended Properties=Excel 8.0;HDR=YES;" +
+                    @"Extended Properties=Excel 8.0;" +
+                    //@"Persist Security Info=false;" +
+                    @"Data Source=" + path + ";";
+
+            return var1;
+        }
     }
 }

@@ -14,6 +14,13 @@ namespace trans_rdg
         public Form1()
         {
             InitializeComponent();
+
+            panelMain.Visible = false;
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            Close ();
         }
     }
 }

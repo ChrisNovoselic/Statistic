@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Threading;
+using System.Data.OleDb;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 
@@ -679,12 +680,65 @@ namespace Statistic
             return result;
         }
 
+        public static DataTable Request (string path, string query) {
+            DataTable dataTableRes = new DataTable();
+
+            OleDbConnection connectionExcel;
+            System.Data.OleDb.OleDbCommand commandExcel;
+            System.Data.OleDb.OleDbDataAdapter adapterExcel;
+
+            connectionExcel = new OleDbConnection (ConnectionSettings.GetConnectionStringExcel (path));
+
+            commandExcel = new OleDbCommand();
+            commandExcel.Connection = connectionExcel;
+            commandExcel.CommandType = CommandType.Text;
+
+            adapterExcel = new OleDbDataAdapter();
+            adapterExcel.SelectCommand = commandExcel;
+
+            commandExcel.CommandText = query;
+
+            dataTableRes.Reset();
+            dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+            try
+            {
+                connectionExcel.Open();
+
+                if (connectionExcel.State == ConnectionState.Open)
+                {
+                    adapterExcel.Fill(dataTableRes);
+                }
+                else
+                    ; //
+            }
+            catch (OleDbException e)
+            {
+                MainForm.log.LogLock();
+                string s;
+                int pos;
+                pos = connectionExcel.ConnectionString.IndexOf("Password");
+                if (pos < 0)
+                    s = connectionExcel.ConnectionString;
+                else
+                    s = connectionExcel.ConnectionString.Substring(0, pos);
+
+                MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
+                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
+                MainForm.log.LogUnlock();
+            }
+
+            connectionExcel.Close();
+
+            return dataTableRes;
+        }
+
         public static DataTable Request (ConnectionSettings connSett, string query) {
+            DataTable dataTableRes = new DataTable();
+            
             MySqlConnection connectionMySQL;
             MySqlCommand commandMySQL;
             MySqlDataAdapter adapterMySQL;
-
-            DataTable dataTableRes = new DataTable ();
 
             connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
 
@@ -729,27 +783,6 @@ namespace Statistic
             connectionMySQL.Close();
 
             return dataTableRes;
-        }
-
-        public static int getIndexFieldOfName(DataRow dataRow, string nameField)
-        {
-            int iRes = -1;
-
-            return iRes;
-        }
-
-        public static int getIndexFieldOfName(DataTable dataRow, string nameField)
-        {
-            int iRes = -1;
-
-            return iRes;
-        }
-
-        public static int getIndexFieldOfName(DataRow[] dataRows, string nameField)
-        {
-            int iRes = -1;
-
-            return iRes;
         }
     }
 }

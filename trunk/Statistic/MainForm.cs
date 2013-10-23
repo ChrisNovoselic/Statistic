@@ -178,8 +178,8 @@ namespace Statistic
 
                     changeMode.btnClearAll_Click(changeMode, new EventArgs ());
 
-                    changeMode.admin_was_checked = false;
-                    prevStateIsAdmin = changeMode.admin_was_checked;
+                    changeMode.admin_was_checked =
+                    prevStateIsAdmin = false;
 
                     StopWait();
 
@@ -282,6 +282,8 @@ namespace Statistic
                 {
                     if ((! (prevModeComponent == changeMode.getModeTECComponent()))) {
                         this.tec = changeMode.tec;
+
+                        prevStateIsAdmin = false;
 
                         tecViews.Clear ();
                         selectedTecViews.Clear ();

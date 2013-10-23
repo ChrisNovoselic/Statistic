@@ -129,9 +129,11 @@ namespace Statistic
         private System.Windows.Forms.DataGridViewTextBoxColumn Deviation;
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
+        private System.Windows.Forms.Button btnImportExcel;
+        private System.Windows.Forms.Button btnExportExcel;
         //private System.Windows.Forms.Button btnLoadLayout;
         private System.Windows.Forms.DataGridViewButtonColumn ToAll;
-        private System.Windows.Forms.ComboBox cbxTec;
+        private System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
         private MD5CryptoServiceProvider md5;
 
@@ -278,6 +280,8 @@ namespace Statistic
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
+            this.btnImportExcel = new System.Windows.Forms.Button();
+            this.btnExportExcel = new System.Windows.Forms.Button();
             //this.btnLoadLayout = new System.Windows.Forms.Button();
             this.dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.DateHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -287,7 +291,7 @@ namespace Statistic
             this.Deviation = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ToAll = new System.Windows.Forms.DataGridViewButtonColumn();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
-            this.cbxTec = new System.Windows.Forms.ComboBox();
+            this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
             this.gbxDivider = new System.Windows.Forms.GroupBox();
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
@@ -295,9 +299,12 @@ namespace Statistic
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
             //this.Controls.Add(this.btnLoadLayout);
+            this.Controls.Add(this.btnImportExcel);
+            this.Controls.Add(this.btnExportExcel);
+            this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.dgwAdminTable);
             this.Controls.Add(this.mcldrDate);
-            this.Controls.Add(this.cbxTec);
+            this.Controls.Add(this.comboBoxTecComponent);
             this.Controls.Add(this.gbxDivider);
             this.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Location = new System.Drawing.Point(8, 8);
@@ -337,7 +344,7 @@ namespace Statistic
             this.DeviationType,
             this.Deviation,
             this.ToAll});
-            this.dgwAdminTable.Location = new System.Drawing.Point(170, 9);
+            this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
             this.dgwAdminTable.Name = "dgwAdminTable";
             this.dgwAdminTable.RowHeadersVisible = false;
             this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
@@ -420,20 +427,40 @@ namespace Statistic
             //this.btnLoadLayout.UseVisualStyleBackColor = true;
             //this.btnLoadLayout.Click += new System.EventHandler(this.btnLoadLayout_Click);
             // 
+            // btnImportExcel
+            // 
+            this.btnImportExcel.Location = new System.Drawing.Point(10, 284);
+            this.btnImportExcel.Name = "btnImportExcel";
+            this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnImportExcel.TabIndex = 667;
+            this.btnImportExcel.Text = "Импорт из Excel";
+            this.btnImportExcel.UseVisualStyleBackColor = true;
+            this.btnImportExcel.Click += new System.EventHandler(this.btnImportExcel_Click);
+            // 
+            // btnExportExcel
+            // 
+            this.btnExportExcel.Location = new System.Drawing.Point(10, 314);
+            this.btnExportExcel.Name = "btnExportExcel";
+            this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnExportExcel.TabIndex = 668;
+            this.btnExportExcel.Text = "Экспорт в Excel";
+            this.btnExportExcel.UseVisualStyleBackColor = true;
+            this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
+            // 
             // ToAll
             // 
             this.ToAll.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.TO_ALL];
             this.ToAll.Name = arDescStringIndex [(int) Admin.DESC_INDEX.TO_ALL];
             // 
-            // cbxTec
+            // comboBoxTecComponent
             // 
-            this.cbxTec.FormattingEnabled = true;
-            this.cbxTec.Location = new System.Drawing.Point(10, 10);
-            this.cbxTec.Name = "cbxTec";
-            this.cbxTec.Size = new System.Drawing.Size(154, 21);
-            this.cbxTec.TabIndex = 3;
-            this.cbxTec.SelectionChangeCommitted += new System.EventHandler(this.cbxTec_SelectionChangeCommitted);
-            this.cbxTec.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.comboBoxTecComponent.FormattingEnabled = true;
+            this.comboBoxTecComponent.Location = new System.Drawing.Point(10, 10);
+            this.comboBoxTecComponent.Name = "comboBoxTecComponent";
+            this.comboBoxTecComponent.Size = new System.Drawing.Size(154, 21);
+            this.comboBoxTecComponent.TabIndex = 3;
+            this.comboBoxTecComponent.SelectionChangeCommitted += new System.EventHandler(this.comboBoxTecComponent_SelectionChangeCommitted);
+            this.comboBoxTecComponent.DropDownStyle = ComboBoxStyle.DropDownList;
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.ResumeLayout();
         }
@@ -669,7 +696,7 @@ namespace Statistic
             }
         }
 
-        private void cbxTec_SelectionChangeCommitted(object sender, EventArgs e)
+        private void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
             Errors resultSaving;
@@ -690,7 +717,7 @@ namespace Statistic
                         {
                             ClearValues();
                             ClearTables();
-                            oldTecIndex = cbxTec.SelectedIndex;
+                            oldTecIndex = comboBoxTecComponent.SelectedIndex;
                             dateForValues = oldDate;
                             using_date = false;
 
@@ -715,7 +742,7 @@ namespace Statistic
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        cbxTec.SelectedIndex = oldTecIndex;
+                        comboBoxTecComponent.SelectedIndex = oldTecIndex;
                     }
                     break;
                 case DialogResult.No:
@@ -723,7 +750,7 @@ namespace Statistic
                     {
                         ClearValues();
                         ClearTables();
-                        oldTecIndex = cbxTec.SelectedIndex;
+                        oldTecIndex = comboBoxTecComponent.SelectedIndex;
                         dateForValues = oldDate;
                         using_date = false;
 
@@ -743,7 +770,7 @@ namespace Statistic
                     }
                     break;
                 case DialogResult.Cancel:
-                    cbxTec.SelectedIndex = oldTecIndex;
+                    comboBoxTecComponent.SelectedIndex = oldTecIndex;
                     break;
             }
         }
@@ -1176,6 +1203,44 @@ namespace Statistic
         }
         */
 
+        private void btnImportExcel_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog importExcelBook = new OpenFileDialog ();
+            importExcelBook.Title = "Выбор файла с РДГ";
+            importExcelBook.AddExtension = true;
+            importExcelBook.InitialDirectory = m_list_tec[0].m_path_rdg_excel;
+            importExcelBook.Multiselect = false;
+            importExcelBook.Filter = "Книги Excel 97-2003 (*.xls)|*.xls|Книги Excel 2010 (*.xlss)|*.xlsx";
+            importExcelBook.FilterIndex = 0;
+            //importExcelBook.DefaultExt = "";
+            importExcelBook.ShowDialog ();
+
+            //dateForValues
+            DateTime dateTime = mcldrDate.SelectionStart.Date;
+            //allTECComponents[oldTecIndex].tec
+            //allTECComponents[oldTecIndex].TG
+
+            DataTable dataExcel;
+            if (importExcelBook.FileName.Length > 0) {
+                //dataExcel = DbInterface.Request(importExcelBook.FileName, "SELECT * FROM [Лист1$]");
+                dataExcel = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + dateForValues.GetDateTimeFormats () [5] + ".xls",
+                            @"SELECT * FROM [Лист1$]");
+            }
+            else
+                ;
+        }
+
+        private void btnExportExcel_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog exportFolder = new FolderBrowserDialog ();
+            exportFolder.ShowDialog ();
+
+            if (exportFolder.SelectedPath.Length > 0) {
+            }
+            else
+                ;
+        }
+
         private void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
@@ -1279,7 +1344,7 @@ namespace Statistic
             {
                 oldTecIndex = 0;
                 using_date = true;
-                cbxTec.SelectedIndex = oldTecIndex;
+                comboBoxTecComponent.SelectedIndex = oldTecIndex;
 
                 newState = true;
                 states.Clear();
@@ -2447,6 +2512,23 @@ namespace Statistic
 
         public void Activate(bool active)
         {
+            bool bImpExpButtonVisible = false;
+            switch (m_modeTECComponent) {
+                case ChangeMode.MODE_TECCOMPONENT.TEC:
+                    break;
+                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    ; //bImpExpButtonVisible = false;
+                    break;
+                case ChangeMode.MODE_TECCOMPONENT.PC:
+                    bImpExpButtonVisible = true;
+                    break;
+                default:
+                    break;
+            }
+
+            btnImportExcel.Visible =
+            btnExportExcel.Visible = bImpExpButtonVisible;
+
             isActive = active;
         }
 
@@ -2478,7 +2560,7 @@ namespace Statistic
         public void InitTEC (List <TEC> tec) {
             this.m_list_tec = tec;
 
-            cbxTec.Items.Clear ();
+            comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear ();
 
             foreach (TEC t in tec)
@@ -2486,12 +2568,12 @@ namespace Statistic
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
                     {
-                        cbxTec.Items.Add(t.name + " - " + g.name);
+                        comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
                         allTECComponents.Add(g);
                     }
                 else
                 {
-                    cbxTec.Items.Add(t.name);
+                    comboBoxTecComponent.Items.Add(t.name);
                     allTECComponents.Add(t.list_TECComponents[0]);
                 }
             }
@@ -2947,14 +3029,22 @@ namespace Statistic
                 case StatesMachine.PPBRValues:
                     if (response)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
-                    else
+                    else {
                         ErrorReport("Ошибка получения данных плана. Переход в ожидание.");
+
+                        ClearValues ();
+                        ClearTables();
+                    }
                     break;
                 case StatesMachine.AdminValues:
                     if (response)
                         ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
-                    else
+                    else {
                         ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+
+                        ClearValues();
+                        ClearTables();
+                    }
                     break;
                 case StatesMachine.PPBRDates:
                     if (response)

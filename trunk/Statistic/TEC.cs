@@ -21,6 +21,8 @@ namespace Statistic
                     m_strUsedAdminValues, m_strUsedPPBRvsPBR;
         public List <string> m_strNamesField;
 
+        public string m_path_rdg_excel { get; set;}
+
         public List<TECComponent> list_TECComponents;
 
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
