@@ -730,5 +730,26 @@ namespace Statistic
 
             return dataTableRes;
         }
+
+        public static int getIndexFieldOfName(DataRow dataRow, string nameField)
+        {
+            int iRes = -1;
+
+            return iRes;
+        }
+
+        public static int getIndexFieldOfName(DataTable dataRow, string nameField)
+        {
+            int iRes = -1;
+
+            return iRes;
+        }
+
+        public static int getIndexFieldOfName(DataRow[] dataRows, string nameField)
+        {
+            int iRes = -1;
+
+            return iRes;
+        }
     }
 }

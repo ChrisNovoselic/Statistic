@@ -519,10 +519,14 @@ namespace Statistic
                         break;
                     case "DataGridViewButtonColumn":
                         //Удаление GTP/PC
-
-                        fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
+                        m_list_data[comboBoxMode.SelectedIndex].Rows.Remove(m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT][e.RowIndex]);
 
                         //Установка в '0' всех соответствующих GTP/PC ТГ
+                        for (int i = 0; i < m_list_dataRow [(int)INDEX_UICONTROL.DATAGRIDVIEW_TG].Length; i ++) {
+                            deleteTG (i);
+                        }
+
+                        fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
                         break;
                     default:
                         break;
@@ -556,7 +560,7 @@ namespace Statistic
                 case "DataGridViewTextBoxColumn":
                     break;
                 case "DataGridViewButtonColumn":
-                    deleteTG((short)getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TG));
+                    deleteTG(e.RowIndex);
 
                     fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
                     fillComboBoxTGAdd();
@@ -566,8 +570,20 @@ namespace Statistic
             }
         }
 
-        private void deleteTG (short id_tg) {
+        private void deleteTG (int sel_indx) {
             //Установка в '0' поля в соответствии с 'comboBoxMode.SelectedIndex'
+            switch (comboBoxMode.SelectedIndex) {
+                case (int)ChangeMode.MODE_TECCOMPONENT.TEC:
+                    m_list_data[comboBoxMode.Items.Count].Rows.Remove(m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG][sel_indx]);
+                    break;
+                case (int)ChangeMode.MODE_TECCOMPONENT.GTP:
+                case (int)ChangeMode.MODE_TECCOMPONENT.PC:
+                    int indx_col = m_list_data[comboBoxMode.Items.Count].Columns["ID_" + ChangeMode.getPrefixMode(comboBoxMode.SelectedIndex)].Ordinal;
+                    m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG][sel_indx][indx_col] = 0;
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void dataGridViewTEC_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -632,13 +648,18 @@ namespace Statistic
 
         private void buttonTECComponentAdd_Click(object sender, EventArgs e)
         {
-            
+            m_list_data[comboBoxMode.SelectedIndex].Rows.Add();
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = getIdNext ((ChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID_TEC"] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC);
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["NAME_SHR"] = m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text;
+
             fillDataGridView (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
         }
 
         private void buttonTGAdd_Click(object sender, EventArgs e)
         {
-
+            m_list_dataRow_comboBoxAddTG [comboBoxTGAdd.SelectedIndex] ["ID_" + ChangeMode.getPrefixMode (comboBoxMode.SelectedIndex)] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
+            
             fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
             fillComboBoxTGAdd();
         }
