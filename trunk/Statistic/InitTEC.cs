@@ -95,7 +95,10 @@ namespace Statistic
                         tec[i].list_TECComponents[j].TG.Add(new TG(tec[i].list_TECComponents[j]));
                         tec[i].list_TECComponents[j].TG[k].name = list_tg.Rows[k]["NAME_SHR"].ToString();
                         tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32 (list_tg.Rows[k]["ID"]);
-                        tec[i].list_TECComponents[j].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                        if (! (list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                            tec[i].list_TECComponents[j].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                        else
+                            ;
                     }
                 }
             }

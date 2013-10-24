@@ -234,6 +234,7 @@ namespace Statistic
             PPBRValues,
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
+            RDGExcelValues,
             SaveAdminValues, //Сохранение административных данных
             SavePPBRValues, //Сохранение PPBR
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
@@ -1672,6 +1673,9 @@ namespace Statistic
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, m_modeTECComponent));
         }
 
+        private void GetRDGExcelValuesRequest () {
+        }
+
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             bool bRes = true;
@@ -1764,6 +1768,13 @@ namespace Statistic
             }
 
             return true;
+        }
+
+        private bool GetRDGExcelValuesResponse(DataTable tableRDGExcel, DateTime date)
+        {
+            bool bRes = false;
+
+            return bRes;
         }
 
         private void GetAdminDatesRequest(DateTime date)
@@ -2723,6 +2734,10 @@ namespace Statistic
                     oldDate = dateForValues.Date;
                     this.BeginInvoke(delegateCalendarSetDate, oldDate);
                     break;
+                case StatesMachine.RDGExcelValues:
+                    ActionReport("Импорт РДГ из Excel.");
+                    GetRDGExcelValuesRequest();
+                    break;
                 case StatesMachine.PPBRDates:
                     if (serverTime.Date > dateForValues.Date)
                     {
@@ -2798,6 +2813,8 @@ namespace Statistic
 
         private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
         {
+            bool bRes = false;
+            
             if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (! (m_indxDbInterfaceCurrent < 0)))
             {
                 switch (state)
@@ -2805,23 +2822,29 @@ namespace Statistic
                     case StatesMachine.CurrentTime:
                     case StatesMachine.PPBRValues:
                     case StatesMachine.AdminValues:
+
+                    case StatesMachine.RDGExcelValues:
+
                     case StatesMachine.PPBRDates:
                     case StatesMachine.AdminDates:                    
                     case StatesMachine.SaveAdminValues:
                     case StatesMachine.SavePPBRValues:
                     //case StatesMachine.UpdateValuesPPBR:
                     case StatesMachine.GetPass:
-                        return GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                        bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                        break;
                     case StatesMachine.SetPassInsert:
                     case StatesMachine.SetPassUpdate:
                     //case StatesMachine.LayoutGet:
                     //case StatesMachine.LayoutSet:
-                        return GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
+                        bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
+                        break;
                     default:
                         error = true;
                         table = null;
                         
-                        return false;
+                        bRes = false;
+                        break;
                 }
             }
             else {
@@ -2830,8 +2853,10 @@ namespace Statistic
                 error = true;
                 table = null;
 
-                return false;
+                bRes = false;
             }
+
+            return bRes;
         }
 
         private bool StateResponse(StatesMachine state, DataTable table)
@@ -2861,6 +2886,16 @@ namespace Statistic
                     break;
                 case StatesMachine.AdminValues:
                     result = GetAdminValuesResponse(table, dateForValues);
+                    if (result)
+                    {
+                        this.BeginInvoke(delegateFillData, oldDate);
+                    }
+                    else
+                        ;
+                    break;
+                case StatesMachine.RDGExcelValues:
+                    ActionReport("Импорт РДГ из Excel.");
+                    result = GetRDGExcelValuesResponse(table, dateForValues);
                     if (result)
                     {
                         this.BeginInvoke(delegateFillData, oldDate);
@@ -3000,6 +3035,8 @@ namespace Statistic
 
         private void StateErrors(StatesMachine state, bool response)
         {
+            bool bClear = false;
+            
             switch (state)
             {
                 case StatesMachine.CurrentTime:
@@ -3032,8 +3069,7 @@ namespace Statistic
                     else {
                         ErrorReport("Ошибка получения данных плана. Переход в ожидание.");
 
-                        ClearValues ();
-                        ClearTables();
+                        bClear = true;
                     }
                     break;
                 case StatesMachine.AdminValues:
@@ -3042,8 +3078,17 @@ namespace Statistic
                     else {
                         ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
 
-                        ClearValues();
-                        ClearTables();
+                        bClear = true;
+                    }
+                    break;
+                case StatesMachine.RDGExcelValues:
+                    if (response)
+                        ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
+                    else
+                    {
+                        ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+
+                        bClear = true;
                     }
                     break;
                 case StatesMachine.PPBRDates:
@@ -3182,6 +3227,13 @@ namespace Statistic
                 //    }
                 //    break;
             }
+
+            if (bClear) {
+                ClearValues();
+                ClearTables();
+            }
+            else
+                ;
         }
 
         private void TecView_ThreadFunction(object data)
