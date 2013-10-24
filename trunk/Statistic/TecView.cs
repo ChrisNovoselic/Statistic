@@ -3265,18 +3265,73 @@ namespace Statistic
 
         private bool GetAdminValuesResponse(DataTable table_in)
         {
-            //DataTable table = table_in.Copy();
+            DataTable table_in_restruct = new DataTable ();
             //table.Merge(m_tablePBRResponse, false);
-            
+            List <DataColumn> cols_data = new List <DataColumn> ();
+            DataRow [] dataRows;
+
             DateTime date = dtprDate.Value.Date;
             int hour;
 
             double currPBRe;
             int offsetPrev = -1,
             tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
-            int offsetUDG, offsetPlan, offsetLayout;
+            int i = -1, j = -1,
+                offsetUDG, offsetPlan, offsetLayout;
 
             lastLayout = "---";
+
+            for (i = 0; i < table_in.Columns.Count; i ++) {
+                if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
+                {
+                    //Преобразование таблицы
+                    break;
+                }
+                else
+                    ;
+            }
+
+            if (i < table_in.Columns.Count)
+            {
+                //Преобразование таблицы
+                for (i = 0; i < table_in.Columns.Count; i++)
+                {
+                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT")) && (! (table_in.Columns[i].ColumnName.IndexOf ("DATE") > -1)))
+                    //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
+                    {
+                        cols_data.Add(table_in.Columns [i]);
+                    }
+                    else
+                        if (table_in.Columns[i].ColumnName.IndexOf("DATE") > -1)
+                        {
+                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].GetType ());
+                        }
+                        else
+                            ;
+                }
+
+                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                {
+                    for (j = 0; j < cols_data.Count; j++)
+                    {
+                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].GetType());
+                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += tec.list_TECComponents [i].m_id;
+                    }
+                }
+
+                List<DataRow[]> listDataRows = new List<DataRow[]>();
+
+                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                {
+                    dataRows = table_in.Select("ID_COMPONENT=" + tec.list_TECComponents[i].m_id);
+                    listDataRows.Add(new DataRow[dataRows.Length]);
+                    dataRows.CopyTo(listDataRows[i], 0);
+                }
+
+                table_in.Clear ();
+            }
+            else
+                ;
 
             //switch (tec.type ()) {
             //    case TEC.TEC_TYPE.COMMON:
@@ -3294,7 +3349,7 @@ namespace Statistic
                         offsetLayout = offsetPlan + tec.list_TECComponents.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
+                        for (i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
@@ -3304,11 +3359,11 @@ namespace Statistic
                                     if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
-                                        int j = 0;
-                                        foreach (TECComponent g in tec.list_TECComponents)
+                                        //foreach (TECComponent g in tec.list_TECComponents)
+                                        for (j = 0; j < tec.list_TECComponents.Count; j ++)
                                         {
                                             valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
-                                            j++;
+                                            //j++;
                                         }
                                     }
                                 }
@@ -3334,7 +3389,7 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < tableRowsCount; i++)
+                        for (i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
@@ -3349,9 +3404,11 @@ namespace Statistic
                                     else
                                         if (hour == 0)
                                             continue;
+                                        else
+                                            ;
 
-                                    int j = 0;
-                                    foreach (TECComponent g in tec.list_TECComponents)
+                                    //foreach (TECComponent g in tec.list_TECComponents)
+                                    for (j = 0; j < tec.list_TECComponents.Count; j++)
                                     {
                                         try
                                         {
@@ -3379,7 +3436,7 @@ namespace Statistic
                                         catch
                                         {
                                         }
-                                        j++;
+                                        //j++;
                                     }
 
                                     string tmp = "";
@@ -3411,8 +3468,8 @@ namespace Statistic
                                         else
                                             ;
 
-                                    int j = 0;
-                                    foreach (TECComponent g in tec.list_TECComponents)
+                                    //foreach (TECComponent g in tec.list_TECComponents)
+                                    for (j = 0; j < tec.list_TECComponents.Count; j++)
                                     {
                                         try
                                         {
@@ -3436,7 +3493,7 @@ namespace Statistic
                                         catch
                                         {
                                         }
-                                        j++;
+                                        //j++;
                                     }
                                     
                                     string tmp = "";
@@ -3456,9 +3513,9 @@ namespace Statistic
                             }
                         }
 
-                        for (int i = 0; i < 24; i++)
+                        for (i = 0; i < 24; i++)
                         {
-                            for (int j = 0; j < tec.list_TECComponents.Count; j++)
+                            for (j = 0; j < tec.list_TECComponents.Count; j++)
                             {
                                 valuesHours.valuesPBR[i] += valuesPBR[j, i];
                                 if (i == 0)
@@ -3504,7 +3561,7 @@ namespace Statistic
                         offsetLayout = offsetPlan + 1;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (int i = 0; i < tableRowsCount && offsetPrev < 0; i++)
+                        for (i = 0; i < tableRowsCount && offsetPrev < 0; i++)
                         {
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
@@ -3538,7 +3595,7 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (int i = 0; i < tableRowsCount; i++)
+                        for (i = 0; i < tableRowsCount; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
@@ -3641,7 +3698,7 @@ namespace Statistic
                             }
                         }
 
-                        for (int i = 0; i < 24; i++)
+                        for (i = 0; i < 24; i++)
                         {
                             valuesHours.valuesPBR[i] = valuesPBR[i];
                             if (i == 0)
@@ -4041,7 +4098,7 @@ namespace Statistic
             if (hour == 24)
                 hour = 23;
 
-            for (int i = 0; i < 21; i++)
+            for (i = 0; i < 21; i++)
             {
                 valuesMins.valuesPBR[i] = valuesHours.valuesPBR[hour];
                 valuesMins.valuesPBRe[i] = valuesHours.valuesPBRe[hour];

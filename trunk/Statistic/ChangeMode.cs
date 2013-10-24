@@ -19,7 +19,9 @@ namespace Statistic
 
         private ConnectionSettings m_connSet;
 
-        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, /*, BLOCK*/ UNKNOWN };
+        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
+        private const MODE_TECCOMPONENT m_mode_TECComponentStart = MODE_TECCOMPONENT.GTP;
+        private const MODE_TECCOMPONENT m_mode_TECComponentEnd = MODE_TECCOMPONENT.TG;
 
         public ChangeMode(ConnectionSettings connSet)
         {
@@ -32,7 +34,7 @@ namespace Statistic
             closing = false;
         }
 
-        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex + (int)MODE_TECCOMPONENT.GTP; }
+        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex + (int)m_mode_TECComponentStart; }
 
         public static string getPrefixMode(int indx)
         {
@@ -42,7 +44,7 @@ namespace Statistic
         }
 
         public static string getNameMode (Int16 indx) {
-            string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", /*"Поблочно",*/ "Неизвестно"};
+            string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", "Поблочно", "Неизвестно"};
 
             return nameModes[indx];
         }
@@ -59,6 +61,8 @@ namespace Statistic
             int index_tec = 0, index_gtp = 0;
 
             clbMode.Items.Clear ();
+
+            //comboBoxModeTECComponent.Items.Clear ();            
 
             this.tec = new InitTEC(m_connSet, (short) getModeTECComponent ()).tec;
 

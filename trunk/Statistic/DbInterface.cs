@@ -45,6 +45,7 @@ namespace Statistic
         private Thread dbThread;
         private Semaphore sem;
         private volatile bool threadIsWorking;
+        private string m_ThreadName;
 
         private DbConnection m_dbConnection;
         private DbCommand m_dbCommand;
@@ -52,13 +53,15 @@ namespace Statistic
 
         public ConnectionSettings connectionSettings;
         private bool needReconnect;
-        private DbInterfaceType connectionType;
+        private DbInterfaceType m_connectionType;
         private bool connected;
 
-        public DbInterface(DbInterfaceType type)
+        public DbInterface(DbInterfaceType type, string name)
         {
+            m_ThreadName = name;
+            
             //maxListeners = maxListenersAllowed;
-            connectionType = type;
+            m_connectionType = type;
             lockListeners = new object();
             lockConnectionSettings = new object();
             
@@ -69,7 +72,7 @@ namespace Statistic
             needReconnect = false;
             connectionSettings = new ConnectionSettings();
 
-            switch (connectionType)
+            switch (m_connectionType)
             {
                 case DbInterfaceType.MySQL:
                     m_dbConnection = new MySqlConnection();
@@ -79,7 +82,6 @@ namespace Statistic
                     m_dbCommand.CommandType = CommandType.Text;
 
                     m_dbAdapter = new MySqlDataAdapter();
-                    m_dbAdapter.SelectCommand = m_dbCommand;
                     break;
                 case DbInterfaceType.MSSQL:
                     m_dbConnection = new SqlConnection();
@@ -89,7 +91,6 @@ namespace Statistic
                     m_dbCommand.CommandType = CommandType.Text;
 
                     m_dbAdapter = new SqlDataAdapter();
-                    m_dbAdapter.SelectCommand = m_dbCommand;
                     break;
                 case DbInterfaceType.MSExcel:
                     m_dbConnection = new OleDbConnection();
@@ -98,15 +99,16 @@ namespace Statistic
                     m_dbCommand.Connection = m_dbConnection;
                     m_dbCommand.CommandType = CommandType.Text;
 
-                    m_dbAdapter = new SqlDataAdapter();
-                    m_dbAdapter.SelectCommand = m_dbCommand;
+                    m_dbAdapter = new OleDbDataAdapter();
                     break;
                 default:
                     break;
             }
 
+            m_dbAdapter.SelectCommand = m_dbCommand;
+
             dbThread = new Thread(new ParameterizedThreadStart(DbInterface_ThreadFunction));
-            dbThread.Name = "Интерфейс БД";
+            dbThread.Name = m_ThreadName;
             dbThread.IsBackground = true;
 
             sem = new Semaphore(1, 1);
@@ -319,33 +321,9 @@ namespace Statistic
         {
             if (connectionSettings.Validate() != ConnectionSettings.ConnectionSettingsError.NoError)
                 return false;
-            if (connectionType == DbInterfaceType.MySQL)
-                return ConnectMySQL();
-            if (connectionType == DbInterfaceType.MSSQL)
-                return ConnectMSSQL();
-            return false;
-        }
+            else
+                ;
 
-        private bool Disconnect()
-        {
-            if (connectionType == DbInterfaceType.MySQL)
-                return DisconnectMySQL();
-            if (connectionType == DbInterfaceType.MSSQL)
-                return DisconnectMSSQL();
-            return false;
-        }
-
-        private bool GetData(DataTable table, string query)
-        {
-            if (connectionType == DbInterfaceType.MySQL)
-                return GetDataMySQL(table, query);
-            if (connectionType == DbInterfaceType.MSSQL)
-                return GetDataMSSQL(table, query);
-            return false;
-        }
-
-        private bool ConnectMySQL()
-        {
             bool result =false, bRes = false;
 
             if (m_dbConnection.State == ConnectionState.Open)
@@ -383,11 +361,32 @@ namespace Statistic
             {
                 if (needReconnect) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
                     return false;
+                else
+                    ;
+
                 if (connectionSettings.ignore)
                     return false;
-                m_dbConnection.ConnectionString = connectionSettings.GetConnectionStringMySQL();
+                else
+                    ;
+                
+                //string connStr = string.Empty;
+                switch (m_connectionType) {
+                    case DbInterfaceType.MSSQL:
+                        //connStr = connectionSettings.GetConnectionStringMSSQL();
+                        ((SqlConnection)m_dbConnection).ConnectionString = connectionSettings.GetConnectionStringMSSQL();
+                        break;
+                    case DbInterfaceType.MySQL:
+                        //connStr = connectionSettings.GetConnectionStringMySQL();
+                        ((MySqlConnection)m_dbConnection).ConnectionString = connectionSettings.GetConnectionStringMySQL();
+                        break;
+                    case DbInterfaceType.MSExcel:
+                        //((OleDbConnection)m_dbConnection).ConnectionString = ConnectionSettings.GetConnectionStringExcel ();
+                        break;
+                    default:
+                        break;
+                }
+                //m_dbConnection.ConnectionString = connStr;
             }
-            //m_dbConnection.ConnectionString = @"Server=localhost;Database=Statistic;User id=root;Password=;";
 
             try
             {
@@ -441,7 +440,7 @@ namespace Statistic
             return result;
         }
 
-        private bool DisconnectMySQL()
+        private bool Disconnect()
         {
             if (m_dbConnection.State == ConnectionState.Closed)
                 return true; 
@@ -462,7 +461,7 @@ namespace Statistic
                 MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
 
             }
-            catch (MySqlException e)
+            catch (DbException e)
             {
                 MainForm.log.LogLock();
                 MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
@@ -478,7 +477,7 @@ namespace Statistic
             return result;
         }
 
-        private bool GetDataMySQL(DataTable table, string query)
+        private bool GetData(DataTable table, string query)
         {
             if (m_dbConnection.State != ConnectionState.Open)
                 return false;
@@ -494,165 +493,7 @@ namespace Statistic
                 m_dbAdapter.Fill(table);
                 result = true;
             }
-            catch (MySqlException e)
-            {
-                needReconnect = true;
-                MainForm.log.LogLock();
-                string s;
-                int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
-                else
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
-
-                MainForm.log.LogToFile("Ошибка получения данных", true, true, false);
-                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
-                MainForm.log.LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                MainForm.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                MainForm.log.LogToFile(e.ToString(), false, false, false);
-                MainForm.log.LogUnlock();
-            }
-            catch
-            {
-                needReconnect = true;
-                MainForm.log.LogLock();
-                string s;
-                int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
-                else
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
-
-                MainForm.log.LogToFile("Ошибка получения данных", true, true, false);
-                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
-                MainForm.log.LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                MainForm.log.LogUnlock();
-            }
-
-            return result;
-        }
-
-        private bool ConnectMSSQL()
-        {
-            if (m_dbConnection.State == ConnectionState.Open)
-                return true;
-            if (m_dbConnection.State != ConnectionState.Closed)
-                return false;
-
-            bool result = false;
-
-            lock (lockConnectionSettings)
-            {
-                if (needReconnect) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
-                    return false;
-                m_dbConnection.ConnectionString = connectionSettings.GetConnectionStringMSSQL();
-            }
-            //m_dbConnection.ConnectionString = @"Data Source=.\SQLEXPRESS;AttachDbFilename=H:\Work\НовосибирскЭнерго\" + name + @"\Piramida2000-" + name + @".MDF;Integrated Security=True;Connect Timeout=30;User Instance=True";
-
-            try
-            {
-                m_dbConnection.Open();
-                result = true;
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
-            }
-            catch (SqlException e)
-            {
-                MainForm.log.LogLock();
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-
-                MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
-                MainForm.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                MainForm.log.LogToFile(e.ToString(), false, false, false);
-                MainForm.log.LogUnlock();
-            }
-            catch
-            {
-                MainForm.log.LogLock();
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-
-                MainForm.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                MainForm.log.LogToFile("Строка соединения " + s, false, false, false);
-                MainForm.log.LogUnlock();
-            }
-
-            return result;
-        }
-
-        private bool DisconnectMSSQL()
-        {
-            if (m_dbConnection.State == ConnectionState.Closed)
-                return true;
-
-            bool result = false;
-
-            try
-            {
-                m_dbConnection.Close();
-                result = true;
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-                MainForm.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
-            }
-            catch (SqlException e)
-            {
-                MainForm.log.LogLock();
-                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
-                MainForm.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                MainForm.log.LogToFile(e.ToString(), false, false, false);
-                MainForm.log.LogUnlock();
-            }
-            catch
-            {
-                MainForm.log.LogToFile("Ошибка закрытия соединения", true, true, false);
-            }
-
-            return result;
-        }
-
-        private bool GetDataMSSQL(DataTable table, string query)
-        {
-            if (m_dbConnection.State != ConnectionState.Open)
-                return false;
-            bool result = false;
-
-            m_dbCommand.CommandText = query;
-
-            table.Reset();
-            table.Locale = System.Globalization.CultureInfo.InvariantCulture;
-
-            try
-            {
-                m_dbAdapter.Fill(table);
-                result = true;
-            }
-            catch (SqlException e)
+            catch (DbException e)
             {
                 needReconnect = true;
                 MainForm.log.LogLock();

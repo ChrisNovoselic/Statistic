@@ -225,7 +225,8 @@ namespace Statistic
         int m_indxDbInterfaceConfigDB,
             m_listenerIdConfigDB;
 
-        DataTable m_tablePPBRValuesResponse;
+        DataTable m_tablePPBRValuesResponse,
+                    m_tableRDGExcelValuesResponse;
 
         private enum StatesMachine
         {
@@ -702,6 +703,8 @@ namespace Statistic
             DialogResult result;
             Errors resultSaving;
 
+            bool bRequery = false;
+
             if (WasChanged())
             {
                 result = MessageBox.Show(this, "Данные были изменены но не сохранялись.\nЕсли Вы хотите сохранить изменения, нажмите \"да\".\nЕсли Вы не хотите сохранять изменения, нажмите \"нет\".\nДля отмены действия нажмите \"отмена\".", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
@@ -714,28 +717,7 @@ namespace Statistic
                 case DialogResult.Yes:
                     if ((resultSaving = SaveChanges()) == Errors.NoError)
                     {
-                        lock (lockValue)
-                        {
-                            ClearValues();
-                            ClearTables();
-                            oldTecIndex = comboBoxTecComponent.SelectedIndex;
-                            dateForValues = oldDate;
-                            using_date = false;
-
-                            newState = true;
-                            states.Clear();
-                            states.Add(StatesMachine.CurrentTime);
-                            states.Add(StatesMachine.PPBRValues);
-                            states.Add(StatesMachine.AdminValues);
-
-                            try
-                            {
-                                sem.Release(1);
-                            }
-                            catch
-                            {
-                            }
-                        }
+                        bRequery = true;
                     }
                     else
                     {
@@ -743,37 +725,46 @@ namespace Statistic
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
                         comboBoxTecComponent.SelectedIndex = oldTecIndex;
                     }
                     break;
                 case DialogResult.No:
-                    lock (lockValue)
-                    {
-                        ClearValues();
-                        ClearTables();
-                        oldTecIndex = comboBoxTecComponent.SelectedIndex;
-                        dateForValues = oldDate;
-                        using_date = false;
-
-                        newState = true;
-                        states.Clear();
-                        states.Add(StatesMachine.CurrentTime);
-                        states.Add(StatesMachine.PPBRValues);
-                        states.Add(StatesMachine.AdminValues);
-
-                        try
-                        {
-                            sem.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    bRequery = true;
                     break;
                 case DialogResult.Cancel:
                     comboBoxTecComponent.SelectedIndex = oldTecIndex;
                     break;
             }
+
+            if (bRequery) {
+                lock (lockValue)
+                {
+                    ClearValues();
+                    ClearTables();
+                    oldTecIndex = comboBoxTecComponent.SelectedIndex;
+                    dateForValues = oldDate;
+                    using_date = true; //false
+
+                    newState = true;
+                    states.Clear();
+                    states.Add(StatesMachine.CurrentTime);
+                    states.Add(StatesMachine.PPBRValues);
+                    states.Add(StatesMachine.AdminValues);
+
+                    try
+                    {
+                        sem.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            else
+                ;
+
+            visibleControlRDGExcel ();
         }
 
         private void btnSet_Click(object sender, EventArgs e)
@@ -1206,29 +1197,45 @@ namespace Statistic
 
         private void btnImportExcel_Click(object sender, EventArgs e)
         {
-            OpenFileDialog importExcelBook = new OpenFileDialog ();
-            importExcelBook.Title = "Выбор файла с РДГ";
-            importExcelBook.AddExtension = true;
-            importExcelBook.InitialDirectory = m_list_tec[0].m_path_rdg_excel;
-            importExcelBook.Multiselect = false;
-            importExcelBook.Filter = "Книги Excel 97-2003 (*.xls)|*.xls|Книги Excel 2010 (*.xlss)|*.xlsx";
-            importExcelBook.FilterIndex = 0;
-            //importExcelBook.DefaultExt = "";
-            importExcelBook.ShowDialog ();
+            //OpenFileDialog importExcelBook = new OpenFileDialog ();
+            //importExcelBook.Title = "Выбор файла с РДГ";
+            //importExcelBook.AddExtension = true;
+            //importExcelBook.InitialDirectory = m_list_tec[0].m_path_rdg_excel;
+            //importExcelBook.Multiselect = false;
+            //importExcelBook.Filter = "Книги Excel 97-2003 (*.xls)|*.xls|Книги Excel 2010 (*.xlss)|*.xlsx";
+            //importExcelBook.FilterIndex = 0;
+            ////importExcelBook.DefaultExt = "";
+            //importExcelBook.ShowDialog ();
 
-            //dateForValues
-            DateTime dateTime = mcldrDate.SelectionStart.Date;
-            //allTECComponents[oldTecIndex].tec
-            //allTECComponents[oldTecIndex].TG
+            //DataTable dataExcel;
+            //if (importExcelBook.FileName.Length > 0) {
+            //    //dataExcel = DbInterface.Request(importExcelBook.FileName, "SELECT * FROM [Лист1$]");
+            //    dataExcel = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + dateForValues.GetDateTimeFormats () [5] + ".xls",
+            //                @"SELECT * FROM [Лист1$]");
+            //}
+            //else
+            //    ;
 
-            DataTable dataExcel;
-            if (importExcelBook.FileName.Length > 0) {
-                //dataExcel = DbInterface.Request(importExcelBook.FileName, "SELECT * FROM [Лист1$]");
-                dataExcel = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + dateForValues.GetDateTimeFormats () [5] + ".xls",
-                            @"SELECT * FROM [Лист1$]");
+            lock (lockValue)
+            {
+                ClearValues ();
+                ClearTables();
+
+                dateForValues = oldDate;
+                using_date = false;
+
+                newState = true;
+                states.Clear();
+                states.Add (StatesMachine.RDGExcelValues);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
             }
-            else
-                ;
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
@@ -1674,6 +1681,8 @@ namespace Statistic
         }
 
         private void GetRDGExcelValuesRequest () {
+            m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + mcldrDate.SelectionStart.GetDateTimeFormats()[4] + ".xls",
+                            @"SELECT * FROM [Лист1$]");
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -1693,6 +1702,23 @@ namespace Statistic
 
             int i = -1, j = -1, k = -1,
                 hour = -1;
+
+            //Удаление столбцов 'ID_COMPONENT'
+            for (i = 0; i < arTable.Length; i++) {
+                /*
+                for (j = 0; j < arTable[i].Columns.Count; j++)
+                {
+                    if (arTable[i].Columns [j].ColumnName == "ID_COMPONENT") {
+                        arTable[i].Columns.RemoveAt (j);
+                        break;
+                    }
+                    else
+                        ;
+                }
+                */
+                try { arTable[i].Columns.Remove("ID_COMPONENT"); }
+                catch (ArgumentException e) { }
+            }
 
             if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
                 arIndexTables[0] = 1;
@@ -1770,9 +1796,40 @@ namespace Statistic
             return true;
         }
 
-        private bool GetRDGExcelValuesResponse(DataTable tableRDGExcel, DateTime date)
+        private bool GetRDGExcelValuesResponse()
         {
             bool bRes = false;
+            int i = -1, j = -1,
+                iTimeZoneOffset = allTECComponents[oldTecIndex].tec.m_timezone_offset_msc,
+                rowRDGExcelStart = 1 + iTimeZoneOffset,
+                hour = -1;
+
+            if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+
+            if (bRes) {
+                for (i = rowRDGExcelStart; i < 24 + 1; i++)
+                {
+                    hour = i - iTimeZoneOffset;
+
+                    for (j = 0; j < allTECComponents[oldTecIndex].TG.Count; j ++)
+                        values.plan[hour - 1] += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG [j].m_indx_col_rdg_excel - 1];
+                    values.recommendations[hour - 1] = 0;
+                    values.diviationPercent[hour - 1] = false;
+                    values.diviation[hour - 1] = 0;
+                }
+
+                /*for (i = hour; i < 24 + 1; i++)
+                {
+                    hour = i;
+
+                    values.plan[hour - 1] = 0;
+                    values.recommendations[hour - 1] = 0;
+                    values.diviationPercent[hour - 1] = false;
+                    values.diviation[hour - 1] = 0;
+                }*/
+            }
+            else
+                ;
 
             return bRes;
         }
@@ -2521,24 +2578,32 @@ namespace Statistic
             stsStrip.BeginInvoke(delegateEventUpdate);
         }
 
-        public void Activate(bool active)
-        {
+        private void visibleControlRDGExcel () {
             bool bImpExpButtonVisible = false;
-            switch (m_modeTECComponent) {
-                case ChangeMode.MODE_TECCOMPONENT.TEC:
-                    break;
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
-                    ; //bImpExpButtonVisible = false;
-                    break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
-                    bImpExpButtonVisible = true;
-                    break;
-                default:
-                    break;
-            }
+            if (allTECComponents[oldTecIndex].tec.m_path_rdg_excel.Length > 0)
+                switch (m_modeTECComponent)
+                {
+                    case ChangeMode.MODE_TECCOMPONENT.TEC:
+                        break;
+                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        ; //bImpExpButtonVisible = false;
+                        break;
+                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                        bImpExpButtonVisible = true;
+                        break;
+                    default:
+                        break;
+                }
+            else
+                ;
 
             btnImportExcel.Visible =
             btnExportExcel.Visible = bImpExpButtonVisible;
+        }
+
+        public void Activate(bool active)
+        {
+            visibleControlRDGExcel ();
 
             isActive = active;
         }
@@ -2596,7 +2661,7 @@ namespace Statistic
             m_listListenerIdCurrent.Clear();
             m_indxDbInterfaceCurrent = -1;
 
-            m_listDbInterfaces.Add(new DbInterface(DbInterface.DbInterfaceType.MySQL));
+            m_listDbInterfaces.Add(new DbInterface(DbInterface.DbInterfaceType.MySQL, "Интерфейс MySQL-БД: Конфигурация"));
             m_listListenerIdCurrent.Add(-1);
 
             m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
@@ -2630,7 +2695,7 @@ namespace Statistic
                     }
 
                     if (isAlready == false) {
-                        m_listDbInterfaces.Add (new DbInterface (DbInterface.DbInterfaceType.MySQL));
+                        m_listDbInterfaces.Add(new DbInterface(DbInterface.DbInterfaceType.MySQL, "Интерфейс MySQL-БД: Администратор"));
                         m_listListenerIdCurrent.Add (-1);
 
                         t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
@@ -2819,12 +2884,15 @@ namespace Statistic
             {
                 switch (state)
                 {
+                    case StatesMachine.RDGExcelValues:
+                        error = false;
+                        table = null;
+
+                        bRes = true;
+                        break;
                     case StatesMachine.CurrentTime:
                     case StatesMachine.PPBRValues:
                     case StatesMachine.AdminValues:
-
-                    case StatesMachine.RDGExcelValues:
-
                     case StatesMachine.PPBRDates:
                     case StatesMachine.AdminDates:                    
                     case StatesMachine.SaveAdminValues:
@@ -2895,7 +2963,8 @@ namespace Statistic
                     break;
                 case StatesMachine.RDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
-                    result = GetRDGExcelValuesResponse(table, dateForValues);
+                    //result = GetRDGExcelValuesResponse(table, dateForValues);
+                    result = GetRDGExcelValuesResponse();
                     if (result)
                     {
                         this.BeginInvoke(delegateFillData, oldDate);
@@ -3082,14 +3151,9 @@ namespace Statistic
                     }
                     break;
                 case StatesMachine.RDGExcelValues:
-                    if (response)
-                        ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
-                    else
-                    {
-                        ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
+                    ErrorReport("Ошибка импорта РДГ из книги Excel. Переход в ожидание.");
 
-                        bClear = true;
-                    }
+                    // ???
                     break;
                 case StatesMachine.PPBRDates:
                     if (response)

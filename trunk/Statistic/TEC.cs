@@ -21,6 +21,7 @@ namespace Statistic
                     m_strUsedAdminValues, m_strUsedPPBRvsPBR;
         public List <string> m_strNamesField;
 
+        public int m_timezone_offset_msc { get; set; }
         public string m_path_rdg_excel { get; set;}
 
         public List<TECComponent> list_TECComponents;
@@ -97,7 +98,7 @@ namespace Statistic
         {
             if (used == 0)
             {
-                m_dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL);
+                m_dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, "Интерфейс MSSQL-БД: " + name);
                 m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
                 m_dbInterface.Start();
                 m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
@@ -217,6 +218,9 @@ namespace Statistic
 
                     strRes += @", " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
 
+                    //Такого столбца для ГТП нет
+                    strRes += @", " + "ID_COMPONENT";
+
                     strRes += @" " + @"FROM " +
                         strUsedPPBRvsPBR +
                         @" WHERE " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
@@ -224,8 +228,14 @@ namespace Statistic
 
                         @" AND ID_COMPONENT IN (" + selectPBR.Split (';')[1] + ")" +
 
-                        @" AND MINUTE(" + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
-                        @" ORDER BY DATE_PBR" +
+                        @" AND MINUTE(" + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
+                    /*
+                    if (selectPBR.Split(';')[1].Split (',').Length > 1)
+                        strRes += @" GROUP BY DATE_PBR";
+                    else
+                        ;
+                    */
+                    strRes += @" ORDER BY DATE_PBR" +
                         @" ASC";
                     break;
                 default:
@@ -327,33 +337,42 @@ namespace Statistic
                     string strUsedAdminValues = @"AdminValuesOfID";
 
                     strRes = @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
-                                selectAdmin.Split (';') [0] +
+                        selectAdmin.Split (';') [0] +
 
-                                @" " + @"FROM " + strUsedAdminValues +
+                        //Такого столбца для ГТП нет
+                        @", " + "ID_COMPONENT" +
 
-                                @" " + @"WHERE" +
-                                @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
+                        @" " + @"FROM " + strUsedAdminValues +
 
-                                @" " + @"AND " +
-                                strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                                @" " + @"AND " +
-                                strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        @" " + @"WHERE" +
+                        @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
 
-                                @" " + @"UNION " +
-                                @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
+                        @" " + @"AND " +
+                        strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        @" " + @"AND " +
+                        strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'";
+                    /*
+                    strRes += @" " + @"UNION " +
+                        @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
 
-                                selectAdmin.Split (';') [0] +
+                        selectAdmin.Split (';') [0] +
 
-                                @" " + @"FROM " + strUsedAdminValues +
+                        @" " + @"FROM " + strUsedAdminValues +
 
-                                @" " + @"WHERE" +
-                                @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
+                        @" " + @"WHERE" +
+                        @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
 
-                                @" " + @"AND " +
-                                strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " IS NULL" +
-
-                                @" " + @"ORDER BY DATE_ADMIN" +
-                                @" " + @"ASC";
+                        @" " + @"AND " +
+                        strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " IS NULL";
+                    */
+                    /*
+                    if (selectAdmin.Split(';')[1].Split(',').Length > 1)
+                        strRes += @" GROUP BY DATE_ADMIN";
+                    else
+                        ;
+                    */
+                    strRes += @" " + @"ORDER BY DATE_ADMIN" +
+                        @" " + @"ASC";
                     break;
                 default:
                     break;
@@ -412,10 +431,6 @@ namespace Statistic
                     }
                     break;
                 case ChangeMode.MODE_TECCOMPONENT.PC:
-                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-
-                    selectPBR += ";";
-
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -428,8 +443,10 @@ namespace Statistic
                     }
                     else
                     {
-                        selectPBR += (list_TECComponents[num_comp].m_id).ToString ();
+                        selectPBR = (list_TECComponents[num_comp].m_id).ToString ();
                     }
+
+                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + ";" + selectPBR;
                     break;
                 default:
                     break;
@@ -466,10 +483,6 @@ namespace Statistic
                     }
                     break;
                 case ChangeMode.MODE_TECCOMPONENT.PC:
-                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-
-                    selectAdmin += ";";
-
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -484,6 +497,8 @@ namespace Statistic
                     {
                         selectAdmin += (list_TECComponents[num_comp].m_id).ToString();
                     }
+
+                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] + ";" + selectAdmin;
                     break;
                 default:
                     break;
