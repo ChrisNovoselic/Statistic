@@ -27,7 +27,7 @@ namespace Statistic {
         public ParametersTG()
         {
             InitializeComponent();
-            settingsFile = MainForm.logPath + "\\" + settingsFile;
+            settingsFile = FormMain.logPath + "\\" + settingsFile;
 
             //delegateParamsApply = delParApp;
 

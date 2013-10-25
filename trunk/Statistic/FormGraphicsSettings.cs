@@ -20,7 +20,7 @@ namespace Statistic
         public GraphTypes graphTypes;
         private DelegateFunc delegateUpdateActiveGui;
         private DelegateFunc delegateHideGraphicsSettings;
-        private MainForm mainForm;
+        private FormMain mainForm;
 
         public enum GraphTypes
         {
@@ -28,7 +28,7 @@ namespace Statistic
             Bar,
         }
 
-        public GraphicsSettings(MainForm mf, DelegateFunc delUp, DelegateFunc Hide)
+        public GraphicsSettings(FormMain mf, DelegateFunc delUp, DelegateFunc Hide)
         {
             InitializeComponent();
 

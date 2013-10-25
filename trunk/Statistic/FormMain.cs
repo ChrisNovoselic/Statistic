@@ -20,7 +20,7 @@ namespace Statistic
     public delegate void DelegateStringFunc(string param);
     public delegate void DelegateBoolFunc(bool param);
 
-    public partial class MainForm : Form
+    public partial class FormMain : Form
     {
         public List<TEC> tec;
         private FormWait waitForm;
@@ -62,7 +62,7 @@ namespace Statistic
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 100;
 
-        public MainForm()
+        public FormMain()
         {
             InitializeComponent();
 

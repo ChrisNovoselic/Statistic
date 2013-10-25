@@ -24,7 +24,7 @@ namespace Statistic
         public Parameters()
         {
             InitializeComponent();
-            settingsFile = MainForm.logPath + "\\" + settingsFile;
+            settingsFile = FormMain.logPath + "\\" + settingsFile;
             
             loadParam();
             mayClose = false;

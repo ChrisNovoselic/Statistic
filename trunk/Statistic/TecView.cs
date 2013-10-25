@@ -812,7 +812,7 @@ namespace Statistic
             this.parameters = par;
 
             if (tec.type () == TEC.TEC_TYPE.BIYSK)
-                ; //this.parameters = MainForm.papar;
+                ; //this.parameters = FormMain.papar;
             else
                 ;
 
@@ -4908,15 +4908,15 @@ namespace Statistic
                     bool error = true;
                     bool dataPresent = false;
                     DataTable table = null;
-                    for (int i = 0; i < MainForm.MAX_RETRY && !dataPresent && !newState; i++)
+                    for (int i = 0; i < FormMain.MAX_RETRY && !dataPresent && !newState; i++)
                     {
                         if (error)
                             StateRequest(currentState);
 
                         error = false;
-                        for (int j = 0; j < MainForm.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
+                        for (int j = 0; j < FormMain.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
                         {
-                            System.Threading.Thread.Sleep(MainForm.WAIT_TIME_MS);
+                            System.Threading.Thread.Sleep(FormMain.WAIT_TIME_MS);
                             dataPresent = StateCheckResponse(currentState, out error, out table);
                         }
                     }
@@ -4978,12 +4978,12 @@ namespace Statistic
                 timerCurrent.Change(1000, Timeout.Infinite);
             }
             catch (Exception e) {
-                MainForm.log.LogLock();
-                MainForm.log.LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
-                MainForm.log.LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
-                MainForm.log.LogToFile("Исключение " + e.Message, false, false, false);
-                MainForm.log.LogToFile(e.ToString(), false, false, false);
-                MainForm.log.LogUnlock();
+                FormMain.log.LogLock();
+                FormMain.log.LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
+                FormMain.log.LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
+                FormMain.log.LogToFile("Исключение " + e.Message, false, false, false);
+                FormMain.log.LogToFile(e.ToString(), false, false, false);
+                FormMain.log.LogUnlock();
             }
         }
     }

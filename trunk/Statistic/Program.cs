@@ -17,7 +17,7 @@ namespace Statistic
 
             //InitTEC init = new InitTEC();
 
-            MainForm mainForm = new MainForm();
+            FormMain formMain = new FormMain();
 
             //mainForm.Show();
             //ToolStripItem [] items;
@@ -43,7 +43,7 @@ namespace Statistic
             //else
             //    ;
 
-            Application.Run(mainForm);
+            Application.Run(formMain);
         }
     }
 }
