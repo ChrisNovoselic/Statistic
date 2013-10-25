@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Statistic
 {
-    public partial class ParametrsBase : Form
+    public partial class FormParametersBase : Form
     {
         public enum TYPE_VALUE : int { CURRENT, PREVIOUS, COUNT_TYPE_VALUE };
 
@@ -32,7 +32,7 @@ namespace Statistic
 
         public Int16 m_State;
 
-        public ParametrsBase () {
+        public FormParametersBase () {
             m_State = 0;
         }
 

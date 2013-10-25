@@ -107,7 +107,7 @@ namespace Statistic
 
         private PanelAdmin m_panelAdmin;
         private GraphicsSettings graphSettings;
-        private Parameters parameters;        
+        private FormParameters parameters;        
 
         private volatile bool currHour;
         private volatile int lastHour;
@@ -797,7 +797,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, GraphicsSettings gs, Parameters par)
+        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, GraphicsSettings gs, FormParameters par)
         {
             InitializeComponent();
 

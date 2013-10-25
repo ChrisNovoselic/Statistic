@@ -48,8 +48,8 @@ namespace Statistic
         public static object lockFile = new object();
         public static string logPath;
         public GraphicsSettings graphicsSettingsForm;
-        public Parameters parametersForm;
-        //public ParametersTG parametersTGForm;
+        public FormParameters parametersForm;
+        //public FormParametersTG parametersTGForm;
         public static Logging log;
 
         private bool show_error_alert = false;
@@ -107,7 +107,7 @@ namespace Statistic
             formPassword = new FormPassword(m_panelAdmin);
             formSetPassword = new FormSetPassword(m_panelAdmin);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            parametersForm = new Parameters();
+            parametersForm = new FormParameters();
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
@@ -618,7 +618,7 @@ namespace Statistic
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            About a = new About();
+            FormAbout a = new FormAbout();
             a.ShowDialog();
         }
 

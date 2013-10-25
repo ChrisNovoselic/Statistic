@@ -57,17 +57,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="ConnectionSettings.cs" />
-    <Compile Include="About.cs">
+    <Compile Include="DbInterface.cs" />
+    <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="About.Designer.cs">
-      <DependentUpon>About.cs</DependentUpon>
+    <Compile Include="FormAbout.designer.cs">
+      <DependentUpon>FormAbout.cs</DependentUpon>
     </Compile>
-    <Compile Include="DbInterface.cs" />
     <Compile Include="FormChangeMode.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,11 +131,13 @@
     <Compile Include="Logging.cs" />
     <Compile Include="GTP.cs" />
     <Compile Include="InitTEC.cs" />
+    <Compile Include="PanelAdmin.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="About.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>About.cs</DependentUpon>
+    <EmbeddedResource Include="FormAbout.resx">
+      <DependentUpon>FormAbout.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormChangeMode.resx">
       <DependentUpon>FormChangeMode.cs</DependentUpon>

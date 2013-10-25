@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class ParametersTG
+    partial class FormParametersTG
     {
         /// <summary>
         /// Required designer variable.
@@ -63,7 +63,7 @@ namespace Statistic
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // ParametersTG
+            // FormParametersTG
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -74,7 +74,7 @@ namespace Statistic
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "ParametersTG";
+            this.Name = "FormParametersTG";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Параметры ТГ";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Parameters_FormClosing);

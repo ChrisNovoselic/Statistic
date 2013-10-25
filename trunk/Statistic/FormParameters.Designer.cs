@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class Parameters
+    partial class FormParameters
     {
         /// <summary>
         /// Required designer variable.
@@ -154,7 +154,7 @@ namespace Statistic
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
-            // Parameters
+            // FormParameters
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -170,7 +170,7 @@ namespace Statistic
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Parameters";
+            this.Name = "FormParameters";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Параметры приложения";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Parameters_FormClosing);

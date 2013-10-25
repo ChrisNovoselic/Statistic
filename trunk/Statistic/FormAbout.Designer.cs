@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class About
+    partial class FormAbout
     {
         /// <summary>
         /// Required designer variable.
@@ -87,7 +87,7 @@ namespace Statistic
             this.linkLabel1.Text = "ChrjapinAN@nske.ru";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
-            // About
+            // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -99,7 +99,7 @@ namespace Statistic
             this.Controls.Add(this.pictureBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "About";
+            this.Name = "FormAbout";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "О программе";

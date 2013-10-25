@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 
 namespace Statistic {
-    public partial class ParametersTG : Statistic.ParametrsBase
+    public partial class FormParametersTG : Statistic.FormParametersBase
     {
         private const int COUNT_TG = 8;
         private const char SEP_ID_TG = ',';
@@ -23,8 +23,8 @@ namespace Statistic {
         private int[,] m_tg_id_default = { { 9223, 9222, 9431, 9430, 9433,9435, 9434, 9432 }, { 8436, 8470, 8878, 8674, 8980, 9150, 6974, 8266 } };
         private int [,] m_tg_id;
 
-        //public ParametersTG(DelegateFunc delParApp)
-        public ParametersTG()
+        //public FormParametersTG(DelegateFunc delParApp)
+        public FormParametersTG()
         {
             InitializeComponent();
             settingsFile = FormMain.logPath + "\\" + settingsFile;

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Statistic
 {
-    public partial class Parameters : ParametrsBase
+    public partial class FormParameters : FormParametersBase
     {
         private const int POLL_TIME = 30;
         private const int ERROR_DELAY = 60;
@@ -21,7 +21,7 @@ namespace Statistic
         public int error_delay;
         public int max_tryes;
 
-        public Parameters()
+        public FormParameters()
         {
             InitializeComponent();
             settingsFile = FormMain.logPath + "\\" + settingsFile;
