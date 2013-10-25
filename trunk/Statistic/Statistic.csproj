@@ -60,19 +60,7 @@
     <Compile Include="Admin.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ChangeMode.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ChangeMode.Designer.cs">
-      <DependentUpon>ChangeMode.cs</DependentUpon>
-    </Compile>
     <Compile Include="ConnectionSettings.cs" />
-    <Compile Include="ConnectionSettingsView.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ConnectionSettingsView.Designer.cs">
-      <DependentUpon>ConnectionSettingsView.cs</DependentUpon>
-    </Compile>
     <Compile Include="About.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,96 +68,106 @@
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
     <Compile Include="DbInterface.cs" />
+    <Compile Include="FormChangeMode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormChangeMode.designer.cs">
+      <DependentUpon>FormChangeMode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormConnectionSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormConnectionSettings.designer.cs">
+      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormGraphicsSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormGraphicsSettings.designer.cs">
+      <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMain.designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParameters.designer.cs">
+      <DependentUpon>FormParameters.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormParametersTG.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormParametersTG.designer.cs">
+      <DependentUpon>FormParametersTG.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormParametrsBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPassword.cs" />
+    <Compile Include="FormPassword.designer.cs">
+      <DependentUpon>FormPassword.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormSetPassword.cs" />
+    <Compile Include="FormSetPassword.designer.cs">
+      <DependentUpon>FormSetPassword.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormTECComponent.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormTECComponent.Designer.cs">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormWait.cs" />
+    <Compile Include="FormWait.designer.cs">
+      <DependentUpon>FormWait.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logging.cs" />
-    <Compile Include="Parameters.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Parameters.Designer.cs">
-      <DependentUpon>Parameters.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GraphicsSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GraphicsSettings.Designer.cs">
-      <DependentUpon>GraphicsSettings.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ParametersTG.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ParametersTG.designer.cs">
-      <DependentUpon>ParametersTG.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ParametrsBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Password.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Password.Designer.cs">
-      <DependentUpon>Password.cs</DependentUpon>
-    </Compile>
     <Compile Include="GTP.cs" />
     <Compile Include="InitTEC.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="ChangeMode.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>ChangeMode.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionSettingsView.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>ConnectionSettingsView.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="About.resx">
       <SubType>Designer</SubType>
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormChangeMode.resx">
+      <DependentUpon>FormChangeMode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormConnectionSettings.resx">
+      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormGraphicsSettings.resx">
+      <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormParameters.resx">
+      <DependentUpon>FormParameters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormParametersTG.resx">
+      <DependentUpon>FormParametersTG.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPassword.resx">
+      <DependentUpon>FormPassword.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSetPassword.resx">
+      <DependentUpon>FormSetPassword.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormTECComponent.resx">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GraphicsSettings.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>GraphicsSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Parameters.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>Parameters.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ParametersTG.resx">
-      <DependentUpon>ParametersTG.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Password.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>Password.cs</DependentUpon>
+    <EmbeddedResource Include="FormWait.resx">
+      <DependentUpon>FormWait.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SetPassword.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>SetPassword.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WaitForm.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>WaitForm.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -185,23 +183,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="SetPassword.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SetPassword.Designer.cs">
-      <DependentUpon>SetPassword.cs</DependentUpon>
-    </Compile>
     <Compile Include="TEC.cs" />
     <Compile Include="TecView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TG.cs" />
-    <Compile Include="WaitForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WaitForm.Designer.cs">
-      <DependentUpon>WaitForm.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\statistic2.ico" />
