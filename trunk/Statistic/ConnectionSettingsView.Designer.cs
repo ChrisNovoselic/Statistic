@@ -49,6 +49,7 @@ namespace Statistic
             // 
             // cbxConnFor
             // 
+            this.cbxConnFor.Enabled = false;
             this.cbxConnFor.FormattingEnabled = true;
             this.cbxConnFor.Location = new System.Drawing.Point(130, 16);
             this.cbxConnFor.Name = "cbxConnFor";
@@ -92,6 +93,7 @@ namespace Statistic
             // lblConnFor
             // 
             this.lblConnFor.AutoSize = true;
+            this.lblConnFor.Enabled = false;
             this.lblConnFor.Location = new System.Drawing.Point(12, 19);
             this.lblConnFor.Name = "lblConnFor";
             this.lblConnFor.Size = new System.Drawing.Size(89, 13);

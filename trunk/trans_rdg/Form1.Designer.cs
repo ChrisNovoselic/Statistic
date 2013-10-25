@@ -30,39 +30,51 @@
         {
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
+            this.comboBoxMode = new System.Windows.Forms.ComboBox();
+            this.labelTECComponent = new System.Windows.Forms.Label();
+            this.labelMode = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.buttonDestImport = new System.Windows.Forms.Button();
+            this.buttonDestTest = new System.Windows.Forms.Button();
+            this.labelDestPort = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
+            this.labelDestPass = new System.Windows.Forms.Label();
+            this.labelDestUserID = new System.Windows.Forms.Label();
+            this.labelDestDBName = new System.Windows.Forms.Label();
+            this.labelDestServerIP = new System.Windows.Forms.Label();
             this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.groupBoxSource = new System.Windows.Forms.GroupBox();
-            this.lblPort = new System.Windows.Forms.Label();
+            this.buttonSourceTest = new System.Windows.Forms.Button();
+            this.labelSourcePort = new System.Windows.Forms.Label();
             this.nudnPort = new System.Windows.Forms.NumericUpDown();
-            this.lblPass = new System.Windows.Forms.Label();
-            this.lblUserId = new System.Windows.Forms.Label();
-            this.lblDataBase = new System.Windows.Forms.Label();
-            this.lblServer = new System.Windows.Forms.Label();
+            this.labelSourcePass = new System.Windows.Forms.Label();
+            this.labelSourceUserId = new System.Windows.Forms.Label();
+            this.labelSourceDBName = new System.Windows.Forms.Label();
+            this.labelSourceServerIP = new System.Windows.Forms.Label();
             this.mtbxPass = new System.Windows.Forms.MaskedTextBox();
             this.tbxUserId = new System.Windows.Forms.TextBox();
             this.tbxDataBase = new System.Windows.Forms.TextBox();
             this.tbxServer = new System.Windows.Forms.TextBox();
+            this.menuStripMain = new System.Windows.Forms.MenuStrip();
+            this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.panelMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.groupBoxSource.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnPort)).BeginInit();
+            this.menuStripMain.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonClose
@@ -77,8 +89,10 @@
             // 
             // panelMain
             // 
-            this.panelMain.Controls.Add(this.label7);
-            this.panelMain.Controls.Add(this.label6);
+            this.panelMain.Controls.Add(this.comboBoxTECComponent);
+            this.panelMain.Controls.Add(this.comboBoxMode);
+            this.panelMain.Controls.Add(this.labelTECComponent);
+            this.panelMain.Controls.Add(this.labelMode);
             this.panelMain.Controls.Add(this.labelDate);
             this.panelMain.Controls.Add(this.dateTimePicker1);
             this.panelMain.Controls.Add(this.dataGridView1);
@@ -89,23 +103,39 @@
             this.panelMain.Size = new System.Drawing.Size(822, 501);
             this.panelMain.TabIndex = 3;
             // 
-            // label7
+            // comboBoxTECComponent
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(11, 62);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(63, 13);
-            this.label7.TabIndex = 31;
-            this.label7.Text = "Компонент";
+            this.comboBoxTECComponent.FormattingEnabled = true;
+            this.comboBoxTECComponent.Location = new System.Drawing.Point(132, 60);
+            this.comboBoxTECComponent.Name = "comboBoxTECComponent";
+            this.comboBoxTECComponent.Size = new System.Drawing.Size(171, 21);
+            this.comboBoxTECComponent.TabIndex = 33;
             // 
-            // label6
+            // comboBoxMode
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(11, 37);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(42, 13);
-            this.label6.TabIndex = 30;
-            this.label6.Text = "Режим";
+            this.comboBoxMode.FormattingEnabled = true;
+            this.comboBoxMode.Location = new System.Drawing.Point(132, 33);
+            this.comboBoxMode.Name = "comboBoxMode";
+            this.comboBoxMode.Size = new System.Drawing.Size(171, 21);
+            this.comboBoxMode.TabIndex = 32;
+            // 
+            // labelTECComponent
+            // 
+            this.labelTECComponent.AutoSize = true;
+            this.labelTECComponent.Location = new System.Drawing.Point(11, 62);
+            this.labelTECComponent.Name = "labelTECComponent";
+            this.labelTECComponent.Size = new System.Drawing.Size(63, 13);
+            this.labelTECComponent.TabIndex = 31;
+            this.labelTECComponent.Text = "Компонент";
+            // 
+            // labelMode
+            // 
+            this.labelMode.AutoSize = true;
+            this.labelMode.Location = new System.Drawing.Point(11, 37);
+            this.labelMode.Name = "labelMode";
+            this.labelMode.Size = new System.Drawing.Size(42, 13);
+            this.labelMode.TabIndex = 30;
+            this.labelMode.Text = "Режим";
             // 
             // labelDate
             // 
@@ -133,12 +163,15 @@
             // 
             // groupBoxDest
             // 
-            this.groupBoxDest.Controls.Add(this.label1);
+            this.groupBoxDest.BackColor = System.Drawing.SystemColors.Control;
+            this.groupBoxDest.Controls.Add(this.buttonDestImport);
+            this.groupBoxDest.Controls.Add(this.buttonDestTest);
+            this.groupBoxDest.Controls.Add(this.labelDestPort);
             this.groupBoxDest.Controls.Add(this.numericUpDown1);
-            this.groupBoxDest.Controls.Add(this.label2);
-            this.groupBoxDest.Controls.Add(this.label3);
-            this.groupBoxDest.Controls.Add(this.label4);
-            this.groupBoxDest.Controls.Add(this.label5);
+            this.groupBoxDest.Controls.Add(this.labelDestPass);
+            this.groupBoxDest.Controls.Add(this.labelDestUserID);
+            this.groupBoxDest.Controls.Add(this.labelDestDBName);
+            this.groupBoxDest.Controls.Add(this.labelDestServerIP);
             this.groupBoxDest.Controls.Add(this.maskedTextBox1);
             this.groupBoxDest.Controls.Add(this.textBox1);
             this.groupBoxDest.Controls.Add(this.textBox2);
@@ -149,15 +182,35 @@
             this.groupBoxDest.TabIndex = 26;
             this.groupBoxDest.TabStop = false;
             this.groupBoxDest.Text = "Получатель";
+            this.groupBoxDest.MouseClick += new System.Windows.Forms.MouseEventHandler(this.groupBox_MouseClick);
+            this.groupBoxDest.Enter += new System.EventHandler(this.groupBox_Enter);
             // 
-            // label1
+            // buttonDestImport
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 57);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(32, 13);
-            this.label1.TabIndex = 31;
-            this.label1.Text = "Порт";
+            this.buttonDestImport.Location = new System.Drawing.Point(11, 166);
+            this.buttonDestImport.Name = "buttonDestImport";
+            this.buttonDestImport.Size = new System.Drawing.Size(137, 23);
+            this.buttonDestImport.TabIndex = 36;
+            this.buttonDestImport.Text = "Импорт данных";
+            this.buttonDestImport.UseVisualStyleBackColor = true;
+            // 
+            // buttonDestTest
+            // 
+            this.buttonDestTest.Location = new System.Drawing.Point(152, 166);
+            this.buttonDestTest.Name = "buttonDestTest";
+            this.buttonDestTest.Size = new System.Drawing.Size(137, 23);
+            this.buttonDestTest.TabIndex = 35;
+            this.buttonDestTest.Text = "Тест соединения";
+            this.buttonDestTest.UseVisualStyleBackColor = true;
+            // 
+            // labelDestPort
+            // 
+            this.labelDestPort.AutoSize = true;
+            this.labelDestPort.Location = new System.Drawing.Point(11, 57);
+            this.labelDestPort.Name = "labelDestPort";
+            this.labelDestPort.Size = new System.Drawing.Size(32, 13);
+            this.labelDestPort.TabIndex = 31;
+            this.labelDestPort.Text = "Порт";
             // 
             // numericUpDown1
             // 
@@ -178,41 +231,41 @@
             0,
             0});
             // 
-            // label2
+            // labelDestPass
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 136);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(45, 13);
-            this.label2.TabIndex = 34;
-            this.label2.Text = "Пароль";
+            this.labelDestPass.AutoSize = true;
+            this.labelDestPass.Location = new System.Drawing.Point(10, 136);
+            this.labelDestPass.Name = "labelDestPass";
+            this.labelDestPass.Size = new System.Drawing.Size(45, 13);
+            this.labelDestPass.TabIndex = 34;
+            this.labelDestPass.Text = "Пароль";
             // 
-            // label3
+            // labelDestUserID
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(10, 110);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(103, 13);
-            this.label3.TabIndex = 33;
-            this.label3.Text = "Имя пользователя";
+            this.labelDestUserID.AutoSize = true;
+            this.labelDestUserID.Location = new System.Drawing.Point(10, 110);
+            this.labelDestUserID.Name = "labelDestUserID";
+            this.labelDestUserID.Size = new System.Drawing.Size(103, 13);
+            this.labelDestUserID.TabIndex = 33;
+            this.labelDestUserID.Text = "Имя пользователя";
             // 
-            // label4
+            // labelDestDBName
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(10, 84);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(98, 13);
-            this.label4.TabIndex = 32;
-            this.label4.Text = "Имя базы данных";
+            this.labelDestDBName.AutoSize = true;
+            this.labelDestDBName.Location = new System.Drawing.Point(10, 84);
+            this.labelDestDBName.Name = "labelDestDBName";
+            this.labelDestDBName.Size = new System.Drawing.Size(98, 13);
+            this.labelDestDBName.TabIndex = 32;
+            this.labelDestDBName.Text = "Имя базы данных";
             // 
-            // label5
+            // labelDestServerIP
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(10, 30);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(95, 13);
-            this.label5.TabIndex = 30;
-            this.label5.Text = "IP адрес сервера";
+            this.labelDestServerIP.AutoSize = true;
+            this.labelDestServerIP.Location = new System.Drawing.Point(10, 30);
+            this.labelDestServerIP.Name = "labelDestServerIP";
+            this.labelDestServerIP.Size = new System.Drawing.Size(95, 13);
+            this.labelDestServerIP.TabIndex = 30;
+            this.labelDestServerIP.Text = "IP адрес сервера";
             // 
             // maskedTextBox1
             // 
@@ -245,12 +298,14 @@
             // 
             // groupBoxSource
             // 
-            this.groupBoxSource.Controls.Add(this.lblPort);
+            this.groupBoxSource.BackColor = System.Drawing.SystemColors.Info;
+            this.groupBoxSource.Controls.Add(this.buttonSourceTest);
+            this.groupBoxSource.Controls.Add(this.labelSourcePort);
             this.groupBoxSource.Controls.Add(this.nudnPort);
-            this.groupBoxSource.Controls.Add(this.lblPass);
-            this.groupBoxSource.Controls.Add(this.lblUserId);
-            this.groupBoxSource.Controls.Add(this.lblDataBase);
-            this.groupBoxSource.Controls.Add(this.lblServer);
+            this.groupBoxSource.Controls.Add(this.labelSourcePass);
+            this.groupBoxSource.Controls.Add(this.labelSourceUserId);
+            this.groupBoxSource.Controls.Add(this.labelSourceDBName);
+            this.groupBoxSource.Controls.Add(this.labelSourceServerIP);
             this.groupBoxSource.Controls.Add(this.mtbxPass);
             this.groupBoxSource.Controls.Add(this.tbxUserId);
             this.groupBoxSource.Controls.Add(this.tbxDataBase);
@@ -261,15 +316,26 @@
             this.groupBoxSource.TabIndex = 25;
             this.groupBoxSource.TabStop = false;
             this.groupBoxSource.Text = "Источник";
+            this.groupBoxSource.MouseClick += new System.Windows.Forms.MouseEventHandler(this.groupBox_MouseClick);
+            this.groupBoxSource.Enter += new System.EventHandler(this.groupBox_Enter);
             // 
-            // lblPort
+            // buttonSourceTest
             // 
-            this.lblPort.AutoSize = true;
-            this.lblPort.Location = new System.Drawing.Point(12, 55);
-            this.lblPort.Name = "lblPort";
-            this.lblPort.Size = new System.Drawing.Size(32, 13);
-            this.lblPort.TabIndex = 21;
-            this.lblPort.Text = "Порт";
+            this.buttonSourceTest.Location = new System.Drawing.Point(151, 163);
+            this.buttonSourceTest.Name = "buttonSourceTest";
+            this.buttonSourceTest.Size = new System.Drawing.Size(137, 23);
+            this.buttonSourceTest.TabIndex = 36;
+            this.buttonSourceTest.Text = "Тест соединения";
+            this.buttonSourceTest.UseVisualStyleBackColor = true;
+            // 
+            // labelSourcePort
+            // 
+            this.labelSourcePort.AutoSize = true;
+            this.labelSourcePort.Location = new System.Drawing.Point(12, 55);
+            this.labelSourcePort.Name = "labelSourcePort";
+            this.labelSourcePort.Size = new System.Drawing.Size(32, 13);
+            this.labelSourcePort.TabIndex = 21;
+            this.labelSourcePort.Text = "Порт";
             // 
             // nudnPort
             // 
@@ -290,41 +356,41 @@
             0,
             0});
             // 
-            // lblPass
+            // labelSourcePass
             // 
-            this.lblPass.AutoSize = true;
-            this.lblPass.Location = new System.Drawing.Point(11, 134);
-            this.lblPass.Name = "lblPass";
-            this.lblPass.Size = new System.Drawing.Size(45, 13);
-            this.lblPass.TabIndex = 24;
-            this.lblPass.Text = "Пароль";
+            this.labelSourcePass.AutoSize = true;
+            this.labelSourcePass.Location = new System.Drawing.Point(11, 134);
+            this.labelSourcePass.Name = "labelSourcePass";
+            this.labelSourcePass.Size = new System.Drawing.Size(45, 13);
+            this.labelSourcePass.TabIndex = 24;
+            this.labelSourcePass.Text = "Пароль";
             // 
-            // lblUserId
+            // labelSourceUserId
             // 
-            this.lblUserId.AutoSize = true;
-            this.lblUserId.Location = new System.Drawing.Point(11, 108);
-            this.lblUserId.Name = "lblUserId";
-            this.lblUserId.Size = new System.Drawing.Size(103, 13);
-            this.lblUserId.TabIndex = 23;
-            this.lblUserId.Text = "Имя пользователя";
+            this.labelSourceUserId.AutoSize = true;
+            this.labelSourceUserId.Location = new System.Drawing.Point(11, 108);
+            this.labelSourceUserId.Name = "labelSourceUserId";
+            this.labelSourceUserId.Size = new System.Drawing.Size(103, 13);
+            this.labelSourceUserId.TabIndex = 23;
+            this.labelSourceUserId.Text = "Имя пользователя";
             // 
-            // lblDataBase
+            // labelSourceDBName
             // 
-            this.lblDataBase.AutoSize = true;
-            this.lblDataBase.Location = new System.Drawing.Point(11, 82);
-            this.lblDataBase.Name = "lblDataBase";
-            this.lblDataBase.Size = new System.Drawing.Size(98, 13);
-            this.lblDataBase.TabIndex = 22;
-            this.lblDataBase.Text = "Имя базы данных";
+            this.labelSourceDBName.AutoSize = true;
+            this.labelSourceDBName.Location = new System.Drawing.Point(11, 82);
+            this.labelSourceDBName.Name = "labelSourceDBName";
+            this.labelSourceDBName.Size = new System.Drawing.Size(98, 13);
+            this.labelSourceDBName.TabIndex = 22;
+            this.labelSourceDBName.Text = "Имя базы данных";
             // 
-            // lblServer
+            // labelSourceServerIP
             // 
-            this.lblServer.AutoSize = true;
-            this.lblServer.Location = new System.Drawing.Point(11, 28);
-            this.lblServer.Name = "lblServer";
-            this.lblServer.Size = new System.Drawing.Size(95, 13);
-            this.lblServer.TabIndex = 20;
-            this.lblServer.Text = "IP адрес сервера";
+            this.labelSourceServerIP.AutoSize = true;
+            this.labelSourceServerIP.Location = new System.Drawing.Point(11, 28);
+            this.labelSourceServerIP.Name = "labelSourceServerIP";
+            this.labelSourceServerIP.Size = new System.Drawing.Size(95, 13);
+            this.labelSourceServerIP.TabIndex = 20;
+            this.labelSourceServerIP.Text = "IP адрес сервера";
             // 
             // mtbxPass
             // 
@@ -355,14 +421,66 @@
             this.tbxServer.Size = new System.Drawing.Size(160, 20);
             this.tbxServer.TabIndex = 15;
             // 
+            // menuStripMain
+            // 
+            this.menuStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.файлToolStripMenuItem,
+            this.помощьToolStripMenuItem});
+            this.menuStripMain.Location = new System.Drawing.Point(0, 0);
+            this.menuStripMain.Name = "menuStripMain";
+            this.menuStripMain.Size = new System.Drawing.Size(841, 24);
+            this.menuStripMain.TabIndex = 4;
+            this.menuStripMain.Text = "menuStrip1";
+            // 
+            // файлToolStripMenuItem
+            // 
+            this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.выходToolStripMenuItem});
+            this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
+            this.файлToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
+            this.файлToolStripMenuItem.Text = "Файл";
+            // 
+            // выходToolStripMenuItem
+            // 
+            this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.выходToolStripMenuItem.Text = "Выход";
+            this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
+            // 
+            // помощьToolStripMenuItem
+            // 
+            this.помощьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.оПрограммеToolStripMenuItem});
+            this.помощьToolStripMenuItem.Name = "помощьToolStripMenuItem";
+            this.помощьToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.помощьToolStripMenuItem.Text = "Помощь";
+            // 
+            // оПрограммеToolStripMenuItem
+            // 
+            this.оПрограммеToolStripMenuItem.Name = "оПрограммеToolStripMenuItem";
+            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.оПрограммеToolStripMenuItem.Text = "О программе";
+            this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
+            // 
+            // statusStripMain
+            // 
+            this.statusStripMain.Location = new System.Drawing.Point(0, 552);
+            this.statusStripMain.Name = "statusStripMain";
+            this.statusStripMain.Size = new System.Drawing.Size(841, 22);
+            this.statusStripMain.TabIndex = 5;
+            this.statusStripMain.Text = "statusStrip1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(841, 574);
+            this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.buttonClose);
+            this.Controls.Add(this.menuStripMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MainMenuStrip = this.menuStripMain;
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -376,7 +494,10 @@
             this.groupBoxSource.ResumeLayout(false);
             this.groupBoxSource.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnPort)).EndInit();
+            this.menuStripMain.ResumeLayout(false);
+            this.menuStripMain.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -384,33 +505,44 @@
 
         private System.Windows.Forms.Button buttonClose;
         private System.Windows.Forms.Panel panelMain;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label labelTECComponent;
+        private System.Windows.Forms.Label labelMode;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.GroupBox groupBoxDest;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelDestPort;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label labelDestPass;
+        private System.Windows.Forms.Label labelDestUserID;
+        private System.Windows.Forms.Label labelDestDBName;
+        private System.Windows.Forms.Label labelDestServerIP;
         private System.Windows.Forms.MaskedTextBox maskedTextBox1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.GroupBox groupBoxSource;
-        private System.Windows.Forms.Label lblPort;
+        private System.Windows.Forms.Label labelSourcePort;
         private System.Windows.Forms.NumericUpDown nudnPort;
-        private System.Windows.Forms.Label lblPass;
-        private System.Windows.Forms.Label lblUserId;
-        private System.Windows.Forms.Label lblDataBase;
-        private System.Windows.Forms.Label lblServer;
+        private System.Windows.Forms.Label labelSourcePass;
+        private System.Windows.Forms.Label labelSourceUserId;
+        private System.Windows.Forms.Label labelSourceDBName;
+        private System.Windows.Forms.Label labelSourceServerIP;
         private System.Windows.Forms.MaskedTextBox mtbxPass;
         private System.Windows.Forms.TextBox tbxUserId;
         private System.Windows.Forms.TextBox tbxDataBase;
         private System.Windows.Forms.TextBox tbxServer;
+        private System.Windows.Forms.ComboBox comboBoxTECComponent;
+        private System.Windows.Forms.ComboBox comboBoxMode;
+        private System.Windows.Forms.Button buttonDestImport;
+        private System.Windows.Forms.Button buttonDestTest;
+        private System.Windows.Forms.Button buttonSourceTest;
+        private System.Windows.Forms.MenuStrip menuStripMain;
+        private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
+        private System.Windows.Forms.StatusStrip statusStripMain;
     }
 }
 
