@@ -184,13 +184,13 @@ namespace Statistic
             return strRes;
         }
 
-        private string pbrValueQuery(string selectPBR, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode)
+        private string pbrValueQuery(string selectPBR, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode)
         {
             string strRes = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     strRes = @"SELECT " +
                         //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                         m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
@@ -209,7 +209,7 @@ namespace Statistic
                         @" ORDER BY DATE_PBR" +
                         @" ASC";
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     string strUsedPPBRvsPBR = "PPBRvsPBROfID";
 
                     strRes = @"SELECT " +
@@ -245,16 +245,16 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetPBRValueQuery (TECComponent comp, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode) {
+        public string GetPBRValueQuery (TECComponent comp, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode) {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     selectPBR = selectPBRValueQuery(comp);
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
 
                     selectPBR += ";";
@@ -291,12 +291,12 @@ namespace Statistic
             return strRes;
         }
 
-        private string adminValueQuery(string selectAdmin, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode)
+        private string adminValueQuery(string selectAdmin, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode)
         {
             string strRes = string.Empty;
             
             switch (mode) {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     strRes = @"SELECT " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                         //strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR, " +
                                 selectAdmin +
@@ -333,7 +333,7 @@ namespace Statistic
                         //@", DATE_PBR" +
                                 @" " + @"ASC";
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     string strUsedAdminValues = @"AdminValuesOfID";
 
                     strRes = @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
@@ -381,17 +381,17 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminValueQuery(TECComponent comp, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode)
+        public string GetAdminValueQuery(TECComponent comp, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode)
         {
             string strRes = string.Empty,
                     selectAdmin = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     selectAdmin = selectAdminValueQuery(comp);
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
 
                     selectAdmin += ";";
@@ -407,14 +407,14 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetPBRValueQuery(int num_comp, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode)
+        public string GetPBRValueQuery(int num_comp, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -430,7 +430,7 @@ namespace Statistic
                         selectPBR = selectPBRValueQuery(list_TECComponents[num_comp]);
                     }
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -457,14 +457,14 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminValueQuery(int num_comp, DateTime dt, ChangeMode.MODE_TECCOMPONENT mode)
+        public string GetAdminValueQuery(int num_comp, DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode)
         {
             string strRes = string.Empty,
                 selectAdmin = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -482,7 +482,7 @@ namespace Statistic
                         selectAdmin = selectAdminValueQuery(list_TECComponents[num_comp]);
                     }
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     if (num_comp < 0)
                     {
                         foreach (TECComponent g in list_TECComponents)
@@ -567,20 +567,20 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetAdminDatesQuery(DateTime dt, ChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
+        public string GetAdminDatesQuery(DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
         {
             string strUsedAdminValues = "AdminValuesOfID",
                     strRes = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     strRes = @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     strRes = @"SELECT DATE FROM " + strUsedAdminValues + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
@@ -594,21 +594,21 @@ namespace Statistic
             return strRes;
         }
 
-        public string GetPBRDatesQuery(DateTime dt, ChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
+        public string GetPBRDatesQuery(DateTime dt, FormChangeMode.MODE_TECCOMPONENT mode, TECComponent comp)
         {
             string strUsedPPBRvsPBR = "PPBRvsPBROfID",
                     strRes = string.Empty;
 
             switch (mode)
             {
-                case ChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
                     strRes = @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
-                case ChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
                     strRes = @"SELECT DATE_TIME FROM " + strUsedPPBRvsPBR +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" + 

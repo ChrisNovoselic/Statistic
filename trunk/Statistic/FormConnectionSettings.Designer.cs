@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class ConnectionSettingsView
+    partial class FormConnectionSettings
     {
         /// <summary>
         /// Required designer variable.
@@ -204,7 +204,7 @@ namespace Statistic
             this.lblIgnore.TabIndex = 15;
             this.lblIgnore.Text = "Игнорировать";
             // 
-            // ConnectionSettingsView
+            // FormConnectionSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -228,7 +228,7 @@ namespace Statistic
             this.Controls.Add(this.cbxConnFor);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "ConnectionSettingsView";
+            this.Name = "FormConnectionSettings";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

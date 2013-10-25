@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class ConnectionSettingsView : Form
+    public partial class FormConnectionSettings : Form
     {
         private List<ConnectionSettings> connectionSettingsEdit;
         public List<ConnectionSettings> connectionSettings;
@@ -372,8 +372,8 @@ namespace Statistic
             mayToProtected = true;
         }
 
-        //public ConnectionSettingsView(List<TEC> tec)
-        public ConnectionSettingsView()
+        //public FormConnectionSettings(List<TEC> tec)
+        public FormConnectionSettings()
         {
             InitializeComponent();
 

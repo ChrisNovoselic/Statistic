@@ -144,15 +144,15 @@ namespace Statistic
         private DelegateFunctionDate delegateFillData;
         private DelegateFunctionDate delegateCalendarSetDate;
 
-        ChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
-        public int mode(int new_mode = (int) ChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+        FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
+        public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
         {
             int prev_mode = (int) m_modeTECComponent;
 
-            if (new_mode == (int) ChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+            if (new_mode == (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
                 ;
             else
-                m_modeTECComponent = (ChangeMode.MODE_TECCOMPONENT) new_mode;
+                m_modeTECComponent = (FormChangeMode.MODE_TECCOMPONENT) new_mode;
 
             return prev_mode;
         }
@@ -1451,7 +1451,7 @@ namespace Statistic
             return false;
         }
 
-        public bool SetPassword(string password, uint idPass)
+        public bool FormSetPassword(string password, uint idPass)
         {
             m_idPass = idPass;
 
@@ -1932,7 +1932,7 @@ namespace Statistic
                 if (adminDates[i])
                 {
                     switch (m_modeTECComponent) {
-                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             //name = t.NameFieldOfAdminRequest(comp);
                             
                             requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
@@ -1942,7 +1942,7 @@ namespace Statistic
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                        case FormChangeMode.MODE_TECCOMPONENT.PC:
                             requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
                                         @", " + "DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
@@ -1959,14 +1959,14 @@ namespace Statistic
                 {
                     // запись отсутствует, запоминаем значения
                     switch (m_modeTECComponent) {
-                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (values.diviationPercent[i] ? "1" : "0") +
                                         @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
-                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                        case FormChangeMode.MODE_TECCOMPONENT.PC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (values.diviationPercent[i] ? "1" : "0") +
@@ -1985,12 +1985,12 @@ namespace Statistic
             {
                 switch (m_modeTECComponent)
                 {
-                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
                         requestInsert = @"INSERT INTO " + t.m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
-                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                    case FormChangeMode.MODE_TECCOMPONENT.PC:
                         requestInsert = @"INSERT INTO " + strUsedAdminValues + " (DATE, " + @"REC" +
                                 @", " + "IS_PER" +
                                 @", " + "DIVIAT" +
@@ -2103,7 +2103,7 @@ namespace Statistic
                 {
                     switch (m_modeTECComponent)
                     {
-                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -2113,7 +2113,7 @@ namespace Statistic
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                        case FormChangeMode.MODE_TECCOMPONENT.PC:
                             requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + values.plan[i].ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -2129,7 +2129,7 @@ namespace Statistic
                     // запись отсутствует, запоминаем значения
                     switch (m_modeTECComponent)
                     {
-                        case ChangeMode.MODE_TECCOMPONENT.GTP:
+                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
@@ -2137,7 +2137,7 @@ namespace Statistic
                                         @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
-                        case ChangeMode.MODE_TECCOMPONENT.PC:
+                        case FormChangeMode.MODE_TECCOMPONENT.PC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
@@ -2157,10 +2157,10 @@ namespace Statistic
             {
                 switch (m_modeTECComponent)
                 {
-                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
                         requestInsert = @"INSERT INTO " + t.m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
-                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                    case FormChangeMode.MODE_TECCOMPONENT.PC:
                         requestInsert = @"INSERT INTO " + strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
                     default:
@@ -2583,12 +2583,12 @@ namespace Statistic
             if (allTECComponents[oldTecIndex].tec.m_path_rdg_excel.Length > 0)
                 switch (m_modeTECComponent)
                 {
-                    case ChangeMode.MODE_TECCOMPONENT.TEC:
+                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
                         break;
-                    case ChangeMode.MODE_TECCOMPONENT.GTP:
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
                         ; //bImpExpButtonVisible = false;
                         break;
-                    case ChangeMode.MODE_TECCOMPONENT.PC:
+                    case FormChangeMode.MODE_TECCOMPONENT.PC:
                         bImpExpButtonVisible = true;
                         break;
                     default:

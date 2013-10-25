@@ -8,10 +8,10 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class WaitForm : Form
+    public partial class FormWait : Form
     {
         private bool started;
-        public WaitForm()
+        public FormWait()
         {
             InitializeComponent();
             started = false;

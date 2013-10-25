@@ -8,14 +8,14 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class SetPassword : Form
+    public partial class FormSetPassword : Form
     {
         private uint m_idPass;
 
         private Admin admin;
         private bool closing;
 
-        public SetPassword(Admin a)
+        public FormSetPassword(Admin a)
         {
             InitializeComponent();
             admin = a;
@@ -37,7 +37,7 @@ namespace Statistic
         {
             if (tbxNewPassword.Text == tbxNewPasswordAgain.Text)
             {
-                admin.SetPassword(tbxNewPassword.Text, m_idPass);
+                admin.FormSetPassword(tbxNewPassword.Text, m_idPass);
                 closing = true;
                 Close();
             }

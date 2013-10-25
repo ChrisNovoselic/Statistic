@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class ChangeMode
+    partial class FormChangeMode
     {
         /// <summary>
         /// Required designer variable.
@@ -123,7 +123,7 @@ namespace Statistic
             this.labelModeTEC.TabIndex = 8;
             this.labelModeTEC.Text = "По составу:";
             // 
-            // ChangeMode
+            // FormChangeMode
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -139,7 +139,7 @@ namespace Statistic
             this.Controls.Add(this.btnOk);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "ChangeMode";
+            this.Name = "FormChangeMode";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

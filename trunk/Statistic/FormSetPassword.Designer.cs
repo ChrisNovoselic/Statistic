@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class SetPassword
+    partial class FormSetPassword
     {
         /// <summary>
         /// Required designer variable.
@@ -94,7 +94,7 @@ namespace Statistic
             this.параметрыПриложения.UseVisualStyleBackColor = true;
             this.параметрыПриложения.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // SetPassword
+            // FormSetPassword
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -108,7 +108,7 @@ namespace Statistic
             this.Controls.Add(this.tbxNewPassword);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "SetPassword";
+            this.Name = "FormSetPassword";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

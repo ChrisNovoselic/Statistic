@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class WaitForm
+    partial class FormWait
     {
         /// <summary>
         /// Required designer variable.
@@ -50,7 +50,7 @@ namespace Statistic
             this.lblWait.TabIndex = 1;
             this.lblWait.Text = "Подождите пожалуйста";
             // 
-            // WaitForm
+            // FormWait
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -58,10 +58,10 @@ namespace Statistic
             this.Controls.Add(this.lblWait);
             this.Controls.Add(this.progressBar1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "WaitForm";
+            this.Name = "FormWait";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "WaitForm";
+            this.Text = "FormWait";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WaitForm_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();

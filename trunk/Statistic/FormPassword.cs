@@ -8,14 +8,14 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class Password : Form
+    public partial class FormPassword : Form
     {
         private uint m_idPass;
 
         private Admin admin;
         private bool closing;
 
-        public Password(Admin a)
+        public FormPassword(Admin a)
         {
             InitializeComponent();
             admin = a;

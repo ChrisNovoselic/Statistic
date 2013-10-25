@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class ChangeMode : Form
+    public partial class FormChangeMode : Form
     {
         public List<TEC> tec;
         public List<int> tec_index;
@@ -23,7 +23,7 @@ namespace Statistic
         private const MODE_TECCOMPONENT m_mode_TECComponentStart = MODE_TECCOMPONENT.GTP;
         private const MODE_TECCOMPONENT m_mode_TECComponentEnd = MODE_TECCOMPONENT.TG;
 
-        public ChangeMode(ConnectionSettings connSet)
+        public FormChangeMode(ConnectionSettings connSet)
         {
             InitializeComponent();
 

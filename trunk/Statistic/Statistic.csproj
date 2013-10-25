@@ -107,11 +107,15 @@
     <Compile Include="FormParametrsBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormPassword.cs" />
+    <Compile Include="FormPassword.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormPassword.designer.cs">
       <DependentUpon>FormPassword.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormSetPassword.cs" />
+    <Compile Include="FormSetPassword.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormSetPassword.designer.cs">
       <DependentUpon>FormSetPassword.cs</DependentUpon>
     </Compile>
@@ -121,7 +125,9 @@
     <Compile Include="FormTECComponent.Designer.cs">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormWait.cs" />
+    <Compile Include="FormWait.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormWait.designer.cs">
       <DependentUpon>FormWait.cs</DependentUpon>
     </Compile>

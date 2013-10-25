@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class Password
+    partial class FormPassword
     {
         /// <summary>
         /// Required designer variable.
@@ -82,7 +82,7 @@ namespace Statistic
             this.labelOwnerPassword.Size = new System.Drawing.Size(0, 13);
             this.labelOwnerPassword.TabIndex = 4;
             // 
-            // Password
+            // FormPassword
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -94,7 +94,7 @@ namespace Statistic
             this.Controls.Add(this.tbxPassword);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Password";
+            this.Name = "FormPassword";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
