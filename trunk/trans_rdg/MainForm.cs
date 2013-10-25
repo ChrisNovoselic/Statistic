@@ -13,7 +13,7 @@ namespace trans_rdg
 {
     public partial class FormMain : Form
     {
-        Statistic.Admin m_panelAdmin;
+        Statistic.Admin m_adminPanel;
 
         public FormMain()
         {
