@@ -3263,23 +3263,109 @@ namespace Statistic
             return bRes;
         }
 
-        private bool GetAdminValuesResponse(DataTable table_in)
+        private DataTable restruct_table_pbrValues(DataTable table_in)
         {
-            DataTable table_in_restruct = new DataTable ();
-            //table.Merge(m_tablePBRResponse, false);
-            List <DataColumn> cols_data = new List <DataColumn> ();
-            DataRow [] dataRows;
+            DataTable table_in_restruct = new DataTable();
+            List<DataColumn> cols_data = new List<DataColumn>();
+            DataRow[] dataRows;
+            int i = -1, j = -1, k = -1;
+            string nameFieldDate = "DATE_PBR"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME]
 
-            DateTime date = dtprDate.Value.Date;
-            int hour;
+            for (i = 0; i < table_in.Columns.Count; i++)
+            {
+                if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
+                {
+                    //Преобразование таблицы
+                    break;
+                }
+                else
+                    ;
+            }
 
-            double currPBRe;
-            int offsetPrev = -1,
-            tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
-            int i = -1, j = -1,
-                offsetUDG, offsetPlan, offsetLayout;
+            if (i < table_in.Columns.Count)
+            {
+                //Преобразование таблицы
+                for (i = 0; i < table_in.Columns.Count; i++)
+                {
+                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
+                        && (!(table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1))
+                        && (!(table_in.Columns[i].ColumnName.IndexOf(tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) > -1)))
+                    //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
+                    {
+                        cols_data.Add(table_in.Columns[i]);
+                    }
+                    else
+                        if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
+                            || (table_in.Columns[i].ColumnName.IndexOf(tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) > -1))
+                        {
+                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
+                        }
+                        else
+                            ;
+                }
 
-            lastLayout = "---";
+                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                {
+                    for (j = 0; j < cols_data.Count; j++)
+                    {
+                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
+                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + tec.list_TECComponents[i].m_id;
+                    }
+                }
+
+                table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+
+                List<DataRow[]> listDataRows = new List<DataRow[]>();
+
+                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                {
+                    dataRows = table_in.Select("ID_COMPONENT=" + tec.list_TECComponents[i].m_id);
+                    listDataRows.Add(new DataRow[dataRows.Length]);
+                    dataRows.CopyTo(listDataRows[i], 0);
+
+                    int indx_row = -1;
+                    for (j = 0; j < listDataRows[i].Length; j++)
+                    {
+                        for (k = 0; k < table_in_restruct.Rows.Count; k++)
+                        {
+                            if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
+                                break;
+                            else
+                                ;
+                        }
+
+                        if (!(k < table_in_restruct.Rows.Count))
+                        {
+                            table_in_restruct.Rows.Add();
+
+                            indx_row = table_in_restruct.Rows.Count - 1;
+
+                            //Заполнение DATE_ADMIN (постоянные столбцы)
+                            table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
+                            table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                        }
+                        else
+                            indx_row = k;
+
+                        for (k = 0; k < cols_data.Count; k++)
+                        {
+                            table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + tec.list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                        }
+                    }
+                }
+            }
+            else
+                table_in_restruct = table_in;
+
+            return table_in_restruct;
+        }
+
+        private DataTable restruct_table_adminValues (DataTable table_in) {
+            DataTable table_in_restruct = new DataTable();
+            List<DataColumn> cols_data = new List<DataColumn>();
+            DataRow[] dataRows;
+            int i = -1, j = -1, k = -1;
+            string nameFieldDate = "DATE_ADMIN"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
 
             for (i = 0; i < table_in.Columns.Count; i ++) {
                 if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
@@ -3296,15 +3382,15 @@ namespace Statistic
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {
-                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT")) && (! (table_in.Columns[i].ColumnName.IndexOf ("DATE") > -1)))
+                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT")) && (!(table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)))
                     //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
                     {
                         cols_data.Add(table_in.Columns [i]);
                     }
                     else
-                        if (table_in.Columns[i].ColumnName.IndexOf("DATE") > -1)
+                        if (table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
                         {
-                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].GetType ());
+                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
                         }
                         else
                             ;
@@ -3314,8 +3400,8 @@ namespace Statistic
                 {
                     for (j = 0; j < cols_data.Count; j++)
                     {
-                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].GetType());
-                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += tec.list_TECComponents [i].m_id;
+                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
+                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + tec.list_TECComponents [i].m_id;
                     }
                 }
 
@@ -3326,12 +3412,51 @@ namespace Statistic
                     dataRows = table_in.Select("ID_COMPONENT=" + tec.list_TECComponents[i].m_id);
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
-                }
 
-                table_in.Clear ();
+                    int indx_row = -1;
+                    for (j = 0; j < listDataRows [i].Length; j ++) {
+                        for (k = 0; k < table_in_restruct.Rows.Count; k ++) {
+                            if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
+                                break;
+                            else
+                                ;
+                        }
+
+                        if (! (k < table_in_restruct.Rows.Count)) {
+                            table_in_restruct.Rows.Add();
+
+                            indx_row = table_in_restruct.Rows.Count - 1;
+
+                            //Заполнение DATE_ADMIN (постоянные столбцы)
+                            table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
+                        }
+                        else
+                            indx_row = k;
+
+                        for (k = 0; k < cols_data.Count; k ++) {
+                            table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + tec.list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                        }
+                    }
+                }
             }
             else
-                ;
+                table_in_restruct = table_in;
+
+            return table_in_restruct;
+        }
+
+        private bool GetAdminValuesResponse(DataTable table_in)
+        {
+            DateTime date = dtprDate.Value.Date;
+            int hour;
+
+            double currPBRe;
+            int offsetPrev = -1
+                //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
+                , i = -1, j = -1,
+                offsetUDG, offsetPlan, offsetLayout;
+
+            lastLayout = "---";
 
             //switch (tec.type ()) {
             //    case TEC.TEC_TYPE.COMMON:
@@ -3348,8 +3473,12 @@ namespace Statistic
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1;
                         offsetLayout = offsetPlan + tec.list_TECComponents.Count;
 
+                        m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+
+                        table_in = restruct_table_adminValues(table_in);
+
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (i = 0; i < tableRowsCount && offsetPrev < 0; i++)
+                        for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
                         {
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
@@ -3366,6 +3495,8 @@ namespace Statistic
                                             //j++;
                                         }
                                     }
+                                    else
+                                        ;
                                 }
                                 catch {
                                 }
@@ -3389,7 +3520,7 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (i = 0; i < tableRowsCount; i++)
+                        for (i = 0; i < m_tablePBRResponse.Rows.Count; i++)
                         {
                             if (i == offsetPrev)
                                 continue;
@@ -3561,7 +3692,7 @@ namespace Statistic
                         offsetLayout = offsetPlan + 1;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                        for (i = 0; i < tableRowsCount && offsetPrev < 0; i++)
+                        for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
                         {
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
@@ -3595,7 +3726,7 @@ namespace Statistic
                         }
 
                         // разбор остальных значений
-                        for (i = 0; i < tableRowsCount; i++)
+                        for (i = 0; i < m_tablePBRResponse.Rows.Count; i++)
                         {
                             if (i == offsetPrev)
                                 continue;

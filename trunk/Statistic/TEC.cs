@@ -195,7 +195,7 @@ namespace Statistic
                         //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                         m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                         //        selectAdmin +
-                        @", " + selectPBR + " AS PBR";
+                        @", " + selectPBR; // + " AS PBR";
                     if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
                         strRes += @", " + m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
                     else
