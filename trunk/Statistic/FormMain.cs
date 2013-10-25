@@ -23,9 +23,9 @@ namespace Statistic
     public partial class FormMain : Form
     {
         public List<TEC> tec;
-        private FormWait waitForm;
+        private FormWait formWait;
         private FormConnectionSettings formConnSett;
-        private Admin adminPanel;
+        private PanelAdmin m_panelAdmin;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
         private object lockValue;
@@ -74,8 +74,8 @@ namespace Statistic
             delegateStartWait = new DelegateFunc(StartWait);
             delegateStopWait = new DelegateFunc(StopWait);
 
-            waitForm = new FormWait();
-            delegateStopWaitForm = new DelegateFunc(waitForm.StopWaitForm);
+            formWait = new FormWait();
+            delegateStopWaitForm = new DelegateFunc(formWait.StopWaitForm);
             delegateEvent = new DelegateFunc(EventRaised);
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
@@ -98,14 +98,14 @@ namespace Statistic
             this.tec = formChangeMode.tec;
             oldSelectedIndex = 0;
 
-            adminPanel = new Admin(tec, stsStrip);
-            adminPanel.connSettConfigDB = formConnSett.getConnSett();
+            m_panelAdmin = new PanelAdmin(tec, stsStrip);
+            m_panelAdmin.connSettConfigDB = formConnSett.getConnSett();
 
-            adminPanel.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+            m_panelAdmin.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
             //formChangeMode = new FormChangeMode();
-            formPassword = new FormPassword(adminPanel);
-            formSetPassword = new FormSetPassword(adminPanel);
+            formPassword = new FormPassword(m_panelAdmin);
+            formSetPassword = new FormSetPassword(m_panelAdmin);
             graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             parametersForm = new Parameters();
 
@@ -137,7 +137,7 @@ namespace Statistic
             {
                 if ((! (formChangeMode == null)) && formChangeMode.admin_was_checked)
                 {
-                    if (!adminPanel.MayToClose())
+                    if (!m_panelAdmin.MayToClose())
                         e.Cancel = true;
                     else
                         ;
@@ -151,7 +151,7 @@ namespace Statistic
                 {
                     foreach (TEC t in tec)
                         t.StopDbInterfaceForce();
-                    adminPanel.StopDbInterface();
+                    m_panelAdmin.StopDbInterface();
                 }
                 else
                     ;
@@ -205,7 +205,7 @@ namespace Statistic
                     if (! (tecViews == null)) tecViews.Clear (); else ;
 
                     if (timer.Enabled) timer.Stop(); else ;
-                    if (! (adminPanel == null)) adminPanel.StopDbInterface(); else ;
+                    if (! (m_panelAdmin == null)) m_panelAdmin.StopDbInterface(); else ;
 
                     formChangeMode.InitTEC (formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
                     Initialize();
@@ -215,7 +215,7 @@ namespace Statistic
                     //    t.Reinit();
                     //}
 
-                    //adminPanel.Reinit();
+                    //m_panelAdmin.Reinit();
                 }
                 else
                     ;
@@ -234,9 +234,9 @@ namespace Statistic
                     if (tt != null && tt.IsAlive)
                         tt.Join();
                     tt = new Thread(new ParameterizedThreadStart(ThreadProc));
-                    waitForm.Location = new Point(this.Location.X + (this.Width - waitForm.Width) / 2, this.Location.Y + (this.Height - waitForm.Height) / 2);
+                    formWait.Location = new Point(this.Location.X + (this.Width - formWait.Width) / 2, this.Location.Y + (this.Height - formWait.Height) / 2);
                     tt.IsBackground = true;
-                    tt.Start(waitForm);
+                    tt.Start(formWait);
                 }
                 else
                     ;
@@ -247,8 +247,8 @@ namespace Statistic
 
         public static void ThreadProc(object data)
         {
-            FormWait wf = (FormWait)data;
-            wf.StartWaitForm();
+            FormWait fw = (FormWait)data;
+            fw.StartWaitForm();
         }
 
         public void StopWait()
@@ -262,8 +262,8 @@ namespace Statistic
                 if (waitCounter == 0)
                 {
 //                    this.Opacity = 1.0;
-                    while(!waitForm.IsHandleCreated);
-                    waitForm.Invoke(delegateStopWaitForm);
+                    while(!formWait.IsHandleCreated);
+                    formWait.Invoke(delegateStopWaitForm);
                 }
                 else
                     ;
@@ -293,18 +293,18 @@ namespace Statistic
                     }
 
                     if (tecViews.Count == 0) {
-                        adminPanel.StopDbInterface ();
-                        adminPanel.Stop();
+                        m_panelAdmin.StopDbInterface ();
+                        m_panelAdmin.Stop();
 
-                        adminPanel.InitTEC (formChangeMode.tec);
-                        adminPanel.mode(formChangeMode.getModeTECComponent ());
-                        adminPanel.StartDbInterface ();
+                        m_panelAdmin.InitTEC (formChangeMode.tec);
+                        m_panelAdmin.mode(formChangeMode.getModeTECComponent ());
+                        m_panelAdmin.StartDbInterface ();
 
                         // создаём все tecview
                         foreach (TEC t in formChangeMode.tec)
                         {
                             int index_gtp;
-                            tecView = new TecView(t, -1, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                            tecView = new TecView(t, -1, m_panelAdmin, stsStrip, graphicsSettingsForm, parametersForm);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             if (t.list_TECComponents.Count > 0)
@@ -312,7 +312,7 @@ namespace Statistic
                                 index_gtp = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
-                                    tecView = new TecView(t, index_gtp, adminPanel, stsStrip, graphicsSettingsForm, parametersForm);
+                                    tecView = new TecView(t, index_gtp, m_panelAdmin, stsStrip, graphicsSettingsForm, parametersForm);
                                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                     tecViews.Add(tecView);
                                     index_gtp++;
@@ -399,9 +399,9 @@ namespace Statistic
                             StartWait();
                             tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues((short) formChangeMode.getModeTECComponent ()));
 
-                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
+                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
 
-                            adminPanel.Start();
+                            m_panelAdmin.Start();
                             StopWait();
                         }
                         else
@@ -414,11 +414,11 @@ namespace Statistic
                     {
                         oldSelectedIndex = 0;
                         selectedTecViews[oldSelectedIndex].Activate(true);
-                        adminPanel.Activate(false);
+                        m_panelAdmin.Activate(false);
                     }
                     else
                         if (formChangeMode.admin_was_checked)
-                            adminPanel.Activate(true);
+                            m_panelAdmin.Activate(true);
                         else
                             ;
                 }
@@ -467,7 +467,7 @@ namespace Statistic
                 selectedTecViews[oldSelectedIndex].Activate(false);
                 selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
                 oldSelectedIndex = tclTecViews.SelectedIndex;
-                adminPanel.Activate(false);
+                m_panelAdmin.Activate(false);
             }
             else
             {
@@ -475,7 +475,7 @@ namespace Statistic
                     selectedTecViews[oldSelectedIndex].Activate(false);
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
-                    adminPanel.Activate(true);
+                    m_panelAdmin.Activate(true);
                 else
                     ;
             }
@@ -511,19 +511,19 @@ namespace Statistic
                     ;
             }
 
-            if (adminPanel.actioned_state && adminPanel.isActive)
+            if (m_panelAdmin.actioned_state && m_panelAdmin.isActive)
             {
-                lblDateError.Text = adminPanel.last_time_action.ToString();
-                lblError.Text = adminPanel.last_action;
+                lblDateError.Text = m_panelAdmin.last_time_action.ToString();
+                lblError.Text = m_panelAdmin.last_action;
             }
             else
                 ;
 
-            if (adminPanel.errored_state)
+            if (m_panelAdmin.errored_state)
             {
                 have_eror = true;
-                lblDateError.Text = adminPanel.last_time_error.ToString();
-                lblError.Text = adminPanel.last_error;
+                lblDateError.Text = m_panelAdmin.last_time_error.ToString();
+                lblError.Text = m_panelAdmin.last_error;
             }
             else
                 ;
@@ -545,7 +545,7 @@ namespace Statistic
         {
             if (firstStart)
             {
-                adminPanel.StartDbInterface();
+                m_panelAdmin.StartDbInterface();
 
                 // отображаем вкладки ТЭЦ
                 int index;
@@ -585,9 +585,9 @@ namespace Statistic
                     {
                         tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues (1));
 
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(adminPanel);
+                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
 
-                        adminPanel.Start();
+                        m_panelAdmin.Start();
                     }
                 }
                 else

@@ -14,7 +14,7 @@ using System.Globalization;
 
 namespace Statistic
 {
-    public class Admin : Panel
+    public class PanelAdmin : Panel
     {
         private delegate void DelegateFunctionDate(DateTime date);
 
@@ -359,35 +359,35 @@ namespace Statistic
             // 
             this.DateHour.Frozen = true;
             this.DateHour.HeaderText = "Дата, Час";
-            this.DateHour.Name = arDescStringIndex [(int) Admin.DESC_INDEX.DATE_HOUR];
+            this.DateHour.Name = arDescStringIndex [(int) PanelAdmin.DESC_INDEX.DATE_HOUR];
             this.DateHour.ReadOnly = true;
             this.DateHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Plan
             // 
             this.Plan.Frozen = true;
-            this.Plan.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.PLAN];
-            this.Plan.Name = arDescStringIndex[(int)Admin.DESC_INDEX.PLAN];
+            this.Plan.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
+            this.Plan.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
             this.Plan.ReadOnly = false;
             this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             this.Plan.Width = 70;
             // 
             // Recommendation
             // 
-            this.Recommendation.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.RECOMENDATION];
-            this.Recommendation.Name = arDescStringIndex[(int)Admin.DESC_INDEX.RECOMENDATION];
+            this.Recommendation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
+            this.Recommendation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
             this.Recommendation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationType
             // 
-            this.DeviationType.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.DIVIATION_TYPE];
-            this.DeviationType.Name = arDescStringIndex[(int)Admin.DESC_INDEX.DIVIATION_TYPE];
+            this.DeviationType.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
+            this.DeviationType.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
             this.DeviationType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Deviation
             // 
-            this.Deviation.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.DIVIATION];
-            this.Deviation.Name = arDescStringIndex[(int)Admin.DESC_INDEX.DIVIATION];
+            this.Deviation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
+            this.Deviation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
             this.Deviation.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.Deviation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
@@ -451,8 +451,8 @@ namespace Statistic
             // 
             // ToAll
             // 
-            this.ToAll.HeaderText = arDescRusStringIndex[(int)Admin.DESC_INDEX.TO_ALL];
-            this.ToAll.Name = arDescStringIndex [(int) Admin.DESC_INDEX.TO_ALL];
+            this.ToAll.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.TO_ALL];
+            this.ToAll.Name = arDescStringIndex [(int) PanelAdmin.DESC_INDEX.TO_ALL];
             // 
             // comboBoxTecComponent
             // 
@@ -467,7 +467,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public Admin(List<TEC> tec, StatusStrip sts)
+        public PanelAdmin(List<TEC> tec, StatusStrip sts)
         {
             InitializeComponents();
 
@@ -608,7 +608,7 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[(int) Admin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.dgwAdminTable.Rows[i].Cells[(int) PanelAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = values.plan[i].ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = values.recommendations[i].ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = values.diviationPercent[i].ToString();

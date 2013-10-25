@@ -105,7 +105,7 @@ namespace Statistic
         private System.Threading.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
 
-        private Admin admin;
+        private PanelAdmin m_panelAdmin;
         private GraphicsSettings graphSettings;
         private Parameters parameters;        
 
@@ -185,7 +185,7 @@ namespace Statistic
         private volatile int countTG;
         private bool update;
 
-        private Admin.TECComponentsAdminStruct adminValues;
+        private PanelAdmin.TECComponentsAdminStruct adminValues;
 
         public volatile bool isActive;
 
@@ -797,7 +797,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_comp, Admin admin, StatusStrip sts, GraphicsSettings gs, Parameters par)
+        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, GraphicsSettings gs, Parameters par)
         {
             InitializeComponent();
 
@@ -807,7 +807,7 @@ namespace Statistic
             dgvCellStyleError.BackColor = Color.Red;
             dgvCellStyleCommon = new DataGridViewCellStyle();
 
-            this.admin = admin;
+            this.m_panelAdmin = m_panelAdmin;
             this.graphSettings = gs;
             this.parameters = par;
 
@@ -827,7 +827,7 @@ namespace Statistic
 
             lockValue = new object();
 
-            adminValues = new Admin.TECComponentsAdminStruct(24);
+            adminValues = new PanelAdmin.TECComponentsAdminStruct(24);
 
             valuesMins = new valuesS();
             valuesMins.valuesFact = new double[21];
@@ -2151,11 +2151,11 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) admin.mode()));
+            m_panelAdmin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) m_panelAdmin.mode()));
         }
 
         private void GetAdminValuesRequest () {
-            admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) admin.mode ()));
+            m_panelAdmin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) m_panelAdmin.mode ()));
         }
 
         private void FillGridMins(int hour)
@@ -4726,11 +4726,11 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.PBRValues:
-                    return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    return m_panelAdmin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     //return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
-                    //return admin.GetResponse(out error, out table, true);
-                    return admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    //return m_panelAdmin.GetResponse(out error, out table, true);
+                    return m_panelAdmin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
             }
 
             error = true;

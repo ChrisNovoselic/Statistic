@@ -12,13 +12,13 @@ namespace Statistic
     {
         private uint m_idPass;
 
-        private Admin admin;
+        private PanelAdmin m_panelAdmin;
         private bool closing;
 
-        public FormPassword(Admin a)
+        public FormPassword(PanelAdmin a)
         {
             InitializeComponent();
-            admin = a;
+            m_panelAdmin = a;
             closing = false;
         }
 
@@ -36,9 +36,9 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
-                switch (admin.ComparePassword(tbxPassword.Text, m_idPass))
+                switch (m_panelAdmin.ComparePassword(tbxPassword.Text, m_idPass))
                 {
-                    case Admin.Errors.NoAccess:
+                    case PanelAdmin.Errors.NoAccess:
                         tbxPassword.Text = "";
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
@@ -50,8 +50,8 @@ namespace Statistic
                         {
                         }
                         break;
-                    case Admin.Errors.InvalidValue:
-                    case Admin.Errors.ParseError:
+                    case PanelAdmin.Errors.InvalidValue:
+                    case PanelAdmin.Errors.ParseError:
                         tbxPassword.Text = "";
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
@@ -63,7 +63,7 @@ namespace Statistic
                             Close();
                         }
                         break;
-                    case Admin.Errors.NoError:
+                    case PanelAdmin.Errors.NoError:
                         tbxPassword.Text = "";
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
