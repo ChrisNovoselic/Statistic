@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class GraphicsSettings : Form
+    public partial class FormGraphicsSettings : Form
     {
         public Color udgColor;
         public Color divColor;
@@ -28,7 +28,7 @@ namespace Statistic
             Bar,
         }
 
-        public GraphicsSettings(FormMain mf, DelegateFunc delUp, DelegateFunc Hide)
+        public FormGraphicsSettings(FormMain mf, DelegateFunc delUp, DelegateFunc Hide)
         {
             InitializeComponent();
 

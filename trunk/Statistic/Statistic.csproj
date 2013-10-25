@@ -89,20 +89,16 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormParameters.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="FormParameters.cs" />
     <Compile Include="FormParameters.designer.cs">
       <DependentUpon>FormParameters.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormParametersTG.cs">
+    <Compile Include="FormParametersBase.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FormParametersTG.cs" />
     <Compile Include="FormParametersTG.designer.cs">
       <DependentUpon>FormParametersTG.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormParametrsBase.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormPassword.cs">
       <SubType>Form</SubType>
@@ -129,7 +125,6 @@
       <DependentUpon>FormWait.cs</DependentUpon>
     </Compile>
     <Compile Include="Logging.cs" />
-    <Compile Include="GTP.cs" />
     <Compile Include="InitTEC.cs" />
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
@@ -189,6 +184,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="TEC.cs" />
+    <Compile Include="TECComponent.cs" />
     <Compile Include="TecView.cs">
       <SubType>Component</SubType>
     </Compile>

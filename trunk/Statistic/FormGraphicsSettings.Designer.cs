@@ -1,6 +1,6 @@
 namespace Statistic
 {
-    partial class GraphicsSettings
+    partial class FormGraphicsSettings
     {
         /// <summary>
         /// Required designer variable.
@@ -158,7 +158,7 @@ namespace Statistic
             this.lblGRIDcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblGRIDcolor.Click += new System.EventHandler(this.lblGRIDcolor_Click);
             // 
-            // GraphicsSettings
+            // FormGraphicsSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -175,7 +175,7 @@ namespace Statistic
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(170, 25);
-            this.Name = "GraphicsSettings";
+            this.Name = "FormGraphicsSettings";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

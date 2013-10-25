@@ -47,8 +47,8 @@ namespace Statistic
         private Thread tt;
         public static object lockFile = new object();
         public static string logPath;
-        public GraphicsSettings graphicsSettingsForm;
-        public FormParameters parametersForm;
+        public FormGraphicsSettings formGraphicsSettings;
+        public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
         public static Logging log;
 
@@ -106,8 +106,8 @@ namespace Statistic
             //formChangeMode = new FormChangeMode();
             formPassword = new FormPassword(m_panelAdmin);
             formSetPassword = new FormSetPassword(m_panelAdmin);
-            graphicsSettingsForm = new GraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            parametersForm = new FormParameters();
+            formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
+            formParameters = new FormParameters();
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
@@ -304,7 +304,7 @@ namespace Statistic
                         foreach (TEC t in formChangeMode.tec)
                         {
                             int index_gtp;
-                            tecView = new TecView(t, -1, m_panelAdmin, stsStrip, graphicsSettingsForm, parametersForm);
+                            tecView = new TecView(t, -1, m_panelAdmin, stsStrip, formGraphicsSettings, formParameters);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             if (t.list_TECComponents.Count > 0)
@@ -312,7 +312,7 @@ namespace Statistic
                                 index_gtp = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
-                                    tecView = new TecView(t, index_gtp, m_panelAdmin, stsStrip, graphicsSettingsForm, parametersForm);
+                                    tecView = new TecView(t, index_gtp, m_panelAdmin, stsStrip, formGraphicsSettings, formParameters);
                                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                     tecViews.Add(tecView);
                                     index_gtp++;
@@ -627,9 +627,9 @@ namespace Statistic
             if (formConnSett.Protected == true)
             {
                 if (панельГрафическихToolStripMenuItem.Checked)
-                    graphicsSettingsForm.Show();
+                    formGraphicsSettings.Show();
                 else
-                    graphicsSettingsForm.Hide();
+                    formGraphicsSettings.Hide();
             }
             else
                 ;
@@ -666,9 +666,9 @@ namespace Statistic
         {
             if (панельГрафическихToolStripMenuItem.Checked)
             {
-                ShowWindow(graphicsSettingsForm.Handle, SW_SHOWNOACTIVATE);
-                SetWindowPos(graphicsSettingsForm.Handle.ToInt32(), HWND_TOP,
-                graphicsSettingsForm.Left, graphicsSettingsForm.Top, graphicsSettingsForm.Width, graphicsSettingsForm.Height,
+                ShowWindow(formGraphicsSettings.Handle, SW_SHOWNOACTIVATE);
+                SetWindowPos(formGraphicsSettings.Handle.ToInt32(), HWND_TOP,
+                formGraphicsSettings.Left, formGraphicsSettings.Top, formGraphicsSettings.Width, formGraphicsSettings.Height,
                 SWP_NOACTIVATE);
             }
             else
@@ -678,7 +678,7 @@ namespace Statistic
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (formConnSett.Protected == true)
-                parametersForm.ShowDialog();
+                formParameters.ShowDialog();
             else
                 ;
         }

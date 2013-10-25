@@ -106,7 +106,7 @@ namespace Statistic
         private DelegateFunc delegateTickTime;
 
         private PanelAdmin m_panelAdmin;
-        private GraphicsSettings graphSettings;
+        private FormGraphicsSettings graphSettings;
         private FormParameters parameters;        
 
         private volatile bool currHour;
@@ -797,7 +797,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, GraphicsSettings gs, FormParameters par)
+        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
         {
             InitializeComponent();
 
@@ -1176,7 +1176,7 @@ namespace Statistic
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
             //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
-            if (graphSettings.graphTypes == GraphicsSettings.GraphTypes.Bar)
+            if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
                 BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, graphSettings.pColor);
 
@@ -1184,7 +1184,7 @@ namespace Statistic
             }
             else
             {
-                if (graphSettings.graphTypes == GraphicsSettings.GraphTypes.Linear)
+                if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     if (lastMin > 1)
                     {
@@ -1425,13 +1425,13 @@ namespace Statistic
             LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
 
-            if (graphSettings.graphTypes == GraphicsSettings.GraphTypes.Bar)
+            if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
                 BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, graphSettings.pColor);
             }
             else
             {
-                if (graphSettings.graphTypes == GraphicsSettings.GraphTypes.Linear)
+                if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     int valuescount;
 

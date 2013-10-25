@@ -19,7 +19,9 @@ namespace trans_rdg
         {
             InitializeComponent();
 
-            //m_panelAdmin = new Admin (new InitTEC (), statusStripMain);
+            FormConnectionSettings formConnectionSettings = new FormConnectionSettings ();
+            ConnectionSettings connSett = formConnectionSettings.getConnSett ();
+            m_panelAdmin = new PanelAdmin(new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec, statusStripMain);
 
             //panelMain.Visible = false;
         }
@@ -79,8 +81,8 @@ namespace trans_rdg
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            About about = new About ();
-            about.ShowDialog ();
+            FormAbout formAbout = new FormAbout ();
+            formAbout.ShowDialog();
         }
 
     }
