@@ -1,6 +1,6 @@
 ﻿namespace trans_rdg
 {
-    partial class Form1
+    partial class FormMain
     {
         /// <summary>
         /// Требуется переменная конструктора.
@@ -158,7 +158,7 @@
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Location = new System.Drawing.Point(319, 5);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(498, 494);
+            this.dataGridView1.Size = new System.Drawing.Size(498, 483);
             this.dataGridView1.TabIndex = 27;
             // 
             // groupBoxDest
@@ -464,17 +464,17 @@
             // 
             // statusStripMain
             // 
-            this.statusStripMain.Location = new System.Drawing.Point(0, 552);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 570);
             this.statusStripMain.Name = "statusStripMain";
             this.statusStripMain.Size = new System.Drawing.Size(841, 22);
             this.statusStripMain.TabIndex = 5;
             this.statusStripMain.Text = "statusStrip1";
             // 
-            // Form1
+            // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(841, 574);
+            this.ClientSize = new System.Drawing.Size(841, 592);
             this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.buttonClose);
@@ -482,7 +482,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MainMenuStrip = this.menuStripMain;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Конвертер данных плана и административных данных";
             this.panelMain.ResumeLayout(false);

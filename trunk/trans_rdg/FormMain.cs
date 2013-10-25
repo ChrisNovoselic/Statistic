@@ -11,17 +11,17 @@ using Statistic;
 
 namespace trans_rdg
 {
-    public partial class Form1 : Form
+    public partial class FormMain : Form
     {
         Statistic.Admin m_panelAdmin;
 
-        public Form1()
+        public FormMain()
         {
             InitializeComponent();
 
             //m_panelAdmin = new Admin (new InitTEC (), statusStripMain);
 
-            panelMain.Visible = false;
+            //panelMain.Visible = false;
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
