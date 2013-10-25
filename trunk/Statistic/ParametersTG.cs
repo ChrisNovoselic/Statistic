@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 
 namespace Statistic {
-    public partial class ParametersTG : ParametrsBase
+    public partial class ParametersTG : Statistic.ParametrsBase
     {
         private const int COUNT_TG = 8;
         private const char SEP_ID_TG = ',';
