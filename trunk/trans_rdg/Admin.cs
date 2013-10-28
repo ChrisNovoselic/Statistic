@@ -12,6 +12,11 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 
+using HDatabase;
+using HConnectionSettings;
+
+using Statistic;
+
 namespace trans_rdg
 {
     public class Admin : object
