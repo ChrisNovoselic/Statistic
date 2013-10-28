@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
 using System.Data;
-using MySql.Data.MySqlClient;
+
+using HConnectionSettings;
+using HDatabase;
 
 namespace Statistic
 {

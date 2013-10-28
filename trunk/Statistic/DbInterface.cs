@@ -8,7 +8,12 @@ using System.Data.OleDb;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 
-namespace Statistic
+using Statistic;
+
+using HConnectionSettings;
+
+//namespace Statistic
+namespace HDatabase
 {
     public class DbInterface
     {
@@ -174,12 +179,16 @@ namespace Statistic
                 if (!joined)
                     dbThread.Abort();
             }
+            else
+                ;
         }
-        
+
         public void Request(int listenerId, string request)
         {
             if ((! (listenerId < m_listListeners.Count)) || listenerId < 0)
                 return;
+            else
+                ;
 
             lock (lockListeners)
             {
@@ -205,6 +214,8 @@ namespace Statistic
                 table = null;
                 return false;
             }
+            else
+                ;
 
             error = m_listListeners[listenerId].dataError;
             table = m_listListeners[listenerId].dataTable;
@@ -224,7 +235,7 @@ namespace Statistic
                 connectionSettings.ignore = cs.ignore;
                 needReconnect = true;
             }
-            
+
             try
             {
                 sem.Release(1);
@@ -248,7 +259,7 @@ namespace Statistic
             while (threadIsWorking)
             {
                 sem.WaitOne();
-                
+
                 lock (lockConnectionSettings) // атомарно читаю и сбрасываю флаг, чтобы при параллельной смене настроек не сбросить повторно выставленный флаг
                 {
                     reconnection = needReconnect;
@@ -264,9 +275,13 @@ namespace Statistic
                     else
                         needReconnect = true; // выставлять флаг можно без блокировки
                 }
+                else
+                    ;
 
                 if (!connected) // не удалось подключиться - не пытаемся получить данные
                     continue;
+                else
+                    ;
 
                 for (int i = 0; i < m_listListeners.Count; i++)
                 {
@@ -274,9 +289,15 @@ namespace Statistic
                     {
                         if (! m_listListeners [i].listenerActive)
                             continue;
+                        else
+                            ;
+
                         request = m_listListeners [i].requestDB;
+
                         if (request == "")
                             continue;
+                        else
+                            ;
                     }
 
                     try
@@ -586,7 +607,8 @@ namespace Statistic
             return dataTableRes;
         }
 
-        public static DataTable Request (ConnectionSettings connSett, string query) {
+        public static DataTable Request(ConnectionSettings connSett, string query)
+        {
             DataTable dataTableRes = new DataTable();
             
             MySqlConnection connectionMySQL;

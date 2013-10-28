@@ -4,13 +4,13 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.Security.Cryptography;
-using System.Data.OleDb;
 using System.IO;
-using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
+
+using HConnectionSettings;
+using HDatabase;
 
 namespace Statistic
 {

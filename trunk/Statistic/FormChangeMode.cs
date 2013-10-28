@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using HConnectionSettings;
+
 namespace Statistic
 {
     public partial class FormChangeMode : Form

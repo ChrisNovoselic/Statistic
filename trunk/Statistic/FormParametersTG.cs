@@ -27,7 +27,7 @@ namespace Statistic {
         public FormParametersTG()
         {
             InitializeComponent();
-            settingsFile = FormMain.logPath + "\\" + settingsFile;
+            settingsFile = System.Environment.CurrentDirectory + "\\" + settingsFile;
 
             //delegateParamsApply = delParApp;
 

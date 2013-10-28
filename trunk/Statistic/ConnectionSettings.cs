@@ -7,7 +7,8 @@ using System.Windows.Forms;
 using MySql.Data.MySqlClient; //Äëÿ 'IsConnect'
 using System.Data;
 
-namespace Statistic
+//namespace Statistic
+namespace HConnectionSettings
 {
     public enum CONN_SETT_TYPE
     {
@@ -25,7 +26,7 @@ namespace Statistic
         public volatile bool ignore;
 
         override public bool Equals(object obj) {
-            if ((Statistic.ConnectionSettings) obj == this)
+            if ((ConnectionSettings) obj == this)
                 return true;
             else
                 return false;

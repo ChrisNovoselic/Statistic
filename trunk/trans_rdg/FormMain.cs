@@ -9,19 +9,25 @@ using System.Windows.Forms;
 
 using Statistic;
 
+using HConnectionSettings;
+
 namespace trans_rdg
 {
     public partial class FormMain : Form
     {
-        Statistic.PanelAdmin m_panelAdmin;
+        Admin m_admin;
+
+        public static Logging log;
 
         public FormMain()
         {
             InitializeComponent();
 
+            log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
+
             FormConnectionSettings formConnectionSettings = new FormConnectionSettings ();
             ConnectionSettings connSett = formConnectionSettings.getConnSett ();
-            m_panelAdmin = new PanelAdmin(new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec, statusStripMain);
+            m_admin = new Admin(new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec);
 
             //panelMain.Visible = false;
         }

@@ -7,6 +7,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
+using HConnectionSettings;
+using HDatabase;
+
 namespace Statistic
 {
     public partial class FormTECComponent : Form

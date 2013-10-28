@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 //???
 //using System.Security.Cryptography;
 
+using HConnectionSettings;
+
 namespace Statistic
 {
     public delegate void DelegateFunc();
@@ -45,12 +47,12 @@ namespace Statistic
         private bool prevStateIsAdmin;
         private bool prevStateIsPPBR;
         private Thread tt;
-        public static object lockFile = new object();
-        public static string logPath;
+        //public static object lockFile = new object();
+        //public static string logPath;
+        public static Logging log;
         public FormGraphicsSettings formGraphicsSettings;
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
-        public static Logging log;
 
         private bool show_error_alert = false;
 
@@ -68,7 +70,6 @@ namespace Statistic
 
             lockEvent = new object();
 
-            logPath = System.Environment.CurrentDirectory;
             log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
 
             delegateStartWait = new DelegateFunc(StartWait);
@@ -158,6 +159,34 @@ namespace Statistic
             }
         }
 
+        private void connectionSettings () {
+            DialogResult result;
+            result = formConnSett.ShowDialog();
+            if (result == DialogResult.Yes)
+            {
+                if (! (tecViews == null)) tecViews.Clear (); else ;
+
+                if (timer.Enabled) timer.Stop(); else ;
+                if (! (m_panelAdmin == null)) m_panelAdmin.StopDbInterface(); else ;
+
+                if (formChangeMode == null)
+                    formChangeMode = new FormChangeMode(formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+                else
+                    formChangeMode.InitTEC (formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+
+                Initialize();
+
+                //foreach (TecView t in tecViews)
+                //{
+                //    t.Reinit();
+                //}
+
+                //m_panelAdmin.Reinit();
+            }
+            else
+                ;
+        }
+        
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tclTecViews.TabPages.Count > 0)
@@ -195,33 +224,19 @@ namespace Statistic
             //StringBuilder strPasswordHashed = new StringBuilder ();
             //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
 
-            formPassword.SetIdPass(2);
-            if (!formConnSett.Protected || formPassword.ShowDialog() == DialogResult.Yes)
+            if (formPassword == null)
             {
-                DialogResult result;
-                result = formConnSett.ShowDialog();
-                if (result == DialogResult.Yes)
+                connectionSettings ();
+            }
+            else {
+                formPassword.SetIdPass(2);
+                if ((formConnSett.Protected == false) || formPassword.ShowDialog() == DialogResult.Yes)
                 {
-                    if (! (tecViews == null)) tecViews.Clear (); else ;
-
-                    if (timer.Enabled) timer.Stop(); else ;
-                    if (! (m_panelAdmin == null)) m_panelAdmin.StopDbInterface(); else ;
-
-                    formChangeMode.InitTEC (formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
-                    Initialize();
-
-                    //foreach (TecView t in tecViews)
-                    //{
-                    //    t.Reinit();
-                    //}
-
-                    //m_panelAdmin.Reinit();
+                    connectionSettings ();
                 }
                 else
                     ;
             }
-            else
-                ;
         }
 
         public void StartWait()

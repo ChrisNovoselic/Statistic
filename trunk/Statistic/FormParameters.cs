@@ -24,7 +24,7 @@ namespace Statistic
         public FormParameters()
         {
             InitializeComponent();
-            settingsFile = FormMain.logPath + "\\" + settingsFile;
+            settingsFile = System.Environment.CurrentDirectory + "\\" + settingsFile;
             
             loadParam();
             mayClose = false;

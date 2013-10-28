@@ -13,6 +13,8 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
+using HConnectionSettings;
+
 namespace Statistic
 {
     public class TecView : Panel
