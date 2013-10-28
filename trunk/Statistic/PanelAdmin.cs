@@ -18,28 +18,12 @@ namespace Statistic
     {
         private delegate void DelegateFunctionDate(DateTime date);
 
-        private struct OldValuesStruct
+        private struct RDGStruct
         {
             public double plan;
             public double recomendation;
-            public bool deviationType;
+            public bool deviationPercent;
             public double deviation;
-        }
-
-        public struct TECComponentsAdminStruct
-        {
-            public double[] plan;
-            public double[] recommendations;            
-            public double[] diviation;
-            public bool[] diviationPercent;
-
-            public TECComponentsAdminStruct(int count)
-            {
-                this.plan = new double[count];
-                this.recommendations = new double[count];                
-                this.diviation = new double[count];
-                this.diviationPercent = new bool[count];
-            }
         }
 
         private struct TecPPBRValues
@@ -172,9 +156,9 @@ namespace Statistic
         private string [] arDescStringIndex = {"DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll"};
         private string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
-        private volatile OldValuesStruct[] oldValues;
-        private TECComponentsAdminStruct values;
-        private DateTime oldDate;
+        private volatile RDGStruct[] m_prevRDGValues;
+        private RDGStruct[] m_curRDGValues;
+        private DateTime m_prevDatetime;
         private volatile List<TECComponent> allTECComponents;
         private volatile int oldTecIndex;
         private volatile List<TEC> m_list_tec;
@@ -479,7 +463,7 @@ namespace Statistic
 
             started = false;
 
-            oldValues = new OldValuesStruct[24];
+            m_prevRDGValues = new RDGStruct[24];
 
             md5 = new MD5CryptoServiceProvider();
 
@@ -491,7 +475,7 @@ namespace Statistic
 
             using_date = false;
 
-            values = new TECComponentsAdminStruct(24);
+            m_curRDGValues = new RDGStruct  [24];
 
             adminDates = new bool[24];
             PPBRDates = new bool[24];
@@ -524,19 +508,19 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                if (oldValues[i].plan != values.plan[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value.ToString())*/)
+                if (m_prevRDGValues[i].plan != m_curRDGValues[i].plan /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (oldValues[i].recomendation != values.recommendations[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (oldValues[i].deviationType != values.diviationPercent[i] /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (oldValues[i].deviation != values.diviation[i] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value.ToString())*/)
                     return true;
                 else
                     ;
@@ -553,7 +537,7 @@ namespace Statistic
                 saveResult = Errors.NoAccess;
                 saving = true;
                 using_date = false;
-                dateForValues = oldDate;
+                dateForValues = m_prevDatetime;
 
                 newState = true;
                 states.Clear();
@@ -597,10 +581,10 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                oldValues[i].plan = values.plan[i];
-                oldValues[i].recomendation = values.recommendations[i];
-                oldValues[i].deviationType = values.diviationPercent[i];
-                oldValues[i].deviation = values.diviation[i];
+                m_prevRDGValues[i].plan = m_curRDGValues[i].plan;
+                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
+                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
+                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
             }
         }
 
@@ -609,10 +593,10 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 this.dgwAdminTable.Rows[i].Cells[(int) PanelAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = values.plan[i].ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = values.recommendations[i].ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = values.diviationPercent[i].ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = values.diviation[i].ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = m_curRDGValues[i].plan.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = m_curRDGValues[i].recomendation.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value = m_curRDGValues[i].deviationPercent.ToString();
+                this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value = m_curRDGValues[i].deviation.ToString("F2");
             }
 
             FillOldValues();
@@ -644,8 +628,8 @@ namespace Statistic
                         {
                             ClearValues();
                             ClearTables();
-                            oldDate = e.Start;
-                            dateForValues = oldDate;
+                            m_prevDatetime = e.Start;
+                            dateForValues = m_prevDatetime;
 
                             newState = true;
                             states.Clear();
@@ -667,7 +651,7 @@ namespace Statistic
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        mcldrDate.SetDate(oldDate);
+                        mcldrDate.SetDate(m_prevDatetime);
                     }
                     break;
                 case DialogResult.No:
@@ -675,8 +659,8 @@ namespace Statistic
                     {
                         ClearValues();
                         ClearTables();
-                        oldDate = e.Start;
-                        dateForValues = oldDate;
+                        m_prevDatetime = e.Start;
+                        dateForValues = m_prevDatetime;
 
                         newState = true;
                         states.Clear();
@@ -693,7 +677,7 @@ namespace Statistic
                     }
                     break;
                 case DialogResult.Cancel:
-                    mcldrDate.SetDate(oldDate);
+                    mcldrDate.SetDate(m_prevDatetime);
                     break;
             }
         }
@@ -743,8 +727,8 @@ namespace Statistic
                     ClearValues();
                     ClearTables();
                     oldTecIndex = comboBoxTecComponent.SelectedIndex;
-                    dateForValues = oldDate;
-                    using_date = true; //false
+                    dateForValues = m_prevDatetime;
+                    using_date = false; //true
 
                     newState = true;
                     states.Clear();
@@ -851,7 +835,7 @@ namespace Statistic
         //    char divider = ':';
         //    int pos1, pos2, tmp_int, hour;
         //    TecPPBRValues tecPPBRValues;
-        //    double[] values;
+        //    double[] m_curRDGValues;
 
         //    layoutForLoading.ClearValues();
 
@@ -1002,10 +986,10 @@ namespace Statistic
         //            tmp_int /= 10;
         //        switch (tmp_int % 1000)
         //        {
-        //            case 100: /*values = tecPPBRValues.SN; break;*/
-        //            case 200: values = tecPPBRValues.PBR; break;
-        //            case 300: values = tecPPBRValues.Pmax; break;
-        //            case 400: values = tecPPBRValues.Pmin; break;
+        //            case 100: /*m_curRDGValues = tecPPBRValues.SN; break;*/
+        //            case 200: m_curRDGValues = tecPPBRValues.PBR; break;
+        //            case 300: m_curRDGValues = tecPPBRValues.Pmax; break;
+        //            case 400: m_curRDGValues = tecPPBRValues.Pmin; break;
         //            default:
         //                {
         //                    sr.Close();
@@ -1018,7 +1002,7 @@ namespace Statistic
         //        while ((pos2 = str.IndexOf(divider, pos1)) > 0)
         //        {
         //            tmp_str = SetNumberSeparator(str.Substring(pos1, pos2 - pos1));
-        //            if (!double.TryParse(tmp_str, out values[hour++]))
+        //            if (!double.TryParse(tmp_str, out m_curRDGValues[hour++]))
         //            {
         //                sr.Close();
         //                return false;
@@ -1029,7 +1013,7 @@ namespace Statistic
         //        if ((pos2 = str.IndexOf("==", pos1)) > 0)
         //        {
         //            tmp_str = SetNumberSeparator(str.Substring(pos1, pos2 - pos1));
-        //            if (!double.TryParse(tmp_str, out values[hour++]))
+        //            if (!double.TryParse(tmp_str, out m_curRDGValues[hour++]))
         //            {
         //                sr.Close();
         //                return false;
@@ -1039,7 +1023,7 @@ namespace Statistic
         //        else
         //        {
         //            tmp_str = SetNumberSeparator(str.Substring(pos1, str.Length - pos1));
-        //            if (!double.TryParse(tmp_str, out values[hour++]))
+        //            if (!double.TryParse(tmp_str, out m_curRDGValues[hour++]))
         //            {
         //                sr.Close();
         //                return false;
@@ -1184,12 +1168,12 @@ namespace Statistic
             valid = double.TryParse((string)this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value, out value);
             if (!valid || value > maxRecomendationValue)
             {
-                values.recommendations[rowIndx] = 0;
+                m_curRDGValues.recommendations[rowIndx] = 0;
                 this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = 0.ToString("F2");
             }
             else
             {
-                values.recommendations[rowIndx] = value;
+                m_curRDGValues.recommendations[rowIndx] = value;
                 this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = value.ToString("F2");
             }
         }
@@ -1221,7 +1205,7 @@ namespace Statistic
                 ClearValues ();
                 ClearTables();
 
-                dateForValues = oldDate;
+                dateForValues = m_prevDatetime;
                 using_date = false;
 
                 newState = true;
@@ -1262,12 +1246,12 @@ namespace Statistic
                     valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value, out value);
                     if (!valid || value > maxRecomendationValue)
                     {
-                        values.plan[e.RowIndex] = 0;
+                        m_curRDGValues[e.RowIndex].plan = 0;
                         this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = 0.ToString("F2");
                     }
                     else
                     {
-                        values.plan[e.RowIndex] = value;
+                        m_curRDGValues[e.RowIndex].plan = value;
                         this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = value.ToString("F2");
                     }
                     break;
@@ -1278,19 +1262,19 @@ namespace Statistic
                         valid = double.TryParse((string)this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
                         if (!valid || value > maxRecomendationValue)
                         {
-                            values.recommendations[e.RowIndex] = 0;
+                            m_curRDGValues[e.RowIndex].recomendation = 0;
                             this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
                         }
                         else
                         {
-                            values.recommendations[e.RowIndex] = value;
+                            m_curRDGValues[e.RowIndex].recomendation = value;
                             this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
                         }
                         break;
                     }
                 case (int)DESC_INDEX.DIVIATION_TYPE:
                     {
-                        values.diviationPercent[e.RowIndex] = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString());
+                        m_curRDGValues[e.RowIndex].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString());
                         break;
                     }
                 case (int)DESC_INDEX.DIVIATION: // Максимальное отклонение
@@ -1307,12 +1291,12 @@ namespace Statistic
 
                         if (!valid || value < 0 || value > maxValue)
                         {
-                            values.diviation[e.RowIndex] = 0;
+                            m_curRDGValues[e.RowIndex].deviation = 0;
                             this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value = 0.ToString("F2");
                         }
                         else
                         {
-                            values.diviation[e.RowIndex] = value;
+                            m_curRDGValues[e.RowIndex].deviation = value;
                             this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DIVIATION].Value = value.ToString("F2");
                         }
                         break;
@@ -1326,10 +1310,10 @@ namespace Statistic
             {
                 for (int i = e.RowIndex + 1; i < 24; i++)
                 {
-                    values.plan[i] = values.plan[e.RowIndex];
-                    values.recommendations[i] = values.recommendations[e.RowIndex];
-                    values.diviationPercent[i] = values.diviationPercent[e.RowIndex];
-                    values.diviation[i] = values.diviation[e.RowIndex];
+                    m_curRDGValues[i].plan = m_curRDGValues[e.RowIndex].plan;
+                    m_curRDGValues[i].recomendation = m_curRDGValues[e.RowIndex].recomendation;
+                    m_curRDGValues[i].deviationPercent = m_curRDGValues[e.RowIndex].deviationPercent;
+                    m_curRDGValues[i].deviation = m_curRDGValues[e.RowIndex].deviation;
 
                     this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value;
                     this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value;
@@ -1628,8 +1612,8 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
             {
-                values.plan[i] = values.recommendations[i] = values.diviation[i] = 0;
-                values.diviationPercent[i] = false;
+                m_curRDGValues[i].plan = m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
+                m_curRDGValues[i].deviationPercent = false;
             }
             FillOldValues();
         }
@@ -1761,10 +1745,10 @@ namespace Statistic
                             else
                                 ;
 
-                        values.plan[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 4 + 1/*"PBR"*/];
-                        values.recommendations[hour - 1] = 0;
-                        values.diviationPercent[hour - 1] = false;
-                        values.diviation[hour - 1] = 0;
+                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1/*"PBR"*/];
+                        m_curRDGValues[hour - 1].recomendation = 0;
+                        m_curRDGValues[hour - 1].deviationPercent = false;
+                        m_curRDGValues[hour - 1].deviation = 0;
                     }
                     catch { }
                 }
@@ -1781,13 +1765,13 @@ namespace Statistic
                             else
                                 ;
 
-                        values.recommendations[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 3 + 1/*"REC"*/];
-                        values.diviationPercent[hour - 1] = (int)table.Rows[i][arIndexTables[1] * 3 + 2/*"IS_PER"*/] == 1;
-                        values.diviation[hour - 1] = (double)table.Rows[i][arIndexTables[1] * 3 + 3/*"DIVIAT"*/];
+                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1/*"REC"*/];
+                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2/*"IS_PER"*/] == 1;
+                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3/*"DIVIAT"*/];
                         if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
-                            values.plan[hour - 1] = (double)table.Rows[i][arIndexTables[0] * 4 + 1/*"PBR"*/];
+                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1/*"PBR"*/];
                         else
-                            values.plan[hour - 1] = 0;
+                            m_curRDGValues[hour - 1].plan = 0;
                     }
                     catch { }
                 }
@@ -1812,20 +1796,20 @@ namespace Statistic
                     hour = i - iTimeZoneOffset;
 
                     for (j = 0; j < allTECComponents[oldTecIndex].TG.Count; j ++)
-                        values.plan[hour - 1] += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG [j].m_indx_col_rdg_excel - 1];
-                    values.recommendations[hour - 1] = 0;
-                    values.diviationPercent[hour - 1] = false;
-                    values.diviation[hour - 1] = 0;
+                        m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG[j].m_indx_col_rdg_excel - 1];
+                    m_curRDGValues[hour - 1].recomendation = 0;
+                    m_curRDGValues[hour - 1].deviationPercent = false;
+                    m_curRDGValues[hour - 1].deviation = 0;
                 }
 
                 /*for (i = hour; i < 24 + 1; i++)
                 {
                     hour = i;
 
-                    values.plan[hour - 1] = 0;
-                    values.recommendations[hour - 1] = 0;
-                    values.diviationPercent[hour - 1] = false;
-                    values.diviation[hour - 1] = 0;
+                    m_curRDGValues.plan[hour - 1] = 0;
+                    m_curRDGValues.recommendations[hour - 1] = 0;
+                    m_curRDGValues.deviationPercent[hour - 1] = false;
+                    m_curRDGValues.diviation[hour - 1] = 0;
                 }*/
             }
             else
@@ -1935,17 +1919,17 @@ namespace Statistic
                         case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             //name = t.NameFieldOfAdminRequest(comp);
                             
-                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + name + @"_IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
-                                        @", " + name + "_DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + name + @"_IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                        @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
                         case FormChangeMode.MODE_TECCOMPONENT.PC:
-                            requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + @"IS_PER=" + (values.diviationPercent[i] ? "1" : "0") +
-                                        @", " + "DIVIAT='" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                        @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
@@ -1961,16 +1945,16 @@ namespace Statistic
                     switch (m_modeTECComponent) {
                         case FormChangeMode.MODE_TECCOMPONENT.GTP:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (values.diviationPercent[i] ? "1" : "0") +
-                                        @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                        @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case FormChangeMode.MODE_TECCOMPONENT.PC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + values.recommendations[i].ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (values.diviationPercent[i] ? "1" : "0") +
-                                        @", '" + values.diviation[i].ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                        @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (comp.m_id) +
                                         @"),";
                             break;
@@ -2104,17 +2088,17 @@ namespace Statistic
                     switch (m_modeTECComponent)
                     {
                         case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                            /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                            /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";*/
-                            requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
                         case FormChangeMode.MODE_TECCOMPONENT.PC:
-                            requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + values.plan[i].ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + m_curRDGValues[i].plan.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
@@ -2134,7 +2118,7 @@ namespace Statistic
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
                                         @"', '" + "0" +
-                                        @"', '" + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case FormChangeMode.MODE_TECCOMPONENT.PC:
@@ -2143,7 +2127,7 @@ namespace Statistic
                                         @"', '" + "ПБР" + getPBRNumber(i) +
                                         @"', " + comp.m_id +
                                         @", '" + "0" +
-                                        @"', " + values.plan[i].ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', " + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"),";
                             break;
                         default:
@@ -2796,8 +2780,8 @@ namespace Statistic
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
                     GetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], dateForValues.Date);
-                    oldDate = dateForValues.Date;
-                    this.BeginInvoke(delegateCalendarSetDate, oldDate);
+                    m_prevDatetime = dateForValues.Date;
+                    this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
                 case StatesMachine.RDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
@@ -2956,7 +2940,7 @@ namespace Statistic
                     result = GetAdminValuesResponse(table, dateForValues);
                     if (result)
                     {
-                        this.BeginInvoke(delegateFillData, oldDate);
+                        this.BeginInvoke(delegateFillData, m_prevDatetime);
                     }
                     else
                         ;
@@ -2967,7 +2951,7 @@ namespace Statistic
                     result = GetRDGExcelValuesResponse();
                     if (result)
                     {
-                        this.BeginInvoke(delegateFillData, oldDate);
+                        this.BeginInvoke(delegateFillData, m_prevDatetime);
                     }
                     else
                         ;

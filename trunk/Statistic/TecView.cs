@@ -185,8 +185,6 @@ namespace Statistic
         private volatile int countTG;
         private bool update;
 
-        private PanelAdmin.TECComponentsAdminStruct adminValues;
-
         public volatile bool isActive;
 
         private StatusStrip stsStrip;
@@ -826,8 +824,6 @@ namespace Statistic
             recalcAver = true;
 
             lockValue = new object();
-
-            adminValues = new PanelAdmin.TECComponentsAdminStruct(24);
 
             valuesMins = new valuesS();
             valuesMins.valuesFact = new double[21];

@@ -89,14 +89,18 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormParameters.cs" />
+    <Compile Include="FormParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormParameters.designer.cs">
       <DependentUpon>FormParameters.cs</DependentUpon>
     </Compile>
     <Compile Include="FormParametersBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormParametersTG.cs" />
+    <Compile Include="FormParametersTG.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormParametersTG.designer.cs">
       <DependentUpon>FormParametersTG.cs</DependentUpon>
     </Compile>
