@@ -13,28 +13,101 @@ namespace trans_rdg
 {
     public partial class FormMain : FormMainBase
     {
-        Admin m_admin;
+        private enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
+        private enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
+
+        Admin [] m_arAdmin;
+        FormConnectionSettings m_formConnectionSettings;
+        GroupBox [] m_arGroupBox;
+        System.Windows.Forms.Control [,] m_arUIControlDB;
+
+        private Int16 indxDB
+        {
+            get {
+                CONN_SETT_TYPE i;
+                for (i = CONN_SETT_TYPE.SOURCE; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    if (m_arGroupBox [(Int16)i].BackColor == SystemColors.Info)
+                        break;
+                    else
+                        ;
+                }
+
+                return (Int16)i;
+            }
+
+            set {
+            }
+        }
 
         public FormMain()
         {
             InitializeComponent();
 
-            FormConnectionSettings formConnSett = new FormConnectionSettings();
-            ConnectionSettings connSett = formConnSett.getConnSett();
-            m_admin = new Admin(new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec);
-            m_admin.connSettConfigDB = formConnSett.getConnSett();
+            m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
-            m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-            m_admin.SetDelegateReport(ErrorReport, ActionReport);
+            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
+            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
+            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
 
-            m_admin.StartDbInterface ();
+            delegateEvent = new DelegateFunc(EventRaised);
+
+            m_formConnectionSettings = new FormConnectionSettings();
+
+            if (m_formConnectionSettings.Protected == false) {
+                m_formConnectionSettings.addConnSett (new ConnectionSettings ());
+
+                //formConnectionSettings.setConnSett();
+            }
+            else
+                ;
+
+            m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+                m_arAdmin[i] = new Admin(m_formConnectionSettings.getConnSett(i));
+
+                for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j ++) {
+                    switch (j) {
+                        case (Int16)INDX_UICONTROL_DB.SERVER_IP:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.PORT:
+                            if (m_arUIControlDB[i, j].Enabled)
+                                ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString ();
+                            else
+                                ;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.USER_ID:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.PASS:
+                            ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                m_arAdmin [i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                m_arAdmin [i].SetDelegateReport(ErrorReport, ActionReport);
+
+                m_arAdmin [i].StartDbInterface();
+            }
 
             //panelMain.Visible = false;
+
+            timerMain.Start ();
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
-            m_admin.StopDbInterface ();
+            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+                m_arAdmin[i].StopDbInterface();
+            }
 
             Close ();
         }
@@ -44,6 +117,8 @@ namespace trans_rdg
             bool bBackColorChange = false;
             if (! (groupBox.BackColor == SystemColors.Info)) {
                 groupBox.BackColor = SystemColors.Info;
+
+                UpdateStatusString ();
 
                 bBackColorChange = true;
             }
@@ -94,12 +169,80 @@ namespace trans_rdg
         }
 
         private void ErrorReport (string msg) {
-            statusStripMain.Text = msg;
+            statusStripMain.BeginInvoke(delegateEvent);
         }
 
         private void ActionReport(string msg)
         {
-            statusStripMain.Text = msg;
+            statusStripMain.BeginInvoke(delegateEvent);
+        }
+
+        public bool UpdateStatusString()
+        {
+            bool have_eror = false;
+
+            if (m_arAdmin[indxDB].actioned_state && m_arAdmin[indxDB].threadIsWorking)
+            {
+                lblDateError.Text = m_arAdmin[indxDB].last_action;
+                lblDescError.Text = m_arAdmin[indxDB].last_time_action.ToString();
+            }
+            else
+                ;
+
+            if (m_arAdmin[indxDB].errored_state)
+            {
+                have_eror = true;
+                lblDescError.Text = m_arAdmin[indxDB].last_error;
+                lblDateError.Text = m_arAdmin[indxDB].last_time_error.ToString();
+            }
+            else
+                ;
+
+            return have_eror;
+        }
+
+        protected override void EventRaised()
+        {
+            lock (lockEvent)
+            {
+                UpdateStatusString();
+                lblDescError.Invalidate();
+                lblDateError.Invalidate();
+            }
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            //if (m_arAdmin[indxDB].threadIsWorking == false)
+            //{
+            //    m_arAdmin[indxDB].StartDbInterface();
+            //}
+            //else
+            //    ;
+
+            lock (lockEvent)
+            {
+                bool have_eror = UpdateStatusString();
+
+                if (have_eror)
+                    lblMainState.Text = "ОШИБКА";
+                else
+                    ;
+
+                if (!have_eror || !show_error_alert)
+                    lblMainState.Text = "";
+                else
+                    ;
+
+                show_error_alert = !show_error_alert;
+                lblDescError.Invalidate();
+                lblDateError.Invalidate();
+            }
+        }
+
+        private void FormMain_Activated(object sender, EventArgs e)
+        {
+            m_arAdmin[indxDB].GetCurrentTime ();
         }
     }
 }

@@ -28,6 +28,8 @@ namespace StatisticCommon
         protected DelegateFunc delegateHideGraphicsSettings;
         protected DelegateFunc delegateParamsApply;
 
+        protected bool show_error_alert = false;
+
         protected FormMainBase()
         {
             InitializeComponent();
@@ -95,5 +97,7 @@ namespace StatisticCommon
                     ;
             }
         }
+
+        protected virtual void EventRaised () { }
     }
 }

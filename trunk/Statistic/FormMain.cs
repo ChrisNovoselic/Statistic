@@ -37,8 +37,6 @@ namespace Statistic
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
 
-        private bool show_error_alert = false;
-
         private bool firstStart;
 
         public FormMain()
@@ -419,7 +417,7 @@ namespace Statistic
         public bool UpdateStatusString()
         {
             bool have_eror = false;
-            lblError.Text = lblDateError.Text = "";
+            lblDescError.Text = lblDateError.Text = "";
             for (int i = 0; i < selectedTecViews.Count; i++)
             {
                 if (selectedTecViews[i].actioned_state && !selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA].ignore)
@@ -427,7 +425,7 @@ namespace Statistic
                     if (selectedTecViews[i].isActive)
                     {
                         lblDateError.Text = selectedTecViews[i].last_time_action.ToString();
-                        lblError.Text = selectedTecViews[i].last_action;
+                        lblDescError.Text = selectedTecViews[i].last_action;
                     }
                 }
                 else
@@ -439,7 +437,7 @@ namespace Statistic
                     if (selectedTecViews[i].isActive)
                     {
                         lblDateError.Text = selectedTecViews[i].last_time_error.ToString();
-                        lblError.Text = selectedTecViews[i].last_error;
+                        lblDescError.Text = selectedTecViews[i].last_error;
                     }
                 }
                 else
@@ -449,7 +447,7 @@ namespace Statistic
             if (m_panelAdmin.actioned_state && m_panelAdmin.isActive)
             {
                 lblDateError.Text = m_panelAdmin.last_time_action.ToString();
-                lblError.Text = m_panelAdmin.last_action;
+                lblDescError.Text = m_panelAdmin.last_action;
             }
             else
                 ;
@@ -458,7 +456,7 @@ namespace Statistic
             {
                 have_eror = true;
                 lblDateError.Text = m_panelAdmin.last_time_error.ToString();
-                lblError.Text = m_panelAdmin.last_error;
+                lblDescError.Text = m_panelAdmin.last_error;
             }
             else
                 ;
@@ -466,12 +464,12 @@ namespace Statistic
             return have_eror;
         }
 
-        public void EventRaised()
+        protected override void EventRaised()
         {
             lock (lockEvent)
             {
                 UpdateStatusString();
-                lblError.Invalidate();
+                lblDescError.Invalidate();
                 lblDateError.Invalidate();
             }
         }
@@ -546,7 +544,7 @@ namespace Statistic
                     ;
 
                 show_error_alert = !show_error_alert;
-                lblError.Invalidate();
+                lblDescError.Invalidate();
                 lblDateError.Invalidate();
             }
         }

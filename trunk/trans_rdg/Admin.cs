@@ -112,7 +112,7 @@ namespace trans_rdg
 
         private Thread taskThread;
         private Semaphore sem;
-        private volatile bool threadIsWorking;
+        public volatile bool threadIsWorking;
         private volatile bool newState;
         private volatile List<StatesMachine> states;
 
@@ -176,13 +176,28 @@ namespace trans_rdg
 
         //public bool isActive;
 
+        public Admin(ConnectionSettings connSett)
+        {
+            connSettConfigDB = connSett;
+            
+            Initialize();
+
+            InitTEC(new InitTEC(connSettConfigDB, 0).tec);
+        }
+
         public Admin(List<TEC> tec)
         {
+            Initialize ();
+
+            InitTEC(tec);
+        }
+
+        private void Initialize () {
             //m_strUsedAdminValues = "AdminValuesNew";
             //m_strUsedPPBRvsPBR = "PPBRvsPBRnew";
 
-            m_listDbInterfaces = new List <DbInterface> ();
-            m_listListenerIdCurrent = new List <int> ();
+            m_listDbInterfaces = new List<DbInterface>();
+            m_listListenerIdCurrent = new List<int>();
 
             started = false;
 
@@ -198,15 +213,14 @@ namespace trans_rdg
 
             using_date = false;
 
-            m_curRDGValues = new RDGStruct  [24];
+            m_curRDGValues = new RDGStruct[24];
 
             adminDates = new bool[24];
             PPBRDates = new bool[24];
 
             //layoutForLoading = new LayoutData(1);
 
-            allTECComponents = new List <TECComponent> ();
-            InitTEC (tec);
+            allTECComponents = new List<TECComponent>();
 
             m_lockObj = new Object();
 
@@ -374,6 +388,10 @@ namespace trans_rdg
         {
             this.errorReport = err;
             this.actionReport = act;
+        }
+
+        public void SetDelegateData(DelegateFunc f)
+        {
         }
 
         void MessageBox (string msg) {
@@ -569,10 +587,36 @@ namespace trans_rdg
             //FillOldValues();
         }
 
+        public void GetCurrentTime()
+        {
+            lock (m_lockObj)
+            {
+                newState = true;
+                states.Clear();
+
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("GetCurrentTime () - states.Clear()", true, true, false);
+                Logging.Logg().LogUnlock();
+
+                states.Add(StatesMachine.CurrentTime);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
+            }
+        }
+
         private void GetCurrentTimeRequest()
         {
-            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
+            if (oldTecIndex < allTECComponents.Count)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
+                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
+            else
+                ;
         }
 
         private bool GetCurrentTimeResponse(DataTable table)
@@ -604,8 +648,11 @@ namespace trans_rdg
         }
 
         private void GetRDGExcelValuesRequest () {
-            m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
-                            @"SELECT * FROM [Лист1$]");
+            if (oldTecIndex < allTECComponents.Count)
+                m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
+                                                                        @"SELECT * FROM [Лист1$]");
+            else
+                ;
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -722,34 +769,41 @@ namespace trans_rdg
         private bool GetRDGExcelValuesResponse()
         {
             bool bRes = false;
-            int i = -1, j = -1,
-                iTimeZoneOffset = allTECComponents[oldTecIndex].tec.m_timezone_offset_msc,
-                rowRDGExcelStart = 1 + iTimeZoneOffset,
-                hour = -1;
 
-            if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+            if (oldTecIndex < allTECComponents.Count) bRes = true; else ;
 
             if (bRes) {
-                for (i = rowRDGExcelStart; i < 24 + 1; i++)
-                {
-                    hour = i - iTimeZoneOffset;
+                int i = -1, j = -1,
+                    iTimeZoneOffset = allTECComponents[oldTecIndex].tec.m_timezone_offset_msc,
+                    rowRDGExcelStart = 1 + iTimeZoneOffset,
+                    hour = -1;
 
-                    for (j = 0; j < allTECComponents[oldTecIndex].TG.Count; j ++)
-                        m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG[j].m_indx_col_rdg_excel - 1];
-                    m_curRDGValues[hour - 1].recomendation = 0;
-                    m_curRDGValues[hour - 1].deviationPercent = false;
-                    m_curRDGValues[hour - 1].deviation = 0;
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+
+                if (bRes) {
+                    for (i = rowRDGExcelStart; i < 24 + 1; i++)
+                    {
+                        hour = i - iTimeZoneOffset;
+
+                        for (j = 0; j < allTECComponents[oldTecIndex].TG.Count; j ++)
+                            m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG[j].m_indx_col_rdg_excel - 1];
+                        m_curRDGValues[hour - 1].recomendation = 0;
+                        m_curRDGValues[hour - 1].deviationPercent = false;
+                        m_curRDGValues[hour - 1].deviation = 0;
+                    }
+
+                    /*for (i = hour; i < 24 + 1; i++)
+                    {
+                        hour = i;
+
+                        m_curRDGValues.plan[hour - 1] = 0;
+                        m_curRDGValues.recommendations[hour - 1] = 0;
+                        m_curRDGValues.deviationPercent[hour - 1] = false;
+                        m_curRDGValues.diviation[hour - 1] = 0;
+                    }*/
                 }
-
-                /*for (i = hour; i < 24 + 1; i++)
-                {
-                    hour = i;
-
-                    m_curRDGValues.plan[hour - 1] = 0;
-                    m_curRDGValues.recommendations[hour - 1] = 0;
-                    m_curRDGValues.deviationPercent[hour - 1] = false;
-                    m_curRDGValues.diviation[hour - 1] = 0;
-                }*/
+                else
+                    ;
             }
             else
                 ;
@@ -766,8 +820,11 @@ namespace trans_rdg
             else
                 ;
 
-            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
-            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            if (oldTecIndex < allTECComponents.Count)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
+                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            else
+                ;
         }
 
         private void GetPPBRDatesRequest(DateTime date)
@@ -779,8 +836,11 @@ namespace trans_rdg
             else
                 ;
 
-//            Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
-            Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            if (oldTecIndex < allTECComponents.Count)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
+                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            else
+                ;
         }
 
         private void ClearAdminDates()
@@ -1206,6 +1266,7 @@ namespace trans_rdg
             actioned_state = true;
 
             //stsStrip.BeginInvoke(delegateEventUpdate);
+            //delegateEventUpdate ();
             actionReport(action_string);
         }
 
@@ -1256,7 +1317,9 @@ namespace trans_rdg
             }
         }
 
-        private void InitDbInterfaces () {
+        private bool InitDbInterfaces () {
+            bool bRes = true;
+            
             m_listDbInterfaces.Clear ();
 
             m_listListenerIdCurrent.Clear();
@@ -1317,6 +1380,8 @@ namespace trans_rdg
                         ;
                 }
             }
+
+            return bRes;
         }
 
         public void StartDbInterface()

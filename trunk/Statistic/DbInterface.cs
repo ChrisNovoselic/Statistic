@@ -641,7 +641,7 @@ namespace StatisticCommon
                 else
                     ; //
             }
-            catch (MySqlException e)
+            catch //(MySqlException e)
             {
                 Logging.Logg().LogLock();
                 string s;

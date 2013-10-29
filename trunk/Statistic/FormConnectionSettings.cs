@@ -398,8 +398,9 @@ namespace StatisticCommon
             closing = false;
             if (!File.Exists(settingsFile)) {
                 connectionSettingsEdit.Add(new ConnectionSettings());
+                connectionSettingsEdit[connectionSettingsEdit.Count - 1].port = 3306;
+
                 connectionSettings.Add(new ConnectionSettings());
-                connectionSettingsEdit[connectionSettings.Count - 1].port = 3306;
                 connectionSettings[connectionSettings.Count - 1].port = 3306;
             }
             else
@@ -418,13 +419,27 @@ namespace StatisticCommon
             cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
         }
 
-        public ConnectionSettings getConnSett() { return connectionSettings[connectionSettings.Count - 1]; }
+        public ConnectionSettings getConnSett(int indx = -1) {
+            if (indx < 0)
+                indx = cbxConnFor.SelectedIndex;
+            else
+                ;
 
-        public ConnectionSettings getConnSett(int id_source) {
-            return connectionSettings[connectionSettings.Count - 1];
+            //return connectionSettings[connectionSettings.Count - 1];
+            return connectionSettings[indx];
         }
 
-        private void btnOk_Click(object sender, EventArgs e)
+        public void setConnSett(int indx, ConnectionSettings connSett)
+        {
+            connectionSettings.Add (connSett);
+        }
+
+        public void addConnSett(ConnectionSettings connSett)
+        {
+            connectionSettings.Add(connSett);
+        }
+
+        public void btnOk_Click(object obj, EventArgs ev)
         {
             ConnectionSettings.ConnectionSettingsError error;
 

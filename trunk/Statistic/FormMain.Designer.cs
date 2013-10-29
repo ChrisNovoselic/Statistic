@@ -41,6 +41,7 @@
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,10 +50,9 @@
             this.stsStrip = new System.Windows.Forms.StatusStrip();
             this.lblMainState = new System.Windows.Forms.ToolStripStatusLabel();
             this.lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblError = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.stsStrip.SuspendLayout();
             this.SuspendLayout();
@@ -150,6 +150,13 @@
             this.изменитьПарольАдминистратораToolStripMenuItem.Text = "Изменить пароль администратора";
             this.изменитьПарольАдминистратораToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольАдминистратораToolStripMenuItem_Click);
             // 
+            // изментьСоставТЭЦГТПЩУToolStripMenuItem
+            // 
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)";
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
+            // 
             // параметрыToolStripMenuItem
             // 
             this.параметрыToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -198,7 +205,7 @@
             this.stsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblMainState,
             this.lblDateError,
-            this.lblError});
+            this.lblDescError});
             this.stsStrip.Location = new System.Drawing.Point(0, 762);
             this.stsStrip.Name = "stsStrip";
             this.stsStrip.Size = new System.Drawing.Size(982, 22);
@@ -226,16 +233,16 @@
             this.lblDateError.Name = "lblDateError";
             this.lblDateError.Size = new System.Drawing.Size(150, 17);
             // 
-            // lblError
+            // lblDescError
             // 
-            this.lblError.AutoSize = false;
-            this.lblError.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            this.lblDescError.AutoSize = false;
+            this.lblDescError.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
             | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
-            this.lblError.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
-            this.lblError.Name = "lblError";
-            this.lblError.Size = new System.Drawing.Size(667, 17);
-            this.lblError.Spring = true;
+            this.lblDescError.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
+            this.lblDescError.Name = "lblDescError";
+            this.lblDescError.Size = new System.Drawing.Size(667, 17);
+            this.lblDescError.Spring = true;
             // 
             // timer
             // 
@@ -254,13 +261,6 @@
             this.lblLabel.TabIndex = 5;
             this.lblLabel.Text = "ОАО \"Новосибирскэнерго\"";
             this.lblLabel.Visible = false;
-            // 
-            // изментьСоставТЭЦГТПЩУToolStripMenuItem
-            // 
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
             // 
             // FormMain
             // 
@@ -300,7 +300,7 @@
         private System.Windows.Forms.StatusStrip stsStrip;
         private System.Windows.Forms.ToolStripStatusLabel lblMainState;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
-        private System.Windows.Forms.ToolStripStatusLabel lblError;
+        private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольToolStripMenuItem;
         private System.Windows.Forms.Timer timer;
