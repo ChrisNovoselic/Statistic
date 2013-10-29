@@ -10,13 +10,15 @@ using MySql.Data.MySqlClient;
 
 using Statistic;
 
-using HConnectionSettings;
-
 //namespace Statistic
-namespace HDatabase
+namespace StatisticCommon
 {
     public class DbInterface
     {
+        public static int MAX_RETRY = 2;
+        public static int MAX_WAIT_COUNT = 25;
+        public static int WAIT_TIME_MS = 100;
+
         public enum DbInterfaceType
         {
             MySQL,
@@ -242,11 +244,11 @@ namespace HDatabase
             }
             catch (Exception e)
             {
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("Исключение обращения к переменной (sem.Release ())", true, true, false);
-                FormMain.log.LogToFile("Исключение " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Исключение обращения к переменной (sem.Release ())", true, true, false);
+                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
         }
 
@@ -361,11 +363,11 @@ namespace HDatabase
             }
             catch (Exception e)
             {
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("Исключение обращения к переменной", true, true, false);
-                FormMain.log.LogToFile("Исключение " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Исключение обращения к переменной", true, true, false);
+                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
 
             if (m_dbConnection.State != ConnectionState.Closed)
@@ -421,13 +423,13 @@ namespace HDatabase
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
+                Logging.Logg().LogUnlock();
             }
             catch (MySqlException e)
             {
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = m_dbConnection.ConnectionString.IndexOf("Password");
@@ -436,15 +438,15 @@ namespace HDatabase
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
             catch
             {
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = m_dbConnection.ConnectionString.IndexOf("Password");
@@ -453,9 +455,9 @@ namespace HDatabase
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogUnlock();
             }
 
             return result;
@@ -479,20 +481,20 @@ namespace HDatabase
                     s = m_dbConnection.ConnectionString;
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
-                FormMain.log.LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
+                Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
 
             }
             catch (DbException e)
             {
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("Ошибка закрытия соединения", true, true, false);
-                FormMain.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Ошибка закрытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
             catch
             {
-                FormMain.log.LogToFile("Ошибка закрытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Ошибка закрытия соединения", true, true, false);
             }
             
             return result;
@@ -517,7 +519,7 @@ namespace HDatabase
             catch (DbException e)
             {
                 needReconnect = true;
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
@@ -526,17 +528,17 @@ namespace HDatabase
                 else
                     s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка получения данных", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                FormMain.log.LogToFile("Ошибка " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
+                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
             catch
             {
                 needReconnect = true;
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
@@ -545,10 +547,10 @@ namespace HDatabase
                 else
                     s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка получения данных", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
+                Logging.Logg().LogUnlock();
             }
 
             return result;
@@ -588,7 +590,7 @@ namespace HDatabase
             }
             catch (OleDbException e)
             {
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = connectionExcel.ConnectionString.IndexOf("Password");
@@ -597,9 +599,9 @@ namespace HDatabase
                 else
                     s = connectionExcel.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogUnlock();
             }
 
             connectionExcel.Close();
@@ -641,7 +643,7 @@ namespace HDatabase
             }
             catch (MySqlException e)
             {
-                FormMain.log.LogLock();
+                Logging.Logg().LogLock();
                 string s;
                 int pos;
                 pos = connectionMySQL.ConnectionString.IndexOf("Password");
@@ -650,9 +652,9 @@ namespace HDatabase
                 else
                     s = connectionMySQL.ConnectionString.Substring(0, pos);
 
-                FormMain.log.LogToFile("Ошибка открытия соединения", true, true, false);
-                FormMain.log.LogToFile("Строка соединения " + s, false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogUnlock();
             }
 
             connectionMySQL.Close();

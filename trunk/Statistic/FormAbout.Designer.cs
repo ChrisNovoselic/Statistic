@@ -1,4 +1,4 @@
-namespace Statistic
+namespace StatisticCommon
 {
     partial class FormAbout
     {

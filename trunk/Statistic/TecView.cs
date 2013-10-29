@@ -13,7 +13,7 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HConnectionSettings;
+using StatisticCommon;
 
 namespace Statistic
 {
@@ -4906,15 +4906,15 @@ namespace Statistic
                     bool error = true;
                     bool dataPresent = false;
                     DataTable table = null;
-                    for (int i = 0; i < FormMain.MAX_RETRY && !dataPresent && !newState; i++)
+                    for (int i = 0; i < DbInterface.MAX_RETRY && !dataPresent && !newState; i++)
                     {
                         if (error)
                             StateRequest(currentState);
 
                         error = false;
-                        for (int j = 0; j < FormMain.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
+                        for (int j = 0; j < DbInterface.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
                         {
-                            System.Threading.Thread.Sleep(FormMain.WAIT_TIME_MS);
+                            System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
                             dataPresent = StateCheckResponse(currentState, out error, out table);
                         }
                     }
@@ -4976,12 +4976,12 @@ namespace Statistic
                 timerCurrent.Change(1000, Timeout.Infinite);
             }
             catch (Exception e) {
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
-                FormMain.log.LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
-                FormMain.log.LogToFile("Исключение " + e.Message, false, false, false);
-                FormMain.log.LogToFile(e.ToString(), false, false, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
+                Logging.Logg().LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
+                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                Logging.Logg().LogUnlock();
             }
         }
     }

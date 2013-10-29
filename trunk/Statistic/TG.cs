@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public class TG
     {

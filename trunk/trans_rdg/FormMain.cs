@@ -7,43 +7,45 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-using Statistic;
-
-using HConnectionSettings;
+using StatisticCommon;
 
 namespace trans_rdg
 {
-    public partial class FormMain : Form
+    public partial class FormMain : FormMainBase
     {
         Admin m_admin;
-
-        public static Logging log;
 
         public FormMain()
         {
             InitializeComponent();
 
-            log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
-
-            FormConnectionSettings formConnectionSettings = new FormConnectionSettings ();
-            ConnectionSettings connSett = formConnectionSettings.getConnSett ();
+            FormConnectionSettings formConnSett = new FormConnectionSettings();
+            ConnectionSettings connSett = formConnSett.getConnSett();
             m_admin = new Admin(new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec);
+            m_admin.connSettConfigDB = formConnSett.getConnSett();
+
+            m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+            m_admin.SetDelegateReport(ErrorReport, ActionReport);
+
+            m_admin.StartDbInterface ();
 
             //panelMain.Visible = false;
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
+            m_admin.StopDbInterface ();
+
             Close ();
         }
 
         private void groupBoxFocus (GroupBox groupBox) {
             GroupBox groupBoxOther = null;
-            bool bBackCoorChange = false;
+            bool bBackColorChange = false;
             if (! (groupBox.BackColor == SystemColors.Info)) {
                 groupBox.BackColor = SystemColors.Info;
 
-                bBackCoorChange = true;
+                bBackColorChange = true;
             }
             else
                 ;
@@ -59,7 +61,7 @@ namespace trans_rdg
                     break;
             }
 
-            if (bBackCoorChange)
+            if (bBackColorChange)
                 groupBoxOther.BackColor = SystemColors.Control;
             else
                 ;
@@ -91,5 +93,13 @@ namespace trans_rdg
             formAbout.ShowDialog();
         }
 
+        private void ErrorReport (string msg) {
+            statusStripMain.Text = msg;
+        }
+
+        private void ActionReport(string msg)
+        {
+            statusStripMain.Text = msg;
+        }
     }
 }

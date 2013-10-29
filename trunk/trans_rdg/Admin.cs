@@ -12,10 +12,7 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 
-using HDatabase;
-using HConnectionSettings;
-
-using Statistic;
+using StatisticCommon;
 
 namespace trans_rdg
 {
@@ -50,6 +47,9 @@ namespace trans_rdg
         private DelegateFunc delegateStartWait;
         private DelegateFunc delegateStopWait;
         private DelegateFunc delegateEventUpdate;
+
+        private DelegateStringFunc errorReport;
+        private DelegateStringFunc actionReport;
 
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
         public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
@@ -258,9 +258,9 @@ namespace trans_rdg
                 newState = true;
                 states.Clear();
 
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("SaveChanges () - states.Clear()", true, true, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("SaveChanges () - states.Clear()", true, true, false);
+                Logging.Logg().LogUnlock();
 
                 states.Add(StatesMachine.CurrentTime);
                 states.Add(StatesMachine.AdminDates);
@@ -297,6 +297,8 @@ namespace trans_rdg
         {
             if (started)
                 return;
+            else
+                ;
 
             started = true;
 
@@ -355,15 +357,23 @@ namespace trans_rdg
         {
             if (!started)
                 return;
+            else
+                ;
 
             started = false;
         }
 
-        public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
+        public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
         {
             this.delegateStartWait = dStart;
             this.delegateStopWait = dStop;
             this.delegateEventUpdate = dStatus;
+        }
+
+        public void SetDelegateReport(DelegateStringFunc err, DelegateStringFunc act)
+        {
+            this.errorReport = err;
+            this.actionReport = act;
         }
 
         void MessageBox (string msg) {
@@ -1106,9 +1116,9 @@ namespace trans_rdg
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
 
-            FormMain.log.LogLock();
-            FormMain.log.LogToFile("SetPPBRRequest", true, true, false);
-            FormMain.log.LogUnlock();
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("SetPPBRRequest", true, true, false);
+            Logging.Logg().LogUnlock();
             
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
@@ -1186,7 +1196,7 @@ namespace trans_rdg
             last_error = error_string;
             last_time_error = DateTime.Now;
             errored_state = true;
-            //stsStrip.BeginInvoke(delegateEventUpdate);
+            errorReport (error_string);
         }
 
         private void ActionReport(string action_string)
@@ -1194,7 +1204,9 @@ namespace trans_rdg
             last_action = action_string;
             last_time_action = DateTime.Now;
             actioned_state = true;
+
             //stsStrip.BeginInvoke(delegateEventUpdate);
+            actionReport(action_string);
         }
 
         public void Request(int indxDbInterface, int listenerId, string request)
@@ -1265,7 +1277,7 @@ namespace trans_rdg
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
                     bool isAlready = false;
-                    
+
                     foreach (DbInterface dbi in m_listDbInterfaces) {
                         //if (! (t.connSetts [0] == cs))
                         //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
@@ -1914,7 +1926,7 @@ namespace trans_rdg
                     bool error = true;
                     bool dataPresent = false;
                     DataTable table = null;
-                    for (int i = 0; i < FormMain.MAX_RETRY && !dataPresent && !newState; i++)
+                    for (int i = 0; i < DbInterface.MAX_RETRY && !dataPresent && !newState; i++)
                     {
                         if (error)
                         {
@@ -1928,9 +1940,9 @@ namespace trans_rdg
                             ;
 
                         error = false;
-                        for (int j = 0; j < FormMain.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
+                        for (int j = 0; j < DbInterface.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
                         {
-                            System.Threading.Thread.Sleep(FormMain.WAIT_TIME_MS);
+                            System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
                             dataPresent = StateCheckResponse(currentState, out error, out table);
                         }
                     }

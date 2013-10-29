@@ -12,44 +12,27 @@ using System.Runtime.InteropServices;
 //???
 //using System.Security.Cryptography;
 
-using HConnectionSettings;
+using StatisticCommon;
 
 namespace Statistic
 {
-    public delegate void DelegateFunc();
-    public delegate void DelegateIntFunc(int param);
-    public delegate void DelegateIntIntFunc(int param1, int param2);
-    public delegate void DelegateStringFunc(string param);
-    public delegate void DelegateBoolFunc(bool param);
-
-    public partial class FormMain : Form
+    public partial class FormMain : FormMainBase
     {
         public List<TEC> tec;
-        private FormWait formWait;
         private FormConnectionSettings formConnSett;
         private PanelAdmin m_panelAdmin;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
-        private object lockValue;
-        private int waitCounter;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
-        private DelegateFunc delegateStartWait;
-        private DelegateFunc delegateStopWait;
-        private DelegateFunc delegateStopWaitForm;
-        private DelegateFunc delegateEvent;
-        private DelegateFunc delegateUpdateActiveGui;
-        private DelegateFunc delegateHideGraphicsSettings;
-        private DelegateFunc delegateParamsApply;
         private TecView tecView;
         private int oldSelectedIndex;
         private bool prevStateIsAdmin;
         private bool prevStateIsPPBR;
-        private Thread tt;
         //public static object lockFile = new object();
         //public static string logPath;
-        public static Logging log;
+        //public static Logging log;
         public FormGraphicsSettings formGraphicsSettings;
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
@@ -58,25 +41,10 @@ namespace Statistic
 
         private bool firstStart;
 
-        private object lockEvent;
-
-        public static int MAX_RETRY = 2;
-        public static int MAX_WAIT_COUNT = 25;
-        public static int WAIT_TIME_MS = 100;
-
         public FormMain()
         {
             InitializeComponent();
 
-            lockEvent = new object();
-
-            log = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
-
-            delegateStartWait = new DelegateFunc(StartWait);
-            delegateStopWait = new DelegateFunc(StopWait);
-
-            formWait = new FormWait();
-            delegateStopWaitForm = new DelegateFunc(formWait.StopWaitForm);
             delegateEvent = new DelegateFunc(EventRaised);
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
@@ -112,8 +80,6 @@ namespace Statistic
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
-            lockValue = new object();
-            waitCounter = 0;
 
             prevStateIsAdmin = false;
             prevStateIsPPBR = false;
@@ -199,7 +165,7 @@ namespace Statistic
                     StartWait();
                     tclTecViews.TabPages.Clear();
                     selectedTecViews.Clear();
-                    
+
                     for (int i = 0; i < formChangeMode.tec_index.Count; i++)
                     {
                         tecViews [i].Stop ();
@@ -233,52 +199,6 @@ namespace Statistic
                 if ((formConnSett.Protected == false) || formPassword.ShowDialog() == DialogResult.Yes)
                 {
                     connectionSettings ();
-                }
-                else
-                    ;
-            }
-        }
-
-        public void StartWait()
-        {
-            lock (lockValue)
-            {
-                if (waitCounter == 0)
-                {
-//                    this.Opacity = 0.75;
-                    if (tt != null && tt.IsAlive)
-                        tt.Join();
-                    tt = new Thread(new ParameterizedThreadStart(ThreadProc));
-                    formWait.Location = new Point(this.Location.X + (this.Width - formWait.Width) / 2, this.Location.Y + (this.Height - formWait.Height) / 2);
-                    tt.IsBackground = true;
-                    tt.Start(formWait);
-                }
-                else
-                    ;
-
-                waitCounter++;
-            }
-        }
-
-        public static void ThreadProc(object data)
-        {
-            FormWait fw = (FormWait)data;
-            fw.StartWaitForm();
-        }
-
-        public void StopWait()
-        {
-            lock (lockValue)
-            {
-                waitCounter--;
-                if (waitCounter < 0)
-                    waitCounter = 0;
-
-                if (waitCounter == 0)
-                {
-//                    this.Opacity = 1.0;
-                    while(!formWait.IsHandleCreated);
-                    formWait.Invoke(delegateStopWaitForm);
                 }
                 else
                     ;
@@ -660,6 +580,8 @@ namespace Statistic
         {
             if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
                 selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
+            else
+                ;
         }
 
         private const int SW_SHOWNOACTIVATE = 4;

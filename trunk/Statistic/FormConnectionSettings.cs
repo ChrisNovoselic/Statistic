@@ -7,9 +7,9 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 
-using HConnectionSettings;
+//using Statistic;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public partial class FormConnectionSettings : Form
     {

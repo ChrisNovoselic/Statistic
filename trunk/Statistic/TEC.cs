@@ -7,10 +7,9 @@ using System.IO;
 using System.Windows.Forms;     
 using System.Threading;
 
-using HConnectionSettings;
-using HDatabase;
+using Statistic;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public class TEC
     {

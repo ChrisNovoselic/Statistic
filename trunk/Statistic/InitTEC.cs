@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 
-using HConnectionSettings;
-using HDatabase;
-
-namespace Statistic
+namespace StatisticCommon
 {
     public class InitTEC
     {
@@ -31,7 +28,7 @@ namespace Statistic
         {
             return DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString());
         }
-        
+
         public InitTEC(ConnectionSettings connSett, Int16 indx)
         {
             tec = new List<TEC> ();

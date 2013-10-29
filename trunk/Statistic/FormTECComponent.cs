@@ -7,8 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using HConnectionSettings;
-using HDatabase;
+using StatisticCommon;
 
 namespace Statistic
 {

@@ -9,8 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 
-using HConnectionSettings;
-using HDatabase;
+using StatisticCommon;
 
 namespace Statistic
 {
@@ -542,9 +541,9 @@ namespace Statistic
                 newState = true;
                 states.Clear();
 
-                FormMain.log.LogLock();
-                FormMain.log.LogToFile("SaveChanges () - states.Clear()", true, true, false);
-                FormMain.log.LogUnlock();
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("SaveChanges () - states.Clear()", true, true, false);
+                Logging.Logg().LogUnlock();
 
                 states.Add(StatesMachine.CurrentTime);
                 states.Add(StatesMachine.AdminDates);
@@ -2177,9 +2176,9 @@ namespace Statistic
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
 
-            FormMain.log.LogLock();
-            FormMain.log.LogToFile("SetPPBRRequest", true, true, false);
-            FormMain.log.LogUnlock();
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("SetPPBRRequest", true, true, false);
+            Logging.Logg().LogUnlock();
             
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
@@ -3309,7 +3308,7 @@ namespace Statistic
                     bool error = true;
                     bool dataPresent = false;
                     DataTable table = null;
-                    for (int i = 0; i < FormMain.MAX_RETRY && !dataPresent && !newState; i++)
+                    for (int i = 0; i < DbInterface.MAX_RETRY && !dataPresent && !newState; i++)
                     {
                         if (error)
                         {
@@ -3323,9 +3322,9 @@ namespace Statistic
                             ;
 
                         error = false;
-                        for (int j = 0; j < FormMain.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
+                        for (int j = 0; j < DbInterface.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
                         {
-                            System.Threading.Thread.Sleep(FormMain.WAIT_TIME_MS);
+                            System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
                             dataPresent = StateCheckResponse(currentState, out error, out table);
                         }
                     }

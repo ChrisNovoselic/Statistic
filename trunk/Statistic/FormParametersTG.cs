@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
+using StatisticCommon;
 
 namespace Statistic {
     public partial class FormParametersTG : Statistic.FormParametersBase

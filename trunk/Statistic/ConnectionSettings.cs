@@ -8,7 +8,7 @@ using MySql.Data.MySqlClient; //Äëÿ 'IsConnect'
 using System.Data;
 
 //namespace Statistic
-namespace HConnectionSettings
+namespace StatisticCommon
 {
     public enum CONN_SETT_TYPE
     {

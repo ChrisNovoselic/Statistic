@@ -5,7 +5,9 @@ using System.IO;
 using System.Windows.Forms;
 using System.Threading;
 
-namespace Statistic
+using Statistic;
+
+namespace StatisticCommon
 {
     public class Logging
     {
@@ -27,7 +29,17 @@ namespace Statistic
         private const int logRotateFilesMax = 100;
         private int logRotateFiles;
 
-        public Logging(string name, bool extLog, DelegateStringFunc updateLogText, DelegateFunc clearLogText)
+        private static Logging m_this = null;
+        public static Logging Logg () {
+            if (m_this == null)
+                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
+            else
+                ;
+
+            return m_this;
+        }
+
+        private Logging(string name, bool extLog, DelegateStringFunc updateLogText, DelegateFunc clearLogText)
         {
             externalLog = extLog;
             logRotateSize = logRotateSizeDefault;
@@ -53,7 +65,7 @@ namespace Statistic
             sema.Release();
         }
 
-        public void LogToFile(string message, bool separator, bool timeStamp, bool locking)
+        public void LogToFile(string message, bool separator, bool timeStamp, bool locking/* = false*/)
         {
             if (logging)
             {
@@ -97,6 +109,8 @@ namespace Statistic
             sw.Close();
             if (externalLog)
                 delegateClearLogText();
+            else
+                ;
 
             logIndex = (logIndex + 1) % logRotateFiles;
 
