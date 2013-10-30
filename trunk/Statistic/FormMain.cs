@@ -53,7 +53,7 @@ namespace Statistic
             }
             else
             {
-                formChangeMode = new FormChangeMode(formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+                formChangeMode = new FormChangeMode(formConnSett.getConnSett ());
                 Initialize();
             }
         }
@@ -134,9 +134,9 @@ namespace Statistic
                 if (! (m_panelAdmin == null)) m_panelAdmin.StopDbInterface(); else ;
 
                 if (formChangeMode == null)
-                    formChangeMode = new FormChangeMode(formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+                    formChangeMode = new FormChangeMode(formConnSett.getConnSett ());
                 else
-                    formChangeMode.InitTEC (formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+                    formChangeMode.InitTEC(formConnSett.getConnSett());
 
                 Initialize();
 
@@ -639,7 +639,7 @@ namespace Statistic
             formPassword.SetIdPass(2);
             if (formPassword.ShowDialog() == DialogResult.Yes)
             {
-                FormTECComponent tecComponent = new FormTECComponent(formConnSett.connectionSettings[formConnSett.connectionSettings.Count - 1]);
+                FormTECComponent tecComponent = new FormTECComponent(formConnSett.getConnSett());
                 if (tecComponent.ShowDialog () == DialogResult.OK) {
                 }
                 else

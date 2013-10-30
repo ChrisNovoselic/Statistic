@@ -13,8 +13,7 @@ namespace StatisticCommon
 {
     public partial class FormConnectionSettings : Form
     {
-        private List<ConnectionSettings> connectionSettingsEdit;
-        public List<ConnectionSettings> connectionSettings;
+        private List<ConnectionSettings> m_connectionSettingsEdit, m_connectionSettings;
         //public List<TEC> tec;
 
         private bool closing;
@@ -164,11 +163,10 @@ namespace StatisticCommon
                     countParts = System.Int32.Parse (st.Substring(0, pos1));
                     pos1 ++;
 
-                    //foreach (ConnectionSettings cs in connectionSettings)
+                    //foreach (ConnectionSettings cs in m_connectionSettings)
                     while (i < countParts)
                     {
-                        connectionSettingsEdit.Add(new ConnectionSettings());
-                        connectionSettings.Add(new ConnectionSettings());
+                        addConnSett (new ConnectionSettings ());
                     
                         pos2 = st.IndexOf(';', pos1);
                         if (pos2 < 0)
@@ -179,8 +177,8 @@ namespace StatisticCommon
                             break;
                         }
 
-                        connectionSettingsEdit[i].server =
-                        connectionSettings[i].server =
+                        m_connectionSettingsEdit[i].server =
+                        m_connectionSettings[i].server =
                         st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
@@ -200,8 +198,8 @@ namespace StatisticCommon
                             bRes = false;
                             break;
                         }
-                        connectionSettingsEdit[i].port =
-                        connectionSettings[i].port =
+                        m_connectionSettingsEdit[i].port =
+                        m_connectionSettings[i].port =
                         port;
                         pos1 = pos2 + 1;
 
@@ -213,8 +211,8 @@ namespace StatisticCommon
                             bRes = false;
                             break;
                         }
-                        connectionSettingsEdit[i].dbName =
-                        connectionSettings[i].dbName =
+                        m_connectionSettingsEdit[i].dbName =
+                        m_connectionSettings[i].dbName =
                         st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
@@ -226,8 +224,8 @@ namespace StatisticCommon
                             bRes = false;
                             break;
                         }
-                        connectionSettingsEdit[i].userName =
-                        connectionSettings[i].userName =
+                        m_connectionSettingsEdit[i].userName =
+                        m_connectionSettings[i].userName =
                         st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
@@ -239,8 +237,8 @@ namespace StatisticCommon
                             bRes = false;
                             break;
                         }
-                        connectionSettingsEdit[i].password =
-                        connectionSettings[i].password =
+                        m_connectionSettingsEdit[i].password =
+                        m_connectionSettings[i].password =
                         st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
@@ -260,11 +258,11 @@ namespace StatisticCommon
                             bRes = false;
                             break;
                         }
-                        connectionSettingsEdit[i].ignore =
-                        connectionSettings[i].ignore =
+                        m_connectionSettingsEdit[i].ignore =
+                        m_connectionSettings[i].ignore =
                         (ignore == "1");
 
-                        //connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
+                        //m_connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
 
                         pos1 = pos2 + 1;
 
@@ -272,10 +270,10 @@ namespace StatisticCommon
                     }
                 }
                 else
-                    ; //Не найдено количество блоков соединений
+                    bRes = false; //Не найдено количество блоков соединений
             }
             else
-                ;
+                bRes = false;
 
             if (bRes == true)
                 mayToProtected = true;
@@ -287,19 +285,19 @@ namespace StatisticCommon
 
         private void ClearSettings()
         {
-            for (int i = 0; i < connectionSettingsEdit.Count; i++)
-                connectionSettingsEdit[i].SetDefault();
+            for (int i = 0; i < m_connectionSettingsEdit.Count; i++)
+                m_connectionSettingsEdit[i].SetDefault();
         }
 
-        private void SaveSettingsFile()
+        public void SaveSettingsFile()
         {
             StreamWriter sw = new StreamWriter(settingsFile, false);
 
             StringBuilder sb = new StringBuilder(1024);
 
-            sb.Append(connectionSettings.Count.ToString () + '#');
-            
-            foreach (ConnectionSettings cs in connectionSettings)
+            sb.Append(m_connectionSettings.Count.ToString () + '#');
+
+            foreach (ConnectionSettings cs in m_connectionSettings)
             {
                 sb.Append(cs.server + ";");
                 sb.Append(cs.port.ToString() + ";");
@@ -379,42 +377,53 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
+            bool bConnSettEmpty = false;
+
             //this.tec = tec;
-            connectionSettingsEdit = new List<ConnectionSettings>();
-            connectionSettings = new List<ConnectionSettings>();
+            m_connectionSettingsEdit = new List<ConnectionSettings>();
+            m_connectionSettings = new List<ConnectionSettings>();
 
             cbxConnFor.DropDownStyle = ComboBoxStyle.DropDownList;
 
             //foreach (TEC t in tec)
             //{
             //    cbxConnFor.Items.Add(t.name);
-            //    connectionSettingsEdit.Add(new ConnectionSettings());
-            //    connectionSettings.Add(new ConnectionSettings());
-            //    t.connSett = connectionSettings[connectionSettings.Count - 1];
+            //    m_connectionSettingsEdit.Add(new ConnectionSettings());
+            //    m_connectionSettings.Add(new ConnectionSettings());
+            //    t.connSett = m_connectionSettings[m_connectionSettings.Count - 1];
             //}
 
             cbxConnFor.Items.Add("БД конфигурации");
 
             closing = false;
             if (!File.Exists(settingsFile)) {
-                connectionSettingsEdit.Add(new ConnectionSettings());
-                connectionSettingsEdit[connectionSettingsEdit.Count - 1].port = 3306;
-
-                connectionSettings.Add(new ConnectionSettings());
-                connectionSettings[connectionSettings.Count - 1].port = 3306;
+                //Не найден файл
+                bConnSettEmpty = true;
             }
             else
                 if (ParseSettingsFile())
                 {
-                    tbxServer.Text = connectionSettingsEdit[0].server;
-                    nudnPort.Value = connectionSettingsEdit[0].port;
-                    tbxDataBase.Text = connectionSettingsEdit[0].dbName;
-                    tbxUserId.Text = connectionSettingsEdit[0].userName;
-                    mtbxPass.Text = connectionSettingsEdit[0].password;
-                    cbxIgnore.Checked = connectionSettingsEdit[0].ignore;
+                    tbxServer.Text = m_connectionSettingsEdit[0].server;
+                    nudnPort.Value = m_connectionSettingsEdit[0].port;
+                    tbxDataBase.Text = m_connectionSettingsEdit[0].dbName;
+                    tbxUserId.Text = m_connectionSettingsEdit[0].userName;
+                    mtbxPass.Text = m_connectionSettingsEdit[0].password;
+                    cbxIgnore.Checked = m_connectionSettingsEdit[0].ignore;
                 }
                 else
-                    ;
+                    //Ошибка при разборе файла
+                    bConnSettEmpty = true;
+
+            if (bConnSettEmpty == true)
+            {
+                m_connectionSettingsEdit.Add(new ConnectionSettings());
+                m_connectionSettingsEdit[m_connectionSettingsEdit.Count - 1].port = 3306;
+
+                m_connectionSettings.Add(new ConnectionSettings());
+                m_connectionSettings[m_connectionSettings.Count - 1].port = 3306;
+            }
+            else
+                ;
 
             cbxConnFor.SelectedIndex = oldSelectedIndex = 0;
         }
@@ -425,34 +434,37 @@ namespace StatisticCommon
             else
                 ;
 
-            //return connectionSettings[connectionSettings.Count - 1];
-            return connectionSettings[indx];
+            //return m_connectionSettings[m_connectionSettings.Count - 1];
+            return m_connectionSettings[indx];
         }
 
         public void setConnSett(int indx, ConnectionSettings connSett)
         {
-            connectionSettings.Add (connSett);
+            addConnSett (connSett);
         }
 
         public void addConnSett(ConnectionSettings connSett)
         {
-            connectionSettings.Add(connSett);
+            m_connectionSettings.Add(connSett);
+            m_connectionSettingsEdit.Add(connSett);
+
+            cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 1) + ")");
         }
 
         public void btnOk_Click(object obj, EventArgs ev)
         {
             ConnectionSettings.ConnectionSettingsError error;
 
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].server = tbxServer.Text;
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].port = (int)nudnPort.Value;
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName = tbxDataBase.Text;
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].userName = tbxUserId.Text;
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].password = mtbxPass.Text;
-            connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore = cbxIgnore.Checked;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].server = tbxServer.Text;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].port = (int)nudnPort.Value;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName = tbxDataBase.Text;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].userName = tbxUserId.Text;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].password = mtbxPass.Text;
+            m_connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore = cbxIgnore.Checked;
 
-            for (int i = 0; i < connectionSettingsEdit.Count; i++ )
+            for (int i = 0; i < m_connectionSettingsEdit.Count; i++ )
             {
-                if ((error = connectionSettingsEdit[i].Validate()) != ConnectionSettings.ConnectionSettingsError.NoError)
+                if ((error = m_connectionSettingsEdit[i].Validate()) != ConnectionSettings.ConnectionSettingsError.NoError)
                 {
                     string msgError = string.Empty;
                     switch (error)
@@ -485,12 +497,12 @@ namespace StatisticCommon
                     return;
                 }
 
-                connectionSettings[i].server = connectionSettingsEdit[i].server;
-                connectionSettings[i].port = connectionSettingsEdit[i].port;
-                connectionSettings[i].dbName = connectionSettingsEdit[i].dbName;
-                connectionSettings[i].userName = connectionSettingsEdit[i].userName;
-                connectionSettings[i].password = connectionSettingsEdit[i].password;
-                connectionSettings[i].ignore = connectionSettingsEdit[i].ignore;
+                m_connectionSettings[i].server = m_connectionSettingsEdit[i].server;
+                m_connectionSettings[i].port = m_connectionSettingsEdit[i].port;
+                m_connectionSettings[i].dbName = m_connectionSettingsEdit[i].dbName;
+                m_connectionSettings[i].userName = m_connectionSettingsEdit[i].userName;
+                m_connectionSettings[i].password = m_connectionSettingsEdit[i].password;
+                m_connectionSettings[i].ignore = m_connectionSettingsEdit[i].ignore;
             }
 
             SaveSettingsFile();
@@ -502,21 +514,21 @@ namespace StatisticCommon
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < connectionSettingsEdit.Count; i++)
+            for (int i = 0; i < m_connectionSettingsEdit.Count; i++)
             {
-                connectionSettingsEdit[i].server = connectionSettings[i].server;
-                connectionSettingsEdit[i].port = connectionSettings[i].port;
-                connectionSettingsEdit[i].dbName = connectionSettings[i].dbName;
-                connectionSettingsEdit[i].userName = connectionSettings[i].userName;
-                connectionSettingsEdit[i].password = connectionSettings[i].password;
-                connectionSettingsEdit[i].ignore = connectionSettings[i].ignore;
+                m_connectionSettingsEdit[i].server = m_connectionSettings[i].server;
+                m_connectionSettingsEdit[i].port = m_connectionSettings[i].port;
+                m_connectionSettingsEdit[i].dbName = m_connectionSettings[i].dbName;
+                m_connectionSettingsEdit[i].userName = m_connectionSettings[i].userName;
+                m_connectionSettingsEdit[i].password = m_connectionSettings[i].password;
+                m_connectionSettingsEdit[i].ignore = m_connectionSettings[i].ignore;
             }
-            tbxServer.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].server;
-            nudnPort.Value = connectionSettingsEdit[cbxConnFor.SelectedIndex].port;
-            tbxDataBase.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName;
-            tbxUserId.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].userName;
-            mtbxPass.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].password;
-            cbxIgnore.Checked = connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore;
+            tbxServer.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].server;
+            nudnPort.Value = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].port;
+            tbxDataBase.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName;
+            tbxUserId.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].userName;
+            mtbxPass.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].password;
+            cbxIgnore.Checked = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore;
 
             
             closing = true;
@@ -524,21 +536,49 @@ namespace StatisticCommon
             Close();
         }
 
+        public ConnectionSettings ConnectionSettingsEdit {
+            get {
+                return m_connectionSettingsEdit[cbxConnFor.SelectedIndex];
+            }
+
+            set {
+                tbxServer.Text = value.server;
+                nudnPort.Value = value.port;
+                tbxDataBase.Text = value.dbName;
+                tbxUserId.Text = value.userName;
+                mtbxPass.Text = value.password;
+                cbxIgnore.Checked = false; //value.ignore;
+            }
+        }
+
+        public int SelectedIndex
+        {
+            get
+            {
+                return cbxConnFor.SelectedIndex;
+            }
+
+            set
+            {
+                cbxConnFor.SelectedIndex = value;
+            }
+        }
+
         private void cbxConnFor_SelectedIndexChanged(object sender, EventArgs e)
         {
-            connectionSettingsEdit[oldSelectedIndex].server = tbxServer.Text;
-            connectionSettingsEdit[oldSelectedIndex].port = (int)nudnPort.Value;
-            connectionSettingsEdit[oldSelectedIndex].dbName = tbxDataBase.Text;
-            connectionSettingsEdit[oldSelectedIndex].userName = tbxUserId.Text;
-            connectionSettingsEdit[oldSelectedIndex].password = mtbxPass.Text;
-            connectionSettingsEdit[oldSelectedIndex].ignore = cbxIgnore.Checked;
+            m_connectionSettingsEdit[oldSelectedIndex].server = tbxServer.Text;
+            m_connectionSettingsEdit[oldSelectedIndex].port = (int)nudnPort.Value;
+            m_connectionSettingsEdit[oldSelectedIndex].dbName = tbxDataBase.Text;
+            m_connectionSettingsEdit[oldSelectedIndex].userName = tbxUserId.Text;
+            m_connectionSettingsEdit[oldSelectedIndex].password = mtbxPass.Text;
+            m_connectionSettingsEdit[oldSelectedIndex].ignore = cbxIgnore.Checked;
 
-            tbxServer.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].server;
-            nudnPort.Value = connectionSettingsEdit[cbxConnFor.SelectedIndex].port;
-            tbxDataBase.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName;
-            tbxUserId.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].userName;
-            mtbxPass.Text = connectionSettingsEdit[cbxConnFor.SelectedIndex].password;
-            cbxIgnore.Checked = connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore;
+            tbxServer.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].server;
+            nudnPort.Value = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].port;
+            tbxDataBase.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].dbName;
+            tbxUserId.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].userName;
+            mtbxPass.Text = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].password;
+            cbxIgnore.Checked = m_connectionSettingsEdit[cbxConnFor.SelectedIndex].ignore;
 
             oldSelectedIndex = cbxConnFor.SelectedIndex;
 
@@ -559,6 +599,11 @@ namespace StatisticCommon
         public bool Protected
         {
             get { return mayToProtected; }
+        }
+
+        public int Count
+        {
+            get { return m_connectionSettings.Count; }
         }
 
         private void component_Changed(object sender, EventArgs e)

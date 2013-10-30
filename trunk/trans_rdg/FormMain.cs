@@ -21,7 +21,7 @@ namespace trans_rdg
         GroupBox [] m_arGroupBox;
         System.Windows.Forms.Control [,] m_arUIControlDB;
 
-        private Int16 indxDB
+        private Int16 m_IndexDB
         {
             get {
                 CONN_SETT_TYPE i;
@@ -54,7 +54,8 @@ namespace trans_rdg
 
             m_formConnectionSettings = new FormConnectionSettings();
 
-            if (m_formConnectionSettings.Protected == false) {
+            if (m_formConnectionSettings.Protected == false || m_formConnectionSettings.Count < 2)
+            {
                 m_formConnectionSettings.addConnSett (new ConnectionSettings ());
 
                 //formConnectionSettings.setConnSett();
@@ -64,43 +65,83 @@ namespace trans_rdg
 
             m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
-                m_arAdmin[i] = new Admin(m_formConnectionSettings.getConnSett(i));
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST));
 
-                for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j ++) {
-                    switch (j) {
-                        case (Int16)INDX_UICONTROL_DB.SERVER_IP:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
-                            break;
-                        case (Int16)INDX_UICONTROL_DB.PORT:
-                            if (m_arUIControlDB[i, j].Enabled)
-                                ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString ();
-                            else
-                                ;
-                            break;
-                        case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
-                            break;
-                        case (Int16)INDX_UICONTROL_DB.USER_ID:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
-                            break;
-                        case (Int16)INDX_UICONTROL_DB.PASS:
-                            ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
-                            break;
-                        default:
-                            break;
-                    }
-                }
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_list_tec);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
+
+            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+                setUIControlConnectionSettings (i);
 
                 m_arAdmin [i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 m_arAdmin [i].SetDelegateReport(ErrorReport, ActionReport);
+
+                m_arAdmin[i].SetDelegateData(FillAdminTable);
 
                 m_arAdmin [i].StartDbInterface();
             }
 
             //panelMain.Visible = false;
 
+            FillComboBoxTECComponent ();
+
             timerMain.Start ();
+        }
+
+        private void setUIControlConnectionSettings (int i) {
+            for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j ++) {
+                switch (j) {
+                    case (Int16)INDX_UICONTROL_DB.SERVER_IP:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.PORT:
+                        if (m_arUIControlDB[i, j].Enabled)
+                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString ();
+                        else
+                            ;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.USER_ID:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.PASS:
+                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void FillComboBoxTECComponent () {
+            for (int i = 0; i < m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents.Count; i ++)
+                comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[i].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[i].name);
+
+            if (comboBoxTECComponent.Items.Count > 0)
+                comboBoxTECComponent.SelectedIndex = 0;
+            else
+                ;
+        }
+
+        private void FillPreviousAdminTable()
+        {
+        }
+
+        private void FillAdminTable (DateTime date) {
+            int indxDB = m_IndexDB;
+            
+            for (int i = 0; i < 24; i++)
+            {
+                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.PLAN].Value = m_arAdmin [indxDB].m_curRDGValues[i].plan.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].recomendation.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviationPercent.ToString();
+                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DIVIATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviation.ToString("F2");
+            }
+
+            FillPreviousAdminTable();
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -136,8 +177,11 @@ namespace trans_rdg
                     break;
             }
 
-            if (bBackColorChange)
+            if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
+
+                m_formConnectionSettings.SelectedIndex = m_IndexDB;
+            }
             else
                 ;
         }
@@ -181,19 +225,19 @@ namespace trans_rdg
         {
             bool have_eror = false;
 
-            if (m_arAdmin[indxDB].actioned_state && m_arAdmin[indxDB].threadIsWorking)
+            if (m_arAdmin[m_IndexDB].actioned_state && m_arAdmin[m_IndexDB].threadIsWorking)
             {
-                lblDateError.Text = m_arAdmin[indxDB].last_action;
-                lblDescError.Text = m_arAdmin[indxDB].last_time_action.ToString();
+                lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
+                lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
             }
             else
                 ;
 
-            if (m_arAdmin[indxDB].errored_state)
+            if (m_arAdmin[m_IndexDB].errored_state)
             {
                 have_eror = true;
-                lblDescError.Text = m_arAdmin[indxDB].last_error;
-                lblDateError.Text = m_arAdmin[indxDB].last_time_error.ToString();
+                lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
+                lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
             }
             else
                 ;
@@ -213,9 +257,9 @@ namespace trans_rdg
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            //if (m_arAdmin[indxDB].threadIsWorking == false)
+            //if (m_arAdmin[m_IndexDB].threadIsWorking == false)
             //{
-            //    m_arAdmin[indxDB].StartDbInterface();
+            //    m_arAdmin[m_IndexDB].StartDbInterface();
             //}
             //else
             //    ;
@@ -242,7 +286,28 @@ namespace trans_rdg
 
         private void FormMain_Activated(object sender, EventArgs e)
         {
-            m_arAdmin[indxDB].GetCurrentTime ();
+            m_arAdmin[m_IndexDB].GetCurrentTime ();
+        }
+
+        private void buttonSave_Click(object sender, EventArgs e)
+        {
+            //m_formConnectionSettings.SaveSettingsFile ();
+            m_formConnectionSettings.btnOk_Click (null, null);
+        }
+
+        private void component_Changed(object sender, EventArgs e)
+        {
+            uint indxDB = (uint)m_IndexDB;
+            ConnectionSettings connSett = new ConnectionSettings ();
+
+            connSett.server = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.SERVER_IP].Text;
+            connSett.port = (Int32)((NumericUpDown)m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PORT]).Value;
+            connSett.dbName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.NAME_DATABASE].Text;
+            connSett.userName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.USER_ID].Text;
+            connSett.password = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PASS].Text;
+            connSett.ignore = false;
+
+            m_formConnectionSettings.ConnectionSettingsEdit = connSett;
         }
     }
 }

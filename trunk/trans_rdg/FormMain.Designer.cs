@@ -32,15 +32,13 @@
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
-            this.comboBoxMode = new System.Windows.Forms.ComboBox();
             this.labelTECComponent = new System.Windows.Forms.Label();
-            this.labelMode = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
             this.buttonDestImport = new System.Windows.Forms.Button();
-            this.buttonDestTest = new System.Windows.Forms.Button();
+            this.buttonDestSave = new System.Windows.Forms.Button();
             this.labelDestPort = new System.Windows.Forms.Label();
             this.nudnDestPort = new System.Windows.Forms.NumericUpDown();
             this.labelDestPass = new System.Windows.Forms.Label();
@@ -52,7 +50,7 @@
             this.tbxDestNameDatabase = new System.Windows.Forms.TextBox();
             this.tbxDestServerIP = new System.Windows.Forms.TextBox();
             this.groupBoxSource = new System.Windows.Forms.GroupBox();
-            this.buttonSourceTest = new System.Windows.Forms.Button();
+            this.buttonSourceSave = new System.Windows.Forms.Button();
             this.labelSourcePort = new System.Windows.Forms.Label();
             this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
             this.labelSourcePass = new System.Windows.Forms.Label();
@@ -74,7 +72,7 @@
             this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
             this.panelMain.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
             this.groupBoxSource.SuspendLayout();
@@ -85,7 +83,7 @@
             // 
             // buttonClose
             // 
-            this.buttonClose.Location = new System.Drawing.Point(733, 533);
+            this.buttonClose.Location = new System.Drawing.Point(733, 516);
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.Size = new System.Drawing.Size(100, 23);
             this.buttonClose.TabIndex = 2;
@@ -96,52 +94,34 @@
             // panelMain
             // 
             this.panelMain.Controls.Add(this.comboBoxTECComponent);
-            this.panelMain.Controls.Add(this.comboBoxMode);
             this.panelMain.Controls.Add(this.labelTECComponent);
-            this.panelMain.Controls.Add(this.labelMode);
             this.panelMain.Controls.Add(this.labelDate);
             this.panelMain.Controls.Add(this.dateTimePicker1);
-            this.panelMain.Controls.Add(this.dataGridView1);
+            this.panelMain.Controls.Add(this.dgwAdminTable);
             this.panelMain.Controls.Add(this.groupBoxDest);
             this.panelMain.Controls.Add(this.groupBoxSource);
             this.panelMain.Location = new System.Drawing.Point(12, 28);
             this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(822, 501);
+            this.panelMain.Size = new System.Drawing.Size(822, 484);
             this.panelMain.TabIndex = 3;
             // 
             // comboBoxTECComponent
             // 
+            this.comboBoxTECComponent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTECComponent.FormattingEnabled = true;
-            this.comboBoxTECComponent.Location = new System.Drawing.Point(132, 60);
+            this.comboBoxTECComponent.Location = new System.Drawing.Point(132, 37);
             this.comboBoxTECComponent.Name = "comboBoxTECComponent";
             this.comboBoxTECComponent.Size = new System.Drawing.Size(171, 21);
             this.comboBoxTECComponent.TabIndex = 33;
             // 
-            // comboBoxMode
-            // 
-            this.comboBoxMode.FormattingEnabled = true;
-            this.comboBoxMode.Location = new System.Drawing.Point(132, 33);
-            this.comboBoxMode.Name = "comboBoxMode";
-            this.comboBoxMode.Size = new System.Drawing.Size(171, 21);
-            this.comboBoxMode.TabIndex = 32;
-            // 
             // labelTECComponent
             // 
             this.labelTECComponent.AutoSize = true;
-            this.labelTECComponent.Location = new System.Drawing.Point(11, 62);
+            this.labelTECComponent.Location = new System.Drawing.Point(11, 39);
             this.labelTECComponent.Name = "labelTECComponent";
             this.labelTECComponent.Size = new System.Drawing.Size(63, 13);
             this.labelTECComponent.TabIndex = 31;
             this.labelTECComponent.Text = "Компонент";
-            // 
-            // labelMode
-            // 
-            this.labelMode.AutoSize = true;
-            this.labelMode.Location = new System.Drawing.Point(11, 37);
-            this.labelMode.Name = "labelMode";
-            this.labelMode.Size = new System.Drawing.Size(42, 13);
-            this.labelMode.TabIndex = 30;
-            this.labelMode.Text = "Режим";
             // 
             // labelDate
             // 
@@ -159,19 +139,19 @@
             this.dateTimePicker1.Size = new System.Drawing.Size(170, 20);
             this.dateTimePicker1.TabIndex = 28;
             // 
-            // dataGridView1
+            // dgwAdminTable
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(319, 5);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(498, 493);
-            this.dataGridView1.TabIndex = 27;
+            this.dgwAdminTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.dgwAdminTable.Name = "dgwAdminTable";
+            this.dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.dgwAdminTable.TabIndex = 27;
             // 
             // groupBoxDest
             // 
             this.groupBoxDest.BackColor = System.Drawing.SystemColors.Control;
             this.groupBoxDest.Controls.Add(this.buttonDestImport);
-            this.groupBoxDest.Controls.Add(this.buttonDestTest);
+            this.groupBoxDest.Controls.Add(this.buttonDestSave);
             this.groupBoxDest.Controls.Add(this.labelDestPort);
             this.groupBoxDest.Controls.Add(this.nudnDestPort);
             this.groupBoxDest.Controls.Add(this.labelDestPass);
@@ -182,7 +162,7 @@
             this.groupBoxDest.Controls.Add(this.tbxDestUserId);
             this.groupBoxDest.Controls.Add(this.tbxDestNameDatabase);
             this.groupBoxDest.Controls.Add(this.tbxDestServerIP);
-            this.groupBoxDest.Location = new System.Drawing.Point(3, 299);
+            this.groupBoxDest.Location = new System.Drawing.Point(3, 276);
             this.groupBoxDest.Name = "groupBoxDest";
             this.groupBoxDest.Size = new System.Drawing.Size(300, 200);
             this.groupBoxDest.TabIndex = 26;
@@ -200,14 +180,15 @@
             this.buttonDestImport.Text = "Импорт данных";
             this.buttonDestImport.UseVisualStyleBackColor = true;
             // 
-            // buttonDestTest
+            // buttonDestSave
             // 
-            this.buttonDestTest.Location = new System.Drawing.Point(152, 166);
-            this.buttonDestTest.Name = "buttonDestTest";
-            this.buttonDestTest.Size = new System.Drawing.Size(137, 23);
-            this.buttonDestTest.TabIndex = 35;
-            this.buttonDestTest.Text = "Тест соединения";
-            this.buttonDestTest.UseVisualStyleBackColor = true;
+            this.buttonDestSave.Location = new System.Drawing.Point(153, 166);
+            this.buttonDestSave.Name = "buttonDestSave";
+            this.buttonDestSave.Size = new System.Drawing.Size(137, 23);
+            this.buttonDestSave.TabIndex = 35;
+            this.buttonDestSave.Text = "Сохранить";
+            this.buttonDestSave.UseVisualStyleBackColor = true;
+            this.buttonDestSave.Click += new System.EventHandler(this.buttonSave_Click);
             // 
             // labelDestPort
             // 
@@ -280,6 +261,7 @@
             this.mtbxDestPass.PasswordChar = '#';
             this.mtbxDestPass.Size = new System.Drawing.Size(160, 20);
             this.mtbxDestPass.TabIndex = 29;
+            this.mtbxDestPass.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxDestUserId
             // 
@@ -287,6 +269,7 @@
             this.tbxDestUserId.Name = "tbxDestUserId";
             this.tbxDestUserId.Size = new System.Drawing.Size(160, 20);
             this.tbxDestUserId.TabIndex = 28;
+            this.tbxDestUserId.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxDestNameDatabase
             // 
@@ -294,6 +277,7 @@
             this.tbxDestNameDatabase.Name = "tbxDestNameDatabase";
             this.tbxDestNameDatabase.Size = new System.Drawing.Size(160, 20);
             this.tbxDestNameDatabase.TabIndex = 27;
+            this.tbxDestNameDatabase.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxDestServerIP
             // 
@@ -301,11 +285,12 @@
             this.tbxDestServerIP.Name = "tbxDestServerIP";
             this.tbxDestServerIP.Size = new System.Drawing.Size(160, 20);
             this.tbxDestServerIP.TabIndex = 25;
+            this.tbxDestServerIP.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // groupBoxSource
             // 
             this.groupBoxSource.BackColor = System.Drawing.SystemColors.Info;
-            this.groupBoxSource.Controls.Add(this.buttonSourceTest);
+            this.groupBoxSource.Controls.Add(this.buttonSourceSave);
             this.groupBoxSource.Controls.Add(this.labelSourcePort);
             this.groupBoxSource.Controls.Add(this.nudnSourcePort);
             this.groupBoxSource.Controls.Add(this.labelSourcePass);
@@ -316,7 +301,7 @@
             this.groupBoxSource.Controls.Add(this.tbxSourceUserId);
             this.groupBoxSource.Controls.Add(this.tbxSourceNameDatabase);
             this.groupBoxSource.Controls.Add(this.tbxSourceServerIP);
-            this.groupBoxSource.Location = new System.Drawing.Point(3, 88);
+            this.groupBoxSource.Location = new System.Drawing.Point(3, 65);
             this.groupBoxSource.Name = "groupBoxSource";
             this.groupBoxSource.Size = new System.Drawing.Size(300, 200);
             this.groupBoxSource.TabIndex = 25;
@@ -325,14 +310,15 @@
             this.groupBoxSource.MouseClick += new System.Windows.Forms.MouseEventHandler(this.groupBox_MouseClick);
             this.groupBoxSource.Enter += new System.EventHandler(this.groupBox_Enter);
             // 
-            // buttonSourceTest
+            // buttonSourceSave
             // 
-            this.buttonSourceTest.Location = new System.Drawing.Point(151, 163);
-            this.buttonSourceTest.Name = "buttonSourceTest";
-            this.buttonSourceTest.Size = new System.Drawing.Size(137, 23);
-            this.buttonSourceTest.TabIndex = 36;
-            this.buttonSourceTest.Text = "Тест соединения";
-            this.buttonSourceTest.UseVisualStyleBackColor = true;
+            this.buttonSourceSave.Location = new System.Drawing.Point(80, 163);
+            this.buttonSourceSave.Name = "buttonSourceSave";
+            this.buttonSourceSave.Size = new System.Drawing.Size(137, 23);
+            this.buttonSourceSave.TabIndex = 36;
+            this.buttonSourceSave.Text = "Сохранить";
+            this.buttonSourceSave.UseVisualStyleBackColor = true;
+            this.buttonSourceSave.Click += new System.EventHandler(this.buttonSave_Click);
             // 
             // labelSourcePort
             // 
@@ -405,6 +391,7 @@
             this.mtbxSourcePass.PasswordChar = '#';
             this.mtbxSourcePass.Size = new System.Drawing.Size(160, 20);
             this.mtbxSourcePass.TabIndex = 19;
+            this.mtbxSourcePass.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxSourceUserId
             // 
@@ -412,6 +399,7 @@
             this.tbxSourceUserId.Name = "tbxSourceUserId";
             this.tbxSourceUserId.Size = new System.Drawing.Size(160, 20);
             this.tbxSourceUserId.TabIndex = 18;
+            this.tbxSourceUserId.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxSourceNameDatabase
             // 
@@ -419,6 +407,7 @@
             this.tbxSourceNameDatabase.Name = "tbxSourceNameDatabase";
             this.tbxSourceNameDatabase.Size = new System.Drawing.Size(160, 20);
             this.tbxSourceNameDatabase.TabIndex = 17;
+            this.tbxSourceNameDatabase.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // tbxSourceServerIP
             // 
@@ -426,6 +415,7 @@
             this.tbxSourceServerIP.Name = "tbxSourceServerIP";
             this.tbxSourceServerIP.Size = new System.Drawing.Size(160, 20);
             this.tbxSourceServerIP.TabIndex = 15;
+            this.tbxSourceServerIP.TextChanged += new System.EventHandler(this.component_Changed);
             // 
             // menuStripMain
             // 
@@ -474,15 +464,17 @@
             this.lblMainState,
             this.lblDateError,
             this.lblDescError});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 562);
+            this.statusStripMain.Location = new System.Drawing.Point(0, 546);
             this.statusStripMain.Name = "statusStripMain";
             this.statusStripMain.Size = new System.Drawing.Size(841, 22);
+            this.statusStripMain.SizingGrip = false;
             this.statusStripMain.TabIndex = 5;
             this.statusStripMain.Text = "Нет текста";
             // 
             // lblMainState
             // 
             this.lblMainState.AutoSize = false;
+            this.lblMainState.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.lblMainState.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold);
             this.lblMainState.ForeColor = System.Drawing.Color.Red;
             this.lblMainState.Name = "lblMainState";
@@ -491,6 +483,7 @@
             // lblDateError
             // 
             this.lblDateError.AutoSize = false;
+            this.lblDateError.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
             this.lblDateError.Name = "lblDateError";
             this.lblDateError.Size = new System.Drawing.Size(166, 17);
             this.lblDateError.Text = "lblDateError";
@@ -501,6 +494,7 @@
             this.lblDescError.Name = "lblDescError";
             this.lblDescError.Size = new System.Drawing.Size(463, 17);
             this.lblDescError.Text = "lblDescError";
+            this.lblDescError.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // timerMain
             // 
@@ -511,7 +505,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(841, 584);
+            this.ClientSize = new System.Drawing.Size(841, 568);
             this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.buttonClose);
@@ -525,7 +519,7 @@
             this.Activated += new System.EventHandler(this.FormMain_Activated);
             this.panelMain.ResumeLayout(false);
             this.panelMain.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.groupBoxDest.ResumeLayout(false);
             this.groupBoxDest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
@@ -546,10 +540,9 @@
         private System.Windows.Forms.Button buttonClose;
         private System.Windows.Forms.Panel panelMain;
         private System.Windows.Forms.Label labelTECComponent;
-        private System.Windows.Forms.Label labelMode;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.DateTimePicker dateTimePicker1;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dgwAdminTable;
         private System.Windows.Forms.GroupBox groupBoxDest;
         private System.Windows.Forms.Label labelDestPort;
         private System.Windows.Forms.NumericUpDown nudnDestPort;
@@ -573,10 +566,9 @@
         private System.Windows.Forms.TextBox tbxSourceNameDatabase;
         private System.Windows.Forms.TextBox tbxSourceServerIP;
         private System.Windows.Forms.ComboBox comboBoxTECComponent;
-        private System.Windows.Forms.ComboBox comboBoxMode;
         private System.Windows.Forms.Button buttonDestImport;
-        private System.Windows.Forms.Button buttonDestTest;
-        private System.Windows.Forms.Button buttonSourceTest;
+        private System.Windows.Forms.Button buttonDestSave;
+        private System.Windows.Forms.Button buttonSourceSave;
         private System.Windows.Forms.MenuStrip menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;

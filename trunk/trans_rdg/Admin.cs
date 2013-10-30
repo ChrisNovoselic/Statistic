@@ -18,7 +18,7 @@ namespace trans_rdg
 {
     public class Admin : object
     {
-        private struct RDGStruct
+        public struct RDGStruct
         {
             public double plan;
             public double recomendation;
@@ -51,6 +51,9 @@ namespace trans_rdg
         private DelegateStringFunc errorReport;
         private DelegateStringFunc actionReport;
 
+        //private DelegateFunc fillTECComponent = null;
+        private DelegateFunctionDate fillData = null;
+
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
         public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
         {
@@ -72,11 +75,11 @@ namespace trans_rdg
 
         public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL };
 
-        private volatile RDGStruct[] m_prevRDGValues;
-        private RDGStruct[] m_curRDGValues;
-        private volatile List<TECComponent> allTECComponents;
+        public volatile RDGStruct[] m_prevRDGValues;
+        public RDGStruct[] m_curRDGValues;
+        public volatile List<TECComponent> allTECComponents;
         private volatile int oldTecIndex;
-        private volatile List<TEC> m_list_tec;
+        public volatile List<TEC> m_list_tec;
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -179,10 +182,10 @@ namespace trans_rdg
         public Admin(ConnectionSettings connSett)
         {
             connSettConfigDB = connSett;
-            
+
             Initialize();
 
-            InitTEC(new InitTEC(connSettConfigDB, 0).tec);
+            InitTEC(new InitTEC(connSettConfigDB, (Int32)FormChangeMode.MODE_TECCOMPONENT.GTP).tec);
         }
 
         public Admin(List<TEC> tec)
@@ -384,13 +387,18 @@ namespace trans_rdg
             this.delegateEventUpdate = dStatus;
         }
 
-        public void SetDelegateReport(DelegateStringFunc err, DelegateStringFunc act)
+        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fact)
         {
-            this.errorReport = err;
-            this.actionReport = act;
+            this.errorReport = ferr;
+            this.actionReport = fact;
         }
 
-        public void SetDelegateData(DelegateFunc f)
+        public void SetDelegateData(DelegateFunctionDate f)
+        {
+            fillData = f;
+        }
+
+        public void SetDelegateTECComponent(DelegateFunc f)
         {
         }
 
@@ -1315,6 +1323,11 @@ namespace trans_rdg
                     allTECComponents.Add(t.list_TECComponents[0]);
                 }
             }
+
+            //if (! (fillTECComponent == null))
+            //    fillTECComponent ();
+            //else
+            //    ;
         }
 
         private bool InitDbInterfaces () {

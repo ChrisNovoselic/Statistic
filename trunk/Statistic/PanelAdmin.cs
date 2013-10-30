@@ -9,14 +9,12 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 
-using StatisticCommon;
-
-namespace Statistic
+namespace StatisticCommon
 {
+    public delegate void DelegateFunctionDate(DateTime date);
+
     public class PanelAdmin : Panel
     {
-        private delegate void DelegateFunctionDate(DateTime date);
-
         private struct RDGStruct
         {
             public double plan;
@@ -110,14 +108,18 @@ namespace Statistic
         private System.Windows.Forms.DataGridViewTextBoxColumn Recommendation;
         private System.Windows.Forms.DataGridViewCheckBoxColumn DeviationType;
         private System.Windows.Forms.DataGridViewTextBoxColumn Deviation;
+        private System.Windows.Forms.DataGridViewButtonColumn ToAll;
+        
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnImportExcel;
         private System.Windows.Forms.Button btnExportExcel;
+
         //private System.Windows.Forms.Button btnLoadLayout;
-        private System.Windows.Forms.DataGridViewButtonColumn ToAll;
+        
         private System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
+        
         private MD5CryptoServiceProvider md5;
 
         private DelegateFunc delegateStartWait;
