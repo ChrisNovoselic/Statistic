@@ -321,7 +321,8 @@ namespace StatisticCommon
                                                                                                             this.Plan,
                                                                                                             this.Recommendation,
                                                                                                             this.DeviationType,
-                                                                                                            this.Deviation });
+                                                                                                            this.Deviation,
+                                                                                                            this.ToAll });
             this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
             this.dgwAdminTable.Name = "dgwAdminTable";
             this.dgwAdminTable.RowHeadersVisible = false;
@@ -389,11 +390,6 @@ namespace StatisticCommon
             this.btnExportExcel.UseVisualStyleBackColor = true;
             this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
             // 
-            // ToAll
-            // 
-            this.ToAll.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.TO_ALL];
-            this.ToAll.Name = arDescStringIndex [(int) PanelAdmin.DESC_INDEX.TO_ALL];
-            // 
             // comboBoxTecComponent
             // 
             this.comboBoxTecComponent.FormattingEnabled = true;
@@ -407,7 +403,7 @@ namespace StatisticCommon
             this.ResumeLayout();
         }
 
-        public void InitializeAdminTable (DataGridView dgw, DataGridViewColumn [] arColumn) {
+        static public void InitializeAdminTable (DataGridView dgw, DataGridViewColumn [] arColumn) {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
 
             dgw.AllowUserToAddRows = false;
@@ -424,48 +420,53 @@ namespace StatisticCommon
             dgw.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
             dgw.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgw.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.DateHour,
-            this.Plan,
-            this.Recommendation,
-            this.DeviationType,
-            this.Deviation,
-            this.ToAll});
+            arColumn [(int)PanelAdmin.DESC_INDEX.DATE_HOUR],
+            arColumn [(int)PanelAdmin.DESC_INDEX.PLAN],
+            arColumn [(int)PanelAdmin.DESC_INDEX.RECOMENDATION],
+            arColumn [(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE],
+            arColumn [(int)PanelAdmin.DESC_INDEX.DIVIATION],
+            arColumn [(int)PanelAdmin.DESC_INDEX.TO_ALL]});
             // 
             // DateHour
             // 
-            this.DateHour.Frozen = true;
-            this.DateHour.HeaderText = "Дата, Час";
-            this.DateHour.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DATE_HOUR];
-            this.DateHour.ReadOnly = true;
-            this.DateHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Frozen = true;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].HeaderText = "Дата, Час";
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DATE_HOUR];
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].ReadOnly = true;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Plan
             // 
-            this.Plan.Frozen = true;
-            this.Plan.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
-            this.Plan.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
-            this.Plan.ReadOnly = false;
-            this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Plan.Width = 70;
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].Frozen = true;
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].ReadOnly = false;
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            arColumn[(int)PanelAdmin.DESC_INDEX.PLAN].Width = 70;
             // 
             // Recommendation
             // 
-            this.Recommendation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
-            this.Recommendation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
-            this.Recommendation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            arColumn[(int)PanelAdmin.DESC_INDEX.RECOMENDATION].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
+            arColumn[(int)PanelAdmin.DESC_INDEX.RECOMENDATION].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
+            arColumn[(int)PanelAdmin.DESC_INDEX.RECOMENDATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationType
             // 
-            this.DeviationType.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
-            this.DeviationType.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
-            this.DeviationType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Deviation
             // 
-            this.Deviation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
-            this.Deviation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
-            this.Deviation.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Deviation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION].Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            arColumn[(int)PanelAdmin.DESC_INDEX.DIVIATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ToAll
+            // 
+            arColumn[(int)PanelAdmin.DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.TO_ALL];
+            arColumn[(int)PanelAdmin.DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.TO_ALL];
         }
 
         public PanelAdmin(List<TEC> tec, StatusStrip sts)
