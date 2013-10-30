@@ -102,6 +102,7 @@ namespace StatisticCommon
         //}
 
         private System.Windows.Forms.MonthCalendar mcldrDate;
+        
         private System.Windows.Forms.DataGridView dgwAdminTable;
         private System.Windows.Forms.DataGridViewTextBoxColumn DateHour;
         private System.Windows.Forms.DataGridViewTextBoxColumn Plan;
@@ -153,7 +154,7 @@ namespace StatisticCommon
         private const double maxDeviationValue = 1500;
         private const double maxDeviationPercentValue = 100;
 
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL, COUNT_COLUMN };
         private string [] arDescStringIndex = {"DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll"};
         private string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
@@ -264,12 +265,12 @@ namespace StatisticCommon
 
         private void InitializeComponents()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
             this.btnImportExcel = new System.Windows.Forms.Button();
             this.btnExportExcel = new System.Windows.Forms.Button();
             //this.btnLoadLayout = new System.Windows.Forms.Button();
+            
             this.dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.DateHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Plan = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -277,10 +278,13 @@ namespace StatisticCommon
             this.DeviationType = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Deviation = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ToAll = new System.Windows.Forms.DataGridViewButtonColumn();
+            
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
             this.gbxDivider = new System.Windows.Forms.GroupBox();
+            
             this.SuspendLayout();
+            
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
             this.Controls.Add(this.btnSet);
@@ -289,7 +293,9 @@ namespace StatisticCommon
             this.Controls.Add(this.btnImportExcel);
             this.Controls.Add(this.btnExportExcel);
             this.Controls.Add(this.btnRefresh);
+            
             this.Controls.Add(this.dgwAdminTable);
+            
             this.Controls.Add(this.mcldrDate);
             this.Controls.Add(this.comboBoxTecComponent);
             this.Controls.Add(this.gbxDivider);
@@ -310,27 +316,12 @@ namespace StatisticCommon
             this.mcldrDate.ShowTodayCircle = false;
             // 
             // dgwAdminTable
-            // 
-            this.dgwAdminTable.AllowUserToAddRows = false;
-            this.dgwAdminTable.AllowUserToDeleteRows = false;
-            this.dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
-            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgwAdminTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
-            this.dgwAdminTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgwAdminTable.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.DateHour,
-            this.Plan,
-            this.Recommendation,
-            this.DeviationType,
-            this.Deviation,
-            this.ToAll});
+            //
+            InitializeAdminTable(this.dgwAdminTable, new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { this.DateHour,
+                                                                                                            this.Plan,
+                                                                                                            this.Recommendation,
+                                                                                                            this.DeviationType,
+                                                                                                            this.Deviation });
             this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
             this.dgwAdminTable.Name = "dgwAdminTable";
             this.dgwAdminTable.RowHeadersVisible = false;
@@ -338,43 +329,7 @@ namespace StatisticCommon
             this.dgwAdminTable.TabIndex = 1;
             this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
             this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
-            this.dgwAdminTable.RowTemplate.Resizable = DataGridViewTriState.False;
-            // 
-            // DateHour
-            // 
-            this.DateHour.Frozen = true;
-            this.DateHour.HeaderText = "Дата, Час";
-            this.DateHour.Name = arDescStringIndex [(int) PanelAdmin.DESC_INDEX.DATE_HOUR];
-            this.DateHour.ReadOnly = true;
-            this.DateHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Plan
-            // 
-            this.Plan.Frozen = true;
-            this.Plan.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
-            this.Plan.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
-            this.Plan.ReadOnly = false;
-            this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.Plan.Width = 70;
-            // 
-            // Recommendation
-            // 
-            this.Recommendation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
-            this.Recommendation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
-            this.Recommendation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // DeviationType
-            // 
-            this.DeviationType.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
-            this.DeviationType.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
-            this.DeviationType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Deviation
-            // 
-            this.Deviation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
-            this.Deviation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
-            this.Deviation.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Deviation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.dgwAdminTable.RowTemplate.Resizable = DataGridViewTriState.False; 
             // 
             // btnSet
             // 
@@ -450,6 +405,67 @@ namespace StatisticCommon
             this.comboBoxTecComponent.DropDownStyle = ComboBoxStyle.DropDownList;
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.ResumeLayout();
+        }
+
+        public void InitializeAdminTable (DataGridView dgw, DataGridViewColumn [] arColumn) {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
+
+            dgw.AllowUserToAddRows = false;
+            dgw.AllowUserToDeleteRows = false;
+            dgw.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)));
+            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            dgw.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
+            dgw.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgw.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.DateHour,
+            this.Plan,
+            this.Recommendation,
+            this.DeviationType,
+            this.Deviation,
+            this.ToAll});
+            // 
+            // DateHour
+            // 
+            this.DateHour.Frozen = true;
+            this.DateHour.HeaderText = "Дата, Час";
+            this.DateHour.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DATE_HOUR];
+            this.DateHour.ReadOnly = true;
+            this.DateHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // Plan
+            // 
+            this.Plan.Frozen = true;
+            this.Plan.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
+            this.Plan.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.PLAN];
+            this.Plan.ReadOnly = false;
+            this.Plan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.Plan.Width = 70;
+            // 
+            // Recommendation
+            // 
+            this.Recommendation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
+            this.Recommendation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.RECOMENDATION];
+            this.Recommendation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // DeviationType
+            // 
+            this.DeviationType.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
+            this.DeviationType.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE];
+            this.DeviationType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // Deviation
+            // 
+            this.Deviation.HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
+            this.Deviation.Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DIVIATION];
+            this.Deviation.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Deviation.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
         }
 
         public PanelAdmin(List<TEC> tec, StatusStrip sts)

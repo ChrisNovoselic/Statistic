@@ -34,7 +34,7 @@
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
             this.labelTECComponent = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePickerMain = new System.Windows.Forms.DateTimePicker();
             this.dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
             this.buttonDestImport = new System.Windows.Forms.Button();
@@ -96,7 +96,7 @@
             this.panelMain.Controls.Add(this.comboBoxTECComponent);
             this.panelMain.Controls.Add(this.labelTECComponent);
             this.panelMain.Controls.Add(this.labelDate);
-            this.panelMain.Controls.Add(this.dateTimePicker1);
+            this.panelMain.Controls.Add(this.dateTimePickerMain);
             this.panelMain.Controls.Add(this.dgwAdminTable);
             this.panelMain.Controls.Add(this.groupBoxDest);
             this.panelMain.Controls.Add(this.groupBoxSource);
@@ -132,12 +132,12 @@
             this.labelDate.TabIndex = 29;
             this.labelDate.Text = "Дата";
             // 
-            // dateTimePicker1
+            // dateTimePickerMain
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(132, 7);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(170, 20);
-            this.dateTimePicker1.TabIndex = 28;
+            this.dateTimePickerMain.Location = new System.Drawing.Point(132, 7);
+            this.dateTimePickerMain.Name = "dateTimePickerMain";
+            this.dateTimePickerMain.Size = new System.Drawing.Size(170, 20);
+            this.dateTimePickerMain.TabIndex = 28;
             // 
             // dgwAdminTable
             // 
@@ -541,7 +541,7 @@
         private System.Windows.Forms.Panel panelMain;
         private System.Windows.Forms.Label labelTECComponent;
         private System.Windows.Forms.Label labelDate;
-        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.DateTimePicker dateTimePickerMain;
         private System.Windows.Forms.DataGridView dgwAdminTable;
         private System.Windows.Forms.GroupBox groupBoxDest;
         private System.Windows.Forms.Label labelDestPort;
