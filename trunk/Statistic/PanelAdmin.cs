@@ -496,7 +496,7 @@ namespace StatisticCommon
             return saveResult;
         }
 
-        private void FillOldValues()
+        private void CopyCurRDGValues ()
         {
             for (int i = 0; i < 24; i++)
             {
@@ -546,7 +546,7 @@ namespace StatisticCommon
                 }
             }
 
-            FillOldValues();
+            CopyCurRDGValues();
         }
 
         private void setDataGridViewAdmin(DateTime date)
@@ -560,7 +560,7 @@ namespace StatisticCommon
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_curRDGValues[i].deviation.ToString("F2");
             }
 
-            FillOldValues();
+            CopyCurRDGValues();
         }
 
         private void CalendarSetDate(DateTime date)
@@ -1461,7 +1461,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].plan = m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
                 m_curRDGValues[i].deviationPercent = false;
             }
-            FillOldValues();
+            CopyCurRDGValues();
         }
 
         public void ClearTables()

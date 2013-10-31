@@ -54,6 +54,8 @@ namespace trans_rdg
         private DelegateFunc fillTECComponent = null;
         private DelegateDateFunction fillData = null;
 
+        private DelegateDateFunction setDatetime;
+
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
         //public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
         public int mode(FormChangeMode.MODE_TECCOMPONENT new_mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
@@ -385,17 +387,14 @@ namespace trans_rdg
             this.actionReport = fact;
         }
 
-        public void SetDelegateData(DelegateDateFunction f)
-        {
-            fillData = f;
-        }
+        public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
 
-        public void SetDelegateTECComponent(DelegateFunc f)
-        {
-            fillTECComponent = f;
-        }
+        public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
-        void MessageBox (string msg) {
+        public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
+
+        void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
+        {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
@@ -1654,6 +1653,8 @@ namespace trans_rdg
                         if (using_date) {
                             m_prevDate = serverTime.Date;
                             m_curDate = m_prevDate;
+
+                            if (!(setDatetime == null)) setDatetime(m_curDate); else;
                         }
                         else
                             ;
@@ -2126,6 +2127,47 @@ namespace trans_rdg
             catch
             {
             }
+        }
+
+        public void SaveRDGValues(DateTime date)
+        {
+            Errors resultSaving;
+            if ((resultSaving = SaveChanges()) == Errors.NoError)
+            {
+                lock (m_lockObj)
+                {
+                    ClearValues();
+
+                    m_curDate = date;
+                    using_date = false;
+
+                    newState = true;
+                    states.Clear();
+                    states.Add(StatesMachine.CurrentTime);
+                    states.Add(StatesMachine.PPBRValues);
+                    states.Add(StatesMachine.AdminValues);
+
+                    try
+                    {
+                        sem.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            else
+            {
+                if (resultSaving == Errors.InvalidValue)
+                    //MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                    MessageBox("Изменение ретроспективы недопустимо!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                else
+                    //MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox("Не удалось сохранить изменения, возможно отсутствует связь с базой данных.");
+            }
+        }
+
+        public void CopyCurRDGValues () {
         }
     }
 }

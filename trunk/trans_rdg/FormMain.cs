@@ -88,6 +88,8 @@ namespace trans_rdg
 
                 m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
 
+                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
                 m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_arAdmin [i].StartDbInterface();
@@ -137,7 +139,7 @@ namespace trans_rdg
                 ;
         }
 
-        private void FillPreviousAdminTable()
+        private void CopyCurAdminValues()
         {
         }
 
@@ -154,7 +156,11 @@ namespace trans_rdg
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviation.ToString("F2");
             }
 
-            FillPreviousAdminTable();
+            CopyCurAdminValues();
+        }
+
+        private void setDatetimePicker (DateTime date) {
+            dateTimePickerMain.Value = date;
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -389,45 +395,17 @@ namespace trans_rdg
                 }
             }
 
-            FillOldValues();
+            m_arAdmin[indxDB].CopyCurRDGValues ();
         }
 
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
+            //Взять значения "с окна" в таблицу
             getDataGridViewAdmin();
 
-            Errors resultSaving;
-            if ((resultSaving = SaveChanges()) == Errors.NoError)
-            {
-                lock (m_lockObj)
-                {
-                    ClearValues();
-                    ClearTables();
-                    dateForValues = mcldrDate.SelectionStart;
-                    using_date = false;
+            //ClearTables();
 
-                    newState = true;
-                    states.Clear();
-                    states.Add(StatesMachine.CurrentTime);
-                    states.Add(StatesMachine.PPBRValues);
-                    states.Add(StatesMachine.AdminValues);
-
-                    try
-                    {
-                        sem.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            else
-            {
-                if (resultSaving == Errors.InvalidValue)
-                    MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                else
-                    MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            m_arAdmin[m_IndexDB].SaveRDGValues(dateTimePickerMain.Value);
         }
     }
 }
