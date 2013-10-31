@@ -34,13 +34,15 @@ namespace StatisticCommon
             this.clbMode = new System.Windows.Forms.CheckedListBox();
             this.btnSetAll = new System.Windows.Forms.Button();
             this.btnClearAll = new System.Windows.Forms.Button();
-            this.comboBoxModeTECComponent = new System.Windows.Forms.ComboBox();
-            this.labelModeTEC = new System.Windows.Forms.Label();
+            this.checkBoxTEC = new System.Windows.Forms.CheckBox();
+            this.checkBoxTG = new System.Windows.Forms.CheckBox();
+            this.checkBoxGTP = new System.Windows.Forms.CheckBox();
+            this.checkBoxPC = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(5, 295);
+            this.btnOk.Location = new System.Drawing.Point(5, 336);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(95, 23);
             this.btnOk.TabIndex = 1;
@@ -51,7 +53,7 @@ namespace StatisticCommon
             // параметрыПриложения
             // 
             this.параметрыПриложения.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.параметрыПриложения.Location = new System.Drawing.Point(106, 295);
+            this.параметрыПриложения.Location = new System.Drawing.Point(106, 336);
             this.параметрыПриложения.Name = "параметрыПриложения";
             this.параметрыПриложения.Size = new System.Drawing.Size(95, 23);
             this.параметрыПриложения.TabIndex = 2;
@@ -72,7 +74,7 @@ namespace StatisticCommon
             // 
             this.clbMode.CheckOnClick = true;
             this.clbMode.FormattingEnabled = true;
-            this.clbMode.Location = new System.Drawing.Point(5, 75);
+            this.clbMode.Location = new System.Drawing.Point(5, 114);
             this.clbMode.Name = "clbMode";
             this.clbMode.Size = new System.Drawing.Size(197, 214);
             this.clbMode.TabIndex = 4;
@@ -97,35 +99,60 @@ namespace StatisticCommon
             this.btnClearAll.UseVisualStyleBackColor = true;
             this.btnClearAll.Click += new System.EventHandler(this.btnClearAll_Click);
             // 
-            // comboBoxModeTECComponent
+            // checkBoxTEC
             // 
-            this.comboBoxModeTECComponent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxModeTECComponent.FormattingEnabled = true;
-            //this.comboBoxModeTECComponent.Items.AddRange(new object[] { "ГТП", "ЩУ", "Поблочно"});
-            this.comboBoxModeTECComponent.Location = new System.Drawing.Point(106, 48);
-            this.comboBoxModeTECComponent.Name = "comboBoxModeTECComponent";
-            this.comboBoxModeTECComponent.Size = new System.Drawing.Size(95, 21);
-            this.comboBoxModeTECComponent.TabIndex = 7;
-            this.comboBoxModeTECComponent.SelectedIndexChanged += new System.EventHandler(this.comboBoxModeTEC_SelectedIndexChanged);
+            this.checkBoxTEC.AutoSize = true;
+            this.checkBoxTEC.Location = new System.Drawing.Point(5, 56);
+            this.checkBoxTEC.Name = "checkBoxTEC";
+            this.checkBoxTEC.Size = new System.Drawing.Size(48, 17);
+            this.checkBoxTEC.TabIndex = 7;
+            this.checkBoxTEC.Text = "ТЭЦ";
+            this.checkBoxTEC.UseVisualStyleBackColor = true;
+            this.checkBoxTEC.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
             // 
-            // labelModeTEC
+            // checkBoxTG
             // 
-            this.labelModeTEC.AutoSize = true;
-            this.labelModeTEC.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelModeTEC.Location = new System.Drawing.Point(6, 48);
-            this.labelModeTEC.Name = "labelModeTEC";
-            this.labelModeTEC.Size = new System.Drawing.Size(74, 15);
-            this.labelModeTEC.TabIndex = 8;
-            this.labelModeTEC.Text = "По составу:";
+            this.checkBoxTG.AutoSize = true;
+            this.checkBoxTG.Location = new System.Drawing.Point(4, 85);
+            this.checkBoxTG.Name = "checkBoxTG";
+            this.checkBoxTG.Size = new System.Drawing.Size(39, 17);
+            this.checkBoxTG.TabIndex = 8;
+            this.checkBoxTG.Text = "ТГ";
+            this.checkBoxTG.UseVisualStyleBackColor = true;
+            this.checkBoxTG.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
+            // 
+            // checkBoxGTP
+            // 
+            this.checkBoxGTP.AutoSize = true;
+            this.checkBoxGTP.Location = new System.Drawing.Point(106, 56);
+            this.checkBoxGTP.Name = "checkBoxGTP";
+            this.checkBoxGTP.Size = new System.Drawing.Size(47, 17);
+            this.checkBoxGTP.TabIndex = 9;
+            this.checkBoxGTP.Text = "ГТП";
+            this.checkBoxGTP.UseVisualStyleBackColor = true;
+            this.checkBoxGTP.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
+            // 
+            // checkBoxPC
+            // 
+            this.checkBoxPC.AutoSize = true;
+            this.checkBoxPC.Location = new System.Drawing.Point(106, 85);
+            this.checkBoxPC.Name = "checkBoxPC";
+            this.checkBoxPC.Size = new System.Drawing.Size(44, 17);
+            this.checkBoxPC.TabIndex = 10;
+            this.checkBoxPC.Text = "ЩУ";
+            this.checkBoxPC.UseVisualStyleBackColor = true;
+            this.checkBoxPC.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
             // 
             // FormChangeMode
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.параметрыПриложения;
-            this.ClientSize = new System.Drawing.Size(206, 322);
-            this.Controls.Add(this.labelModeTEC);
-            this.Controls.Add(this.comboBoxModeTECComponent);
+            this.ClientSize = new System.Drawing.Size(206, 365);
+            this.Controls.Add(this.checkBoxPC);
+            this.Controls.Add(this.checkBoxGTP);
+            this.Controls.Add(this.checkBoxTG);
+            this.Controls.Add(this.checkBoxTEC);
             this.Controls.Add(this.btnClearAll);
             this.Controls.Add(this.btnSetAll);
             this.Controls.Add(this.clbMode);
@@ -153,7 +180,9 @@ namespace StatisticCommon
         private System.Windows.Forms.CheckedListBox clbMode;
         private System.Windows.Forms.Button btnSetAll;
         private System.Windows.Forms.Button btnClearAll;
-        private System.Windows.Forms.ComboBox comboBoxModeTECComponent;
-        private System.Windows.Forms.Label labelModeTEC;
+        private System.Windows.Forms.CheckBox checkBoxTEC;
+        private System.Windows.Forms.CheckBox checkBoxTG;
+        private System.Windows.Forms.CheckBox checkBoxGTP;
+        private System.Windows.Forms.CheckBox checkBoxPC;
     }
 }

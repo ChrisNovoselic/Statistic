@@ -13,6 +13,7 @@ namespace StatisticCommon
         public List<TEC> tec;
         public List<int> tec_index;
         public List<int> TECComponent_index;
+        private CheckBox[] m_arCheckBoxTECComponent;
         public List<int> was_checked;
         public bool admin_was_checked;
         public bool closing;
@@ -20,27 +21,37 @@ namespace StatisticCommon
         private ConnectionSettings m_connSet;
 
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
-        private const MODE_TECCOMPONENT m_mode_TECComponentStart = MODE_TECCOMPONENT.GTP;
-        private const MODE_TECCOMPONENT m_mode_TECComponentEnd = MODE_TECCOMPONENT.TG;
 
         public FormChangeMode(ConnectionSettings connSet)
         {
             InitializeComponent();
 
-            InitTEC(connSet);
+            m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
+                                                                                        checkBoxGTP,
+                                                                                        checkBoxPC,
+                                                                                        checkBoxTG };
 
-            for (int i = (int)m_mode_TECComponentStart; i < (int)m_mode_TECComponentEnd; i++)
-            {
-                comboBoxModeTECComponent.Items.Add(getNameMode((short)i));
-            }
-            comboBoxModeTECComponent.SelectedIndex = 0;
+            InitTEC(connSet);
+            
+            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.PC].Checked = true;
+
+            //FillListBoxTab();
 
             //clbMode.Items.Add("Назначение ПБР");
 
             closing = false;
         }
 
-        public int getModeTECComponent() { return comboBoxModeTECComponent.SelectedIndex + (int)m_mode_TECComponentStart; }
+        public int getModeTECComponent() {
+            int iMode = 0;
+
+            for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
+            {
+                if (m_arCheckBoxTECComponent[i].Checked == true) iMode |= (int)Math.Pow (2, i); else ;
+            }
+
+            return iMode;
+        }
 
         public static string getPrefixMode(int indx)
         {
@@ -64,40 +75,64 @@ namespace StatisticCommon
         public void InitTEC (ConnectionSettings connSet) {
             m_connSet = connSet;
 
-            int index_tec = 0, index_gtp = 0;
+            //this.tec = new InitTEC(m_connSet, (short) getModeTECComponent ()).tec;
+            this.tec = new InitTEC(m_connSet).tec;
+        }
 
-            clbMode.Items.Clear ();
-
-            //comboBoxModeTECComponent.Items.Clear ();            
-
-            this.tec = new InitTEC(m_connSet, (short) getModeTECComponent ()).tec;
-
-            tec_index = new List<int>();
-            TECComponent_index = new List<int>();
-            was_checked = new List<int>();
-            admin_was_checked = false;
-
-            foreach (TEC t in this.tec)
+        private void FillListBoxTab()
+        {
+            if (!(tec == null))
             {
-                clbMode.Items.Add(t.name);
-                tec_index.Add(index_tec);
-                TECComponent_index.Add(-1);
-                if (t.list_TECComponents.Count > 0)
-                {
-                    index_gtp = 0;
-                    foreach (TECComponent g in t.list_TECComponents)
-                    {
-                        clbMode.Items.Add(t.name + " - " + g.name);
-                        tec_index.Add(index_tec);
-                        TECComponent_index.Add(index_gtp);
-                        index_gtp++;
-                    }
-                }
-                index_tec++;
-            }
+                int index_tec = 0, index_gtp = 0;
 
-            //clbMode.Items.Add("Редактирование ПБР");
-            clbMode.Items.Add(getNameAdminValues((short)getModeTECComponent()));
+                clbMode.Items.Clear();
+
+                tec_index = new List<int>();
+                TECComponent_index = new List<int>();
+                was_checked = new List<int>();
+                admin_was_checked = false;
+
+                int iMode = getModeTECComponent(),
+                    iSheet = 0;
+
+                foreach (TEC t in tec)
+                {
+                    if ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TEC + 0)))) == (int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TEC + 0)))
+                    {
+                        clbMode.Items.Add(t.name);
+                        tec_index.Add(index_tec);
+                        TECComponent_index.Add(-1);
+                    }
+                    else
+                        ;
+
+                    if (t.list_TECComponents.Count > 0)
+                    {
+                        index_gtp = 0;
+                        foreach (TECComponent g in t.list_TECComponents)
+                        {
+                            if ((((g.m_id > 100) && (g.m_id < 500)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.GTP + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.GTP + 0)))) ||
+                                (((g.m_id > 500) && (g.m_id < 1000)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.PC + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.PC + 0))))) ||
+                                (((g.m_id > 1000) && (g.m_id < 10000)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TG + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TG + 0)))))))
+                            {
+                                clbMode.Items.Add(t.name + " - " + g.name);
+                                tec_index.Add(index_tec);
+                                TECComponent_index.Add(index_gtp);
+                            }
+                            else
+                                ;
+
+                            index_gtp++;
+                        }
+                    }
+                    index_tec++;
+                }
+
+                //clbMode.Items.Add("Редактирование ПБР");
+                //clbMode.Items.Add(getNameAdminValues((short)getModeTECComponent()));
+            }
+            else
+                ;
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -163,6 +198,11 @@ namespace StatisticCommon
             this.InitTEC (m_connSet);
 
             closing = false;
+        }
+
+        private void checkBox_CheckedChanged(object sender, EventArgs e)
+        {
+            FillListBoxTab();
         }
     }
 }
