@@ -27,7 +27,13 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
-            InitTEC (connSet);
+            InitTEC(connSet);
+
+            for (int i = (int)m_mode_TECComponentStart; i < (int)m_mode_TECComponentEnd; i++)
+            {
+                comboBoxModeTECComponent.Items.Add(getNameMode((short)i));
+            }
+            comboBoxModeTECComponent.SelectedIndex = 0;
 
             //clbMode.Items.Add("Назначение ПБР");
 

@@ -104,12 +104,7 @@ namespace StatisticCommon
         private System.Windows.Forms.MonthCalendar mcldrDate;
         
         private System.Windows.Forms.DataGridView dgwAdminTable;
-        private System.Windows.Forms.DataGridViewTextBoxColumn DateHour;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Plan;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Recommendation;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn DeviationType;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Deviation;
-        private System.Windows.Forms.DataGridViewButtonColumn ToAll;
+        private System.Windows.Forms.DataGridViewColumn[] m_arAdminTableColumns;
         
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
@@ -155,8 +150,8 @@ namespace StatisticCommon
         private const double maxDeviationPercentValue = 100;
 
         public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL, COUNT_COLUMN };
-        private string [] arDescStringIndex = {"DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll"};
-        private string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+        private static string [] arDescStringIndex = {"DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll"};
+        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
         private volatile RDGStruct[] m_prevRDGValues;
         private RDGStruct[] m_curRDGValues;
@@ -272,12 +267,12 @@ namespace StatisticCommon
             //this.btnLoadLayout = new System.Windows.Forms.Button();
             
             this.dgwAdminTable = new System.Windows.Forms.DataGridView();
-            this.DateHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Plan = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Recommendation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DeviationType = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Deviation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ToAll = new System.Windows.Forms.DataGridViewButtonColumn();
+            m_arAdminTableColumns = new DataGridViewColumn [(int)PanelAdmin.DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
+                                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                                    new DataGridViewCheckBoxColumn (),
+                                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                                    new DataGridViewButtonColumn ()};
             
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
@@ -317,12 +312,7 @@ namespace StatisticCommon
             // 
             // dgwAdminTable
             //
-            InitializeAdminTable(this.dgwAdminTable, new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { this.DateHour,
-                                                                                                            this.Plan,
-                                                                                                            this.Recommendation,
-                                                                                                            this.DeviationType,
-                                                                                                            this.Deviation,
-                                                                                                            this.ToAll });
+            InitializeAdminTable(this.dgwAdminTable, m_arAdminTableColumns);
             this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
             this.dgwAdminTable.Name = "dgwAdminTable";
             this.dgwAdminTable.RowHeadersVisible = false;
@@ -430,7 +420,7 @@ namespace StatisticCommon
             // DateHour
             // 
             arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Frozen = true;
-            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].HeaderText = "Дата, Час";
+            arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].HeaderText = arDescRusStringIndex[(int)PanelAdmin.DESC_INDEX.DATE_HOUR];
             arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Name = arDescStringIndex[(int)PanelAdmin.DESC_INDEX.DATE_HOUR];
             arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].ReadOnly = true;
             arColumn[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;

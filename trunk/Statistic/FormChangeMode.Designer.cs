@@ -102,11 +102,6 @@ namespace StatisticCommon
             this.comboBoxModeTECComponent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxModeTECComponent.FormattingEnabled = true;
             //this.comboBoxModeTECComponent.Items.AddRange(new object[] { "ГТП", "ЩУ", "Поблочно"});
-            for (int i = (int)m_mode_TECComponentStart; i < (int)m_mode_TECComponentEnd; i++)
-            {
-                comboBoxModeTECComponent.Items.Add(getNameMode((short)i));
-            }
-            comboBoxModeTECComponent.SelectedIndex = 0;
             this.comboBoxModeTECComponent.Location = new System.Drawing.Point(106, 48);
             this.comboBoxModeTECComponent.Name = "comboBoxModeTECComponent";
             this.comboBoxModeTECComponent.Size = new System.Drawing.Size(95, 21);

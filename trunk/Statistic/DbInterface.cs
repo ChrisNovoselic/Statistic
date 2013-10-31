@@ -612,7 +612,7 @@ namespace StatisticCommon
         public static DataTable Request(ConnectionSettings connSett, string query)
         {
             DataTable dataTableRes = new DataTable();
-            
+
             MySqlConnection connectionMySQL;
             MySqlCommand commandMySQL;
             MySqlDataAdapter adapterMySQL;
