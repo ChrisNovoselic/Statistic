@@ -138,6 +138,9 @@
     <Compile Include="FormMainBase.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="dgwAdmin.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="FormAbout.resx">
       <DependentUpon>FormAbout.cs</DependentUpon>
     </EmbeddedResource>

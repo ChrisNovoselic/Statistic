@@ -21,6 +21,8 @@ namespace trans_rdg
         GroupBox [] m_arGroupBox;
         System.Windows.Forms.Control [,] m_arUIControlDB;
 
+        //DataGridViewAdmin m_dgwAdminTable;
+
         private Int16 m_IndexDB
         {
             get {
@@ -43,6 +45,8 @@ namespace trans_rdg
         public FormMain()
         {
             InitializeComponent();
+
+            //m_dgwAdminTable = new DataGridViewAdmin ();
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
@@ -134,11 +138,11 @@ namespace trans_rdg
             
             for (int i = 0; i < 24; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.PLAN].Value = m_arAdmin [indxDB].m_curRDGValues[i].plan.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].recomendation.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DIVIATION_TYPE].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviationPercent.ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)PanelAdmin.DESC_INDEX.DIVIATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_arAdmin [indxDB].m_curRDGValues[i].plan.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].recomendation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviationPercent.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviation.ToString("F2");
             }
 
             FillPreviousAdminTable();

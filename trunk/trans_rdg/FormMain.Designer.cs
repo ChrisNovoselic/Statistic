@@ -35,7 +35,7 @@
             this.labelTECComponent = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
             this.dateTimePickerMain = new System.Windows.Forms.DateTimePicker();
-            this.dgwAdminTable = new System.Windows.Forms.DataGridView();
+            this.m_dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
             this.buttonDestImport = new System.Windows.Forms.Button();
             this.buttonDestSave = new System.Windows.Forms.Button();
@@ -72,7 +72,7 @@
             this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
             this.panelMain.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
             this.groupBoxSource.SuspendLayout();
@@ -97,7 +97,7 @@
             this.panelMain.Controls.Add(this.labelTECComponent);
             this.panelMain.Controls.Add(this.labelDate);
             this.panelMain.Controls.Add(this.dateTimePickerMain);
-            this.panelMain.Controls.Add(this.dgwAdminTable);
+            this.panelMain.Controls.Add(this.m_dgwAdminTable);
             this.panelMain.Controls.Add(this.groupBoxDest);
             this.panelMain.Controls.Add(this.groupBoxSource);
             this.panelMain.Location = new System.Drawing.Point(12, 28);
@@ -139,13 +139,13 @@
             this.dateTimePickerMain.Size = new System.Drawing.Size(170, 20);
             this.dateTimePickerMain.TabIndex = 28;
             // 
-            // dgwAdminTable
+            // m_dgwAdminTable
             // 
-            this.dgwAdminTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgwAdminTable.Location = new System.Drawing.Point(319, 5);
-            this.dgwAdminTable.Name = "dgwAdminTable";
-            this.dgwAdminTable.Size = new System.Drawing.Size(498, 471);
-            this.dgwAdminTable.TabIndex = 27;
+            this.m_dgwAdminTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
+            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // groupBoxDest
             // 
@@ -519,7 +519,7 @@
             this.Activated += new System.EventHandler(this.FormMain_Activated);
             this.panelMain.ResumeLayout(false);
             this.panelMain.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.groupBoxDest.ResumeLayout(false);
             this.groupBoxDest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
@@ -542,7 +542,7 @@
         private System.Windows.Forms.Label labelTECComponent;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.DateTimePicker dateTimePickerMain;
-        private System.Windows.Forms.DataGridView dgwAdminTable;
+        private System.Windows.Forms.DataGridView m_dgwAdminTable;
         private System.Windows.Forms.GroupBox groupBoxDest;
         private System.Windows.Forms.Label labelDestPort;
         private System.Windows.Forms.NumericUpDown nudnDestPort;

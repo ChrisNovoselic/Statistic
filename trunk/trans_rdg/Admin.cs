@@ -52,7 +52,7 @@ namespace trans_rdg
         private DelegateStringFunc actionReport;
 
         //private DelegateFunc fillTECComponent = null;
-        private DelegateFunctionDate fillData = null;
+        private DelegateDateFunction fillData = null;
 
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
         public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
@@ -73,7 +73,7 @@ namespace trans_rdg
             return ownersPass [m_idPass - 1];            
         }
 
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DIVIATION_TYPE, DIVIATION, TO_ALL };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL };
 
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
@@ -241,19 +241,19 @@ namespace trans_rdg
         {
             for (int i = 0; i < 24; i++)
             {
-                if (m_prevRDGValues[i].plan != m_curRDGValues[i].plan /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.PLAN].Value.ToString())*/)
+                if (m_prevRDGValues[i].plan != m_curRDGValues[i].plan /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION_TYPE].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
                     return true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DESC_INDEX.DIVIATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
                     return true;
                 else
                     ;
@@ -393,7 +393,7 @@ namespace trans_rdg
             this.actionReport = fact;
         }
 
-        public void SetDelegateData(DelegateFunctionDate f)
+        public void SetDelegateData(DelegateDateFunction f)
         {
             fillData = f;
         }
