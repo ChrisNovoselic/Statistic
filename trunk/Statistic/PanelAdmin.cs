@@ -296,13 +296,10 @@ namespace StatisticCommon
             // dgwAdminTable
             //
             this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
-            this.dgwAdminTable.Name = "dgwAdminTable";
-            this.dgwAdminTable.RowHeadersVisible = false;
             this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
             this.dgwAdminTable.TabIndex = 1;
             //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
             //this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
-            this.dgwAdminTable.RowTemplate.Resizable = DataGridViewTriState.False; 
             // 
             // btnSet
             // 
@@ -422,8 +419,6 @@ namespace StatisticCommon
             //dataInterface = new DbDataInterface();
 
             stsStrip = sts;
-
-            this.dgwAdminTable.Rows.Add(24);
 
             states = new List<StatesMachine>();
         }
@@ -1516,8 +1511,10 @@ namespace StatisticCommon
         }
 
         private void GetRDGExcelValuesRequest () {
+            delegateStartWait();
             m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + mcldrDate.SelectionStart.GetDateTimeFormats()[4] + ".xls",
                             @"SELECT * FROM [Лист1$]");
+            delegateStopWait();
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)

@@ -1,4 +1,6 @@
-﻿namespace trans_rdg
+﻿using StatisticCommon;
+
+namespace trans_rdg
 {
     partial class FormMain
     {
@@ -29,13 +31,20 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewButtonColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
             this.labelTECComponent = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
             this.dateTimePickerMain = new System.Windows.Forms.DateTimePicker();
-            this.m_dgwAdminTable = new System.Windows.Forms.DataGridView();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
             this.buttonDestImport = new System.Windows.Forms.Button();
             this.buttonDestSave = new System.Windows.Forms.Button();
@@ -71,8 +80,8 @@
             this.lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
             this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
-            this.panelMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
+            this.panelMain.SuspendLayout();
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
             this.groupBoxSource.SuspendLayout();
@@ -80,6 +89,15 @@
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // m_dgwAdminTable
+            // 
+            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
+            this.m_dgwAdminTable.RowHeadersVisible = false;
+            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // buttonClose
             // 
@@ -96,8 +114,8 @@
             this.panelMain.Controls.Add(this.comboBoxTECComponent);
             this.panelMain.Controls.Add(this.labelTECComponent);
             this.panelMain.Controls.Add(this.labelDate);
-            this.panelMain.Controls.Add(this.dateTimePickerMain);
             this.panelMain.Controls.Add(this.m_dgwAdminTable);
+            this.panelMain.Controls.Add(this.dateTimePickerMain);
             this.panelMain.Controls.Add(this.groupBoxDest);
             this.panelMain.Controls.Add(this.groupBoxSource);
             this.panelMain.Location = new System.Drawing.Point(12, 28);
@@ -138,14 +156,6 @@
             this.dateTimePickerMain.Name = "dateTimePickerMain";
             this.dateTimePickerMain.Size = new System.Drawing.Size(170, 20);
             this.dateTimePickerMain.TabIndex = 28;
-            // 
-            // m_dgwAdminTable
-            // 
-            this.m_dgwAdminTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
-            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
-            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
-            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // groupBoxDest
             // 
@@ -498,7 +508,7 @@
             // 
             // timerMain
             // 
-            this.timerMain.Interval = 1000;
+            this.timerMain.Interval = 666;
             this.timerMain.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // FormMain
@@ -516,10 +526,10 @@
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Конвертер данных плана и административных данных";
-            this.Activated += new System.EventHandler(this.FormMain_Activated);
+            //this.Activated += new System.EventHandler(this.FormMain_Activated);
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.panelMain.ResumeLayout(false);
             this.panelMain.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.groupBoxDest.ResumeLayout(false);
             this.groupBoxDest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
@@ -542,7 +552,6 @@
         private System.Windows.Forms.Label labelTECComponent;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.DateTimePicker dateTimePickerMain;
-        private System.Windows.Forms.DataGridView m_dgwAdminTable;
         private System.Windows.Forms.GroupBox groupBoxDest;
         private System.Windows.Forms.Label labelDestPort;
         private System.Windows.Forms.NumericUpDown nudnDestPort;
@@ -579,6 +588,12 @@
         private System.Windows.Forms.ToolStripStatusLabel lblMainState;
         private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
+        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
     }
 }
 

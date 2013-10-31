@@ -391,7 +391,7 @@ namespace StatisticCommon
                     return false;
                 else
                     ;
-                
+
                 //string connStr = string.Empty;
                 switch (m_connectionType) {
                     case DbInterfaceType.MSSQL:
@@ -504,6 +504,9 @@ namespace StatisticCommon
         {
             if (m_dbConnection.State != ConnectionState.Open)
                 return false;
+            else
+                ;
+
             bool result = false;
 
             m_dbCommand.CommandText = query;

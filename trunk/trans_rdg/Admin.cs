@@ -51,15 +51,16 @@ namespace trans_rdg
         private DelegateStringFunc errorReport;
         private DelegateStringFunc actionReport;
 
-        //private DelegateFunc fillTECComponent = null;
+        private DelegateFunc fillTECComponent = null;
         private DelegateDateFunction fillData = null;
 
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
-        public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+        //public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+        public int mode(FormChangeMode.MODE_TECCOMPONENT new_mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
         {
             int prev_mode = (int) m_modeTECComponent;
 
-            if (new_mode == (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+            if (new_mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
                 ;
             else
                 m_modeTECComponent = (FormChangeMode.MODE_TECCOMPONENT) new_mode;
@@ -77,9 +78,11 @@ namespace trans_rdg
 
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
-        public volatile List<TECComponent> allTECComponents;
-        private volatile int oldTecIndex;
+
         public volatile List<TEC> m_list_tec;
+        public volatile List<TECComponent> allTECComponents;
+        public int indxTECComponents;
+        
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -179,20 +182,9 @@ namespace trans_rdg
 
         //public bool isActive;
 
-        public Admin(ConnectionSettings connSett)
-        {
-            connSettConfigDB = connSett;
-
-            Initialize();
-
-            InitTEC(new InitTEC(connSettConfigDB, (Int32)FormChangeMode.MODE_TECCOMPONENT.GTP).tec);
-        }
-
-        public Admin(List<TEC> tec)
+        public Admin()
         {
             Initialize ();
-
-            InitTEC(tec);
         }
 
         private void Initialize () {
@@ -321,9 +313,9 @@ namespace trans_rdg
 
             lock (m_lockObj)
             {
-                oldTecIndex = 0;
+                indxTECComponents = 0;
                 using_date = true;
-                //comboBoxTecComponent.SelectedIndex = oldTecIndex;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
 
                 newState = true;
                 states.Clear();
@@ -400,6 +392,7 @@ namespace trans_rdg
 
         public void SetDelegateTECComponent(DelegateFunc f)
         {
+            fillTECComponent = f;
         }
 
         void MessageBox (string msg) {
@@ -595,10 +588,12 @@ namespace trans_rdg
             //FillOldValues();
         }
 
-        public void GetCurrentTime()
+        public void GetCurrentTime(int indx)
         {
             lock (m_lockObj)
             {
+                indxTECComponents = indx;
+                
                 newState = true;
                 states.Clear();
 
@@ -620,9 +615,9 @@ namespace trans_rdg
 
         private void GetCurrentTimeRequest()
         {
-            if (oldTecIndex < allTECComponents.Count)
+            if (indxTECComponents < allTECComponents.Count)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
             else
                 ;
         }
@@ -646,6 +641,31 @@ namespace trans_rdg
             return true;
         }
 
+        public void GetRDGValues (int indx) {
+            lock (m_lockObj)
+            {
+                ClearValues ();
+                
+                indxTECComponents = indx;
+                using_date = true;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                newState = true;
+                states.Clear();
+                states.Add(StatesMachine.CurrentTime);
+                states.Add(StatesMachine.PPBRValues);
+                states.Add(StatesMachine.AdminValues);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
+            }
+        }
+        
         private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, m_modeTECComponent));
@@ -656,8 +676,8 @@ namespace trans_rdg
         }
 
         private void GetRDGExcelValuesRequest () {
-            if (oldTecIndex < allTECComponents.Count)
-                m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[oldTecIndex].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
+            if (indxTECComponents < allTECComponents.Count)
+                m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
                                                                         @"SELECT * FROM [Лист1$]");
             else
                 ;
@@ -695,7 +715,15 @@ namespace trans_rdg
                 }
                 */
                 try { arTable[i].Columns.Remove("ID_COMPONENT"); }
-                catch (ArgumentException e) { }
+                catch (ArgumentException e) {
+                    /*
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("Remove(\"ID_COMPONENT\")", true, true, false);
+                    Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                    Logging.Logg().LogUnlock();
+                    */ 
+                }
             }
 
             if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
@@ -778,11 +806,11 @@ namespace trans_rdg
         {
             bool bRes = false;
 
-            if (oldTecIndex < allTECComponents.Count) bRes = true; else ;
+            if (indxTECComponents < allTECComponents.Count) bRes = true; else ;
 
             if (bRes) {
                 int i = -1, j = -1,
-                    iTimeZoneOffset = allTECComponents[oldTecIndex].tec.m_timezone_offset_msc,
+                    iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
                     rowRDGExcelStart = 1 + iTimeZoneOffset,
                     hour = -1;
 
@@ -793,8 +821,8 @@ namespace trans_rdg
                     {
                         hour = i - iTimeZoneOffset;
 
-                        for (j = 0; j < allTECComponents[oldTecIndex].TG.Count; j ++)
-                            m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[oldTecIndex].TG[j].m_indx_col_rdg_excel - 1];
+                        for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j ++)
+                            m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
@@ -828,9 +856,9 @@ namespace trans_rdg
             else
                 ;
 
-            if (oldTecIndex < allTECComponents.Count)
-                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date));
-                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            if (indxTECComponents < allTECComponents.Count)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -844,9 +872,9 @@ namespace trans_rdg
             else
                 ;
 
-            if (oldTecIndex < allTECComponents.Count)
-                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date));
-                Request(allTECComponents[oldTecIndex].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[oldTecIndex].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[oldTecIndex]));
+            if (indxTECComponents < allTECComponents.Count)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -1303,13 +1331,22 @@ namespace trans_rdg
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
-        public void InitTEC (List <TEC> tec) {
-            this.m_list_tec = tec;
+        public void InitTEC (ConnectionSettings connSett) {
+            //connSettConfigDB = connSett;
+
+            //if (tec == null)
+                this.m_list_tec = new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec;
+            //else {
+            //    //for (int i = 0; i < tec.Count; i ++) {
+            //    //}
+            //    this.m_list_tec = new List <TEC> (tec);
+            //    //this.m_list_tec = tec;
+            //}
 
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear ();
 
-            foreach (TEC t in tec)
+            foreach (TEC t in this.m_list_tec)
             {
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
@@ -1324,10 +1361,10 @@ namespace trans_rdg
                 }
             }
 
-            //if (! (fillTECComponent == null))
-            //    fillTECComponent ();
-            //else
-            //    ;
+            if (! (fillTECComponent == null))
+                fillTECComponent ();
+            else
+                ;
         }
 
         private bool InitDbInterfaces () {
@@ -1470,13 +1507,12 @@ namespace trans_rdg
                     break;
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], m_curDate.Date);
+                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date);
                     break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
-                    GetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], m_curDate.Date);
-                    m_prevDate = m_curDate.Date;
-                    //this.BeginInvoke(delegateCalendarSetDate, m_prevDate);
+                    GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date);
+                    //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
                 case StatesMachine.RDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
@@ -1518,11 +1554,11 @@ namespace trans_rdg
                     break;
                 case StatesMachine.SaveAdminValues:
                     ActionReport("Сохранение административных данных.");
-                    SetAdminValuesRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], m_curDate);
+                    SetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     break;
                 case StatesMachine.SavePPBRValues:
                     ActionReport("Сохранение ПЛАНА.");
-                    SetPPBRRequest(allTECComponents[oldTecIndex].tec, allTECComponents[oldTecIndex], m_curDate);
+                    SetPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     break;
                 //case StatesMachine.UpdateValuesPPBR:
                 //    ActionReport("Обровление ПЛАНА.");
@@ -1615,8 +1651,10 @@ namespace trans_rdg
                     result = GetCurrentTimeResponse(table);
                     if (result)
                     {
-                        if (using_date)
-                            m_curDate = serverTime;
+                        if (using_date) {
+                            m_prevDate = serverTime.Date;
+                            m_curDate = m_prevDate;
+                        }
                         else
                             ;
                     }
@@ -1635,7 +1673,7 @@ namespace trans_rdg
                     result = GetAdminValuesResponse(table, m_curDate);
                     if (result)
                     {
-                        //this.BeginInvoke(delegateFillData, m_prevDatetime);
+                        fillData(m_prevDate);
                     }
                     else
                         ;
