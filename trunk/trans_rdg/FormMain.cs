@@ -346,5 +346,88 @@ namespace trans_rdg
                 m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = "";
             }
         }
+
+        private void getDataGridViewAdmin()
+        {
+            int indxDB = m_IndexDB;
+            
+            double value;
+            bool valid;
+
+            for (int i = 0; i < 24; i++)
+            {
+                for (int j = 0; j < (int)DataGridViewAdmin.DESC_INDEX.TO_ALL; j++)
+                {
+                    switch (j)
+                    {
+                        case (int)DataGridViewAdmin.DESC_INDEX.PLAN: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value, out value);
+                            m_arAdmin [indxDB].m_curRDGValues[i].plan = value;
+                            break;
+                        case (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION: // Рекомендация
+                            {
+                                //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION);
+
+                                valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value, out value);
+                                m_arAdmin[indxDB].m_curRDGValues[i].recomendation = value;
+
+                                break;
+                            }
+                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
+                            {
+                                m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                break;
+                            }
+                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                            {
+                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value, out value);
+                                m_arAdmin[indxDB].m_curRDGValues[i].deviation = value;
+
+                                break;
+                            }
+                    }
+                }
+            }
+
+            FillOldValues();
+        }
+
+        private void buttonSourceExport_Click(object sender, EventArgs e)
+        {
+            getDataGridViewAdmin();
+
+            Errors resultSaving;
+            if ((resultSaving = SaveChanges()) == Errors.NoError)
+            {
+                lock (m_lockObj)
+                {
+                    ClearValues();
+                    ClearTables();
+                    dateForValues = mcldrDate.SelectionStart;
+                    using_date = false;
+
+                    newState = true;
+                    states.Clear();
+                    states.Add(StatesMachine.CurrentTime);
+                    states.Add(StatesMachine.PPBRValues);
+                    states.Add(StatesMachine.AdminValues);
+
+                    try
+                    {
+                        sem.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            else
+            {
+                if (resultSaving == Errors.InvalidValue)
+                    MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                else
+                    MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
