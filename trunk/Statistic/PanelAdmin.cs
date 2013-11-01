@@ -88,7 +88,7 @@ namespace StatisticCommon
             // 
             // btnSet
             // 
-            this.btnSet.Location = new System.Drawing.Point(10, 204);
+            this.btnSet.Location = new System.Drawing.Point(10, 207);
             this.btnSet.Name = "btnSet";
             this.btnSet.Size = new System.Drawing.Size(154, 23);
             this.btnSet.TabIndex = 2;
@@ -98,7 +98,7 @@ namespace StatisticCommon
             // 
             // btnRefresh
             // 
-            this.btnRefresh.Location = new System.Drawing.Point(10, 234);
+            this.btnRefresh.Location = new System.Drawing.Point(10, 237);
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(154, 23);
             this.btnRefresh.TabIndex = 2;

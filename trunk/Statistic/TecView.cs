@@ -2413,11 +2413,11 @@ namespace Statistic
             {
                 foreach (TECComponent g in tec.list_TECComponents)
                 {
-                    foreach (TG t in g.TG)
+                    foreach (TG tg in g.TG)
                     {
-                        if (t.receivedMin[min])
+                        if (tg.receivedMin[min])
                         {
-                            tgsValue[i].Text = t.power[min].ToString("F2");
+                            tgsValue[i].Text = tg.power[min].ToString("F2");
                             if (currHour)
                                 tgsValue[i].ForeColor = System.Drawing.Color.LimeGreen;
                             else
