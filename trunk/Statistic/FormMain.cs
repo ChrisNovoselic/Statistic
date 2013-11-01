@@ -18,9 +18,10 @@ namespace Statistic
 {
     public partial class FormMain : FormMainBase
     {
-        public List<TEC> tec;
-        private FormConnectionSettings formConnSett;
+        //public List<TEC> tec;
+        private FormConnectionSettings m_formConnectionSettings;
         private PanelAdmin m_panelAdmin;
+        public Admin m_admin;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
         private FormPassword formPassword;
@@ -47,14 +48,13 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            formConnSett = new FormConnectionSettings();
-            if (formConnSett.Protected == false)
+            m_formConnectionSettings = new FormConnectionSettings();
+            if (m_formConnectionSettings.Protected == true)
             {
+                Initialize();
             }
             else
             {
-                formChangeMode = new FormChangeMode(formConnSett.getConnSett ());
-                Initialize();
             }
         }
 
@@ -62,17 +62,25 @@ namespace Statistic
         {
             firstStart = true;
 
-            this.tec = formChangeMode.tec;
+            m_admin = new Admin();
+            //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
+            m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN);
+            m_admin.connSettConfigDB = m_formConnectionSettings.getConnSett();
+
+            m_panelAdmin = new PanelAdmin(m_admin);
+
+            m_admin.SetDelegateData(m_panelAdmin.setDataGridViewAdmin);
+            m_admin.SetDelegateDatetime(m_panelAdmin.CalendarSetDate);
+
+            m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+            m_admin.SetDelegateReport(ErrorReport, ActionReport);
+
+            formChangeMode = new FormChangeMode(m_admin.m_list_tec);
             oldSelectedIndex = 0;
 
-            m_panelAdmin = new PanelAdmin(tec, stsStrip);
-            m_panelAdmin.connSettConfigDB = formConnSett.getConnSett();
-
-            m_panelAdmin.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-
             //formChangeMode = new FormChangeMode();
-            formPassword = new FormPassword(m_panelAdmin);
-            formSetPassword = new FormSetPassword(m_panelAdmin);
+            formPassword = new FormPassword(m_admin);
+            formSetPassword = new FormSetPassword(m_admin);
             formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             formParameters = new FormParameters();
 
@@ -85,6 +93,16 @@ namespace Statistic
             timer.Start();
 
             return true;
+        }
+
+        private void ErrorReport(string msg)
+        {
+            stsStrip.BeginInvoke(delegateEvent);
+        }
+
+        private void ActionReport(string msg)
+        {
+            stsStrip.BeginInvoke(delegateEvent);
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -100,7 +118,8 @@ namespace Statistic
             }
             else
             {
-                if ((! (formChangeMode == null)) && formChangeMode.admin_was_checked)
+                if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
+                //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
                 {
                     if (!m_panelAdmin.MayToClose())
                         e.Cancel = true;
@@ -112,11 +131,11 @@ namespace Statistic
 
                 timer.Stop();
 
-                if ((e.Cancel == false) && (! (tec == null)))
+                if ((e.Cancel == false) && (! (m_admin.m_list_tec == null)))
                 {
-                    foreach (TEC t in tec)
+                    foreach (TEC t in m_admin.m_list_tec)
                         t.StopDbInterfaceForce();
-                    m_panelAdmin.StopDbInterface();
+                    m_admin.StopDbInterface();
                 }
                 else
                     ;
@@ -125,18 +144,13 @@ namespace Statistic
 
         private void connectionSettings () {
             DialogResult result;
-            result = formConnSett.ShowDialog();
+            result = m_formConnectionSettings.ShowDialog();
             if (result == DialogResult.Yes)
             {
                 if (! (tecViews == null)) tecViews.Clear (); else ;
 
                 if (timer.Enabled) timer.Stop(); else ;
-                if (! (m_panelAdmin == null)) m_panelAdmin.StopDbInterface(); else ;
-
-                if (formChangeMode == null)
-                    formChangeMode = new FormChangeMode(formConnSett.getConnSett ());
-                else
-                    formChangeMode.InitTEC(formConnSett.getConnSett());
+                if (! (m_admin == null)) m_admin.StopDbInterface(); else ;
 
                 Initialize();
 
@@ -193,8 +207,8 @@ namespace Statistic
                 connectionSettings ();
             }
             else {
-                formPassword.SetIdPass(2);
-                if ((formConnSett.Protected == false) || formPassword.ShowDialog() == DialogResult.Yes)
+                formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
+                if ((m_formConnectionSettings.Protected == false) || formPassword.ShowDialog() == DialogResult.Yes)
                 {
                     connectionSettings ();
                 }
@@ -205,39 +219,41 @@ namespace Statistic
 
         private void сменитьРежимToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true)
+            if (m_formConnectionSettings.Protected == true)
             {
                 int i;
-                int index;
+                //int index;
                 int prevModeComponent = formChangeMode.getModeTECComponent ();
                 // выбираем список отображаемых вкладок
                 if (formChangeMode.ShowDialog() == DialogResult.OK)
                 {
                     if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
-                        this.tec = formChangeMode.tec;
+                        //this.tec = formChangeMode.tec;
 
                         prevStateIsAdmin = false;
 
-                        tecViews.Clear ();
-                        selectedTecViews.Clear ();
+                        //tecViews.Clear ();
+                        //selectedTecViews.Clear ();
                     }
                     else {
                         
                     }
 
                     if (tecViews.Count == 0) {
+                        /*
                         m_panelAdmin.StopDbInterface ();
                         m_panelAdmin.Stop();
 
-                        m_panelAdmin.InitTEC (formChangeMode.tec);
-                        m_panelAdmin.mode(formChangeMode.getModeTECComponent ());
+                        //m_panelAdmin.InitTEC (formChangeMode.tec);
+                        //m_panelAdmin.mode(formChangeMode.getModeTECComponent ());
                         m_panelAdmin.StartDbInterface ();
-
+                        */
                         // создаём все tecview
+                        int index_tec = 0;
                         foreach (TEC t in formChangeMode.tec)
                         {
                             int index_gtp;
-                            tecView = new TecView(t, -1, m_panelAdmin, stsStrip, formGraphicsSettings, formParameters);
+                            tecView = new TecView(t, index_tec, -1, m_admin, stsStrip, formGraphicsSettings, formParameters);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             if (t.list_TECComponents.Count > 0)
@@ -245,12 +261,14 @@ namespace Statistic
                                 index_gtp = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
-                                    tecView = new TecView(t, index_gtp, m_panelAdmin, stsStrip, formGraphicsSettings, formParameters);
+                                    tecView = new TecView(t, index_tec, index_gtp, m_admin, stsStrip, formGraphicsSettings, formParameters);
                                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                     tecViews.Add(tecView);
                                     index_gtp++;
                                 }
                             }
+
+                            index_tec ++;
                         }
                     }
                     else
@@ -261,35 +279,57 @@ namespace Statistic
                     selectedTecViews.Clear();
 
                     Int16 parametrsTGBiysk = 0;
+                    int tecView_index = -1;
+                    List <int> list_tecView_index_start = new List <int> ();
                     // отображаем вкладки ТЭЦ
-                    for (i = 0; i < formChangeMode.tec_index.Count; i++)
+                    for (i = 0; i < formChangeMode.tec_index.Count; i++) //или TECComponent_index.Count
                     {
-                        index = formChangeMode.was_checked.IndexOf(i);
-
-                        if (!(index < 0))
+                        if (!(formChangeMode.was_checked.IndexOf(i) < 0))
                         {
-                            if ((tecViews[i].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
-                                parametrsTGBiysk++;
-                            else
-                                ;
+                            int tec_index = formChangeMode.tec_index [i],
+                                TECComponent_index = formChangeMode.TECComponent_index[i];
 
-                            if (formChangeMode.TECComponent_index[formChangeMode.was_checked[index]] == -1)
-                            {
-                                tclTecViews.TabPages.Add(tec[formChangeMode.tec_index[i]].name);
+                            for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
+                                if ((tecViews [tecView_index].num_TEC == tec_index) && (tecViews [tecView_index].num_TECComponent == TECComponent_index))
+                                    break;
+                                else
+                                    ;
+                            }
+
+                            if ((tecView_index < tecViews.Count)) {
+                                list_tecView_index_start.Add(tecView_index);
+
+                                if ((tecViews[tecView_index].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                                    parametrsTGBiysk++;
+                                else
+                                    ;
+
+                                if (TECComponent_index == -1)
+                                {
+                                    tclTecViews.TabPages.Add(m_admin.m_list_tec[tec_index].name);
+                                }
+                                else
+                                    tclTecViews.TabPages.Add(m_admin.m_list_tec[tec_index].name + " - " + m_admin.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
+
+                                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
+                                selectedTecViews.Add(tecViews[tecView_index]);
+
+                                tecViews[tecView_index].Activate(false);
+                                tecViews[tecView_index].Start();
                             }
                             else
-                                tclTecViews.TabPages.Add(tec[formChangeMode.tec_index[i]].name + " - " + tec[formChangeMode.tec_index[i]].list_TECComponents[formChangeMode.TECComponent_index[formChangeMode.was_checked[index]]].name);
-
-                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
-                            selectedTecViews.Add(tecViews[i]);
-
-                            tecViews[i].Activate(false);
-                            tecViews[i].Start();
+                                ;
                         }
                         else
                         {
-                            tecViews[i].Stop();
                         }
+                    }
+
+                    for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
+                        if (list_tecView_index_start.IndexOf(tecView_index) < 0)
+                            tecViews[tecView_index].Stop();
+                        else
+                            ;
                     }
 
                     параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
@@ -297,16 +337,11 @@ namespace Statistic
                     StopWait();
                     if (formChangeMode.admin_was_checked)
                     {
-                        switch (formChangeMode.getModeTECComponent ()) {
-                            case (int)FormChangeMode.MODE_TECCOMPONENT.TEC:
-                                break;
-                            case (int)FormChangeMode.MODE_TECCOMPONENT.GTP:
-                                formPassword.SetIdPass(1);
-                                break;
-                            case (int)FormChangeMode.MODE_TECCOMPONENT.PC:
-                                formPassword.SetIdPass(3);
-                                break;
+                        if (formChangeMode.IsModeTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP) == true) {
+                            formPassword.SetIdPass(FormPassword.ID_ROLES.COM_DISP);
                         }
+                        else
+                            formPassword.SetIdPass(FormPassword.ID_ROLES.NSS);
 
                         bool bAdminPanelUse = false;
                         if (prevStateIsAdmin == false)
@@ -330,11 +365,17 @@ namespace Statistic
                         if (bAdminPanelUse)
                         {
                             StartWait();
-                            tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues((short) formChangeMode.getModeTECComponent ()));
+                            if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
+                            {
+                                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
+                            }
+                            else
+                                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
+                            
 
                             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
 
-                            m_panelAdmin.Start();
+                            m_admin.Start();
                             StopWait();
                         }
                         else
@@ -364,8 +405,8 @@ namespace Statistic
 
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true) {
-                formPassword.SetIdPass(1);
+            if (m_formConnectionSettings.Protected == true) {
+                formPassword.SetIdPass(FormPassword.ID_ROLES.COM_DISP);
                 if (formPassword.ShowDialog() == DialogResult.Yes) {
                     formSetPassword.SetIdPass(formPassword.GetIdPass ());
                     formSetPassword.ShowDialog();
@@ -379,8 +420,8 @@ namespace Statistic
 
         private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true) {
-                formPassword.SetIdPass(2);
+            if (m_formConnectionSettings.Protected == true) {
+                formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
                 if (formPassword.ShowDialog() == DialogResult.Yes)
                 {
                     formSetPassword.SetIdPass(formPassword.GetIdPass());
@@ -444,19 +485,19 @@ namespace Statistic
                     ;
             }
 
-            if (m_panelAdmin.actioned_state && m_panelAdmin.isActive)
+            if (m_admin.actioned_state && m_panelAdmin.isActive)
             {
-                lblDateError.Text = m_panelAdmin.last_time_action.ToString();
-                lblDescError.Text = m_panelAdmin.last_action;
+                lblDateError.Text = m_admin.last_time_action.ToString();
+                lblDescError.Text = m_admin.last_action;
             }
             else
                 ;
 
-            if (m_panelAdmin.errored_state)
+            if (m_admin.errored_state)
             {
                 have_eror = true;
-                lblDateError.Text = m_panelAdmin.last_time_error.ToString();
-                lblDescError.Text = m_panelAdmin.last_error;
+                lblDateError.Text = m_admin.last_time_error.ToString();
+                lblDescError.Text = m_admin.last_error;
             }
             else
                 ;
@@ -478,13 +519,13 @@ namespace Statistic
         {
             if (firstStart)
             {
-                m_panelAdmin.StartDbInterface();
+                m_admin.StartDbInterface();
 
                 // отображаем вкладки ТЭЦ
                 int index;
                 for (int i = 0; i < formChangeMode.tec_index.Count; i++)
                 {
-                    TEC t = tec[formChangeMode.tec_index[i]];
+                    TEC t = m_admin.m_list_tec[formChangeMode.tec_index[i]];
 
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
@@ -516,11 +557,17 @@ namespace Statistic
                 {
                     //if (formPassword.ShowDialog() == DialogResult.Yes)
                     {
-                        tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues (1));
+                        if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
+                        {
+                            tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
+                        }
+                        else
+                            tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
+                        
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
 
-                        m_panelAdmin.Start();
+                        m_admin.Start();
                     }
                 }
                 else
@@ -557,7 +604,7 @@ namespace Statistic
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true)
+            if (m_formConnectionSettings.Protected == true)
             {
                 if (панельГрафическихToolStripMenuItem.Checked)
                     formGraphicsSettings.Show();
@@ -612,7 +659,7 @@ namespace Statistic
 
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true)
+            if (m_formConnectionSettings.Protected == true)
                 formParameters.ShowDialog();
             else
                 ;
@@ -620,7 +667,7 @@ namespace Statistic
 
         private void параметрыТГБийскToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (formConnSett.Protected == true) {
+            if (m_formConnectionSettings.Protected == true) {
                 foreach (TecView tv in tecViews) {
                     if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
                         tv.tec.parametersTGForm.ShowDialog();
@@ -636,10 +683,10 @@ namespace Statistic
 
         private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            formPassword.SetIdPass(2);
+            formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
             if (formPassword.ShowDialog() == DialogResult.Yes)
             {
-                FormTECComponent tecComponent = new FormTECComponent(formConnSett.getConnSett());
+                FormTECComponent tecComponent = new FormTECComponent(m_formConnectionSettings.getConnSett());
                 if (tecComponent.ShowDialog () == DialogResult.OK) {
                 }
                 else

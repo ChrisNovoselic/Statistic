@@ -15,23 +15,26 @@ namespace StatisticCommon
         public List<int> TECComponent_index;
         private CheckBox[] m_arCheckBoxTECComponent;
         public List<int> was_checked;
-        public bool admin_was_checked;
+        public bool /*[]*/ admin_was_checked;
         public bool closing;
 
-        private ConnectionSettings m_connSet;
+        //private ConnectionSettings m_connSet;
 
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
+        public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER };
 
-        public FormChangeMode(ConnectionSettings connSet)
+        public FormChangeMode(List <TEC> tec)
         {
             InitializeComponent();
+
+            this.tec = tec;
 
             m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
                                                                                         checkBoxGTP,
                                                                                         checkBoxPC,
                                                                                         checkBoxTG };
 
-            InitTEC(connSet);
+            admin_was_checked = false; //new bool [2] {false, false};
             
             m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.PC].Checked = true;
 
@@ -53,6 +56,20 @@ namespace StatisticCommon
             return iMode;
         }
 
+        public bool IsModeTECComponent (MODE_TECCOMPONENT mode) {
+            bool bRes = false;
+            int offset = 0;
+
+            if ((getModeTECComponent() & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
+            {
+                bRes = true;
+            }
+            else
+                ;
+
+            return bRes;
+        }
+
         public static string getPrefixMode(int indx)
         {
             String[] arPREFIX_COMPONENT = { "TEC", "GTP", "PC", "TG" };
@@ -66,17 +83,10 @@ namespace StatisticCommon
             return nameModes[indx];
         }
         
-        public string getNameAdminValues (Int16 indx) {
-            string[] arNameAdminValues = { "ДИС", "Диспетчер", "ДИС" };
+        public string getNameAdminValues (MODE_TECCOMPONENT mode) {
+            string[] arNameAdminValues = { "ДИС", "Диспетчер", "ДИС", "ДИС" };
 
-            return @"ПБР - " + arNameAdminValues[indx];
-        }
-
-        public void InitTEC (ConnectionSettings connSet) {
-            m_connSet = connSet;
-
-            //this.tec = new InitTEC(m_connSet, (short) getModeTECComponent ()).tec;
-            this.tec = new InitTEC(m_connSet).tec;
+            return @"ПБР - " + arNameAdminValues[(int)mode];
         }
 
         private void FillListBoxTab()
@@ -90,14 +100,10 @@ namespace StatisticCommon
                 tec_index = new List<int>();
                 TECComponent_index = new List<int>();
                 was_checked = new List<int>();
-                admin_was_checked = false;
-
-                int iMode = getModeTECComponent(),
-                    iSheet = 0;
 
                 foreach (TEC t in tec)
                 {
-                    if ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TEC + 0)))) == (int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TEC + 0)))
+                    if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
                         clbMode.Items.Add(t.name);
                         tec_index.Add(index_tec);
@@ -111,9 +117,9 @@ namespace StatisticCommon
                         index_gtp = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            if ((((g.m_id > 100) && (g.m_id < 500)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.GTP + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.GTP + 0)))) ||
-                                (((g.m_id > 500) && (g.m_id < 1000)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.PC + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.PC + 0))))) ||
-                                (((g.m_id > 1000) && (g.m_id < 10000)) && ((iMode & ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TG + 0)))) == ((int)Math.Pow(2, (int)(MODE_TECCOMPONENT.TG + 0)))))))
+                            if ((((g.m_id > 100) && (g.m_id < 500)) && (IsModeTECComponent (MODE_TECCOMPONENT.GTP))) ||
+                                (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
+                                (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
                                 clbMode.Items.Add(t.name + " - " + g.name);
                                 tec_index.Add(index_tec);
@@ -130,6 +136,14 @@ namespace StatisticCommon
 
                 //clbMode.Items.Add("Редактирование ПБР");
                 //clbMode.Items.Add(getNameAdminValues((short)getModeTECComponent()));
+                if (IsModeTECComponent (MODE_TECCOMPONENT.GTP)) {
+                    clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
+                }
+                else
+                    if (getModeTECComponent () > 0)
+                        clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
+                    else
+                        ;
             }
             else
                 ;
@@ -191,13 +205,6 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
-        }
-
-        private void comboBoxModeTEC_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            this.InitTEC (m_connSet);
-
-            closing = false;
         }
 
         private void checkBox_CheckedChanged(object sender, EventArgs e)

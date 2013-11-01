@@ -107,7 +107,7 @@ namespace Statistic
         private System.Threading.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
 
-        private PanelAdmin m_panelAdmin;
+        private Admin m_admin;
         private FormGraphicsSettings graphSettings;
         private FormParameters parameters;        
 
@@ -182,7 +182,8 @@ namespace Statistic
         private List<System.Windows.Forms.Label> tgsValue;
 
         public volatile TEC tec;
-        private volatile int num_TECComponent;
+        public volatile int num_TEC;
+        public volatile int num_TECComponent;
 
         private volatile int countTG;
         private bool update;
@@ -797,7 +798,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_comp, PanelAdmin m_panelAdmin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
+        public TecView(TEC tec, int num_tec, int num_comp, Admin admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
         {
             InitializeComponent();
 
@@ -807,7 +808,7 @@ namespace Statistic
             dgvCellStyleError.BackColor = Color.Red;
             dgvCellStyleCommon = new DataGridViewCellStyle();
 
-            this.m_panelAdmin = m_panelAdmin;
+            this.m_admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
 
@@ -846,52 +847,59 @@ namespace Statistic
             tgsName = new List<System.Windows.Forms.Label>();
             tgsValue = new List<System.Windows.Forms.Label>();
             this.tec = tec;
+            this.num_TEC = num_tec;
             this.num_TECComponent = num_comp;
 
             int positionXName = 15, positionXValue = 4, positionYName = 6, positionYValue = 19;
             float value = 0;
             countTG = 0;
+            List <int> tg_ids = new List <int> ();
             if (num_comp < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in tec.list_TECComponents)
                 {
-                    foreach (TG t in g.TG)
+                    foreach (TG tg in g.TG)
                     {
-                        countTG++;
-                        System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
+                        if (tg_ids.IndexOf (tg.m_id) == -1) {
+                            tg_ids.Add(tg.m_id);
+                            countTG++;
+                            System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
 
-                        lblName.AutoSize = true;
-                        lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                        lblName.Name = "lblName" + t.name;
-                        lblName.AutoSize = false;
-                        lblName.Size = new System.Drawing.Size(32, 13);
-                        lblName.TabIndex = 4;
-                        lblName.Text = t.name;
+                            lblName.AutoSize = true;
+                            lblName.Location = new System.Drawing.Point(positionXName, positionYName);
+                            lblName.Name = "lblName" + tg.name;
+                            lblName.AutoSize = false;
+                            lblName.Size = new System.Drawing.Size(32, 13);
+                            lblName.TabIndex = 4;
+                            lblName.Text = tg.name;
 
-                        tgsName.Add(lblName);
+                            tgsName.Add(lblName);
 
-                        System.Windows.Forms.Label lblValue = new System.Windows.Forms.Label();
+                            System.Windows.Forms.Label lblValue = new System.Windows.Forms.Label();
 
-                        lblValue.AutoSize = true;
-                        lblValue.BackColor = System.Drawing.Color.Black;
-                        lblValue.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-                        lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                        lblValue.ForeColor = System.Drawing.Color.LimeGreen;
-                        lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                        lblValue.Name = "lblValue" + t.name;
-                        lblValue.Size = new System.Drawing.Size(63, 27);
-                        lblValue.AutoSize = false;
-                        lblValue.TabIndex = 5;
-                        lblValue.Text = value.ToString();
+                            lblValue.AutoSize = true;
+                            lblValue.BackColor = System.Drawing.Color.Black;
+                            lblValue.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+                            lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                            lblValue.ForeColor = System.Drawing.Color.LimeGreen;
+                            lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
+                            lblValue.Name = "lblValue" + tg.name;
+                            lblValue.Size = new System.Drawing.Size(63, 27);
+                            lblValue.AutoSize = false;
+                            lblValue.TabIndex = 5;
+                            lblValue.Text = value.ToString();
 
-                        tgsValue.Add(lblValue);
+                            tgsValue.Add(lblValue);
 
-                        positionXName += 69;
-                        positionXValue += 69;
+                            positionXName += 69;
+                            positionXValue += 69;
 
 
-                        this.pnlTG.Controls.Add(lblName);
-                        this.pnlTG.Controls.Add(lblValue);
+                            this.pnlTG.Controls.Add(lblName);
+                            this.pnlTG.Controls.Add(lblValue);
+                        }
+                        else
+                            ;
                     }
                 }
             }
@@ -2149,11 +2157,11 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            m_panelAdmin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) m_panelAdmin.mode()));
+            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, Admin.TYPE_FIELDS.DYNAMIC));
         }
 
-        private void GetAdminValuesRequest () {
-            m_panelAdmin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, (FormChangeMode.MODE_TECCOMPONENT) m_panelAdmin.mode ()));
+        private void GetAdminValuesRequest (Admin.TYPE_FIELDS mode) {
+            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, mode));
         }
 
         private void FillGridMins(int hour)
@@ -4690,7 +4698,7 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                            GetAdminValuesRequest();
+                            GetAdminValuesRequest(Admin.TYPE_FIELDS.DYNAMIC);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();
@@ -4724,11 +4732,11 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(out error, out table);
                 case StatesMachine.PBRValues:
-                    return m_panelAdmin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     //return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
-                    //return m_panelAdmin.GetResponse(out error, out table, true);
-                    return m_panelAdmin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    //return m_admin.GetResponse(out error, out table, true);
+                    return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
             }
 
             error = true;

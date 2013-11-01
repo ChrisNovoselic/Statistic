@@ -16,7 +16,7 @@ namespace trans_rdg
         private enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         private enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
 
-        Admin [] m_arAdmin;
+        Admin[] m_arAdmin;
         FormConnectionSettings m_formConnectionSettings;
         GroupBox [] m_arGroupBox;
         System.Windows.Forms.Control [,] m_arUIControlDB;
@@ -72,12 +72,12 @@ namespace trans_rdg
             //Получатель
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC (m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST));
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC (m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
 
             //Источник
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST));
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
 
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
@@ -90,7 +90,7 @@ namespace trans_rdg
 
                 m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
 
-                m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_arAdmin [i].StartDbInterface();
             }
@@ -280,7 +280,7 @@ namespace trans_rdg
                 //Первый запуск
                 timerMain.Interval = 1000;
 
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(comboBoxTECComponent.SelectedIndex);
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, comboBoxTECComponent.SelectedIndex);
             }
             else
                 ;
@@ -335,7 +335,7 @@ namespace trans_rdg
             if (! (m_arAdmin[(int)CONN_SETT_TYPE.SOURCE] == null)) {
                 ClearTables ();
 
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(comboBoxTECComponent.SelectedIndex);
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, comboBoxTECComponent.SelectedIndex);
             }
             else
                 ;

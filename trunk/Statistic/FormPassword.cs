@@ -12,35 +12,38 @@ namespace Statistic
 {
     public partial class FormPassword : Form
     {
-        private uint m_idPass;
+        public enum ID_ROLES : uint {COM_DISP = 1, ADMIN, NSS};
 
-        private PanelAdmin m_panelAdmin;
+        private ID_ROLES m_idPass;
+
+        private Admin m_admin;
         private bool closing;
 
-        public FormPassword(PanelAdmin a)
+        public FormPassword(Admin a)
         {
             InitializeComponent();
-            m_panelAdmin = a;
+            m_admin = a;
             closing = false;
         }
 
-        public void SetIdPass (uint id) {
+        public void SetIdPass(ID_ROLES id)
+        {
             m_idPass = id;
 
             string[] ownersPass = { "коммерческого диспетчера", "администратора", "ДИСа" };
 
-            labelOwnerPassword.Text = ownersPass[m_idPass - 1];
+            labelOwnerPassword.Text = ownersPass[(int)m_idPass - 1];
         }
 
-        public uint GetIdPass() { return m_idPass; }
+        public uint GetIdPass() { return (uint)m_idPass; }
 
         private void tbxPassword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                switch (m_panelAdmin.ComparePassword(tbxPassword.Text, m_idPass))
+                switch (m_admin.ComparePassword(tbxPassword.Text, (uint)m_idPass))
                 {
-                    case PanelAdmin.Errors.NoAccess:
+                    case Admin.Errors.NoAccess:
                         tbxPassword.Text = "";
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
@@ -52,8 +55,8 @@ namespace Statistic
                         {
                         }
                         break;
-                    case PanelAdmin.Errors.InvalidValue:
-                    case PanelAdmin.Errors.ParseError:
+                    case Admin.Errors.InvalidValue:
+                    case Admin.Errors.ParseError:
                         tbxPassword.Text = "";
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
@@ -65,7 +68,7 @@ namespace Statistic
                             Close();
                         }
                         break;
-                    case PanelAdmin.Errors.NoError:
+                    case Admin.Errors.NoError:
                         tbxPassword.Text = "";
                         this.DialogResult = DialogResult.Yes;
                         closing = true;

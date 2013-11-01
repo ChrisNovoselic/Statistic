@@ -12,12 +12,12 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 
-using StatisticCommon;
-
-namespace trans_rdg
+namespace StatisticCommon
 {
     public class Admin : object
     {
+        public enum TYPE_FIELDS : uint {STATIC, DYNAMIC};
+        
         public struct RDGStruct
         {
             public double plan;
@@ -55,7 +55,7 @@ namespace trans_rdg
         private DelegateDateFunction fillData = null;
 
         private DelegateDateFunction setDatetime;
-
+        /*
         FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
         //public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
         public int mode(FormChangeMode.MODE_TECCOMPONENT new_mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
@@ -69,6 +69,9 @@ namespace trans_rdg
 
             return prev_mode;
         }
+        */
+        
+        private Admin.TYPE_FIELDS m_typeFields;
 
         public string getOwnerPass () {
             string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
@@ -84,7 +87,6 @@ namespace trans_rdg
         public volatile List<TEC> m_list_tec;
         public volatile List<TECComponent> allTECComponents;
         public int indxTECComponents;
-        
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -97,9 +99,8 @@ namespace trans_rdg
         public DateTime last_time_action;
         public volatile bool actioned_state;
 
-        private DateTime m_DateIn,
-                        serverTime,
-                        m_prevDate,
+        public DateTime m_prevDate;
+        private DateTime serverTime,
                         m_curDate;
 
         private Semaphore semaSave;
@@ -231,7 +232,7 @@ namespace trans_rdg
             states = new List<StatesMachine>();
         }
 
-        private bool WasChanged()
+        public bool WasChanged()
         {
             for (int i = 0; i < 24; i++)
             {
@@ -255,7 +256,7 @@ namespace trans_rdg
             return false;
         }
 
-        private Errors SaveChanges()
+        public Errors SaveChanges()
         {
             delegateStartWait();
             semaSave.WaitOne();
@@ -313,26 +314,17 @@ namespace trans_rdg
 
             started = true;
 
-            lock (m_lockObj)
-            {
-                indxTECComponents = 0;
-                using_date = true;
-                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+            GetRDGValues (m_typeFields, 0);
+        }
 
-                newState = true;
-                states.Clear();
-                states.Add(StatesMachine.CurrentTime);
-                states.Add(StatesMachine.PPBRValues);
-                states.Add(StatesMachine.AdminValues);
+        public bool IsRDGExcel (int indx) {
+            bool bRes = false;
+            if (allTECComponents[indx].tec.m_path_rdg_excel.Length > 0)
+                bRes = true;
+            else
+                ;
 
-                try
-                {
-                    sem.Release(1);
-                }
-                catch
-                {
-                }
-            }
+            return bRes;
         }
 
         public void Reinit()
@@ -347,8 +339,10 @@ namespace trans_rdg
             lock (m_lockObj)
             {
                 //m_curDate = mcldrDate.SelectionStart;
-                m_curDate = m_DateIn;
+                m_curDate = m_prevDate;
                 saving = false;
+
+                using_date = true; //???
 
                 newState = true;
                 states.Clear();
@@ -640,14 +634,16 @@ namespace trans_rdg
             return true;
         }
 
-        public void GetRDGValues (int indx) {
+        public void GetRDGValues (TYPE_FIELDS mode, int indx) {
             lock (m_lockObj)
             {
-                ClearValues ();
-                
+                ClearValues();
+
                 indxTECComponents = indx;
                 using_date = true;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                m_typeFields = mode;
 
                 newState = true;
                 states.Clear();
@@ -664,14 +660,71 @@ namespace trans_rdg
                 }
             }
         }
-        
-        private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
+
+        public void GetRDGValues(TYPE_FIELDS mode, int indx, DateTime date)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, m_modeTECComponent));
+            lock (m_lockObj)
+            {
+                ClearValues();
+
+                indxTECComponents = indx;
+                using_date = false;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                m_prevDate = date;
+                m_curDate = m_prevDate;
+
+                m_typeFields = mode;
+
+                newState = true;
+                states.Clear();
+                states.Add(StatesMachine.PPBRValues);
+                states.Add(StatesMachine.AdminValues);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
+            }
         }
 
-        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date) {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, m_modeTECComponent));
+        private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, Admin.TYPE_FIELDS mode)
+        {
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
+        }
+
+        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date, Admin.TYPE_FIELDS mode) {
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
+        }
+
+        public void GetRDGExcelValues(int indx, DateTime date)
+        {
+            lock (m_lockObj)
+            {
+                ClearValues();
+
+                indxTECComponents = indx;
+                using_date = false;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                m_prevDate = date;
+                m_curDate = m_prevDate;
+
+                newState = true;
+                states.Clear();
+                states.Add(StatesMachine.RDGExcelValues);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
+            }
         }
 
         private void GetRDGExcelValuesRequest () {
@@ -857,7 +910,7 @@ namespace trans_rdg
 
             if (indxTECComponents < allTECComponents.Count)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_modeTECComponent, allTECComponents[indxTECComponents]));
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -873,7 +926,7 @@ namespace trans_rdg
 
             if (indxTECComponents < allTECComponents.Count)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_modeTECComponent, allTECComponents[indxTECComponents]));
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -949,8 +1002,8 @@ namespace trans_rdg
                 // запись для этого часа имеется, модифицируем её
                 if (adminDates[i])
                 {
-                    switch (m_modeTECComponent) {
-                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                    switch (m_typeFields) {
+                        case Admin.TYPE_FIELDS.STATIC:
                             //name = t.NameFieldOfAdminRequest(comp);
                             
                             requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -960,7 +1013,7 @@ namespace trans_rdg
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case FormChangeMode.MODE_TECCOMPONENT.PC:
+                        case Admin.TYPE_FIELDS.DYNAMIC:
                             requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -976,15 +1029,16 @@ namespace trans_rdg
                 else
                 {
                     // запись отсутствует, запоминаем значения
-                    switch (m_modeTECComponent) {
-                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                    switch (m_typeFields)
+                    {
+                        case Admin.TYPE_FIELDS.STATIC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
-                        case FormChangeMode.MODE_TECCOMPONENT.PC:
+                        case Admin.TYPE_FIELDS.DYNAMIC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
@@ -1001,14 +1055,14 @@ namespace trans_rdg
             // добавляем все записи, не найденные в базе
             if (requestInsert != "")
             {
-                switch (m_modeTECComponent)
+                switch (m_typeFields)
                 {
-                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                    case Admin.TYPE_FIELDS.STATIC:
                         requestInsert = @"INSERT INTO " + t.m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
-                    case FormChangeMode.MODE_TECCOMPONENT.PC:
+                    case Admin.TYPE_FIELDS.DYNAMIC:
                         requestInsert = @"INSERT INTO " + strUsedAdminValues + " (DATE, " + @"REC" +
                                 @", " + "IS_PER" +
                                 @", " + "DIVIAT" +
@@ -1119,9 +1173,9 @@ namespace trans_rdg
                 // запись для этого часа имеется, модифицируем её
                 if (PPBRDates[i])
                 {
-                    switch (m_modeTECComponent)
+                    switch (m_typeFields)
                     {
-                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                        case Admin.TYPE_FIELDS.STATIC:
                             /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -1131,7 +1185,7 @@ namespace trans_rdg
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case FormChangeMode.MODE_TECCOMPONENT.PC:
+                        case Admin.TYPE_FIELDS.DYNAMIC:
                             requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + m_curRDGValues[i].plan.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -1145,9 +1199,9 @@ namespace trans_rdg
                 else
                 {
                     // запись отсутствует, запоминаем значения
-                    switch (m_modeTECComponent)
+                    switch (m_typeFields)
                     {
-                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                        case Admin.TYPE_FIELDS.STATIC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
@@ -1155,7 +1209,7 @@ namespace trans_rdg
                                         @"', '" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
-                        case FormChangeMode.MODE_TECCOMPONENT.PC:
+                        case Admin.TYPE_FIELDS.DYNAMIC:
                             requestInsert += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ПБР" + getPBRNumber(i) +
@@ -1173,12 +1227,12 @@ namespace trans_rdg
             // добавляем все записи, не найденные в базе
             if (requestInsert != "")
             {
-                switch (m_modeTECComponent)
+                switch (m_typeFields)
                 {
-                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                    case Admin.TYPE_FIELDS.STATIC:
                         requestInsert = @"INSERT INTO " + t.m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
-                    case FormChangeMode.MODE_TECCOMPONENT.PC:
+                    case Admin.TYPE_FIELDS.DYNAMIC:
                         requestInsert = @"INSERT INTO " + strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
                     default:
@@ -1330,17 +1384,14 @@ namespace trans_rdg
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
-        public void InitTEC (ConnectionSettings connSett) {
+        public void InitTEC (ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode) {
             //connSettConfigDB = connSett;
 
-            //if (tec == null)
-                this.m_list_tec = new InitTEC(connSett, (short)FormChangeMode.MODE_TECCOMPONENT.GTP).tec;
-            //else {
-            //    //for (int i = 0; i < tec.Count; i ++) {
-            //    //}
-            //    this.m_list_tec = new List <TEC> (tec);
-            //    //this.m_list_tec = tec;
-            //}
+            if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+                this.m_list_tec = new InitTEC(connSett).tec;
+            else {
+                this.m_list_tec = new InitTEC(connSett, (short)mode).tec;
+            }
 
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear ();
@@ -1506,11 +1557,11 @@ namespace trans_rdg
                     break;
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date);
+                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     break;
                 case StatesMachine.AdminValues:
                     ActionReport("Получение административных данных.");
-                    GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date);
+                    GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
                 case StatesMachine.RDGExcelValues:
@@ -2168,6 +2219,13 @@ namespace trans_rdg
         }
 
         public void CopyCurRDGValues () {
+            for (int i = 0; i < 24; i++)
+            {
+                m_prevRDGValues[i].plan = m_curRDGValues[i].plan;
+                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
+                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
+                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
+            }
         }
     }
 }

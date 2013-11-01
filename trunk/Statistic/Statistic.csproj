@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin.cs" />
     <Compile Include="ConnectionSettings.cs" />
     <Compile Include="DbInterface.cs" />
     <Compile Include="FormAbout.cs">
