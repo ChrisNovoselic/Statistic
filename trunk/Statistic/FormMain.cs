@@ -48,7 +48,7 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            m_formConnectionSettings = new FormConnectionSettings();
+            m_formConnectionSettings = new FormConnectionSettings("settings.ini");
             if (m_formConnectionSettings.Protected == true)
             {
                 Initialize();
@@ -131,7 +131,7 @@ namespace Statistic
 
                 timer.Stop();
 
-                if ((e.Cancel == false) && (! (m_admin.m_list_tec == null)))
+                if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
                 {
                     foreach (TEC t in m_admin.m_list_tec)
                         t.StopDbInterfaceForce();

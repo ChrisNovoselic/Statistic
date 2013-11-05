@@ -74,11 +74,12 @@ namespace Statistic
             m_list_UIControl[(int)INDEX_UICONTROL.BUTTON_TEC_ADD].Enabled = false;
 
             // + 1 для ТГ
-            m_list_data_original = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1)];
-            m_list_data = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1)];
+            m_list_data_original = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
+            m_list_data = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
             
             int i = -1;
-            for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1); i++)
+            //for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1); i++)
+            for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN); i++)
             {
                 if (m_list_data_original[i] == null)
                     m_list_data_original[i] = DbInterface.Request(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST");
@@ -95,7 +96,7 @@ namespace Statistic
 
             fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TEC);
 
-            for (i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+            for (i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.TG; i++)
             {
                 comboBoxMode.Items.Add(FormChangeMode.getNameMode((short)i));
             }

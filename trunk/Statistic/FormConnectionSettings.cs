@@ -64,7 +64,7 @@ namespace StatisticCommon
                                 0x01c36ae4,   0xd6ebe1f9,   0x90d4f869,   0xa65cdea0,   0x3f09252d,   0xc208e69f
                             };
 
-        private string settingsFile = "settings.ini";
+        private string settingsFile;
         private bool mayToProtected;
 
         private bool ParseSettingsFile()
@@ -372,9 +372,11 @@ namespace StatisticCommon
         }
 
         //public FormConnectionSettings(List<TEC> tec)
-        public FormConnectionSettings()
+        public FormConnectionSettings(string namefile)
         {
             InitializeComponent();
+
+            settingsFile = namefile;
 
             bool bConnSettEmpty = false;
 

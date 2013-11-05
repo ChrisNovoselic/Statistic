@@ -56,7 +56,7 @@ namespace trans_rdg
 
             delegateEvent = new DelegateFunc(EventRaised);
 
-            m_formConnectionSettings = new FormConnectionSettings();
+            m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
 
             if (m_formConnectionSettings.Protected == false || m_formConnectionSettings.Count < 2)
             {
@@ -159,8 +159,12 @@ namespace trans_rdg
             CopyCurAdminValues();
         }
 
-        private void setDatetimePicker (DateTime date) {
+        private void setDatetimePickerMain (DateTime date) {
             dateTimePickerMain.Value = date;
+        }
+
+        private void setDatetimePicker (DateTime date) {
+            this.BeginInvoke(new DelegateDateFunction(setDatetimePickerMain), date);
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
