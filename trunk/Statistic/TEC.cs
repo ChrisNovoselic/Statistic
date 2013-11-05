@@ -164,6 +164,43 @@ namespace StatisticCommon
             return iRes;
         }
 
+        private string idComponentValueQuery (int num_comp) {
+            string strRes = string.Empty;
+
+            if (num_comp < 0)
+            {
+                foreach (TECComponent g in list_TECComponents)
+                //foreach (TG tg in list_TECComponents [num_comp].TG)
+                {
+                    if ((g.m_id > 100) && (g.m_id < 500)) {
+                        strRes += ", ";
+
+                        strRes += (g.m_id).ToString();
+                        //selectAdmin += (tg.m_id).ToString();
+                    }
+                    else
+                        ;
+                }
+                strRes = strRes.Substring(2);
+            }
+            else
+            {
+                if ((list_TECComponents[num_comp].m_id > 100) && (list_TECComponents[num_comp].m_id < 500))
+                    strRes += (list_TECComponents[num_comp].m_id).ToString();
+                else {
+                    foreach (TG tg in list_TECComponents[num_comp].TG)
+                    {
+                        strRes += ", ";
+
+                        strRes += (tg.m_id).ToString();
+                    }
+                    strRes = strRes.Substring(2);
+                }
+            }
+
+            return strRes;
+        }
+
         private string selectPBRValueQuery(TECComponent g)
         {
             string strRes = string.Empty;
@@ -243,6 +280,43 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            return strRes;
+        }
+
+        public string GetPBRValueQuery(int num_comp, DateTime dt, Admin.TYPE_FIELDS mode)
+        {
+            string strRes = string.Empty,
+                    selectPBR = string.Empty;
+
+            switch (mode)
+            {
+                case Admin.TYPE_FIELDS.STATIC:
+                    if (num_comp < 0)
+                    {
+                        foreach (TECComponent g in list_TECComponents)
+                        {
+                            selectPBR += ", ";
+
+                            selectPBR += selectPBRValueQuery(g);
+                        }
+                        selectPBR = selectPBR.Substring(2);
+                    }
+                    else
+                    {
+                        selectPBR = selectPBRValueQuery(list_TECComponents[num_comp]);
+                    }
+                    break;
+                case Admin.TYPE_FIELDS.DYNAMIC:
+                    selectPBR = idComponentValueQuery (num_comp);
+
+                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + ";" + selectPBR;
+                    break;
+                default:
+                    break;
+            }
+
+            strRes = pbrValueQuery(selectPBR, dt, mode);
 
             return strRes;
         }
@@ -410,56 +484,6 @@ namespace StatisticCommon
             return strRes;
         }
 
-        public string GetPBRValueQuery(int num_comp, DateTime dt, Admin.TYPE_FIELDS mode)
-        {
-            string strRes = string.Empty,
-                    selectPBR = string.Empty;
-
-            switch (mode)
-            {
-                case Admin.TYPE_FIELDS.STATIC:
-                    if (num_comp < 0)
-                    {
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            selectPBR += ", ";
-
-                            selectPBR += selectPBRValueQuery(g);
-                        }
-                        selectPBR = selectPBR.Substring(2);
-                    }
-                    else
-                    {
-                        selectPBR = selectPBRValueQuery(list_TECComponents[num_comp]);
-                    }
-                    break;
-                case Admin.TYPE_FIELDS.DYNAMIC:
-                    if (num_comp < 0)
-                    {
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            selectPBR += ", ";
-
-                            selectPBR += (g.m_id).ToString ();
-                        }
-                        selectPBR = selectPBR.Substring(2);
-                    }
-                    else
-                    {
-                        selectPBR = (list_TECComponents[num_comp].m_id).ToString ();
-                    }
-
-                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + ";" + selectPBR;
-                    break;
-                default:
-                    break;
-            }
-
-            strRes = pbrValueQuery(selectPBR, dt, mode);
-
-            return strRes;
-        }
-
         public string GetAdminValueQuery(int num_comp, DateTime dt, Admin.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,
@@ -486,20 +510,7 @@ namespace StatisticCommon
                     }
                     break;
                 case Admin.TYPE_FIELDS.DYNAMIC:
-                    if (num_comp < 0)
-                    {
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            selectAdmin += ", ";
-
-                            selectAdmin += (g.m_id).ToString();
-                        }
-                        selectAdmin = selectAdmin.Substring(2);
-                    }
-                    else
-                    {
-                        selectAdmin += (list_TECComponents[num_comp].m_id).ToString();
-                    }
+                    selectAdmin = idComponentValueQuery (num_comp);
 
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] + ";" + selectAdmin;
                     break;

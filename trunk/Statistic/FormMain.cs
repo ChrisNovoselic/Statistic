@@ -267,6 +267,8 @@ namespace Statistic
                                     index_gtp++;
                                 }
                             }
+                            else
+                                ;
 
                             index_tec ++;
                         }
@@ -280,7 +282,8 @@ namespace Statistic
 
                     Int16 parametrsTGBiysk = 0;
                     int tecView_index = -1;
-                    List <int> list_tecView_index_start = new List <int> ();
+                    //List<int> list_tecView_index_visible = new List<int>();
+                    List <int> list_tecView_index_checked = new List <int> ();
                     // отображаем вкладки ТЭЦ
                     for (i = 0; i < formChangeMode.tec_index.Count; i++) //или TECComponent_index.Count
                     {
@@ -297,7 +300,7 @@ namespace Statistic
                             }
 
                             if ((tecView_index < tecViews.Count)) {
-                                list_tecView_index_start.Add(tecView_index);
+                                list_tecView_index_checked.Add(tecView_index);
 
                                 if ((tecViews[tecView_index].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                                     parametrsTGBiysk++;
@@ -326,7 +329,7 @@ namespace Statistic
                     }
 
                     for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
-                        if (list_tecView_index_start.IndexOf(tecView_index) < 0)
+                        if (list_tecView_index_checked.IndexOf(tecView_index) < 0)
                             tecViews[tecView_index].Stop();
                         else
                             ;
@@ -365,16 +368,7 @@ namespace Statistic
                         if (bAdminPanelUse)
                         {
                             StartWait();
-                            if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
-                            {
-                                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
-                            }
-                            else
-                                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
-
-                            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
-
-                            m_admin.Start();
+                            AddTabPageAdmin ();
                             StopWait();
                         }
                         else
@@ -514,6 +508,24 @@ namespace Statistic
             }
         }
 
+        private void AddTabPageAdmin () {
+            bool bDisp = false;
+            
+            if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
+            {
+                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
+                bDisp = true;
+            }
+            else
+                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
+
+            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
+
+            m_panelAdmin.InitializeComboBoxTecComponent (bDisp);
+
+            m_admin.Start();
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             if (firstStart)
@@ -556,17 +568,7 @@ namespace Statistic
                 {
                     //if (formPassword.ShowDialog() == DialogResult.Yes)
                     {
-                        if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
-                        {
-                            tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
-                        }
-                        else
-                            tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
-                        
-
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
-
-                        m_admin.Start();
+                        AddTabPageAdmin ();
                     }
                 }
                 else

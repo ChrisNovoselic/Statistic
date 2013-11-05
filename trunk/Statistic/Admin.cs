@@ -71,7 +71,7 @@ namespace StatisticCommon
         }
         */
         
-        private Admin.TYPE_FIELDS m_typeFields;
+        public Admin.TYPE_FIELDS m_typeFields;
 
         public string getOwnerPass () {
             string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
@@ -305,16 +305,41 @@ namespace StatisticCommon
             return saveResult;
         }
 
+        public List <int>GetListIndexTECComponent (bool bDisp) {
+            List <int>listIndex = new List <int> ();
+
+            int indx = -1;
+            foreach (TECComponent comp in allTECComponents) {
+                indx ++;
+                if (comp.m_id < 100) {
+                }
+                else
+                    if ((comp.m_id < 500) && (bDisp == true)) {
+                        listIndex.Add (indx);
+                    }
+                    else
+                        if (comp.m_id < 1000) {
+                        }
+                        else
+                            if ((comp.m_id < 10000) && (bDisp == false))
+                            {
+                                listIndex.Add(indx);
+                            }
+                            else
+                                ;
+            }
+
+            return listIndex;
+        }
+
         public void Start()
         {
             if (started)
-                return;
-            else
                 ;
+            else
+                started = true;
 
-            started = true;
-
-            GetRDGValues (m_typeFields, 0);
+            GetRDGValues (m_typeFields, indxTECComponents);
         }
 
         public bool IsRDGExcel (int indx) {
@@ -606,9 +631,15 @@ namespace StatisticCommon
             }
         }
 
+        bool IsCanUseTECComponents () {
+            bool bRes = false;
+            if ((! (indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count)) bRes = true; else ;
+            return bRes;
+        }
+
         private void GetCurrentTimeRequest()
         {
-            if (indxTECComponents < allTECComponents.Count)
+            if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
                 Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
             else
@@ -728,7 +759,7 @@ namespace StatisticCommon
         }
 
         private void GetRDGExcelValuesRequest () {
-            if (indxTECComponents < allTECComponents.Count)
+            if (IsCanUseTECComponents ())
                 m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
                                                                         @"SELECT * FROM [Лист1$]");
             else
@@ -856,9 +887,7 @@ namespace StatisticCommon
 
         private bool GetRDGExcelValuesResponse()
         {
-            bool bRes = false;
-
-            if (indxTECComponents < allTECComponents.Count) bRes = true; else ;
+            bool bRes = IsCanUseTECComponents ();
 
             if (bRes) {
                 int i = -1, j = -1,
@@ -908,7 +937,7 @@ namespace StatisticCommon
             else
                 ;
 
-            if (indxTECComponents < allTECComponents.Count)
+            if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
                 Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
@@ -924,7 +953,7 @@ namespace StatisticCommon
             else
                 ;
 
-            if (indxTECComponents < allTECComponents.Count)
+            if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
@@ -995,7 +1024,7 @@ namespace StatisticCommon
             string strUsedAdminValues = "AdminValuesOfID",
                     requestUpdate = string.Empty,
                     requestInsert = string.Empty,
-                    name = t.NameFieldOfAdminRequest(comp);
+                    name = string.Empty; //t.NameFieldOfAdminRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1005,7 +1034,7 @@ namespace StatisticCommon
                     switch (m_typeFields) {
                         case Admin.TYPE_FIELDS.STATIC:
                             //name = t.NameFieldOfAdminRequest(comp);
-                            
+                            name = t.NameFieldOfAdminRequest(comp);
                             requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + name + @"_IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -1164,9 +1193,8 @@ namespace StatisticCommon
                 ;
 
             string strUsedPPBRvsPBR = "PPBRvsPBROfID",
-                    requestUpdate = "", requestInsert = "";
-
-            string name = t.NameFieldOfPBRRequest(comp);
+                    requestUpdate = "", requestInsert = "",
+                    name = string.Empty; //t.NameFieldOfPBRRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1176,6 +1204,7 @@ namespace StatisticCommon
                     switch (m_typeFields)
                     {
                         case Admin.TYPE_FIELDS.STATIC:
+                            name = t.NameFieldOfPBRRequest(comp);
                             /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -1417,6 +1446,12 @@ namespace StatisticCommon
                 ;
         }
 
+        public int GetIndexTECComponent (int indxTEC, int indxComp) {
+            int iRes = -1;
+
+            return iRes;
+        }
+
         private bool InitDbInterfaces () {
             bool bRes = true;
             
@@ -1582,6 +1617,8 @@ namespace StatisticCommon
                         result = false;
                         break;
                     }
+                    else
+                        ;                        
                     ActionReport("Получение списка сохранённых часовых значений.");
                     GetPPBRDatesRequest(m_curDate);
                     break;
@@ -1599,6 +1636,8 @@ namespace StatisticCommon
                         result = false;
                         break;
                     }
+                    else
+                        ;
                     ActionReport("Получение списка сохранённых часовых значений.");
                     GetAdminDatesRequest(m_curDate);
                     break;
@@ -1736,7 +1775,7 @@ namespace StatisticCommon
                     result = GetRDGExcelValuesResponse();
                     if (result)
                     {
-                        //this.BeginInvoke(delegateFillData, m_prevDatetime);
+                        fillData(m_prevDate);
                     }
                     else
                         ;

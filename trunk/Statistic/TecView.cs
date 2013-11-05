@@ -2407,29 +2407,35 @@ namespace Statistic
             int min = lastMin;
             if (min != 0)
                 min--;
+            else
+                ;
 
             int i = 0;
             if (num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in tec.list_TECComponents)
                 {
-                    foreach (TG tg in g.TG)
-                    {
-                        if (tg.receivedMin[min])
+                    if (g.m_id < 500)
+                        //Только ГТП
+                        foreach (TG tg in g.TG)
                         {
-                            tgsValue[i].Text = tg.power[min].ToString("F2");
-                            if (currHour)
-                                tgsValue[i].ForeColor = System.Drawing.Color.LimeGreen;
+                            if (tg.receivedMin[min])
+                            {
+                                tgsValue[i].Text = tg.power[min].ToString("F2");
+                                if (currHour)
+                                    tgsValue[i].ForeColor = System.Drawing.Color.LimeGreen;
+                                else
+                                    tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                            }
                             else
+                            {
+                                tgsValue[i].Text = "---";
                                 tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                            }
+                            i++;
                         }
-                        else
-                        {
-                            tgsValue[i].Text = "---";
-                            tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
-                        }
-                        i++;
-                    }
+                    else
+                        ;
                 }
             }
             else
@@ -3290,6 +3296,22 @@ namespace Statistic
 
             if (i < table_in.Columns.Count)
             {
+                List<TG> list_TG = null;
+                List<TECComponent> list_TECComponents = null;
+                int count_comp = -1;
+
+                if (num_TECComponent < 0) {
+                    list_TECComponents = new List<TECComponent>();
+                    for (i = 0; i < tec.list_TECComponents.Count; i ++) {
+                        if ((tec.list_TECComponents[i].m_id > 100) && (tec.list_TECComponents[i].m_id < 500))
+                            list_TECComponents.Add(tec.list_TECComponents[i]);
+                        else
+                            ;
+                    }
+                }
+                else
+                    list_TG = tec.list_TECComponents[num_TECComponent].TG;                
+                
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {
@@ -3310,12 +3332,20 @@ namespace Statistic
                             ;
                 }
 
-                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                if (num_TECComponent < 0)
+                    count_comp = list_TECComponents.Count;
+                else
+                    count_comp = list_TG.Count;
+
+                for (i = 0; i < count_comp; i++)
                 {
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + tec.list_TECComponents[i].m_id;
+                        if (num_TECComponent < 0)
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
+                        else
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;                        
                     }
                 }
 
@@ -3323,9 +3353,13 @@ namespace Statistic
 
                 List<DataRow[]> listDataRows = new List<DataRow[]>();
 
-                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                for (i = 0; i < count_comp; i++)
                 {
-                    dataRows = table_in.Select("ID_COMPONENT=" + tec.list_TECComponents[i].m_id);
+                    if (num_TECComponent < 0)
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
+                    else
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
+                    
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
 
@@ -3355,7 +3389,10 @@ namespace Statistic
 
                         for (k = 0; k < cols_data.Count; k++)
                         {
-                            table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + tec.list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            if (num_TECComponent < 0)
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            else
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                         }
                     }
                 }
@@ -3385,6 +3422,24 @@ namespace Statistic
 
             if (i < table_in.Columns.Count)
             {
+                List<TG> list_TG = null;
+                List<TECComponent> list_TECComponents = null;
+                int count_comp = -1;
+
+                if (num_TECComponent < 0)
+                {
+                    list_TECComponents = new List<TECComponent>();
+                    for (i = 0; i < tec.list_TECComponents.Count; i++)
+                    {
+                        if ((tec.list_TECComponents[i].m_id > 100) && (tec.list_TECComponents[i].m_id < 500))
+                            list_TECComponents.Add(tec.list_TECComponents[i]);
+                        else
+                            ;
+                    }
+                }
+                else
+                    list_TG = tec.list_TECComponents[num_TECComponent].TG;
+                
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {
@@ -3402,20 +3457,31 @@ namespace Statistic
                             ;
                 }
 
-                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                if (num_TECComponent < 0)
+                    count_comp = list_TECComponents.Count;
+                else
+                    count_comp = list_TG.Count;
+
+                for (i = 0; i < count_comp; i++)
                 {
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + tec.list_TECComponents [i].m_id;
+                        if (num_TECComponent < 0)
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
+                        else
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
                     }
                 }
 
                 List<DataRow[]> listDataRows = new List<DataRow[]>();
 
-                for (i = 0; i < tec.list_TECComponents.Count; i++)
+                for (i = 0; i < count_comp; i++)
                 {
-                    dataRows = table_in.Select("ID_COMPONENT=" + tec.list_TECComponents[i].m_id);
+                    if (num_TECComponent < 0)
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
+                    else
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
 
@@ -3440,7 +3506,10 @@ namespace Statistic
                             indx_row = k;
 
                         for (k = 0; k < cols_data.Count; k ++) {
-                            table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + tec.list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            if (num_TECComponent < 0)
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            else
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                         }
                     }
                 }
@@ -3468,7 +3537,7 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-                    if (num_TECComponent < 0)
+                if ((num_TECComponent < 0) || ((!(num_TECComponent < 0)) && (tec.list_TECComponents[num_TECComponent].m_id > 500)))
                     {
                         double[,] valuesPBR = new double[tec.list_TECComponents.Count, 25];
                         double[,] valuesREC = new double[tec.list_TECComponents.Count, 25];

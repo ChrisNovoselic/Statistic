@@ -29,6 +29,7 @@ namespace StatisticCommon
 
         private Admin m_admin;
         
+        List <int>m_listTECComponentIndex;
         private volatile int oldTecIndex;
 
         public bool isActive;
@@ -126,7 +127,7 @@ namespace StatisticCommon
             // 
             // btnImportExcel
             // 
-            this.btnImportExcel.Location = new System.Drawing.Point(10, 284);
+            this.btnImportExcel.Location = new System.Drawing.Point(10, 279);
             this.btnImportExcel.Name = "btnImportExcel";
             this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
             this.btnImportExcel.TabIndex = 667;
@@ -136,7 +137,7 @@ namespace StatisticCommon
             // 
             // btnExportExcel
             // 
-            this.btnExportExcel.Location = new System.Drawing.Point(10, 314);
+            this.btnExportExcel.Location = new System.Drawing.Point(10, 309);
             this.btnExportExcel.Name = "btnExportExcel";
             this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
             this.btnExportExcel.TabIndex = 668;
@@ -191,7 +192,11 @@ namespace StatisticCommon
                             }
                         case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
                             {
-                                m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                if (! (this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value == null))
+                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                else
+                                    m_admin.m_curRDGValues[i].deviationPercent = false;
+
                                 break;
                             }
                         case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
@@ -270,7 +275,26 @@ namespace StatisticCommon
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues (Admin.TYPE_FIELDS.DYNAMIC, comboBoxTecComponent.SelectedIndex, mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            }
+            else
+                ;
+        }
+
+        public void InitializeComboBoxTecComponent (bool bDisp) {
+            m_listTECComponentIndex = m_admin.GetListIndexTECComponent (bDisp);
+
+            comboBoxTecComponent.Items.Clear ();
+
+            for (int i = 0; i < m_listTECComponentIndex.Count; i ++) {
+                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex [i]].tec.name + " - " + m_admin.allTECComponents[m_listTECComponentIndex [i]].name);
+            }
+
+            m_admin.m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
+
+            m_admin.indxTECComponents = m_listTECComponentIndex [0];
+            if (comboBoxTecComponent.Items.Count > 0) {
+                comboBoxTecComponent.SelectedIndex = 0;
             }
             else
                 ;
@@ -320,7 +344,7 @@ namespace StatisticCommon
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, comboBoxTecComponent.SelectedIndex, mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -335,7 +359,7 @@ namespace StatisticCommon
             Admin.Errors resultSaving;
             if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
             {
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, comboBoxTecComponent.SelectedIndex, mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
@@ -374,8 +398,8 @@ namespace StatisticCommon
         private void btnImportExcel_Click(object sender, EventArgs e)
         {
             ClearTables();
-            
-            m_admin.GetRDGExcelValues (comboBoxTecComponent.SelectedIndex, mcldrDate.SelectionStart);
+
+            m_admin.GetRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
@@ -443,7 +467,7 @@ namespace StatisticCommon
 
         private void visibleControlRDGExcel () {
             bool bImpExpButtonVisible = false;
-            if (m_admin.IsRDGExcel (oldTecIndex) == true)
+            if ((!(m_listTECComponentIndex == null)) && (m_listTECComponentIndex.Count > 0) && (!(comboBoxTecComponent.SelectedIndex < 0)) && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
                 bImpExpButtonVisible = true;
             else
                 ;

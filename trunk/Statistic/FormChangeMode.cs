@@ -140,10 +140,10 @@ namespace StatisticCommon
                     clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                 }
                 else
-                    if (getModeTECComponent () > 0)
+                    //if ((getModeTECComponent() > 0) && (IsModeTECComponent(MODE_TECCOMPONENT.TG)))
                         clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
-                    else
-                        ;
+                    //else
+                    //    ;
             }
             else
                 ;
@@ -162,7 +162,9 @@ namespace StatisticCommon
             admin_was_checked = false;
 
             for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
-                if (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1)
+                //(IsModeTECComponent (MODE_TECCOMPONENT.GTP) == true)) || (IsModeTECComponent (MODE_TECCOMPONENT.TG) == true)
+                //if (((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true)) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
+                if ((getModeTECComponent () > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
                     admin_was_checked = true;
                 else
                     was_checked.Add(clbMode.CheckedIndices[i]);
@@ -204,7 +206,11 @@ namespace StatisticCommon
 
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
-            clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
+            //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
+            if (getModeTECComponent () > 0)
+                clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
+            else
+                ;
         }
 
         private void checkBox_CheckedChanged(object sender, EventArgs e)

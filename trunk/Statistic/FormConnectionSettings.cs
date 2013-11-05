@@ -149,7 +149,6 @@ namespace StatisticCommon
                 }
             }
 
-
             if (bRes == true)
             {
                 int pos1 = 0, pos2 = 0, port;
