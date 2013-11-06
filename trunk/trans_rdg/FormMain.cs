@@ -48,6 +48,17 @@ namespace trans_rdg
         {
             InitializeComponent();
 
+            string [] argc = Environment.GetCommandLineArgs();
+            //if (argc.Length > 0)
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                notifyIconMain.Visible = true;
+                
+            }
+            //else
+            //    ;
+
             comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
             dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
 
@@ -443,6 +454,28 @@ namespace trans_rdg
             //ClearTables();
 
             m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(dateTimePickerMain.Value);
+        }
+
+        private void notifyIconMain_Click(object sender, EventArgs e)
+        {
+            развернутьToolStripMenuItem.PerformClick();
+        }
+
+        private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.ShowInTaskbar = true;
+                notifyIconMain.Visible = false;
+            }
+            else
+                ;
+        }
+
+        private void закрытьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            buttonClose.PerformClick();
         }
     }
 }

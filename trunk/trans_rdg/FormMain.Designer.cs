@@ -32,6 +32,7 @@ namespace trans_rdg
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
@@ -75,6 +76,11 @@ namespace trans_rdg
             this.lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
             this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
+            this.notifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.развернутьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.закрытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparatorNotifyIcon = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.panelMain.SuspendLayout();
             this.groupBoxDest.SuspendLayout();
@@ -83,16 +89,8 @@ namespace trans_rdg
             ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).BeginInit();
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
+            this.contextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // m_dgwAdminTable
-            // 
-            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
-            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
-            this.m_dgwAdminTable.RowHeadersVisible = false;
-            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
-            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // buttonClose
             // 
@@ -443,7 +441,7 @@ namespace trans_rdg
             this.menuStripMain.Name = "menuStripMain";
             this.menuStripMain.Size = new System.Drawing.Size(841, 24);
             this.menuStripMain.TabIndex = 4;
-            this.menuStripMain.Text = "menuStrip1";
+            this.menuStripMain.Text = "menuStripMain";
             // 
             // файлToolStripMenuItem
             // 
@@ -456,7 +454,7 @@ namespace trans_rdg
             // выходToolStripMenuItem
             // 
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            this.выходToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.выходToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
             this.выходToolStripMenuItem.Text = "Выход";
             this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
@@ -471,7 +469,7 @@ namespace trans_rdg
             // оПрограммеToolStripMenuItem
             // 
             this.оПрограммеToolStripMenuItem.Name = "оПрограммеToolStripMenuItem";
-            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.оПрограммеToolStripMenuItem.Text = "О программе";
             this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
             // 
@@ -518,6 +516,41 @@ namespace trans_rdg
             this.timerMain.Interval = 666;
             this.timerMain.Tick += new System.EventHandler(this.timer_Tick);
             // 
+            // notifyIconMain
+            // 
+            this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
+            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIconMain.Icon")));
+            this.notifyIconMain.Text = "Статистика: конвертер";
+            this.notifyIconMain.Click +=new System.EventHandler(notifyIconMain_Click);
+            // 
+            // contextMenuStripNotifyIcon
+            // 
+            this.contextMenuStripNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.развернутьToolStripMenuItem,
+            this.toolStripSeparatorNotifyIcon,
+            this.закрытьToolStripMenuItem});
+            this.contextMenuStripNotifyIcon.Name = "contextMenuStripNotifyIcon";
+            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);
+            // 
+            // развернутьToolStripMenuItem
+            // 
+            this.развернутьToolStripMenuItem.Name = "развернутьToolStripMenuItem";
+            this.развернутьToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.развернутьToolStripMenuItem.Text = "Развернуть";
+            this.развернутьToolStripMenuItem.Click += new System.EventHandler(this.развернутьToolStripMenuItem_Click);
+            // 
+            // закрытьToolStripMenuItem
+            // 
+            this.закрытьToolStripMenuItem.Name = "закрытьToolStripMenuItem";
+            this.закрытьToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.закрытьToolStripMenuItem.Text = "Закрыть";
+            this.закрытьToolStripMenuItem.Click += new System.EventHandler(this.закрытьToolStripMenuItem_Click);
+            // 
+            // toolStripSeparatorNotifyIcon
+            // 
+            this.toolStripSeparatorNotifyIcon.Name = "toolStripSeparatorNotifyIcon";
+            this.toolStripSeparatorNotifyIcon.Size = new System.Drawing.Size(149, 6);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -546,6 +579,7 @@ namespace trans_rdg
             this.menuStripMain.PerformLayout();
             this.statusStripMain.ResumeLayout(false);
             this.statusStripMain.PerformLayout();
+            this.contextMenuStripNotifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -595,6 +629,11 @@ namespace trans_rdg
         private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
         private System.Windows.Forms.Button buttonSourceExport;
+        private System.Windows.Forms.NotifyIcon notifyIconMain;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
+        private System.Windows.Forms.ToolStripMenuItem развернутьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorNotifyIcon;
+        private System.Windows.Forms.ToolStripMenuItem закрытьToolStripMenuItem;
     }
 }
 
