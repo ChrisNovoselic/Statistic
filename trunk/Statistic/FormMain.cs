@@ -64,7 +64,7 @@ namespace Statistic
 
             m_admin = new Admin();
             //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN);
+            m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
             m_admin.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
             m_panelAdmin = new PanelAdmin(m_admin);

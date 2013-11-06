@@ -33,30 +33,6 @@ namespace trans_rdg
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
-            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewCheckBoxColumn4 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewButtonColumn4 = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewCheckBoxColumn3 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewButtonColumn3 = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.dataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewCheckBoxColumn2 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewButtonColumn2 = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewButtonColumn1 = new System.Windows.Forms.DataGridViewButtonColumn();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
@@ -64,6 +40,7 @@ namespace trans_rdg
             this.labelDate = new System.Windows.Forms.Label();
             this.dateTimePickerMain = new System.Windows.Forms.DateTimePicker();
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
+            this.buttonDestClear = new System.Windows.Forms.Button();
             this.buttonDestSave = new System.Windows.Forms.Button();
             this.labelDestPort = new System.Windows.Forms.Label();
             this.nudnDestPort = new System.Windows.Forms.NumericUpDown();
@@ -178,6 +155,7 @@ namespace trans_rdg
             // groupBoxDest
             // 
             this.groupBoxDest.BackColor = System.Drawing.SystemColors.Control;
+            this.groupBoxDest.Controls.Add(this.buttonDestClear);
             this.groupBoxDest.Controls.Add(this.buttonDestSave);
             this.groupBoxDest.Controls.Add(this.labelDestPort);
             this.groupBoxDest.Controls.Add(this.nudnDestPort);
@@ -197,6 +175,16 @@ namespace trans_rdg
             this.groupBoxDest.Text = "Получатель";
             this.groupBoxDest.MouseClick += new System.Windows.Forms.MouseEventHandler(this.groupBox_MouseClick);
             this.groupBoxDest.Enter += new System.EventHandler(this.groupBox_Enter);
+            // 
+            // buttonDestClear
+            // 
+            this.buttonDestClear.Location = new System.Drawing.Point(10, 166);
+            this.buttonDestClear.Name = "buttonDestClear";
+            this.buttonDestClear.Size = new System.Drawing.Size(137, 23);
+            this.buttonDestClear.TabIndex = 35;
+            this.buttonDestClear.Text = "Удалить";
+            this.buttonDestClear.UseVisualStyleBackColor = true;
+            this.buttonDestClear.Click += new System.EventHandler(this.buttonClear_Click);
             // 
             // buttonDestSave
             // 
@@ -335,7 +323,7 @@ namespace trans_rdg
             this.buttonSourceExport.Name = "buttonSourceExport";
             this.buttonSourceExport.Size = new System.Drawing.Size(137, 23);
             this.buttonSourceExport.TabIndex = 37;
-            this.buttonSourceExport.Text = "Импорт данных";
+            this.buttonSourceExport.Text = "Экспорт данных";
             this.buttonSourceExport.UseVisualStyleBackColor = true;
             this.buttonSourceExport.Click += new System.EventHandler(this.buttonSourceExport_Click);
             // 
@@ -593,6 +581,7 @@ namespace trans_rdg
         private System.Windows.Forms.TextBox tbxSourceNameDatabase;
         private System.Windows.Forms.TextBox tbxSourceServerIP;
         private System.Windows.Forms.ComboBox comboBoxTECComponent;
+        private System.Windows.Forms.Button buttonDestClear;
         private System.Windows.Forms.Button buttonDestSave;
         private System.Windows.Forms.Button buttonSourceSave;
         private System.Windows.Forms.MenuStrip menuStripMain;
@@ -605,31 +594,7 @@ namespace trans_rdg
         private System.Windows.Forms.ToolStripStatusLabel lblMainState;
         private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn2;
         private System.Windows.Forms.Button buttonSourceExport;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn4;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
-        private System.Windows.Forms.DataGridViewButtonColumn dataGridViewButtonColumn4;
     }
 }
 

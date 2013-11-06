@@ -23,6 +23,8 @@ namespace trans_rdg
 
         DataGridViewAdmin m_dgwAdminTable;
 
+        List <int> m_listTECComponentIndex;
+
         private Int16 m_IndexDB
         {
             get {
@@ -47,6 +49,7 @@ namespace trans_rdg
             InitializeComponent();
 
             comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
+            dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
@@ -69,16 +72,19 @@ namespace trans_rdg
 
             m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC (m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
-
             //Источник
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource (m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);            
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
+
+            //Получатель
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
+            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
 
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
                 setUIControlConnectionSettings (i);
@@ -97,9 +103,8 @@ namespace trans_rdg
 
             //panelMain.Visible = false;
 
+            timerMain.Interval = 666; //Признак первой итерации
             timerMain.Start ();
-
-            //m_arAdmin [m_IndexDB].GetRDGValues ();
         }
 
         private void setUIControlConnectionSettings (int i) {
@@ -130,8 +135,10 @@ namespace trans_rdg
         }
 
         private void FillComboBoxTECComponent () {
-            for (int i = 0; i < m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents.Count; i ++)
-                comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[i].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[i].name);
+            m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(true);
+
+            for (int i = 0; i < m_listTECComponentIndex.Count; i++)
+                comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].name);
 
             if (comboBoxTECComponent.Items.Count > 0)
                 comboBoxTECComponent.SelectedIndex = 0;
@@ -204,6 +211,8 @@ namespace trans_rdg
                 groupBoxOther.BackColor = SystemColors.Control;
 
                 m_formConnectionSettings.SelectedIndex = m_IndexDB;
+
+                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
             }
             else
                 ;
@@ -246,24 +255,30 @@ namespace trans_rdg
 
         public bool UpdateStatusString()
         {
-            bool have_eror = false;
+            bool have_eror = m_arAdmin[m_IndexDB].errored_state;
 
-            if (m_arAdmin[m_IndexDB].actioned_state && m_arAdmin[m_IndexDB].threadIsWorking)
+            if (((have_eror == true) || (m_arAdmin[m_IndexDB].actioned_state == true)) && (m_arAdmin[m_IndexDB].threadIsWorking == true))
             {
-                lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
-                lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
-            }
-            else
-                ;
+                if (m_arAdmin[m_IndexDB].actioned_state == true)
+                {
+                    lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
+                    lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
+                }
+                else
+                    ;
 
-            if (m_arAdmin[m_IndexDB].errored_state)
-            {
-                have_eror = true;
-                lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
-                lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
+                if (have_eror == true)
+                {
+                    lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
+                    lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
+                }
+                else
+                    ;
             }
-            else
-                ;
+            else {
+                lblDescError.Text = string.Empty;
+                lblDateError.Text = string.Empty;
+            }
 
             return have_eror;
         }
@@ -284,7 +299,7 @@ namespace trans_rdg
                 //Первый запуск
                 timerMain.Interval = 1000;
 
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, comboBoxTECComponent.SelectedIndex);
+                FillComboBoxTECComponent();
             }
             else
                 ;
@@ -314,6 +329,11 @@ namespace trans_rdg
         //    m_arAdmin[m_IndexDB].GetCurrentTime ();
         //}
 
+        private void buttonClear_Click(object sender, EventArgs e)
+        {
+            m_arAdmin [m_IndexDB].ClearRDGValues(dateTimePickerMain.Value.Date);
+        }
+
         private void buttonSave_Click(object sender, EventArgs e)
         {
             //m_formConnectionSettings.SaveSettingsFile ();
@@ -336,10 +356,23 @@ namespace trans_rdg
         }
 
         private void comboBoxTECComponent_SelectedIndexChanged (object sender, EventArgs e) {
-            if (! (m_arAdmin[(int)CONN_SETT_TYPE.SOURCE] == null)) {
+            if (!(m_arAdmin[m_IndexDB] == null))
+            {
                 ClearTables ();
 
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, comboBoxTECComponent.SelectedIndex);
+                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
+            }
+            else
+                ;
+        }
+
+        private void dateTimePickerMain_Changed(object sender, EventArgs e)
+        {
+            if (!(m_arAdmin[m_IndexDB] == null))
+            {
+                ClearTables();
+
+                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
             }
             else
                 ;
@@ -357,9 +390,9 @@ namespace trans_rdg
             }
         }
 
-        private void getDataGridViewAdmin()
+        private void getDataGridViewAdmin(int indxDB)
         {
-            int indxDB = m_IndexDB;
+            //int indxDB = m_IndexDB;
             
             double value;
             bool valid;
@@ -405,11 +438,11 @@ namespace trans_rdg
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
             //Взять значения "с окна" в таблицу
-            getDataGridViewAdmin();
+            getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
 
             //ClearTables();
 
-            m_arAdmin[m_IndexDB].SaveRDGValues(dateTimePickerMain.Value);
+            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(dateTimePickerMain.Value);
         }
     }
 }

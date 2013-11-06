@@ -9,7 +9,7 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
 
-        public static DataTable getListTEC(ConnectionSettings connSett, bool bAll = false)
+        public static DataTable getListTEC(ConnectionSettings connSett, bool bAll)
         {
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
@@ -29,7 +29,12 @@ namespace StatisticCommon
             return DbInterface.Request(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString());
         }
 
-        public InitTEC(ConnectionSettings connSett)
+        public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id)
+        {
+            return DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString());
+        }
+
+        public InitTEC(ConnectionSettings connSett, bool bAll)
         {
             tec = new List<TEC>();
 
@@ -38,7 +43,7 @@ namespace StatisticCommon
                     list_TECComponents = null, list_tg = null;
 
             //Использование статической функции
-            list_tec = getListTEC(connSett);
+            list_tec = getListTEC(connSett, bAll);
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
@@ -60,9 +65,9 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int)CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int)CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int)CONN_SETT_TYPE.PBR);
+                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
 
                 tec[i].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
@@ -119,7 +124,7 @@ namespace StatisticCommon
             }
         }
 
-        public InitTEC(ConnectionSettings connSett, Int16 indx) //indx = {GTP или PC}
+        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bAll) //indx = {GTP или PC}
         {
             tec = new List<TEC> ();
 
@@ -143,7 +148,7 @@ namespace StatisticCommon
             //dbInterface.ListenerUnregister(listenerId);
 
             //Использование статической функции
-            list_tec = getListTEC(connSett);
+            list_tec = getListTEC(connSett, bAll);
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ

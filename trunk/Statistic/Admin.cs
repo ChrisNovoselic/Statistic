@@ -51,7 +51,7 @@ namespace StatisticCommon
         private DelegateStringFunc errorReport;
         private DelegateStringFunc actionReport;
 
-        private DelegateFunc fillTECComponent = null;
+        //private DelegateFunc fillTECComponent = null;
         private DelegateDateFunction fillData = null;
 
         private DelegateDateFunction setDatetime;
@@ -152,6 +152,8 @@ namespace StatisticCommon
             SetPassUpdate,
             //LayoutGet,
             //LayoutSet,
+            ClearPPBRValues,
+            ClearAdminValues,
         }
 
         private enum StateActions
@@ -305,6 +307,55 @@ namespace StatisticCommon
             return saveResult;
         }
 
+        private Errors ClearRDG()
+        {
+            Errors errClearResult;
+            
+            delegateStartWait();
+            semaSave.WaitOne();
+            lock (m_lockObj)
+            {
+                errClearResult = Errors.NoError;
+                using_date = false;
+                m_curDate = m_prevDate;
+
+                newState = true;
+                states.Clear();
+
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("ClearRDG () - states.Clear()", true, true, false);
+                Logging.Logg().LogUnlock();
+
+                states.Add(StatesMachine.CurrentTime);
+                states.Add(StatesMachine.AdminDates);
+                //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
+                states.Add(StatesMachine.PPBRDates);
+                states.Add(StatesMachine.ClearAdminValues);
+                states.Add(StatesMachine.ClearPPBRValues);
+                //states.Add(StatesMachine.UpdateValuesPPBR);
+
+                try
+                {
+                    sem.Release(1);
+                }
+                catch
+                {
+                }
+            }
+
+            semaSave.WaitOne();
+            try
+            {
+                semaSave.Release(1);
+            }
+            catch
+            {
+            }
+            delegateStopWait();
+
+            return errClearResult;
+        }
+
         public List <int>GetListIndexTECComponent (bool bDisp) {
             List <int>listIndex = new List <int> ();
 
@@ -408,7 +459,7 @@ namespace StatisticCommon
 
         public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
 
-        public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
+        //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
         public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
 
@@ -1128,6 +1179,58 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
 
+        private void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
+        {
+            int currentHour = serverTime.Hour;
+
+            date = date.Date;
+
+            if (serverTime.Date < date)
+                currentHour = 0;
+            else
+                ;
+
+            string requestUpdate = string.Empty, requestInsert = string.Empty, requestDelete = string.Empty,
+                    name = string.Empty; //t.NameFieldOfPBRRequest(comp);
+
+            for (int i = currentHour; i < 24; i++)
+            {
+                // запись для этого часа имеется, модифицируем её
+                if (adminDates[i])
+                {
+                    switch (m_typeFields)
+                    {
+                        case Admin.TYPE_FIELDS.STATIC:
+                            name = t.NameFieldOfAdminRequest(comp);
+                            requestDelete += @"DELETE FROM " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] +
+                                        @"' WHERE " +
+                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'; ";
+                            break;
+                        case Admin.TYPE_FIELDS.DYNAMIC:
+                            requestDelete += @"DELETE FROM " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                                        @" WHERE " +
+                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'" +
+                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                }
+            }
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("ClearAdminValuesRequest", true, true, false);
+            Logging.Logg().LogUnlock();
+
+            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
+        }
+
         private int getPBRNumber(int hour)
         {
             int iNum = -1;
@@ -1302,6 +1405,58 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
 
+        private void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
+        {
+            int currentHour = serverTime.Hour;
+
+            date = date.Date;
+
+            if (serverTime.Date < date)
+                currentHour = 0;
+            else
+                ;
+
+            string requestUpdate = string.Empty, requestInsert = string.Empty, requestDelete = string.Empty,
+                    name = string.Empty; //t.NameFieldOfPBRRequest(comp);
+
+            for (int i = currentHour; i < 24; i++)
+            {
+                // запись для этого часа имеется, модифицируем её
+                if (PPBRDates[i])
+                {
+                    switch (m_typeFields)
+                    {
+                        case Admin.TYPE_FIELDS.STATIC:
+                            name = t.NameFieldOfPBRRequest(comp);
+                            requestDelete += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] +
+                                        @"' WHERE " +
+                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'; ";
+                            break;
+                        case Admin.TYPE_FIELDS.DYNAMIC:
+                            requestDelete += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                                        @" WHERE " +
+                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"'" +
+                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                }
+            }
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("ClearPPBRRequest", true, true, false);
+            Logging.Logg().LogUnlock();
+
+            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
+            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
+        }
+
         private void GetPassRequest(uint id)
         {
             string request = "SELECT HASH FROM passwords WHERE ID_ROLE=" + id;
@@ -1413,13 +1568,13 @@ namespace StatisticCommon
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
         }
 
-        public void InitTEC (ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode) {
+        public void InitTEC (ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bAll) {
             //connSettConfigDB = connSett;
 
             if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                this.m_list_tec = new InitTEC(connSett).tec;
+                this.m_list_tec = new InitTEC(connSett, bAll).tec;
             else {
-                this.m_list_tec = new InitTEC(connSett, (short)mode).tec;
+                this.m_list_tec = new InitTEC(connSett, (short)mode, bAll).tec;
             }
 
             //comboBoxTecComponent.Items.Clear ();
@@ -1440,10 +1595,10 @@ namespace StatisticCommon
                 }
             }
 
-            if (! (fillTECComponent == null))
+            /*if (! (fillTECComponent == null))
                 fillTECComponent ();
             else
-                ;
+                ;*/
         }
 
         public int GetIndexTECComponent (int indxTEC, int indxComp) {
@@ -1675,6 +1830,14 @@ namespace StatisticCommon
                 //    ActionReport("Сохранение административных данных макета.");
                 //    SetLayoutRequest(m_curDate);
                 //    break;
+                case StatesMachine.ClearAdminValues:
+                    ActionReport("Сохранение административных данных.");
+                    ClearAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
+                    break;
+                case StatesMachine.ClearPPBRValues:
+                    ActionReport("Сохранение ПЛАНА.");
+                    ClearPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
+                    break;
             }
 
             return result;
@@ -1702,6 +1865,8 @@ namespace StatisticCommon
                     case StatesMachine.SaveAdminValues:
                     case StatesMachine.SavePPBRValues:
                     //case StatesMachine.UpdateValuesPPBR:
+                    case StatesMachine.ClearAdminValues:
+                    case StatesMachine.ClearPPBRValues:
                     case StatesMachine.GetPass:
                         bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                         break;
@@ -1902,10 +2067,30 @@ namespace StatisticCommon
                 //    {
                 //    }
                 //    break;
+                case StatesMachine.ClearAdminValues:
+                    result = true;
+                    if (result) { }
+                    else ;
+                    break;
+                case StatesMachine.ClearPPBRValues:
+                    try
+                    {
+                        semaSave.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                    result = true;
+                    if (result)
+                    {
+                    }
+                    break;
             }
 
             if (result)
                 errored_state = actioned_state = false;
+            else
+                ;
 
             return result;
         }
@@ -2098,6 +2283,14 @@ namespace StatisticCommon
                 //    {
                 //    }
                 //    break;
+                case StatesMachine.ClearAdminValues:
+                    ErrorReport("Ошибка удаления административных данных. Переход в ожидание.");
+                    break;
+                case StatesMachine.ClearPPBRValues:
+                    ErrorReport("Ошибка удаления данных ПЛАНа. Переход в ожидание.");
+                    break;
+                default:
+                    break;
             }
 
             if (bClear) {
@@ -2257,6 +2450,38 @@ namespace StatisticCommon
             }
         }
 
+        public void ClearRDGValues(DateTime date)
+        {
+            if (ClearRDG() == Errors.NoError)
+            {
+                lock (m_lockObj)
+                {
+                    ClearValues();
+
+                    m_curDate = date;
+                    using_date = false;
+
+                    newState = true;
+                    states.Clear();
+                    states.Add(StatesMachine.CurrentTime);
+                    states.Add(StatesMachine.PPBRValues);
+                    states.Add(StatesMachine.AdminValues);
+
+                    try
+                    {
+                        sem.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            else
+            {
+                MessageBox("Не удалось удалить значения РДГ, возможно отсутствует связь с базой данных.");
+            }
+        }
+
         public void CopyCurRDGValues () {
             for (int i = 0; i < 24; i++)
             {
@@ -2264,6 +2489,13 @@ namespace StatisticCommon
                 m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
                 m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
                 m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
+            }
+        }
+
+        public void ReConnSettingsRDGSource (ConnectionSettings connSett, int id_source) {
+            for (int i = 0; i < m_list_tec.Count; i ++) {
+                m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.ADMIN);
+                m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.PBR);
             }
         }
     }
