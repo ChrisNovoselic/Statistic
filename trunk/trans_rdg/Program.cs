@@ -15,7 +15,14 @@ namespace trans_rdg
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormMain());
+            try { Application.Run(new FormMain()); }
+            catch (Exception e) { 
+                StatisticCommon.Logging.Logg().LogLock();
+                //StatisticCommon.Logging.Logg().LogToFile("", true, true, false);
+                StatisticCommon.Logging.Logg().LogToFile("Исключение " + e.Message, true, true, false);
+                StatisticCommon.Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                StatisticCommon.Logging.Logg().LogUnlock();
+            }
         }
     }
 }

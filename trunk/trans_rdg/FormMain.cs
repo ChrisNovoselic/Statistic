@@ -49,15 +49,17 @@ namespace trans_rdg
             InitializeComponent();
 
             string [] argc = Environment.GetCommandLineArgs();
-            //if (argc.Length > 0)
+            if (argc.Length > 0)
             {
+                throw new Exception("Ошибка распознавания аргументов командной строки");
+
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
-                
+                развернутьToolStripMenuItem.Enabled = false;              
             }
-            //else
-            //    ;
+            else
+                ;
 
             comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
             dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
@@ -146,8 +148,6 @@ namespace trans_rdg
         }
 
         private void FillComboBoxTECComponent () {
-            m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(true);
-
             for (int i = 0; i < m_listTECComponentIndex.Count; i++)
                 comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].name);
 
@@ -163,18 +163,37 @@ namespace trans_rdg
 
         private void setDataGridViewAdmin(DateTime date)
         {
-            int indxDB = m_IndexDB;
-            
-            for (int i = 0; i < 24; i++)
-            {
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_arAdmin [indxDB].m_curRDGValues[i].plan.ToString("F2");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].recomendation.ToString("F2");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviationPercent.ToString();
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_arAdmin [indxDB].m_curRDGValues[i].deviation.ToString("F2");
-            }
+            int indxDB = -1;
 
-            CopyCurAdminValues();
+            if (WindowState == FormWindowState.Minimized)
+            {
+                for (int i = 0; i < 24; i++)
+                {
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].plan = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].plan;
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].recomendation = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].recomendation;
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].deviationPercent = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].deviationPercent;
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].deviation = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].deviation;
+                }
+
+                m_arAdmin[(int)CONN_SETT_TYPE.DEST].SaveRDGValues(new DateTime ().AddDays (1).Date);
+
+                trans_auto_next();
+            }
+            else
+            {
+                indxDB = m_IndexDB;
+                
+                for (int i = 0; i < 24; i++)
+                {
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_arAdmin[indxDB].m_curRDGValues[i].plan.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].recomendation.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent.ToString();
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviation.ToString("F2");
+                }
+
+                CopyCurAdminValues();
+            }
         }
 
         private void setDatetimePickerMain (DateTime date) {
@@ -304,13 +323,47 @@ namespace trans_rdg
             }
         }
 
+        private void trans_auto_start()
+        {
+            timerMain.Stop();
+            timerMain.Interval = 666;
+
+            comboBoxTECComponent.SelectedIndexChanged -= comboBoxTECComponent_SelectedIndexChanged;
+            FillComboBoxTECComponent();
+
+            if (!(comboBoxTECComponent.SelectedIndex < 0))
+            {
+                comboBoxTECComponent.SelectedIndex = -1;
+
+                trans_auto_next();
+            }
+            else
+                buttonClose.PerformClick();
+        }
+
+        private void trans_auto_next () {
+            if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, m_listTECComponentIndex[++comboBoxTECComponent.SelectedIndex]);
+            else
+                buttonClose.PerformClick();
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             if (timerMain.Interval == 666) {
                 //Первый запуск
                 timerMain.Interval = 1000;
 
-                FillComboBoxTECComponent();
+                m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(true);
+                
+                if (WindowState == FormWindowState.Minimized)
+                {
+                    trans_auto_start();
+
+                    return;
+                }
+                else
+                    FillComboBoxTECComponent();
             }
             else
                 ;

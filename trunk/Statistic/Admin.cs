@@ -103,7 +103,7 @@ namespace StatisticCommon
         private DateTime serverTime,
                         m_curDate;
 
-        private Semaphore semaSave;
+        private Semaphore semaDBAccess;
         private volatile Errors saveResult;
         private volatile bool saving;
 
@@ -120,7 +120,7 @@ namespace StatisticCommon
         private Object m_lockObj;
 
         private Thread taskThread;
-        private Semaphore sem;
+        private Semaphore semaState;
         public volatile bool threadIsWorking;
         private volatile bool newState;
         private volatile List<StatesMachine> states;
@@ -224,7 +224,7 @@ namespace StatisticCommon
 
             m_lockObj = new Object();
 
-            semaSave = new Semaphore(1, 1);
+            semaDBAccess = new Semaphore(1, 1);
             semaGetPass = new Semaphore(1, 1);
             semaSetPass = new Semaphore(1, 1);
             //semaLoadLayout = new Semaphore(1, 1);
@@ -261,7 +261,7 @@ namespace StatisticCommon
         public Errors SaveChanges()
         {
             delegateStartWait();
-            semaSave.WaitOne();
+            semaDBAccess.WaitOne();
             lock (m_lockObj)
             {
                 saveResult = Errors.NoAccess;
@@ -286,17 +286,17 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                 }
             }
 
-            semaSave.WaitOne();
+            semaDBAccess.WaitOne();
             try
             {
-                semaSave.Release(1);
+                semaDBAccess.Release(1);
             }
             catch
             {
@@ -312,7 +312,7 @@ namespace StatisticCommon
             Errors errClearResult;
             
             delegateStartWait();
-            semaSave.WaitOne();
+            semaDBAccess.WaitOne();
             lock (m_lockObj)
             {
                 errClearResult = Errors.NoError;
@@ -336,17 +336,17 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                 }
             }
 
-            semaSave.WaitOne();
+            semaDBAccess.WaitOne();
             try
             {
-                semaSave.Release(1);
+                semaDBAccess.Release(1);
             }
             catch
             {
@@ -426,7 +426,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -490,7 +490,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -535,7 +535,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -596,7 +596,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -674,7 +674,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -735,7 +735,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -765,7 +765,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -801,7 +801,7 @@ namespace StatisticCommon
 
                 try
                 {
-                    sem.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
@@ -1684,9 +1684,9 @@ namespace StatisticCommon
             taskThread.Name = "Интерфейс к данным";
             taskThread.IsBackground = true;
 
-            sem = new Semaphore(1, 1);
+            semaState = new Semaphore(1, 1);
 
-            sem.WaitOne();
+            semaState.WaitOne();
             taskThread.Start();
         }
 
@@ -1703,7 +1703,7 @@ namespace StatisticCommon
 
             if (taskThread.IsAlive)
             {
-                try { sem.Release(1); }
+                try { semaState.Release(1); }
                 catch { }
 
                 joined = taskThread.Join(1000);
@@ -1764,7 +1764,7 @@ namespace StatisticCommon
                         saveResult = Errors.InvalidValue;
                         try
                         {
-                            semaSave.Release(1);
+                            semaDBAccess.Release(1);
                         }
                         catch
                         {
@@ -1783,7 +1783,7 @@ namespace StatisticCommon
                         saveResult = Errors.InvalidValue;
                         try
                         {
-                            semaSave.Release(1);
+                            semaDBAccess.Release(1);
                         }
                         catch
                         {
@@ -1963,7 +1963,7 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
-                    //try { semaSave.Release(1); }
+                    //try { semaDBAccess.Release(1); }
                     //catch { }
                     result = true;
                     if (result) { }
@@ -1973,7 +1973,7 @@ namespace StatisticCommon
                     saveResult = Errors.NoError;
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -1987,7 +1987,7 @@ namespace StatisticCommon
                 //    saveResult = Errors.NoError;
                 //    try
                 //    {
-                //        semaSave.Release(1);
+                //        semaDBAccess.Release(1);
                 //    }
                 //    catch
                 //    {
@@ -2075,7 +2075,7 @@ namespace StatisticCommon
                 case StatesMachine.ClearPPBRValues:
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -2118,7 +2118,7 @@ namespace StatisticCommon
                     {
                         try
                         {
-                            semaSave.Release(1);
+                            semaDBAccess.Release(1);
                         }
                         catch
                         {
@@ -2161,7 +2161,7 @@ namespace StatisticCommon
                     }
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -2180,7 +2180,7 @@ namespace StatisticCommon
                     }
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -2191,7 +2191,7 @@ namespace StatisticCommon
                     saveResult = Errors.NoAccess;
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -2202,7 +2202,7 @@ namespace StatisticCommon
                     saveResult = Errors.NoAccess;
                     try
                     {
-                        semaSave.Release(1);
+                        semaDBAccess.Release(1);
                     }
                     catch
                     {
@@ -2213,7 +2213,7 @@ namespace StatisticCommon
                 //    saveResult = Errors.NoAccess;
                 //    try
                 //    {
-                //        semaSave.Release(1);
+                //        semaDBAccess.Release(1);
                 //    }
                 //    catch
                 //    {
@@ -2308,7 +2308,7 @@ namespace StatisticCommon
 
             while (threadIsWorking)
             {
-                sem.WaitOne();
+                semaState.WaitOne();
 
                 index = 0;
 
@@ -2405,7 +2405,7 @@ namespace StatisticCommon
             }
             try
             {
-                sem.Release(1);
+                semaState.Release(1);
             }
             catch
             {
@@ -2432,7 +2432,7 @@ namespace StatisticCommon
 
                     try
                     {
-                        sem.Release(1);
+                        semaState.Release(1);
                     }
                     catch
                     {
@@ -2469,7 +2469,7 @@ namespace StatisticCommon
 
                     try
                     {
-                        sem.Release(1);
+                        semaState.Release(1);
                     }
                     catch
                     {

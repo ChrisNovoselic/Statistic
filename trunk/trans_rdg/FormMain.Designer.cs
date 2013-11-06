@@ -79,8 +79,8 @@ namespace trans_rdg
             this.notifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.развернутьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.закрытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorNotifyIcon = new System.Windows.Forms.ToolStripSeparator();
+            this.закрытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.panelMain.SuspendLayout();
             this.groupBoxDest.SuspendLayout();
@@ -91,6 +91,15 @@ namespace trans_rdg
             this.statusStripMain.SuspendLayout();
             this.contextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // m_dgwAdminTable
+            // 
+            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
+            this.m_dgwAdminTable.RowHeadersVisible = false;
+            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // buttonClose
             // 
@@ -513,7 +522,6 @@ namespace trans_rdg
             // 
             // timerMain
             // 
-            this.timerMain.Interval = 666;
             this.timerMain.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // notifyIconMain
@@ -521,7 +529,6 @@ namespace trans_rdg
             this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIconMain.Icon")));
             this.notifyIconMain.Text = "Статистика: конвертер";
-            this.notifyIconMain.Click +=new System.EventHandler(notifyIconMain_Click);
             // 
             // contextMenuStripNotifyIcon
             // 
@@ -539,17 +546,17 @@ namespace trans_rdg
             this.развернутьToolStripMenuItem.Text = "Развернуть";
             this.развернутьToolStripMenuItem.Click += new System.EventHandler(this.развернутьToolStripMenuItem_Click);
             // 
+            // toolStripSeparatorNotifyIcon
+            // 
+            this.toolStripSeparatorNotifyIcon.Name = "toolStripSeparatorNotifyIcon";
+            this.toolStripSeparatorNotifyIcon.Size = new System.Drawing.Size(149, 6);
+            // 
             // закрытьToolStripMenuItem
             // 
             this.закрытьToolStripMenuItem.Name = "закрытьToolStripMenuItem";
             this.закрытьToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.закрытьToolStripMenuItem.Text = "Закрыть";
             this.закрытьToolStripMenuItem.Click += new System.EventHandler(this.закрытьToolStripMenuItem_Click);
-            // 
-            // toolStripSeparatorNotifyIcon
-            // 
-            this.toolStripSeparatorNotifyIcon.Name = "toolStripSeparatorNotifyIcon";
-            this.toolStripSeparatorNotifyIcon.Size = new System.Drawing.Size(149, 6);
             // 
             // FormMain
             // 
@@ -561,6 +568,7 @@ namespace trans_rdg
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.menuStripMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStripMain;
             this.MaximizeBox = false;
             this.Name = "FormMain";
