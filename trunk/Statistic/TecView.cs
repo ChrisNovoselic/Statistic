@@ -3623,7 +3623,7 @@ namespace Statistic
                                             ;
 
                                     //foreach (TECComponent g in tec.list_TECComponents)
-                                    for (j = 0; j < tec.list_TECComponents.Count; j++)
+                                    for (j = 0; j < m_list_TECComponents.Count; j++)
                                     {
                                         try
                                         {
@@ -3684,7 +3684,7 @@ namespace Statistic
                                             ;
 
                                     //foreach (TECComponent g in tec.list_TECComponents)
-                                    for (j = 0; j < tec.list_TECComponents.Count; j++)
+                                    for (j = 0; j < m_list_TECComponents.Count; j++)
                                     {
                                         try
                                         {
@@ -3730,7 +3730,7 @@ namespace Statistic
 
                         for (i = 0; i < 24; i++)
                         {
-                            for (j = 0; j < tec.list_TECComponents.Count; j++)
+                            for (j = 0; j < m_list_TECComponents.Count; j++)
                             {
                                 valuesHours.valuesPBR[i] += valuesPBR[j, i];
                                 if (i == 0)

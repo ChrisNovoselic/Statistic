@@ -16,7 +16,7 @@ namespace StatisticCommon
 {
     public class Admin : object
     {
-        public enum TYPE_FIELDS : uint {STATIC, DYNAMIC};
+        public enum TYPE_FIELDS : uint {STATIC, DYNAMIC, COUNT_TYPE_FIELDS};
         
         public struct RDGStruct
         {
@@ -1023,8 +1023,7 @@ namespace StatisticCommon
             else
                 ;
 
-            string strUsedAdminValues = "AdminValuesOfID",
-                    requestUpdate = string.Empty,
+            string requestUpdate = string.Empty,
                     requestInsert = string.Empty,
                     name = string.Empty; //t.NameFieldOfAdminRequest(comp);
 
@@ -1037,7 +1036,7 @@ namespace StatisticCommon
                         case Admin.TYPE_FIELDS.STATIC:
                             //name = t.NameFieldOfAdminRequest(comp);
                             name = t.NameFieldOfAdminRequest(comp);
-                            requestUpdate += @"UPDATE " + t.m_strUsedAdminValues + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_arNameTableAdminValues[(int)TYPE_FIELDS.STATIC] + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + name + @"_IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
@@ -1045,7 +1044,7 @@ namespace StatisticCommon
                                         @"'; ";
                             break;
                         case Admin.TYPE_FIELDS.DYNAMIC:
-                            requestUpdate += @"UPDATE " + strUsedAdminValues + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
@@ -1089,12 +1088,12 @@ namespace StatisticCommon
                 switch (m_typeFields)
                 {
                     case Admin.TYPE_FIELDS.STATIC:
-                        requestInsert = @"INSERT INTO " + t.m_strUsedAdminValues + " (DATE, " + name + @"_REC" +
+                        requestInsert = @"INSERT INTO " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + " (DATE, " + name + @"_REC" +
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
                     case Admin.TYPE_FIELDS.DYNAMIC:
-                        requestInsert = @"INSERT INTO " + strUsedAdminValues + " (DATE, " + @"REC" +
+                        requestInsert = @"INSERT INTO " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " (DATE, " + @"REC" +
                                 @", " + "IS_PER" +
                                 @", " + "DIVIAT" +
                                 @", " + "ID_COMPONENT" +
@@ -1194,8 +1193,7 @@ namespace StatisticCommon
             else
                 ;
 
-            string strUsedPPBRvsPBR = "PPBRvsPBROfID",
-                    requestUpdate = "", requestInsert = "",
+            string requestUpdate = "", requestInsert = "",
                     name = string.Empty; //t.NameFieldOfPBRRequest(comp);
 
             for (int i = currentHour; i < 24; i++)
@@ -1211,13 +1209,13 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";*/
-                            requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
                         case Admin.TYPE_FIELDS.DYNAMIC:
-                            requestUpdate += @"UPDATE " + strUsedPPBRvsPBR + " SET " + @"PBR='" + m_curRDGValues[i].plan.ToString("F2", CultureInfo.InvariantCulture) +
+                            requestUpdate += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + " SET " + @"PBR='" + m_curRDGValues[i].plan.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
@@ -1261,10 +1259,10 @@ namespace StatisticCommon
                 switch (m_typeFields)
                 {
                     case Admin.TYPE_FIELDS.STATIC:
-                        requestInsert = @"INSERT INTO " + t.m_strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        requestInsert = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
                     case Admin.TYPE_FIELDS.DYNAMIC:
-                        requestInsert = @"INSERT INTO " + strUsedPPBRvsPBR + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
+                        requestInsert = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR) VALUES" + requestInsert.Substring(0, requestInsert.Length - 1) + ";";
                         break;
                     default:
                         break;

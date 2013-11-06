@@ -19,8 +19,8 @@ namespace StatisticCommon
         public enum TEC_TYPE { COMMON, BIYSK };
 
         public string name,
-                    prefix_admin, prefix_pbr,
-                    m_strUsedAdminValues, m_strUsedPPBRvsPBR;
+                    prefix_admin, prefix_pbr;
+        public string [] m_arNameTableAdminValues, m_arNameTableUsedPPBRvsPBR;
         public List <string> m_strNamesField;
 
         public int m_timezone_offset_msc { get; set; }
@@ -47,7 +47,9 @@ namespace StatisticCommon
             list_TECComponents = new List<TECComponent>();
 
             this.name = name;
-            this.m_strUsedAdminValues = table_name_admin; this.m_strUsedPPBRvsPBR = table_name_pbr;
+            this.m_arNameTableAdminValues = new string[(int)Admin.TYPE_FIELDS.COUNT_TYPE_FIELDS]; this.m_arNameTableUsedPPBRvsPBR = new string[(int)Admin.TYPE_FIELDS.COUNT_TYPE_FIELDS];
+            this.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] = table_name_pbr;
+            this.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] = "AdminValuesOfID"; this.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] = "PPBRvsPBROfID";
             this.prefix_admin = prefix_admin; this.prefix_pbr = prefix_pbr;
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -210,14 +212,14 @@ namespace StatisticCommon
                 //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                 //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
                 //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                strRes += m_strUsedPPBRvsPBR + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
             else
             {
                 //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                 //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
                 //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                strRes += m_strUsedPPBRvsPBR + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
 
             return strRes;
@@ -232,42 +234,40 @@ namespace StatisticCommon
                 case Admin.TYPE_FIELDS.STATIC:
                     strRes = @"SELECT " +
                         //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
-                        m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
+                        m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                         //        selectAdmin +
                         @", " + selectPBR; // + " AS PBR";
                     if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        strRes += @", " + m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
+                        strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
                     else
                         ;
                     strRes += @" " + @"FROM " +
-                        /*strUsedAdminValues*/ m_strUsedPPBRvsPBR +
-                        @" WHERE " + m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                        @" AND " + m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                        @" AND MINUTE(" + m_strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
+                        /*strUsedAdminValues*/ m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] +
+                        @" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        @" AND " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        @" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
                         //@" AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " IS NULL" +
                         @" ORDER BY DATE_PBR" +
                         @" ASC";
                     break;
                 case Admin.TYPE_FIELDS.DYNAMIC:
-                    string strUsedPPBRvsPBR = "PPBRvsPBROfID";
-
                     strRes = @"SELECT " +
-                        strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
+                        m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                         @", " + selectPBR.Split (';')[0] + " AS PBR";
 
-                    strRes += @", " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
 
                     //Такого столбца для ГТП нет
                     strRes += @", " + "ID_COMPONENT";
 
                     strRes += @" " + @"FROM " +
-                        strUsedPPBRvsPBR +
-                        @" WHERE " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                        @" AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                        @" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        @" AND " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
 
                         @" AND ID_COMPONENT IN (" + selectPBR.Split (';')[1] + ")" +
 
-                        @" AND MINUTE(" + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
+                        @" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
                     /*
                     if (selectPBR.Split(';')[1].Split (',').Length > 1)
                         strRes += @" GROUP BY DATE_PBR";
@@ -353,15 +353,15 @@ namespace StatisticCommon
 
             if (g.prefix_admin.Length > 0)
             {
-                strRes += m_strUsedAdminValues + @"." + g.tec.prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_strUsedAdminValues + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_strUsedAdminValues + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                strRes += m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + g.tec.prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
+                            m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                            m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
                 //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
             else {
-                strRes += m_strUsedAdminValues + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_strUsedAdminValues + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_strUsedAdminValues + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                strRes += m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
+                            m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                            m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
                 //selectPBR += strUsedPPBRvsPBR + "." + namePBR + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
             }
 
@@ -374,25 +374,25 @@ namespace StatisticCommon
             
             switch (mode) {
                 case Admin.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
+                    strRes = @"SELECT " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                         //strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR, " +
                                 selectAdmin +
                         //@", " + selectPBR +
                         //@", " + strUsedPPBRvsPBR + ".PBR_NUMBER " +
-                                @" " + @"FROM " + m_strUsedAdminValues +
+                                @" " + @"FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] +
 
-                                @" " + @"WHERE " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                                @" " + @"AND " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                                @" " + @"WHERE " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                                @" " + @"AND " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
 
                                 @" " + @"UNION " +
-                                @"SELECT " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
+                                @"SELECT " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
 
                                 //strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR, " +
                                 selectAdmin +
                         //@", " + selectPBR +
                         //@", " + strUsedPPBRvsPBR + ".PBR_NUMBER " +
 
-                                @" " + @"FROM " + m_strUsedAdminValues +
+                                @" " + @"FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] +
 
                                 //" RIGHT JOIN " + strUsedPPBRvsPBR +
                         //" ON " + m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " = " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " " +
@@ -404,30 +404,28 @@ namespace StatisticCommon
                         //@"' AND MINUTE(" + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
 
                                 //@" AND " +
-                                m_strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " IS NULL" +
+                                m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " IS NULL" +
 
                                 @" " + @"ORDER BY DATE_ADMIN" +
                         //@", DATE_PBR" +
                                 @" " + @"ASC";
                     break;
                 case Admin.TYPE_FIELDS.DYNAMIC:
-                    string strUsedAdminValues = @"AdminValuesOfID";
-
-                    strRes = @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
+                    strRes = @"SELECT " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                         selectAdmin.Split (';') [0] +
 
                         //Такого столбца для ГТП нет
                         @", " + "ID_COMPONENT" +
 
-                        @" " + @"FROM " + strUsedAdminValues +
+                        @" " + @"FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] +
 
                         @" " + @"WHERE" +
                         @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
 
                         @" " + @"AND " +
-                        strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
+                        m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                         @" " + @"AND " +
-                        strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'";
+                        m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'";
                     /*
                     strRes += @" " + @"UNION " +
                         @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
@@ -583,19 +581,18 @@ namespace StatisticCommon
 
         public string GetAdminDatesQuery(DateTime dt, Admin.TYPE_FIELDS mode, TECComponent comp)
         {
-            string strUsedAdminValues = "AdminValuesOfID",
-                    strRes = string.Empty;
+            string strRes = string.Empty;
 
             switch (mode)
             {
                 case Admin.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE FROM " + m_strUsedAdminValues + " WHERE " +
+                    strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
                 case Admin.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE FROM " + strUsedAdminValues + " WHERE" +
+                    strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -610,20 +607,19 @@ namespace StatisticCommon
 
         public string GetPBRDatesQuery(DateTime dt, Admin.TYPE_FIELDS mode, TECComponent comp)
         {
-            string strUsedPPBRvsPBR = "PPBRvsPBROfID",
-                    strRes = string.Empty;
+            string strRes = string.Empty;
 
             switch (mode)
             {
                 case Admin.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME FROM " + m_strUsedPPBRvsPBR +
+                    strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 case Admin.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME FROM " + strUsedPPBRvsPBR +
+                    strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" + 
                             @" AND DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
