@@ -35,8 +35,8 @@ namespace StatisticCommon
                                                                                         checkBoxTG };
 
             admin_was_checked = false; //new bool [2] {false, false};
-            
-            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.PC].Checked = true;
+
+            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
 
             //FillListBoxTab();
 
