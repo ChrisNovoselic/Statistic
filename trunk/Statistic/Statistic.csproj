@@ -142,6 +142,7 @@
     <Compile Include="dgwAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TECComponentBase.cs" />
     <EmbeddedResource Include="FormAbout.resx">
       <DependentUpon>FormAbout.cs</DependentUpon>
     </EmbeddedResource>

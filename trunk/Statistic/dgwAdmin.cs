@@ -34,7 +34,7 @@ namespace StatisticCommon
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            
+
             ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
@@ -93,6 +93,8 @@ namespace StatisticCommon
             RowTemplate.Resizable = DataGridViewTriState.False;
 
             Rows.Add(24);
+
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgwAdminTable_KeyUp);
         }
 
         /*
@@ -205,6 +207,69 @@ namespace StatisticCommon
             }
             else
                 ;
+        }
+
+        private void dgwAdminTable_KeyUp(object sender, KeyEventArgs e)
+        {
+            //if user clicked Shift+Ins or Ctrl+V (paste from clipboard)
+            if ((e.Shift && e.KeyCode == Keys.Insert) || (e.Control && e.KeyCode == Keys.V))
+            {
+                char[] rowSplitter = { '\r', '\n' };
+                char[] columnSplitter = { '\t' };
+
+                //get the text from clipboard
+                IDataObject dataInClipboard = Clipboard.GetDataObject();
+                string stringInClipboard = (string)dataInClipboard.GetData(DataFormats.Text);
+
+                //split it into lines
+                string[] rowsInClipboard = stringInClipboard.Split(rowSplitter, StringSplitOptions.RemoveEmptyEntries);
+
+                //get the row and column of selected cell in grid
+                int r = SelectedCells[0].RowIndex;
+                int c = SelectedCells[0].ColumnIndex;
+
+                //add rows into grid to fit clipboard lines
+                if (Rows.Count < (r + rowsInClipboard.Length))
+                    //Rows.Add(r + rowsInClipboard.Length - Rows.Count);
+                    return;
+                else
+                    ;
+
+                if ((c < 1) || (rowsInClipboard[0].Split(columnSplitter).Length > (Columns.Count - 1)))
+                    return;
+                else
+                    ;
+
+                // loop through the lines, split them into cells and place the values in the corresponding cell.
+                for (int iRow = 0; iRow < rowsInClipboard.Length; iRow++)
+                {
+                    //split row into cell values
+                    string[] valuesInRow = rowsInClipboard[iRow].Split(columnSplitter);
+
+                    //cycle through cell values
+                    for (int iCol = 0; iCol < valuesInRow.Length; iCol++)
+                    {
+                        //assign cell value, only if it within columns of the grid
+                        if (ColumnCount - 1 >= c + iCol) {
+                            /*switch (Columns [c + iCol].GetType ().ToString ()) {
+                                case "System.Windows.Forms.DataGridViewTextBoxColumn":
+                                    //Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                                    break;
+                                case "System.Windows.Forms.DataGridViewCheckBoxColumn":
+                                    //SendKeys.Send (" ");
+                                    //Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                                    break;
+                                default:
+                                    break;
+                            }*/
+
+                            Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                        }
+                        else
+                            ;
+                    }
+                }
+            }
         } 
     }
 }

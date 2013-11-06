@@ -184,6 +184,7 @@ namespace Statistic
         public volatile TEC tec;
         public volatile int num_TEC;
         public volatile int num_TECComponent;
+        List <TECComponentBase> m_list_TECComponents;
 
         private volatile int countTG;
         private bool update;
@@ -854,10 +855,16 @@ namespace Statistic
             float value = 0;
             countTG = 0;
             List <int> tg_ids = new List <int> ();
+            m_list_TECComponents = new List <TECComponentBase> ();
             if (num_comp < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in tec.list_TECComponents)
                 {
+                    if ((g.m_id > 100) && (g.m_id < 500))
+                        m_list_TECComponents.Add (g);
+                    else
+                        ;
+
                     foreach (TG tg in g.TG)
                     {
                         if (tg_ids.IndexOf (tg.m_id) == -1) {
@@ -905,18 +912,18 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.list_TECComponents[num_comp].TG)
+                foreach (TG tg in tec.list_TECComponents[num_comp].TG)
                 {
                     countTG++;
                     System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
 
                     lblName.AutoSize = true;
                     lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                    lblName.Name = "lblName" + t.name;
+                    lblName.Name = "lblName" + tg.name;
                     lblName.AutoSize = false;
                     lblName.Size = new System.Drawing.Size(32, 13);
-                    lblName.TabIndex = 4;
-                    lblName.Text = t.name;
+                    lblName.TabIndex = 4 + countTG;
+                    lblName.Text = tg.name;
 
                     tgsName.Add(lblName);
 
@@ -928,7 +935,7 @@ namespace Statistic
                     lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
                     lblValue.ForeColor = System.Drawing.Color.LimeGreen;
                     lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                    lblValue.Name = "lblValue" + t.name;
+                    lblValue.Name = "lblValue" + tg.name;
                     lblValue.Size = new System.Drawing.Size(63, 27);
                     lblValue.AutoSize = false;
                     lblValue.TabIndex = 5;
@@ -942,6 +949,8 @@ namespace Statistic
 
                     this.pnlTG.Controls.Add(lblName);
                     this.pnlTG.Controls.Add(lblValue);
+
+                    m_list_TECComponents.Add (tg);
                 }
             }
 
@@ -3539,14 +3548,14 @@ namespace Statistic
 
                 if ((num_TECComponent < 0) || ((!(num_TECComponent < 0)) && (tec.list_TECComponents[num_TECComponent].m_id > 500)))
                     {
-                        double[,] valuesPBR = new double[tec.list_TECComponents.Count, 25];
-                        double[,] valuesREC = new double[tec.list_TECComponents.Count, 25];
-                        int[,] valuesISPER = new int[tec.list_TECComponents.Count, 25];
-                        double[,] valuesDIV = new double[tec.list_TECComponents.Count, 25];
+                        double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
+                        double[,] valuesREC = new double[m_list_TECComponents.Count, 25];
+                        int[,] valuesISPER = new int[m_list_TECComponents.Count, 25];
+                        double[,] valuesDIV = new double[m_list_TECComponents.Count, 25];
 
                         offsetUDG = 1;
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1;
-                        offsetLayout = offsetPlan + tec.list_TECComponents.Count;
+                        offsetLayout = offsetPlan + /*tec.list_TECComponents.Count*/m_list_TECComponents.Count;
 
                         m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
 

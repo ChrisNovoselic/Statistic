@@ -30,7 +30,7 @@ namespace StatisticCommon
         private Admin m_admin;
         
         List <int>m_listTECComponentIndex;
-        private volatile int oldTecIndex;
+        private volatile int prevSelectedIndex;
 
         public bool isActive;
 
@@ -144,6 +144,7 @@ namespace StatisticCommon
             this.btnExportExcel.Text = "Экспорт в Excel";
             this.btnExportExcel.UseVisualStyleBackColor = true;
             this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
+            this.btnExportExcel.Enabled = false;
             // 
             // comboBoxTecComponent
             // 
@@ -330,14 +331,14 @@ namespace StatisticCommon
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                        comboBoxTecComponent.SelectedIndex = oldTecIndex;
+                        comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
                     }
                     break;
                 case DialogResult.No:
                     bRequery = true;
                     break;
                 case DialogResult.Cancel:
-                    comboBoxTecComponent.SelectedIndex = oldTecIndex;
+                    comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
                     break;
             }
 
@@ -374,7 +375,7 @@ namespace StatisticCommon
         {
             ClearTables();
 
-            m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, comboBoxTecComponent.SelectedIndex, mcldrDate.SelectionStart);
+            m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private string SetNumberSeparator(string current_str)

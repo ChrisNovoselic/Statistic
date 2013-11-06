@@ -164,7 +164,7 @@ namespace Statistic
             else
                 ;
         }
-        
+
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (tclTecViews.TabPages.Count > 0)
@@ -394,37 +394,6 @@ namespace Statistic
             }
             else
                 ; //Нет соединения с конфигурационной БД
-        }
-
-        private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (m_formConnectionSettings.Protected == true) {
-                formPassword.SetIdPass(FormPassword.ID_ROLES.COM_DISP);
-                if (formPassword.ShowDialog() == DialogResult.Yes) {
-                    formSetPassword.SetIdPass(formPassword.GetIdPass ());
-                    formSetPassword.ShowDialog();
-                }
-                else
-                    ;
-            }
-            else
-                ;
-        }
-
-        private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (m_formConnectionSettings.Protected == true) {
-                formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
-                if (formPassword.ShowDialog() == DialogResult.Yes)
-                {
-                    formSetPassword.SetIdPass(formPassword.GetIdPass());
-                    formSetPassword.ShowDialog();
-                }
-                else
-                    ;
-            }
-            else
-                ;
         }
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)
@@ -689,6 +658,38 @@ namespace Statistic
             {
                 FormTECComponent tecComponent = new FormTECComponent(m_formConnectionSettings.getConnSett());
                 if (tecComponent.ShowDialog () == DialogResult.OK) {
+                }
+                else
+                    ;
+            }
+            else
+                ;
+        }
+
+        private void изменитьПарольНСС_Click(object sender, EventArgs e)
+        {
+            изменитьПарольToolStripMenuItem_Click(sender, e, FormPassword.ID_ROLES.NSS);
+        }
+
+        private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            изменитьПарольToolStripMenuItem_Click(sender, e, FormPassword.ID_ROLES.COM_DISP);
+        }
+
+        private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            изменитьПарольToolStripMenuItem_Click(sender, e, FormPassword.ID_ROLES.ADMIN);
+        }
+
+        private void изменитьПарольToolStripMenuItem_Click(object sender, EventArgs e, FormPassword.ID_ROLES id)
+        {
+            if (m_formConnectionSettings.Protected == true)
+            {
+                formPassword.SetIdPass(id);
+                if (formPassword.ShowDialog() == DialogResult.Yes)
+                {
+                    formSetPassword.SetIdPass(formPassword.GetIdPass());
+                    formSetPassword.ShowDialog();
                 }
                 else
                     ;

@@ -759,11 +759,13 @@ namespace StatisticCommon
         }
 
         private void GetRDGExcelValuesRequest () {
+            delegateStartWait ();
             if (IsCanUseTECComponents ())
                 m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
                                                                         @"SELECT * FROM [Лист1$]");
             else
                 ;
+            delegateStopWait();
         }
 
         private bool GetPPBRValuesResponse(DataTable table, DateTime date)

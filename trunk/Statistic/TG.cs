@@ -4,12 +4,10 @@ using System.Text;
 
 namespace StatisticCommon
 {
-    public class TG
+    public class TG : TECComponentBase
     {
         public enum ID_TIME : int { MINUTES, HOURS, COUNT_ID_TIME };
 
-        public string name;
-        public int m_id;
         public int m_indx_col_rdg_excel;
         public double[] power;
         public bool[] receivedMin;

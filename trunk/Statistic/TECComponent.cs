@@ -4,11 +4,9 @@ using System.Text;
 
 namespace StatisticCommon
 {
-    public class TECComponent
+    public class TECComponent : TECComponentBase
     {
-        public string name;
         public string prefix_admin, prefix_pbr;
-        public int m_id;
         public List<TG> TG;
         public TEC tec;
 
