@@ -25,6 +25,8 @@ namespace trans_rdg
 
         List <int> m_listTECComponentIndex;
 
+        DateTime m_arg_date;
+
         private Int16 m_IndexDB
         {
             get {
@@ -48,10 +50,19 @@ namespace trans_rdg
         {
             InitializeComponent();
 
-            string [] argc = Environment.GetCommandLineArgs();
-            if (argc.Length > 0)
+            string [] args = Environment.GetCommandLineArgs();
+            int argc = args.Length;
+            if (argc > 1)
             {
-                throw new Exception("Ошибка распознавания аргументов командной строки");
+                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1].ElementAt (0) == '/')) && (!(args[1].IndexOf("=") < 0))) 
+                    throw new Exception("Ошибка распознавания аргументов командной строки");
+                else {
+                    string date = args[1].Substring (args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
+                    if (date == "default")
+                        m_arg_date = new DateTime ().AddDays(1);
+                    else
+                        m_arg_date = DateTime.Parse (date);
+                }
 
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
@@ -175,9 +186,9 @@ namespace trans_rdg
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].deviation = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].deviation;
                 }
 
-                m_arAdmin[(int)CONN_SETT_TYPE.DEST].SaveRDGValues(new DateTime ().AddDays (1).Date);
+                this.BeginInvoke(new DelegateFunc(SaveRDGValues));
 
-                trans_auto_next();
+                this.BeginInvoke (new DelegateFunc (trans_auto_next));
             }
             else
             {
@@ -240,9 +251,9 @@ namespace trans_rdg
             if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
 
-                m_formConnectionSettings.SelectedIndex = m_IndexDB;
+                //m_formConnectionSettings.SelectedIndex = m_IndexDB;
 
-                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
+                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
             }
             else
                 ;
@@ -276,6 +287,8 @@ namespace trans_rdg
 
         private void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
+
+            this.BeginInvoke (new DelegateFunc (trans_auto_next));
         }
 
         private void ActionReport(string msg)
@@ -343,7 +356,7 @@ namespace trans_rdg
 
         private void trans_auto_next () {
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, m_listTECComponentIndex[++comboBoxTECComponent.SelectedIndex]);
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, m_listTECComponentIndex[++comboBoxTECComponent.SelectedIndex], m_arg_date.Date);
             else
                 buttonClose.PerformClick();
         }
@@ -424,7 +437,7 @@ namespace trans_rdg
             {
                 ClearTables ();
 
-                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
+                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
             }
             else
                 ;
@@ -432,14 +445,7 @@ namespace trans_rdg
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
-            if (!(m_arAdmin[m_IndexDB] == null))
-            {
-                ClearTables();
-
-                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, comboBoxTECComponent.SelectedIndex, dateTimePickerMain.Value.Date);
-            }
-            else
-                ;
+            comboBoxTECComponent_SelectedIndexChanged (null, null);
         }
 
         public void ClearTables()
@@ -506,7 +512,11 @@ namespace trans_rdg
 
             //ClearTables();
 
-            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(dateTimePickerMain.Value);
+            SaveRDGValues ();
+        }
+
+        private void SaveRDGValues () {
+            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value);
         }
 
         private void notifyIconMain_Click(object sender, EventArgs e)

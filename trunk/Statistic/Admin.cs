@@ -466,6 +466,10 @@ namespace StatisticCommon
         void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
         {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile(msg, true, true, false);
+            Logging.Logg().LogUnlock();
         }
 
         public bool SetPassword(string password, uint idPass)
@@ -719,9 +723,10 @@ namespace StatisticCommon
         public void GetRDGValues (TYPE_FIELDS mode, int indx) {
             lock (m_lockObj)
             {
+                indxTECComponents = indx;
+                
                 ClearValues();
 
-                indxTECComponents = indx;
                 using_date = true;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
 
@@ -747,13 +752,14 @@ namespace StatisticCommon
         {
             lock (m_lockObj)
             {
+                indxTECComponents = indx;
+                
                 ClearValues();
 
-                indxTECComponents = indx;
                 using_date = false;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
 
-                m_prevDate = date;
+                m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
                 m_typeFields = mode;
@@ -786,13 +792,14 @@ namespace StatisticCommon
         {
             lock (m_lockObj)
             {
+                indxTECComponents = indx;
+                
                 ClearValues();
 
-                indxTECComponents = indx;
                 using_date = false;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
 
-                m_prevDate = date;
+                m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
                 newState = true;
@@ -1175,6 +1182,10 @@ namespace StatisticCommon
                                    //@"DATE > '" + date.ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"' AND DATE <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("SetAdminValuesRequest", true, true, false);
+            Logging.Logg().LogUnlock();
 
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], requestUpdate + requestInsert + requestDelete);
         }
@@ -2412,21 +2423,33 @@ namespace StatisticCommon
             }
         }
 
-        public void SaveRDGValues(DateTime date)
+        public void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date)
         {
-            Errors resultSaving;
-            if ((resultSaving = SaveChanges()) == Errors.NoError)
+            lock (m_lockObj)
+            {
+                indxTECComponents = indx;
+                m_prevDate = date.Date;
+            }
+            
+            Errors resultSaving = SaveChanges();
+            if (resultSaving == Errors.NoError)
             {
                 lock (m_lockObj)
                 {
                     ClearValues();
 
-                    m_curDate = date;
+                    //m_prevDate = date.Date;
+                    m_curDate = m_prevDate;
                     using_date = false;
 
                     newState = true;
                     states.Clear();
-                    states.Add(StatesMachine.CurrentTime);
+
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, false);
+                    Logging.Logg().LogUnlock();
+
+                    //states.Add(StatesMachine.CurrentTime);
                     states.Add(StatesMachine.PPBRValues);
                     states.Add(StatesMachine.AdminValues);
 
@@ -2450,6 +2473,54 @@ namespace StatisticCommon
             }
         }
 
+        //public void SaveRDGValues(/*TYPE_FIELDS mode, */int indx)
+        //{
+        //    lock (m_lockObj)
+        //    {
+        //        indxTECComponents = indx;
+        //    }
+            
+        //    Errors resultSaving = SaveChanges();
+        //    if (resultSaving == Errors.NoError)
+        //    {
+        //        lock (m_lockObj)
+        //        {                    
+        //            ClearValues();
+
+        //            //m_curDate = date.Date;
+        //            using_date = true;
+
+        //            newState = true;
+        //            states.Clear();
+
+        //            Logging.Logg().LogLock();
+        //            Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, false);
+        //            Logging.Logg().LogUnlock();
+
+        //            states.Add(StatesMachine.CurrentTime);
+        //            states.Add(StatesMachine.PPBRValues);
+        //            states.Add(StatesMachine.AdminValues);
+
+        //            try
+        //            {
+        //                semaState.Release(1);
+        //            }
+        //            catch
+        //            {
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (resultSaving == Errors.InvalidValue)
+        //            //MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+        //            MessageBox("Изменение ретроспективы недопустимо!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+        //        else
+        //            //MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //            MessageBox("Не удалось сохранить изменения, возможно отсутствует связь с базой данных.");
+        //    }
+        //}
+
         public void ClearRDGValues(DateTime date)
         {
             if (ClearRDG() == Errors.NoError)
@@ -2458,12 +2529,14 @@ namespace StatisticCommon
                 {
                     ClearValues();
 
-                    m_curDate = date;
+                    m_prevDate = date.Date;
+                    m_curDate = m_prevDate;
                     using_date = false;
 
                     newState = true;
                     states.Clear();
-                    states.Add(StatesMachine.CurrentTime);
+                    
+                    //states.Add(StatesMachine.CurrentTime);
                     states.Add(StatesMachine.PPBRValues);
                     states.Add(StatesMachine.AdminValues);
 
