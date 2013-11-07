@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Statistic", "Statistic\Stat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_rdg", "trans_rdg\trans_rdg.csproj", "{968B1F18-36AD-4188-A598-F54E9CDECE64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticCommon", "StatisticLibrary\StatisticCommon.csproj", "{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,16 @@ Global
 		{968B1F18-36AD-4188-A598-F54E9CDECE64}.Release|Mixed Platforms.Build.0 = Release|x86
 		{968B1F18-36AD-4188-A598-F54E9CDECE64}.Release|x86.ActiveCfg = Release|x86
 		{968B1F18-36AD-4188-A598-F54E9CDECE64}.Release|x86.Build.0 = Release|x86
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

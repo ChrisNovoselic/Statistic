@@ -38,7 +38,7 @@ namespace StatisticCommon
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::Statistic.Properties.Resources.statistic2;
+            this.pictureBox1.Image = (System.Drawing.Image)global::StatisticCommon.Properties.Resources.statistic2.ToBitmap ();
             this.pictureBox1.Location = new System.Drawing.Point(12, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(48, 48);

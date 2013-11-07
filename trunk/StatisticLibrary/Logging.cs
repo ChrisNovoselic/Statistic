@@ -5,8 +5,6 @@ using System.IO;
 using System.Windows.Forms;
 using System.Threading;
 
-using Statistic;
-
 namespace StatisticCommon
 {
     public class Logging

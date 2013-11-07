@@ -10,12 +10,28 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Statistic</RootNamespace>
     <AssemblyName>Statistic</AssemblyName>
-    <ApplicationIcon>Resources\statistic2.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,27 +73,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin.cs" />
-    <Compile Include="ConnectionSettings.cs" />
-    <Compile Include="DbInterface.cs" />
-    <Compile Include="FormAbout.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormAbout.designer.cs">
-      <DependentUpon>FormAbout.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormChangeMode.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormChangeMode.designer.cs">
-      <DependentUpon>FormChangeMode.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormConnectionSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormConnectionSettings.designer.cs">
-      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
-    </Compile>
     <Compile Include="FormGraphicsSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,21 +84,6 @@
     </Compile>
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormParameters.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormParameters.designer.cs">
-      <DependentUpon>FormParameters.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormParametersBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormParametersTG.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormParametersTG.designer.cs">
-      <DependentUpon>FormParametersTG.cs</DependentUpon>
     </Compile>
     <Compile Include="FormPassword.cs">
       <SubType>Form</SubType>
@@ -123,46 +103,19 @@
     <Compile Include="FormTECComponent.Designer.cs">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormWait.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormWait.designer.cs">
-      <DependentUpon>FormWait.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Logging.cs" />
-    <Compile Include="InitTEC.cs" />
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FormMainBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="dgwAdmin.cs">
+    <Compile Include="TecView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TECComponentBase.cs" />
-    <EmbeddedResource Include="FormAbout.resx">
-      <DependentUpon>FormAbout.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormChangeMode.resx">
-      <DependentUpon>FormChangeMode.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormConnectionSettings.resx">
-      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormParameters.resx">
-      <DependentUpon>FormParameters.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormParametersTG.resx">
-      <DependentUpon>FormParametersTG.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormPassword.resx">
       <DependentUpon>FormPassword.cs</DependentUpon>
@@ -173,11 +126,8 @@
     <EmbeddedResource Include="FormTECComponent.resx">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormWait.resx">
-      <DependentUpon>FormWait.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -195,24 +145,32 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="TEC.cs" />
-    <Compile Include="TECComponent.cs" />
-    <Compile Include="TecView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="TG.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\statistic2.ico" />
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>Клиентский профиль .NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Установщик Windows 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\btnAdd.JPG" />
+    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
+      <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
+      <Name>StatisticCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\btnDel.JPG" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\statistic3.ico" />
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

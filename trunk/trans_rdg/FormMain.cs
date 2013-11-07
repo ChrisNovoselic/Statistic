@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
+//using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -54,7 +54,7 @@ namespace trans_rdg
             int argc = args.Length;
             if (argc > 1)
             {
-                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1].ElementAt (0) == '/')) && (!(args[1].IndexOf("=") < 0))) 
+                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1][0] == '/')) && (!(args[1].IndexOf("=") < 0))) 
                     throw new Exception("Ошибка распознавания аргументов командной строки");
                 else {
                     string date = args[1].Substring (args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));

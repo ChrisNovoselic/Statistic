@@ -8,8 +8,6 @@ using System.Data.OleDb;
 using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 
-using Statistic;
-
 //namespace Statistic
 namespace StatisticCommon
 {

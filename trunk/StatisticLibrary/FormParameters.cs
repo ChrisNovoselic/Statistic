@@ -9,7 +9,7 @@ using System.Collections.Generic;
 //using System.Runtime.InteropServices;
 
 
-namespace Statistic
+namespace StatisticCommon
 {
     public partial class FormParameters : FormParametersBase
     {

@@ -4,7 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public partial class FormParametersBase : Form
     {

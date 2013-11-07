@@ -14,6 +14,8 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
+    public delegate void DelegateDateFunction(DateTime date);
+    
     public class Admin : object
     {
         public enum TYPE_FIELDS : uint {STATIC, DYNAMIC, COUNT_TYPE_FIELDS};

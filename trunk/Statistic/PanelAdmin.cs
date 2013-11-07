@@ -9,10 +9,10 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 
-namespace StatisticCommon
-{
-    public delegate void DelegateDateFunction(DateTime date);
+using StatisticCommon;
 
+namespace Statistic
+{
     public class PanelAdmin : Panel
     {
         private System.Windows.Forms.MonthCalendar mcldrDate;

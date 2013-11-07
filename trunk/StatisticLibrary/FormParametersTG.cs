@@ -8,10 +8,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-using StatisticCommon;
-
-namespace Statistic {
-    public partial class FormParametersTG : Statistic.FormParametersBase
+namespace StatisticCommon {
+    public partial class FormParametersTG : FormParametersBase
     {
         private const int COUNT_TG = 8;
         private const char SEP_ID_TG = ',';
