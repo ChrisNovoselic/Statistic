@@ -59,33 +59,5 @@ namespace Statistic.Properties {
                 resourceCulture = value;
             }
         }
-        
-        public static System.Drawing.Bitmap btnAdd {
-            get {
-                object obj = ResourceManager.GetObject("btnAdd", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        public static System.Drawing.Bitmap btnDel {
-            get {
-                object obj = ResourceManager.GetObject("btnDel", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        public static System.Drawing.Bitmap statistic2 {
-            get {
-                object obj = ResourceManager.GetObject("statistic2", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        public static System.Drawing.Icon statistic3 {
-            get {
-                object obj = ResourceManager.GetObject("statistic3", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
     }
 }
