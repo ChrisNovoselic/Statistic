@@ -1,6 +1,6 @@
 ﻿using StatisticCommon;
 
-namespace trans_rdg
+namespace trans_gtp
 {
     partial class FormMain
     {

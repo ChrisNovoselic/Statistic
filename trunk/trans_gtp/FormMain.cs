@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 using StatisticCommon;
 
-namespace trans_rdg
+namespace trans_gtp
 {
     public partial class FormMain : FormMainBase
     {

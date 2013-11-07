@@ -3,7 +3,7 @@ using System.Collections.Generic;
 //using System.Linq;
 using System.Windows.Forms;
 
-namespace trans_rdg
+namespace trans_gtp
 {
     static class Program
     {
