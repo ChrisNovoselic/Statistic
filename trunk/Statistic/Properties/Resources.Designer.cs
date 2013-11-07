@@ -59,5 +59,12 @@ namespace Statistic.Properties {
                 resourceCulture = value;
             }
         }
+        
+        public static System.Drawing.Icon statistic2 {
+            get {
+                object obj = ResourceManager.GetObject("statistic2", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

@@ -59,5 +59,12 @@ namespace trans_gtp.Properties {
                 resourceCulture = value;
             }
         }
+        
+        internal static System.Drawing.Icon statistic3 {
+            get {
+                object obj = ResourceManager.GetObject("statistic3", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }
