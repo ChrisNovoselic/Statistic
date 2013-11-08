@@ -202,5 +202,15 @@ namespace StatisticCommon
 
             return var1;
         }
+
+        public static string GetConnectionStringDBF(string path)
+        {
+            string var1 = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" +
+                         path +
+                        ";Extended Properties=dBase III;";
+            ;
+
+            return var1;
+        }
     }
 }

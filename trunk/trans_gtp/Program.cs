@@ -15,7 +15,7 @@ namespace trans_gtp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            try { Application.Run(new FormMain()); }
+            try { Application.Run(new FormMainTransGTP()); }
             catch (Exception e) { 
                 StatisticCommon.Logging.Logg().LogLock();
                 //StatisticCommon.Logging.Logg().LogToFile("", true, true, false);

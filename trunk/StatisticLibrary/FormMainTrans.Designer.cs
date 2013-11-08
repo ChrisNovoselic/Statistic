@@ -1,8 +1,6 @@
-﻿using StatisticCommon;
-
-namespace trans_gtp
+﻿namespace StatisticCommon
 {
-    partial class FormMain
+    partial class FormMainTrans
     {
         /// <summary>
         /// Требуется переменная конструктора.
@@ -32,7 +30,7 @@ namespace trans_gtp
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();

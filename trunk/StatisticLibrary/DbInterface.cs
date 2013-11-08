@@ -560,52 +560,62 @@ namespace StatisticCommon
         public static DataTable Request (string path, string query) {
             DataTable dataTableRes = new DataTable();
 
-            OleDbConnection connectionExcel;
-            System.Data.OleDb.OleDbCommand commandExcel;
-            System.Data.OleDb.OleDbDataAdapter adapterExcel;
+            OleDbConnection connectionOleDB = null;
+            System.Data.OleDb.OleDbCommand commandOleDB;
+            System.Data.OleDb.OleDbDataAdapter adapterOleDB;
 
-            connectionExcel = new OleDbConnection (ConnectionSettings.GetConnectionStringExcel (path));
+            if (path.IndexOf ("xls") > -1)
+                connectionOleDB = new OleDbConnection (ConnectionSettings.GetConnectionStringExcel (path));
+            else
+                //if (path.IndexOf ("dbf") > -1)
+                    connectionOleDB = new OleDbConnection (ConnectionSettings.GetConnectionStringDBF (path));
+                //else
+                //    ;
 
-            commandExcel = new OleDbCommand();
-            commandExcel.Connection = connectionExcel;
-            commandExcel.CommandType = CommandType.Text;
+            if (! (connectionOleDB == null)) {
+                commandOleDB = new OleDbCommand();
+                commandOleDB.Connection = connectionOleDB;
+                commandOleDB.CommandType = CommandType.Text;
 
-            adapterExcel = new OleDbDataAdapter();
-            adapterExcel.SelectCommand = commandExcel;
+                adapterOleDB = new OleDbDataAdapter();
+                adapterOleDB.SelectCommand = commandOleDB;
 
-            commandExcel.CommandText = query;
+                commandOleDB.CommandText = query;
 
-            dataTableRes.Reset();
-            dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+                dataTableRes.Reset();
+                dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
 
-            try
-            {
-                connectionExcel.Open();
-
-                if (connectionExcel.State == ConnectionState.Open)
+                try
                 {
-                    adapterExcel.Fill(dataTableRes);
+                    connectionOleDB.Open();
+
+                    if (connectionOleDB.State == ConnectionState.Open)
+                    {
+                        adapterOleDB.Fill(dataTableRes);
+                    }
+                    else
+                        ; //
                 }
-                else
-                    ; //
-            }
-            catch (OleDbException e)
-            {
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = connectionExcel.ConnectionString.IndexOf("Password");
-                if (pos < 0)
-                    s = connectionExcel.ConnectionString;
-                else
-                    s = connectionExcel.ConnectionString.Substring(0, pos);
+                catch (OleDbException e)
+                {
+                    Logging.Logg().LogLock();
+                    string s;
+                    int pos;
+                    pos = connectionOleDB.ConnectionString.IndexOf("Password");
+                    if (pos < 0)
+                        s = connectionOleDB.ConnectionString;
+                    else
+                        s = connectionOleDB.ConnectionString.Substring(0, pos);
 
-                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                Logging.Logg().LogUnlock();
-            }
+                    Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+                    Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                    Logging.Logg().LogUnlock();
+                }
 
-            connectionExcel.Close();
+                connectionOleDB.Close();
+            }
+            else
+                ;
 
             return dataTableRes;
         }

@@ -148,6 +148,7 @@ namespace StatisticCommon
             RDGExcelValues,
             SaveAdminValues, //Сохранение административных данных
             SavePPBRValues, //Сохранение PPBR
+            SaveRDGExcelValues,
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
             GetPass,
             SetPassInsert,
@@ -173,6 +174,7 @@ namespace StatisticCommon
         }
 
         private volatile bool using_date;
+        public bool m_ignore_date;
 
         private bool[] adminDates;
         private bool[] PPBRDates;
@@ -209,11 +211,12 @@ namespace StatisticCommon
 
             is_data_error = is_connection_error = false;
 
-            //TecView tecView = FormMain.selectedTecViews [FormMain.stclTecViews.SelectedIndex];
+            //TecView tecView = FormMainTrans.selectedTecViews [FormMainTrans.stclTecViews.SelectedIndex];
 
             //isActive = false;
 
             using_date = false;
+            m_ignore_date = false;
 
             m_curRDGValues = new RDGStruct[24];
 
@@ -966,9 +969,17 @@ namespace StatisticCommon
 
                         for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j ++)
                             m_curRDGValues[hour - 1].plan += (double)m_tableRDGExcelValuesResponse.Rows[i][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
+                            
                         m_curRDGValues[hour - 1].recomendation = 0;
-                        m_curRDGValues[hour - 1].deviationPercent = false;
-                        m_curRDGValues[hour - 1].deviation = 0;
+
+                        if (m_curRDGValues[hour - 1].plan > 0) {
+                            m_curRDGValues[hour - 1].deviationPercent = true;
+                            m_curRDGValues[hour - 1].deviation = 0.2;
+                        }
+                        else {
+                            m_curRDGValues[hour - 1].deviationPercent = false;
+                            m_curRDGValues[hour - 1].deviation = 0.0;
+                        }
                     }
 
                     /*for (i = hour; i < 24 + 1; i++)
@@ -1074,14 +1085,14 @@ namespace StatisticCommon
 
         private void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            int currentHour = serverTime.Hour;
+            int currentHour = -1;
 
             date = date.Date;
 
-            if (serverTime.Date < date)
+            if ((serverTime.Date < date) || (m_ignore_date == true))
                 currentHour = 0;
             else
-                ;
+                currentHour = serverTime.Hour;
 
             string requestUpdate = string.Empty,
                     requestInsert = string.Empty,
@@ -1194,14 +1205,14 @@ namespace StatisticCommon
 
         private void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            int currentHour = serverTime.Hour;
+            int currentHour = -1;
 
             date = date.Date;
 
-            if (serverTime.Date < date)
+            if ((serverTime.Date < date) || (m_ignore_date == true))
                 currentHour = 0;
             else
-                ;
+                currentHour = serverTime.Hour;
 
             string requestUpdate = string.Empty, requestInsert = string.Empty, requestDelete = string.Empty,
                     name = string.Empty; //t.NameFieldOfPBRRequest(comp);
@@ -1300,14 +1311,14 @@ namespace StatisticCommon
 
         private void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
-            int currentHour = serverTime.Hour;
+            int currentHour = -1;
 
             date = date.Date;
 
-            if (serverTime.Date < date)
+            if ((serverTime.Date < date) || (m_ignore_date == true))
                 currentHour = 0;
             else
-                ;
+                currentHour = serverTime.Hour;
 
             string requestUpdate = "", requestInsert = "",
                     name = string.Empty; //t.NameFieldOfPBRRequest(comp);
@@ -1420,14 +1431,14 @@ namespace StatisticCommon
 
         private void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
-            int currentHour = serverTime.Hour;
+            int currentHour = -1;
 
             date = date.Date;
 
-            if (serverTime.Date < date)
+            if ((serverTime.Date < date) || (m_ignore_date == true))
                 currentHour = 0;
             else
-                ;
+                currentHour = serverTime.Hour;
 
             string requestUpdate = string.Empty, requestInsert = string.Empty, requestDelete = string.Empty,
                     name = string.Empty; //t.NameFieldOfPBRRequest(comp);
@@ -1772,8 +1783,9 @@ namespace StatisticCommon
                     GetRDGExcelValuesRequest();
                     break;
                 case StatesMachine.PPBRDates:
-                    if (serverTime.Date > m_curDate.Date)
+                    if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
+                        //Останавливаем сохранение
                         saveResult = Errors.InvalidValue;
                         try
                         {
@@ -1791,8 +1803,9 @@ namespace StatisticCommon
                     GetPPBRDatesRequest(m_curDate);
                     break;
                 case StatesMachine.AdminDates:
-                    if (serverTime.Date > m_curDate.Date)
+                    if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
+                        //Останавливаем сохранение
                         saveResult = Errors.InvalidValue;
                         try
                         {

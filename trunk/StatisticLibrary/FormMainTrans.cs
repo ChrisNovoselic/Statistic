@@ -7,11 +7,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-using StatisticCommon;
-
-namespace trans_gtp
+namespace StatisticCommon
 {
-    public partial class FormMain : FormMainBase
+    public partial class FormMainTrans : FormMainBase
     {
         private enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         private enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
@@ -46,7 +44,7 @@ namespace trans_gtp
             }
         }
 
-        public FormMain()
+        public FormMainTrans()
         {
             InitializeComponent();
 
@@ -59,7 +57,7 @@ namespace trans_gtp
                 else {
                     string date = args[1].Substring (args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
                     if (date == "default")
-                        m_arg_date = new DateTime ().AddDays(1);
+                        m_arg_date = DateTime.Now.AddDays(1);
                     else
                         m_arg_date = DateTime.Parse (date);
                 }
@@ -67,7 +65,9 @@ namespace trans_gtp
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
-                развернутьToolStripMenuItem.Enabled = false;              
+                развернутьToolStripMenuItem.Enabled = false;
+                
+                dateTimePickerMain.Value = m_arg_date.Date;               
             }
             else
                 ;
@@ -109,6 +109,7 @@ namespace trans_gtp
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;            
 
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
                 setUIControlConnectionSettings (i);
@@ -338,10 +339,10 @@ namespace trans_gtp
 
         private void trans_auto_start()
         {
+            //Таймер больше не нужен (сообщения в "строке статуса")
             timerMain.Stop();
             timerMain.Interval = 666;
 
-            comboBoxTECComponent.SelectedIndexChanged -= comboBoxTECComponent_SelectedIndexChanged;
             FillComboBoxTECComponent();
 
             if (!(comboBoxTECComponent.SelectedIndex < 0))
