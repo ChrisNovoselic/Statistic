@@ -54,16 +54,6 @@
             this.groupBoxSource = new System.Windows.Forms.GroupBox();
             this.buttonSourceExport = new System.Windows.Forms.Button();
             this.buttonSourceSave = new System.Windows.Forms.Button();
-            this.labelSourcePort = new System.Windows.Forms.Label();
-            this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
-            this.labelSourcePass = new System.Windows.Forms.Label();
-            this.labelSourceUserId = new System.Windows.Forms.Label();
-            this.labelSourceDBName = new System.Windows.Forms.Label();
-            this.labelSourceServerIP = new System.Windows.Forms.Label();
-            this.mtbxSourcePass = new System.Windows.Forms.MaskedTextBox();
-            this.tbxSourceUserId = new System.Windows.Forms.TextBox();
-            this.tbxSourceNameDatabase = new System.Windows.Forms.TextBox();
-            this.tbxSourceServerIP = new System.Windows.Forms.TextBox();
             this.menuStripMain = new System.Windows.Forms.MenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,7 +74,7 @@
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
             this.groupBoxSource.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).BeginInit();
+            
             this.menuStripMain.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.contextMenuStripNotifyIcon.SuspendLayout();
@@ -297,22 +287,15 @@
             this.tbxDestServerIP.Size = new System.Drawing.Size(160, 20);
             this.tbxDestServerIP.TabIndex = 25;
             this.tbxDestServerIP.TextChanged += new System.EventHandler(this.component_Changed);
+            
+            //Source...
             // 
             // groupBoxSource
             // 
             this.groupBoxSource.BackColor = System.Drawing.SystemColors.Info;
             this.groupBoxSource.Controls.Add(this.buttonSourceExport);
             this.groupBoxSource.Controls.Add(this.buttonSourceSave);
-            this.groupBoxSource.Controls.Add(this.labelSourcePort);
-            this.groupBoxSource.Controls.Add(this.nudnSourcePort);
-            this.groupBoxSource.Controls.Add(this.labelSourcePass);
-            this.groupBoxSource.Controls.Add(this.labelSourceUserId);
-            this.groupBoxSource.Controls.Add(this.labelSourceDBName);
-            this.groupBoxSource.Controls.Add(this.labelSourceServerIP);
-            this.groupBoxSource.Controls.Add(this.mtbxSourcePass);
-            this.groupBoxSource.Controls.Add(this.tbxSourceUserId);
-            this.groupBoxSource.Controls.Add(this.tbxSourceNameDatabase);
-            this.groupBoxSource.Controls.Add(this.tbxSourceServerIP);
+            //Source...
             this.groupBoxSource.Location = new System.Drawing.Point(3, 65);
             this.groupBoxSource.Name = "groupBoxSource";
             this.groupBoxSource.Size = new System.Drawing.Size(300, 200);
@@ -341,103 +324,7 @@
             this.buttonSourceSave.Text = "Сохранить";
             this.buttonSourceSave.UseVisualStyleBackColor = true;
             this.buttonSourceSave.Click += new System.EventHandler(this.buttonSave_Click);
-            // 
-            // labelSourcePort
-            // 
-            this.labelSourcePort.AutoSize = true;
-            this.labelSourcePort.Location = new System.Drawing.Point(12, 55);
-            this.labelSourcePort.Name = "labelSourcePort";
-            this.labelSourcePort.Size = new System.Drawing.Size(32, 13);
-            this.labelSourcePort.TabIndex = 21;
-            this.labelSourcePort.Text = "Порт";
-            // 
-            // nudnSourcePort
-            // 
-            this.nudnSourcePort.Enabled = false;
-            this.nudnSourcePort.Location = new System.Drawing.Point(129, 53);
-            this.nudnSourcePort.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.nudnSourcePort.Name = "nudnSourcePort";
-            this.nudnSourcePort.Size = new System.Drawing.Size(69, 20);
-            this.nudnSourcePort.TabIndex = 16;
-            this.nudnSourcePort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.nudnSourcePort.Value = new decimal(new int[] {
-            3306,
-            0,
-            0,
-            0});
-            // 
-            // labelSourcePass
-            // 
-            this.labelSourcePass.AutoSize = true;
-            this.labelSourcePass.Location = new System.Drawing.Point(11, 134);
-            this.labelSourcePass.Name = "labelSourcePass";
-            this.labelSourcePass.Size = new System.Drawing.Size(45, 13);
-            this.labelSourcePass.TabIndex = 24;
-            this.labelSourcePass.Text = "Пароль";
-            // 
-            // labelSourceUserId
-            // 
-            this.labelSourceUserId.AutoSize = true;
-            this.labelSourceUserId.Location = new System.Drawing.Point(11, 108);
-            this.labelSourceUserId.Name = "labelSourceUserId";
-            this.labelSourceUserId.Size = new System.Drawing.Size(103, 13);
-            this.labelSourceUserId.TabIndex = 23;
-            this.labelSourceUserId.Text = "Имя пользователя";
-            // 
-            // labelSourceDBName
-            // 
-            this.labelSourceDBName.AutoSize = true;
-            this.labelSourceDBName.Location = new System.Drawing.Point(11, 82);
-            this.labelSourceDBName.Name = "labelSourceDBName";
-            this.labelSourceDBName.Size = new System.Drawing.Size(98, 13);
-            this.labelSourceDBName.TabIndex = 22;
-            this.labelSourceDBName.Text = "Имя базы данных";
-            // 
-            // labelSourceServerIP
-            // 
-            this.labelSourceServerIP.AutoSize = true;
-            this.labelSourceServerIP.Location = new System.Drawing.Point(11, 28);
-            this.labelSourceServerIP.Name = "labelSourceServerIP";
-            this.labelSourceServerIP.Size = new System.Drawing.Size(95, 13);
-            this.labelSourceServerIP.TabIndex = 20;
-            this.labelSourceServerIP.Text = "IP адрес сервера";
-            // 
-            // mtbxSourcePass
-            // 
-            this.mtbxSourcePass.Location = new System.Drawing.Point(129, 131);
-            this.mtbxSourcePass.Name = "mtbxSourcePass";
-            this.mtbxSourcePass.PasswordChar = '#';
-            this.mtbxSourcePass.Size = new System.Drawing.Size(160, 20);
-            this.mtbxSourcePass.TabIndex = 19;
-            this.mtbxSourcePass.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxSourceUserId
-            // 
-            this.tbxSourceUserId.Location = new System.Drawing.Point(129, 105);
-            this.tbxSourceUserId.Name = "tbxSourceUserId";
-            this.tbxSourceUserId.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceUserId.TabIndex = 18;
-            this.tbxSourceUserId.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxSourceNameDatabase
-            // 
-            this.tbxSourceNameDatabase.Location = new System.Drawing.Point(129, 79);
-            this.tbxSourceNameDatabase.Name = "tbxSourceNameDatabase";
-            this.tbxSourceNameDatabase.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceNameDatabase.TabIndex = 17;
-            this.tbxSourceNameDatabase.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxSourceServerIP
-            // 
-            this.tbxSourceServerIP.Location = new System.Drawing.Point(129, 25);
-            this.tbxSourceServerIP.Name = "tbxSourceServerIP";
-            this.tbxSourceServerIP.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceServerIP.TabIndex = 15;
-            this.tbxSourceServerIP.TextChanged += new System.EventHandler(this.component_Changed);
+
             // 
             // menuStripMain
             // 
@@ -578,9 +465,7 @@
             this.groupBoxDest.ResumeLayout(false);
             this.groupBoxDest.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
-            this.groupBoxSource.ResumeLayout(false);
-            this.groupBoxSource.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
+            //Source...
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
             this.statusStripMain.ResumeLayout(false);
@@ -598,43 +483,34 @@
         private System.Windows.Forms.Label labelTECComponent;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.DateTimePicker dateTimePickerMain;
-        private System.Windows.Forms.GroupBox groupBoxDest;
-        private System.Windows.Forms.Label labelDestPort;
-        private System.Windows.Forms.NumericUpDown nudnDestPort;
-        private System.Windows.Forms.Label labelDestPass;
-        private System.Windows.Forms.Label labelDestUserID;
-        private System.Windows.Forms.Label labelDestDBName;
-        private System.Windows.Forms.Label labelDestServerIP;
-        private System.Windows.Forms.MaskedTextBox mtbxDestPass;
-        private System.Windows.Forms.TextBox tbxDestUserId;
-        private System.Windows.Forms.TextBox tbxDestNameDatabase;
-        private System.Windows.Forms.TextBox tbxDestServerIP;
-        private System.Windows.Forms.GroupBox groupBoxSource;
-        private System.Windows.Forms.Label labelSourcePort;
-        private System.Windows.Forms.NumericUpDown nudnSourcePort;
-        private System.Windows.Forms.Label labelSourcePass;
-        private System.Windows.Forms.Label labelSourceUserId;
-        private System.Windows.Forms.Label labelSourceDBName;
-        private System.Windows.Forms.Label labelSourceServerIP;
-        private System.Windows.Forms.MaskedTextBox mtbxSourcePass;
-        private System.Windows.Forms.TextBox tbxSourceUserId;
-        private System.Windows.Forms.TextBox tbxSourceNameDatabase;
-        private System.Windows.Forms.TextBox tbxSourceServerIP;
+        protected System.Windows.Forms.GroupBox groupBoxSource;
+        protected System.Windows.Forms.GroupBox groupBoxDest;
+        protected System.Windows.Forms.Label labelDestPort;
+        protected System.Windows.Forms.NumericUpDown nudnDestPort;
+        protected System.Windows.Forms.Label labelDestPass;
+        protected System.Windows.Forms.Label labelDestUserID;
+        protected System.Windows.Forms.Label labelDestDBName;
+        protected System.Windows.Forms.Label labelDestServerIP;
+        protected System.Windows.Forms.MaskedTextBox mtbxDestPass;
+        protected System.Windows.Forms.TextBox tbxDestUserId;
+        protected System.Windows.Forms.TextBox tbxDestNameDatabase;
+        protected System.Windows.Forms.TextBox tbxDestServerIP;
+        //Source...
         private System.Windows.Forms.ComboBox comboBoxTECComponent;
         private System.Windows.Forms.Button buttonDestClear;
         private System.Windows.Forms.Button buttonDestSave;
         private System.Windows.Forms.Button buttonSourceSave;
+        private System.Windows.Forms.Button buttonSourceExport;
         private System.Windows.Forms.MenuStrip menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStripMain;
-        private System.Windows.Forms.Timer timerMain;
+        protected System.Windows.Forms.Timer timerMain;
         private System.Windows.Forms.ToolStripStatusLabel lblMainState;
         private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
-        private System.Windows.Forms.Button buttonSourceExport;
         private System.Windows.Forms.NotifyIcon notifyIconMain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem развернутьToolStripMenuItem;

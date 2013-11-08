@@ -11,21 +11,20 @@ namespace StatisticCommon
 {
     public partial class FormMainTrans : FormMainBase
     {
-        private enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
-        private enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
+        protected enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
+        protected enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
 
-        Admin[] m_arAdmin;
-        FormConnectionSettings m_formConnectionSettings;
-        GroupBox [] m_arGroupBox;
-        System.Windows.Forms.Control [,] m_arUIControlDB;
+        protected Admin[] m_arAdmin;
+        protected FormConnectionSettings m_formConnectionSettings;
+        protected GroupBox[] m_arGroupBox;
 
-        DataGridViewAdmin m_dgwAdminTable;
+        protected DataGridViewAdmin m_dgwAdminTable;
 
-        List <int> m_listTECComponentIndex;
+        protected List<int> m_listTECComponentIndex;
 
-        DateTime m_arg_date;
+        protected DateTime m_arg_date;
 
-        private Int16 m_IndexDB
+        protected Int16 m_IndexDB
         {
             get {
                 CONN_SETT_TYPE i;
@@ -77,10 +76,6 @@ namespace StatisticCommon
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
-            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
-            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
-            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
-
             delegateEvent = new DelegateFunc(EventRaised);
 
             m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
@@ -94,69 +89,6 @@ namespace StatisticCommon
             else
                 ;
 
-            m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
-            //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource (m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);            
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
-
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;            
-
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
-                setUIControlConnectionSettings (i);
-
-                m_arAdmin [i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin [i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                m_arAdmin [i].StartDbInterface();
-            }
-
-            //panelMain.Visible = false;
-
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start ();
-        }
-
-        private void setUIControlConnectionSettings (int i) {
-            for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j ++) {
-                switch (j) {
-                    case (Int16)INDX_UICONTROL_DB.SERVER_IP:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PORT:
-                        if (m_arUIControlDB[i, j].Enabled)
-                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString ();
-                        else
-                            ;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.USER_ID:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PASS:
-                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
-                        break;
-                    default:
-                        break;
-                }
-            }
         }
 
         private void FillComboBoxTECComponent () {
@@ -173,7 +105,7 @@ namespace StatisticCommon
         {
         }
 
-        private void setDataGridViewAdmin(DateTime date)
+        protected void setDataGridViewAdmin(DateTime date)
         {
             int indxDB = -1;
 
@@ -208,11 +140,13 @@ namespace StatisticCommon
             }
         }
 
-        private void setDatetimePickerMain (DateTime date) {
+        protected void setDatetimePickerMain(DateTime date)
+        {
             dateTimePickerMain.Value = date;
         }
 
-        private void setDatetimePicker (DateTime date) {
+        protected void setDatetimePicker(DateTime date)
+        {
             this.BeginInvoke(new DelegateDateFunction(setDatetimePickerMain), date);
         }
 
@@ -286,13 +220,13 @@ namespace StatisticCommon
             formAbout.ShowDialog();
         }
 
-        private void ErrorReport (string msg) {
+        protected void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
 
             this.BeginInvoke (new DelegateFunc (trans_auto_next));
         }
 
-        private void ActionReport(string msg)
+        protected void ActionReport(string msg)
         {
             statusStripMain.BeginInvoke(delegateEvent);
         }
@@ -418,19 +352,8 @@ namespace StatisticCommon
             m_formConnectionSettings.btnOk_Click (null, null);
         }
 
-        private void component_Changed(object sender, EventArgs e)
+        protected virtual void component_Changed(object sender, EventArgs e)
         {
-            uint indxDB = (uint)m_IndexDB;
-            ConnectionSettings connSett = new ConnectionSettings ();
-
-            connSett.server = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.SERVER_IP].Text;
-            connSett.port = (Int32)((NumericUpDown)m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PORT]).Value;
-            connSett.dbName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.NAME_DATABASE].Text;
-            connSett.userName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.USER_ID].Text;
-            connSett.password = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PASS].Text;
-            connSett.ignore = false;
-
-            m_formConnectionSettings.ConnectionSettingsEdit = connSett;
         }
 
         private void comboBoxTECComponent_SelectedIndexChanged (object sender, EventArgs e) {
