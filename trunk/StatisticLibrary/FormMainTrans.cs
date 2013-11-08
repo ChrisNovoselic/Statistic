@@ -152,8 +152,9 @@ namespace StatisticCommon
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
-                m_arAdmin[i].StopDbInterface();
+            for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
+            {
+                if (!(m_arAdmin[i] == null)) m_arAdmin[i].StopDbInterface(); else ;
             }
 
             Close ();

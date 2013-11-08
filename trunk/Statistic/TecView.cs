@@ -2752,17 +2752,14 @@ namespace Statistic
             tgs [(int) TG.ID_TIME.MINUTES] = new Dictionary<string, int>();
             tgs[(int)TG.ID_TIME.HOURS] = new Dictionary<string, int>();
 
-            int count_tg = 0;
-            for (int i = 0; i < tec.list_TECComponents.Count; i++) {
-                count_tg += tec.list_TECComponents[i].TG.Count;
-            }
+            //int count_tg = m_list_TECComponents.Count;
             bool bMinutes = true;
             for (int i = (int) TG.ID_TIME.MINUTES; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++)
             {
                 if (i > (int)TG.ID_TIME.MINUTES) bMinutes = false; else ;
-                for (int j = 0; j < count_tg; j++)
+                for (int j = 0; j < m_list_TECComponents.Count; j++)
                 {
-                    tgs[i].Add("าร" + (j + 1).ToString(), tec.parametersTGForm.ParamsGetTgId(j, bMinutes));
+                    tgs[i].Add(m_list_TECComponents[j].name.ToString(), tec.parametersTGForm.ParamsGetTgId(j, bMinutes));
                 }
             }
 

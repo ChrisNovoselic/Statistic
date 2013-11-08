@@ -295,6 +295,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - SaveChanges () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
 
@@ -345,6 +348,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - ClearRDG () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
 
@@ -435,6 +441,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - Reinit () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
         }
@@ -503,6 +512,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - SetPassword () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
             delegateStartWait();
@@ -548,6 +560,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - SetPassword () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
             semaSetPass.WaitOne();
@@ -609,6 +624,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - ComparePassword () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
             semaGetPass.WaitOne();
@@ -687,6 +705,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
         }
@@ -749,6 +770,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
         }
@@ -780,6 +804,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
         }
@@ -817,6 +844,9 @@ namespace StatisticCommon
                 }
                 catch
                 {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
                 }
             }
         }
@@ -1728,7 +1758,11 @@ namespace StatisticCommon
             if (taskThread.IsAlive)
             {
                 try { semaState.Release(1); }
-                catch { }
+                catch {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
+                }
 
                 joined = taskThread.Join(1000);
                 if (!joined)
@@ -2435,6 +2469,9 @@ namespace StatisticCommon
             }
             catch
             {
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("catch - TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
+                Logging.Logg().LogUnlock();
             }
         }
 
@@ -2474,6 +2511,9 @@ namespace StatisticCommon
                     }
                     catch
                     {
+                        Logging.Logg().LogLock();
+                        Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                        Logging.Logg().LogUnlock();
                     }
                 }
             }
@@ -2522,6 +2562,9 @@ namespace StatisticCommon
         //            }
         //            catch
         //            {
+                        //Logging.Logg().LogLock();
+                        //Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                        //Logging.Logg().LogUnlock();
         //            }
         //        }
         //    }
@@ -2550,7 +2593,7 @@ namespace StatisticCommon
 
                     newState = true;
                     states.Clear();
-                    
+
                     //states.Add(StatesMachine.CurrentTime);
                     states.Add(StatesMachine.PPBRValues);
                     states.Add(StatesMachine.AdminValues);
@@ -2561,6 +2604,9 @@ namespace StatisticCommon
                     }
                     catch
                     {
+                        Logging.Logg().LogLock();
+                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaState.Release(1)", true, true, false);
+                        Logging.Logg().LogUnlock();
                     }
                 }
             }

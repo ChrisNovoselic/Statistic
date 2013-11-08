@@ -13,5 +13,13 @@ namespace trans_tg
 {
     public partial class FormMainTransTG : FormMainTrans
     {
+        public FormMainTransTG()
+        {
+            InitializeComponentTransTG();
+        }
+
+        private void InitializeComponentTransTG()
+        {
+        }
     }
 }
