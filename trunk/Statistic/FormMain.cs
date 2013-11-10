@@ -478,19 +478,19 @@ namespace Statistic
         }
 
         private void AddTabPageAdmin () {
-            bool bDisp = false;
+            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.TG;
             
             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
             {
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
-                bDisp = true;
+                mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
             }
             else
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
 
             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdmin);
 
-            m_panelAdmin.InitializeComboBoxTecComponent (bDisp);
+            m_panelAdmin.InitializeComboBoxTecComponent (mode);
 
             m_admin.Start();
         }

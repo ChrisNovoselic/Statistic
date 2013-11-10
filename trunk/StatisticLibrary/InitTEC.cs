@@ -9,12 +9,12 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
 
-        public static DataTable getListTEC(ConnectionSettings connSett, bool bAll)
+        public static DataTable getListTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
 
-            if (!bAll) req += " WHERE INUSE=TRUE"; else ;
+            if (!bIgnoreTECInUse) req += " WHERE INUSE=TRUE"; else ;
 
             return DbInterface.Request(connSett, req);
         }
@@ -34,7 +34,8 @@ namespace StatisticCommon
             return DbInterface.Request(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString());
         }
 
-        public InitTEC(ConnectionSettings connSett, bool bAll)
+        //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
+        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
             tec = new List<TEC>();
 
@@ -43,7 +44,7 @@ namespace StatisticCommon
                     list_TECComponents = null, list_tg = null;
 
             //Использование статической функции
-            list_tec = getListTEC(connSett, bAll);
+            list_tec = getListTEC(connSett, bIgnoreTECInUse);
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
@@ -124,7 +125,7 @@ namespace StatisticCommon
             }
         }
 
-        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bAll) //indx = {GTP или PC}
+        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse) //indx = {GTP или PC}
         {
             tec = new List<TEC> ();
 
@@ -135,7 +136,7 @@ namespace StatisticCommon
             //Использование методов объекта
             //int listenerId = -1;
             //bool err = false;
-            //DbInterface dbInterface = new DbInterface (DbInterface.DbInterfaceType.MySQL, 1);
+            //DbInterface dbInterface = new DbInterface (DbInterface.DBINTERFACE_TYPE.MySQL, 1);
             //listenerId = dbInterface.ListenerRegister();
             //dbInterface.Start ();
 
@@ -148,7 +149,7 @@ namespace StatisticCommon
             //dbInterface.ListenerUnregister(listenerId);
 
             //Использование статической функции
-            list_tec = getListTEC(connSett, bAll);
+            list_tec = getListTEC(connSett, bIgnoreTECInUse);
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ

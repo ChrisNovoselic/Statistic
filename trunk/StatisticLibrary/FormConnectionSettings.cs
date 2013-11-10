@@ -417,11 +417,7 @@ namespace StatisticCommon
 
             if (bConnSettEmpty == true)
             {
-                m_connectionSettingsEdit.Add(new ConnectionSettings());
-                m_connectionSettingsEdit[m_connectionSettingsEdit.Count - 1].port = 3306;
-
-                m_connectionSettings.Add(new ConnectionSettings());
-                m_connectionSettings[m_connectionSettings.Count - 1].port = 3306;
+                addConnSett(new ConnectionSettings());
             }
             else
                 ;
@@ -449,7 +445,10 @@ namespace StatisticCommon
             m_connectionSettings.Add(connSett);
             m_connectionSettingsEdit.Add(connSett);
 
-            cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 1) + ")");
+            m_connectionSettings[m_connectionSettings.Count - 1].port =
+            m_connectionSettingsEdit[m_connectionSettingsEdit.Count - 1].port = 3306;
+            
+            cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
         }
 
         public void btnOk_Click(object obj, EventArgs ev)
@@ -605,6 +604,7 @@ namespace StatisticCommon
         public int Count
         {
             get { return m_connectionSettings.Count; }
+            //get { return m_connectionSettingsEdit.Count; }
         }
 
         private void component_Changed(object sender, EventArgs e)

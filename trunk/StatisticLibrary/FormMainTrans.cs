@@ -11,8 +11,10 @@ namespace StatisticCommon
 {
     public partial class FormMainTrans : FormMainBase
     {
-        protected enum CONN_SETT_TYPE {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
+        protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
+
+        protected System.Windows.Forms.Control[,] m_arUIControlDB;
 
         protected Admin[] m_arAdmin;
         protected FormConnectionSettings m_formConnectionSettings;
@@ -23,6 +25,17 @@ namespace StatisticCommon
         protected List<int> m_listTECComponentIndex;
 
         protected DateTime m_arg_date;
+
+        protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
+
+        private bool m_bTransAuto {
+            get
+            {
+                //return WindowState == FormWindowState.Minimized ? true : false;
+                //return ((WindowState == FormWindowState.Minimized) && (ShowInTaskbar == false) && (notifyIconMain.Visible == true));
+                return !timerMain.Enabled;
+            }
+        }
 
         protected Int16 m_IndexDB
         {
@@ -51,44 +64,72 @@ namespace StatisticCommon
             int argc = args.Length;
             if (argc > 1)
             {
-                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1][0] == '/')) && (!(args[1].IndexOf("=") < 0))) 
+                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1][0] == '/')) && (!(args[1].IndexOf("=") < 0)))
                     throw new Exception("Ошибка распознавания аргументов командной строки");
-                else {
-                    string date = args[1].Substring (args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
+                else
+                {
+                    string date = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
                     if (date == "default")
                         m_arg_date = DateTime.Now.AddDays(1);
                     else
-                        m_arg_date = DateTime.Parse (date);
+                        m_arg_date = DateTime.Parse(date);
                 }
 
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
                 развернутьToolStripMenuItem.Enabled = false;
-                
-                dateTimePickerMain.Value = m_arg_date.Date;               
+
+                dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
-                ;
-
-            comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
-            dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
+            {
+                comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
+                dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
+            }
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
             delegateEvent = new DelegateFunc(EventRaised);
+        }
 
-            m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
-
-            if (m_formConnectionSettings.Protected == false || m_formConnectionSettings.Count < 2)
+        protected void setUIControlConnectionSettings(int i)
+        {
+            for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
             {
-                m_formConnectionSettings.addConnSett (new ConnectionSettings ());
-
-                //formConnectionSettings.setConnSett();
+                switch (j)
+                {
+                    case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.PORT:
+                        if (m_arUIControlDB[i, j].Enabled)
+                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString();
+                        else
+                            ;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.USER_ID:
+                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
+                        break;
+                    case (Int16)INDX_UICONTROL_DB.PASS:
+                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
+                        break;
+                    default:
+                        break;
+                }
             }
-            else
-                ;
+        }
 
+        protected virtual void setUIControlSourceState()
+        {
+        }
+
+        protected virtual void CreateFormConnectionSettings(string connSettFileName)
+        {
+            m_formConnectionSettings = new FormConnectionSettings(connSettFileName);
         }
 
         private void FillComboBoxTECComponent () {
@@ -109,7 +150,8 @@ namespace StatisticCommon
         {
             int indxDB = -1;
 
-            if (WindowState == FormWindowState.Minimized)
+            //if (WindowState == FormWindowState.Minimized)
+            if (m_bTransAuto == true)
             {
                 for (int i = 0; i < 24; i++)
                 {
@@ -121,7 +163,7 @@ namespace StatisticCommon
 
                 this.BeginInvoke(new DelegateFunc(SaveRDGValues));
 
-                this.BeginInvoke (new DelegateFunc (trans_auto_next));
+                this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }
             else
             {
@@ -187,9 +229,12 @@ namespace StatisticCommon
             if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
 
-                //m_formConnectionSettings.SelectedIndex = m_IndexDB;
+                if (m_formConnectionSettings.Count > 1)
+                    m_formConnectionSettings.SelectedIndex = m_IndexDB;
+                else
+                    ;
 
-                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
                 ;
@@ -224,7 +269,7 @@ namespace StatisticCommon
         protected void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
 
-            this.BeginInvoke (new DelegateFunc (trans_auto_next));
+            if (m_bTransAuto == true) this.BeginInvoke(new DelegateFunc(trans_auto_next)); else ;
         }
 
         protected void ActionReport(string msg)
@@ -234,30 +279,38 @@ namespace StatisticCommon
 
         public bool UpdateStatusString()
         {
-            bool have_eror = m_arAdmin[m_IndexDB].errored_state;
+            bool have_eror = true;
 
-            if (((have_eror == true) || (m_arAdmin[m_IndexDB].actioned_state == true)) && (m_arAdmin[m_IndexDB].threadIsWorking == true))
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                if (m_arAdmin[m_IndexDB].actioned_state == true)
-                {
-                    lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
-                    lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
-                }
-                else
-                    ;
+                have_eror = m_arAdmin[m_IndexDB].errored_state;
 
-                if (have_eror == true)
+                if (((have_eror == true) || (m_arAdmin[m_IndexDB].actioned_state == true)) && (m_arAdmin[m_IndexDB].threadIsWorking == true))
                 {
-                    lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
-                    lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
+                    if (m_arAdmin[m_IndexDB].actioned_state == true)
+                    {
+                        lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
+                        lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
+                    }
+                    else
+                        ;
+
+                    if (have_eror == true)
+                    {
+                        lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
+                        lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
+                    }
+                    else
+                        ;
                 }
                 else
-                    ;
+                {
+                    lblDescError.Text = string.Empty;
+                    lblDateError.Text = string.Empty;
+                }
             }
-            else {
-                lblDescError.Text = string.Empty;
-                lblDateError.Text = string.Empty;
-            }
+            else
+                ;
 
             return have_eror;
         }
@@ -277,6 +330,7 @@ namespace StatisticCommon
             //Таймер больше не нужен (сообщения в "строке статуса")
             timerMain.Stop();
             timerMain.Interval = 666;
+            //timerMain.Enabled = false;
 
             FillComboBoxTECComponent();
 
@@ -292,7 +346,10 @@ namespace StatisticCommon
 
         private void trans_auto_next () {
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
-                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGValues(Admin.TYPE_FIELDS.STATIC, m_listTECComponentIndex[++comboBoxTECComponent.SelectedIndex], m_arg_date.Date);
+            {
+                comboBoxTECComponent.SelectedIndex ++;
+                comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
+            }
             else
                 buttonClose.PerformClick();
         }
@@ -303,9 +360,9 @@ namespace StatisticCommon
                 //Первый запуск
                 timerMain.Interval = 1000;
 
-                m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(true);
-                
-                if (WindowState == FormWindowState.Minimized)
+                m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(m_modeTECComponent);
+
+                if ((WindowState == FormWindowState.Minimized) && (ShowInTaskbar == false) && (notifyIconMain.Visible == true))
                 {
                     trans_auto_start();
 
@@ -347,7 +404,7 @@ namespace StatisticCommon
             m_arAdmin [m_IndexDB].ClearRDGValues(dateTimePickerMain.Value.Date);
         }
 
-        private void buttonSave_Click(object sender, EventArgs e)
+        protected /*virtual*/ void buttonSave_Click(object sender, EventArgs e)
         {
             //m_formConnectionSettings.SaveSettingsFile ();
             m_formConnectionSettings.btnOk_Click (null, null);
@@ -355,14 +412,54 @@ namespace StatisticCommon
 
         protected virtual void component_Changed(object sender, EventArgs e)
         {
+            uint indxDB = (uint)m_IndexDB;
+            ConnectionSettings connSett = new ConnectionSettings();
+
+            connSett.server = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.SERVER_IP].Text;
+            connSett.port = (Int32)((NumericUpDown)m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PORT]).Value;
+            connSett.dbName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.NAME_DATABASE].Text;
+            connSett.userName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.USER_ID].Text;
+            connSett.password = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PASS].Text;
+            connSett.ignore = false;
+
+            m_formConnectionSettings.ConnectionSettingsEdit = connSett;
         }
 
-        private void comboBoxTECComponent_SelectedIndexChanged (object sender, EventArgs e) {
-            if (!(m_arAdmin[m_IndexDB] == null))
+        protected virtual void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev) {
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                ClearTables ();
+                ClearTables();
 
-                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                switch (m_modeTECComponent)
+                {
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                        m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TG:
+                        switch (m_IndexDB)
+                        {
+                            case (int)CONN_SETT_TYPE.SOURCE:
+                                //bool bRDGExcelvalues = false;
+
+                                setUIControlSourceState();
+
+                                //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
+                                //{
+                                    m_arAdmin[m_IndexDB].GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                //}
+                                //else
+                                //    ;
+                                break;
+                            case (int)CONN_SETT_TYPE.DEST:
+                                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
             else
                 ;
@@ -370,7 +467,7 @@ namespace StatisticCommon
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
-            comboBoxTECComponent_SelectedIndexChanged (null, null);
+            comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
         }
 
         public void ClearTables()
@@ -385,7 +482,7 @@ namespace StatisticCommon
             }
         }
 
-        private void getDataGridViewAdmin(int indxDB)
+        protected virtual void getDataGridViewAdmin(int indxDB)
         {
             //int indxDB = m_IndexDB;
             
@@ -427,7 +524,7 @@ namespace StatisticCommon
                 }
             }
 
-            m_arAdmin[indxDB].CopyCurRDGValues ();
+            m_arAdmin[indxDB].CopyCurToPrevRDGValues ();
         }
 
         private void buttonSourceExport_Click(object sender, EventArgs e)
@@ -451,7 +548,7 @@ namespace StatisticCommon
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.WindowState == FormWindowState.Minimized)
+            if (notifyIconMain.Visible == true)
             {
                 this.WindowState = FormWindowState.Normal;
                 this.ShowInTaskbar = true;

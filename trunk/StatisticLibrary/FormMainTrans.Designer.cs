@@ -45,7 +45,7 @@
             this.nudnDestPort = new System.Windows.Forms.NumericUpDown();
             this.labelDestPass = new System.Windows.Forms.Label();
             this.labelDestUserID = new System.Windows.Forms.Label();
-            this.labelDestDBName = new System.Windows.Forms.Label();
+            this.labelDestNameDatabase = new System.Windows.Forms.Label();
             this.labelDestServerIP = new System.Windows.Forms.Label();
             this.mtbxDestPass = new System.Windows.Forms.MaskedTextBox();
             this.tbxDestUserId = new System.Windows.Forms.TextBox();
@@ -156,7 +156,7 @@
             this.groupBoxDest.Controls.Add(this.nudnDestPort);
             this.groupBoxDest.Controls.Add(this.labelDestPass);
             this.groupBoxDest.Controls.Add(this.labelDestUserID);
-            this.groupBoxDest.Controls.Add(this.labelDestDBName);
+            this.groupBoxDest.Controls.Add(this.labelDestNameDatabase);
             this.groupBoxDest.Controls.Add(this.labelDestServerIP);
             this.groupBoxDest.Controls.Add(this.mtbxDestPass);
             this.groupBoxDest.Controls.Add(this.tbxDestUserId);
@@ -237,14 +237,14 @@
             this.labelDestUserID.TabIndex = 33;
             this.labelDestUserID.Text = "Имя пользователя";
             // 
-            // labelDestDBName
+            // labelDestNameDatabase
             // 
-            this.labelDestDBName.AutoSize = true;
-            this.labelDestDBName.Location = new System.Drawing.Point(10, 84);
-            this.labelDestDBName.Name = "labelDestDBName";
-            this.labelDestDBName.Size = new System.Drawing.Size(98, 13);
-            this.labelDestDBName.TabIndex = 32;
-            this.labelDestDBName.Text = "Имя базы данных";
+            this.labelDestNameDatabase.AutoSize = true;
+            this.labelDestNameDatabase.Location = new System.Drawing.Point(10, 84);
+            this.labelDestNameDatabase.Name = "labelDestNameDatabase";
+            this.labelDestNameDatabase.Size = new System.Drawing.Size(98, 13);
+            this.labelDestNameDatabase.TabIndex = 32;
+            this.labelDestNameDatabase.Text = "Имя базы данных";
             // 
             // labelDestServerIP
             // 
@@ -412,7 +412,7 @@
             // notifyIconMain
             // 
             this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
-            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIconMain.Icon")));
+            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.notifyIconMain.Text = "Статистика: конвертер";
             // 
             // contextMenuStripNotifyIcon
@@ -473,34 +473,33 @@
             this.contextMenuStripNotifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
 
-        private System.Windows.Forms.Button buttonClose;
-        private System.Windows.Forms.Panel panelMain;
+        protected System.Windows.Forms.Button buttonClose;
+        protected System.Windows.Forms.Panel panelMain;
         private System.Windows.Forms.Label labelTECComponent;
         private System.Windows.Forms.Label labelDate;
-        private System.Windows.Forms.DateTimePicker dateTimePickerMain;
+        protected System.Windows.Forms.DateTimePicker dateTimePickerMain;
         protected System.Windows.Forms.GroupBox groupBoxSource;
         protected System.Windows.Forms.GroupBox groupBoxDest;
         protected System.Windows.Forms.Label labelDestPort;
         protected System.Windows.Forms.NumericUpDown nudnDestPort;
         protected System.Windows.Forms.Label labelDestPass;
         protected System.Windows.Forms.Label labelDestUserID;
-        protected System.Windows.Forms.Label labelDestDBName;
+        protected System.Windows.Forms.Label labelDestNameDatabase;
         protected System.Windows.Forms.Label labelDestServerIP;
         protected System.Windows.Forms.MaskedTextBox mtbxDestPass;
         protected System.Windows.Forms.TextBox tbxDestUserId;
         protected System.Windows.Forms.TextBox tbxDestNameDatabase;
         protected System.Windows.Forms.TextBox tbxDestServerIP;
         //Source...
-        private System.Windows.Forms.ComboBox comboBoxTECComponent;
+        protected System.Windows.Forms.ComboBox comboBoxTECComponent;
         private System.Windows.Forms.Button buttonDestClear;
         private System.Windows.Forms.Button buttonDestSave;
-        private System.Windows.Forms.Button buttonSourceSave;
-        private System.Windows.Forms.Button buttonSourceExport;
+        protected System.Windows.Forms.Button buttonSourceSave;
+        protected System.Windows.Forms.Button buttonSourceExport;
         private System.Windows.Forms.MenuStrip menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;

@@ -13,13 +13,11 @@ namespace trans_gtp
 {
     public partial class FormMainTransGTP : FormMainTrans
     {
-        System.Windows.Forms.Control[,] m_arUIControlDB;
-
         private System.Windows.Forms.Label labelSourcePort;
         private System.Windows.Forms.NumericUpDown nudnSourcePort;
         private System.Windows.Forms.Label labelSourcePass;
         private System.Windows.Forms.Label labelSourceUserId;
-        private System.Windows.Forms.Label labelSourceDBName;
+        private System.Windows.Forms.Label labelSourceNameDatabase;
         private System.Windows.Forms.Label labelSourceServerIP;
         private System.Windows.Forms.MaskedTextBox mtbxSourcePass;
         private System.Windows.Forms.TextBox tbxSourceUserId;
@@ -29,6 +27,52 @@ namespace trans_gtp
         public FormMainTransGTP()
         {
             InitializeComponentTransGTP();
+
+            m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
+            CreateFormConnectionSettings("connsett_gtp.ini");
+
+            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
+            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
+            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
+
+            m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            //Источник
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
+
+            //Получатель
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
+            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
+
+            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                setUIControlConnectionSettings(i);
+
+                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+
+                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
+                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                m_arAdmin[i].StartDbInterface();
+            }
+
+            //panelMain.Visible = false;
+
+            timerMain.Interval = 666; //Признак первой итерации
+            timerMain.Start();
         }
 
         private void InitializeComponentTransGTP()
@@ -38,7 +82,7 @@ namespace trans_gtp
             this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
             this.labelSourcePass = new System.Windows.Forms.Label();
             this.labelSourceUserId = new System.Windows.Forms.Label();
-            this.labelSourceDBName = new System.Windows.Forms.Label();
+            this.labelSourceNameDatabase = new System.Windows.Forms.Label();
             this.labelSourceServerIP = new System.Windows.Forms.Label();
             this.mtbxSourcePass = new System.Windows.Forms.MaskedTextBox();
             this.tbxSourceUserId = new System.Windows.Forms.TextBox();
@@ -51,7 +95,7 @@ namespace trans_gtp
             this.groupBoxSource.Controls.Add(this.nudnSourcePort);
             this.groupBoxSource.Controls.Add(this.labelSourcePass);
             this.groupBoxSource.Controls.Add(this.labelSourceUserId);
-            this.groupBoxSource.Controls.Add(this.labelSourceDBName);
+            this.groupBoxSource.Controls.Add(this.labelSourceNameDatabase);
             this.groupBoxSource.Controls.Add(this.labelSourceServerIP);
             this.groupBoxSource.Controls.Add(this.mtbxSourcePass);
             this.groupBoxSource.Controls.Add(this.tbxSourceUserId);
@@ -105,14 +149,14 @@ namespace trans_gtp
             this.labelSourceUserId.TabIndex = 23;
             this.labelSourceUserId.Text = "Имя пользователя";
             // 
-            // labelSourceDBName
+            // labelSourceNameDatabase
             // 
-            this.labelSourceDBName.AutoSize = true;
-            this.labelSourceDBName.Location = new System.Drawing.Point(11, 82);
-            this.labelSourceDBName.Name = "labelSourceDBName";
-            this.labelSourceDBName.Size = new System.Drawing.Size(98, 13);
-            this.labelSourceDBName.TabIndex = 22;
-            this.labelSourceDBName.Text = "Имя базы данных";
+            this.labelSourceNameDatabase.AutoSize = true;
+            this.labelSourceNameDatabase.Location = new System.Drawing.Point(11, 82);
+            this.labelSourceNameDatabase.Name = "labelSourceNameDatabase";
+            this.labelSourceNameDatabase.Size = new System.Drawing.Size(98, 13);
+            this.labelSourceNameDatabase.TabIndex = 22;
+            this.labelSourceNameDatabase.Text = "Имя базы данных";
             // 
             // labelSourceServerIP
             // 
@@ -159,93 +203,19 @@ namespace trans_gtp
             this.groupBoxSource.ResumeLayout(false);
             this.groupBoxSource.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
-
-            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
-            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
-            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
-
-            m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
-            //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
-
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
-
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                setUIControlConnectionSettings(i);
-
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                m_arAdmin[i].StartDbInterface();
-            }
-
-            //panelMain.Visible = false;
-
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start();
         }
 
-        private void setUIControlConnectionSettings(int i)
+        protected override void CreateFormConnectionSettings(string connSettFileName)
         {
-            for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
+            base.CreateFormConnectionSettings(connSettFileName);
+
+            if (m_formConnectionSettings.Protected == false || m_formConnectionSettings.Count < 2)
             {
-                switch (j)
-                {
-                    case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PORT:
-                        if (m_arUIControlDB[i, j].Enabled)
-                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString();
-                        else
-                            ;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.USER_ID:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PASS:
-                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
-                        break;
-                    default:
-                        break;
-                }
+                while (m_formConnectionSettings.Count < 2)
+                    m_formConnectionSettings.addConnSett(new ConnectionSettings());
             }
-        }
-
-        protected override void component_Changed(object sender, EventArgs e)
-        {
-            uint indxDB = (uint)m_IndexDB;
-            ConnectionSettings connSett = new ConnectionSettings();
-
-            connSett.server = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.SERVER_IP].Text;
-            connSett.port = (Int32)((NumericUpDown)m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PORT]).Value;
-            connSett.dbName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.NAME_DATABASE].Text;
-            connSett.userName = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.USER_ID].Text;
-            connSett.password = m_arUIControlDB[indxDB, (Int16)INDX_UICONTROL_DB.PASS].Text;
-            connSett.ignore = false;
-
-            m_formConnectionSettings.ConnectionSettingsEdit = connSett;
+            else
+                ;
         }
     }
 }

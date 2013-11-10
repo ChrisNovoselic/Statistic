@@ -100,7 +100,7 @@ namespace StatisticCommon
         {
             if (used == 0)
             {
-                m_dbInterface = new DbInterface(DbInterface.DbInterfaceType.MSSQL, "Èםעונפויס MSSQL-ÁÄ: " + name);
+                m_dbInterface = new DbInterface(DbInterface.DBINTERFACE_TYPE.MSSQL, "Èםעונפויס MSSQL-ÁÄ: " + name);
                 m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
                 m_dbInterface.Start();
                 m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
@@ -595,7 +595,7 @@ namespace StatisticCommon
                 case Admin.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
-                          @" AND DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                          @" AND DATE > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
@@ -623,7 +623,7 @@ namespace StatisticCommon
                     strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" + 
-                            @" AND DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @" AND DATE_TIME > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;

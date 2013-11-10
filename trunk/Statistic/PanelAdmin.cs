@@ -225,7 +225,7 @@ namespace Statistic
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
             }
 
-            m_admin.CopyCurRDGValues();
+            m_admin.CopyCurToPrevRDGValues();
         }
 
         public void CalendarSetDate(DateTime date)
@@ -282,8 +282,8 @@ namespace Statistic
                 ;
         }
 
-        public void InitializeComboBoxTecComponent (bool bDisp) {
-            m_listTECComponentIndex = m_admin.GetListIndexTECComponent (bDisp);
+        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
+            m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
 
             comboBoxTecComponent.Items.Clear ();
 

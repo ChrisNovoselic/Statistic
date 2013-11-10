@@ -17,12 +17,14 @@ namespace StatisticCommon
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 100;
 
-        public enum DbInterfaceType
+        public enum DBINTERFACE_TYPE
         {
             MySQL,
             MSSQL,
             MSExcel
         }
+
+        public enum QUERY_TYPE { UPDATE, INSERT, DELETE, COUNT_QUERY_TYPE };
 
         private class DbInterfaceListener
         {
@@ -58,10 +60,10 @@ namespace StatisticCommon
 
         public ConnectionSettings connectionSettings;
         private bool needReconnect;
-        private DbInterfaceType m_connectionType;
+        private DBINTERFACE_TYPE m_connectionType;
         private bool connected;
 
-        public DbInterface(DbInterfaceType type, string name)
+        public DbInterface(DBINTERFACE_TYPE type, string name)
         {
             m_ThreadName = name;
             
@@ -79,7 +81,7 @@ namespace StatisticCommon
 
             switch (m_connectionType)
             {
-                case DbInterfaceType.MySQL:
+                case DBINTERFACE_TYPE.MySQL:
                     m_dbConnection = new MySqlConnection();
 
                     m_dbCommand = new MySqlCommand();
@@ -88,7 +90,7 @@ namespace StatisticCommon
 
                     m_dbAdapter = new MySqlDataAdapter();
                     break;
-                case DbInterfaceType.MSSQL:
+                case DBINTERFACE_TYPE.MSSQL:
                     m_dbConnection = new SqlConnection();
 
                     m_dbCommand = new SqlCommand();
@@ -97,7 +99,7 @@ namespace StatisticCommon
 
                     m_dbAdapter = new SqlDataAdapter();
                     break;
-                case DbInterfaceType.MSExcel:
+                case DBINTERFACE_TYPE.MSExcel:
                     m_dbConnection = new OleDbConnection();
 
                     m_dbCommand = new OleDbCommand();
@@ -243,7 +245,7 @@ namespace StatisticCommon
             catch (Exception e)
             {
                 Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной (sem.Release ())", true, true, false);
+                Logging.Logg().LogToFile("Исключение обращения к переменной sem (вызов: sem.Release ())", true, true, false);
                 Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
@@ -392,15 +394,15 @@ namespace StatisticCommon
 
                 //string connStr = string.Empty;
                 switch (m_connectionType) {
-                    case DbInterfaceType.MSSQL:
+                    case DBINTERFACE_TYPE.MSSQL:
                         //connStr = connectionSettings.GetConnectionStringMSSQL();
                         ((SqlConnection)m_dbConnection).ConnectionString = connectionSettings.GetConnectionStringMSSQL();
                         break;
-                    case DbInterfaceType.MySQL:
+                    case DBINTERFACE_TYPE.MySQL:
                         //connStr = connectionSettings.GetConnectionStringMySQL();
                         ((MySqlConnection)m_dbConnection).ConnectionString = connectionSettings.GetConnectionStringMySQL();
                         break;
-                    case DbInterfaceType.MSExcel:
+                    case DBINTERFACE_TYPE.MSExcel:
                         //((OleDbConnection)m_dbConnection).ConnectionString = ConnectionSettings.GetConnectionStringExcel ();
                         break;
                     default:
@@ -415,7 +417,7 @@ namespace StatisticCommon
                 result = true;
                 string s;
                 int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
+                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbConnection.ConnectionString;
                 else
@@ -430,15 +432,15 @@ namespace StatisticCommon
                 Logging.Logg().LogLock();
                 string s;
                 int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
+                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbConnection.ConnectionString;
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
                 Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
+                Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
             }
@@ -447,14 +449,14 @@ namespace StatisticCommon
                 Logging.Logg().LogLock();
                 string s;
                 int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
+                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbConnection.ConnectionString;
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
                 Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
                 Logging.Logg().LogUnlock();
             }
 
@@ -474,7 +476,7 @@ namespace StatisticCommon
                 result = true;
                 string s;
                 int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password");
+                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbConnection.ConnectionString;
                 else
@@ -523,7 +525,7 @@ namespace StatisticCommon
                 Logging.Logg().LogLock();
                 string s;
                 int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
+                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
                 else
@@ -542,7 +544,7 @@ namespace StatisticCommon
                 Logging.Logg().LogLock();
                 string s;
                 int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password");
+                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
                 else
@@ -601,14 +603,16 @@ namespace StatisticCommon
                     Logging.Logg().LogLock();
                     string s;
                     int pos;
-                    pos = connectionOleDB.ConnectionString.IndexOf("Password");
+                    pos = connectionOleDB.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                     if (pos < 0)
                         s = connectionOleDB.ConnectionString;
                     else
                         s = connectionOleDB.ConnectionString.Substring(0, pos);
 
                     Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                    Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                    Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
+                    Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
+                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
                     Logging.Logg().LogUnlock();
                 }
 
@@ -657,14 +661,14 @@ namespace StatisticCommon
                 Logging.Logg().LogLock();
                 string s;
                 int pos;
-                pos = connectionMySQL.ConnectionString.IndexOf("Password");
+                pos = connectionMySQL.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
                     s = connectionMySQL.ConnectionString;
                 else
                     s = connectionMySQL.ConnectionString.Substring(0, pos);
 
                 Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
                 Logging.Logg().LogUnlock();
             }
 
