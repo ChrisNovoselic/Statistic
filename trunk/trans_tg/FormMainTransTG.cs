@@ -147,7 +147,7 @@ namespace trans_tg
 
             this.groupBoxSource.Size = new System.Drawing.Size(300, 120);
 
-            this.groupBoxDest.Location = new System.Drawing.Point(8, 196);
+            this.groupBoxDest.Location = new System.Drawing.Point(3, 196);
 
             m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left));
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 392);
@@ -158,6 +158,8 @@ namespace trans_tg
             base.buttonClose.Location = new System.Drawing.Point(733, 434);
 
             this.Size = new System.Drawing.Size(849, 514);
+
+            this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
         protected override void component_Changed(object sender, EventArgs e)
@@ -190,7 +192,7 @@ namespace trans_tg
         protected override void setUIControlSourceState()
         {
             tbxSourcePathExcel.Text = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel;
-            buttonSourceExport.Enabled = tbxSourcePathExcel.Text.Length > 0 ? true : false;
+            enabledButtonSourceExport (tbxSourcePathExcel.Text.Length > 0 ? true : false);
         }
 
         protected override void getDataGridViewAdmin(int indxDB) //indxDB = DEST (ВСЕГДА)

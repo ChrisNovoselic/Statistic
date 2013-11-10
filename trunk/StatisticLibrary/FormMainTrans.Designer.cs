@@ -407,11 +407,10 @@
             // 
             // timerMain
             // 
-            this.timerMain.Tick += new System.EventHandler(this.timer_Tick);
+            this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
             // 
             // notifyIconMain
-            // 
-            this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
+            //
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.notifyIconMain.Text = "Статистика: конвертер";
             // 

@@ -6,15 +6,22 @@ using System.Drawing;
 //using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace StatisticCommon
 {
     public partial class FormMainTrans : FormMainBase
     {
+        [DllImport("user32.dll")]
+        static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        
+        protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
         protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
 
         protected System.Windows.Forms.Control[,] m_arUIControlDB;
+
+        protected System.Windows.Forms.Timer timerService;
 
         protected Admin[] m_arAdmin;
         protected FormConnectionSettings m_formConnectionSettings;
@@ -25,17 +32,26 @@ namespace StatisticCommon
         protected List<int> m_listTECComponentIndex;
 
         protected DateTime m_arg_date;
+        protected Int32 m_arg_interval;
 
         protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
+
+        private MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
+
+        protected CheckBox m_checkboxModeMashine;
 
         private bool m_bTransAuto {
             get
             {
                 //return WindowState == FormWindowState.Minimized ? true : false;
                 //return ((WindowState == FormWindowState.Minimized) && (ShowInTaskbar == false) && (notifyIconMain.Visible == true));
-                return !timerMain.Enabled;
+
+                //return !timerMain.Enabled;
+
+                return m_modeMashine == MODE_MASHINE.AUTO ? true : false;
             }
         }
+        private bool m_bEnabledUIControl = true;
 
         protected Int16 m_IndexDB
         {
@@ -60,37 +76,122 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
+            //this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
+            notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
+
+            //this.Deactivate += new EventHandler(FormMainTrans_Deactivate);
+
+            this.m_checkboxModeMashine = new CheckBox();
+            this.m_checkboxModeMashine.Name = "m_checkboxModeMashine";
+            this.m_checkboxModeMashine.Text = "Фоновый режим";
+            this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 516);
+            this.m_checkboxModeMashine.Size = new System.Drawing.Size(123, 23);
+            //this.m_checkboxModeMashine.CheckAlign = ContentAlignment.;
+            this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
+            this.m_checkboxModeMashine.CheckedChanged +=new EventHandler(m_checkboxModeMashine_CheckedChanged);
+            this.Controls.Add(this.m_checkboxModeMashine);
+
+            string msg_throw = string.Empty;
             string [] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
             if (argc > 1)
             {
-                if ((!(argc == 2)) && (args[1].IndexOf("date") < 0) && (!(args[1][0] == '/')) && (!(args[1].IndexOf("=") < 0)))
-                    throw new Exception("Ошибка распознавания аргументов командной строки");
+                if ((!(argc == 2)))
+                    ;
                 else
                 {
-                    string date = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
-                    if (date == "default")
-                        m_arg_date = DateTime.Now.AddDays(1);
+                    m_arg_date = DateTime.Now;
+                    m_arg_interval = 666666; //Милисекунды
+
+                    if ((!(args[1].IndexOf("date") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
+                    {
+                        m_modeMashine = MODE_MASHINE.AUTO;
+
+                        string date = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
+                        if (date == "default")
+                            m_arg_date = DateTime.Now.AddDays(1);
+                        else
+                            m_arg_date = DateTime.Parse(date);
+                    }
                     else
-                        m_arg_date = DateTime.Parse(date);
+                        if ((!(args[1].IndexOf("service") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
+                        {
+                            m_modeMashine = MODE_MASHINE.SERVICE;
+
+                            string interval = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
+                            if (interval == "default")
+                                ;
+                            else
+                                m_arg_interval = Int32.Parse(interval);
+
+                            if (m_arg_interval < 666666)
+                            {
+                                msg_throw = "Интервал задан меньше необходимого значения";
+                                m_modeMashine = MODE_MASHINE.UNKNOWN;
+                            }
+                            else
+                            {
+                                timerService = new Timer(this.components);
+                                timerService.Interval = 666; //Пеавый запуск
+                                timerService.Tick += new System.EventHandler(this.timerService_Tick);
+                            }
+                        }
+                        else
+                        {
+                            msg_throw = "Ошибка распознавания аргументов командной строки";
+                            m_modeMashine = MODE_MASHINE.UNKNOWN;
+                        }
+
                 }
 
                 this.WindowState = FormWindowState.Minimized;
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
-                развернутьToolStripMenuItem.Enabled = false;
+                //развернутьToolStripMenuItem.Enabled = false;
 
                 dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
             {
-                comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
-                dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
+                
             }
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
 
             delegateEvent = new DelegateFunc(EventRaised);
+
+            if (m_modeMashine == MODE_MASHINE.UNKNOWN)
+                throw new Exception(msg_throw);
+            else
+                if (m_modeMashine == MODE_MASHINE.AUTO)
+                    enabledUIControl(false);
+                else
+                    enabledUIControl(true);
+        }
+
+        private void enabledUIControl (bool enabled) {
+            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                //m_arGroupBox[i].Enabled = enabled;
+                if (!(m_arGroupBox[i].Enabled == enabled)) m_arGroupBox[i].Enabled = enabled; else ;
+            }
+
+            if (!(dateTimePickerMain.Enabled == enabled)) dateTimePickerMain.Enabled = enabled; else ;
+            if (!(comboBoxTECComponent.Enabled == enabled)) comboBoxTECComponent.Enabled = enabled; else ;
+            if (!(m_checkboxModeMashine.Enabled == enabled)) m_checkboxModeMashine.Enabled = enabled; else ;
+            
+            if (enabled)
+            {
+                comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
+                dateTimePickerMain.ValueChanged += new EventHandler(dateTimePickerMain_Changed);
+            }
+            else
+            {
+                comboBoxTECComponent.SelectedIndexChanged -= comboBoxTECComponent_SelectedIndexChanged;
+                dateTimePickerMain.ValueChanged -= dateTimePickerMain_Changed;
+            }
+
+            m_bEnabledUIControl = enabled;
         }
 
         protected void setUIControlConnectionSettings(int i)
@@ -127,17 +228,29 @@ namespace StatisticCommon
         {
         }
 
+        protected void enabledButtonSourceExport(bool enabled)
+        {
+            buttonSourceExport.Enabled = enabled;
+        }
+
         protected virtual void CreateFormConnectionSettings(string connSettFileName)
         {
             m_formConnectionSettings = new FormConnectionSettings(connSettFileName);
         }
 
         private void FillComboBoxTECComponent () {
-            for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].name);
+            if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
+            {
+                comboBoxTECComponent.Items.Clear();
+                
+                for (int i = 0; i < m_listTECComponentIndex.Count; i++)
+                    comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].name);
 
-            if (comboBoxTECComponent.Items.Count > 0)
-                comboBoxTECComponent.SelectedIndex = 0;
+                if (comboBoxTECComponent.Items.Count > 0)
+                    comboBoxTECComponent.SelectedIndex = 0;
+                else
+                    ;
+            }
             else
                 ;
         }
@@ -151,7 +264,9 @@ namespace StatisticCommon
             int indxDB = -1;
 
             //if (WindowState == FormWindowState.Minimized)
-            if (m_bTransAuto == true)
+            //if (m_bTransAuto == true)
+            //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 for (int i = 0; i < 24; i++)
                 {
@@ -269,7 +384,12 @@ namespace StatisticCommon
         protected void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
 
-            if (m_bTransAuto == true) this.BeginInvoke(new DelegateFunc(trans_auto_next)); else ;
+            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
+
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+            else
+                ;
         }
 
         protected void ActionReport(string msg)
@@ -327,12 +447,10 @@ namespace StatisticCommon
 
         private void trans_auto_start()
         {
-            //Таймер больше не нужен (сообщения в "строке статуса")
-            timerMain.Stop();
-            timerMain.Interval = 666;
-            //timerMain.Enabled = false;
-
-            FillComboBoxTECComponent();
+            ////Таймер больше не нужен (сообщения в "строке статуса")
+            //timerMain.Stop();
+            //timerMain.Interval = 666;
+            ////timerMain.Enabled = false;
 
             if (!(comboBoxTECComponent.SelectedIndex < 0))
             {
@@ -341,20 +459,35 @@ namespace StatisticCommon
                 trans_auto_next();
             }
             else
-                buttonClose.PerformClick();
+                if (m_bTransAuto) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
         private void trans_auto_next () {
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
                 comboBoxTECComponent.SelectedIndex ++;
+                //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
-                buttonClose.PerformClick();
+                if (m_bTransAuto)
+                    buttonClose.PerformClick();
+                else
+                {
+                    DateTime dateContinue = IsTomorrow();
+                    if (dateTimePickerMain.Value.Date.Equals (dateContinue) == true)
+                        enabledUIControl(true);
+                    else
+                    {
+                        comboBoxTECComponent.SelectedIndex = 0;
+                        dateTimePickerMain.Value = dateContinue;
+
+                        comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
+                    }
+                }
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void timerMain_Tick(object sender, EventArgs e)
         {
             if (timerMain.Interval == 666) {
                 //Первый запуск
@@ -362,14 +495,19 @@ namespace StatisticCommon
 
                 m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(m_modeTECComponent);
 
-                if ((WindowState == FormWindowState.Minimized) && (ShowInTaskbar == false) && (notifyIconMain.Visible == true))
+                if (m_modeMashine == MODE_MASHINE.AUTO)
                 {
+                    FillComboBoxTECComponent();
+
                     trans_auto_start();
 
                     return;
                 }
                 else
-                    FillComboBoxTECComponent();
+                    if (m_modeMashine == MODE_MASHINE.SERVICE)
+                        m_checkboxModeMashine.Checked = true;
+                    else
+                        FillComboBoxTECComponent();
             }
             else
                 ;
@@ -392,6 +530,25 @@ namespace StatisticCommon
                 lblDescError.Invalidate();
                 lblDateError.Invalidate();
             }
+        }
+
+        private void timerService_Tick(object sender, EventArgs e)
+        {
+            enabledUIControl(false);
+            
+            if (timerService.Interval == 666) {
+                //Первый запуск
+                if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //случайное совпадение
+                timerService.Interval = m_arg_interval;
+
+                FillComboBoxTECComponent();
+            }
+            else
+                ;
+
+            dateTimePickerMain.Value = DateTime.Now;
+
+            trans_auto_start();
         }
 
         //private void FormMain_Activated(object sender, EventArgs e)
@@ -537,6 +694,23 @@ namespace StatisticCommon
             SaveRDGValues ();
         }
 
+        private void m_checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!(m_modeMashine == MODE_MASHINE.AUTO))
+                if (m_checkboxModeMashine.Checked == true)
+                {
+                    SendMessage(this.Handle, 0x112, 0xF020, 0);
+                    timerService.Start();
+                }
+                else
+                {
+                    timerService.Stop();
+                    //timerService.Interval = 666;
+                }
+            else
+                ;
+        }
+
         private void SaveRDGValues () {
             m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value);
         }
@@ -561,6 +735,30 @@ namespace StatisticCommon
         private void закрытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             buttonClose.PerformClick();
+        }
+
+        private void FormMainTrans_Deactivate(object sender, EventArgs e)
+        {
+        }
+
+        // Перехват нажатия на кнопку свернуть
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == 0x112)
+            {
+                if (m.WParam.ToInt32() == 0xF020)
+                {
+                    this.WindowState = FormWindowState.Minimized;
+                    this.ShowInTaskbar = false;
+                    notifyIconMain.Visible = true;
+
+                    return;
+                }
+            }
+            else
+                ;
+
+            base.WndProc(ref m);
         }
     }
 }

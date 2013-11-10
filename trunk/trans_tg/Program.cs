@@ -15,7 +15,15 @@ namespace trans_tg
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormMainTransTG());
+            try { Application.Run(new FormMainTransTG()); }
+            catch (Exception e)
+            {
+                StatisticCommon.Logging.Logg().LogLock();
+                //StatisticCommon.Logging.Logg().LogToFile("", true, true, false);
+                StatisticCommon.Logging.Logg().LogToFile("Исключение " + e.Message, true, true, false);
+                StatisticCommon.Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                StatisticCommon.Logging.Logg().LogUnlock();
+            }
         }
     }
 }

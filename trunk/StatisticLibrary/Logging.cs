@@ -28,9 +28,15 @@ namespace StatisticCommon
         private int logRotateFiles;
 
         private static Logging m_this = null;
+        //private static string m_appName = null;
         public static Logging Logg () {
             if (m_this == null)
-                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + Environment.MachineName + "_log.txt", false, null, null);
+            {
+                int posAppName = System.Environment.CommandLine.LastIndexOf('\\') + 1;
+                string appName = System.Environment.CommandLine.Substring(posAppName, System.Environment.CommandLine.IndexOf(' ', posAppName) - posAppName - 1);
+                appName = appName.Substring(0, appName.IndexOf ('.'));
+                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + appName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+            }
             else
                 ;
 
