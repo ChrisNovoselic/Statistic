@@ -487,6 +487,12 @@ namespace StatisticCommon
                 }
         }
 
+        private DateTime IsTomorrow() {
+            DateTime dateRes = dateTimePickerMain.Value;
+
+            return dateRes;
+        }
+
         private void timerMain_Tick(object sender, EventArgs e)
         {
             if (timerMain.Interval == 666) {

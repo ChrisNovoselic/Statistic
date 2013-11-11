@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9C402674-532B-4224-97F0-DB10C04F527F}</ProjectGuid>
+    <ProjectGuid>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>StatisticCommon</RootNamespace>
@@ -36,12 +36,8 @@
       <HintPath>..\MySQL.Data.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -76,7 +72,7 @@
     <Compile Include="FormMainTrans.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormMainTrans.Designer.cs">
+    <Compile Include="FormMainTrans.designer.cs">
       <DependentUpon>FormMainTrans.cs</DependentUpon>
     </Compile>
     <Compile Include="FormParameters.cs">
@@ -136,9 +132,19 @@
       <DependentUpon>FormWait.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\btnAdd.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\btnDel.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\statistic2.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\statistic3.ico" />
