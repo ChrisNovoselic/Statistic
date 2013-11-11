@@ -21,6 +21,10 @@ namespace trans_tg
         {
             InitializeComponentTransTG();
 
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
+            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic3"))); //$this.Icon
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic3"))); //$this.Icon
+
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.TG;
 
             CreateFormConnectionSettings("connsett_tg.ini");
@@ -55,6 +59,7 @@ namespace trans_tg
                 m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
                 m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                m_arAdmin[i].SetDelegateSaveComplete (saveDataGridViewAdminComplete);
 
                 m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
 
@@ -199,8 +204,9 @@ namespace trans_tg
         {
             base.getDataGridViewAdmin(indxDB);
 
-            ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_curTimezoneOffsetRDGExcelValues = new Admin.RDGStruct[((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curTimezoneOffsetRDGExcelValues.Length];
-            ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curTimezoneOffsetRDGExcelValues.CopyTo(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_curTimezoneOffsetRDGExcelValues, 0);
+            //((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).getDataGridViewAdmin(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]));
+            ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).getCurTimezoneOffsetRDGExcelValues(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]));
+
         }
     }
 }

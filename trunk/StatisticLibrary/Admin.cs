@@ -63,7 +63,7 @@ namespace StatisticCommon
         private DelegateStringFunc errorReport;
         private DelegateStringFunc actionReport;
 
-        //private DelegateFunc fillTECComponent = null;
+        private DelegateFunc saveComplete = null;
         private DelegateDateFunction fillData = null;
 
         private DelegateDateFunction setDatetime;
@@ -481,6 +481,8 @@ namespace StatisticCommon
             this.actionReport = fact;
         }
 
+        public void SetDelegateSaveComplete(DelegateFunc f) { saveComplete = f; }
+        
         public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
 
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
@@ -812,10 +814,13 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch
+                catch (Exception e)
                 {
                     Logging.Logg().LogLock();
                     Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
+                    Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
+                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -1485,7 +1490,7 @@ namespace StatisticCommon
                                    //@"';";
 
             Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("SetPPBRRequest", true, true, false);
+            Logging.Logg().LogToFile("Admin - SetPPBRRequest", true, true, false);
             Logging.Logg().LogUnlock();
             
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
@@ -2076,6 +2081,7 @@ namespace StatisticCommon
                     result = true;
                     if (result)
                     {
+                        if (!(saveComplete == null)) saveComplete(); else ;
                     }
                     break;
                 //case StatesMachine.UpdateValuesPPBR:
@@ -2513,7 +2519,7 @@ namespace StatisticCommon
             }
         }
 
-        public void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date)
+        public void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
         {
             lock (m_lockObj)
             {
@@ -2524,36 +2530,39 @@ namespace StatisticCommon
             Errors resultSaving = SaveChanges();
             if (resultSaving == Errors.NoError)
             {
-                lock (m_lockObj)
-                {
-                    ClearValues();
-
-                    //m_prevDate = date.Date;
-                    m_curDate = m_prevDate;
-                    using_date = false;
-
-                    newState = true;
-                    states.Clear();
-
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, false);
-                    Logging.Logg().LogUnlock();
-
-                    //states.Add(StatesMachine.CurrentTime);
-                    states.Add(StatesMachine.PPBRValues);
-                    states.Add(StatesMachine.AdminValues);
-
-                    try
+                if (bCallback)
+                    lock (m_lockObj)
                     {
-                        semaState.Release(1);
-                    }
-                    catch
-                    {
+                        ClearValues();
+
+                        //m_prevDate = date.Date;
+                        m_curDate = m_prevDate;
+                        using_date = false;
+
+                        newState = true;
+                        states.Clear();
+
                         Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                        Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, false);
                         Logging.Logg().LogUnlock();
+
+                        //states.Add(StatesMachine.CurrentTime);
+                        states.Add(StatesMachine.PPBRValues);
+                        states.Add(StatesMachine.AdminValues);
+
+                        try
+                        {
+                            semaState.Release(1);
+                        }
+                        catch
+                        {
+                            Logging.Logg().LogLock();
+                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                            Logging.Logg().LogUnlock();
+                        }
                     }
-                }
+                else
+                    ;
             }
             else
             {
@@ -2668,6 +2677,16 @@ namespace StatisticCommon
             for (int i = 0; i < m_list_tec.Count; i ++) {
                 m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.ADMIN);
                 m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.PBR);
+            }
+        }
+
+        public virtual void getCurRDGValues (Admin source) {
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].plan = source.m_curRDGValues[i].plan;
+                m_curRDGValues[i].recomendation = source.m_curRDGValues[i].recomendation;
+                m_curRDGValues[i].deviationPercent = source.m_curRDGValues[i].deviationPercent;
+                m_curRDGValues[i].deviation = source.m_curRDGValues[i].deviation;
             }
         }
     }

@@ -28,6 +28,10 @@ namespace trans_gtp
         {
             InitializeComponentTransGTP();
 
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
+            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
+
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
             CreateFormConnectionSettings("connsett_gtp.ini");
@@ -61,6 +65,7 @@ namespace trans_gtp
                 m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
                 m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
 
                 m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
 

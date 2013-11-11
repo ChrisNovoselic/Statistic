@@ -187,7 +187,7 @@ namespace StatisticCommon
 
         public void Request(int listenerId, string request)
         {
-            if ((! (listenerId < m_listListeners.Count)) || listenerId < 0)
+            if ((!(listenerId < m_listListeners.Count)) || (listenerId < 0) || (request.Length == 0))
                 return;
             else
                 ;
@@ -214,6 +214,7 @@ namespace StatisticCommon
             {
                 error = true;
                 table = null;
+
                 return false;
             }
             else

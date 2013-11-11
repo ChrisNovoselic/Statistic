@@ -82,7 +82,7 @@ namespace trans_tg
 
         protected override bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
-            DateTime dateTimezoneOffsetRDGExcel = date.AddDays(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
+            DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
             //bool bIsHourTimezoneOffsetRDGExcel = false;
 
             for (int i = 0, hour; i < table.Rows.Count; i++)
@@ -97,10 +97,12 @@ namespace trans_tg
                     else
                         ;
 
-                    if (!(dateTimezoneOffsetRDGExcel.Day == ((DateTime)table.Rows[i][0]).Day))
+                    if ((!(dateTimezoneOffsetRDGExcel.Day == ((DateTime)table.Rows[i][0]).Day)) && (hour > 0))
                         m_arHaveDates[(int)type, hour - 1] = true;
-                    else
-                        m_listTimezoneOffsetHaveDates[(int)type][hour - 1] = true;
+                    else {
+                        hour = hour == 0 ? 24 : hour;
+                        m_listTimezoneOffsetHaveDates[(int)type][hour - 1 - (24 + (-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc))] = true;
+                    }
                 }
                 catch { }
             }
@@ -308,10 +310,22 @@ namespace trans_tg
             resQuery[(int)DbInterface.QUERY_TYPE.DELETE] = @"";
 
             Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("SetPPBRRequest", true, true, false);
+            Logging.Logg().LogToFile("AdminTransTG - SetPPBRRequest", true, true, false);
             Logging.Logg().LogUnlock();
 
             return resQuery;
+        }
+
+        public override void getCurRDGValues(Admin source)
+        {
+            base.getCurRDGValues (source);
+
+            getCurTimezoneOffsetRDGExcelValues((AdminTransTG)source);
+        }
+
+        public void getCurTimezoneOffsetRDGExcelValues (AdminTransTG source) {
+            m_curTimezoneOffsetRDGExcelValues = new Admin.RDGStruct[source.m_curTimezoneOffsetRDGExcelValues.Length];
+            source.m_curTimezoneOffsetRDGExcelValues.CopyTo(m_curTimezoneOffsetRDGExcelValues, 0);
         }
     }
 }

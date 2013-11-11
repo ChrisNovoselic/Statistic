@@ -14,6 +14,9 @@ namespace StatisticCommon
     {
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 666666;
+        private const Int32 TIMER_START_INTERVAL = 666;
         
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
         protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
@@ -91,6 +94,10 @@ namespace StatisticCommon
             this.m_checkboxModeMashine.CheckedChanged +=new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
 
+            //Значения аргументов по умолчанию
+            m_arg_date = DateTime.Now;
+            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
+
             string msg_throw = string.Empty;
             string [] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
@@ -100,9 +107,6 @@ namespace StatisticCommon
                     ;
                 else
                 {
-                    m_arg_date = DateTime.Now;
-                    m_arg_interval = 666666; //Милисекунды
-
                     if ((!(args[1].IndexOf("date") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
                     {
                         m_modeMashine = MODE_MASHINE.AUTO;
@@ -124,16 +128,13 @@ namespace StatisticCommon
                             else
                                 m_arg_interval = Int32.Parse(interval);
 
-                            if (m_arg_interval < 666666)
+                            if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
                             {
                                 msg_throw = "Интервал задан меньше необходимого значения";
                                 m_modeMashine = MODE_MASHINE.UNKNOWN;
                             }
                             else
                             {
-                                timerService = new Timer(this.components);
-                                timerService.Interval = 666; //Пеавый запуск
-                                timerService.Tick += new System.EventHandler(this.timerService_Tick);
                             }
                         }
                         else
@@ -268,17 +269,11 @@ namespace StatisticCommon
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                for (int i = 0; i < 24; i++)
-                {
-                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].plan = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].plan;
-                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].recomendation = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].recomendation;
-                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].deviationPercent = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].deviationPercent;
-                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_curRDGValues[i].deviation = m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].deviation;
-                }
+                m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
 
-                this.BeginInvoke(new DelegateFunc(SaveRDGValues));
+                this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
 
-                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                //this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }
             else
             {
@@ -295,6 +290,17 @@ namespace StatisticCommon
 
                 CopyCurAdminValues();
             }
+        }
+
+        protected void saveDataGridViewAdminComplete()
+        {
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            {
+                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                //trans_auto_next ();
+            }
+            else
+                ;
         }
 
         protected void setDatetimePickerMain(DateTime date)
@@ -449,7 +455,7 @@ namespace StatisticCommon
         {
             ////Таймер больше не нужен (сообщения в "строке статуса")
             //timerMain.Stop();
-            //timerMain.Interval = 666;
+            //timerMain.Interval = TIMER_START_INTERVAL;
             ////timerMain.Enabled = false;
 
             if (!(comboBoxTECComponent.SelectedIndex < 0))
@@ -474,28 +480,33 @@ namespace StatisticCommon
                     buttonClose.PerformClick();
                 else
                 {
-                    DateTime dateContinue = IsTomorrow();
-                    if (dateTimePickerMain.Value.Date.Equals (dateContinue) == true)
+
+                    if (IsTomorrow () == false) {
+                        dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(-1);
+
                         enabledUIControl(true);
+                    }
                     else
                     {
+                        dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
                         comboBoxTECComponent.SelectedIndex = 0;
-                        dateTimePickerMain.Value = dateContinue;
 
                         comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
                     }
                 }
         }
 
-        private DateTime IsTomorrow() {
-            DateTime dateRes = dateTimePickerMain.Value;
+        protected virtual bool IsTomorrow() {
+            TimeSpan timeSpan= new TimeSpan (4, 5, 6);
+            DateTime dateApp = dateTimePickerMain.Value.AddDays (1);
 
-            return dateRes;
+            return (((DateTime)dateApp.Date) - DateTime.Now) > timeSpan ? false : true;
         }
 
         private void timerMain_Tick(object sender, EventArgs e)
         {
-            if (timerMain.Interval == 666) {
+            if (timerMain.Interval == TIMER_START_INTERVAL)
+            {
                 //Первый запуск
                 timerMain.Interval = 1000;
 
@@ -507,7 +518,7 @@ namespace StatisticCommon
 
                     trans_auto_start();
 
-                    return;
+                    //return;
                 }
                 else
                     if (m_modeMashine == MODE_MASHINE.SERVICE)
@@ -541,8 +552,9 @@ namespace StatisticCommon
         private void timerService_Tick(object sender, EventArgs e)
         {
             enabledUIControl(false);
-            
-            if (timerService.Interval == 666) {
+
+            if (timerService.Interval == TIMER_START_INTERVAL)
+            {
                 //Первый запуск
                 if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //случайное совпадение
                 timerService.Interval = m_arg_interval;
@@ -588,8 +600,9 @@ namespace StatisticCommon
             m_formConnectionSettings.ConnectionSettingsEdit = connSett;
         }
 
-        protected virtual void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev) {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
+        protected void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev) {
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
             {
                 ClearTables();
 
@@ -692,12 +705,16 @@ namespace StatisticCommon
 
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
-            //Взять значения "с окна" в таблицу
-            getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
+            if (!(comboBoxTECComponent.SelectedIndex < 0)) {
+                //Взять значения "с окна" в таблицу
+                getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
 
-            //ClearTables();
+                //ClearTables();
 
-            SaveRDGValues ();
+                SaveRDGValues (true);
+            }
+            else
+                ;
         }
 
         private void m_checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
@@ -705,20 +722,40 @@ namespace StatisticCommon
             if (!(m_modeMashine == MODE_MASHINE.AUTO))
                 if (m_checkboxModeMashine.Checked == true)
                 {
+                    //if (m_modeMashine == MODE_MASHINE.INTERACTIVE) m_modeMashine = MODE_MASHINE.SERVICE; else ;
+                    //То же самое
+                    if (!(m_modeMashine == MODE_MASHINE.SERVICE)) m_modeMashine = MODE_MASHINE.SERVICE; else ;
+
+                    InitializeTimerService ();
+                    
                     SendMessage(this.Handle, 0x112, 0xF020, 0);
                     timerService.Start();
                 }
                 else
                 {
+                    if (!(m_modeMashine == MODE_MASHINE.INTERACTIVE)) m_modeMashine = MODE_MASHINE.INTERACTIVE; else ;
+                    
                     timerService.Stop();
-                    //timerService.Interval = 666;
+                    //timerService.Interval = TIMER_START_INTERVAL;
+
+                    timerService = null;
                 }
             else
                 ;
         }
 
-        private void SaveRDGValues () {
-            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value);
+        private void InitializeTimerService () {
+            if (timerService == null) {
+                timerService = new Timer(this.components);
+                timerService.Interval = TIMER_START_INTERVAL; //Пеавый запуск
+                timerService.Tick += new System.EventHandler(this.timerService_Tick);
+            }
+            else
+                ;
+        }
+
+        private void SaveRDGValues (bool bCallback) {
+            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
         }
 
         private void notifyIconMain_Click(object sender, EventArgs e)

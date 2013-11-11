@@ -29,8 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
+            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
@@ -411,7 +410,7 @@
             // 
             // notifyIconMain
             //
-            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            //this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.notifyIconMain.Text = "Статистика: конвертер";
             // 
             // contextMenuStripNotifyIcon
@@ -452,7 +451,7 @@
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.menuStripMain);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            //this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStripMain;
             this.MaximizeBox = false;
             this.Name = "FormMain";
@@ -509,7 +508,7 @@
         private System.Windows.Forms.ToolStripStatusLabel lblMainState;
         private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripStatusLabel lblDateError;
-        private System.Windows.Forms.NotifyIcon notifyIconMain;
+        protected System.Windows.Forms.NotifyIcon notifyIconMain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem развернутьToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparatorNotifyIcon;
