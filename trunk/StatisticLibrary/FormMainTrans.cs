@@ -482,7 +482,7 @@ namespace StatisticCommon
                 {
 
                     if (IsTomorrow () == false) {
-                        dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(-1);
+                        dateTimePickerMain.Value = DateTime.Now;
 
                         enabledUIControl(true);
                     }
