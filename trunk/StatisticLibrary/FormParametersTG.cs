@@ -179,12 +179,9 @@ namespace StatisticCommon {
             base.buttonCancel_Click(sender, e);
         }
 
-        public int ParamsGetTgId(int sensor, bool mins)
+        public int ParamsGetTgId(TG.ID_TIME id_time, int sensor)
         {
-            if (mins)
-                return m_tg_id[(int)TG.ID_TIME.MINUTES, sensor];
-            else
-                return m_tg_id[(int)TG.ID_TIME.HOURS, sensor];
+            return m_tg_id[(int)id_time, sensor];         
         }
     }
 }

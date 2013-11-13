@@ -224,22 +224,32 @@ namespace StatisticCommon
                 //split it into lines
                 string[] rowsInClipboard = stringInClipboard.Split(rowSplitter, StringSplitOptions.RemoveEmptyEntries);
 
+                if (rowsInClipboard.Length == 0)
+                    return;
+                else
+                    ;
+
                 //get the row and column of selected cell in grid
-                int r = SelectedCells[0].RowIndex;
-                int c = SelectedCells[0].ColumnIndex;
+                int rowSelectedCur = SelectedCells[0].RowIndex;
+                int colSelectedCur = SelectedCells[0].ColumnIndex;
+
+                int colsInClipboard = rowsInClipboard[0].Split(columnSplitter).Length;
 
                 //add rows into grid to fit clipboard lines
-                if (Rows.Count < (r + rowsInClipboard.Length))
+                if (Rows.Count < (rowSelectedCur + rowsInClipboard.Length))
                     //Rows.Add(r + rowsInClipboard.Length - Rows.Count);
                     return;
                 else
                     ;
 
-                if ((c < 1) || (rowsInClipboard[0].Split(columnSplitter).Length > (Columns.Count - 1)))
+                //Если кол-во столбцов в БУФЕРе = 0 ИЛИ > кол-ва столбцов DataGridView (для редактирования) -> ВЫХОД
+                if ((colSelectedCur < 1) || (colsInClipboard > (ColumnCount - 1 - 1)) || ((colSelectedCur + colsInClipboard) > (ColumnCount - 1)))
                     return;
                 else
                     ;
 
+                double dblValue;
+                bool bValid = false, bValue;
                 // loop through the lines, split them into cells and place the values in the corresponding cell.
                 for (int iRow = 0; iRow < rowsInClipboard.Length; iRow++)
                 {
@@ -250,20 +260,24 @@ namespace StatisticCommon
                     for (int iCol = 0; iCol < valuesInRow.Length; iCol++)
                     {
                         //assign cell value, only if it within columns of the grid
-                        if (ColumnCount - 1 >= c + iCol) {
-                            /*switch (Columns [c + iCol].GetType ().ToString ()) {
+                        if (colSelectedCur + iCol < ColumnCount - 1)
+                        {
+                            switch (Columns[colSelectedCur + iCol].GetType().ToString())
+                            {
                                 case "System.Windows.Forms.DataGridViewTextBoxColumn":
-                                    //Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                                    bValid = double.TryParse(valuesInRow[iCol], out dblValue);
                                     break;
                                 case "System.Windows.Forms.DataGridViewCheckBoxColumn":
-                                    //SendKeys.Send (" ");
-                                    //Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                                    bValid = bool.TryParse(valuesInRow[iCol], out bValue);
                                     break;
                                 default:
                                     break;
-                            }*/
+                            }
 
-                            Rows[r + iRow].Cells[c + iCol].Value = valuesInRow[iCol];
+                            if (bValid)
+                                Rows[rowSelectedCur + iRow].Cells[colSelectedCur + iCol].Value = valuesInRow[iCol];
+                            else
+                                ;
                         }
                         else
                             ;

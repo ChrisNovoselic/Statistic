@@ -2752,61 +2752,84 @@ namespace Statistic
             tgs [(int) TG.ID_TIME.MINUTES] = new Dictionary<string, int>();
             tgs[(int)TG.ID_TIME.HOURS] = new Dictionary<string, int>();
 
-            //int count_tg = m_list_TECComponents.Count;
-            bool bMinutes = true;
-            for (int i = (int) TG.ID_TIME.MINUTES; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++)
-            {
-                if (i > (int)TG.ID_TIME.MINUTES) bMinutes = false; else ;
-                for (int j = 0; j < m_list_TECComponents.Count; j++)
-                {
-                    tgs[i].Add(m_list_TECComponents[j].name.ToString(), tec.parametersTGForm.ParamsGetTgId(j, bMinutes));
-                }
-            }
-
             int t = 0;
             if (num_TECComponent < 0)
             {
-                for (int i = 0; i < tec.list_TECComponents.Count; i++)
+                int indxTG = -1;
+                for (TG.ID_TIME i = TG.ID_TIME.MINUTES; i < TG.ID_TIME.COUNT_ID_TIME; i++) {
+                    indxTG = 0;
+                    for (int j = 0; j < m_list_TECComponents.Count; j++) {
+                        for (int k = 0; k < ((TECComponent)m_list_TECComponents[j]).TG.Count; k++, indxTG ++)
+                        {
+                            tgs[(int)i].Add(((TECComponent)m_list_TECComponents[j]).TG[k].name.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
+                        }
+                    }
+                }
+
+                for (int i = 0; i < m_list_TECComponents.Count; i++)
                 {
-                    for (int j = 0; j < tec.list_TECComponents[i].TG.Count; j++)
+                    for (int j = 0; j < ((TECComponent)m_list_TECComponents[i]).TG.Count; j++)
                     {
-                        tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int) TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name];
-                        tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name];
-                        sensorId2TG[t] = tec.list_TECComponents[i].TG[j];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name];
+                        sensorId2TG[t] = ((TECComponent)m_list_TECComponents[i]).TG[j];
                         //sensorId2TGHours[t] = tec.list_TECComponents[i].TG[j];
                         t++;
 
                         if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
 
                         if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_TECComponents[i].TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
                     }
                 }
             }
             else
             {
-                for (int i = 0; i < tec.list_TECComponents[num_TECComponent].TG.Count; i++)
+                int indxTG = -1;
+                List <int> listIdTGTEC = new List <int> ();
+                for (TG.ID_TIME i = TG.ID_TIME.MINUTES; i < TG.ID_TIME.COUNT_ID_TIME; i++)
                 {
-                    tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[num_TECComponent].TG[i].name];
-                    tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[num_TECComponent].TG[i].name];
-                    sensorId2TG[t] = tec.list_TECComponents[num_TECComponent].TG[i];
+                    indxTG = 0;
+                    for (int j = 0; j < tec.list_TECComponents.Count; j++)
+                    {
+                        for (int k = 0; k < ((TECComponent)tec.list_TECComponents[j]).TG.Count; k++)
+                        {
+                            if (listIdTGTEC.IndexOf(((TECComponent)tec.list_TECComponents[j]).TG [k].m_id) < 0)
+                                listIdTGTEC.Add(((TECComponent)tec.list_TECComponents[j]).TG[k].m_id);
+                            else
+                                ;
+                        }
+                    }
+                }
+                
+                for (TG.ID_TIME i = TG.ID_TIME.MINUTES; i < TG.ID_TIME.COUNT_ID_TIME; i++)
+                    for (int j = 0; j < m_list_TECComponents.Count; j++) {
+                        indxTG = listIdTGTEC.IndexOf(m_list_TECComponents[j].m_id);
+                        tgs[(int)i].Add(m_list_TECComponents[j].name.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
+                    }
+
+                for (int i = 0; i < m_list_TECComponents.Count; i++)
+                {
+                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][((TG)m_list_TECComponents[i]).name];
+                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][((TG)m_list_TECComponents[i]).name];
+                    sensorId2TG[t] = ((TG)m_list_TECComponents[i]);
                     //sensorId2TGHours[t] = tec.list_TECComponents[num_gtp].TG[i];
                     t++;
 
-                    if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                    if (sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals (string.Empty) == true)
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES].ToString();
 
-                    if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] = tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                    if (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == true)
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + tec.list_TECComponents[num_TECComponent].TG[i].ids[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS].ToString();
                 }
             }
         }
@@ -3321,9 +3344,9 @@ namespace Statistic
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {
-                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
-                        && (!(table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1))
-                        && (!(table_in.Columns[i].ColumnName.IndexOf(tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) > -1)))
+                    if ((!(table_in.Columns[i].ColumnName.Equals ("ID_COMPONENT") == true))
+                        && (!(table_in.Columns[i].ColumnName.Equals (nameFieldDate) == true))
+                        && (!(table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
                     //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
                     {
                         cols_data.Add(table_in.Columns[i]);
@@ -3355,7 +3378,10 @@ namespace Statistic
                     }
                 }
 
-                table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                    table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                else
+                    ;
 
                 List<DataRow[]> listDataRows = new List<DataRow[]>();
 
@@ -3388,7 +3414,10 @@ namespace Statistic
 
                             //Заполнение DATE_ADMIN (постоянные столбцы)
                             table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                            table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                            if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                                table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                            else
+                                ;
                         }
                         else
                             indx_row = k;

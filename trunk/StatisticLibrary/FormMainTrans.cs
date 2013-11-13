@@ -93,6 +93,8 @@ namespace StatisticCommon
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
             this.m_checkboxModeMashine.CheckedChanged +=new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
+            //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
+            this.m_checkboxModeMashine.Enabled = false;
 
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
@@ -115,7 +117,10 @@ namespace StatisticCommon
                         if (date == "default")
                             m_arg_date = DateTime.Now.AddDays(1);
                         else
-                            m_arg_date = DateTime.Parse(date);
+                            if (date == "now")
+                                ; //Уже присвоено значение
+                            else
+                                m_arg_date = DateTime.Parse(date);
                     }
                     else
                         if ((!(args[1].IndexOf("service") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
@@ -179,7 +184,8 @@ namespace StatisticCommon
 
             if (!(dateTimePickerMain.Enabled == enabled)) dateTimePickerMain.Enabled = enabled; else ;
             if (!(comboBoxTECComponent.Enabled == enabled)) comboBoxTECComponent.Enabled = enabled; else ;
-            if (!(m_checkboxModeMashine.Enabled == enabled)) m_checkboxModeMashine.Enabled = enabled; else ;
+            //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
+            //if (!(m_checkboxModeMashine.Enabled == enabled)) m_checkboxModeMashine.Enabled = enabled; else ;
             
             if (enabled)
             {
@@ -484,7 +490,7 @@ namespace StatisticCommon
                     if (IsTomorrow () == false) {
                         dateTimePickerMain.Value = DateTime.Now;
 
-                        enabledUIControl(true);
+                        //enabledUIControl(true);
                     }
                     else
                     {

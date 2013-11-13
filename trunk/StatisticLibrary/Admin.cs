@@ -894,6 +894,9 @@ namespace StatisticCommon
             int i = -1, j = -1, k = -1,
                 hour = -1;
 
+            int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
+            if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
+
             //Удаление столбцов 'ID_COMPONENT'
             for (i = 0; i < arTable.Length; i++) {
                 /*
@@ -960,7 +963,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1/*"PBR"*/];
+                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1 + offsetPBR_NUMBER/*"PBR"*/];
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
@@ -980,11 +983,11 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1/*"REC"*/];
-                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2/*"IS_PER"*/] == 1;
-                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3/*"DIVIAT"*/];
+                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1 + offsetPBR_NUMBER/*"REC"*/];
+                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2 + offsetPBR_NUMBER/*"IS_PER"*/] == 1;
+                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3 + offsetPBR_NUMBER/*"DIVIAT"*/];
                         if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
-                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1/*"PBR"*/];
+                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1 + offsetPBR_NUMBER/*"PBR"*/];
                         else
                             m_curRDGValues[hour - 1].plan = 0;
                     }
@@ -1716,10 +1719,13 @@ namespace StatisticCommon
 
             m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(connSettConfigDB);
 
-            Int16 connSettType = -1; 
+            Int16 connSettType = -1;
+            Int16 dbType = -1; 
             foreach (TEC t in m_list_tec)
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
+                    dbType = -1;
+                    
                     bool isAlready = false;
 
                     foreach (DbInterface dbi in m_listDbInterfaces) {
@@ -1740,22 +1746,38 @@ namespace StatisticCommon
                     }
 
                     if (isAlready == false) {
-                        m_listDbInterfaces.Add(new DbInterface(DbInterface.DBINTERFACE_TYPE.MySQL, "Интерфейс MySQL-БД: Администратор"));
-                        m_listListenerIdCurrent.Add (-1);
+                        switch (connSettType) {
+                            case (int)CONN_SETT_TYPE.ADMIN:
+                            case (int)CONN_SETT_TYPE.PBR:
+                                dbType = (int)DbInterface.DBINTERFACE_TYPE.MySQL;
+                                break;
+                            case (int)CONN_SETT_TYPE.DATA:
+                                dbType = (int)DbInterface.DBINTERFACE_TYPE.MSSQL;
+                                break;
+                            default:
+                                break; 
+                        }
 
-                        t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
-                        t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
+                        if (! (dbType < 0)) {
+                            m_listDbInterfaces.Add(new DbInterface((DbInterface.DBINTERFACE_TYPE)dbType, "Интерфейс MySQL-БД: Администратор"));
+                            m_listListenerIdCurrent.Add (-1);
 
-                        if (m_indxDbInterfaceConfigDB < 0) {
-                            m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
-                            m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
+                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
+                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
+
+                            if (m_indxDbInterfaceConfigDB < 0) {
+                                m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
+                                m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
+                            }
+                            else
+                                ;
+
+                            m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
+
+                            m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
                         }
                         else
                             ;
-
-                        m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
-
-                        m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
                     }
                     else
                         ;
@@ -2675,8 +2697,20 @@ namespace StatisticCommon
 
         public void ReConnSettingsRDGSource (ConnectionSettings connSett, int id_source) {
             for (int i = 0; i < m_list_tec.Count; i ++) {
-                m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.ADMIN);
-                m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.PBR);
+                if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
+                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.ADMIN);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, id_source), (int)CONN_SETT_TYPE.PBR);
+                }
+                else {
+                    if (m_list_tec[i].type() == TEC.TEC_TYPE.BIYSK)
+                    {
+                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, 101), (int)CONN_SETT_TYPE.ADMIN);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, 101), (int)CONN_SETT_TYPE.PBR);
+                    }
+                    else
+                    {
+                    }
+                }
             }
         }
 
