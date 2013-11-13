@@ -20,10 +20,16 @@ namespace StatisticCommon
         public int error_delay;
         public int max_tryes;
 
-        public FormParameters()
+        public FormParameters(string nameFileINI) : base (nameFileINI)
         {
             InitializeComponent();
-            settingsFile = System.Environment.CurrentDirectory + "\\" + settingsFile;
+
+            this.btnCancel.Location = new System.Drawing.Point(8, 90);
+            this.btnOk.Location = new System.Drawing.Point(89, 90);
+            this.btnReset.Location = new System.Drawing.Point(170, 90);
+
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             
             loadParam();
             mayClose = false;
@@ -31,25 +37,25 @@ namespace StatisticCommon
 
         public void loadParam()
         {
-            poll_time = ReadInt("Main settings", "Polling period", POLL_TIME);
+            poll_time = m_FileINI.ReadInt("Main settings", "Polling period", POLL_TIME);
             if (poll_time < nudnQueryPeriod.Minimum || poll_time > nudnQueryPeriod.Maximum)
                 poll_time = POLL_TIME;
             poll_time *= 1000;
 
-            error_delay = ReadInt("Main settings", "Error delay", ERROR_DELAY);
+            error_delay = m_FileINI.ReadInt("Main settings", "Error delay", ERROR_DELAY);
             if (error_delay < nudnDelayTime.Minimum || error_delay > nudnDelayTime.Maximum)
                 error_delay = ERROR_DELAY;
 
-            max_tryes = ReadInt("Main settings", "Max attempts count", MAX_TRYES);
+            max_tryes = m_FileINI.ReadInt("Main settings", "Max attempts count", MAX_TRYES);
             if (max_tryes < nudnRequeryCount.Minimum || max_tryes > nudnRequeryCount.Maximum)
                 max_tryes = ERROR_DELAY;
         }
 
         public void saveParam()
         {
-            WriteInt("Main settings", "Polling period", poll_time / 1000);
-            WriteInt("Main settings", "Error delay", error_delay);
-            WriteInt("Main settings", "Max attempts count", max_tryes);
+            m_FileINI.WriteInt("Main settings", "Polling period", poll_time / 1000);
+            m_FileINI.WriteInt("Main settings", "Error delay", error_delay);
+            m_FileINI.WriteInt("Main settings", "Max attempts count", max_tryes);
         }
 
         private void btnOk_Click(object sender, EventArgs e)

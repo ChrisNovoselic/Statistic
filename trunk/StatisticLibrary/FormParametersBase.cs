@@ -14,57 +14,62 @@ namespace StatisticCommon
         public System.Windows.Forms.Button btnReset;
         public System.Windows.Forms.Button btnCancel;
 
-        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool WritePrivateProfileString(String Section, String Key, String Value, String FilePath);
-        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.I4)]
-        public static extern int GetPrivateProfileString(String Section, String Key, String Default, StringBuilder retVal, int Size, String FilePath);
-
         /*[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool WritePrivateProfileString(string lpAppName,
            string lpKeyName, string lpString, string lpFileName);*/
-        public string settingsFile = "setup.ini";
+        protected FIleINI m_FileINI;
 
         public bool mayClose;
         //private DelegateFunc delegateParamsApply;
 
         public Int16 m_State;
 
-        public FormParametersBase () {
+        public FormParametersBase (string nameFileINI) {
+            this.btnOk = new System.Windows.Forms.Button();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.SuspendLayout();
+            // 
+            // btnOk
+            // 
+            //this.btnOk.Location = new System.Drawing.Point(61, 320);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(75, 23);
+            this.btnOk.TabIndex = 39;
+            this.btnOk.Text = "Применить";
+            this.btnOk.UseVisualStyleBackColor = true;
+            //this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            // 
+            // btnReset
+            // 
+            //this.btnReset.Location = new System.Drawing.Point(154, 320);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(75, 23);
+            this.btnReset.TabIndex = 40;
+            this.btnReset.Text = "Сброс";
+            this.btnReset.UseVisualStyleBackColor = true;
+            //this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
+            // btnCancel
+            // 
+            //this.btnCancel.Location = new System.Drawing.Point(247, 320);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 41;
+            this.btnCancel.Text = "Отмена";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.buttonCancel_Click);
+
+            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.btnOk);
+
+            this.KeyUp +=new KeyEventHandler(FormParametersBase_KeyUp);
+
+            m_FileINI = new FIleINI(nameFileINI);
+
             m_State = 0;
-        }
-
-        public String ReadString(String Section, String Key, String Default)
-        {
-            StringBuilder StrBu = new StringBuilder(255);
-            GetPrivateProfileString(Section, Key, Default, StrBu, 255, settingsFile);
-            return StrBu.ToString();
-        }
-
-        public int ReadInt(String Section, String Key, int Default)
-        {
-            int value;
-            string s;
-            s = ReadString(Section, Key, "");
-            if (s == "")
-                value = Default;
-            else
-                if (!int.TryParse(s, out value))
-                    value = Default;
-            return value;
-        }
-
-        public void WriteString(String Section, String Key, String Value)
-        {
-            WritePrivateProfileString(Section, Key, Value, settingsFile);
-        }
-
-        public void WriteInt(String Section, String Key, int Value)
-        {
-            string s = Value.ToString();
-            WriteString(Section, Key, s);
         }
 
         public void Parameters_FormClosing(object sender, FormClosingEventArgs e)
@@ -79,6 +84,15 @@ namespace StatisticCommon
         {
             mayClose = true;
             Close();
+        }
+
+        private void FormParametersBase_KeyUp(object obj, KeyEventArgs ev)
+        {
+            if (ev.KeyCode == Keys.Escape) {
+                btnCancel.PerformClick ();
+            }
+            else
+                ;
         }
     }
 }

@@ -23,10 +23,12 @@ namespace StatisticCommon {
         private int [,] m_tg_id;
 
         //public FormParametersTG(DelegateFunc delParApp)
-        public FormParametersTG()
+        public FormParametersTG(string nameFileINI) : base(nameFileINI)
         {
             InitializeComponent();
-            settingsFile = System.Environment.CurrentDirectory + "\\" + settingsFile;
+
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
 
             //delegateParamsApply = delParApp;
 
@@ -72,9 +74,9 @@ namespace StatisticCommon {
                 }
             }
 
-            btnCancel.Location = new System.Drawing.Point(btnCancel.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
-            btnOk.Location = new System.Drawing.Point(btnOk.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
-            btnReset.Location = new System.Drawing.Point(btnReset.Location.X, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            btnCancel.Location = new System.Drawing.Point(17, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            btnOk.Location = new System.Drawing.Point(98, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            btnReset.Location = new System.Drawing.Point(148, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
 
             this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, btnReset.Location.Y + btnReset.Size.Height + 9);
 
@@ -90,7 +92,7 @@ namespace StatisticCommon {
 
             for (int i = 0; i < (int) TG.ID_TIME.COUNT_ID_TIME; i++) {
                 for (int j = 0; j < COUNT_TG; j ++) {
-                    key_value = ReadString(NAME_SECTION_TG_ID, "TG" + (j + 1).ToString() + " " + NAME_TIME[i], null);
+                    key_value = m_FileINI.ReadString(NAME_SECTION_TG_ID, "TG" + (j + 1).ToString() + " " + NAME_TIME[i], null);
                     if (key_value.Length > 0) {
                         key_values = key_value.Split(SEP_ID_TG);
                         if (int.TryParse(key_values[(int)TYPE_VALUE.CURRENT], out tg_id)) m_tg_id[i, j] = tg_id; else ;
@@ -116,7 +118,7 @@ namespace StatisticCommon {
             key_value = m_tg_id[id_time, num_tg].ToString();
             key_value += SEP_ID_TG;
             key_value += m_tg_id_default[id_time, num_tg].ToString();
-            WriteString(NAME_SECTION_TG_ID, "TG" + (num_tg + 1).ToString() + " " + NAME_TIME[id_time], key_value);
+            m_FileINI.WriteString(NAME_SECTION_TG_ID, "TG" + (num_tg + 1).ToString() + " " + NAME_TIME[id_time], key_value);
         }
 
         public void saveParam()

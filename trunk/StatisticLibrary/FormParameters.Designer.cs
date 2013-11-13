@@ -34,8 +34,6 @@ namespace StatisticCommon
             this.nudnRequeryCount = new System.Windows.Forms.NumericUpDown();
             this.lblQueryPeriod = new System.Windows.Forms.Label();
             this.nudnQueryPeriod = new System.Windows.Forms.NumericUpDown();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.btnReset = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDelayTime)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudnRequeryCount)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudnQueryPeriod)).BeginInit();
@@ -133,34 +131,13 @@ namespace StatisticCommon
             0,
             0,
             0});
-            // 
-            // btnOk
-            // 
-            this.btnOk.Location = new System.Drawing.Point(47, 90);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 6;
-            this.btnOk.Text = "Применить";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
-            // 
-            // btnReset
-            // 
-            this.btnReset.Location = new System.Drawing.Point(128, 90);
-            this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(75, 23);
-            this.btnReset.TabIndex = 7;
-            this.btnReset.Text = "Сброс";
-            this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            
             // 
             // FormParameters
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(250, 125);
-            this.Controls.Add(this.btnReset);
-            this.Controls.Add(this.btnOk);
             this.Controls.Add(this.lblQueryPeriod);
             this.Controls.Add(this.nudnQueryPeriod);
             this.Controls.Add(this.lblRequeryCount);

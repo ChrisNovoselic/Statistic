@@ -64,7 +64,7 @@ namespace StatisticCommon
             m_strNamesField = new List<string> ();
 
             if (type () == TEC_TYPE.BIYSK)
-                parametersTGForm = new FormParametersTG ();
+                parametersTGForm = new FormParametersTG ("setup.ini");
             else
                 ;
 

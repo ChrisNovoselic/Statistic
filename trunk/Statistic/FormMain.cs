@@ -82,7 +82,7 @@ namespace Statistic
             formPassword = new FormPassword(m_admin);
             formSetPassword = new FormSetPassword(m_admin);
             formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            formParameters = new FormParameters();
+            formParameters = new FormParameters("setup.ini");
 
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();

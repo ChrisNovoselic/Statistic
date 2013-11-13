@@ -48,6 +48,7 @@
     <Compile Include="dgwAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="FileINI.cs" />
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>
