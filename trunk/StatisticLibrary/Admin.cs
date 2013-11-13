@@ -869,7 +869,7 @@ namespace StatisticCommon
         private void GetRDGExcelValuesRequest () {
             delegateStartWait ();
             if (IsCanUseTECComponents ())
-                m_tableRDGExcelValuesResponse = DbInterface.Request(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
+                m_tableRDGExcelValuesResponse = DbInterface.Select(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
                                                                         @"SELECT * FROM [Лист1$]");
             else
                 ;

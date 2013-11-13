@@ -104,6 +104,7 @@
             this.dataGridViewTEC.Size = new System.Drawing.Size(138, 195);
             this.dataGridViewTEC.TabIndex = 16;
             this.dataGridViewTEC.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTEC_CellClick);
+            this.dataGridViewTEC.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTEC_CellEndEdit);
             // 
             // ColumnCheckBoxTECInUse
             // 

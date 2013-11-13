@@ -430,35 +430,11 @@ namespace StatisticCommon
             }
             catch (MySqlException e)
             {
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-
-                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
-                Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_openDb(m_dbConnection, e);
             }
             catch
             {
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-
-                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_openDb(m_dbConnection, null);
             }
 
             return result;
@@ -542,25 +518,34 @@ namespace StatisticCommon
             catch
             {
                 needReconnect = true;
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
-                else
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
-
-                Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_openDb (m_dbConnection, null);
             }
 
             return result;
         }
 
-        public static DataTable Request (string path, string query) {
+        private static void logging_catch_openDb (DbConnection conn, Exception e) {
+            Logging.Logg().LogLock();
+            string s;
+            int pos;
+            pos = conn.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
+            if (pos < 0)
+                s = conn.ConnectionString;
+            else
+                s = conn.ConnectionString.Substring(0, pos);
+
+            Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+            Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
+            if (!(e == null)) {
+                Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
+                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+            }
+            else
+                ;
+            Logging.Logg().LogUnlock();
+        }
+
+        public static DataTable Select (string path, string query) {
             DataTable dataTableRes = new DataTable();
 
             OleDbConnection connectionOleDB = null;
@@ -601,20 +586,7 @@ namespace StatisticCommon
                 }
                 catch (OleDbException e)
                 {
-                    Logging.Logg().LogLock();
-                    string s;
-                    int pos;
-                    pos = connectionOleDB.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                    if (pos < 0)
-                        s = connectionOleDB.ConnectionString;
-                    else
-                        s = connectionOleDB.ConnectionString.Substring(0, pos);
-
-                    Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                    Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
-                    Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
-                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                    Logging.Logg().LogUnlock();
+                    logging_catch_openDb (connectionOleDB, e);
                 }
 
                 connectionOleDB.Close();
@@ -625,7 +597,7 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Request(ConnectionSettings connSett, string query)
+        public static DataTable Select(ConnectionSettings connSett, string query)
         {
             DataTable dataTableRes = new DataTable();
 
@@ -659,23 +631,100 @@ namespace StatisticCommon
             }
             catch //(MySqlException e)
             {
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = connectionMySQL.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = connectionMySQL.ConnectionString;
-                else
-                    s = connectionMySQL.ConnectionString.Substring(0, pos);
-
-                Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_openDb (connectionMySQL, null);
             }
 
             connectionMySQL.Close();
 
             return dataTableRes;
+        }
+
+        public static void Insert(ConnectionSettings connSett, string query)
+        {
+        }
+
+        public static void Insert(string path, string query)
+        {
+        }
+
+        public static void Update(ConnectionSettings connSett, string query)
+        {
+            MySqlConnection connectionMySQL;
+            MySqlCommand commandMySQL;
+
+            connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
+
+            commandMySQL = new MySqlCommand();
+            commandMySQL.Connection = connectionMySQL;
+            commandMySQL.CommandType = CommandType.Text;
+
+            commandMySQL.CommandText = query;
+
+            try
+            {
+                connectionMySQL.Open();
+
+                if (connectionMySQL.State == ConnectionState.Open)
+                {
+                    commandMySQL.ExecuteNonQuery();
+                }
+                else
+                    ; //
+            }
+            catch //(MySqlException e)
+            {
+                logging_catch_openDb(connectionMySQL, null);
+            }
+
+            connectionMySQL.Close();
+        }
+
+        public static void Update(string path, string query)
+        {
+            OleDbConnection connectionOleDB = null;
+            System.Data.OleDb.OleDbCommand commandOleDB;
+
+            if (path.IndexOf("xls") > -1)
+                connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringExcel(path));
+            else
+                //if (path.IndexOf ("dbf") > -1)
+                    connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
+                //else
+                //    ;
+
+            if (!(connectionOleDB == null))
+            {
+                commandOleDB = new OleDbCommand();
+                commandOleDB.Connection = connectionOleDB;
+                commandOleDB.CommandType = CommandType.Text;
+
+                commandOleDB.CommandText = query;
+
+                try
+                {
+                    connectionOleDB.Open();
+
+                    if (connectionOleDB.State == ConnectionState.Open)
+                    {
+                        commandOleDB.ExecuteNonQuery();
+
+                        Logging.Logg().LogLock();
+                        Logging.Logg().LogToFile(connectionOleDB.ConnectionString, true, true, false);
+                        Logging.Logg().LogToFile(commandOleDB.CommandText, true, false, false);
+                        Logging.Logg().LogUnlock();
+                    }
+                    else
+                        ; //
+                }
+                catch (OleDbException e)
+                {
+                    logging_catch_openDb(connectionOleDB, e);
+                }
+
+                connectionOleDB.Close();
+            }
+            else
+                ;
         }
     }
 }

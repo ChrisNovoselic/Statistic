@@ -158,7 +158,7 @@ namespace StatisticCommon
                 return ConnectionSettingsError.IllegalSymbolPassword;
             }
 
-            //if (DbInterface.Request(this, "SELECT * FROM TEC_LIST").Rows.Count > 0)
+            //if (DbInterface.Select(this, "SELECT * FROM TEC_LIST").Rows.Count > 0)
             //    return ConnectionSettingsError.NotConnect;
             //else
             //    ;
