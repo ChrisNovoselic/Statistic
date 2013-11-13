@@ -82,7 +82,6 @@ namespace trans_gtp
 
         private void InitializeComponentTransGTP()
         {
-            
             this.labelSourcePort = new System.Windows.Forms.Label();
             this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
             this.labelSourcePass = new System.Windows.Forms.Label();
@@ -106,7 +105,6 @@ namespace trans_gtp
             this.groupBoxSource.Controls.Add(this.tbxSourceUserId);
             this.groupBoxSource.Controls.Add(this.tbxSourceNameDatabase);
             this.groupBoxSource.Controls.Add(this.tbxSourceServerIP);
-
             // 
             // labelSourcePort
             // 

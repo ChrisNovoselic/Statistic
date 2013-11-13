@@ -8,7 +8,6 @@ using System.Collections.Generic;
 //using System.Windows.Forms;
 //using System.Runtime.InteropServices;
 
-
 namespace StatisticCommon
 {
     public partial class FormParameters : FormParametersBase
