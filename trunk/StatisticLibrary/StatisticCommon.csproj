@@ -115,6 +115,9 @@
     <Compile Include="dgwAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="AdminKomDisp.cs" />
+    <Compile Include="AdminNSS.cs" />
+    <Compile Include="Passwords.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

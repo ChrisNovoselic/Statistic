@@ -21,7 +21,7 @@ namespace Statistic
         //public List<TEC> tec;
         private FormConnectionSettings m_formConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
-        public Admin m_admin;
+        public Admin [] m_arAdmin;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
         private FormPassword formPassword;
@@ -62,27 +62,51 @@ namespace Statistic
         {
             firstStart = true;
 
-            m_admin = new Admin();
-            //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-            m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
-            m_admin.connSettConfigDB = m_formConnectionSettings.getConnSett();
+            m_arAdmin = new Admin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+            m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
 
-            m_arPanelAdmin = new PanelAdmin [(int)FormChangeMode.MANAGER.COUNT_MANAGER];
-            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] = new PanelAdminKomDisp(m_admin);
-            m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS] = new PanelAdminNSS(m_admin);
+            int i = -1;
+            for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                switch (i) {
+                    case (int)FormChangeMode.MANAGER.DISP:
+                        m_arAdmin[i] = new AdminKomDisp();
+                        break;
+                    case (int)FormChangeMode.MANAGER.NSS:
+                        m_arAdmin[i] = new AdminNSS();
+                        break;
+                    default:
+                        break;
+                }
+                
+                //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
+                m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
+                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
 
-            m_admin.SetDelegateData(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].setDataGridViewAdmin);
-            m_admin.SetDelegateDatetime(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].CalendarSetDate);
+                switch (i)
+                {
+                    case (int)FormChangeMode.MANAGER.DISP:
+                        m_arPanelAdmin[i] = new PanelAdminKomDisp(m_arAdmin[i]);
+                        break;
+                    case (int)FormChangeMode.MANAGER.NSS:
+                        m_arPanelAdmin[i] = new PanelAdminNSS(m_arAdmin[i]);
+                        break;
+                    default:
+                        break;
+                }
 
-            m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-            m_admin.SetDelegateReport(ErrorReport, ActionReport);
+                m_arAdmin[i].SetDelegateData(m_arPanelAdmin[i].setDataGridViewAdmin);
+                m_arAdmin[i].SetDelegateDatetime(m_arPanelAdmin[i].CalendarSetDate);
 
-            formChangeMode = new FormChangeMode(m_admin.m_list_tec);
+                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+            }
+
+            formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);
             m_prevSelectedIndex = 0;
 
             //formChangeMode = new FormChangeMode();
-            formPassword = new FormPassword(m_admin);
-            formSetPassword = new FormSetPassword(m_admin);
+            formPassword = new FormPassword(m_arAdmin[(int)FormChangeMode.MANAGER.DISP]);
+            formSetPassword = new FormSetPassword(m_arAdmin[(int)FormChangeMode.MANAGER.DISP]);
             formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             formParameters = new FormParameters("setup.ini");
 
@@ -127,15 +151,18 @@ namespace Statistic
 
             timer.Stop();
 
-            if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
-            {
-                foreach (TEC t in m_admin.m_list_tec)
-                    t.StopDbInterfaceForce();
+            int i = -1;
+            for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                if ((e.Cancel == false) && ((!(m_arAdmin [i] == null)) && (!(m_arAdmin [i].m_list_tec == null))))
+                {                
+                    foreach (TEC t in m_arAdmin[i].m_list_tec)
+                        t.StopDbInterfaceForce();
 
-                m_admin.StopDbInterface();
+                    m_arAdmin [i].StopDbInterface();
+                }
+                else
+                    ;
             }
-            else
-                ;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -166,7 +193,10 @@ namespace Statistic
                 if (! (tecViews == null)) tecViews.Clear (); else ;
 
                 if (timer.Enabled) timer.Stop(); else ;
-                if (! (m_admin == null)) m_admin.StopDbInterface(); else ;
+                int i = -1;
+                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                    if (!(m_arAdmin [i] == null)) m_arAdmin [i].StopDbInterface(); else ;
+                }
 
                 Initialize();
 
@@ -269,7 +299,7 @@ namespace Statistic
                         foreach (TEC t in formChangeMode.tec)
                         {
                             int index_gtp;
-                            tecView = new TecView(t, index_tec, -1, m_admin, stsStrip, formGraphicsSettings, formParameters);
+                            tecView = new TecView(t, index_tec, -1, m_arAdmin [(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             if (t.list_TECComponents.Count > 0)
@@ -277,7 +307,7 @@ namespace Statistic
                                 index_gtp = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
-                                    tecView = new TecView(t, index_tec, index_gtp, m_admin, stsStrip, formGraphicsSettings, formParameters);
+                                    tecView = new TecView(t, index_tec, index_gtp, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
                                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                     tecViews.Add(tecView);
                                     index_gtp++;
@@ -325,10 +355,10 @@ namespace Statistic
 
                                 if (TECComponent_index == -1)
                                 {
-                                    tclTecViews.TabPages.Add(m_admin.m_list_tec[tec_index].name);
+                                    tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
                                 }
                                 else
-                                    tclTecViews.TabPages.Add(m_admin.m_list_tec[tec_index].name + " - " + m_admin.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
+                                    tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name + " - " + m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
 
                                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                 selectedTecViews.Add(tecViews[tecView_index]);
@@ -392,16 +422,16 @@ namespace Statistic
                     }
 
                     prevStateIsAdmin = formChangeMode.admin_was_checked;
-
+                    
                     if (selectedTecViews.Count > 0)
                     {
                         m_prevSelectedIndex = 0;
                         selectedTecViews[m_prevSelectedIndex].Activate(true);
-                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
+                        m_arPanelAdmin[(int)modePanelAdmin].Activate(false);
                     }
                     else
                         if (formChangeMode.admin_was_checked)
-                            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
+                            m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
                         else
                             ;
                 }
@@ -425,6 +455,8 @@ namespace Statistic
             {
                 if (m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
                     selectedTecViews[m_prevSelectedIndex].Activate(false);
+                else
+                    ;
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
                     m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
@@ -463,19 +495,19 @@ namespace Statistic
                     ;
             }
 
-            if (m_admin.actioned_state && m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].isActive)
+            if (m_arAdmin[(int)modePanelAdmin].actioned_state && m_arPanelAdmin[(int)modePanelAdmin].isActive)
             {
-                lblDateError.Text = m_admin.last_time_action.ToString();
-                lblDescError.Text = m_admin.last_action;
+                lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_action.ToString();
+                lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_action;
             }
             else
                 ;
 
-            if (m_admin.errored_state)
+            if (m_arAdmin[(int)modePanelAdmin].errored_state)
             {
                 have_eror = true;
-                lblDateError.Text = m_admin.last_time_error.ToString();
-                lblDescError.Text = m_admin.last_error;
+                lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_error.ToString();
+                lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_error;
             }
             else
                 ;
@@ -495,33 +527,38 @@ namespace Statistic
 
         private void AddTabPageAdmin () {
             StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.TG;
+            StatisticCommon.FormChangeMode.MANAGER modeAdmin = FormChangeMode.MANAGER.NSS;
             
             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
             {
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
                 mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+                modeAdmin = FormChangeMode.MANAGER.DISP;
             }
             else
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
 
-            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]);
+            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
-            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitializeComboBoxTecComponent (mode);
+            m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
 
-            m_admin.Start();
+            m_arAdmin[(int)modeAdmin].Start();
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
             if (firstStart)
             {
-                m_admin.StartDbInterface();
+                int i = -1;
+                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                    m_arAdmin [i].StartDbInterface();
+                }
 
                 // отображаем вкладки ТЭЦ
                 int index;
-                for (int i = 0; i < formChangeMode.tec_index.Count; i++)
+                for (i = 0; i < formChangeMode.tec_index.Count; i++)
                 {
-                    TEC t = m_admin.m_list_tec[formChangeMode.tec_index[i]];
+                    TEC t = m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.tec_index[i]];
 
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
@@ -716,6 +753,19 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        FormChangeMode.MANAGER modePanelAdmin {
+            get {
+                if (formChangeMode.admin_was_checked) {
+                    if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
+                        return FormChangeMode.MANAGER.DISP;
+                    else
+                        return FormChangeMode.MANAGER.NSS;
+                }
+                else
+                    return FormChangeMode.MANAGER.DISP;
+            }
         }
     }
 }

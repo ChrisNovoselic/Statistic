@@ -608,7 +608,7 @@ namespace StatisticCommon
             }
             else
                 ;
-            
+
             m_idPass = id;
 
             string hashFromForm = "";
@@ -618,7 +618,6 @@ namespace StatisticCommon
 
             for (int i = 0; i < hash.Length; i++)
                 hashedString.Append(hash[i].ToString("x2"));
-
 
             delegateStartWait();
             semaGetPass.WaitOne();
@@ -2533,7 +2532,7 @@ namespace StatisticCommon
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
                 Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("catch - TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
+                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
                 Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", true, true, false);
                 Logging.Logg().LogToFile("Исключение: " + e.Message, false, false, false);
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
