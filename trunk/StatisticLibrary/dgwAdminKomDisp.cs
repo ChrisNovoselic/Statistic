@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
-    public class DataGridViewAdmin : DataGridView
+    public class DataGridViewAdminKomDisp : DataGridView
     {
         public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
         private static string[] arDescStringIndex = { "DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll" };
@@ -19,7 +19,7 @@ namespace StatisticCommon
         private const double maxDeviationValue = 1500;
         private const double maxDeviationPercentValue = 100;
 
-        public DataGridViewAdmin () {
+        public DataGridViewAdminKomDisp () {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
 
             AllowUserToAddRows = false;
@@ -124,49 +124,49 @@ namespace StatisticCommon
 
             switch (e.ColumnIndex)
             {
-                case (int)DataGridViewAdmin.DESC_INDEX.PLAN: // План
-                    //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.PLAN);
+                case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
+                    //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN);
 
-                    valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value, out value);
+                    valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
                     if (!valid || value > maxRecomendationValue)
                     {
                         //m_curRDGValues[e.RowIndex].plan = 0;
-                        Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = 0.ToString("F2");
+                        Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = 0.ToString("F2");
                     }
                     else
                     {
                         //m_curRDGValues[e.RowIndex].plan = value;
-                        Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = value.ToString("F2");
+                        Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = value.ToString("F2");
                     }
                     break;
-                case (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION: // Рекомендация
+                case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
                     {
-                        //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION);
+                        //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
-                        valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value, out value);
+                        valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
                         if (!valid || value > maxRecomendationValue)
                         {
                             //m_curRDGValues[e.RowIndex].recomendation = 0;
-                            Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
+                            Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
                         }
                         else
                         {
                             //m_curRDGValues[e.RowIndex].recomendation = value;
-                            Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
+                            Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
                         }
                         break;
                     }
-                case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
+                case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
                     {
-                        //m_curRDGValues[e.RowIndex].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                        //m_curRDGValues[e.RowIndex].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
                         break;
                     }
-                case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION: // Максимальное отклонение
                     {
-                        valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value, out value);
-                        bool isPercent = bool.Parse(Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                        valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value, out value);
+                        bool isPercent = bool.Parse(Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
                         double maxValue;
-                        double recom = double.Parse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value);
+                        double recom = double.Parse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value);
 
                         if (isPercent)
                             maxValue = maxDeviationPercentValue;
@@ -176,12 +176,12 @@ namespace StatisticCommon
                         if (!valid || value < 0 || value > maxValue)
                         {
                             //m_curRDGValues[e.RowIndex].deviation = 0;
-                            Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
+                            Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
                         }
                         else
                         {
                             //m_curRDGValues[e.RowIndex].deviation = value;
-                            Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = value.ToString("F2");
+                            Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = value.ToString("F2");
                         }
                         break;
                     }
@@ -190,7 +190,7 @@ namespace StatisticCommon
 
         private void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == (int)DataGridViewAdmin.DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
+            if (e.ColumnIndex == (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
             {
                 for (int i = e.RowIndex + 1; i < 24; i++)
                 {
@@ -199,10 +199,10 @@ namespace StatisticCommon
                     //m_curRDGValues[i].deviationPercent = m_curRDGValues[e.RowIndex].deviationPercent;
                     //m_curRDGValues[i].deviation = m_curRDGValues[e.RowIndex].deviation;
 
-                    Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value;
-                    Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value;
-                    Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value;
-                    Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value;
+                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value;
+                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value;
+                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value;
+                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value;
                 }
             }
             else

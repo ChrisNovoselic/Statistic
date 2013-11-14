@@ -30,7 +30,7 @@ namespace StatisticCommon
         protected FormConnectionSettings m_formConnectionSettings;
         protected GroupBox[] m_arGroupBox;
 
-        protected DataGridViewAdmin m_dgwAdminTable;
+        protected DataGridViewAdminKomDisp m_dgwAdminTable;
 
         protected List<int> m_listTECComponentIndex;
 
@@ -287,11 +287,11 @@ namespace StatisticCommon
                 
                 for (int i = 0; i < 24; i++)
                 {
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_arAdmin[indxDB].m_curRDGValues[i].plan.ToString("F2");
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].recomendation.ToString("F2");
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent.ToString();
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviation.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_arAdmin[indxDB].m_curRDGValues[i].plan.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].recomendation.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent.ToString();
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_arAdmin[indxDB].m_curRDGValues[i].deviation.ToString("F2");
                 }
 
                 CopyCurAdminValues();
@@ -656,11 +656,11 @@ namespace StatisticCommon
         {
             for (int i = 0; i < 24; i++)
             {
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = "false";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = "";
+                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = "";
+                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = "";
+                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = "";
+                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = "false";
+                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = "";
             }
         }
 
@@ -673,31 +673,31 @@ namespace StatisticCommon
 
             for (int i = 0; i < 24; i++)
             {
-                for (int j = 0; j < (int)DataGridViewAdmin.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {
-                        case (int)DataGridViewAdmin.DESC_INDEX.PLAN: // План
-                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value, out value);
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
                             m_arAdmin [indxDB].m_curRDGValues[i].plan = value;
                             break;
-                        case (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION: // Рекомендация
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
                             {
-                                //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION);
+                                //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
-                                valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value, out value);
+                                valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
                                 m_arAdmin[indxDB].m_curRDGValues[i].recomendation = value;
 
                                 break;
                             }
-                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
                             {
-                                m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                m_arAdmin[indxDB].m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
                                 break;
                             }
-                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION: // Максимальное отклонение
                             {
-                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value, out value);
+                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value, out value);
                                 m_arAdmin[indxDB].m_curRDGValues[i].deviation = value;
 
                                 break;

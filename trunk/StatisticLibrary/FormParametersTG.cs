@@ -74,9 +74,10 @@ namespace StatisticCommon {
                 }
             }
 
-            btnCancel.Location = new System.Drawing.Point(17, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
-            btnOk.Location = new System.Drawing.Point(98, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
-            btnReset.Location = new System.Drawing.Point(148, m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + 9 * 2);
+            int posY = m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + (COUNT_TG + 1) * 2;
+            btnCancel.Location = new System.Drawing.Point(47, posY);
+            btnOk.Location = new System.Drawing.Point(148, posY);
+            btnReset.Location = new System.Drawing.Point(251, posY);
 
             this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, btnReset.Location.Y + btnReset.Size.Height + 9);
 

@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
-            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdmin();
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();

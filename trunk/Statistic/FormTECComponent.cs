@@ -203,12 +203,21 @@ namespace Statistic
             catch { }
         }
 
-        private Int32 getIdSelectedDataRow(INDEX_UICONTROL indx_list_dataRow)
+        private Int32 getIdSelectedDataRow(INDEX_UICONTROL indx_list_dataRow, int selRow = -1)
         {
-            if (((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).SelectedRows.Count > 0)
-                return getIdDataRow(indx_list_dataRow, ((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).SelectedRows[0].Index);
+            int iRes = -1;
+            
+            if ((selRow == -1) && (((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).SelectedRows.Count > 0))
+                selRow = ((DataGridView)m_list_UIControl[(int)indx_list_dataRow]).SelectedRows[0].Index;
             else
-                return -1;
+                ;
+
+            if (!(selRow == -1))
+                iRes = getIdDataRow(indx_list_dataRow, selRow);
+            else
+                ;
+
+            return iRes;
         }
 
         private Int32 getIdDataRow(INDEX_UICONTROL indx_list_dataRow, int indx)
@@ -460,46 +469,78 @@ namespace Statistic
         {
             int i = -1, j = -1, k = -1;
             DataRow [] dataRows;
-            bool bUpdate = false, bQuote = false;
-            string strUpdate = string.Empty;
+            bool bUpdate = false;
+            string [] strQuery = new string [(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
+            string nameTable = string.Empty,
+                    valuesForInsert = string.Empty;
 
+            //UPDATE, INSERT
             for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
+                nameTable = FormChangeMode.getPrefixMode(i) + "_LIST";
                 for (j = 0; j < m_list_data/*_original*/[i].Rows.Count; j ++) {
                     dataRows = m_list_data_original[i].Select("ID=" + m_list_data[i].Rows[j]["ID"]);
                     if (dataRows.Length == 0) {
                         //INSERT
-                        DbInterface.Insert(m_connectionSetttings, "");
+                        strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = string.Empty;
+                        valuesForInsert = string.Empty;
+                        strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = "INSERT INTO " + nameTable + " (";
+                        for (k = 0; k < m_list_data[i].Columns.Count; k ++) {
+                            strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += m_list_data[i].Columns[k].ColumnName + ",";
+                            valuesForInsert += DbInterface.valueForQuery (m_list_data [i], j, k) + ",";
+                        }
+                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Substring (0, strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Length - 1);
+                        valuesForInsert = valuesForInsert.Substring (0, valuesForInsert.Length - 1);
+                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += ") VALUES (";
+                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
+                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.INSERT]);
                     }
                     else {
                         if (dataRows.Length == 1)
                         {//UPDATE
                             bUpdate = false;
-                            strUpdate = string.Empty;
+                            strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = string.Empty;
                             for (k = 0; k < m_list_data[i].Columns.Count; k ++) {
                                 if (!(m_list_data[i].Rows[j][k].Equals(m_list_data_original[i].Rows[j][k]) == true))
                                     if (bUpdate == false) bUpdate = true; else ;
                                 else
                                     ;
 
-                                strUpdate += m_list_data[i].Columns[k].ColumnName + "="; // + m_list_data[i].Rows[j][k] + ",";
-                                if (m_list_data[i].Columns[k].DataType.IsPrimitive == true)
-                                    bQuote = false;
-                                else
-                                    bQuote = true;
-                                strUpdate += (bQuote ? "'" : "") + m_list_data[i].Rows[j][k] + (bQuote ? "'" : "") + ",";
+                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] += m_list_data[i].Columns[k].ColumnName + "="; // + m_list_data[i].Rows[j][k] + ",";
+
+                                strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += DbInterface.valueForQuery(m_list_data[i], j, k) + ",";
                             }
 
                             if (bUpdate == true)
                             {//UPDATE
-                                strUpdate = strUpdate.Substring (0, strUpdate.Length - 1);
-                                strUpdate = "UPDATE TEC_LIST SET " + strUpdate + " WHERE ID=" + m_list_data[i].Rows[j]["ID"];
-                                DbInterface.Update(m_connectionSetttings, strUpdate);
+                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Substring (0, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Length - 1);
+                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + m_list_data[i].Rows[j]["ID"];
+                                
+                                DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE]);
                             }
                             else
                                 ;
                         }
                         else
                             throw new Exception ("");
+                    }
+                }
+            }
+
+            //DELETE
+            for (i = 0; i < m_list_data_original.Length; i ++) {
+                for (j = 0; j < m_list_data_original[i].Rows.Count; j ++) {
+                    dataRows = m_list_data[i].Select("ID=" + m_list_data_original[i].Rows[j]["ID"]);
+                    if (dataRows.Length == 0) {
+                        //DELETE
+                        strQuery [(int)DbInterface.QUERY_TYPE.DELETE] = string.Empty;
+                        strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + m_list_data_original[i].Rows[j]["ID"];
+                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.DELETE]);
+                    }
+                    else {
+                        if (dataRows.Length == 1) {                            
+                        }
+                        else {
+                        }
                     }
                 }
             }
@@ -655,7 +696,7 @@ namespace Statistic
 
         private void dataGridView_CellEndEdit(object sender, DataGridViewCellEventArgs e, INDEX_UICONTROL indx_uicontrol)
         {
-            int indx_row = getIndexDataRow(indx_uicontrol, getIdSelectedDataRow(indx_uicontrol));
+            int indx_row = getIndexDataRow(indx_uicontrol, getIdSelectedDataRow(indx_uicontrol, e.RowIndex));
             string nameField = string.Empty;
 
             if (((DataGridView)m_list_UIControl[(int)indx_uicontrol]).Columns[e.ColumnIndex].GetType().Name.Equals ("DataGridViewTextBoxColumn") == true)
@@ -670,29 +711,30 @@ namespace Statistic
                     ;
 
             if ((nameField.Equals (string.Empty) == false) && (!(indx_row < 0)))
-                switch (indx_uicontrol)
-                {
-                    case INDEX_UICONTROL.DATAGRIDVIEW_TEC:
-                        m_list_data[/*(int)FormChangeMode.MODE_TECCOMPONENT.TEC*/0].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-                        break;
-                    case INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
-                        switch (comboBoxMode.SelectedIndex)
-                        {
-                            case (int)FormChangeMode.MODE_TECCOMPONENT.GTP:
-                                break;
-                            case (int)FormChangeMode.MODE_TECCOMPONENT.PC:
-                                break;
-                            default:
-                                break;
-                        }
-                        m_list_data[comboBoxMode.SelectedIndex].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-                        break;
-                    case INDEX_UICONTROL.DATAGRIDVIEW_TG:
-                        m_list_data[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-                        break;
-                    default:
-                        break;
-                }
+                m_list_dataRow [(int)indx_uicontrol][indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                //switch (indx_uicontrol)
+                //{
+                //    case INDEX_UICONTROL.DATAGRIDVIEW_TEC:
+                //        m_list_data[/*(int)FormChangeMode.MODE_TECCOMPONENT.TEC*/0].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                //        break;
+                //    case INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
+                //        switch (comboBoxMode.SelectedIndex)
+                //        {
+                //            case (int)FormChangeMode.MODE_TECCOMPONENT.GTP:
+                //                break;
+                //            case (int)FormChangeMode.MODE_TECCOMPONENT.PC:
+                //                break;
+                //            default:
+                //                break;
+                //        }
+                //        m_list_data[comboBoxMode.SelectedIndex].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                //        break;
+                //    case INDEX_UICONTROL.DATAGRIDVIEW_TG:
+                //        m_list_data[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Rows[indx_row][nameField] = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                //        break;
+                //    default:
+                //        break;
+                //}                
             else
                 ;
         }
@@ -718,6 +760,11 @@ namespace Statistic
             
             fillDataGridView(INDEX_UICONTROL.DATAGRIDVIEW_TG);
             fillComboBoxTGAdd();
+        }
+
+        private void dataGridViewTEC_CellValuePushed(object sender, DataGridViewCellValueEventArgs e)
+        {
+
         }
     }
 }

@@ -45,7 +45,7 @@
     <Compile Include="Admin.cs" />
     <Compile Include="ConnectionSettings.cs" />
     <Compile Include="DbInterface.cs" />
-    <Compile Include="dgwAdmin.cs">
+    <Compile Include="dgwAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="FileINI.cs" />
@@ -109,6 +109,9 @@
     <Compile Include="TECComponent.cs" />
     <Compile Include="TECComponentBase.cs" />
     <Compile Include="TG.cs" />
+    <Compile Include="dgwAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

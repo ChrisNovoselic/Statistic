@@ -105,6 +105,7 @@
             this.dataGridViewTEC.TabIndex = 16;
             this.dataGridViewTEC.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTEC_CellClick);
             this.dataGridViewTEC.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTEC_CellEndEdit);
+            this.dataGridViewTEC.CellValuePushed += new System.Windows.Forms.DataGridViewCellValueEventHandler(this.dataGridViewTEC_CellValuePushed);
             // 
             // ColumnCheckBoxTECInUse
             // 

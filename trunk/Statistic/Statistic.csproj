@@ -98,12 +98,15 @@
     <Compile Include="FormTECComponent.Designer.cs">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelAdmin.cs">
+    <Compile Include="PanelAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TecView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
     <EmbeddedResource Include="FormGraphicsSettings.resx">

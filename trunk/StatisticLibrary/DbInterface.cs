@@ -545,6 +545,20 @@ namespace StatisticCommon
             Logging.Logg().LogUnlock();
         }
 
+        public static string valueForQuery (DataTable table, int row, int col) {
+            string strRes = string.Empty;
+            bool bQuote = false;
+
+            if (table.Columns[col].DataType.IsPrimitive == true)
+                bQuote = false;
+            else
+                bQuote = true;
+
+            strRes = (bQuote ? "'" : string.Empty) + table.Rows[row][col] + (bQuote ? "'" : string.Empty);
+
+            return strRes;
+        }
+
         public static DataTable Select (string path, string query) {
             DataTable dataTableRes = new DataTable();
 
@@ -639,15 +653,7 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static void Insert(ConnectionSettings connSett, string query)
-        {
-        }
-
-        public static void Insert(string path, string query)
-        {
-        }
-
-        public static void Update(ConnectionSettings connSett, string query)
+        public static void ExecNonQuery(ConnectionSettings connSett, string query)
         {
             MySqlConnection connectionMySQL;
             MySqlCommand commandMySQL;
@@ -679,7 +685,7 @@ namespace StatisticCommon
             connectionMySQL.Close();
         }
 
-        public static void Update(string path, string query)
+        public static void ExecNonQuery(string path, string query)
         {
             OleDbConnection connectionOleDB = null;
             System.Data.OleDb.OleDbCommand commandOleDB;
