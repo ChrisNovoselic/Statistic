@@ -20,7 +20,7 @@ namespace Statistic
     {
         //public List<TEC> tec;
         private FormConnectionSettings m_formConnectionSettings;
-        private PanelAdminKomDisp [] m_arPanelAdmin;
+        private PanelAdmin [] m_arPanelAdmin;
         public Admin m_admin;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
@@ -67,10 +67,11 @@ namespace Statistic
             m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
             m_admin.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
-            m_panelAdminKomDisp = new PanelAdminKomDisp(m_admin);
+            m_arPanelAdmin = new PanelAdmin [(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] = new PanelAdminKomDisp(m_admin);
 
-            m_admin.SetDelegateData(m_panelAdminKomDisp.setDataGridViewAdmin);
-            m_admin.SetDelegateDatetime(m_panelAdminKomDisp.CalendarSetDate);
+            m_admin.SetDelegateData(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].setDataGridViewAdmin);
+            m_admin.SetDelegateDatetime(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].CalendarSetDate);
 
             m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             m_admin.SetDelegateReport(ErrorReport, ActionReport);
@@ -121,7 +122,7 @@ namespace Statistic
                 if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
                 //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
                 {
-                    if (!m_panelAdminKomDisp.MayToClose())
+                    if (!m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].MayToClose())
                         e.Cancel = true;
                     else
                         ;
@@ -159,7 +160,7 @@ namespace Statistic
                 //    t.Reinit();
                 //}
 
-                //m_panelAdminKomDisp.Reinit();
+                //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Reinit();
             }
             else
                 ;
@@ -241,12 +242,12 @@ namespace Statistic
 
                     if (tecViews.Count == 0) {
                         /*
-                        m_panelAdminKomDisp.StopDbInterface ();
-                        m_panelAdminKomDisp.Stop();
+                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StopDbInterface ();
+                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
 
-                        //m_panelAdminKomDisp.InitTEC (formChangeMode.tec);
-                        //m_panelAdminKomDisp.mode(formChangeMode.getModeTECComponent ());
-                        m_panelAdminKomDisp.StartDbInterface ();
+                        //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitTEC (formChangeMode.tec);
+                        //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].mode(formChangeMode.getModeTECComponent ());
+                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StartDbInterface ();
                         */
                         // создаём все tecview
                         int index_tec = 0;
@@ -381,11 +382,11 @@ namespace Statistic
                     {
                         oldSelectedIndex = 0;
                         selectedTecViews[oldSelectedIndex].Activate(true);
-                        m_panelAdminKomDisp.Activate(false);
+                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
                     }
                     else
                         if (formChangeMode.admin_was_checked)
-                            m_panelAdminKomDisp.Activate(true);
+                            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
                         else
                             ;
                 }
@@ -403,7 +404,7 @@ namespace Statistic
                 selectedTecViews[oldSelectedIndex].Activate(false);
                 selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
                 oldSelectedIndex = tclTecViews.SelectedIndex;
-                m_panelAdminKomDisp.Activate(false);
+                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
             }
             else
             {
@@ -411,7 +412,7 @@ namespace Statistic
                     selectedTecViews[oldSelectedIndex].Activate(false);
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
-                    m_panelAdminKomDisp.Activate(true);
+                    m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
                 else
                     ;
             }
@@ -447,7 +448,7 @@ namespace Statistic
                     ;
             }
 
-            if (m_admin.actioned_state && m_panelAdminKomDisp.isActive)
+            if (m_admin.actioned_state && m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].isActive)
             {
                 lblDateError.Text = m_admin.last_time_action.ToString();
                 lblDescError.Text = m_admin.last_action;
@@ -488,9 +489,9 @@ namespace Statistic
             else
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
 
-            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelAdminKomDisp);
+            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]);
 
-            m_panelAdminKomDisp.InitializeComboBoxTecComponent (mode);
+            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitializeComboBoxTecComponent (mode);
 
             m_admin.Start();
         }

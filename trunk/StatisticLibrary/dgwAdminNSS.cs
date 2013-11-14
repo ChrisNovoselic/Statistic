@@ -8,9 +8,9 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
-    public class DataGridViewAdminKomDisp : DataGridViewAdmin
+    public class DataGridViewAdminNSS : DataGridViewAdmin
     {
-        public DataGridViewAdminKomDisp () {
+        public DataGridViewAdminNSS () {
         }
     }
 }

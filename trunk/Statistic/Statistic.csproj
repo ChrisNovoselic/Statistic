@@ -98,9 +98,10 @@
     <Compile Include="FormTECComponent.Designer.cs">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelAdminKomDisp.cs">
+    <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelAdminKomDisp.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TecView.cs">
