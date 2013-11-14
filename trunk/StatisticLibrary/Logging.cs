@@ -171,5 +171,14 @@ namespace StatisticCommon
                     logRotateFiles = value;
             }
         }
+
+        public void LogExceptionToFile(Exception e, string message)
+        {
+            LogLock();
+            LogToFile("Обработка исключения: " + message, true, true, false);
+            LogToFile("Исключение: " + e.Message, false, false, false);
+            LogToFile(e.ToString(), false, false, false);
+            LogUnlock();
+        }
     }
 }

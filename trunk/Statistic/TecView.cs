@@ -1611,9 +1611,7 @@ namespace Statistic
                     {
                         sem.Release(1);
                     }
-                    catch
-                    {
-                    }
+                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
 
                 }
                 delegateStopWait();
@@ -2014,13 +2012,13 @@ namespace Statistic
                 {
                     sem.Release(1);
                 }
-                catch
-                {
-                }
+                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)"); }
 
                 joined = taskThread.Join(1000);
                 if (!joined)
                     taskThread.Abort();
+                else
+                    ;
             }
 
             tec.StopDbInterface();
@@ -2633,8 +2631,10 @@ namespace Statistic
                     selectedTime = (DateTime)table.Rows[0][0];
                     serverTime = selectedTime;
                 }
-                catch
+                catch (Exception excpt)
                 {
+                    Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)");
+
                     return false;
                 }
             }
@@ -2842,6 +2842,8 @@ namespace Statistic
             else
                 if (season > 2)
                     season = 2;
+                else
+                    ;
         }
         
         private bool GetHoursResponse(DataTable table)
@@ -3608,8 +3610,7 @@ namespace Statistic
                                     else
                                         ;
                                 }
-                                catch {
-                                }
+                                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ..."); }
                             }
                             else
                             {

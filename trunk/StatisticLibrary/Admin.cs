@@ -987,7 +987,7 @@ namespace StatisticCommon
                         m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2 + offsetPBR_NUMBER/*"IS_PER"*/] == 1;
                         m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3 + offsetPBR_NUMBER/*"DIVIAT"*/];
                         if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
-                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1 + offsetPBR_NUMBER/*"PBR"*/];
+                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1/* + offsetPBR_NUMBER*//*"PBR"*/];
                         else
                             m_curRDGValues[hour - 1].plan = 0;
                     }

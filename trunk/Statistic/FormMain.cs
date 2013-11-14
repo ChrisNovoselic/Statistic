@@ -28,7 +28,7 @@ namespace Statistic
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
         private TecView tecView;
-        private int oldSelectedIndex;
+        private int m_prevSelectedIndex;
         private bool prevStateIsAdmin;
         private bool prevStateIsPPBR;
         //public static object lockFile = new object();
@@ -69,6 +69,7 @@ namespace Statistic
 
             m_arPanelAdmin = new PanelAdmin [(int)FormChangeMode.MANAGER.COUNT_MANAGER];
             m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] = new PanelAdminKomDisp(m_admin);
+            m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS] = new PanelAdminNSS(m_admin);
 
             m_admin.SetDelegateData(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].setDataGridViewAdmin);
             m_admin.SetDelegateDatetime(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].CalendarSetDate);
@@ -77,7 +78,7 @@ namespace Statistic
             m_admin.SetDelegateReport(ErrorReport, ActionReport);
 
             formChangeMode = new FormChangeMode(m_admin.m_list_tec);
-            oldSelectedIndex = 0;
+            m_prevSelectedIndex = 0;
 
             //formChangeMode = new FormChangeMode();
             formPassword = new FormPassword(m_admin);
@@ -111,35 +112,49 @@ namespace Statistic
             Close();
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void Stop(FormClosingEventArgs e = null)
         {
-            if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
+            //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
             {
-                e.Cancel = true;
+                if (!m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].MayToClose())
+                    if (!(e == null)) e.Cancel = true;
+                else
+                    ;
             }
             else
+                ;
+
+            timer.Stop();
+
+            if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
             {
-                if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
-                //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
+                foreach (TEC t in m_admin.m_list_tec)
+                    t.StopDbInterfaceForce();
+
+                m_admin.StopDbInterface();
+            }
+            else
+                ;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (e.Cancel == false)
+                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 {
-                    if (!m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].MayToClose())
-                        e.Cancel = true;
-                    else
-                        ;
+                    e.Cancel = true;
                 }
                 else
-                    ;
-
-                timer.Stop();
-
-                if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
                 {
-                    foreach (TEC t in m_admin.m_list_tec)
-                        t.StopDbInterfaceForce();
-                    m_admin.StopDbInterface();
+                    Stop (e);
                 }
-                else
-                    ;
+            else {
+                e.Cancel = false;
+
+                Stop(e);
+
+                //Application.Exit (
             }
         }
 
@@ -380,8 +395,8 @@ namespace Statistic
 
                     if (selectedTecViews.Count > 0)
                     {
-                        oldSelectedIndex = 0;
-                        selectedTecViews[oldSelectedIndex].Activate(true);
+                        m_prevSelectedIndex = 0;
+                        selectedTecViews[m_prevSelectedIndex].Activate(true);
                         m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
                     }
                     else
@@ -399,17 +414,17 @@ namespace Statistic
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count && oldSelectedIndex >= 0 && oldSelectedIndex < selectedTecViews.Count)
+            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count && m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
             {
-                selectedTecViews[oldSelectedIndex].Activate(false);
+                selectedTecViews[m_prevSelectedIndex].Activate(false);
                 selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
-                oldSelectedIndex = tclTecViews.SelectedIndex;
+                m_prevSelectedIndex = tclTecViews.SelectedIndex;
                 m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
             }
             else
             {
-                if (oldSelectedIndex >= 0 && oldSelectedIndex < selectedTecViews.Count)
-                    selectedTecViews[oldSelectedIndex].Activate(false);
+                if (m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
+                    selectedTecViews[m_prevSelectedIndex].Activate(false);
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
                     m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
@@ -528,8 +543,8 @@ namespace Statistic
 
                 if ((! (selectedTecViews == null)) && (selectedTecViews.Count > 0))
                 {
-                    oldSelectedIndex = 0;
-                    selectedTecViews[oldSelectedIndex].Activate(true);
+                    m_prevSelectedIndex = 0;
+                    selectedTecViews[m_prevSelectedIndex].Activate(true);
                 }
                 else
                     ;
@@ -621,8 +636,8 @@ namespace Statistic
             {
                 ShowWindow(formGraphicsSettings.Handle, SW_SHOWNOACTIVATE);
                 SetWindowPos(formGraphicsSettings.Handle.ToInt32(), HWND_TOP,
-                formGraphicsSettings.Left, formGraphicsSettings.Top, formGraphicsSettings.Width, formGraphicsSettings.Height,
-                SWP_NOACTIVATE);
+                            formGraphicsSettings.Left, formGraphicsSettings.Top, formGraphicsSettings.Width, formGraphicsSettings.Height,
+                            SWP_NOACTIVATE);
             }
             else
                 ;
@@ -661,6 +676,8 @@ namespace Statistic
                 if (tecComponent.ShowDialog () == DialogResult.Yes) {
                     MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     выходToolStripMenuItem.PerformClick ();
+                    //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
+                    //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
                 }
                 else
                     ;

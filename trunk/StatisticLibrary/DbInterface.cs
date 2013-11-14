@@ -430,11 +430,11 @@ namespace StatisticCommon
             }
             catch (MySqlException e)
             {
-                logging_catch_openDb(m_dbConnection, e);
+                logging_catch_db(m_dbConnection, e);
             }
             catch
             {
-                logging_catch_openDb(m_dbConnection, null);
+                logging_catch_db(m_dbConnection, null);
             }
 
             return result;
@@ -463,15 +463,11 @@ namespace StatisticCommon
             }
             catch (DbException e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Ошибка закрытия соединения", true, true, false);
-                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_db (m_dbConnection, e);
             }
             catch
             {
-                Logging.Logg().LogToFile("Ошибка закрытия соединения", true, true, false);
+                logging_catch_db(m_dbConnection, null);
             }
             
             return result;
@@ -518,13 +514,13 @@ namespace StatisticCommon
             catch
             {
                 needReconnect = true;
-                logging_catch_openDb (m_dbConnection, null);
+                logging_catch_db (m_dbConnection, null);
             }
 
             return result;
         }
 
-        private static void logging_catch_openDb (DbConnection conn, Exception e) {
+        private static void logging_catch_db (DbConnection conn, Exception e) {
             Logging.Logg().LogLock();
             string s;
             int pos;
@@ -534,7 +530,7 @@ namespace StatisticCommon
             else
                 s = conn.ConnectionString.Substring(0, pos);
 
-            Logging.Logg().LogToFile("Ошибка открытия соединения", true, true, false);
+            Logging.Logg().LogToFile("Обработка исключения при работе с БД", true, true, false);
             Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
             if (!(e == null)) {
                 Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
@@ -600,7 +596,7 @@ namespace StatisticCommon
                 }
                 catch (OleDbException e)
                 {
-                    logging_catch_openDb (connectionOleDB, e);
+                    logging_catch_db(connectionOleDB, e);
                 }
 
                 connectionOleDB.Close();
@@ -645,7 +641,7 @@ namespace StatisticCommon
             }
             catch //(MySqlException e)
             {
-                logging_catch_openDb (connectionMySQL, null);
+                logging_catch_db(connectionMySQL, null);
             }
 
             connectionMySQL.Close();
@@ -679,7 +675,7 @@ namespace StatisticCommon
             }
             catch //(MySqlException e)
             {
-                logging_catch_openDb(connectionMySQL, null);
+                logging_catch_db(connectionMySQL, null);
             }
 
             connectionMySQL.Close();
@@ -724,7 +720,7 @@ namespace StatisticCommon
                 }
                 catch (OleDbException e)
                 {
-                    logging_catch_openDb(connectionOleDB, e);
+                    logging_catch_db(connectionOleDB, e);
                 }
 
                 connectionOleDB.Close();
