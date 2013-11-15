@@ -43,14 +43,14 @@ namespace trans_gtp
             m_arAdmin = new Admin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new Admin();
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new AdminKomDisp();
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
 
             //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new Admin();
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminKomDisp();
             //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);

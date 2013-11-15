@@ -104,7 +104,9 @@ namespace Statistic
         private volatile bool newState;
         private volatile List<StatesMachine> states;
         private int currValuesPeriod = 0;
+        private ManualResetEvent evTimerCurrent;
         private System.Threading.Timer timerCurrent;
+        //private System.Windows.Forms.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
 
         private Admin m_admin;
@@ -1970,8 +1972,11 @@ namespace Statistic
 
             serverTime = selectedTime;
 
-            //TimerCallback timerCallbackCurrent = new TimerCallback(TimerCurrent_Tick);
-            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), null, 0, Timeout.Infinite);
+            evTimerCurrent = new ManualResetEvent (true);
+            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
+            
+            //timerCurrent = new System.Windows.Forms.Timer ();
+            //timerCurrent.Tick += TimerCurrent_Tick;
 
             update = false;
             SetNowDate(true);
@@ -1994,7 +1999,10 @@ namespace Statistic
         {
             if (!started)
                 return;
+            else
+                ;
 
+            evTimerCurrent.Reset ();
             timerCurrent.Dispose();
 
             started = false;
@@ -2724,7 +2732,7 @@ namespace Statistic
             {
                 if (sensorId2TG[i] != null)
                 {
-                    if (sensorsString == "")
+                    if (sensorsString.Equals (string.Empty) == true)
                     {
                         sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
@@ -3589,7 +3597,7 @@ namespace Statistic
 
                         offsetUDG = 1;
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
-                        offsetLayout = offsetPlan + /*tec.list_TECComponents.Count*/m_list_TECComponents.Count;
+                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count) : m_tablePBRResponse.Columns.Count;
 
                         m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
 
@@ -3817,7 +3825,7 @@ namespace Statistic
 
                         offsetUDG = 1;
                         offsetPlan = 1;
-                        offsetLayout = offsetPlan + 1;
+                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? offsetPlan + 1 : m_tablePBRResponse.Columns.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
@@ -4429,6 +4437,9 @@ namespace Statistic
             {
                 if (dtprDate.Value.Date != selectedTime.Date)
                     currHour = false;
+                else
+                    ;
+
                 NewDateRefresh();
             }
             else
@@ -4465,7 +4476,7 @@ namespace Statistic
             newState = true;
             states.Clear();
 
-            if (sensorsString != "")
+            if ((sensorsString.Equals(string.Empty) == false) || ((sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
             {
                 if (currHour)
                 {
@@ -5096,16 +5107,23 @@ namespace Statistic
         private void TimerCurrent_Tick(Object stateInfo)
         {
             Invoke(delegateTickTime);
-            if (currHour && isActive) {
+            if (currHour && isActive)
                 if (((currValuesPeriod++) * 1000) >= parameters.poll_time) {
                     currValuesPeriod = 0;
                     NewDateRefresh();
                 }
-            }
-            try {
+                else
+                    ;
+            else
+                ;
+
+            ((ManualResetEvent)stateInfo).WaitOne ();
+            try
+            {
                 timerCurrent.Change(1000, Timeout.Infinite);
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Logging.Logg().LogLock();
                 Logging.Logg().LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
                 Logging.Logg().LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
