@@ -30,7 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
-            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
+            //this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
             this.buttonClose = new System.Windows.Forms.Button();
             this.panelMain = new System.Windows.Forms.Panel();
             this.comboBoxTECComponent = new System.Windows.Forms.ComboBox();
@@ -68,7 +68,7 @@
             this.развернутьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorNotifyIcon = new System.Windows.Forms.ToolStripSeparator();
             this.закрытьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
+            //((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.panelMain.SuspendLayout();
             this.groupBoxDest.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
@@ -78,15 +78,6 @@
             this.statusStripMain.SuspendLayout();
             this.contextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // m_dgwAdminTable
-            // 
-            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
-            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
-            this.m_dgwAdminTable.RowHeadersVisible = false;
-            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
-            this.m_dgwAdminTable.TabIndex = 27;
             // 
             // buttonClose
             // 
@@ -103,7 +94,7 @@
             this.panelMain.Controls.Add(this.comboBoxTECComponent);
             this.panelMain.Controls.Add(this.labelTECComponent);
             this.panelMain.Controls.Add(this.labelDate);
-            this.panelMain.Controls.Add(this.m_dgwAdminTable);
+            //this.panelMain.Controls.Add(this.m_dgwAdminTable);
             this.panelMain.Controls.Add(this.dateTimePickerMain);
             this.panelMain.Controls.Add(this.groupBoxDest);
             this.panelMain.Controls.Add(this.groupBoxSource);

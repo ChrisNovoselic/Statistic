@@ -28,6 +28,22 @@ namespace trans_gtp
         {
             InitializeComponentTransGTP();
 
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // m_dgwAdminTable
+            // 
+            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
+            this.m_dgwAdminTable.RowHeadersVisible = false;
+            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.m_dgwAdminTable.TabIndex = 27;
+            this.panelMain.Controls.Add(this.m_dgwAdminTable);
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
+            this.ResumeLayout(false);
+
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon

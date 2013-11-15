@@ -17,7 +17,7 @@ namespace Statistic
     {
         private System.Windows.Forms.MonthCalendar mcldrDate;
 
-        private DataGridViewAdmin dgwAdminTable;
+        protected DataGridViewAdmin dgwAdminTable;
 
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
@@ -27,14 +27,14 @@ namespace Statistic
         private System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
 
-        private Admin m_admin;
-        
+        protected Admin m_admin;
+
         List <int>m_listTECComponentIndex;
         private volatile int prevSelectedIndex;
 
         public bool isActive;
 
-        private void InitializeComponents()
+        protected virtual void InitializeComponents()
         {
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
@@ -42,14 +42,14 @@ namespace Statistic
             this.btnExportExcel = new System.Windows.Forms.Button();
             //this.btnLoadLayout = new System.Windows.Forms.Button();
 
-            this.dgwAdminTable = new DataGridViewAdmin();
+            //this.dgwAdminTable = new DataGridViewAdmin();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
             this.gbxDivider = new System.Windows.Forms.GroupBox();
-            
+
             this.SuspendLayout();
-            
-            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
+
+            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
@@ -58,7 +58,7 @@ namespace Statistic
             this.Controls.Add(this.btnExportExcel);
             this.Controls.Add(this.btnRefresh);
             
-            this.Controls.Add(this.dgwAdminTable);
+            //this.Controls.Add(this.dgwAdminTable);
             
             this.Controls.Add(this.mcldrDate);
             this.Controls.Add(this.comboBoxTecComponent);
@@ -78,14 +78,6 @@ namespace Statistic
             this.mcldrDate.MaxSelectionCount = 1;
             this.mcldrDate.ShowToday = false;
             this.mcldrDate.ShowTodayCircle = false;
-            // 
-            // dgwAdminTable
-            //
-            this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
-            this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
-            this.dgwAdminTable.TabIndex = 1;
-            //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
-            //this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
             // 
             // btnSet
             // 
@@ -155,78 +147,22 @@ namespace Statistic
             this.comboBoxTecComponent.TabIndex = 3;
             this.comboBoxTecComponent.SelectionChangeCommitted += new System.EventHandler(this.comboBoxTecComponent_SelectionChangeCommitted);
             this.comboBoxTecComponent.DropDownStyle = ComboBoxStyle.DropDownList;
-            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
+            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.ResumeLayout();
         }
 
         public PanelAdmin(Admin admin)
         {
             this.m_admin = admin;
-            
+
             InitializeComponents();
             
             isActive = false;
         }
 
-        private void getDataGridViewAdmin()
-        {
-            double value;
-            bool valid;
+        protected virtual void getDataGridViewAdmin() {}
 
-            for (int i = 0; i < 24; i++)
-            {
-                for (int j = 0; j < (int)DataGridViewAdmin.DESC_INDEX.TO_ALL; j ++) {
-                    switch (j)
-                    {
-                        case (int)DataGridViewAdmin.DESC_INDEX.PLAN: // План
-                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value, out value);
-                            m_admin.m_curRDGValues[i].plan = value;                            
-                            break;
-                        case (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION: // Рекомендация
-                            {
-                                //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION);
-
-                                valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value, out value);
-                                m_admin.m_curRDGValues[i].recomendation = value;
-
-                                break;
-                            }
-                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
-                            {
-                                if (! (this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value == null))
-                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
-                                else
-                                    m_admin.m_curRDGValues[i].deviationPercent = false;
-
-                                break;
-                            }
-                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
-                            {
-                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value, out value);
-                                m_admin.m_curRDGValues[i].deviation = value;
-                                
-                                break;
-                            }
-                    }
-                }
-            }
-
-            //m_admin.CopyCurRDGValues();
-        }
-
-        public void setDataGridViewAdmin(DateTime date)
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].plan.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
-            }
-
-            m_admin.CopyCurToPrevRDGValues();
-        }
+        public virtual void setDataGridViewAdmin(DateTime date) {}
 
         public void CalendarSetDate(DateTime date)
         {
@@ -293,8 +229,8 @@ namespace Statistic
 
             m_admin.m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
 
-            m_admin.indxTECComponents = m_listTECComponentIndex [0];
             if (comboBoxTecComponent.Items.Count > 0) {
+                m_admin.indxTECComponents = m_listTECComponentIndex[0];                
                 comboBoxTecComponent.SelectedIndex = 0;
             }
             else
@@ -454,17 +390,7 @@ namespace Statistic
             return false;
         }
 
-        public void ClearTables()
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = "false";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = "";
-            }
-        }
+        public virtual void ClearTables() {}
 
         private void visibleControlRDGExcel () {
             bool bImpExpButtonVisible = false;

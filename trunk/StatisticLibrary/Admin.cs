@@ -382,7 +382,9 @@ namespace StatisticCommon
             int indx = -1;
             foreach (TECComponent comp in allTECComponents) {
                 indx ++;
-                if (comp.m_id < 100) {
+                if ((comp.m_id < 100) && (mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
+                {
+                    listIndex.Add(indx);
                 }
                 else
                     if ((comp.m_id < 500) && (mode == FormChangeMode.MODE_TECCOMPONENT.GTP))
@@ -390,7 +392,9 @@ namespace StatisticCommon
                         listIndex.Add (indx);
                     }
                     else
-                        if (comp.m_id < 1000) {
+                        if ((comp.m_id < 1000) && (mode == FormChangeMode.MODE_TECCOMPONENT.PC))
+                        {
+                            listIndex.Add(indx);
                         }
                         else
                             if ((comp.m_id < 10000) && (mode == FormChangeMode.MODE_TECCOMPONENT.TG))
@@ -884,7 +888,7 @@ namespace StatisticCommon
             return bRes;
         }
 
-        private bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
+        protected virtual bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
             DataTable table = null;
             DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };

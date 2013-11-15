@@ -10,23 +10,19 @@ namespace StatisticCommon
 {
     public class DataGridViewAdmin : DataGridView
     {
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
-        private static string[] arDescStringIndex = { "DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll" };
-        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
-
         private const double maxPlanValue = 1500;
         private const double maxRecomendationValue = 1500;
         private const double maxDeviationValue = 1500;
         private const double maxDeviationPercentValue = 100;
 
-        public DataGridViewAdmin () {
+        protected virtual void InitializeComponents () {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
 
             AllowUserToAddRows = false;
             AllowUserToDeleteRows = false;
             Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)));
-            
+
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -37,53 +33,10 @@ namespace StatisticCommon
 
             ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewCheckBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewButtonColumn ()});
-            // 
-            // DateHour
-            // 
-            Columns[(int)DESC_INDEX.DATE_HOUR].Frozen = true;
-            Columns[(int)DESC_INDEX.DATE_HOUR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DATE_HOUR];
-            Columns[(int)DESC_INDEX.DATE_HOUR].Name = arDescStringIndex[(int)DESC_INDEX.DATE_HOUR];
-            Columns[(int)DESC_INDEX.DATE_HOUR].ReadOnly = true;
-            Columns[(int)DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Plan
-            // 
-            //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
-            Columns[(int)DESC_INDEX.PLAN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].Name = arDescStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].ReadOnly = false;
-            Columns[(int)DESC_INDEX.PLAN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[(int)DESC_INDEX.PLAN].Width = 70;
-            // 
-            // Recommendation
-            // 
-            Columns[(int)DESC_INDEX.RECOMENDATION].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.RECOMENDATION];
-            Columns[(int)DESC_INDEX.RECOMENDATION].Name = arDescStringIndex[(int)DESC_INDEX.RECOMENDATION];
-            Columns[(int)DESC_INDEX.RECOMENDATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // DeviationType
-            // 
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DEVIATION_TYPE];
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].Name = arDescStringIndex[(int)DESC_INDEX.DEVIATION_TYPE];
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Deviation
-            // 
-            Columns[(int)DESC_INDEX.DEVIATION].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DEVIATION];
-            Columns[(int)DESC_INDEX.DEVIATION].Name = arDescStringIndex[(int)DESC_INDEX.DEVIATION];
-            Columns[(int)DESC_INDEX.DEVIATION].Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            Columns[(int)DESC_INDEX.DEVIATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ToAll
-            // 
-            Columns[(int)DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.TO_ALL];
-            Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];
+        }
+
+        public DataGridViewAdmin () {
+            InitializeComponents ();
 
             CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
             CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
@@ -92,10 +45,12 @@ namespace StatisticCommon
             RowHeadersVisible = false;
             RowTemplate.Resizable = DataGridViewTriState.False;
 
-            Rows.Add(24);
+            RowsAdd ();
 
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgwAdminTable_KeyUp);
         }
+
+        protected void RowsAdd () { Rows.Add(24); }
 
         /*
         private void cellValidated(int rowIndx, int colIndx)
