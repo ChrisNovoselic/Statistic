@@ -3263,35 +3263,41 @@ namespace Statistic
             return true;
         }
 
+        private int LayotByName (string l) {
+            int iRes = -1;
+
+            if (l.Length > 3)
+                switch (l)
+                {
+                    case "ППБР": iRes = 0; break;
+                    default:
+                        {
+                            if (l.Substring(0, 3) != "ПБР" || int.TryParse(l.Substring(3), out iRes) == false || iRes <= 0 || iRes > 24)
+                                ;
+                            else
+                                ;
+                        }
+                        break;
+                }
+            else
+                ;
+
+            return iRes;
+        }
+
         private bool LayoutIsBiggerByName(string l1, string l2)
         {
-            int num1, num2;
-            switch (l1)
-            {
-                case "ППБР": num1 = 0; break;
-                default:
-                    {
-                        if (l1.Substring(0, 3) != "ПБР" || int.TryParse(l1.Substring(3), out num1) == false || num1 <= 0 || num1 > 24)
-                            num1 = -1;
-                        break;
-                    }
-            }
+            bool bRes = false;
 
-            switch (l2)
-            {
-                case "ППБР": num2 = 0; break;
-                default:
-                    {
-                        if (l2.Substring(0, 3) != "ПБР" || int.TryParse(l2.Substring(3), out num2) == false || num2 <= 0 || num2 > 24)
-                            num2 = -1;
-                        break;
-                    }
-            }
+            int num1 = LayotByName (l1),
+                num2 = LayotByName (l2);
 
             if (num2 > num1)
-                return true;
+                bRes = true;
+            else
+                ;
             
-            return false;
+            return bRes;
         }
 
         private bool GetPBRValuesResponse(DataTable table)
@@ -3355,7 +3361,7 @@ namespace Statistic
                     }
                     else
                         if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                            || (table_in.Columns[i].ColumnName.IndexOf(tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) > -1))
+                            || (table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
                         {
                             table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
                         }
@@ -3574,7 +3580,7 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-                if ((num_TECComponent < 0) || ((!(num_TECComponent < 0)) && (tec.list_TECComponents[num_TECComponent].m_id > 500)))
+                    if ((num_TECComponent < 0) || ((!(num_TECComponent < 0)) && (tec.list_TECComponents[num_TECComponent].m_id > 500)))
                     {
                         double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
                         double[,] valuesREC = new double[m_list_TECComponents.Count, 25];
@@ -3582,12 +3588,23 @@ namespace Statistic
                         double[,] valuesDIV = new double[m_list_TECComponents.Count, 25];
 
                         offsetUDG = 1;
-                        offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1;
+                        offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                         offsetLayout = offsetPlan + /*tec.list_TECComponents.Count*/m_list_TECComponents.Count;
 
                         m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
 
                         table_in = restruct_table_adminValues(table_in);
+
+                        //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
+                        //    try { table_in.Columns.Remove("ID_COMPONENT"); }
+                        //    catch (Exception excpt)
+                        //    {
+                        //        /*
+                        //        Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ...");
+                        //        */
+                        //    }
+                        //else
+                        //    ;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
@@ -3601,7 +3618,7 @@ namespace Statistic
                                     {
                                         offsetPrev = i;
                                         //foreach (TECComponent g in tec.list_TECComponents)
-                                        for (j = 0; j < tec.list_TECComponents.Count; j ++)
+                                        for (j = 0; j < m_list_TECComponents.Count; j ++)
                                         {
                                             valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
                                             //j++;
@@ -3659,8 +3676,8 @@ namespace Statistic
                                             else
                                                 ;
 
-                                            //if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
                                                 valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
                                             else
                                                 valuesREC[j, hour - 1] = 0;
@@ -3716,8 +3733,8 @@ namespace Statistic
                                         try
                                         {
                                             valuesPBR[j, hour - 1] = 0;
-                                            //if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
                                                 valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
                                             else
                                                 valuesREC[j, hour - 1] = 0;
@@ -3862,8 +3879,8 @@ namespace Statistic
                                     else
                                         ;
 
-                                    //if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
-                                    if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
+                                    if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
+                                    //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
                                         valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
                                     else
                                         valuesREC[hour - 1] = 0;
@@ -3907,8 +3924,8 @@ namespace Statistic
                                             ;
 
                                     valuesPBR[hour - 1] = 0;
-                                    //if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
-                                    if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
+                                    if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
+                                    //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
                                         valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
                                     else
                                         valuesREC[hour - 1] = 0;

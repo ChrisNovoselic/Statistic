@@ -896,6 +896,9 @@ namespace StatisticCommon
             int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
             if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
+            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR");
+            if (offsetPBR > 0) offsetPBR = 0; else ;
+
             //Удаление столбцов 'ID_COMPONENT'
             for (i = 0; i < arTable.Length; i++) {
                 /*
@@ -909,16 +912,19 @@ namespace StatisticCommon
                         ;
                 }
                 */
-                try { arTable[i].Columns.Remove("ID_COMPONENT"); }
-                catch (ArgumentException e) {
-                    /*
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("Remove(\"ID_COMPONENT\")", true, true, false);
-                    Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
-                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                    Logging.Logg().LogUnlock();
-                    */ 
-                }
+                if (!(arTable[i].Columns.IndexOf("ID_COMPONENT") < 0))
+                    try { arTable[i].Columns.Remove("ID_COMPONENT"); }
+                    catch (ArgumentException e) {
+                        /*
+                        Logging.Logg().LogLock();
+                        Logging.Logg().LogToFile("Remove(\"ID_COMPONENT\")", true, true, false);
+                        Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                        Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                        Logging.Logg().LogUnlock();
+                        */ 
+                    }
+                else
+                    ;
             }
 
             if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
@@ -962,7 +968,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1 + offsetPBR_NUMBER/*"PBR"*/];
+                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1 + offsetPBR_NUMBER + offsetPBR/*"PBR"*/];
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
@@ -982,10 +988,10 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1 + offsetPBR_NUMBER/*"REC"*/];
-                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2 + offsetPBR_NUMBER/*"IS_PER"*/] == 1;
-                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3 + offsetPBR_NUMBER/*"DIVIAT"*/];
-                        if (!(table.Rows[i]["DATE_PBR"] is System.DBNull))
+                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1 + offsetPBR_NUMBER + offsetPBR/*"REC"*/];
+                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2 + offsetPBR_NUMBER + offsetPBR/*"IS_PER"*/] == 1;
+                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3 + offsetPBR_NUMBER + offsetPBR/*"DIVIAT"*/];
+                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0))
                             m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1/* + offsetPBR_NUMBER*//*"PBR"*/];
                         else
                             m_curRDGValues[hour - 1].plan = 0;

@@ -201,24 +201,28 @@ namespace StatisticCommon
             return strRes;
         }
 
+        //Вызывается только для БД со статическими полями (старый формат)
         private string selectPBRValueQuery(TECComponent g)
         {
             string strRes = string.Empty;
 
-            if (g.prefix_admin.Length > 0)
-            {
-                //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
+            if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
+                if (g.prefix_admin.Length > 0)
+                {
+                    //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
+                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                    strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                }
+                else
+                {
+                    //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
+                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
+                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                    strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                }
             else
-            {
-                //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                strRes += m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
+                ;
 
             return strRes;
         }
@@ -232,9 +236,18 @@ namespace StatisticCommon
                 case Admin.TYPE_FIELDS.STATIC:
                     strRes = @"SELECT " +
                         //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
-                        m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
-                        //        selectAdmin +
-                        @", " + selectPBR + " AS PBR";
+                        m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR";
+
+                    if (selectPBR.Length > 0)
+                        strRes += @", " + selectPBR + " AS PBR";
+                    else
+                        ;
+
+                    //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
+                    //    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    //else
+                    //    ;
+                    
                     if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
                         strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
                     else
