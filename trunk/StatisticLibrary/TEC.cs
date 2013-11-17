@@ -16,6 +16,7 @@ namespace StatisticCommon
                                         COUNT_INDEX_NAME_FIELD};
         public enum TEC_TYPE { COMMON, BIYSK };
 
+        public int m_id;
         public string name,
                     prefix_admin, prefix_pbr;
         public string [] m_arNameTableAdminValues, m_arNameTableUsedPPBRvsPBR;
@@ -41,9 +42,10 @@ namespace StatisticCommon
 
         public FormParametersTG parametersTGForm;
 
-        public TEC (string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
+        public TEC (int id, string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
             list_TECComponents = new List<TECComponent>();
 
+            this.m_id = id;
             this.name = name;
             this.m_arNameTableAdminValues = new string[(int)Admin.TYPE_FIELDS.COUNT_TYPE_FIELDS]; this.m_arNameTableUsedPPBRvsPBR = new string[(int)Admin.TYPE_FIELDS.COUNT_TYPE_FIELDS];
             this.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] = table_name_pbr;

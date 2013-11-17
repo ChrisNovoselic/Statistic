@@ -22,6 +22,7 @@ namespace Statistic
         private FormConnectionSettings m_formConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
         public Admin [] m_arAdmin;
+        public Passwords m_passwords;
         private List<TecView> tecViews;
         private List<TecView> selectedTecViews;
         private FormPassword formPassword;
@@ -61,6 +62,11 @@ namespace Statistic
         private bool Initialize()
         {
             firstStart = true;
+
+            m_passwords = new Passwords();
+            m_passwords.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+            m_passwords.SetDelegateReport(ErrorReport, ActionReport);
+            m_passwords.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
             m_arAdmin = new Admin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
             m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
@@ -105,8 +111,8 @@ namespace Statistic
             m_prevSelectedIndex = 0;
 
             //formChangeMode = new FormChangeMode();
-            formPassword = new FormPassword(m_arAdmin[(int)FormChangeMode.MANAGER.DISP]);
-            formSetPassword = new FormSetPassword(m_arAdmin[(int)FormChangeMode.MANAGER.DISP]);
+            formPassword = new FormPassword(m_passwords);
+            formSetPassword = new FormSetPassword(m_passwords);
             formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
             formParameters = new FormParameters("setup.ini");
 
@@ -163,6 +169,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            m_passwords.StopDbInterface();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -512,6 +520,23 @@ namespace Statistic
             else
                 ;
 
+            if (m_passwords.actioned_state)
+            {
+                lblDateError.Text = m_passwords.last_time_action.ToString();
+                lblDescError.Text = m_passwords.last_action;
+            }
+            else
+                ;
+
+            if (m_passwords.errored_state)
+            {
+                have_eror = true;
+                lblDateError.Text = m_passwords.last_time_error.ToString();
+                lblDescError.Text = m_passwords.last_error;
+            }
+            else
+                ;
+
             return have_eror;
         }
 
@@ -549,6 +574,8 @@ namespace Statistic
         {
             if (firstStart)
             {
+                m_passwords.StartDbInterface();
+                
                 int i = -1;
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     m_arAdmin [i].StartDbInterface();

@@ -14,13 +14,13 @@ namespace Statistic
     {
         private uint m_idPass;
 
-        private Admin m_admin;
+        private Passwords m_pass;
         private bool closing;
 
-        public FormSetPassword(Admin a)
+        public FormSetPassword(Passwords p)
         {
             InitializeComponent();
-            m_admin = a;
+            m_pass = p;
             closing = false;
         }
 
@@ -39,7 +39,7 @@ namespace Statistic
         {
             if (tbxNewPassword.Text == tbxNewPasswordAgain.Text)
             {
-                m_admin.SetPassword(tbxNewPassword.Text, m_idPass);
+                m_pass.SetPassword(tbxNewPassword.Text, m_idPass);
                 closing = true;
                 Close();
             }

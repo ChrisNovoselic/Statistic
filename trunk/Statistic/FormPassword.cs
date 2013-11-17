@@ -16,13 +16,13 @@ namespace Statistic
 
         private ID_ROLES m_idPass;
 
-        private Admin m_admin;
+        private Passwords m_pass;
         private bool closing;
 
-        public FormPassword(Admin a)
+        public FormPassword(Passwords p)
         {
             InitializeComponent();
-            m_admin = a;
+            m_pass = p;
             closing = false;
         }
 
@@ -41,7 +41,7 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
-                switch (m_admin.ComparePassword(tbxPassword.Text, (uint)m_idPass))
+                switch (m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass))
                 {
                     case Admin.Errors.NoAccess:
                         tbxPassword.Text = "";

@@ -49,7 +49,8 @@ namespace StatisticCommon
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
                 //Создание объекта ТЭЦ
-                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
+                tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
+                                list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                 list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                 list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                 list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
@@ -153,7 +154,8 @@ namespace StatisticCommon
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
-                tec.Add(new TEC(list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
+                tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
+                                list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                 list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                 list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                 list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),

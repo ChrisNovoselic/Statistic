@@ -5,7 +5,6 @@ using System.Windows.Forms;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
-using System.Security.Cryptography;
 using System.Data.OleDb;
 using System.IO;
 using MySql.Data.MySqlClient;
@@ -54,8 +53,6 @@ namespace StatisticCommon
             }
         }
 
-        private MD5CryptoServiceProvider md5;
-
         private DelegateFunc delegateStartWait;
         private DelegateFunc delegateStopWait;
         private DelegateFunc delegateEventUpdate;
@@ -67,31 +64,8 @@ namespace StatisticCommon
         private DelegateDateFunction fillData = null;
 
         private DelegateDateFunction setDatetime;
-        /*
-        FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
-        //public int mode(int new_mode = (int) FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-        public int mode(FormChangeMode.MODE_TECCOMPONENT new_mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-        {
-            int prev_mode = (int) m_modeTECComponent;
 
-            if (new_mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                ;
-            else
-                m_modeTECComponent = (FormChangeMode.MODE_TECCOMPONENT) new_mode;
-
-            return prev_mode;
-        }
-        */
-        
         public Admin.TYPE_FIELDS m_typeFields;
-
-        public string getOwnerPass () {
-            string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
-
-            return ownersPass [m_idPass - 1];            
-        }
-
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL };
 
         public volatile RDGStruct[] m_prevRDGValues;
         //public RDGStruct[] m_curTimezoneOffsetRDGExcelValues;
@@ -125,11 +99,13 @@ namespace StatisticCommon
         private volatile Errors saveResult;
         private volatile bool saving;
 
+        /* Passwords
         private Semaphore semaGetPass;
         private Semaphore semaSetPass;
         private volatile Errors passResult;
         private volatile string passReceive;
         private volatile uint m_idPass;
+        */
 
         //private Semaphore semaLoadLayout;
         //private volatile Errors loadLayoutResult;
@@ -166,9 +142,9 @@ namespace StatisticCommon
             SavePPBRValues, //Сохранение PPBR
             SaveRDGExcelValues,
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
-            GetPass,
-            SetPassInsert,
-            SetPassUpdate,
+            //GetPass,
+            //SetPassInsert,
+            //SetPassUpdate,
             //LayoutGet,
             //LayoutSet,
             ClearPPBRValues,
@@ -217,8 +193,6 @@ namespace StatisticCommon
 
             m_prevRDGValues = new RDGStruct[24];
 
-            md5 = new MD5CryptoServiceProvider();
-
             is_data_error = is_connection_error = false;
 
             //TecView tecView = FormMainTrans.selectedTecViews [FormMainTrans.stclTecViews.SelectedIndex];
@@ -238,9 +212,6 @@ namespace StatisticCommon
 
             m_lockObj = new Object();
 
-            semaDBAccess = new Semaphore(1, 1);
-            semaGetPass = new Semaphore(1, 1);
-            semaSetPass = new Semaphore(1, 1);
             //semaLoadLayout = new Semaphore(1, 1);
 
             //delegateFillData = new DelegateFunctionDate(FillData);
@@ -380,29 +351,43 @@ namespace StatisticCommon
             List <int>listIndex = new List <int> ();
 
             int indx = -1;
-            foreach (TECComponent comp in allTECComponents) {
-                indx ++;
-                if ((comp.m_id < 100) && (mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
-                {
-                    listIndex.Add(indx);
-                }
-                else
-                    if ((comp.m_id < 500) && (mode == FormChangeMode.MODE_TECCOMPONENT.GTP))
+
+            switch (mode) {
+                case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                    foreach (TECComponent comp in allTECComponents)
                     {
-                        listIndex.Add (indx);
-                    }
-                    else
-                        if ((comp.m_id < 1000) && (mode == FormChangeMode.MODE_TECCOMPONENT.PC))
-                        {
+                        indx = comp.tec.m_id;
+                        if (listIndex.IndexOf(indx) < 0)
                             listIndex.Add(indx);
+                        else
+                            ;
+                    }
+                    break;
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.TG:
+                    foreach (TECComponent comp in allTECComponents) {
+                        indx ++;
+                        if ((comp.m_id < 500) && (mode == FormChangeMode.MODE_TECCOMPONENT.GTP))
+                        {
+                            listIndex.Add (indx);
                         }
                         else
-                            if ((comp.m_id < 10000) && (mode == FormChangeMode.MODE_TECCOMPONENT.TG))
+                            if ((comp.m_id < 1000) && (mode == FormChangeMode.MODE_TECCOMPONENT.PC))
                             {
                                 listIndex.Add(indx);
                             }
                             else
-                                ;
+                                if ((comp.m_id < 10000) && (mode == FormChangeMode.MODE_TECCOMPONENT.TG))
+                                {
+                                    listIndex.Add(indx);
+                                }
+                                else
+                                    ;
+                    }
+                    break;
+                default:
+                    break;
             }
 
             return listIndex;
@@ -500,192 +485,6 @@ namespace StatisticCommon
             Logging.Logg().LogLock();
             Logging.Logg().LogToFile(msg, true, true, false);
             Logging.Logg().LogUnlock();
-        }
-
-        public bool SetPassword(string password, uint idPass)
-        {
-            m_idPass = idPass;
-
-            byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
-
-            StringBuilder hashedString = new StringBuilder();
-
-            for (int i = 0; i < hash.Length; i++)
-                hashedString.Append(hash[i].ToString("x2"));
-
-            semaGetPass.WaitOne();
-            lock (m_lockObj)
-            {
-                passResult = Errors.NoAccess;
-
-                newState = true;
-                states.Clear();
-                states.Add(StatesMachine.GetPass);
-
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch
-                {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SetPassword () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
-                }
-            }
-            delegateStartWait();
-            semaGetPass.WaitOne();
-            try
-            {
-                semaGetPass.Release(1);
-            }
-            catch
-            {
-            }
-
-            if (passResult != Errors.NoError)
-            {
-                delegateStopWait();
-                
-                //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка получения пароля " + getOwnerPass() + ". Пароль не сохранён.");
-                
-                return false;
-            }
-
-
-            semaSetPass.WaitOne();
-            lock (m_lockObj)
-            {
-                passResult = Errors.NoAccess;
-
-                newState = true;
-                states.Clear();
-
-                if (passReceive == null)
-                    states.Add(StatesMachine.SetPassInsert);
-                else
-                    states.Add(StatesMachine.SetPassUpdate);
-
-                if (password != "")
-                    passReceive = hashedString.ToString();
-
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch
-                {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SetPassword () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
-                }
-            }
-            semaSetPass.WaitOne();
-            try
-            {
-                semaSetPass.Release(1);
-            }
-            catch
-            {
-            }
-            delegateStopWait();
-
-            if (passResult != Errors.NoError)
-            {
-                //MessageBox.Show(this, "Ошибка сохранения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка сохранения пароля " + getOwnerPass() + ". Пароль не сохранён.");                
-                return false;
-            }
-
-            return true;
-        }
-
-        public Errors ComparePassword(string password, uint id)
-        {
-            if (password.Length < 1)
-            {
-                //MessageBox.Show(this, "Длина пароля меньше допустимой.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Длина пароля меньше допустимой.");
-
-                return Errors.InvalidValue;
-            }
-            else
-                ;
-
-            m_idPass = id;
-
-            string hashFromForm = "";
-            byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
-
-            StringBuilder hashedString = new StringBuilder();
-
-            for (int i = 0; i < hash.Length; i++)
-                hashedString.Append(hash[i].ToString("x2"));
-
-            delegateStartWait();
-            semaGetPass.WaitOne();
-            lock (m_lockObj)
-            {
-                passResult = Errors.NoAccess;
-
-                newState = true;
-                states.Clear();
-                states.Add(StatesMachine.GetPass);
-
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch
-                {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - ComparePassword () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
-                }
-            }
-            semaGetPass.WaitOne();
-            try
-            {
-                semaGetPass.Release(1);
-            }
-            catch
-            {
-            }
-
-            //???
-            //passResult = Errors.NoError;
-
-            delegateStopWait();
-            if (passResult != Errors.NoError)
-            {                
-                //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка получения пароля " + getOwnerPass() + ".");
-                
-                return Errors.ParseError;
-            }
-
-            if (passReceive == null)
-            {
-                //MessageBox.Show(this, "Пароль не установлен.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Пароль не установлен.");
-                    
-                return Errors.NoAccess;
-            }
-            else
-            {
-                hashFromForm = hashedString.ToString();
-             
-                if (hashFromForm != passReceive)
-                {
-                    //MessageBox.Show(this, "Пароль введён неверно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    MessageBox("Пароль введён неверно.");
-                    
-                    return Errors.InvalidValue;
-                }
-                else
-                    return Errors.NoError;
-            }
         }
 
         public void ClearValues()
@@ -1560,78 +1359,12 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbInterface.QUERY_TYPE.UPDATE] + query[(int)DbInterface.QUERY_TYPE.INSERT] + query[(int)DbInterface.QUERY_TYPE.DELETE]);
         }
 
-        private void GetPassRequest(uint id)
-        {
-            string request = "SELECT HASH FROM passwords WHERE ID_ROLE=" + id;
-            
-            Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, request);
-        }
-
-        private bool GetPassResponse(DataTable table)
-        {
-            if (table.Rows.Count != 0)
-                try
-                {
-                    if (table.Rows[0][0] is System.DBNull)
-                        passReceive = "";
-                    else
-                        passReceive = (string)table.Rows[0][0];
-                }
-                catch
-                {
-                    return false;
-                }
-            else
-                passReceive = null;
-
-            return true;
-        }
-
-        private void SetPassRequest(string password, uint id, bool insert)
-        {
-            string query = string.Empty;
-            
-            if (insert)
-                switch (m_idPass) {
-                    case 1:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    case 2:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    case 3:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    default:
-                        break;
-                }
-            else {
-                switch (m_idPass)
-                {
-                    case 1:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    case 2:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    case 3:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    default:
-                        break;
-                }
-
-                query += " WHERE ID_USER=ID_ROLE AND ID_ROLE=" + id;
-            }
-
-            Request(m_indxDbInterfaceConfigDB, m_listenerIdConfigDB, query);
-        }
-
         private void ErrorReport(string error_string)
         {
             last_error = error_string;
             last_time_error = DateTime.Now;
             errored_state = true;
+            
             errorReport (error_string);
         }
 
@@ -1932,24 +1665,6 @@ namespace StatisticCommon
                     ActionReport("Сохранение ПЛАНА.");
                     SetPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     break;
-                //case StatesMachine.UpdateValuesPPBR:
-                //    ActionReport("Обровление ПЛАНА.");
-                //    break;
-                case StatesMachine.GetPass:
-                    ActionReport("Получение пароля " + getOwnerPass () + ".");
-
-                    GetPassRequest(m_idPass);
-                    break;
-                case StatesMachine.SetPassInsert:
-                    ActionReport("Сохранение пароля " + getOwnerPass() + ".");
-                    
-                    SetPassRequest(passReceive, m_idPass, true);
-                    break;
-                case StatesMachine.SetPassUpdate:
-                    ActionReport("Обновление пароля " + getOwnerPass() + ".");
-
-                    SetPassRequest(passReceive, m_idPass, false);
-                    break;
                 //case StatesMachine.LayoutGet:
                 //    ActionReport("Получение административных данных макета.");
                 //    GetLayoutRequest(m_curDate);
@@ -2002,15 +1717,13 @@ namespace StatisticCommon
                     //case StatesMachine.UpdateValuesPPBR:
                     case StatesMachine.ClearAdminValues:
                     case StatesMachine.ClearPPBRValues:
-                    case StatesMachine.GetPass:
+                    //case StatesMachine.GetPass:
                         bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                         break;
-                    case StatesMachine.SetPassInsert:
-                    case StatesMachine.SetPassUpdate:
                     //case StatesMachine.LayoutGet:
                     //case StatesMachine.LayoutSet:
-                        bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
-                        break;
+                        //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
+                        //break;
                     default:
                         break;
                 }
@@ -2113,62 +1826,6 @@ namespace StatisticCommon
                     if (result)
                     {
                         if (!(saveComplete == null)) saveComplete(); else ;
-                    }
-                    break;
-                //case StatesMachine.UpdateValuesPPBR:
-                //    saveResult = Errors.NoError;
-                //    try
-                //    {
-                //        semaDBAccess.Release(1);
-                //    }
-                //    catch
-                //    {
-                //    }
-                //    result = true;
-                //    if (result)
-                //    {
-                //    }
-                //    break;
-                case StatesMachine.GetPass:
-                    result = GetPassResponse(table);
-                    if (result)
-                    {
-                        passResult = Errors.NoError;
-                        try
-                        {
-                            semaGetPass.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    break;
-                case StatesMachine.SetPassInsert:
-                    passResult = Errors.NoError;
-                    try
-                    {
-                        semaSetPass.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                    result = true;
-                    if (result)
-                    {
-                    }
-                    break;
-                case StatesMachine.SetPassUpdate:
-                    passResult = Errors.NoError;
-                    try
-                    {
-                        semaSetPass.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                    result = true;
-                    if (result)
-                    {
                     }
                     break;
                 //case StatesMachine.LayoutGet:
@@ -2335,51 +1992,6 @@ namespace StatisticCommon
                     try
                     {
                         semaDBAccess.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                    break;
-                //case StatesMachine.UpdateValuesPPBR:
-                //    ErrorReport("Ошибка обновления данных ПЛАНа. Переход в ожидание.");
-                //    saveResult = Errors.NoAccess;
-                //    try
-                //    {
-                //        semaDBAccess.Release(1);
-                //    }
-                //    catch
-                //    {
-                //    }
-                //    break;
-                case StatesMachine.GetPass:
-                    if (response)
-                    {
-                        ErrorReport("Ошибка разбора пароля " + getOwnerPass() + ". Переход в ожидание.");
-
-                        passResult = Errors.ParseError;
-                    }
-                    else
-                    {
-                        ErrorReport("Ошибка получения пароля " + getOwnerPass() + ". Переход в ожидание.");
-
-                        passResult = Errors.NoAccess;
-                    }
-                    try
-                    {
-                        semaGetPass.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                    break;
-                case StatesMachine.SetPassInsert:
-                case StatesMachine.SetPassUpdate:
-                    ErrorReport("Ошибка сохранения пароля " + getOwnerPass() + ". Переход в ожидание.");
-
-                    passResult = Errors.NoAccess;
-                    try
-                    {
-                        semaSetPass.Release(1);
                     }
                     catch
                     {

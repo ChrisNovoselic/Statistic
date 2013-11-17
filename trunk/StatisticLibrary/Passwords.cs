@@ -25,7 +25,7 @@ namespace StatisticCommon
         private DelegateStringFunc errorReport;
         private DelegateStringFunc actionReport;
 
-        public string getOwnerPass () {
+        private string getOwnerPass () {
             string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
 
             return ownersPass [m_idPass - 1];            
@@ -409,6 +409,7 @@ namespace StatisticCommon
             last_error = error_string;
             last_time_error = DateTime.Now;
             errored_state = true;
+            
             errorReport (error_string);
         }
 
@@ -476,7 +477,7 @@ namespace StatisticCommon
             threadIsWorking = true;
 
             taskThread = new Thread (new ParameterizedThreadStart(Passwords_ThreadFunction));
-            taskThread.Name = "Интерфейс получения пароля";
+            taskThread.Name = "Интерфейс получения пароля (Passwords.cs)";
             taskThread.IsBackground = true;
 
             semaState = new Semaphore(1, 1);
