@@ -241,10 +241,11 @@ namespace StatisticCommon
                 else
                     ;
             }
+
             return false;
         }
 
-        public Errors SaveChanges()
+        public virtual Errors SaveChanges()
         {
             delegateStartWait();
             semaDBAccess.WaitOne();
@@ -1536,6 +1537,8 @@ namespace StatisticCommon
 
             threadIsWorking = true;
 
+            semaDBAccess = new Semaphore(1, 1);
+
             taskThread = new Thread (new ParameterizedThreadStart(TecView_ThreadFunction));
             taskThread.Name = "Интерфейс к данным";
             taskThread.IsBackground = true;
@@ -2363,6 +2366,26 @@ namespace StatisticCommon
                 ;
 
             return allTECComponents[indx].name;
+        }
+
+        public FormChangeMode.MODE_TECCOMPONENT modeTECComponent (int indx) {
+            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
+            
+            if ((allTECComponents [indx].m_id > 0) && (allTECComponents [indx].m_id < 100))
+                modeRes  = FormChangeMode.MODE_TECCOMPONENT.TEC;
+            else
+                if ((allTECComponents [indx].m_id > 100) && (allTECComponents [indx].m_id < 500))
+                    modeRes  = FormChangeMode.MODE_TECCOMPONENT.GTP;
+                else
+                    if ((allTECComponents [indx].m_id > 500) && (allTECComponents [indx].m_id < 1000))
+                        modeRes  = FormChangeMode.MODE_TECCOMPONENT.PC;
+                    else
+                        if ((allTECComponents [indx].m_id > 1000) && (allTECComponents [indx].m_id < 10000))
+                            modeRes  = FormChangeMode.MODE_TECCOMPONENT.TG;
+                        else
+                            ;
+
+            return modeRes;
         }
     }
 }

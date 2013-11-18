@@ -285,6 +285,8 @@ namespace Statistic
             Admin.Errors resultSaving;
             if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
             {
+                ClearTables();
+
                 m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else

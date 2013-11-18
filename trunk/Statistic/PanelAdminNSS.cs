@@ -34,7 +34,7 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.ResumeLayout();
         }
-        
+
         public PanelAdminNSS (Admin a) : base (a) {
         }
 
@@ -45,6 +45,16 @@ namespace Statistic
 
             for (int i = 0; i < 24; i++)
             {
+                foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents)
+                {
+                    if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                    {
+                        int indx_tg = ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf(indx);
+                        ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
+                    }
+                    else
+                        ;
+                }
             }
         }
 
@@ -72,7 +82,7 @@ namespace Statistic
 
             //m_admin.CopyCurToPrevRDGValues();
         }
-        
+
         public override void setDataGridViewAdmin(DateTime date)
         {
             //if (this.dgwAdminTable.Columns.Count < ((AdminNSS)m_admin).m_list_indxTECComponents.Count)

@@ -24,18 +24,17 @@ namespace StatisticCommon
             //curRDGValues = (RDGStruct[])m_curRDGValues.Clone();
 
             m_curRDGValues.CopyTo(curRDGValues, 0);
-            /*
+            
             for (int i = 0; i < m_curRDGValues.Length; i ++) {
+                curRDGValues [i].plan += m_curRDGValues [i].recomendation;
+                
                 //curRDGValues [i].plan = m_curRDGValues [i].plan;
 
                 //curRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
                 //curRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
                 //curRDGValues[i].deviation = m_curRDGValues[i].deviation;
-
-
-                curRDGValues.SetValue(m_curRDGValues[i], i);
             }
-            */
+
             m_listCurRDGValues.Add (curRDGValues);
 
             return bRes;
@@ -176,6 +175,34 @@ namespace StatisticCommon
             m_curRDGValues.CopyTo(curRDGValues, 0);
 
             m_listCurRDGValues.Add(curRDGValues);
+
+            return bRes;
+        }
+
+        public override Errors SaveChanges()
+        {
+            Errors bErr = Errors.NoError,
+                    bRes = Errors.NoError;
+
+            int prevIndxTECComponent = indxTECComponents;
+            
+            foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
+                if (modeTECComponent(m_list_indxTECComponents[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                    indxTECComponents = m_list_indxTECComponents[m_listCurRDGValues.IndexOf(curRDGValues)];
+                    
+                    curRDGValues.CopyTo(m_curRDGValues, 0);
+
+                    bErr = base.SaveChanges ();
+                    if (!(bErr == Errors.NoError))
+                        bRes = bErr;
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+
+            indxTECComponents = prevIndxTECComponent;
 
             return bRes;
         }
