@@ -1,76 +1,183 @@
 using System;
 using System.Data;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace StatisticCommon
 {
     public class AdminNSS : Admin
     {
+        public List <int> m_list_indxTECComponents;
+        public List <RDGStruct []> m_listCurRDGValues;
+
         public AdminNSS () {
+            m_listCurRDGValues = new List<RDGStruct[]> ();
+            m_list_indxTECComponents = new List<int> ();
         }
 
         protected override bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
-            DataTable table = null;
-            DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
-            int [] arIndexTables = {0, 1};
+            bool bRes = base.GetAdminValuesResponse(tableAdminValuesResponse, date);
 
-            int i = -1, j = -1, k = -1,
-                hour = -1;
+            RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];            
 
-            int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
-            if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
+            //curRDGValues = (RDGStruct[])m_curRDGValues.Clone();
 
-            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR");
-            if (offsetPBR > 0) offsetPBR = 0; else ;
+            m_curRDGValues.CopyTo(curRDGValues, 0);
+            /*
+            for (int i = 0; i < m_curRDGValues.Length; i ++) {
+                //curRDGValues [i].plan = m_curRDGValues [i].plan;
 
-            //Удаление столбцов 'ID_COMPONENT'
-            for (i = 0; i < arTable.Length; i++) {
-                /*
-                for (j = 0; j < arTable[i].Columns.Count; j++)
+                //curRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
+                //curRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
+                //curRDGValues[i].deviation = m_curRDGValues[i].deviation;
+
+
+                curRDGValues.SetValue(m_curRDGValues[i], i);
+            }
+            */
+            m_listCurRDGValues.Add (curRDGValues);
+
+            return bRes;
+        }
+
+        private void fillListIndexTECComponent (int id) {
+            m_list_indxTECComponents.Clear();
+            foreach (TECComponent comp in allTECComponents)
+            {
+                if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
+                    (((comp.m_id > 100) && (comp.m_id < 500)) || //Является ГТП
+                    ((comp.m_id > 1000) && (comp.m_id < 10000)))) //Является ТГ
                 {
-                    if (arTable[i].Columns [j].ColumnName == "ID_COMPONENT") {
-                        arTable[i].Columns.RemoveAt (j);
+                    m_list_indxTECComponents.Add(allTECComponents.IndexOf(comp));
+                }
+                else
+                    ;
+            }
+
+            m_listCurRDGValues.Clear();
+        }
+
+        private void threadGetRDGValuesWithoutDate(object obj)
+        {
+            foreach (int indx in m_list_indxTECComponents)
+            {
+                evStateEnd.WaitOne();
+                base.GetRDGValues(m_typeFields, indx);
+            }
+        }
+        
+        public override void GetRDGValues(TYPE_FIELDS mode, int id)
+        {
+            //delegateStartWait ();
+            fillListIndexTECComponent(id);
+
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
+            //delegateStopWait ();
+        }
+
+        private void threadGetRDGValuesWithDate(object date)
+        {
+            foreach (int indx in m_list_indxTECComponents)
+            {
+                evStateEnd.WaitOne();
+                base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+            }
+        }
+
+        public override void GetRDGValues(TYPE_FIELDS mode, int id, DateTime date)
+        {
+            //delegateStartWait ();
+            fillListIndexTECComponent (id);
+
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
+            //delegateStopWait ();
+        }
+
+        private void threadGetRDGExcelValues (object date) {
+            foreach (int indx in m_list_indxTECComponents)
+            {
+                evStateEnd.WaitOne();
+                if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
+                    base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+                else
+                    if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
+                        base.GetRDGExcelValues(indx, (DateTime)date);
+                    else
+                        ;
+            }
+        }
+
+        public override void GetRDGExcelValues(int id, DateTime date)
+        {
+            //delegateStartWait();
+
+            m_listCurRDGValues.Clear();
+
+            new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
+            //delegateStopWait();
+        }
+
+        public string [] GetListNameTEC()
+        {
+            int indx = -1;
+            List<string> listRes = new List<string> ();
+            List<int> listIdTEC = new List<int>();
+
+            foreach (TECComponent comp in allTECComponents)
+            {
+                indx = comp.tec.m_id;
+                if (listIdTEC.IndexOf(indx) < 0) {
+                    listIdTEC.Add (indx);
+                    
+                    listRes.Add(comp.tec.name);
+                }
+                else
+                    ;
+            }
+
+            return listRes.ToArray ();
+        }
+
+        public override bool WasChanged()
+        {
+            bool bRes = false;
+
+            return bRes;
+        }
+
+        public override bool IsRDGExcel(int id_tec)
+        {
+            bool bRes = false;
+
+            foreach (TECComponent comp in allTECComponents) {
+                if (comp.tec.m_id == id_tec) {
+                    if (comp.tec.m_path_rdg_excel.Length > 0) {
+                        bRes = true;
+
                         break;
                     }
                     else
                         ;
                 }
-                */
-                if (!(arTable[i].Columns.IndexOf("ID_COMPONENT") < 0))
-                    try { arTable[i].Columns.Remove("ID_COMPONENT"); }
-                    catch (Exception e) {
-                        Logging.Logg().LogExceptionToFile(e, "AdminNSS - GetAdminValuesResponse () - ...Columns.Remove(\"ID_COMPONENT\")"); 
-                    }
                 else
                     ;
             }
 
-            if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
-                arIndexTables[0] = 1;
-                arIndexTables[1] = 0;
-            }
-            else {
-            }
+            return bRes;
+        }
 
-            table = arTable[arIndexTables [0]].Copy();
-            table.Merge(arTable[arIndexTables[1]].Clone (), false);
+        protected override bool GetRDGExcelValuesResponse()
+        {
+            bool bRes = base.GetRDGExcelValuesResponse();
 
-            for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
-            {
-                for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
-                {
-                    if (arTable[arIndexTables[0]].Rows[i][0].Equals (arTable[arIndexTables[1]].Rows[j][0])) {
-                        for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
-                        {
-                            table.Rows [i] [arTable[arIndexTables[1]].Columns [k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
-                        }
-                    }
-                    else
-                        ;
-                }
-            }
+            RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
 
-            return true;
+            m_curRDGValues.CopyTo(curRDGValues, 0);
+
+            m_listCurRDGValues.Add(curRDGValues);
+
+            return bRes;
         }
     }
 }

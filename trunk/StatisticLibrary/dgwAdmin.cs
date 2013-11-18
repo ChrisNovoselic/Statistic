@@ -72,7 +72,7 @@ namespace StatisticCommon
         }
         */
 
-        private void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
+        protected virtual void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
             bool valid;

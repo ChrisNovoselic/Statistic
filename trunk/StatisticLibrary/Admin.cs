@@ -53,8 +53,8 @@ namespace StatisticCommon
             }
         }
 
-        private DelegateFunc delegateStartWait;
-        private DelegateFunc delegateStopWait;
+        protected DelegateFunc delegateStartWait;
+        protected DelegateFunc delegateStopWait;
         private DelegateFunc delegateEventUpdate;
 
         private DelegateStringFunc errorReport;
@@ -114,7 +114,8 @@ namespace StatisticCommon
         private Object m_lockObj;
 
         private Thread taskThread;
-        private Semaphore semaState;
+        protected Semaphore semaStateStart;
+        protected AutoResetEvent evStateEnd;
         public volatile bool threadIsWorking;
         private volatile bool newState;
         private volatile List<StatesMachine> states;
@@ -130,7 +131,7 @@ namespace StatisticCommon
         protected DataTable m_tablePPBRValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
-        private enum StatesMachine
+        protected enum StatesMachine
         {
             CurrentTime,
             AdminValues, //Получение административных данных
@@ -173,7 +174,7 @@ namespace StatisticCommon
         //private volatile bool workTread;
         //-------------------------
 
-        private bool started;
+        protected bool started;
 
         //public bool isActive;
 
@@ -219,7 +220,7 @@ namespace StatisticCommon
             states = new List<StatesMachine>();
         }
 
-        public bool WasChanged()
+        public virtual bool WasChanged()
         {
             for (int i = 0; i < 24; i++)
             {
@@ -271,12 +272,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SaveChanges () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - SaveChanges () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -324,12 +325,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - ClearRDG () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - ClearRDG () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -403,7 +404,7 @@ namespace StatisticCommon
             GetRDGValues (m_typeFields, indxTECComponents);
         }
 
-        public bool IsRDGExcel (int indx) {
+        public virtual bool IsRDGExcel (int indx) {
             bool bRes = false;
             if (allTECComponents[indx].tec.m_path_rdg_excel.Length > 0)
                 bRes = true;
@@ -436,12 +437,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - Reinit () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - Reinit () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -515,12 +516,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -541,7 +542,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private bool GetCurrentTimeResponse(DataTable table)
+        protected bool GetCurrentTimeResponse(DataTable table)
         {
             if (table.Rows.Count == 1)
             {
@@ -559,8 +560,8 @@ namespace StatisticCommon
 
             return true;
         }
-
-        public void GetRDGValues (TYPE_FIELDS mode, int indx) {
+        
+        public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
             lock (m_lockObj)
             {
                 indxTECComponents = indx;
@@ -580,18 +581,18 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
         }
 
-        public void GetRDGValues(TYPE_FIELDS mode, int indx, DateTime date)
+        public virtual void GetRDGValues(TYPE_FIELDS mode, int indx, DateTime date)
         {
             lock (m_lockObj)
             {
@@ -614,13 +615,13 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch (Exception e)
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaStateStart)", false, false, false);
                     Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
                     Logging.Logg().LogToFile(e.ToString(), false, false, false);
                     Logging.Logg().LogUnlock();
@@ -637,7 +638,7 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
         }
 
-        public void GetRDGExcelValues(int indx, DateTime date)
+        public virtual void GetRDGExcelValues(int indx, DateTime date)
         {
             lock (m_lockObj)
             {
@@ -657,12 +658,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaState.Release(1);
+                    semaStateStart.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -1539,9 +1540,10 @@ namespace StatisticCommon
             taskThread.Name = "Интерфейс к данным";
             taskThread.IsBackground = true;
 
-            semaState = new Semaphore(1, 1);
+            semaStateStart = new Semaphore(1, 1);
+            evStateEnd = new AutoResetEvent (true);
 
-            semaState.WaitOne();
+            semaStateStart.WaitOne();
             taskThread.Start();
         }
 
@@ -1558,10 +1560,10 @@ namespace StatisticCommon
 
             if (taskThread.IsAlive)
             {
-                try { semaState.Release(1); }
+                try { semaStateStart.Release(1); }
                 catch {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaStateStart.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
 
@@ -1740,7 +1742,7 @@ namespace StatisticCommon
             return bRes;
         }
 
-        private bool StateResponse(StatesMachine state, DataTable table)
+        protected virtual bool StateResponse(StatesMachine state, DataTable table)
         {
             bool result = false;
             switch (state)
@@ -1876,7 +1878,7 @@ namespace StatisticCommon
                     break;
             }
 
-            if (result)
+            if (result == true)
                 errored_state = actioned_state = false;
             else
                 ;
@@ -2052,7 +2054,7 @@ namespace StatisticCommon
 
             while (threadIsWorking)
             {
-                semaState.WaitOne();
+                semaStateStart.WaitOne();
 
                 index = 0;
 
@@ -2060,6 +2062,9 @@ namespace StatisticCommon
                 {
                     if (states.Count == 0)
                         continue;
+                    else
+                        ;
+
                     currentState = states[index];
                     newState = false;
                 }
@@ -2146,16 +2151,21 @@ namespace StatisticCommon
                         currentState = states[index];
                     }
                 }
+
+                try { evStateEnd.Set (); }
+                catch (Exception e) {
+                    Logging.Logg().LogExceptionToFile(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
+                }
             }
             try
             {
-                semaState.Release(1);
+                semaStateStart.Release(1);
             }
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
                 Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
-                Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", true, true, false);
+                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaStateStart.Release(1)", true, true, false);
+                Logging.Logg().LogToFile("Исключение обращения к переменной (semaStateStart)", true, true, false);
                 Logging.Logg().LogToFile("Исключение: " + e.Message, false, false, false);
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
@@ -2195,12 +2205,12 @@ namespace StatisticCommon
 
                         try
                         {
-                            semaState.Release(1);
+                            semaStateStart.Release(1);
                         }
                         catch
                         {
                             Logging.Logg().LogLock();
-                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaStateStart.Release(1)", true, true, false);
                             Logging.Logg().LogUnlock();
                         }
                     }
@@ -2248,12 +2258,12 @@ namespace StatisticCommon
 
         //            try
         //            {
-        //                semaState.Release(1);
+        //                semaStateStart.Release(1);
         //            }
         //            catch
         //            {
                         //Logging.Logg().LogLock();
-                        //Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
+                        //Logging.Logg().LogToFile("catch - SaveRDGValues () - semaStateStart.Release(1)", true, true, false);
                         //Logging.Logg().LogUnlock();
         //            }
         //        }
@@ -2290,12 +2300,12 @@ namespace StatisticCommon
 
                     try
                     {
-                        semaState.Release(1);
+                        semaStateStart.Release(1);
                     }
                     catch
                     {
                         Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaState.Release(1)", true, true, false);
+                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaStateStart.Release(1)", true, true, false);
                         Logging.Logg().LogUnlock();
                     }
                 }
@@ -2343,6 +2353,16 @@ namespace StatisticCommon
                 m_curRDGValues[i].deviationPercent = source.m_curRDGValues[i].deviationPercent;
                 m_curRDGValues[i].deviation = source.m_curRDGValues[i].deviation;
             }
+        }
+
+        public string GetNameTECComponent(int indx = -1)
+        {
+            if (indx < 0)
+                indx = indxTECComponents;
+            else
+                ;
+
+            return allTECComponents[indx].name;
         }
     }
 }

@@ -26,5 +26,17 @@ namespace StatisticCommon
 
         public DataGridViewAdminNSS () {
         }
+
+        protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            double value;
+            bool valid;
+
+            switch (e.ColumnIndex)
+            {
+                default:
+                    break;
+            }
+        }
     }
 }

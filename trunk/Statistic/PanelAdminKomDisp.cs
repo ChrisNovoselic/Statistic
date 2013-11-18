@@ -111,5 +111,23 @@ namespace Statistic
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = "";
             }
         }
+
+        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
+        {
+            base.InitializeComboBoxTecComponent(mode);
+
+            for (int i = 0; i < m_listTECComponentIndex.Count; i++)
+            {
+                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
+            }
+
+            if (comboBoxTecComponent.Items.Count > 0)
+            {
+                m_admin.indxTECComponents = m_listTECComponentIndex[0];
+                comboBoxTecComponent.SelectedIndex = 0;
+            }
+            else
+                ;
+        }
     }
 }

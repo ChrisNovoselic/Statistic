@@ -428,13 +428,9 @@ namespace StatisticCommon
                 Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
                 Logging.Logg().LogUnlock();
             }
-            catch (MySqlException e)
+            catch (Exception e)
             {
                 logging_catch_db(m_dbConnection, e);
-            }
-            catch
-            {
-                logging_catch_db(m_dbConnection, null);
             }
 
             return result;
@@ -461,13 +457,9 @@ namespace StatisticCommon
                 Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
 
             }
-            catch (DbException e)
+            catch (Exception e)
             {
                 logging_catch_db (m_dbConnection, e);
-            }
-            catch
-            {
-                logging_catch_db(m_dbConnection, null);
             }
             
             return result;
@@ -511,10 +503,10 @@ namespace StatisticCommon
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
             }
-            catch
+            catch (Exception e)
             {
                 needReconnect = true;
-                logging_catch_db (m_dbConnection, null);
+                logging_catch_db (m_dbConnection, e);
             }
 
             return result;
@@ -639,9 +631,9 @@ namespace StatisticCommon
                 else
                     ; //
             }
-            catch //(MySqlException e)
+            catch (Exception e)
             {
-                logging_catch_db(connectionMySQL, null);
+                logging_catch_db(connectionMySQL, e);
             }
 
             connectionMySQL.Close();
@@ -673,9 +665,9 @@ namespace StatisticCommon
                 else
                     ; //
             }
-            catch //(MySqlException e)
+            catch (Exception e)
             {
-                logging_catch_db(connectionMySQL, null);
+                logging_catch_db(connectionMySQL, e);
             }
 
             connectionMySQL.Close();
@@ -718,7 +710,7 @@ namespace StatisticCommon
                     else
                         ; //
                 }
-                catch (OleDbException e)
+                catch (Exception e)
                 {
                     logging_catch_db(connectionOleDB, e);
                 }

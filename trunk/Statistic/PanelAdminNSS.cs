@@ -48,22 +48,78 @@ namespace Statistic
             }
         }
 
-        public override void setDataGridViewAdmin(DateTime date)
-        {
+        private void addTextBoxColumn (DateTime date) {
+            this.dgwAdminTable.Columns.Add("column" + (this.dgwAdminTable.Columns.Count), m_admin.GetNameTECComponent(((AdminNSS)m_admin).m_list_indxTECComponents[this.dgwAdminTable.Columns.Count - 1]));
+
             for (int i = 0; i < 24; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                if (this.dgwAdminTable.Columns.Count == 2)
+                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                else
+                    ;
+
+                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 1].Value = ((AdminNSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 2][i].plan.ToString("F2");
             }
 
             m_admin.CopyCurToPrevRDGValues();
         }
 
-        public override void ClearTables()
+        private void updateTextBoxColumn()
         {
             for (int i = 0; i < 24; i++)
             {
+            }
+
+            //m_admin.CopyCurToPrevRDGValues();
+        }
+        
+        public override void setDataGridViewAdmin(DateTime date)
+        {
+            //if (this.dgwAdminTable.Columns.Count < ((AdminNSS)m_admin).m_list_indxTECComponents.Count)
+                this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
+            //else
+            //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
+        }
+
+        public override void ClearTables()
+        {
+            int i = -1;
+
+            while (this.dgwAdminTable.Columns.Count > 1)
+            {
+                this.dgwAdminTable.Columns.RemoveAt(this.dgwAdminTable.Columns.Count -1);
+            }            
+            
+            for (i = 0; i < 24; i++)
+            {
                 this.dgwAdminTable.Rows[i].Cells[0].Value = string.Empty;
             }
+        }
+
+        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
+        {
+            base.InitializeComboBoxTecComponent (mode);
+
+            if (m_listTECComponentIndex.Count > 0) {
+                comboBoxTecComponent.Items.AddRange (((AdminNSS)m_admin).GetListNameTEC ());
+            
+                if (comboBoxTecComponent.Items.Count > 0)
+                {
+                    m_admin.indxTECComponents = m_listTECComponentIndex[0];
+                    comboBoxTecComponent.SelectedIndex = 0;
+                }
+                else
+                    ;
+            }
+            else
+                ;
+        }
+
+        public override void Activate(bool active)
+        {
+            base.Activate (active);
+
+            ClearTables ();
         }
     }
 }

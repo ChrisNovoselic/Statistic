@@ -39,8 +39,6 @@ namespace Statistic
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
 
-        private bool firstStart;
-
         public FormMain()
         {
             InitializeComponent();
@@ -61,7 +59,7 @@ namespace Statistic
 
         private bool Initialize()
         {
-            firstStart = true;
+            timer.Interval = 666; //Признак первого старта
 
             m_passwords = new Passwords();
             m_passwords.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
@@ -428,9 +426,11 @@ namespace Statistic
                         else
                             formChangeMode.admin_was_checked = false;
                     }
+                    else
+                        ;
 
                     prevStateIsAdmin = formChangeMode.admin_was_checked;
-                    
+
                     if (selectedTecViews.Count > 0)
                     {
                         m_prevSelectedIndex = 0;
@@ -572,7 +572,7 @@ namespace Statistic
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if (firstStart)
+            if (timer.Interval == 666)
             {
                 m_passwords.StartDbInterface();
                 
@@ -623,7 +623,7 @@ namespace Statistic
                 else
                     ;
 
-                firstStart = false;
+                timer.Interval = 1000;
             }
 
             lock (lockEvent)

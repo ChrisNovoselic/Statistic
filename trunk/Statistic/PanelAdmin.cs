@@ -24,12 +24,12 @@ namespace Statistic
         private System.Windows.Forms.Button btnImportExcel;
         private System.Windows.Forms.Button btnExportExcel;
 
-        private System.Windows.Forms.ComboBox comboBoxTecComponent;
+        protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
 
         protected Admin m_admin;
 
-        List <int>m_listTECComponentIndex;
+        protected List <int>m_listTECComponentIndex;
         private volatile int prevSelectedIndex;
 
         public bool isActive;
@@ -218,23 +218,12 @@ namespace Statistic
                 ;
         }
 
-        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
+        public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
             m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
-
-            comboBoxTecComponent.Items.Clear ();
-
-            for (int i = 0; i < m_listTECComponentIndex.Count; i ++) {
-                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex [i]].tec.name + " - " + m_admin.allTECComponents[m_listTECComponentIndex [i]].name);
-            }
 
             m_admin.m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
 
-            if (comboBoxTecComponent.Items.Count > 0) {
-                m_admin.indxTECComponents = m_listTECComponentIndex[0];                
-                comboBoxTecComponent.SelectedIndex = 0;
-            }
-            else
-                ;
+            comboBoxTecComponent.Items.Clear ();
         }
 
         private void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
@@ -281,7 +270,7 @@ namespace Statistic
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -403,7 +392,7 @@ namespace Statistic
             btnExportExcel.Visible = bImpExpButtonVisible;
         }
 
-        public void Activate(bool active)
+        public virtual void Activate(bool active)
         {
             visibleControlRDGExcel ();
 

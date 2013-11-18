@@ -141,9 +141,10 @@ namespace StatisticCommon
                 }
                 else
                     //if ((getModeTECComponent() > 0) && (IsModeTECComponent(MODE_TECCOMPONENT.TG)))
+                    if (getModeTECComponent() > 0)
                         clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
-                    //else
-                    //    ;
+                    else
+                        ;
             }
             else
                 ;
