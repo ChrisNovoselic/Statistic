@@ -44,7 +44,7 @@ namespace Statistic
                 switch (m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass))
                 {
                     case Admin.Errors.NoAccess:
-                        tbxPassword.Text = "";
+                        tbxPassword.Text = string.Empty;
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                             this.DialogResult = DialogResult.Retry;
@@ -56,8 +56,7 @@ namespace Statistic
                         }
                         break;
                     case Admin.Errors.InvalidValue:
-                    case Admin.Errors.ParseError:
-                        tbxPassword.Text = "";
+                        tbxPassword.Text = string.Empty;
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                         }
@@ -68,8 +67,9 @@ namespace Statistic
                             Close();
                         }
                         break;
+                    case Admin.Errors.ParseError:
                     case Admin.Errors.NoError:
-                        tbxPassword.Text = "";
+                        tbxPassword.Text = string.Empty;
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
                         Close();

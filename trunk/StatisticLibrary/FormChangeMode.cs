@@ -97,12 +97,15 @@ namespace StatisticCommon
         {
             if (!(tec == null))
             {
-                int tec_indx = 0, comp_indx = 0, across_indx = 0;
+                int tec_indx = 0, comp_indx = 0, across_indx = -1;
 
                 foreach (int indx in clbMode.CheckedIndices)
                 {
-                    m_listAcrossIndexCheckedIndices.Add (across_index [indx]);
-                }                
+                    if (m_listAcrossIndexCheckedIndices.IndexOf(across_index[indx]) < 0)
+                        m_listAcrossIndexCheckedIndices.Add(across_index[indx]);
+                    else
+                        ;
+                }
 
                 clbMode.Items.Clear();
 
@@ -113,6 +116,8 @@ namespace StatisticCommon
 
                 foreach (TEC t in tec)
                 {
+                    across_indx++;
+
                     if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
                         clbMode.Items.Add(t.name);
@@ -160,22 +165,19 @@ namespace StatisticCommon
                         }
                     }
                     else
-                        across_indx++;
+                        ;
 
                     tec_indx++;
                 }
 
-                //clbMode.Items.Add("Редактирование ПБР");
-                //clbMode.Items.Add(getNameAdminValues((short)getModeTECComponent()));
-                if (IsModeTECComponent (MODE_TECCOMPONENT.GTP)) {
-                    clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
-                }
-                else
-                    //if ((getModeTECComponent() > 0) && (IsModeTECComponent(MODE_TECCOMPONENT.TG)))
-                    if (getModeTECComponent() > 0)
-                        clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
+                if ((getModeTECComponent() > 0) && (tec.Count > 0))
+                    if (IsModeTECComponent (MODE_TECCOMPONENT.GTP)) {
+                        clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
+                    }
                     else
-                        ;
+                        clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
+                else
+                    ;
             }
             else
                 ;
@@ -239,7 +241,7 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if (getModeTECComponent () > 0)
+            if ((getModeTECComponent() > 0) && (tec.Count > 0))
                 clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
             else
                 ;
