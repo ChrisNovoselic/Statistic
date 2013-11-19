@@ -11,8 +11,10 @@ namespace StatisticCommon
     public partial class FormChangeMode : Form
     {
         public List<TEC> tec;
-        public List<int> tec_index;
-        public List<int> TECComponent_index;
+        public List<int> tec_index,
+                        TECComponent_index,
+                        across_index,
+                        m_listAcrossIndexCheckedIndices;
         private CheckBox[] m_arCheckBoxTECComponent;
         public List<int> was_checked;
         public bool /*[]*/ admin_was_checked;
@@ -36,11 +38,13 @@ namespace StatisticCommon
 
             admin_was_checked = false; //new bool [2] {false, false};
 
+            tec_index = new List<int>();
+            TECComponent_index = new List<int>();
+            across_index = new List<int>();
+            m_listAcrossIndexCheckedIndices = new List <int> ();
+            was_checked = new List<int>();
+            
             m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
-
-            //FillListBoxTab();
-
-            //clbMode.Items.Add("Назначение ПБР");
 
             closing = false;
         }
@@ -82,7 +86,7 @@ namespace StatisticCommon
 
             return nameModes[indx];
         }
-        
+
         public string getNameAdminValues (MODE_TECCOMPONENT mode) {
             string[] arNameAdminValues = { "ДИС", "Диспетчер", "ДИС", "ДИС" };
 
@@ -93,45 +97,72 @@ namespace StatisticCommon
         {
             if (!(tec == null))
             {
-                int index_tec = 0, index_gtp = 0;
+                int tec_indx = 0, comp_indx = 0, across_indx = 0;
+
+                foreach (int indx in clbMode.CheckedIndices)
+                {
+                    m_listAcrossIndexCheckedIndices.Add (across_index [indx]);
+                }                
 
                 clbMode.Items.Clear();
 
-                tec_index = new List<int>();
-                TECComponent_index = new List<int>();
-                was_checked = new List<int>();
+                tec_index.Clear();
+                TECComponent_index.Clear();
+                across_index.Clear();
+                //was_checked.Clear ();
 
                 foreach (TEC t in tec)
                 {
                     if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
                         clbMode.Items.Add(t.name);
-                        tec_index.Add(index_tec);
+
+                        tec_index.Add(tec_indx);
                         TECComponent_index.Add(-1);
+
+                        across_index.Add (across_indx);
+
+                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
+                            clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
+                        else
+                            ;
                     }
                     else
                         ;
 
                     if (t.list_TECComponents.Count > 0)
                     {
-                        index_gtp = 0;
+                        comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
+                            across_indx++;
+
                             if ((((g.m_id > 100) && (g.m_id < 500)) && (IsModeTECComponent (MODE_TECCOMPONENT.GTP))) ||
                                 (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
                                 (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
                                 clbMode.Items.Add(t.name + " - " + g.name);
-                                tec_index.Add(index_tec);
-                                TECComponent_index.Add(index_gtp);
+
+                                tec_index.Add(tec_indx);
+                                TECComponent_index.Add(comp_indx);
+
+                                across_index.Add(across_indx);
+
+                                if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
+                                    clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
+                                else
+                                    ;
                             }
                             else
                                 ;
 
-                            index_gtp++;
+                            comp_indx++;
                         }
                     }
-                    index_tec++;
+                    else
+                        across_indx++;
+
+                    tec_indx++;
                 }
 
                 //clbMode.Items.Add("Редактирование ПБР");
