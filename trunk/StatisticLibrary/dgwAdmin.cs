@@ -10,10 +10,10 @@ namespace StatisticCommon
 {
     public class DataGridViewAdmin : DataGridView
     {
-        private const double maxPlanValue = 1500;
-        private const double maxRecomendationValue = 1500;
-        private const double maxDeviationValue = 1500;
-        private const double maxDeviationPercentValue = 100;
+        protected const double maxPlanValue = 1500;
+        protected const double maxRecomendationValue = 1500;
+        protected const double maxDeviationValue = 1500;
+        protected const double maxDeviationPercentValue = 100;
 
         protected virtual void InitializeComponents () {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
@@ -143,7 +143,7 @@ namespace StatisticCommon
             }
         }
 
-        private void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
+        protected virtual void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
             {
@@ -154,10 +154,9 @@ namespace StatisticCommon
                     //m_curRDGValues[i].deviationPercent = m_curRDGValues[e.RowIndex].deviationPercent;
                     //m_curRDGValues[i].deviation = m_curRDGValues[e.RowIndex].deviation;
 
-                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value;
-                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value;
-                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value;
-                    Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value;
+                    for (int j = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++) {
+                        Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
+                    }
                 }
             }
             else
@@ -166,6 +165,11 @@ namespace StatisticCommon
 
         private void dgwAdminTable_KeyUp(object sender, KeyEventArgs e)
         {
+            //get the row and column of selected cell in grid
+            int rowSelectedCur = SelectedCells[0].RowIndex,
+                colSelectedCur = SelectedCells[0].ColumnIndex,
+                iRow = -1, iCol = -1;
+            
             //if user clicked Shift+Ins or Ctrl+V (paste from clipboard)
             if ((e.Shift && e.KeyCode == Keys.Insert) || (e.Control && e.KeyCode == Keys.V))
             {
@@ -183,10 +187,6 @@ namespace StatisticCommon
                     return;
                 else
                     ;
-
-                //get the row and column of selected cell in grid
-                int rowSelectedCur = SelectedCells[0].RowIndex;
-                int colSelectedCur = SelectedCells[0].ColumnIndex;
 
                 int colsInClipboard = rowsInClipboard[0].Split(columnSplitter).Length;
 
@@ -206,13 +206,13 @@ namespace StatisticCommon
                 double dblValue;
                 bool bValid = false, bValue;
                 // loop through the lines, split them into cells and place the values in the corresponding cell.
-                for (int iRow = 0; iRow < rowsInClipboard.Length; iRow++)
+                for (iRow = 0; iRow < rowsInClipboard.Length; iRow++)
                 {
                     //split row into cell values
                     string[] valuesInRow = rowsInClipboard[iRow].Split(columnSplitter);
 
                     //cycle through cell values
-                    for (int iCol = 0; iCol < valuesInRow.Length; iCol++)
+                    for (iCol = 0; iCol < valuesInRow.Length; iCol++)
                     {
                         //assign cell value, only if it within columns of the grid
                         if (colSelectedCur + iCol < ColumnCount - 1)
@@ -239,6 +239,17 @@ namespace StatisticCommon
                     }
                 }
             }
+            else
+                if (e.KeyCode == Keys.Delete)
+                {
+                    iRow =
+                    iCol =
+                    0;
+
+                    Rows[rowSelectedCur + iRow].Cells[colSelectedCur + iCol].Value = 0.ToString("F2"); 
+                }
+                else
+                    ;
         } 
     }
 }

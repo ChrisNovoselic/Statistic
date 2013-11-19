@@ -35,7 +35,7 @@ namespace StatisticCommon
 
             col = Columns.Count -1;
             Columns[col].Frozen = false;
-            Columns[col].HeaderText = "Для всех";
+            Columns[col].HeaderText = "Дозаполнить";
             Columns[col].Name = "ToAll";
             Columns[col].ReadOnly = true;
             Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
@@ -44,25 +44,105 @@ namespace StatisticCommon
         public DataGridViewAdminNSS () {
             m_listIds = new List<int []> ();
 
-            dgvCellStyleError =
-            dgvCellStyleGTP = new DataGridViewCellStyle();
-
+            dgvCellStyleError = new DataGridViewCellStyle();
             dgvCellStyleError.BackColor = Color.Red;
+            
+            dgvCellStyleGTP = new DataGridViewCellStyle();            
             dgvCellStyleGTP.BackColor = Color.Yellow;
 
             Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
+
+            //this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminNSS_CellValueChanged);
         }
 
+        public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if ((m_listIds.Count == Columns.Count - 2) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 1))
+            {
+                int id_gtp = m_listIds [e.ColumnIndex - 1][(int)ID_TYPE.ID_OWNER],
+                    col_gtp = -1;
+                List<int> list_col_tg = new List<int>();
+                foreach (int [] ids in m_listIds) {
+                    //Поиск номера столбца ГТП (только ОДИН раз)
+                    if ((col_gtp < 0) && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
+                        col_gtp = m_listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
+                    else
+                        ;
+
+                    //Все столбцы для ГТП с id_gtp == ...
+                    if (id_gtp == ids [(int)ID_TYPE.ID_OWNER])
+                        list_col_tg.Add(m_listIds.IndexOf(ids) + 1); // '+ 1' за счт столбца "Дата, время"
+                    else
+                        ;
+                }
+
+                if (list_col_tg.Count > 0) {
+                    double plan_gtp = 0.0;
+                    foreach (int col in list_col_tg) {
+                        plan_gtp += Convert.ToDouble (Rows [e.RowIndex].Cells[col].Value);
+                    }
+
+                    if (Convert.ToDouble (Rows [e.RowIndex].Cells[col_gtp].Value).Equals (plan_gtp) == false) {
+                        Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleError;
+                    }
+                    else
+                        if (Rows[e.RowIndex].Cells[col_gtp].Style.BackColor == dgvCellStyleError.BackColor)
+                            Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleGTP;
+                        else
+                            ;
+                }
+                else
+                    ;
+            }
+            else
+                ;
+        }
+        
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
             bool valid;
 
-            switch (e.ColumnIndex)
+            if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 1))
             {
-                default:
-                    break;
+                valid = double.TryParse((string)Rows[e.RowIndex].Cells[e.ColumnIndex].Value, out value);
+                if ((valid == false) || (value > DataGridViewAdmin.maxRecomendationValue))
+                {
+                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = 0.ToString("F2");
+                }
+                else
+                {
+                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = value.ToString("F2");
+                }
+
+                DataGridViewAdminNSS_CellValueChanged (sender, e);
             }
+            else
+                ;
+        }
+
+        protected override void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if ((e.ColumnIndex == (Columns.Count - 1)) && (!(e.RowIndex < 0))) // кнопка применение для всех
+            {
+                DataGridViewCellEventArgs ev;
+                
+                for (int j = 1; j < Columns.Count - 1; j++) 
+                {
+                    if (Columns [j].ReadOnly == false)
+                        for (int i = e.RowIndex + 1; i < 24; i++)
+                        {
+                            Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
+
+                            ev = new DataGridViewCellEventArgs (j, i);
+                            DataGridViewAdminNSS_CellValueChanged (null, ev);
+                        }
+                    else
+                        ;
+                }
+            }
+            else
+                ;
         }
 
         public void addTextBoxColumn(string name, int id, int id_owner, DateTime date)
@@ -78,6 +158,7 @@ namespace StatisticCommon
             m_listIds.Add (new int [(int)ID_TYPE.COUNT_ID_TYPE] {id, id_owner});
 
             if (id_owner < 0) {
+                Columns[Columns.Count - 1 - 1].Frozen = true;
                 Columns [Columns.Count - 1 - 1].ReadOnly = true;
                 Columns [Columns.Count - 1 - 1].DefaultCellStyle = dgvCellStyleGTP;
             }
@@ -99,6 +180,15 @@ namespace StatisticCommon
             {
                 Rows[i].Cells[0].Value = string.Empty;
             }
+        }
+
+        public int GetIdGTPOwner(int i)
+        {
+            int iRes = -1;
+
+            iRes = m_listIds [i][(int)ID_TYPE.ID_OWNER];
+
+            return iRes;
         }
     }
 }

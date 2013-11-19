@@ -38,23 +38,48 @@ namespace Statistic
         public PanelAdminNSS (Admin a) : base (a) {
         }
 
+        private int GetIndexGTPOwner(int indx_tg)
+        {
+            int id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
+            
+            foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents)
+            {
+                if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
+                    return ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf (indx);
+                }
+                else
+                    ;
+            }
+
+            return -1;
+        }
+
         protected override void getDataGridViewAdmin()
         {
             double value;
             bool valid;
 
-            for (int i = 0; i < 24; i++)
+            foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents) 
             {
-                foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents)
+                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
-                    if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                    {
-                        int indx_tg = ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf(indx);
-                        ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
-                    }
+                    int indx_tg = ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf(indx),
+                        indx_gtp = GetIndexGTPOwner(indx_tg);
+
+                    if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
+                        for (int i = 0; i < 24; i++)
+                        {
+                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
+
+                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].recomendation = 0.0;
+                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].deviationPercent = ((AdminNSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent;
+                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].deviation = ((AdminNSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviation;
+                        }
                     else
                         ;
                 }
+                else
+                    ;
             }
         }
 
@@ -65,6 +90,8 @@ namespace Statistic
                                                                         m_admin.GetIdGTPOwnerTECComponent(indx),
                                                                         date);
 
+            DataGridViewCellEventArgs ev;
+
             for (int i = 0; i < 24; i++)
             {
                 if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
@@ -73,6 +100,8 @@ namespace Statistic
                     ;
 
                 this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminNSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].plan.ToString("F2");
+                ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 2, i);
+                ((DataGridViewAdminNSS)this.dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
             }
 
             m_admin.CopyCurToPrevRDGValues();
