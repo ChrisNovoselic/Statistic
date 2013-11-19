@@ -38,9 +38,9 @@ namespace StatisticCommon
             //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
             Columns[(int)DESC_INDEX.PLAN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PLAN];
             Columns[(int)DESC_INDEX.PLAN].Name = arDescStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].ReadOnly = false;
             Columns[(int)DESC_INDEX.PLAN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             Columns[(int)DESC_INDEX.PLAN].Width = 70;
+            Columns[(int)DESC_INDEX.PLAN].ReadOnly = true;
             // 
             // Recommendation
             // 

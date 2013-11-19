@@ -2358,14 +2358,65 @@ namespace StatisticCommon
             }
         }
 
+        public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT selfMode, FormChangeMode.MODE_TECCOMPONENT ownerMode, int indx = -1)
+        {
+            if (indx < 0) indx = indxTECComponents; else ;
+
+            if ((indx < allTECComponents.Count) && (modeTECComponent(indx) == selfMode))
+            {
+                foreach (TECComponent comp in allTECComponents)
+                {
+                    if ((comp.tec.m_id == allTECComponents[indx].tec.m_id) && (modeTECComponent(allTECComponents.IndexOf(comp)) == ownerMode))
+                    {
+                        foreach (TG tg in comp.TG)
+                        {
+                            if (tg.m_id == allTECComponents[indx].m_id)
+                            {
+                                return comp.m_id;
+                            }
+                            else
+                                ;
+                        }
+                    }
+                    else
+                        ;
+                }
+            }
+            else ;
+
+            return -1;
+        }
+
+        public int GetIdPCOwnerTECComponent(int indx = -1)
+        {
+            return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.PC, indx);
+        }
+        
+        public int GetIdGTPOwnerTECComponent(int indx = -1)
+        {
+            return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.GTP, indx);
+        }
+
+        public int GetIdTECComponent(int indx = -1)
+        {
+            if (indx < 0) indx = indxTECComponents; else ;
+
+            int iRes = -1;
+
+            if (indx < allTECComponents.Count) iRes = allTECComponents[indx].m_id; else ;
+
+            return iRes;
+        }
+        
         public string GetNameTECComponent(int indx = -1)
         {
-            if (indx < 0)
-                indx = indxTECComponents;
-            else
-                ;
+            if (indx < 0) indx = indxTECComponents; else ;
 
-            return allTECComponents[indx].name;
+            string strRes = string.Empty;
+
+            if (indx < allTECComponents.Count) strRes = allTECComponents[indx].name; else ;
+
+            return strRes;
         }
 
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent (int indx) {

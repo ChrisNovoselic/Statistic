@@ -59,16 +59,20 @@ namespace Statistic
         }
 
         private void addTextBoxColumn (DateTime date) {
-            this.dgwAdminTable.Columns.Add("column" + (this.dgwAdminTable.Columns.Count), m_admin.GetNameTECComponent(((AdminNSS)m_admin).m_list_indxTECComponents[this.dgwAdminTable.Columns.Count - 1]));
+            int indx = ((AdminNSS)m_admin).m_list_indxTECComponents[this.dgwAdminTable.Columns.Count - 2];
+            ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
+                                                                        m_admin.GetIdTECComponent (indx),
+                                                                        m_admin.GetIdGTPOwnerTECComponent(indx),
+                                                                        date);
 
             for (int i = 0; i < 24; i++)
             {
-                if (this.dgwAdminTable.Columns.Count == 2)
+                if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
                     this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 else
                     ;
 
-                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 1].Value = ((AdminNSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 2][i].plan.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminNSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].plan.ToString("F2");
             }
 
             m_admin.CopyCurToPrevRDGValues();
@@ -93,17 +97,7 @@ namespace Statistic
 
         public override void ClearTables()
         {
-            int i = -1;
-
-            while (this.dgwAdminTable.Columns.Count > 1)
-            {
-                this.dgwAdminTable.Columns.RemoveAt(this.dgwAdminTable.Columns.Count -1);
-            }            
-            
-            for (i = 0; i < 24; i++)
-            {
-                this.dgwAdminTable.Rows[i].Cells[0].Value = string.Empty;
-            }
+            ((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables();
         }
 
         public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)

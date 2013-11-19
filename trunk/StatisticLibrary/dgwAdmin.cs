@@ -20,8 +20,8 @@ namespace StatisticCommon
 
             AllowUserToAddRows = false;
             AllowUserToDeleteRows = false;
-            Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) |
+                                                            System.Windows.Forms.AnchorStyles.Left)));
 
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
@@ -83,7 +83,7 @@ namespace StatisticCommon
                     //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN);
 
                     valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
-                    if (!valid || value > maxRecomendationValue)
+                    if ((valid == false) || (value > maxRecomendationValue))
                     {
                         //m_curRDGValues[e.RowIndex].plan = 0;
                         Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = 0.ToString("F2");
@@ -99,7 +99,7 @@ namespace StatisticCommon
                         //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
                         valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
-                        if (!valid || value > maxRecomendationValue)
+                        if ((valid == false) || (value > maxRecomendationValue))
                         {
                             //m_curRDGValues[e.RowIndex].recomendation = 0;
                             Rows[e.RowIndex].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
@@ -229,7 +229,7 @@ namespace StatisticCommon
                                     break;
                             }
 
-                            if (bValid)
+                            if ((bValid == true) && (Columns[colSelectedCur + iCol].ReadOnly == false))
                                 Rows[rowSelectedCur + iRow].Cells[colSelectedCur + iCol].Value = valuesInRow[iCol];
                             else
                                 ;
