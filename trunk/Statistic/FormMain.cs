@@ -47,10 +47,16 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            m_formConnectionSettings = new FormConnectionSettings("settings.ini");
+            m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
             if (m_formConnectionSettings.Protected == true)
             {
-                Initialize();
+                if (Initialize() == true)
+                    ;
+                else
+                {
+                    throw new Exception ("Ошибка инициализации пользовательских компонентов формы.");
+                    //настройкиСоединенияToolStripMenuItem.PerformClick ();
+                }
             }
             else
             {
@@ -59,6 +65,8 @@ namespace Statistic
 
         private bool Initialize()
         {
+            bool bRes = true;
+            
             timer.Interval = 666; //Признак первого старта
 
             m_passwords = new Passwords();
@@ -84,6 +92,12 @@ namespace Statistic
                 
                 //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
                 m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
+                if (!(m_arAdmin[i].m_list_tec.Count > 0)) {
+                    bRes = false;
+                    break;
+                }
+                else
+                    ;
                 m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
 
                 switch (i)
@@ -120,9 +134,12 @@ namespace Statistic
             prevStateIsAdmin = false;
             prevStateIsPPBR = false;
 
-            timer.Start();
+            if (bRes == true)
+                timer.Start();
+            else
+                ;
 
-            return true;
+            return bRes;
         }
 
         private void ErrorReport(string msg)
@@ -156,17 +173,24 @@ namespace Statistic
             timer.Stop();
 
             int i = -1;
-            for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                if ((e.Cancel == false) && ((!(m_arAdmin [i] == null)) && (!(m_arAdmin [i].m_list_tec == null))))
-                {                
-                    foreach (TEC t in m_arAdmin[i].m_list_tec)
-                        t.StopDbInterfaceForce();
+            
+            if (!(m_arAdmin == null))
+                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                    if (!(m_arAdmin [i] == null))
+                        if ((e.Cancel == false) && ((!(m_arAdmin [i] == null)) && (!(m_arAdmin [i].m_list_tec == null))))
+                        {                
+                            foreach (TEC t in m_arAdmin[i].m_list_tec)
+                                t.StopDbInterfaceForce();
 
-                    m_arAdmin [i].StopDbInterface();
+                            m_arAdmin [i].StopDbInterface();
+                        }
+                        else
+                            ;
+                    else
+                        ;
                 }
-                else
-                    ;
-            }
+            else
+                ;
 
             m_passwords.StopDbInterface();
         }
@@ -200,9 +224,12 @@ namespace Statistic
 
                 if (timer.Enabled) timer.Stop(); else ;
                 int i = -1;
-                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    if (!(m_arAdmin [i] == null)) m_arAdmin [i].StopDbInterface(); else ;
-                }
+                if (!(m_arAdmin == null))
+                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                        if (!(m_arAdmin [i] == null)) m_arAdmin [i].StopDbInterface(); else ;
+                    }
+                else
+                    ;
 
                 Initialize();
 
@@ -288,7 +315,6 @@ namespace Statistic
                         //selectedTecViews.Clear ();
                     }
                     else {
-                        
                     }
 
                     if (tecViews.Count == 0) {
@@ -301,28 +327,28 @@ namespace Statistic
                         m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StartDbInterface ();
                         */
                         // создаём все tecview
-                        int index_tec = 0;
+                        int tec_indx = 0,
+                            comp_indx;
                         foreach (TEC t in formChangeMode.tec)
                         {
-                            int index_gtp;
-                            tecView = new TecView(t, index_tec, -1, m_arAdmin [(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                            tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             if (t.list_TECComponents.Count > 0)
                             {
-                                index_gtp = 0;
+                                comp_indx = 0;
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
-                                    tecView = new TecView(t, index_tec, index_gtp, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                                    tecView = new TecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
                                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                     tecViews.Add(tecView);
-                                    index_gtp++;
+                                    comp_indx++;
                                 }
                             }
                             else
                                 ;
 
-                            index_tec ++;
+                            tec_indx++;
                         }
                     }
                     else

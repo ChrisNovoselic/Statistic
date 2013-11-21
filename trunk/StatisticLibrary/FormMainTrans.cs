@@ -30,7 +30,7 @@ namespace StatisticCommon
         protected FormConnectionSettings m_formConnectionSettings;
         protected GroupBox[] m_arGroupBox;
 
-        protected DataGridViewAdminKomDisp m_dgwAdminTable;
+        protected DataGridViewAdmin m_dgwAdminTable;
 
         protected List<int> m_listTECComponentIndex;
 
@@ -39,11 +39,13 @@ namespace StatisticCommon
 
         protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
 
-        private MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
+        protected MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
 
         protected CheckBox m_checkboxModeMashine;
 
-        private bool m_bTransAuto {
+        protected int m_countDataTECComponents;
+
+        protected bool m_bTransAuto {
             get
             {
                 //return WindowState == FormWindowState.Minimized ? true : false;
@@ -54,7 +56,7 @@ namespace StatisticCommon
                 return m_modeMashine == MODE_MASHINE.AUTO ? true : false;
             }
         }
-        private bool m_bEnabledUIControl = true;
+        protected bool m_bEnabledUIControl = true;
 
         protected Int16 m_IndexDB
         {
@@ -95,6 +97,8 @@ namespace StatisticCommon
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false;
+
+            m_countDataTECComponents = -1;
 
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
@@ -245,7 +249,7 @@ namespace StatisticCommon
             m_formConnectionSettings = new FormConnectionSettings(connSettFileName);
         }
 
-        private void FillComboBoxTECComponent () {
+        protected virtual void FillComboBoxTECComponent () {
             if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
             {
                 comboBoxTECComponent.Items.Clear();
@@ -266,7 +270,7 @@ namespace StatisticCommon
         {
         }
 
-        protected void setDataGridViewAdmin(DateTime date)
+        protected virtual void setDataGridViewAdmin(DateTime date)
         {
             int indxDB = -1;
 
@@ -580,7 +584,7 @@ namespace StatisticCommon
         //    m_arAdmin[m_IndexDB].GetCurrentTime ();
         //}
 
-        private void buttonClear_Click(object sender, EventArgs e)
+        protected virtual void buttonClear_Click(object sender, EventArgs e)
         {
             m_arAdmin [m_IndexDB].ClearRDGValues(dateTimePickerMain.Value.Date);
         }
@@ -618,22 +622,29 @@ namespace StatisticCommon
                         m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                         break;
                     case FormChangeMode.MODE_TECCOMPONENT.TG:
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
                         switch (m_IndexDB)
                         {
                             case (int)CONN_SETT_TYPE.SOURCE:
                                 //bool bRDGExcelvalues = false;
+                                m_countDataTECComponents = 0;
+
+                                ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                int countComp = ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
 
                                 setUIControlSourceState();
-
+                                
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
                                 //{
-                                    m_arAdmin[m_IndexDB].GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 //}
                                 //else
                                 //    ;
                                 break;
                             case (int)CONN_SETT_TYPE.DEST:
-                                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 break;
                             default:
                                 break;
@@ -654,20 +665,13 @@ namespace StatisticCommon
 
         public void ClearTables()
         {
-            for (int i = 0; i < 24; i++)
-            {
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = "";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = "false";
-                m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = "";
-            }
+            m_dgwAdminTable.ClearTables ();
         }
 
         protected virtual void getDataGridViewAdmin(int indxDB)
         {
             //int indxDB = m_IndexDB;
-            
+
             double value;
             bool valid;
 
@@ -760,7 +764,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void SaveRDGValues (bool bCallback) {
+        protected virtual void SaveRDGValues (bool bCallback) {
             m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
         }
 

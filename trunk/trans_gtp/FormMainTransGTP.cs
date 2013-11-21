@@ -28,6 +28,8 @@ namespace trans_gtp
         {
             InitializeComponentTransGTP();
 
+            this.Text = "Конвертер данных плана и административных данных (ГТП)";
+
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.SuspendLayout();

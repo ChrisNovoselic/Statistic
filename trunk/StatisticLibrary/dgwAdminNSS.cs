@@ -153,7 +153,10 @@ namespace StatisticCommon
             insColumn.Name = "column" + (Columns.Count - 1);
             insColumn.ReadOnly = false;
             insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns.Insert(Columns.Count - 1, insColumn);
+            try { Columns.Insert(Columns.Count - 1, insColumn); }
+            catch (Exception e) {
+                Logging.Logg().LogExceptionToFile(e, "dgwAdminNSS - addTextBoxColumn () - Columns.Insert");
+            }
 
             m_listIds.Add (new int [(int)ID_TYPE.COUNT_ID_TYPE] {id, id_owner});
 
@@ -166,7 +169,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public void ClearTables () {
+        public override void ClearTables () {
             int i = -1;
 
             m_listIds.Clear ();

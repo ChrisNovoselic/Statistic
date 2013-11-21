@@ -447,8 +447,8 @@
             this.MaximizeBox = false;
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Конвертер данных плана и административных данных";
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
+            //this.Text = "Конвертер данных плана и административных данных";
+            //((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.panelMain.ResumeLayout(false);
             this.panelMain.PerformLayout();
             this.groupBoxDest.ResumeLayout(false);

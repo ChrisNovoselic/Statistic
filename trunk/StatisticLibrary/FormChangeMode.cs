@@ -98,13 +98,19 @@ namespace StatisticCommon
             if (!(tec == null))
             {
                 int tec_indx = 0, comp_indx = 0, across_indx = -1;
-
-                foreach (int indx in clbMode.CheckedIndices)
+ 
+                foreach (int indx in across_index)
                 {
-                    if (m_listAcrossIndexCheckedIndices.IndexOf(across_index[indx]) < 0)
-                        m_listAcrossIndexCheckedIndices.Add(across_index[indx]);
-                    else
-                        ;
+                    if (clbMode.CheckedIndices.IndexOf(across_index.IndexOf(indx)) < 0)
+                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0))
+                            m_listAcrossIndexCheckedIndices.RemoveAt(m_listAcrossIndexCheckedIndices.IndexOf(indx));
+                        else
+                            ;
+                    else                    
+                        if (m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0)
+                            m_listAcrossIndexCheckedIndices.Add(indx);
+                        else
+                            ;
                 }
 
                 clbMode.Items.Clear();

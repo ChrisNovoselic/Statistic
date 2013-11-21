@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
+using StatisticCommon;
+
 namespace Statistic
 {
     static class Program
@@ -17,7 +19,12 @@ namespace Statistic
 
             //InitTEC init = new InitTEC();
 
-            FormMain formMain = new FormMain();
+            FormMain formMain = null;
+            try { formMain = new FormMain(); }
+            catch (Exception e)
+            {
+                Logging.Logg ().LogExceptionToFile (e, "Ошибка запуска приложения.");
+            }
 
             //mainForm.Show();
             //ToolStripItem [] items;
@@ -43,7 +50,10 @@ namespace Statistic
             //else
             //    ;
 
-            Application.Run(formMain);
+            if (!(formMain == null))
+                Application.Run(formMain);
+            else
+                ;
         }
     }
 }

@@ -250,6 +250,18 @@ namespace StatisticCommon
                 }
                 else
                     ;
-        } 
+        }
+
+        public virtual void ClearTables()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = "";
+                Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = "";
+                Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = "";
+                Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = "false";
+                Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = "";
+            }
+        }
     }
 }

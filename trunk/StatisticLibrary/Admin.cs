@@ -297,10 +297,10 @@ namespace StatisticCommon
             return saveResult;
         }
 
-        private Errors ClearRDG()
+        protected Errors ClearRDG()
         {
             Errors errClearResult;
-            
+
             delegateStartWait();
             semaDBAccess.WaitOne();
             lock (m_lockObj)
@@ -370,22 +370,12 @@ namespace StatisticCommon
                 case FormChangeMode.MODE_TECCOMPONENT.TG:
                     foreach (TECComponent comp in allTECComponents) {
                         indx ++;
-                        if ((comp.m_id < 500) && (mode == FormChangeMode.MODE_TECCOMPONENT.GTP))
+                        if (mode == modeTECComponent (indx))
                         {
                             listIndex.Add (indx);
                         }
                         else
-                            if ((comp.m_id < 1000) && (mode == FormChangeMode.MODE_TECCOMPONENT.PC))
-                            {
-                                listIndex.Add(indx);
-                            }
-                            else
-                                if ((comp.m_id < 10000) && (mode == FormChangeMode.MODE_TECCOMPONENT.TG))
-                                {
-                                    listIndex.Add(indx);
-                                }
-                                else
-                                    ;
+                            ;
                     }
                     break;
                 default:
@@ -1439,8 +1429,18 @@ namespace StatisticCommon
                 ;*/
         }
 
-        public int GetIndexTECComponent (int indxTEC, int indxComp) {
+        public int GetIndexTECComponent (int idTEC, int idComp) {
             int iRes = -1;
+
+            foreach (TECComponent comp in allTECComponents)
+            {
+                if ((comp.tec.m_id == idTEC) && (comp.m_id == idComp)) {
+                    iRes = allTECComponents.IndexOf (comp);
+                    break;
+                }
+                else
+                    ;
+            }
 
             return iRes;
         }
@@ -2175,7 +2175,7 @@ namespace StatisticCommon
             }
         }
 
-        public void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
+        public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
         {
             lock (m_lockObj)
             {
@@ -2282,7 +2282,7 @@ namespace StatisticCommon
         //    }
         //}
 
-        public void ClearRDGValues(DateTime date)
+        public virtual void ClearRDGValues(DateTime date)
         {
             if (ClearRDG() == Errors.NoError)
             {

@@ -7,12 +7,12 @@ namespace StatisticCommon
 {
     public class AdminNSS : Admin
     {
-        public List <int> m_list_indxTECComponents;
+        public List<int> m_listTECComponentIndexDetail;
         public List <RDGStruct []> m_listCurRDGValues;
 
         public AdminNSS () {
             m_listCurRDGValues = new List<RDGStruct[]> ();
-            m_list_indxTECComponents = new List<int> ();
+            m_listTECComponentIndexDetail = new List<int> ();
         }
 
         protected override bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
@@ -40,15 +40,15 @@ namespace StatisticCommon
             return bRes;
         }
 
-        private void fillListIndexTECComponent (int id) {
-            m_list_indxTECComponents.Clear();
+        public void fillListIndexTECComponent (int id) {
+            m_listTECComponentIndexDetail.Clear();
             foreach (TECComponent comp in allTECComponents)
             {
                 if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
                     (((comp.m_id > 100) && (comp.m_id < 500)) || //Является ГТП
                     ((comp.m_id > 1000) && (comp.m_id < 10000)))) //Является ТГ
                 {
-                    m_list_indxTECComponents.Add(allTECComponents.IndexOf(comp));
+                    m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
                 }
                 else
                     ;
@@ -59,7 +59,7 @@ namespace StatisticCommon
 
         private void threadGetRDGValuesWithoutDate(object obj)
         {
-            foreach (int indx in m_list_indxTECComponents)
+            foreach (int indx in m_listTECComponentIndexDetail)
             {
                 evStateEnd.WaitOne();
                 base.GetRDGValues(m_typeFields, indx);
@@ -77,7 +77,7 @@ namespace StatisticCommon
 
         private void threadGetRDGValuesWithDate(object date)
         {
-            foreach (int indx in m_list_indxTECComponents)
+            foreach (int indx in m_listTECComponentIndexDetail)
             {
                 evStateEnd.WaitOne();
                 base.GetRDGValues(m_typeFields, indx, (DateTime)date);
@@ -94,7 +94,7 @@ namespace StatisticCommon
         }
 
         private void threadGetRDGExcelValues (object date) {
-            foreach (int indx in m_list_indxTECComponents)
+            foreach (int indx in m_listTECComponentIndexDetail)
             {
                 evStateEnd.WaitOne();
                 if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
@@ -113,7 +113,9 @@ namespace StatisticCommon
 
             m_listCurRDGValues.Clear();
 
-            new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
+            //new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
+            threadGetRDGExcelValues (date);
+
             //delegateStopWait();
         }
 
@@ -185,11 +187,11 @@ namespace StatisticCommon
                     bRes = Errors.NoError;
 
             int prevIndxTECComponent = indxTECComponents;
-            
+
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
-                if (modeTECComponent(m_list_indxTECComponents[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
-                    indxTECComponents = m_list_indxTECComponents[m_listCurRDGValues.IndexOf(curRDGValues)];
-                    
+                if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                    indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+
                     curRDGValues.CopyTo(m_curRDGValues, 0);
 
                     bErr = base.SaveChanges ();

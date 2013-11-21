@@ -42,10 +42,10 @@ namespace Statistic
         {
             int id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
             
-            foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents)
+            foreach (int indx in ((AdminNSS)m_admin).m_listTECComponentIndexDetail)
             {
                 if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
-                    return ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf (indx);
+                    return ((AdminNSS)m_admin).m_listTECComponentIndexDetail.IndexOf (indx);
                 }
                 else
                     ;
@@ -59,11 +59,11 @@ namespace Statistic
             double value;
             bool valid;
 
-            foreach (int indx in ((AdminNSS)m_admin).m_list_indxTECComponents) 
+            foreach (int indx in ((AdminNSS)m_admin).m_listTECComponentIndexDetail) 
             {
                 if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
-                    int indx_tg = ((AdminNSS)m_admin).m_list_indxTECComponents.IndexOf(indx),
+                    int indx_tg = ((AdminNSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
                         indx_gtp = GetIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
@@ -84,7 +84,7 @@ namespace Statistic
         }
 
         private void addTextBoxColumn (DateTime date) {
-            int indx = ((AdminNSS)m_admin).m_list_indxTECComponents[this.dgwAdminTable.Columns.Count - 2];
+            int indx = ((AdminNSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
                                                                         m_admin.GetIdTECComponent (indx),
                                                                         m_admin.GetIdGTPOwnerTECComponent(indx),
@@ -118,7 +118,7 @@ namespace Statistic
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            //if (this.dgwAdminTable.Columns.Count < ((AdminNSS)m_admin).m_list_indxTECComponents.Count)
+            //if (this.dgwAdminTable.Columns.Count < ((AdminNSS)m_admin).m_listTECComponentIndexDetail.Count)
                 this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
             //else
             //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
