@@ -383,6 +383,8 @@ namespace trans_tg
         {
             statusStripMain.BeginInvoke(delegateEvent);
 
+            m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortGetRDGExcelValues();
+
             this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))

@@ -630,6 +630,8 @@ namespace StatisticCommon
                                 //bool bRDGExcelvalues = false;
                                 m_countDataTECComponents = 0;
 
+                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetGetRDGExcelValues();
+
                                 ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
                                 ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
                                 int countComp = ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;

@@ -2447,5 +2447,21 @@ namespace StatisticCommon
 
             return modeRes;
         }
+
+        public virtual void ResetGetRDGExcelValues()
+        {
+            if (m_waitHandleState.Length > 0)
+                ((ManualResetEvent)m_waitHandleState[1]).Reset();
+            else
+                ;
+        }
+
+        public virtual void AbortGetRDGExcelValues()
+        {
+            if (m_waitHandleState.Length > 0)
+                ((ManualResetEvent)m_waitHandleState[1]).Set();
+            else
+                ;
+        }
     }
 }

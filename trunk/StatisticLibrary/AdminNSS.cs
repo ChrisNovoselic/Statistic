@@ -27,7 +27,7 @@ namespace StatisticCommon
             
             for (int i = 0; i < m_curRDGValues.Length; i ++) {
                 curRDGValues [i].plan += m_curRDGValues [i].recomendation;
-                
+
                 //curRDGValues [i].plan = m_curRDGValues [i].plan;
 
                 //curRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
