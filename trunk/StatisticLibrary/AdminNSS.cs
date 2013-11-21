@@ -59,10 +59,15 @@ namespace StatisticCommon
 
         private void threadGetRDGValuesWithoutDate(object obj)
         {
+            int indxEv = -1;
+
             foreach (int indx in m_listTECComponentIndexDetail)
             {
-                evStateEnd.WaitOne();
-                base.GetRDGValues(m_typeFields, indx);
+                indxEv = WaitHandle.WaitAny (m_waitHandleState);
+                if (indxEv == 0)
+                    base.GetRDGValues(m_typeFields, indx);
+                else
+                    break;
             }
         }
         
@@ -71,16 +76,21 @@ namespace StatisticCommon
             //delegateStartWait ();
             fillListIndexTECComponent(id);
 
-            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
+            //new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
+            threadGetRDGValuesWithoutDate (null);
             //delegateStopWait ();
         }
 
         private void threadGetRDGValuesWithDate(object date)
         {
+            int indxEv = -1;
             foreach (int indx in m_listTECComponentIndexDetail)
             {
-                evStateEnd.WaitOne();
-                base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+                indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                if (indxEv == 0)
+                    base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+                else
+                    break;
             }
         }
 
@@ -89,21 +99,26 @@ namespace StatisticCommon
             //delegateStartWait ();
             fillListIndexTECComponent (id);
 
-            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
+            //new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
+            threadGetRDGValuesWithDate (date);
             //delegateStopWait ();
         }
 
         private void threadGetRDGExcelValues (object date) {
+            int indxEv = -1;
             foreach (int indx in m_listTECComponentIndexDetail)
             {
-                evStateEnd.WaitOne();
-                if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
-                    base.GetRDGValues(m_typeFields, indx, (DateTime)date);
-                else
-                    if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
-                        base.GetRDGExcelValues(indx, (DateTime)date);
+                indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                if (indxEv == 0)
+                    if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
+                        base.GetRDGValues(m_typeFields, indx, (DateTime)date);
                     else
-                        ;
+                        if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
+                            base.GetRDGExcelValues(indx, (DateTime)date);
+                        else
+                            ;
+                else
+                    break;
             }
         }
 

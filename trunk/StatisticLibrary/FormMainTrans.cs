@@ -397,7 +397,7 @@ namespace StatisticCommon
             formAbout.ShowDialog();
         }
 
-        protected void ErrorReport (string msg) {
+        protected virtual void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
 
             this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
@@ -478,7 +478,7 @@ namespace StatisticCommon
                 if (m_bTransAuto) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
-        private void trans_auto_next () {
+        protected void trans_auto_next () {
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
                 comboBoxTECComponent.SelectedIndex ++;

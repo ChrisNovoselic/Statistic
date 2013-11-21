@@ -114,8 +114,9 @@ namespace StatisticCommon
         private Object m_lockObj;
 
         private Thread taskThread;
-        protected Semaphore semaStateStart;
-        protected AutoResetEvent evStateEnd;
+        protected Semaphore semaState;
+        protected WaitHandle [] m_waitHandleState;
+        //protected AutoResetEvent evStateEnd;
         public volatile bool threadIsWorking;
         private volatile bool newState;
         private volatile List<StatesMachine> states;
@@ -273,12 +274,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SaveChanges () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - SaveChanges () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -326,12 +327,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - ClearRDG () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - ClearRDG () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -428,12 +429,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - Reinit () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - Reinit () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -507,12 +508,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -572,12 +573,12 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
@@ -606,13 +607,13 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch (Exception e)
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaStateStart.Release(1)", true, true, false);
-                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaStateStart)", false, false, false);
+                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
                     Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
                     Logging.Logg().LogToFile(e.ToString(), false, false, false);
                     Logging.Logg().LogUnlock();
@@ -649,22 +650,24 @@ namespace StatisticCommon
 
                 try
                 {
-                    semaStateStart.Release(1);
+                    semaState.Release(1);
                 }
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
         }
 
         private void GetRDGExcelValuesRequest () {
+            int err = 0;
+            
             delegateStartWait ();
             if (IsCanUseTECComponents ())
                 m_tableRDGExcelValuesResponse = DbInterface.Select(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
-                                                                        @"SELECT * FROM [Лист1$]");
+                                                                        @"SELECT * FROM [Лист1$]", out err);
             else
                 ;
             delegateStopWait();
@@ -1543,11 +1546,17 @@ namespace StatisticCommon
             taskThread.Name = "Интерфейс к данным";
             taskThread.IsBackground = true;
 
-            semaStateStart = new Semaphore(1, 1);
-            evStateEnd = new AutoResetEvent (true);
+            semaState = new Semaphore(1, 1);
+            
+            InitializeSyncState ();
 
-            semaStateStart.WaitOne();
+            semaState.WaitOne();
             taskThread.Start();
+        }
+
+        protected virtual void InitializeSyncState ()
+        {
+            m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
         }
 
         public void StopDbInterface()
@@ -1563,10 +1572,10 @@ namespace StatisticCommon
 
             if (taskThread.IsAlive)
             {
-                try { semaStateStart.Release(1); }
+                try { semaState.Release(1); }
                 catch {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaStateStart.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
 
@@ -2057,7 +2066,7 @@ namespace StatisticCommon
 
             while (threadIsWorking)
             {
-                semaStateStart.WaitOne();
+                semaState.WaitOne();
 
                 index = 0;
 
@@ -2155,20 +2164,20 @@ namespace StatisticCommon
                     }
                 }
 
-                try { evStateEnd.Set (); }
+                try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
                 catch (Exception e) {
                     Logging.Logg().LogExceptionToFile(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
                 }
             }
             try
             {
-                semaStateStart.Release(1);
+                semaState.Release(1);
             }
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
                 Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaStateStart.Release(1)", true, true, false);
-                Logging.Logg().LogToFile("Исключение обращения к переменной (semaStateStart)", true, true, false);
+                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
+                Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", true, true, false);
                 Logging.Logg().LogToFile("Исключение: " + e.Message, false, false, false);
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
@@ -2208,12 +2217,12 @@ namespace StatisticCommon
 
                         try
                         {
-                            semaStateStart.Release(1);
+                            semaState.Release(1);
                         }
                         catch
                         {
                             Logging.Logg().LogLock();
-                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaStateStart.Release(1)", true, true, false);
+                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
                             Logging.Logg().LogUnlock();
                         }
                     }
@@ -2261,12 +2270,12 @@ namespace StatisticCommon
 
         //            try
         //            {
-        //                semaStateStart.Release(1);
+        //                semaState.Release(1);
         //            }
         //            catch
         //            {
                         //Logging.Logg().LogLock();
-                        //Logging.Logg().LogToFile("catch - SaveRDGValues () - semaStateStart.Release(1)", true, true, false);
+                        //Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
                         //Logging.Logg().LogUnlock();
         //            }
         //        }
@@ -2303,12 +2312,12 @@ namespace StatisticCommon
 
                     try
                     {
-                        semaStateStart.Release(1);
+                        semaState.Release(1);
                     }
                     catch
                     {
                         Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaStateStart.Release(1)", true, true, false);
+                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaState.Release(1)", true, true, false);
                         Logging.Logg().LogUnlock();
                     }
                 }

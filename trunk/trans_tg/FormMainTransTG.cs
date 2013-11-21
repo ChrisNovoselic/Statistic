@@ -378,5 +378,17 @@ namespace trans_tg
 
             m_arAdmin[(int)CONN_SETT_TYPE.DEST].GetRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
         }
+
+        protected override void ErrorReport(string msg)
+        {
+            statusStripMain.BeginInvoke(delegateEvent);
+
+            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
+
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+            else
+                ;
+        }
     }
 }

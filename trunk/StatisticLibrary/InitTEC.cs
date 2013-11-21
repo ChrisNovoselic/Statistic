@@ -11,27 +11,35 @@ namespace StatisticCommon
 
         public static DataTable getListTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
+            int err = 0;
+
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
 
             if (!bIgnoreTECInUse) req += " WHERE INUSE=TRUE"; else ;
 
-            return DbInterface.Select(connSett, req);
+            return DbInterface.Select(connSett, req, out err);
         }
 
         public static DataTable getListTECComponent(ConnectionSettings connSett, string prefix, int id_tec)
         {
-            return DbInterface.Select(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString());
+            int err = 0;
+
+            return DbInterface.Select(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), out err);
         }
 
         public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id)
         {
-            return DbInterface.Select(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString());
+            int err = 0;
+
+            return DbInterface.Select(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), out err);
         }
 
         public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id)
         {
-            return DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString());
+            int err = 0;
+
+            return DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
         }
 
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
@@ -130,6 +138,7 @@ namespace StatisticCommon
         {
             tec = new List<TEC> ();
 
+            int err = 0;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec= null, // = DbInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                     list_TECComponents = null, list_tg = null;
@@ -172,9 +181,9 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings (DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString()), (int) CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString()), (int) CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString()), (int) CONN_SETT_TYPE.PBR);
+                tec[i].connSettings (DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int) CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
 
                 tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();

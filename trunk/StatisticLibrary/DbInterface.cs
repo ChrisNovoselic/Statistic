@@ -547,7 +547,9 @@ namespace StatisticCommon
             return strRes;
         }
 
-        public static DataTable Select (string path, string query) {
+        public static DataTable Select (string path, string query, out int er) {
+            er = 0;
+
             DataTable dataTableRes = new DataTable();
 
             OleDbConnection connectionOleDB = null;
@@ -589,6 +591,8 @@ namespace StatisticCommon
                 catch (OleDbException e)
                 {
                     logging_catch_db(connectionOleDB, e);
+
+                    er = -1;
                 }
 
                 connectionOleDB.Close();
@@ -599,8 +603,10 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Select(ConnectionSettings connSett, string query)
+        public static DataTable Select(ConnectionSettings connSett, string query, out int er)
         {
+            er = 0;
+
             DataTable dataTableRes = new DataTable();
 
             MySqlConnection connectionMySQL;
@@ -634,6 +640,8 @@ namespace StatisticCommon
             catch (Exception e)
             {
                 logging_catch_db(connectionMySQL, e);
+
+                er = -1;
             }
 
             connectionMySQL.Close();
@@ -641,8 +649,10 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static void ExecNonQuery(ConnectionSettings connSett, string query)
+        public static void ExecNonQuery(ConnectionSettings connSett, string query, out int er)
         {
+            er = 0;
+
             MySqlConnection connectionMySQL;
             MySqlCommand commandMySQL;
 
@@ -668,13 +678,17 @@ namespace StatisticCommon
             catch (Exception e)
             {
                 logging_catch_db(connectionMySQL, e);
+
+                er = -1;
             }
 
             connectionMySQL.Close();
         }
 
-        public static void ExecNonQuery(string path, string query)
+        public static void ExecNonQuery(string path, string query, out int er)
         {
+            er = 0;
+            
             OleDbConnection connectionOleDB = null;
             System.Data.OleDb.OleDbCommand commandOleDB;
 
@@ -713,6 +727,8 @@ namespace StatisticCommon
                 catch (Exception e)
                 {
                     logging_catch_db(connectionOleDB, e);
+
+                    er = -1;
                 }
 
                 connectionOleDB.Close();

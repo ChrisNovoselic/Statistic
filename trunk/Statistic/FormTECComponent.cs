@@ -37,6 +37,8 @@ namespace Statistic
 
         public FormTECComponent(ConnectionSettings connSett)
         {
+            int err = 0;
+            
             m_connectionSetttings = connSett;
 
             InitializeComponent();
@@ -82,7 +84,7 @@ namespace Statistic
             for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN); i++)
             {
                 if (m_list_data_original[i] == null)
-                    m_list_data_original[i] = DbInterface.Select(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST");
+                    m_list_data_original[i] = DbInterface.Select(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST", out err);
                 else ;
 
                 m_list_data[i] = m_list_data_original[i].Copy ();
@@ -332,9 +334,10 @@ namespace Statistic
 
         Int32 getIdNext(FormChangeMode.MODE_TECCOMPONENT indx)
         {
-            Int32 idRes = -1;
+            Int32 idRes = -1,
+                err = 0;
 
-            idRes = Convert.ToInt32 (DbInterface.Select(m_connectionSetttings, "SELECT MAX(ID) FROM " + FormChangeMode.getPrefixMode((int)indx) + "_LIST").Rows [0][0]);
+            idRes = Convert.ToInt32(DbInterface.Select(m_connectionSetttings, "SELECT MAX(ID) FROM " + FormChangeMode.getPrefixMode((int)indx) + "_LIST", out err).Rows[0][0]);
 
             return ++idRes;
         }
@@ -465,7 +468,8 @@ namespace Statistic
 
         private void buttonOk_Click(object sender, EventArgs e)
         {
-            int i = -1, j = -1, k = -1;
+            int err = 0,
+                i = -1, j = -1, k = -1;
             DataRow [] dataRows;
             bool bUpdate = false;
             string [] strQuery = new string [(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
@@ -490,7 +494,7 @@ namespace Statistic
                         valuesForInsert = valuesForInsert.Substring (0, valuesForInsert.Length - 1);
                         strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += ") VALUES (";
                         strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
-                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.INSERT]);
+                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.INSERT], out err);
                     }
                     else {
                         if (dataRows.Length == 1)
@@ -513,7 +517,7 @@ namespace Statistic
                                 strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Substring (0, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Length - 1);
                                 strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + m_list_data[i].Rows[j]["ID"];
                                 
-                                DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE]);
+                                DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE], out err);
                             }
                             else
                                 ;
@@ -532,7 +536,7 @@ namespace Statistic
                         //DELETE
                         strQuery [(int)DbInterface.QUERY_TYPE.DELETE] = string.Empty;
                         strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + m_list_data_original[i].Rows[j]["ID"];
-                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.DELETE]);
+                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.DELETE], out err);
                     }
                     else {
                         if (dataRows.Length == 1) {                            

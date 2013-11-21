@@ -4,6 +4,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
+using System.Threading;
 
 using StatisticCommon;
 
@@ -389,6 +390,11 @@ namespace trans_tg
                     ;
             }
             
+        }
+
+        protected override void InitializeSyncState()
+        {
+            m_waitHandleState = new WaitHandle[2] { new AutoResetEvent(true), new ManualResetEvent (true) };
         }
     }
 }
