@@ -44,7 +44,7 @@ namespace trans_tg
 
             m_listIsDataTECComponents = new List<bool> ();
 
-            m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left));
+            m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left));
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 392);
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
@@ -70,6 +70,7 @@ namespace trans_tg
             //m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_date = false;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
 
             //Получатель
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminTransTG();
@@ -78,6 +79,7 @@ namespace trans_tg
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett();
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_connsett_data = true;
 
             setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
 

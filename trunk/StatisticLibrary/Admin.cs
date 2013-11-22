@@ -92,6 +92,7 @@ namespace StatisticCommon
 
         private volatile bool using_date;
         public bool m_ignore_date;
+        public bool m_ignore_connsett_data;
 
         protected bool[,] m_arHaveDates;
 
@@ -203,6 +204,7 @@ namespace StatisticCommon
 
             using_date = false;
             m_ignore_date = false;
+            m_ignore_connsett_data = false;
 
             m_curRDGValues = new RDGStruct[24];
 
@@ -1478,6 +1480,11 @@ namespace StatisticCommon
             foreach (TEC t in m_list_tec)
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
+                    if ((m_ignore_connsett_data == true) && (connSettType == (int)CONN_SETT_TYPE.DATA))
+                        continue;
+                    else
+                        ;
+
                     dbType = -1;
                     
                     bool isAlready = false;
@@ -1603,6 +1610,11 @@ namespace StatisticCommon
                 foreach (TEC t in m_list_tec)
                 {
                     for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {
+                        if ((m_ignore_connsett_data == true) && (connSettType == CONN_SETT_TYPE.DATA))
+                            continue;
+                        else
+                            ;
+
                         m_listDbInterfaces[t.m_arIndxDbInterfaces[(int)connSettType]].ListenerUnregister(t.m_arListenerIds[(int)connSettType]);
                     }
                 }

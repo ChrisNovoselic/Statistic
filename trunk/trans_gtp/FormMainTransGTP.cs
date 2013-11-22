@@ -67,6 +67,7 @@ namespace trans_gtp
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = Admin.TYPE_FIELDS.STATIC;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
 
             //Получатель
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminKomDisp();
@@ -75,6 +76,7 @@ namespace trans_gtp
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
             m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
+            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_connsett_data = true;
 
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
