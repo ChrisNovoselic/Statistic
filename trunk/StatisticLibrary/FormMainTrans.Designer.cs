@@ -402,7 +402,7 @@
             // notifyIconMain
             //
             //this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.notifyIconMain.Text = "Статистика: конвертер";
+            //this.notifyIconMain.Text = "Статистика: конвертер";
             // 
             // contextMenuStripNotifyIcon
             // 

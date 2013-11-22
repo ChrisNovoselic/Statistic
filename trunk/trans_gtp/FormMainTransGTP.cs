@@ -48,6 +48,7 @@ namespace trans_gtp
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
+            this.notifyIconMain.Text = "Статистика: конвертер (ГТП)";
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
