@@ -733,6 +733,8 @@ namespace StatisticCommon
                     //То же самое
                     if (!(m_modeMashine == MODE_MASHINE.SERVICE)) m_modeMashine = MODE_MASHINE.SERVICE; else ;
 
+                    m_dgwAdminTable.Enabled = false;
+
                     InitializeTimerService ();
                     
                     SendMessage(this.Handle, 0x112, 0xF020, 0);

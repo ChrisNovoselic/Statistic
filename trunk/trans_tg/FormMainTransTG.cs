@@ -36,7 +36,7 @@ namespace trans_tg
             this.m_dgwAdminTable.Name = "m_dgwAdminTable";
             this.m_dgwAdminTable.RowHeadersVisible = false;
             this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            //this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 401);
             this.m_dgwAdminTable.TabIndex = 27;
             this.panelMain.Controls.Add(this.m_dgwAdminTable);
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
@@ -44,8 +44,8 @@ namespace trans_tg
 
             m_listIsDataTECComponents = new List<bool> ();
 
-            m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left));
-            m_dgwAdminTable.Size = new System.Drawing.Size(498, 392);
+            m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left));
+            m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic3"))); //$this.Icon
