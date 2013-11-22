@@ -233,48 +233,58 @@ namespace trans_tg
             currentHour = 0;
 
             int indx = m_listTECComponentIndexDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - GetCountGTP ();
-            for (int i = currentHour; i < m_listTimezoneOffsetHaveDates [(int)CONN_SETT_TYPE.ADMIN].Count; i++)
+
+            if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
-                // запись для этого часа имеется, модифицируем её
-                if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i])
+                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates [(int)CONN_SETT_TYPE.ADMIN].Count; i++)
                 {
-                    switch (m_typeFields)
+                    // запись для этого часа имеется, модифицируем её
+                    if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
                     {
-                        case Admin.TYPE_FIELDS.STATIC:
-                            break;
-                        case Admin.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " SET " +
-                                        @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                        @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
-                                        @"DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                            break;
-                        default:
-                            break;
+                        switch (m_typeFields)
+                        {
+                            case Admin.TYPE_FIELDS.STATIC:
+                                break;
+                            case Admin.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " SET " +
+                                            @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
+                                            @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"' WHERE " +
+                                            @"DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"'" +
+                                            @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // запись отсутствует, запоминаем значения
+                        switch (m_typeFields)
+                        {
+                            case Admin.TYPE_FIELDS.STATIC:
+                                break;
+                            case Admin.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
+                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', " + (comp.m_id) +
+                                            @"),";
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
-                else
-                {
-                    // запись отсутствует, запоминаем значения
-                    switch (m_typeFields)
-                    {
-                        case Admin.TYPE_FIELDS.STATIC:
-                            break;
-                        case Admin.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                        @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (comp.m_id) +
-                                        @"),";
-                            break;
-                        default:
-                            break;
-                    }
-                }
+            }
+            else
+            {
+                Logging.Logg ().LogLock ();
+                Logging.Logg().LogToFile("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, true, true, false);
+                Logging.Logg().LogUnlock();
             }
 
             return resQuery;
@@ -291,53 +301,61 @@ namespace trans_tg
             currentHour = 0;
 
             int indx = m_listTECComponentIndexDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - GetCountGTP();
-            for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR].Count; i++)
+            if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
-                // запись для этого часа имеется, модифицируем её
-                if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR][i])
+                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR].Count; i++)
                 {
-                    switch (m_typeFields)
+                    // запись для этого часа имеется, модифицируем её
+                    if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR][i])
                     {
-                        case Admin.TYPE_FIELDS.STATIC:
-                            break;
-                        case Admin.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
-                                        " SET " + @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                            break;
-                        default:
-                            break;
+                        switch (m_typeFields)
+                        {
+                            case Admin.TYPE_FIELDS.STATIC:
+                                break;
+                            case Admin.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                                            " SET " + @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"' WHERE " +
+                                            @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"'" +
+                                            @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // запись отсутствует, запоминаем значения
+                        switch (m_typeFields)
+                        {
+                            case Admin.TYPE_FIELDS.STATIC:
+                                break;
+                            case Admin.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"', '" + "ПБР" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
+                                            @"', " + comp.m_id +
+                                            @", '" + "0" +
+                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                                            @"),";
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
-                else
-                {
-                    // запись отсутствует, запоминаем значения
-                    switch (m_typeFields)
-                    {
-                        case Admin.TYPE_FIELDS.STATIC:
-                            break;
-                        case Admin.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "ПБР" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
-                                        @"', " + comp.m_id +
-                                        @", '" + "0" +
-                                        @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F1", CultureInfo.InvariantCulture) +
-                                        @"),";
-                            break;
-                        default:
-                            break;
-                    }
-                }
+            }
+            else{
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, true, true, false);
+                Logging.Logg().LogUnlock();
             }
 
             resQuery[(int)DbInterface.QUERY_TYPE.DELETE] = @"";
 
             Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("AdminTransTG - SetPPBRRequest", true, true, false);
+            Logging.Logg().LogToFile("AdminTransTG - setPPBRQuery", true, true, false);
             Logging.Logg().LogUnlock();
 
             return resQuery;

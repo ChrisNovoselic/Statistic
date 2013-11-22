@@ -10,9 +10,57 @@ namespace StatisticCommon
         public List<int> m_listTECComponentIndexDetail;
         public List <RDGStruct []> m_listCurRDGValues;
 
+        public List <Errors>  m_listResSaveChanges;
+
+        public ManualResetEvent m_evSaveChangesComplete;
+
+        private object m_lockSuccessGetData,
+                        m_lockResSaveChanges;
+        public bool SuccessGetData {
+            get {
+                lock (m_lockSuccessGetData)
+                {
+                    return m_listCurRDGValues.Count == m_listTECComponentIndexDetail.Count ? true : false;
+                }
+            }
+        }
+
+        public bool SuccessSaveChanges {
+            get {
+                bool bRes = true;
+
+                lock (m_lockResSaveChanges)
+                {
+                    foreach (Errors err in m_listResSaveChanges)
+                    {
+                        if (!(err == Errors.NoError))
+                            bRes = false;
+                        else
+                            ;
+                    }
+
+                    if (bRes == true)
+                        if ((m_listResSaveChanges.Count + 1) == m_listTECComponentIndexDetail.Count)
+                            ;
+                        else
+                            bRes = false;
+                    else
+                        ;
+                }
+
+                return bRes;
+            }
+        }
+
         public AdminNSS () {
             m_listCurRDGValues = new List<RDGStruct[]> ();
             m_listTECComponentIndexDetail = new List<int> ();
+            m_listResSaveChanges = new List <Errors> ();
+
+            m_lockSuccessGetData = new object();
+            m_lockResSaveChanges = new object ();
+
+            m_evSaveChangesComplete = new ManualResetEvent (false);
         }
 
         protected override bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
@@ -41,20 +89,23 @@ namespace StatisticCommon
         }
 
         public void fillListIndexTECComponent (int id) {
-            m_listTECComponentIndexDetail.Clear();
-            foreach (TECComponent comp in allTECComponents)
+            lock (m_lockSuccessGetData)
             {
-                if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
-                    (((comp.m_id > 100) && (comp.m_id < 500)) || //Является ГТП
-                    ((comp.m_id > 1000) && (comp.m_id < 10000)))) //Является ТГ
+                m_listTECComponentIndexDetail.Clear();
+                foreach (TECComponent comp in allTECComponents)
                 {
-                    m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
+                    if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
+                        (((comp.m_id > 100) && (comp.m_id < 500)) || //Является ГТП
+                        ((comp.m_id > 1000) && (comp.m_id < 10000)))) //Является ТГ
+                    {
+                        m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
+                    }
+                    else
+                        ;
                 }
-                else
-                    ;
-            }
 
-            m_listCurRDGValues.Clear();
+                m_listCurRDGValues.Clear();
+            }
         }
 
         private void threadGetRDGValuesWithoutDate(object obj)
@@ -128,8 +179,8 @@ namespace StatisticCommon
 
             m_listCurRDGValues.Clear();
 
-            //new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
-            threadGetRDGExcelValues (date);
+            new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
+            //threadGetRDGExcelValues (date);
 
             //delegateStopWait();
         }
@@ -198,30 +249,64 @@ namespace StatisticCommon
 
         public override Errors SaveChanges()
         {
-            Errors bErr = Errors.NoError,
-                    bRes = Errors.NoError;
+            Errors errRes = Errors.NoError,
+                    bErr = Errors.NoError;
+            int indxEv = -1;
+            
+            m_evSaveChangesComplete.Reset ();
+            
+            lock (m_lockResSaveChanges)
+            {
+                m_listResSaveChanges.Clear ();
+            }
 
             int prevIndxTECComponent = indxTECComponents;
 
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
+                bErr = Errors.NoError;
+
                 if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
-                    indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                    {                        
+                        indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
 
-                    curRDGValues.CopyTo(m_curRDGValues, 0);
+                        curRDGValues.CopyTo(m_curRDGValues, 0);
 
-                    bErr = base.SaveChanges ();
-                    if (!(bErr == Errors.NoError))
-                        bRes = bErr;
+                        bErr = base.SaveChanges();
+                    }
                     else
-                        ;
+                        break;
                 }
                 else
                     ;
+
+                lock (m_lockResSaveChanges)
+                {
+                    m_listResSaveChanges.Add(bErr);
+                }
             }
 
             indxTECComponents = prevIndxTECComponent;
 
-            return bRes;
+            lock (m_lockResSaveChanges)
+            {
+                foreach (Errors err in m_listResSaveChanges)
+                {
+                    if (!(err == Errors.NoError))
+                        errRes = err;
+                    else
+                        ;
+                }
+            }
+
+            //if (indxEv == 0)
+            if (errRes == Errors.NoError)
+                m_evSaveChangesComplete.Set();
+            else
+                ;
+
+            return errRes;
         }
     }
 }

@@ -349,14 +349,12 @@ namespace trans_tg
         {
             int indxDB = -1;
 
-            m_countDataTECComponents ++;
-
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                if (m_countDataTECComponents == ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count)
+                if (((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).SuccessGetData == true)
                 {
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
-                    
+
                     this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
 
                     //this.BeginInvoke(new DelegateFunc(SaveChanges));
@@ -379,16 +377,11 @@ namespace trans_tg
             m_arAdmin[(int)CONN_SETT_TYPE.DEST].GetRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
         }
 
-        protected override void ErrorReport(string msg)
-        {
-            statusStripMain.BeginInvoke(delegateEvent);
-
-            m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortGetRDGExcelValues();
-
-            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
-
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
-                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+        protected override void saveDataGridViewAdminComplete()
+        {            
+            if (((AdminNSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true)
+            //if (((AdminNSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete.WaitOne (6) == true)
+                base.saveDataGridViewAdminComplete ();
             else
                 ;
         }

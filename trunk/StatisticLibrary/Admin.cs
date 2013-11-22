@@ -663,13 +663,20 @@ namespace StatisticCommon
 
         private void GetRDGExcelValuesRequest () {
             int err = 0;
+            string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel;
+            if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
             
             delegateStartWait ();
-            if (IsCanUseTECComponents ())
-                m_tableRDGExcelValuesResponse = DbInterface.Select(allTECComponents[indxTECComponents].tec.m_path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
+            if ((IsCanUseTECComponents () == true) && (path_rdg_excel.Length > 0))
+                m_tableRDGExcelValuesResponse = DbInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
                                                                         @"SELECT * FROM [Лист1$]", out err);
             else
                 ;
+
+            //Logging.Logg ().LogLock ();
+            //Logging.Logg().LogToFile("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
+            //Logging.Logg().LogUnlock();
+
             delegateStopWait();
         }
 
@@ -2448,7 +2455,7 @@ namespace StatisticCommon
             return modeRes;
         }
 
-        public virtual void ResetGetRDGExcelValues()
+        public virtual void ResetRDGExcelValues()
         {
             if (m_waitHandleState.Length > 0)
                 ((ManualResetEvent)m_waitHandleState[1]).Reset();
@@ -2456,7 +2463,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public virtual void AbortGetRDGExcelValues()
+        public virtual void AbortRDGExcelValues()
         {
             if (m_waitHandleState.Length > 0)
                 ((ManualResetEvent)m_waitHandleState[1]).Set();

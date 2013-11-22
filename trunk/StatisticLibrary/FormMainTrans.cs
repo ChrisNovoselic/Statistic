@@ -43,8 +43,6 @@ namespace StatisticCommon
 
         protected CheckBox m_checkboxModeMashine;
 
-        protected int m_countDataTECComponents;
-
         protected bool m_bTransAuto {
             get
             {
@@ -96,9 +94,7 @@ namespace StatisticCommon
             this.m_checkboxModeMashine.CheckedChanged +=new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
-            this.m_checkboxModeMashine.Enabled = false;
-
-            m_countDataTECComponents = -1;
+            this.m_checkboxModeMashine.Enabled = false;;
 
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
@@ -302,7 +298,7 @@ namespace StatisticCommon
             }
         }
 
-        protected void saveDataGridViewAdminComplete()
+        protected virtual void saveDataGridViewAdminComplete()
         {
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
@@ -397,8 +393,10 @@ namespace StatisticCommon
             formAbout.ShowDialog();
         }
 
-        protected virtual void ErrorReport (string msg) {
+        protected /*virtual*/ void ErrorReport (string msg) {
             statusStripMain.BeginInvoke(delegateEvent);
+
+            m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
 
             this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
 
@@ -627,10 +625,7 @@ namespace StatisticCommon
                         switch (m_IndexDB)
                         {
                             case (int)CONN_SETT_TYPE.SOURCE:
-                                //bool bRDGExcelvalues = false;
-                                m_countDataTECComponents = 0;
-
-                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetGetRDGExcelValues();
+                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
 
                                 ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
                                 ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
