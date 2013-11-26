@@ -47,20 +47,30 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
+            bool bShowFormConnectionSettings = true;
             m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
             if (m_formConnectionSettings.Protected == true)
             {
-                if (Initialize() == true)
-                    ;
-                else
+                bShowFormConnectionSettings = ! Initialize();
+                if (bShowFormConnectionSettings == true)
                 {
-                    throw new Exception ("Ошибка инициализации пользовательских компонентов формы.");
-                    //настройкиСоединенияToolStripMenuItem.PerformClick ();
+                    //throw new Exception("Ошибка инициализации пользовательских компонентов формы.");
+                    //m_formConnectionSettings.ShowDialog(this);
                 }
+                else
+                    ;
             }
             else
             {
+                //m_formConnectionSettings.ShowDialog(this);
             }
+
+            if (bShowFormConnectionSettings == true)
+            {
+                connectionSettings ();
+            }
+            else
+                ;
         }
 
         private bool Initialize()
@@ -192,7 +202,10 @@ namespace Statistic
             else
                 ;
 
-            m_passwords.StopDbInterface();
+            if (! (m_passwords == null))
+                m_passwords.StopDbInterface();
+            else
+                ;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -217,7 +230,7 @@ namespace Statistic
 
         private void connectionSettings () {
             DialogResult result;
-            result = m_formConnectionSettings.ShowDialog();
+            result = m_formConnectionSettings.ShowDialog(this);
             if (result == DialogResult.Yes)
             {
                 if (! (tecViews == null)) tecViews.Clear (); else ;
@@ -287,7 +300,7 @@ namespace Statistic
             }
             else {
                 formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
-                if ((m_formConnectionSettings.Protected == false) || formPassword.ShowDialog() == DialogResult.Yes)
+                if ((m_formConnectionSettings.Protected == false) || (formPassword.ShowDialog() == DialogResult.Yes) || (formPassword.ShowDialog() == DialogResult.None))
                 {
                     connectionSettings ();
                 }
@@ -802,7 +815,10 @@ namespace Statistic
                     formSetPassword.ShowDialog();
                 }
                 else
-                    ;
+                    if (formPassword.ShowDialog() == DialogResult.None)
+                        connectionSettings ();
+                    else
+                        ;
             }
             else
                 ;

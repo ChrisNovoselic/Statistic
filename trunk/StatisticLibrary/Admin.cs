@@ -165,6 +165,7 @@ namespace StatisticCommon
             NoError,
             InvalidValue,
             NoAccess,
+            NoSet,
             ParseError,
         }
 
@@ -1584,7 +1585,7 @@ namespace StatisticCommon
                 errored_state = false;
             }
 
-            if (taskThread.IsAlive)
+            if ((! (taskThread == null)) && taskThread.IsAlive)
             {
                 try { semaState.Release(1); }
                 catch {

@@ -26,7 +26,7 @@ namespace StatisticCommon
         private DelegateStringFunc actionReport;
 
         private string getOwnerPass () {
-            string[] ownersPass = { "диспетчера", "администратора", "ДИСа" };
+            string[] ownersPass = { "диспетчера", "администратора", "НССа" };
 
             return ownersPass [m_idPass - 1];            
         }
@@ -252,6 +252,11 @@ namespace StatisticCommon
 
         public Admin.Errors ComparePassword(string password, uint id)
         {
+            if (semaState == null)
+                return Admin.Errors.NoAccess;
+            else
+                ;
+            
             if (password.Length < 1)
             {
                 //MessageBox.Show(this, "Длина пароля меньше допустимой.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -319,7 +324,7 @@ namespace StatisticCommon
                 //MessageBox.Show(this, "Пароль не установлен.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Пароль не установлен.");
 
-                return Admin.Errors.NoAccess;
+                return Admin.Errors.NoSet;
             }
             else
             {
@@ -442,7 +447,7 @@ namespace StatisticCommon
                 ;
 
             return m_listDbInterfaces[indxDbInterface].GetResponse(listenerId, out error, out table);
-            
+
             //if (isTec)
             //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
             //else
@@ -497,7 +502,7 @@ namespace StatisticCommon
                 errored_state = false;
             }
 
-            if (taskThread.IsAlive)
+            if ((!(taskThread == null)) && (taskThread.IsAlive))
             {
                 try { semaState.Release(1); }
                 catch {

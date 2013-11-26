@@ -189,7 +189,10 @@ namespace StatisticCommon
         {
             int iRes = -1;
 
-            iRes = m_listIds [i][(int)ID_TYPE.ID_OWNER];
+            if ((i < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds[i].Length))
+                iRes = m_listIds [i][(int)ID_TYPE.ID_OWNER];
+            else
+                ;
 
             return iRes;
         }

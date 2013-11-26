@@ -15,9 +15,39 @@ namespace Statistic
 {
     public class PanelAdminNSS : PanelAdmin
     {
+        private System.Windows.Forms.Button btnImportExcel;
+        private System.Windows.Forms.Button btnExportExcel;
+        
         protected override void InitializeComponents()
         {
             base.InitializeComponents();
+
+            this.btnImportExcel = new System.Windows.Forms.Button();
+            this.btnExportExcel = new System.Windows.Forms.Button();
+
+            this.Controls.Add(this.btnImportExcel);
+            this.Controls.Add(this.btnExportExcel);
+            // 
+            // btnImportExcel
+            // 
+            this.btnImportExcel.Location = new System.Drawing.Point(10, 279);
+            this.btnImportExcel.Name = "btnImportExcel";
+            this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnImportExcel.TabIndex = 667;
+            this.btnImportExcel.Text = "Импорт из Excel";
+            this.btnImportExcel.UseVisualStyleBackColor = true;
+            this.btnImportExcel.Click += new System.EventHandler(this.btnImportExcel_Click);
+            // 
+            // btnExportExcel
+            // 
+            this.btnExportExcel.Location = new System.Drawing.Point(10, 309);
+            this.btnExportExcel.Name = "btnExportExcel";
+            this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnExportExcel.TabIndex = 668;
+            this.btnExportExcel.Text = "Экспорт в Excel";
+            this.btnExportExcel.UseVisualStyleBackColor = true;
+            this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
+            this.btnExportExcel.Enabled = false;
 
             this.dgwAdminTable = new DataGridViewAdminNSS();
             this.SuspendLayout();
@@ -135,7 +165,7 @@ namespace Statistic
 
             if (m_listTECComponentIndex.Count > 0) {
                 comboBoxTecComponent.Items.AddRange (((AdminNSS)m_admin).GetListNameTEC ());
-            
+
                 if (comboBoxTecComponent.Items.Count > 0)
                 {
                     m_admin.indxTECComponents = m_listTECComponentIndex[0];
@@ -150,9 +180,49 @@ namespace Statistic
 
         public override void Activate(bool active)
         {
+            visibleControlRDGExcel();
+
             base.Activate (active);
 
             ClearTables ();
+        }
+
+        protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
+
+            visibleControlRDGExcel();
+        }
+
+        private void visibleControlRDGExcel()
+        {
+            bool bImpExpButtonVisible = false;
+            if ((!(m_listTECComponentIndex == null)) && (m_listTECComponentIndex.Count > 0) && (!(comboBoxTecComponent.SelectedIndex < 0)) && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
+                bImpExpButtonVisible = true;
+            else
+                ;
+
+            btnImportExcel.Visible =
+            btnExportExcel.Visible = bImpExpButtonVisible;
+        }
+
+        private void btnImportExcel_Click(object sender, EventArgs e)
+        {
+            ClearTables();
+
+            m_admin.GetRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+        }
+
+        private void btnExportExcel_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog exportFolder = new FolderBrowserDialog();
+            exportFolder.ShowDialog();
+
+            if (exportFolder.SelectedPath.Length > 0)
+            {
+            }
+            else
+                ;
         }
     }
 }

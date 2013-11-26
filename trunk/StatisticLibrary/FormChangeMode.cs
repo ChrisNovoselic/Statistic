@@ -88,7 +88,7 @@ namespace StatisticCommon
         }
 
         public string getNameAdminValues (MODE_TECCOMPONENT mode) {
-            string[] arNameAdminValues = { "ДИС", "Диспетчер", "ДИС", "ДИС" };
+            string[] arNameAdminValues = { "НСС", "Диспетчер", "НСС", "НСС" };
 
             return @"ПБР - " + arNameAdminValues[(int)mode];
         }

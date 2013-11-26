@@ -30,7 +30,7 @@ namespace Statistic
         {
             m_idPass = id;
 
-            string[] ownersPass = { "коммерческого диспетчера", "администратора", "ДИСа" };
+            string[] ownersPass = { "коммерческого диспетчера", "администратора", "НССа" };
 
             labelOwnerPassword.Text = ownersPass[(int)m_idPass - 1];
         }
@@ -41,10 +41,16 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
+                tbxPassword.Text = string.Empty;
+
                 switch (m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass))
                 {
                     case Admin.Errors.NoAccess:
-                        tbxPassword.Text = string.Empty;
+                        this.DialogResult = DialogResult.None;
+                        closing = true;
+                        Close();
+                        break;
+                    case Admin.Errors.NoSet:
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                             this.DialogResult = DialogResult.Retry;
@@ -56,7 +62,6 @@ namespace Statistic
                         }
                         break;
                     case Admin.Errors.InvalidValue:
-                        tbxPassword.Text = string.Empty;
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                         }
@@ -69,7 +74,6 @@ namespace Statistic
                         break;
                     case Admin.Errors.ParseError:
                     case Admin.Errors.NoError:
-                        tbxPassword.Text = string.Empty;
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
                         Close();

@@ -15,14 +15,12 @@ namespace Statistic
 {
     public class PanelAdmin : Panel
     {
-        private System.Windows.Forms.MonthCalendar mcldrDate;
+        protected System.Windows.Forms.MonthCalendar mcldrDate;
 
         protected DataGridViewAdmin dgwAdminTable;
 
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
-        private System.Windows.Forms.Button btnImportExcel;
-        private System.Windows.Forms.Button btnExportExcel;
 
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
@@ -38,8 +36,6 @@ namespace Statistic
         {
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
-            this.btnImportExcel = new System.Windows.Forms.Button();
-            this.btnExportExcel = new System.Windows.Forms.Button();
             //this.btnLoadLayout = new System.Windows.Forms.Button();
 
             //this.dgwAdminTable = new DataGridViewAdmin();
@@ -54,8 +50,7 @@ namespace Statistic
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
             //this.Controls.Add(this.btnLoadLayout);
-            this.Controls.Add(this.btnImportExcel);
-            this.Controls.Add(this.btnExportExcel);
+            
             this.Controls.Add(this.btnRefresh);
             
             //this.Controls.Add(this.dgwAdminTable);
@@ -116,27 +111,6 @@ namespace Statistic
             //this.btnLoadLayout.Text = "Загрузить макет";
             //this.btnLoadLayout.UseVisualStyleBackColor = true;
             //this.btnLoadLayout.Click += new System.EventHandler(this.btnLoadLayout_Click);
-            // 
-            // btnImportExcel
-            // 
-            this.btnImportExcel.Location = new System.Drawing.Point(10, 279);
-            this.btnImportExcel.Name = "btnImportExcel";
-            this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
-            this.btnImportExcel.TabIndex = 667;
-            this.btnImportExcel.Text = "Импорт из Excel";
-            this.btnImportExcel.UseVisualStyleBackColor = true;
-            this.btnImportExcel.Click += new System.EventHandler(this.btnImportExcel_Click);
-            // 
-            // btnExportExcel
-            // 
-            this.btnExportExcel.Location = new System.Drawing.Point(10, 309);
-            this.btnExportExcel.Name = "btnExportExcel";
-            this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
-            this.btnExportExcel.TabIndex = 668;
-            this.btnExportExcel.Text = "Экспорт в Excel";
-            this.btnExportExcel.UseVisualStyleBackColor = true;
-            this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
-            this.btnExportExcel.Enabled = false;
             // 
             // comboBoxTecComponent
             // 
@@ -226,7 +200,7 @@ namespace Statistic
             comboBoxTecComponent.Items.Clear ();
         }
 
-        private void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
+        protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
             Admin.Errors resultSaving;
@@ -274,8 +248,6 @@ namespace Statistic
             }
             else
                 ;
-
-            visibleControlRDGExcel ();
         }
 
         private void btnSet_Click(object sender, EventArgs e)
@@ -311,6 +283,8 @@ namespace Statistic
             {
                 if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ".")
                     return current_str.Replace(".", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
+                else
+                    ;
             }
             else
             {
@@ -318,27 +292,13 @@ namespace Statistic
                 {
                     if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ",")
                         return current_str.Replace(",", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
+                    else
+                        ;
                 }
+                else
+                    ;
             }
             return current_str;
-        }
-
-        private void btnImportExcel_Click(object sender, EventArgs e)
-        {
-            ClearTables();
-
-            m_admin.GetRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-        }
-
-        private void btnExportExcel_Click(object sender, EventArgs e)
-        {
-            FolderBrowserDialog exportFolder = new FolderBrowserDialog ();
-            exportFolder.ShowDialog ();
-
-            if (exportFolder.SelectedPath.Length > 0) {
-            }
-            else
-                ;
         }
 
         public bool MayToClose()
@@ -383,21 +343,8 @@ namespace Statistic
 
         public virtual void ClearTables() {}
 
-        private void visibleControlRDGExcel () {
-            bool bImpExpButtonVisible = false;
-            if ((!(m_listTECComponentIndex == null)) && (m_listTECComponentIndex.Count > 0) && (!(comboBoxTecComponent.SelectedIndex < 0)) && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
-                bImpExpButtonVisible = true;
-            else
-                ;
-
-            btnImportExcel.Visible =
-            btnExportExcel.Visible = bImpExpButtonVisible;
-        }
-
         public virtual void Activate(bool active)
         {
-            visibleControlRDGExcel ();
-
             isActive = active;
         }
     }

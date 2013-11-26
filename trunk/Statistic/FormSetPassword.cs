@@ -28,7 +28,7 @@ namespace Statistic
         {
             m_idPass = id;
 
-            string[] ownersPass = { "Коммерческий диспетчер", "Администратор", "ДИС" };
+            string[] ownersPass = { "Коммерческий диспетчер", "Администратор", "НСС" };
 
             this.Text = ownersPass[m_idPass - 1];
         }
