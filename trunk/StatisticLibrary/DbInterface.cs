@@ -538,11 +538,12 @@ namespace StatisticCommon
             bool bQuote = false;
 
             if (table.Columns[col].DataType.IsPrimitive == true)
+            //if (table.Columns[col].DataType.IsByRef == false)
                 bQuote = false;
             else
                 bQuote = true;
 
-            strRes = (bQuote ? "'" : string.Empty) + table.Rows[row][col] + (bQuote ? "'" : string.Empty);
+            strRes = (bQuote ? "'" : string.Empty) + (table.Rows[row][col].ToString ().Length > 0 ? table.Rows[row][col] : "NULL") + (bQuote ? "'" : string.Empty);
 
             return strRes;
         }

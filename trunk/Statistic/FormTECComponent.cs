@@ -445,7 +445,10 @@ namespace Statistic
                     break;
                 case (int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT:
                 case (int)INDEX_UICONTROL.DATAGRIDVIEW_TG:
-                    m_list_dataRow_comboBoxAddTG = m_list_data [comboBoxMode.Items.Count].Select ("ID_TEC=" + id_tec + " AND ID_" + FormChangeMode.getPrefixMode (comboBoxMode.SelectedIndex) + "=" + 0);
+                    if (m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT].Length > 0)
+                        m_list_dataRow_comboBoxAddTG = m_list_data [comboBoxMode.Items.Count].Select ("ID_TEC=" + id_tec + " AND ID_" + FormChangeMode.getPrefixMode (comboBoxMode.SelectedIndex) + "=" + 0);
+                    else
+                        m_list_dataRow_comboBoxAddTG = new DataRow [0] {};
                     break;
                 default:
                     break;
@@ -466,87 +469,110 @@ namespace Statistic
                 ;
         }
 
-        private void buttonOk_Click(object sender, EventArgs e)
+        private void RecUpdateInsert(string nameTable, DataTable origin, DataTable data)
         {
             int err = 0,
-                i = -1, j = -1, k = -1;
-            DataRow [] dataRows;
+                j = -1, k = -1;
             bool bUpdate = false;
-            string [] strQuery = new string [(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
-            string nameTable = string.Empty,
+            DataRow[] dataRows;
+            string[] strQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
+            string valuesForInsert = string.Empty;
+            
+            for (j = 0; j < data.Rows.Count; j ++) {
+                dataRows = origin.Select("ID=" + data.Rows[j]["ID"]);
+                if (dataRows.Length == 0) {
+                    //INSERT
+                    strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = string.Empty;
                     valuesForInsert = string.Empty;
-
-            //UPDATE, INSERT
-            for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
-                nameTable = FormChangeMode.getPrefixMode(i) + "_LIST";
-                for (j = 0; j < m_list_data/*_original*/[i].Rows.Count; j ++) {
-                    dataRows = m_list_data_original[i].Select("ID=" + m_list_data[i].Rows[j]["ID"]);
-                    if (dataRows.Length == 0) {
-                        //INSERT
-                        strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = string.Empty;
-                        valuesForInsert = string.Empty;
-                        strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = "INSERT INTO " + nameTable + " (";
-                        for (k = 0; k < m_list_data[i].Columns.Count; k ++) {
-                            strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += m_list_data[i].Columns[k].ColumnName + ",";
-                            valuesForInsert += DbInterface.valueForQuery (m_list_data [i], j, k) + ",";
-                        }
-                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Substring (0, strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Length - 1);
-                        valuesForInsert = valuesForInsert.Substring (0, valuesForInsert.Length - 1);
-                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += ") VALUES (";
-                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
-                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.INSERT], out err);
+                    strQuery [(int)DbInterface.QUERY_TYPE.INSERT] = "INSERT INTO " + nameTable + " (";
+                    for (k = 0; k < data.Columns.Count; k ++) {
+                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += data.Columns[k].ColumnName + ",";
+                        valuesForInsert += DbInterface.valueForQuery (data, j, k) + ",";
                     }
-                    else {
-                        if (dataRows.Length == 1)
-                        {//UPDATE
-                            bUpdate = false;
-                            strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = string.Empty;
-                            for (k = 0; k < m_list_data[i].Columns.Count; k ++) {
-                                if (!(m_list_data[i].Rows[j][k].Equals(m_list_data_original[i].Rows[j][k]) == true))
-                                    if (bUpdate == false) bUpdate = true; else ;
-                                else
-                                    ;
-
-                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] += m_list_data[i].Columns[k].ColumnName + "="; // + m_list_data[i].Rows[j][k] + ",";
-
-                                strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += DbInterface.valueForQuery(m_list_data[i], j, k) + ",";
-                            }
-
-                            if (bUpdate == true)
-                            {//UPDATE
-                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Substring (0, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Length - 1);
-                                strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + m_list_data[i].Rows[j]["ID"];
-                                
-                                DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE], out err);
-                            }
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Substring (0, strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Length - 1);
+                    valuesForInsert = valuesForInsert.Substring (0, valuesForInsert.Length - 1);
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += ") VALUES (";
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
+                    DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.INSERT], out err);
+                }
+                else {
+                    if (dataRows.Length == 1)
+                    {//UPDATE
+                        bUpdate = false;
+                        strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = string.Empty;
+                        for (k = 0; k < data.Columns.Count; k ++) {
+                            if (!(data.Rows[j][k].Equals(origin.Rows[j][k]) == true))
+                                if (bUpdate == false) bUpdate = true; else ;
                             else
                                 ;
+
+                            strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] += data.Columns[k].ColumnName + "="; // + data.Rows[j][k] + ",";
+
+                            strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += DbInterface.valueForQuery(data, j, k) + ",";
+                        }
+
+                        if (bUpdate == true)
+                        {//UPDATE
+                            strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Substring (0, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE].Length - 1);
+                            strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery [(int)DbInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + data.Rows[j]["ID"];
+                                
+                            DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.UPDATE], out err);
                         }
                         else
-                            throw new Exception ("");
+                            ;
                     }
+                    else
+                        throw new Exception ("Невозможно определить тип изменения таблицы " + nameTable);
+                }
+            }
+        }
+
+        private void RecDelete(string nameTable, DataTable origin, DataTable data)
+        {
+            int err = 0,
+                j = -1;
+            DataRow[] dataRows;
+            string[] strQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
+
+            for (j = 0; j < origin.Rows.Count; j++)
+            {
+                dataRows = data.Select("ID=" + origin.Rows[j]["ID"]);
+                if (dataRows.Length == 0)
+                {
+                    //DELETE
+                    strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = string.Empty;
+                    strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + origin.Rows[j]["ID"];
+                    DbInterface.ExecNonQuery(m_connectionSetttings, strQuery[(int)DbInterface.QUERY_TYPE.DELETE], out err);
+                }
+                else
+                {
+                    if (dataRows.Length == 1)
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
+            }
+        }
+
+        private void buttonOk_Click(object sender, EventArgs e)
+        {
+            int i = -1;
+
+            for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
+                if (! (m_list_data[i].Rows.Count < m_list_data_original[i].Rows.Count))
+                {
+                    //UPDATE, INSERT
+                    RecUpdateInsert(FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i]);
+                }
+                else
+                {
+                    //DELETE
+                    RecDelete (FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i]);
                 }
             }
 
-            //DELETE
-            for (i = 0; i < m_list_data_original.Length; i ++) {
-                for (j = 0; j < m_list_data_original[i].Rows.Count; j ++) {
-                    dataRows = m_list_data[i].Select("ID=" + m_list_data_original[i].Rows[j]["ID"]);
-                    if (dataRows.Length == 0) {
-                        //DELETE
-                        strQuery [(int)DbInterface.QUERY_TYPE.DELETE] = string.Empty;
-                        strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + m_list_data_original[i].Rows[j]["ID"];
-                        DbInterface.ExecNonQuery(m_connectionSetttings, strQuery [(int)DbInterface.QUERY_TYPE.DELETE], out err);
-                    }
-                    else {
-                        if (dataRows.Length == 1) {                            
-                        }
-                        else {
-                        }
-                    }
-                }
-            }
-            
             buttonClick(DialogResult.Yes);
         }
 
@@ -753,7 +779,10 @@ namespace Statistic
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID_TEC"] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["NAME_SHR"] = m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text;
 
+            m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text = string.Empty;
+
             fillDataGridView (INDEX_UICONTROL.DATAGRIDVIEW_TEC_COMPONENT);
+            fillComboBoxTGAdd ();
         }
 
         private void buttonTGAdd_Click(object sender, EventArgs e)

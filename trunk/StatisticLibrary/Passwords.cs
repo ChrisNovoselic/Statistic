@@ -256,7 +256,7 @@ namespace StatisticCommon
                 return Admin.Errors.NoAccess;
             else
                 ;
-            
+
             if (password.Length < 1)
             {
                 //MessageBox.Show(this, "Длина пароля меньше допустимой.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);

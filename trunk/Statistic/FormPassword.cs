@@ -41,12 +41,12 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
-                tbxPassword.Text = string.Empty;
-
-                switch (m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass))
+                Admin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass);
+                tbxPassword.Clear ();
+                switch (errRes)
                 {
                     case Admin.Errors.NoAccess:
-                        this.DialogResult = DialogResult.None;
+                        this.DialogResult = DialogResult.Abort;
                         closing = true;
                         Close();
                         break;

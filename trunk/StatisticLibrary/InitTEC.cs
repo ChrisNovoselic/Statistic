@@ -8,6 +8,7 @@ namespace StatisticCommon
     public class InitTEC
     {
         public List<TEC> tec;
+        private Users m_user;
 
         public static DataTable getListTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
@@ -46,6 +47,7 @@ namespace StatisticCommon
         public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
             tec = new List<TEC>();
+            m_user = new Users(connSett);
 
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -54,84 +56,124 @@ namespace StatisticCommon
             //Использование статической функции
             list_tec = getListTEC(connSett, bIgnoreTECInUse);
 
+            Logging.Logg ().LogLock ();
+            Logging.Logg().LogToFile("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
+            Logging.Logg().LogUnlock();
+
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
-                //Создание объекта ТЭЦ
-                tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
-                                list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
-                                list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
-                                list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
-                                list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                list_tec.Rows[i]["PREFIX_PBR"].ToString()));
-
-                //List <string> listNamesField;
-                //listNamesField = new List<string> ();
-                //listNamesField.Add ();
-                tec[i].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
-                                    list_tec.Rows[i]["ADMIN_REC"].ToString(),
-                                    list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
-                                    list_tec.Rows[i]["ADMIN_DIVIAT"].ToString(),
-                                    list_tec.Rows[i]["PBR_DATETIME"].ToString(),
-                                    list_tec.Rows[i]["PPBRvsPBR"].ToString(),
-                                    list_tec.Rows[i]["PBR_NUMBER"].ToString());
-
-                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
-
-                tec[i].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
-                tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
-
-                int indx = -1;
-                for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; ! (c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
+                Logging.Logg().LogUnlock();
+                
+                if ((m_user.allTEC == 0) || (m_user.Role < 100) || (m_user.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                 {
-                    list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
-                    for (int j = 0; j < list_TECComponents.Rows.Count; j++)
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
+                    Logging.Logg().LogUnlock();
+                    
+                    //Создание объекта ТЭЦ
+                    tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
+                                    list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
+                                    list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
+                                    list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
+                                    list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
+                                    list_tec.Rows[i]["PREFIX_PBR"].ToString()));
+
+                    //List <string> listNamesField;
+                    //listNamesField = new List<string> ();
+                    //listNamesField.Add ();
+
+                    int indx_tec = tec.Count - 1;
+                    tec[indx_tec].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
+                                        list_tec.Rows[i]["ADMIN_REC"].ToString(),
+                                        list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
+                                        list_tec.Rows[i]["ADMIN_DIVIAT"].ToString(),
+                                        list_tec.Rows[i]["PBR_DATETIME"].ToString(),
+                                        list_tec.Rows[i]["PPBRvsPBR"].ToString(),
+                                        list_tec.Rows[i]["PBR_NUMBER"].ToString());
+
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
+
+                    tec[indx_tec].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
+                    tec[indx_tec].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
+
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
+                    Logging.Logg().LogUnlock();
+
+                    int indx = -1;
+                    for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; ! (c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                     {
-                        //indx = (c - (int)FormChangeMode.MODE_TECCOMPONENT.GTP) * ((int)(FormChangeMode.MODE_TECCOMPONENT.PC - FormChangeMode.MODE_TECCOMPONENT.GTP + 1)) + j;
-                        
-                        tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString(), list_TECComponents.Rows[j]["PREFIX_PBR"].ToString()));
+                        list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
-                        indx = tec[i].list_TECComponents.Count - 1;
-                        
-                        tec[i].list_TECComponents[indx].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
-                        tec[i].list_TECComponents[indx].m_id = Convert.ToInt32(list_TECComponents.Rows[j]["ID"]);
+                        Logging.Logg().LogLock();
+                        Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
+                        Logging.Logg().LogUnlock();
 
-                        list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
-
-                        for (int k = 0; k < list_tg.Rows.Count; k++)
+                        for (int j = 0; j < list_TECComponents.Rows.Count; j++)
                         {
-                            tec[i].list_TECComponents[indx].TG.Add(new TG(tec[i].list_TECComponents[indx]));
-                            tec[i].list_TECComponents[indx].TG[k].name = list_tg.Rows[k]["NAME_SHR"].ToString();
-                            tec[i].list_TECComponents[indx].TG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
-                            if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                                tec[i].list_TECComponents[indx].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
-                            else
-                                ;
+                            //indx = (c - (int)FormChangeMode.MODE_TECCOMPONENT.GTP) * ((int)(FormChangeMode.MODE_TECCOMPONENT.PC - FormChangeMode.MODE_TECCOMPONENT.GTP + 1)) + j;
+
+                            tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString(), list_TECComponents.Rows[j]["PREFIX_PBR"].ToString()));
+
+                            indx = tec[indx_tec].list_TECComponents.Count - 1;
+
+                            tec[indx_tec].list_TECComponents[indx].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
+                            tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_TECComponents.Rows[j]["ID"]);
+
+                            list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
+
+                            for (int k = 0; k < list_tg.Rows.Count; k++)
+                            {
+                                tec[indx_tec].list_TECComponents[indx].TG.Add(new TG(tec[indx_tec].list_TECComponents[indx]));
+                                tec[indx_tec].list_TECComponents[indx].TG[k].name = list_tg.Rows[k]["NAME_SHR"].ToString();
+                                tec[indx_tec].list_TECComponents[indx].TG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                                if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                                    tec[indx_tec].list_TECComponents[indx].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                                else
+                                    ;
+                            }
                         }
                     }
+
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
+                    Logging.Logg().LogUnlock();
+
+                    list_tg = getListTG(connSett, FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]));
+
+                    for (int k = 0; k < list_tg.Rows.Count; k++)
+                    {
+                        tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], null, null));
+
+                        indx = tec[indx_tec].list_TECComponents.Count - 1;
+
+                        tec[indx_tec].list_TECComponents[indx].name = list_tg.Rows[k]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
+                        tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+
+                        tec[indx_tec].list_TECComponents[indx].TG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
+                        tec[indx_tec].list_TECComponents[indx].TG[0].name = list_tg.Rows[k]["NAME_SHR"].ToString();
+                        tec[indx_tec].list_TECComponents[indx].TG[0].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                        if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                            tec[indx_tec].list_TECComponents[indx].TG[0].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                        else
+                            ;
+                    }
+
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TG = Ok", true, false, false);
+                    Logging.Logg().LogUnlock();
                 }
-
-                list_tg = getListTG(connSett, FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]));
-
-                for (int k = 0; k < list_tg.Rows.Count; k++)
-                {
-                    tec[i].list_TECComponents.Add(new TECComponent(tec[i], null, null));
-
-                    indx = tec[i].list_TECComponents.Count - 1;
-
-                    tec[i].list_TECComponents[indx].name = list_tg.Rows[k]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
-                    tec[i].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
-
-                    tec[i].list_TECComponents[indx].TG.Add(new TG(new TECComponent(tec[i], null, null)));
-                    tec[i].list_TECComponents[indx].TG[0].name = list_tg.Rows[k]["NAME_SHR"].ToString();
-                    tec[i].list_TECComponents[indx].TG[0].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
-                    if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                        tec[i].list_TECComponents[indx].TG[0].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
-                    else
-                        ;
-                }
+                else
+                    ;
             }
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("InitTEC::InitTEC () - exit...", true, false, false);
+            Logging.Logg().LogUnlock();
         }
 
         public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse) //indx = {GTP или PC}
