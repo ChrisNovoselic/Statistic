@@ -85,7 +85,10 @@ namespace Statistic
             m_passwords.SetDelegateReport(ErrorReport, ActionReport);
             m_passwords.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
-            //m_user = new Users(m_formConnectionSettings.getConnSett());
+            Users user = new Users(m_formConnectionSettings.getConnSett());
+            if (! (user.Role == 2)) //Администратор
+                администрированиеToolStripMenuItem.Enabled = false;
+            else;
 
             m_arAdmin = new Admin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
             m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
@@ -310,7 +313,7 @@ namespace Statistic
                 }
                 else {
                     formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
-                    DialogResult dlgRes = formPassword.ShowDialog();
+                    DialogResult dlgRes = formPassword.ShowDialog(this);
                     if ((dlgRes == DialogResult.Yes) || (dlgRes == DialogResult.Abort))
                         bShowFormConnectionSettings = true;
                     else
@@ -454,13 +457,13 @@ namespace Statistic
 
                         bool bAdminPanelUse = false;
                         if (prevStateIsAdmin == false)
-                            switch (formPassword.ShowDialog()) {
+                            switch (formPassword.ShowDialog(this)) {
                                 case DialogResult.Yes:
                                     bAdminPanelUse = true;
                                     break;
                                 case DialogResult.Retry:
                                     formSetPassword.SetIdPass (formPassword.GetIdPass ());
-                                    if (formSetPassword.ShowDialog() == DialogResult.Yes)
+                                    if (formSetPassword.ShowDialog(this) == DialogResult.Yes)
                                         bAdminPanelUse = true;
                                     else
                                         ;
@@ -607,7 +610,7 @@ namespace Statistic
         private void AddTabPageAdmin () {
             StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //FormChangeMode.MODE_TECCOMPONENT.TG;
             StatisticCommon.FormChangeMode.MANAGER modeAdmin = FormChangeMode.MANAGER.NSS;
-            
+
             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
             {
                 tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
@@ -703,7 +706,7 @@ namespace Statistic
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormAbout a = new FormAbout();
-            a.ShowDialog();
+            a.ShowDialog(this);
         }
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -764,7 +767,7 @@ namespace Statistic
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (m_formConnectionSettings.Protected == true)
-                formParameters.ShowDialog();
+                formParameters.ShowDialog(this);
             else
                 ;
         }
@@ -774,7 +777,7 @@ namespace Statistic
             if (m_formConnectionSettings.Protected == true) {
                 foreach (TecView tv in tecViews) {
                     if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
-                        tv.tec.parametersTGForm.ShowDialog();
+                        tv.tec.parametersTGForm.ShowDialog(this);
                         break;
                     }
                     else
@@ -788,14 +791,43 @@ namespace Statistic
         private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
         {
             formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
-            formPassword.ShowDialog();
+            formPassword.ShowDialog(this);
             DialogResult dlgRes = formPassword.DialogResult;
             if (dlgRes == DialogResult.Yes)
             {
                 FormTECComponent tecComponent = new FormTECComponent(m_formConnectionSettings.getConnSett());
-                if (tecComponent.ShowDialog () == DialogResult.Yes) {
+                if (tecComponent.ShowDialog (this) == DialogResult.Yes) {
                     MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     выходToolStripMenuItem.PerformClick ();
+                    //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
+                    //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
+                }
+                else
+                    ;
+            }
+            else
+                if (dlgRes == DialogResult.Abort)
+                {
+                    //Errors.NoAccess
+                    connectionSettings();
+                }
+                else
+                    ;
+        }
+
+        private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            formPassword.SetIdPass(FormPassword.ID_ROLES.ADMIN);
+            formPassword.ShowDialog(this);
+            DialogResult dlgRes = formPassword.DialogResult;
+            if (dlgRes == DialogResult.Yes)
+            {
+                FormUser formUser = new FormUser(m_formConnectionSettings.getConnSett());
+                
+                if (formUser.ShowDialog(this) == DialogResult.Yes)
+                {
+                    MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    выходToolStripMenuItem.PerformClick();
                     //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
                     //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
                 }
@@ -832,11 +864,11 @@ namespace Statistic
             if (m_formConnectionSettings.Protected == true)
             {
                 formPassword.SetIdPass(id);
-                DialogResult dlgRes = formPassword.ShowDialog();
+                DialogResult dlgRes = formPassword.ShowDialog(this);
                 if (dlgRes == DialogResult.Yes)
                 {
                     formSetPassword.SetIdPass(formPassword.GetIdPass());
-                    formSetPassword.ShowDialog();
+                    formSetPassword.ShowDialog(this);
                 }
                 else
                     if (dlgRes == DialogResult.Abort)

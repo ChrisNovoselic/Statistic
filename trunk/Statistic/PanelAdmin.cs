@@ -50,11 +50,11 @@ namespace Statistic
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
             //this.Controls.Add(this.btnLoadLayout);
-            
+
             this.Controls.Add(this.btnRefresh);
-            
+
             //this.Controls.Add(this.dgwAdminTable);
-            
+
             this.Controls.Add(this.mcldrDate);
             this.Controls.Add(this.comboBoxTecComponent);
             this.Controls.Add(this.gbxDivider);

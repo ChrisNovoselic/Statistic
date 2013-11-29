@@ -43,6 +43,7 @@
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemИзменитьПарольНСС = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -106,7 +107,6 @@
             // 
             this.настройкиToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.сменитьРежимToolStripMenuItem,
-            this.настройкиСоединенияToolStripMenuItem,
             this.администрированиеToolStripMenuItem,
             this.параметрыToolStripMenuItem});
             this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
@@ -130,10 +130,12 @@
             // администрированиеToolStripMenuItem
             // 
             this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.настройкиСоединенияToolStripMenuItem,
             this.изменитьПарольДиспетчераToolStripMenuItem,
             this.изменитьПарольАдминистратораToolStripMenuItem,
             this.toolStripMenuItemИзменитьПарольНСС,
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem});
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
+            this.изментьСоставПользовательToolStripMenuItem});
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
@@ -165,6 +167,13 @@
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)";
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
+            // 
+            // изментьСоставПользовательToolStripMenuItem
+            // 
+            this.изментьСоставПользовательToolStripMenuItem.Name = "изментьСоставПользовательToolStripMenuItem";
+            this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей";
+            this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
             // 
             // параметрыToolStripMenuItem
             // 
@@ -323,6 +332,7 @@
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemИзменитьПарольНСС;
+        private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
     }
 }
 

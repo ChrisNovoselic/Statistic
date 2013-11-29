@@ -295,6 +295,8 @@ namespace StatisticCommon
                 }
 
                 CopyCurAdminValues();
+
+                this.m_dgwAdminTable.Invalidate();
             }
         }
 
@@ -390,7 +392,7 @@ namespace StatisticCommon
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormAbout formAbout = new FormAbout ();
-            formAbout.ShowDialog();
+            formAbout.ShowDialog(this);
         }
 
         protected /*virtual*/ void ErrorReport (string msg) {

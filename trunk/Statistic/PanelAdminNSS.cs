@@ -135,6 +135,8 @@ namespace Statistic
             }
 
             m_admin.CopyCurToPrevRDGValues();
+
+            this.dgwAdminTable.Invalidate();
         }
 
         private void updateTextBoxColumn()
@@ -216,7 +218,7 @@ namespace Statistic
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog exportFolder = new FolderBrowserDialog();
-            exportFolder.ShowDialog();
+            exportFolder.ShowDialog(this);
 
             if (exportFolder.SelectedPath.Length > 0)
             {

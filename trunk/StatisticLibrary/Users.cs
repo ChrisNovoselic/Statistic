@@ -61,12 +61,7 @@ namespace StatisticCommon
                 else
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
-            string strQuery = string.Empty;
-            //strQuer//strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='" + Environment.UserDomainName + "\\" + Environment.UserName + "'";
-            //strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='NE\\ChrjapinAN'";
-            strQuery = "SELECT * FROM users";
-
-            dataUsers = DbInterface.Select(connSettConfigDB, strQuery, out err);
+            GetUsers ("", out dataUsers, out err);
 
             if ((err == 0) && (dataUsers.Rows.Count > 0))
             {
@@ -100,7 +95,7 @@ namespace StatisticCommon
                 else
                     throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
             }
-            
+
             Initialize ();
         }
 
@@ -122,6 +117,36 @@ namespace StatisticCommon
             {
                 return id_tec;
             }
+        }
+
+        public void GetUsers(string where, out DataTable users, out int err)
+        {
+            err = 0;            
+            users = new DataTable ();
+
+            string strQuery = string.Empty;
+            //strQuer//strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='" + Environment.UserDomainName + "\\" + Environment.UserName + "'";
+            //strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='NE\\ChrjapinAN'";
+            strQuery = "SELECT * FROM users" + where;
+
+            users = DbInterface.Select(connSettConfigDB, strQuery, out err);
+        }
+
+        public static void GetUsers(ConnectionSettings connSett, string where, out DataTable users, out int err)
+        {
+            err = 0;
+            users = new DataTable();
+
+            string strQuery = string.Empty;
+            strQuery = "SELECT * FROM users";
+            if ((!(where == null)) && (where.Length > 0))
+                strQuery += " WHERE " + where;
+            else
+                ;
+
+            strQuery += " ORDER BY DESCRIPTION";
+
+            users = DbInterface.Select(connSett, strQuery, out err);
         }
     }
 }

@@ -335,6 +335,8 @@ namespace trans_tg
             }
 
             m_arAdmin[indxDB].CopyCurToPrevRDGValues();
+
+            m_dgwAdminTable.Invalidate();
         }
 
         private void SaveChanges ()
