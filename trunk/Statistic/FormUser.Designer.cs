@@ -147,6 +147,9 @@
             this.textBoxIP.Name = "textBoxIP";
             this.textBoxIP.Size = new System.Drawing.Size(149, 20);
             this.textBoxIP.TabIndex = 10;
+            this.textBoxIP.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.textBoxIP.Enter += new System.EventHandler(this.textBox_Enter);
+            this.textBoxIP.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // textBoxDomain
             // 
@@ -154,6 +157,9 @@
             this.textBoxDomain.Name = "textBoxDomain";
             this.textBoxDomain.Size = new System.Drawing.Size(149, 20);
             this.textBoxDomain.TabIndex = 11;
+            this.textBoxDomain.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.textBoxDomain.Enter += new System.EventHandler(this.textBox_Enter);
+            this.textBoxDomain.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // textBoxUserName
             // 
@@ -161,6 +167,9 @@
             this.textBoxUserName.Name = "textBoxUserName";
             this.textBoxUserName.Size = new System.Drawing.Size(149, 20);
             this.textBoxUserName.TabIndex = 12;
+            this.textBoxUserName.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.textBoxUserName.Enter += new System.EventHandler(this.textBox_Enter);
+            this.textBoxUserName.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // textBoxComputerName
             // 
@@ -168,6 +177,9 @@
             this.textBoxComputerName.Name = "textBoxComputerName";
             this.textBoxComputerName.Size = new System.Drawing.Size(149, 20);
             this.textBoxComputerName.TabIndex = 13;
+            this.textBoxComputerName.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.textBoxComputerName.Enter += new System.EventHandler(this.textBox_Enter);
+            this.textBoxComputerName.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // comboBoxAccess
             // 
@@ -203,6 +215,9 @@
             this.textBoxUserDesc.Name = "textBoxUserDesc";
             this.textBoxUserDesc.Size = new System.Drawing.Size(158, 20);
             this.textBoxUserDesc.TabIndex = 17;
+            this.textBoxUserDesc.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.textBoxUserDesc.Enter += new System.EventHandler(this.textBox_Enter);
+            this.textBoxUserDesc.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // FormUser
             // 

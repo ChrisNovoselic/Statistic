@@ -13,10 +13,14 @@ namespace Statistic
 {
     public partial class FormUser : Form
     {
+        private enum INDEX_UICONTROL { TEXTBOX_DESCRIPTION, TEXTBOX_IP, TEXTBOX_DOMAIN, TEXTBOX_USERNAME, TEXTBOX_COMPUTERNAME, COUNT_INDEX_UICONTROL };
+        
         private ConnectionSettings m_connSett;
         DataTable m_users_origin;
         DataTable m_users_edit;
         DataRow [] m_userRows;
+        Control [] m_arUIControl;
+        INDEX_UICONTROL m_curIndexUIControl;
 
         List <int> m_listUserID;
 
@@ -27,6 +31,9 @@ namespace Statistic
             m_connSett = connSett;
 
             m_listUserID = new List<int> ();
+
+            m_arUIControl = new Control [] { textBoxUserDesc, textBoxIP, textBoxDomain, textBoxUserName, textBoxComputerName};
+            m_curIndexUIControl = INDEX_UICONTROL.COUNT_INDEX_UICONTROL;
 
             int err = 0,
                 i = -1;
@@ -135,6 +142,70 @@ namespace Statistic
             m_userRows = m_users_edit.Select();
 
             listBoxUsers.SelectedIndex = m_userRows.Length - 1; //listBoxUsers.Items.Count - 1; //m_users_edit.Rows.Count - 1 
+        }
+
+        private void textBox_TextChanged(object sender, EventArgs e)
+        {
+            string name_field = string.Empty;
+            
+            if ((!(m_curIndexUIControl < 0)) && (m_curIndexUIControl < INDEX_UICONTROL.COUNT_INDEX_UICONTROL))
+            {
+                int indx_sel = listBoxUsers.SelectedIndex;
+
+                switch (m_curIndexUIControl) {
+                    case INDEX_UICONTROL.TEXTBOX_DESCRIPTION:
+                        //listBoxUsers.SelectedItem = m_arUIControl[(int)m_curIndexUIControl].Text;
+                        listBoxUsers.Items.RemoveAt(indx_sel);
+                        listBoxUsers.Items.Insert(indx_sel, m_arUIControl[(int)m_curIndexUIControl].Text);
+                        listBoxUsers.SelectedIndex = indx_sel;
+
+                        name_field = "DESCRIPTION";
+                        break;
+                    case INDEX_UICONTROL.TEXTBOX_IP:
+                        name_field = "IP";
+                        break;
+                    case INDEX_UICONTROL.TEXTBOX_DOMAIN:
+                        name_field = "DOMAIN_NAME";
+                        break;
+                    case INDEX_UICONTROL.TEXTBOX_USERNAME:
+                        name_field = "USER_NAME";
+                        break;
+                    case INDEX_UICONTROL.TEXTBOX_COMPUTERNAME:
+                        name_field = "COMPUTER_NAME";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (name_field.Equals (string.Empty) == false)
+                {
+                    m_userRows[indx_sel][name_field] = m_arUIControl[(int)m_curIndexUIControl].Text;
+                }
+                else
+                    ;
+            }
+            else
+                ;
+        }
+
+        private void textBox_Enter(object sender, EventArgs e)
+        {
+            INDEX_UICONTROL i = INDEX_UICONTROL.COUNT_INDEX_UICONTROL;
+            
+            for (i = INDEX_UICONTROL.TEXTBOX_DESCRIPTION; i < INDEX_UICONTROL.COUNT_INDEX_UICONTROL; i ++)
+            {
+                if (sender.Equals (m_arUIControl [(int)i])) {
+                    m_curIndexUIControl = i;
+                    break;
+                }
+                else
+                    ;
+            }
+        }
+
+        private void textBox_Leave(object sender, EventArgs e)
+        {
+            m_curIndexUIControl = INDEX_UICONTROL.COUNT_INDEX_UICONTROL;
         }
     }
 }
