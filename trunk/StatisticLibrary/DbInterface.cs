@@ -737,5 +737,126 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        public static Int32 getIdNext(ConnectionSettings connSett, string nameTable)
+        {
+            Int32 idRes = -1,
+                err = 0;
+
+            idRes = Convert.ToInt32(Select(connSett, "SELECT MAX(ID) FROM " + nameTable, out err).Rows[0][0]);
+
+            return ++idRes;
+        }
+
+        //Изменение (вставка), удаление
+        public static void RecUpdateInsertDelete(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        {
+            if (!(data.Rows.Count < origin.Rows.Count))
+            {
+                //UPDATE, INSERT
+                RecUpdateInsert(connSett, nameTable, origin, data, out err);
+            }
+            else
+            {
+                //DELETE
+                RecDelete(connSett, nameTable, origin, data, out err);
+            }
+        }
+
+        //Изменение (вставка) в оригинальную таблицу записей измененных (добавленных) в измененную таблицу (обязательно наличие поля: ID)
+        public static void RecUpdateInsert(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        {
+            err = 0;
+
+            int j = -1, k = -1;
+            bool bUpdate = false;
+            DataRow[] dataRows;
+            string[] strQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
+            string valuesForInsert = string.Empty;
+
+            for (j = 0; j < data.Rows.Count; j++)
+            {
+                dataRows = origin.Select("ID=" + data.Rows[j]["ID"]);
+                if (dataRows.Length == 0)
+                {
+                    //INSERT
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = string.Empty;
+                    valuesForInsert = string.Empty;
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = "INSERT INTO " + nameTable + " (";
+                    for (k = 0; k < data.Columns.Count; k++)
+                    {
+                        strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += data.Columns[k].ColumnName + ",";
+                        valuesForInsert += DbInterface.valueForQuery(data, j, k) + ",";
+                    }
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] = strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Substring(0, strQuery[(int)DbInterface.QUERY_TYPE.INSERT].Length - 1);
+                    valuesForInsert = valuesForInsert.Substring(0, valuesForInsert.Length - 1);
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += ") VALUES (";
+                    strQuery[(int)DbInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
+                    DbInterface.ExecNonQuery(connSett, strQuery[(int)DbInterface.QUERY_TYPE.INSERT], out err);
+                }
+                else
+                {
+                    if (dataRows.Length == 1)
+                    {//UPDATE
+                        bUpdate = false;
+                        strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] = string.Empty;
+                        for (k = 0; k < data.Columns.Count; k++)
+                        {
+                            if (!(data.Rows[j][k].Equals(origin.Rows[j][k]) == true))
+                                if (bUpdate == false) bUpdate = true; else ;
+                            else
+                                ;
+
+                            strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += data.Columns[k].ColumnName + "="; // + data.Rows[j][k] + ",";
+
+                            strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += DbInterface.valueForQuery(data, j, k) + ",";
+                        }
+
+                        if (bUpdate == true)
+                        {//UPDATE
+                            strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] = strQuery[(int)DbInterface.QUERY_TYPE.UPDATE].Substring(0, strQuery[(int)DbInterface.QUERY_TYPE.UPDATE].Length - 1);
+                            strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery[(int)DbInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + data.Rows[j]["ID"];
+
+                            DbInterface.ExecNonQuery(connSett, strQuery[(int)DbInterface.QUERY_TYPE.UPDATE], out err);
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        throw new Exception("Невозможно определить тип изменения таблицы " + nameTable);
+                }
+            }
+        }
+
+        //Удаление из оригинальной таблицы записей не существующих в измененной таблице (обязательно наличие поля: ID)
+        public static void RecDelete(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        {
+            err = 0;
+
+            int j = -1;
+            DataRow[] dataRows;
+            string[] strQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE];
+
+            for (j = 0; j < origin.Rows.Count; j++)
+            {
+                dataRows = data.Select("ID=" + origin.Rows[j]["ID"]);
+                if (dataRows.Length == 0)
+                {
+                    //DELETE
+                    strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = string.Empty;
+                    strQuery[(int)DbInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + origin.Rows[j]["ID"];
+                    DbInterface.ExecNonQuery(connSett, strQuery[(int)DbInterface.QUERY_TYPE.DELETE], out err);
+                }
+                else
+                {
+                    if (dataRows.Length == 1)
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
+            }
+        }
     }
 }

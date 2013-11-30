@@ -148,6 +148,7 @@
             this.dataGridViewTECComponent.Size = new System.Drawing.Size(136, 168);
             this.dataGridViewTECComponent.TabIndex = 17;
             this.dataGridViewTECComponent.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTECComponent_CellClick);
+            this.dataGridViewTECComponent.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTECComponent_CellContentClick);
             this.dataGridViewTECComponent.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewTECComponent_CellEndEdit);
             // 
             // ColumnTECComponentName

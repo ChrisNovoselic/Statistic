@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
-            this.listBoxUsers = new System.Windows.Forms.ListBox();
             this.comboBoxRole = new System.Windows.Forms.ComboBox();
             this.labelRole = new System.Windows.Forms.Label();
             this.labelIP = new System.Windows.Forms.Label();
@@ -39,33 +38,28 @@
             this.labelAccess = new System.Windows.Forms.Label();
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
-            this.textBoxIP = new System.Windows.Forms.TextBox();
             this.textBoxDomain = new System.Windows.Forms.TextBox();
             this.textBoxUserName = new System.Windows.Forms.TextBox();
             this.textBoxComputerName = new System.Windows.Forms.TextBox();
             this.comboBoxAccess = new System.Windows.Forms.ComboBox();
-            this.buttonUserDel = new System.Windows.Forms.Button();
             this.buttonUserAdd = new System.Windows.Forms.Button();
             this.textBoxUserDesc = new System.Windows.Forms.TextBox();
+            this.dgvUsers = new System.Windows.Forms.DataGridView();
+            this.ColumnDesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnButtonDel = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.maskedTextBoxIP = new System.Windows.Forms.MaskedTextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).BeginInit();
             this.SuspendLayout();
-            // 
-            // listBoxUsers
-            // 
-            this.listBoxUsers.FormattingEnabled = true;
-            this.listBoxUsers.HorizontalScrollbar = true;
-            this.listBoxUsers.Location = new System.Drawing.Point(12, 12);
-            this.listBoxUsers.Name = "listBoxUsers";
-            this.listBoxUsers.Size = new System.Drawing.Size(217, 173);
-            this.listBoxUsers.TabIndex = 0;
-            this.listBoxUsers.SelectedIndexChanged += new System.EventHandler(this.listBoxUsers_SelectedIndexChanged);
             // 
             // comboBoxRole
             // 
+            this.comboBoxRole.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxRole.FormattingEnabled = true;
             this.comboBoxRole.Location = new System.Drawing.Point(306, 12);
             this.comboBoxRole.Name = "comboBoxRole";
             this.comboBoxRole.Size = new System.Drawing.Size(149, 21);
             this.comboBoxRole.TabIndex = 1;
+            this.comboBoxRole.SelectedIndexChanged += new System.EventHandler(this.comboBoxRole_SelectedIndexChanged);
             // 
             // labelRole
             // 
@@ -141,16 +135,6 @@
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
-            // textBoxIP
-            // 
-            this.textBoxIP.Location = new System.Drawing.Point(306, 48);
-            this.textBoxIP.Name = "textBoxIP";
-            this.textBoxIP.Size = new System.Drawing.Size(149, 20);
-            this.textBoxIP.TabIndex = 10;
-            this.textBoxIP.TextChanged += new System.EventHandler(this.textBox_TextChanged);
-            this.textBoxIP.Enter += new System.EventHandler(this.textBox_Enter);
-            this.textBoxIP.Leave += new System.EventHandler(this.textBox_Leave);
-            // 
             // textBoxDomain
             // 
             this.textBoxDomain.Location = new System.Drawing.Point(306, 86);
@@ -183,21 +167,13 @@
             // 
             // comboBoxAccess
             // 
+            this.comboBoxAccess.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxAccess.FormattingEnabled = true;
             this.comboBoxAccess.Location = new System.Drawing.Point(306, 193);
             this.comboBoxAccess.Name = "comboBoxAccess";
             this.comboBoxAccess.Size = new System.Drawing.Size(149, 21);
             this.comboBoxAccess.TabIndex = 14;
-            // 
-            // buttonUserDel
-            // 
-            this.buttonUserDel.Location = new System.Drawing.Point(176, 193);
-            this.buttonUserDel.Name = "buttonUserDel";
-            this.buttonUserDel.Size = new System.Drawing.Size(23, 23);
-            this.buttonUserDel.TabIndex = 15;
-            this.buttonUserDel.Text = "-";
-            this.buttonUserDel.UseVisualStyleBackColor = true;
-            this.buttonUserDel.Click += new System.EventHandler(this.buttonUserDel_Click);
+            this.comboBoxAccess.SelectionChangeCommitted += new System.EventHandler(this.comboBoxAccess_SelectionChangeCommitted);
             // 
             // buttonUserAdd
             // 
@@ -213,25 +189,78 @@
             // 
             this.textBoxUserDesc.Location = new System.Drawing.Point(12, 196);
             this.textBoxUserDesc.Name = "textBoxUserDesc";
-            this.textBoxUserDesc.Size = new System.Drawing.Size(158, 20);
+            this.textBoxUserDesc.Size = new System.Drawing.Size(187, 20);
             this.textBoxUserDesc.TabIndex = 17;
             this.textBoxUserDesc.TextChanged += new System.EventHandler(this.textBox_TextChanged);
             this.textBoxUserDesc.Enter += new System.EventHandler(this.textBox_Enter);
             this.textBoxUserDesc.Leave += new System.EventHandler(this.textBox_Leave);
+            // 
+            // dgvUsers
+            // 
+            this.dgvUsers.AllowUserToAddRows = false;
+            this.dgvUsers.AllowUserToDeleteRows = false;
+            this.dgvUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvUsers.ColumnHeadersVisible = false;
+            this.dgvUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ColumnDesc,
+            this.ColumnButtonDel});
+            this.dgvUsers.Location = new System.Drawing.Point(12, 11);
+            this.dgvUsers.MultiSelect = false;
+            this.dgvUsers.Name = "dgvUsers";
+            this.dgvUsers.RowHeadersVisible = false;
+            this.dgvUsers.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dgvUsers.Size = new System.Drawing.Size(216, 166);
+            this.dgvUsers.TabIndex = 18;
+            this.dgvUsers.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvUsers_CellClick);
+            this.dgvUsers.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvUsers_CellEndEdit);
+            // 
+            // ColumnDesc
+            // 
+            this.ColumnDesc.Frozen = true;
+            this.ColumnDesc.HeaderText = "Описание";
+            this.ColumnDesc.MaxInputLength = 64;
+            this.ColumnDesc.MinimumWidth = 169;
+            this.ColumnDesc.Name = "ColumnDesc";
+            this.ColumnDesc.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnDesc.ToolTipText = "Пользователь";
+            this.ColumnDesc.Width = 169;
+            // 
+            // ColumnButtonDel
+            // 
+            this.ColumnButtonDel.FillWeight = 40F;
+            this.ColumnButtonDel.Frozen = true;
+            this.ColumnButtonDel.HeaderText = "Удалить";
+            this.ColumnButtonDel.Name = "ColumnButtonDel";
+            this.ColumnButtonDel.ReadOnly = true;
+            this.ColumnButtonDel.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ColumnButtonDel.Text = "-";
+            this.ColumnButtonDel.ToolTipText = "Удалить";
+            this.ColumnButtonDel.Width = 29;
+            // 
+            // maskedTextBoxIP
+            // 
+            this.maskedTextBoxIP.Location = new System.Drawing.Point(306, 50);
+            this.maskedTextBoxIP.Mask = "000\\.000\\.000\\.000";
+            this.maskedTextBoxIP.Name = "maskedTextBoxIP";
+            this.maskedTextBoxIP.Size = new System.Drawing.Size(149, 20);
+            this.maskedTextBoxIP.TabIndex = 19;
+            this.maskedTextBoxIP.TextChanged += new System.EventHandler(this.textBox_TextChanged);
+            this.maskedTextBoxIP.Enter += new System.EventHandler(this.textBox_Enter);
+            this.maskedTextBoxIP.Leave += new System.EventHandler(this.textBox_Leave);
             // 
             // FormUser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(466, 264);
+            this.Controls.Add(this.maskedTextBoxIP);
+            this.Controls.Add(this.dgvUsers);
             this.Controls.Add(this.textBoxUserDesc);
             this.Controls.Add(this.buttonUserAdd);
-            this.Controls.Add(this.buttonUserDel);
             this.Controls.Add(this.comboBoxAccess);
             this.Controls.Add(this.textBoxComputerName);
             this.Controls.Add(this.textBoxUserName);
             this.Controls.Add(this.textBoxDomain);
-            this.Controls.Add(this.textBoxIP);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.Controls.Add(this.labelAccess);
@@ -241,7 +270,6 @@
             this.Controls.Add(this.labelIP);
             this.Controls.Add(this.labelRole);
             this.Controls.Add(this.comboBoxRole);
-            this.Controls.Add(this.listBoxUsers);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -249,6 +277,7 @@
             this.Name = "FormUser";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Пользователи";
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -256,7 +285,6 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox listBoxUsers;
         private System.Windows.Forms.ComboBox comboBoxRole;
         private System.Windows.Forms.Label labelRole;
         private System.Windows.Forms.Label labelIP;
@@ -266,13 +294,15 @@
         private System.Windows.Forms.Label labelAccess;
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.TextBox textBoxIP;
         private System.Windows.Forms.TextBox textBoxDomain;
         private System.Windows.Forms.TextBox textBoxUserName;
         private System.Windows.Forms.TextBox textBoxComputerName;
         private System.Windows.Forms.ComboBox comboBoxAccess;
-        private System.Windows.Forms.Button buttonUserDel;
         private System.Windows.Forms.Button buttonUserAdd;
         private System.Windows.Forms.TextBox textBoxUserDesc;
+        private System.Windows.Forms.DataGridView dgvUsers;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnDesc;
+        private System.Windows.Forms.DataGridViewButtonColumn ColumnButtonDel;
+        private System.Windows.Forms.MaskedTextBox maskedTextBoxIP;
     }
 }
