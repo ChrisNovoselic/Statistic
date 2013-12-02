@@ -182,7 +182,7 @@ namespace StatisticCommon
             return saveResult;
         }
 
-        protected override Errors ClearRDG()
+        protected virtual Errors ClearRDG()
         {
             Errors errClearResult;
 
@@ -324,16 +324,6 @@ namespace StatisticCommon
             }
         }
 
-        public void Stop()
-        {
-            if (!started)
-                return;
-            else
-                ;
-
-            started = false;
-        }
-
         public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
         {
             this.delegateStartWait = dStart;
@@ -362,17 +352,6 @@ namespace StatisticCommon
             Logging.Logg().LogLock();
             Logging.Logg().LogToFile(msg, true, true, false);
             Logging.Logg().LogUnlock();
-        }
-
-        public void ClearValues()
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                m_curRDGValues[i].plan = m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
-                m_curRDGValues[i].deviationPercent = false;
-            }
-            
-            //FillOldValues();
         }
 
         public void GetCurrentTime(int indx)
@@ -962,7 +941,7 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbInterface.QUERY_TYPE.UPDATE] + query[(int)DbInterface.QUERY_TYPE.INSERT] + query[(int)DbInterface.QUERY_TYPE.DELETE]);
         }
 
-        protected override void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
+        protected virtual void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
             

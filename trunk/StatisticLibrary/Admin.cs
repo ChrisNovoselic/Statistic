@@ -203,8 +203,6 @@ namespace StatisticCommon
 
         public abstract Errors SaveChanges();
 
-        protected abstract Errors ClearRDG();
-
         public abstract void Start();
 
         public abstract bool IsRDGExcel (int indx);
@@ -310,8 +308,6 @@ namespace StatisticCommon
         protected abstract string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date);
         
         protected abstract void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date);
-
-        protected abstract void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date);
 
         protected int getPBRNumber(int hour)
         {
@@ -565,7 +561,7 @@ namespace StatisticCommon
 
         public virtual void AbortRDGExcelValues()
         {
-            if (m_waitHandleState.Length > 0)
+            if (m_waitHandleState.Length > 1)
                 ((ManualResetEvent)m_waitHandleState[1]).Set();
             else
                 ;

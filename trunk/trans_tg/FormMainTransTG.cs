@@ -170,6 +170,7 @@ namespace trans_tg
             //this.buttonPathExcel.Click += new System.EventHandler(...);
             this.buttonPathExcel.Enabled = false;
 
+            //Идентичный код с панелью Modes-Centre
             base.buttonSourceExport.Location = new System.Drawing.Point(8, 86);
             
             base.buttonSourceSave.Location = new System.Drawing.Point(151, 86);
