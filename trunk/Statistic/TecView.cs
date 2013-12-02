@@ -109,7 +109,7 @@ namespace Statistic
         //private System.Windows.Forms.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
 
-        private Admin m_admin;
+        private AdminTS m_admin;
         private FormGraphicsSettings graphSettings;
         private FormParameters parameters;        
 
@@ -801,7 +801,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public TecView(TEC tec, int num_tec, int num_comp, Admin admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
+        public TecView(TEC tec, int num_tec, int num_comp, AdminTS admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
         {
             InitializeComponent();
 
@@ -2172,10 +2172,10 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, Admin.TYPE_FIELDS.DYNAMIC));
+            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
         }
 
-        private void GetAdminValuesRequest (Admin.TYPE_FIELDS mode) {
+        private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
             m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, dtprDate.Value.Date, mode));
         }
 
@@ -4831,7 +4831,7 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                            GetAdminValuesRequest(Admin.TYPE_FIELDS.DYNAMIC);
+                            GetAdminValuesRequest(AdminTS.TYPE_FIELDS.DYNAMIC);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();

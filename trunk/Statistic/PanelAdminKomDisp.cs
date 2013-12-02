@@ -35,7 +35,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminKomDisp(Admin a) : base(a)
+        public PanelAdminKomDisp(AdminTS a) : base(a)
         {
         }
 

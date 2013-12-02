@@ -65,17 +65,17 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS (Admin a) : base (a) {
+        public PanelAdminNSS (AdminTS a) : base (a) {
         }
 
         private int GetIndexGTPOwner(int indx_tg)
         {
             int id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
             
-            foreach (int indx in ((AdminNSS)m_admin).m_listTECComponentIndexDetail)
+            foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail)
             {
                 if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
-                    return ((AdminNSS)m_admin).m_listTECComponentIndexDetail.IndexOf (indx);
+                    return ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
                 }
                 else
                     ;
@@ -89,21 +89,21 @@ namespace Statistic
             double value;
             bool valid;
 
-            foreach (int indx in ((AdminNSS)m_admin).m_listTECComponentIndexDetail) 
+            foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail) 
             {
                 if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
-                    int indx_tg = ((AdminNSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
+                    int indx_tg = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
                         indx_gtp = GetIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)
                         {
-                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
 
-                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].recomendation = 0.0;
-                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].deviationPercent = ((AdminNSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent;
-                            ((AdminNSS)m_admin).m_listCurRDGValues[indx_tg][i].deviation = ((AdminNSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviation;
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].recomendation = 0.0;
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].deviationPercent = ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent;
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].deviation = ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviation;
                         }
                     else
                         ;
@@ -114,7 +114,7 @@ namespace Statistic
         }
 
         private void addTextBoxColumn (DateTime date) {
-            int indx = ((AdminNSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
+            int indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
                                                                         m_admin.GetIdTECComponent (indx),
                                                                         m_admin.GetIdGTPOwnerTECComponent(indx),
@@ -129,7 +129,7 @@ namespace Statistic
                 else
                     ;
 
-                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminNSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].plan.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].plan.ToString("F2");
                 ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 2, i);
                 ((DataGridViewAdminNSS)this.dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
             }
@@ -150,7 +150,7 @@ namespace Statistic
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            //if (this.dgwAdminTable.Columns.Count < ((AdminNSS)m_admin).m_listTECComponentIndexDetail.Count)
+            //if (this.dgwAdminTable.Columns.Count < ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.Count)
                 this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
             //else
             //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
@@ -166,7 +166,7 @@ namespace Statistic
             base.InitializeComboBoxTecComponent (mode);
 
             if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTecComponent.Items.AddRange (((AdminNSS)m_admin).GetListNameTEC ());
+                comboBoxTecComponent.Items.AddRange (((AdminTS_NSS)m_admin).GetListNameTEC ());
 
                 if (comboBoxTecComponent.Items.Count > 0)
                 {

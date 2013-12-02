@@ -10,7 +10,7 @@ using StatisticCommon;
 
 namespace trans_tg
 {
-    public class AdminTransTG : AdminNSS
+    public class AdminTransTG : AdminTS_NSS
     {        
         public List <RDGStruct[]> m_listCurTimezoneOffsetRDGExcelValues;
 
@@ -152,20 +152,20 @@ namespace trans_tg
         }
 
         //Из 'TEC.cs'
-        private string GetAdminDatesQuery(DateTime dt, Admin.TYPE_FIELDS mode, TECComponent comp)
+        private string GetAdminDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
         {
             string strRes = string.Empty;
 
             switch (mode)
             {
-                case Admin.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.STATIC] + " WHERE " +
+                case AdminTS.TYPE_FIELDS.STATIC:
+                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
-                case Admin.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " WHERE" +
+                case AdminTS.TYPE_FIELDS.DYNAMIC:
+                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -179,21 +179,21 @@ namespace trans_tg
         }
 
         //Из 'TEC.cs'
-        private string GetPBRDatesQuery(DateTime dt, Admin.TYPE_FIELDS mode, TECComponent comp)
+        private string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
         {
             string strRes = string.Empty;
 
             switch (mode)
             {
-                case Admin.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.STATIC] +
+                case AdminTS.TYPE_FIELDS.STATIC:
+                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
-                case Admin.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                case AdminTS.TYPE_FIELDS.DYNAMIC:
+                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -243,10 +243,10 @@ namespace trans_tg
                     {
                         switch (m_typeFields)
                         {
-                            case Admin.TYPE_FIELDS.STATIC:
+                            case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
-                            case Admin.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)Admin.TYPE_FIELDS.DYNAMIC] + " SET " +
+                            case AdminTS.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " SET " +
                                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -264,9 +264,9 @@ namespace trans_tg
                         // запись отсутствует, запоминаем значения
                         switch (m_typeFields)
                         {
-                            case Admin.TYPE_FIELDS.STATIC:
+                            case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
-                            case Admin.TYPE_FIELDS.DYNAMIC:
+                            case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
@@ -310,10 +310,10 @@ namespace trans_tg
                     {
                         switch (m_typeFields)
                         {
-                            case Admin.TYPE_FIELDS.STATIC:
+                            case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
-                            case Admin.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)Admin.TYPE_FIELDS.DYNAMIC] +
+                            case AdminTS.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                                             " SET " + @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"' WHERE " +
                                             @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -329,9 +329,9 @@ namespace trans_tg
                         // запись отсутствует, запоминаем значения
                         switch (m_typeFields)
                         {
-                            case Admin.TYPE_FIELDS.STATIC:
+                            case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
-                            case Admin.TYPE_FIELDS.DYNAMIC:
+                            case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + "ПБР" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
@@ -366,12 +366,12 @@ namespace trans_tg
 
             for (int i = 0; i < source.m_listCurTimezoneOffsetRDGExcelValues.Count; i ++)
             {
-                m_listCurTimezoneOffsetRDGExcelValues.Add(new Admin.RDGStruct[source.m_listCurTimezoneOffsetRDGExcelValues [i].Length]);
+                m_listCurTimezoneOffsetRDGExcelValues.Add(new AdminTS.RDGStruct[source.m_listCurTimezoneOffsetRDGExcelValues [i].Length]);
                 source.m_listCurTimezoneOffsetRDGExcelValues [i].CopyTo(m_listCurTimezoneOffsetRDGExcelValues [i], 0);
             }            
         }
 
-        public override void getCurRDGValues(Admin source)
+        public override void getCurRDGValues(HAdmin source)
         {
             m_listCurRDGValues = new List<RDGStruct[]>();
 
@@ -379,8 +379,8 @@ namespace trans_tg
             {
                 int j = m_listTECComponentIndexDetail.IndexOf(indx);
 
-                m_listCurRDGValues.Add(new RDGStruct[((AdminNSS)source).m_listCurRDGValues[j].Length]);
-                ((AdminNSS)source).m_listCurRDGValues[j].CopyTo(m_listCurRDGValues[j], 0);
+                m_listCurRDGValues.Add(new RDGStruct[((AdminTS_NSS)source).m_listCurRDGValues[j].Length]);
+                ((AdminTS_NSS)source).m_listCurRDGValues[j].CopyTo(m_listCurRDGValues[j], 0);
             }
 
             getCurTimezoneOffsetRDGExcelValues((AdminTransTG)source);

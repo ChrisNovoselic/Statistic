@@ -119,6 +119,7 @@
     <Compile Include="AdminNSS.cs" />
     <Compile Include="Passwords.cs" />
     <Compile Include="Users.cs" />
+    <Compile Include="AdminTS.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

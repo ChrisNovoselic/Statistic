@@ -41,16 +41,16 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
-                Admin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass);
+                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass);
                 tbxPassword.Clear ();
                 switch (errRes)
                 {
-                    case Admin.Errors.NoAccess:
+                    case HAdmin.Errors.NoAccess:
                         this.DialogResult = DialogResult.Abort;
                         closing = true;
                         Close();
                         break;
-                    case Admin.Errors.NoSet:
+                    case HAdmin.Errors.NoSet:
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                             this.DialogResult = DialogResult.Retry;
@@ -61,7 +61,7 @@ namespace Statistic
                         {
                         }
                         break;
-                    case Admin.Errors.InvalidValue:
+                    case HAdmin.Errors.InvalidValue:
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                         }
@@ -72,8 +72,8 @@ namespace Statistic
                             Close();
                         }
                         break;
-                    case Admin.Errors.ParseError:
-                    case Admin.Errors.NoError:
+                    case HAdmin.Errors.ParseError:
+                    case HAdmin.Errors.NoError:
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
                         Close();

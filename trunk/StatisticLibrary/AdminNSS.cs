@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace StatisticCommon
 {
-    public class AdminNSS : Admin
+    public class AdminTS_NSS : AdminTS
     {
         public List<int> m_listTECComponentIndexDetail;
         public List <RDGStruct []> m_listCurRDGValues;
@@ -52,7 +52,7 @@ namespace StatisticCommon
             }
         }
 
-        public AdminNSS () {
+        public AdminTS_NSS () {
             m_listCurRDGValues = new List<RDGStruct[]> ();
             m_listTECComponentIndexDetail = new List<int> ();
             m_listResSaveChanges = new List <Errors> ();

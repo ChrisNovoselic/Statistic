@@ -44,7 +44,7 @@ namespace StatisticCommon
 
         private Semaphore semaGetPass;
         private Semaphore semaSetPass;
-        private volatile Admin.Errors passResult;
+        private volatile HAdmin.Errors passResult;
         private volatile string passReceive;
         private volatile uint m_idPass;
         private Object m_lockObj;
@@ -165,7 +165,7 @@ namespace StatisticCommon
             semaGetPass.WaitOne();
             lock (m_lockObj)
             {
-                passResult = Admin.Errors.NoAccess;
+                passResult = HAdmin.Errors.NoAccess;
 
                 newState = true;
                 states.Clear();
@@ -192,7 +192,7 @@ namespace StatisticCommon
             {
             }
 
-            if (passResult != Admin.Errors.NoError)
+            if (passResult != HAdmin.Errors.NoError)
             {
                 delegateStopWait();
                 
@@ -206,7 +206,7 @@ namespace StatisticCommon
             semaSetPass.WaitOne();
             lock (m_lockObj)
             {
-                passResult = Admin.Errors.NoAccess;
+                passResult = HAdmin.Errors.NoAccess;
 
                 newState = true;
                 states.Clear();
@@ -240,7 +240,7 @@ namespace StatisticCommon
             }
             delegateStopWait();
 
-            if (passResult != Admin.Errors.NoError)
+            if (passResult != HAdmin.Errors.NoError)
             {
                 //MessageBox.Show(this, "Ошибка сохранения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Ошибка сохранения пароля " + getOwnerPass() + ". Пароль не сохранён.");                
@@ -250,10 +250,10 @@ namespace StatisticCommon
             return true;
         }
 
-        public Admin.Errors ComparePassword(string password, uint id)
+        public HAdmin.Errors ComparePassword(string password, uint id)
         {
             if (semaState == null)
-                return Admin.Errors.NoAccess;
+                return HAdmin.Errors.NoAccess;
             else
                 ;
 
@@ -262,7 +262,7 @@ namespace StatisticCommon
                 //MessageBox.Show(this, "Длина пароля меньше допустимой.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Длина пароля меньше допустимой.");
 
-                return Admin.Errors.InvalidValue;
+                return HAdmin.Errors.InvalidValue;
             }
             else
                 ;
@@ -281,7 +281,7 @@ namespace StatisticCommon
             semaGetPass.WaitOne();
             lock (m_lockObj)
             {
-                passResult = Admin.Errors.NoAccess;
+                passResult = HAdmin.Errors.NoAccess;
 
                 newState = true;
                 states.Clear();
@@ -311,12 +311,12 @@ namespace StatisticCommon
             //passResult = Errors.NoError;
 
             delegateStopWait();
-            if (passResult != Admin.Errors.NoError)
+            if (passResult != HAdmin.Errors.NoError)
             {                
                 //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Ошибка получения пароля " + getOwnerPass() + ".");
 
-                return Admin.Errors.ParseError;
+                return HAdmin.Errors.ParseError;
             }
 
             if (passReceive == null)
@@ -324,7 +324,7 @@ namespace StatisticCommon
                 //MessageBox.Show(this, "Пароль не установлен.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Пароль не установлен.");
 
-                return Admin.Errors.NoSet;
+                return HAdmin.Errors.NoSet;
             }
             else
             {
@@ -335,10 +335,10 @@ namespace StatisticCommon
                     //MessageBox.Show(this, "Пароль введён неверно.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     MessageBox("Пароль введён неверно.");
 
-                    return Admin.Errors.InvalidValue;
+                    return HAdmin.Errors.InvalidValue;
                 }
                 else
-                    return Admin.Errors.NoError;
+                    return HAdmin.Errors.NoError;
             }
         }
 
@@ -604,7 +604,7 @@ namespace StatisticCommon
                     result = GetPassResponse(table);
                     if (result)
                     {
-                        passResult = Admin.Errors.NoError;
+                        passResult = HAdmin.Errors.NoError;
                         try
                         {
                             semaGetPass.Release(1);
@@ -615,7 +615,7 @@ namespace StatisticCommon
                     }
                     break;
                 case StatesMachine.SetPassInsert:
-                    passResult = Admin.Errors.NoError;
+                    passResult = HAdmin.Errors.NoError;
                     try
                     {
                         semaSetPass.Release(1);
@@ -629,7 +629,7 @@ namespace StatisticCommon
                     }
                     break;
                 case StatesMachine.SetPassUpdate:
-                    passResult = Admin.Errors.NoError;
+                    passResult = HAdmin.Errors.NoError;
                     try
                     {
                         semaSetPass.Release(1);
@@ -665,13 +665,13 @@ namespace StatisticCommon
                     {
                         ErrorReport("Ошибка разбора пароля " + getOwnerPass() + ". Переход в ожидание.");
 
-                        passResult = Admin.Errors.ParseError;
+                        passResult = HAdmin.Errors.ParseError;
                     }
                     else
                     {
                         ErrorReport("Ошибка получения пароля " + getOwnerPass() + ". Переход в ожидание.");
 
-                        passResult = Admin.Errors.NoAccess;
+                        passResult = HAdmin.Errors.NoAccess;
                     }
                     try
                     {
@@ -685,7 +685,7 @@ namespace StatisticCommon
                 case StatesMachine.SetPassUpdate:
                     ErrorReport("Ошибка сохранения пароля " + getOwnerPass() + ". Переход в ожидание.");
 
-                    passResult = Admin.Errors.NoAccess;
+                    passResult = HAdmin.Errors.NoAccess;
                     try
                     {
                         semaSetPass.Release(1);

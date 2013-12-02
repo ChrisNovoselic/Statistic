@@ -1,8 +1,9 @@
 namespace StatisticCommon
 {
-    public class AdminKomDisp : Admin
+    public class AdminTS_KomDisp : AdminTS
     {
-        public AdminKomDisp () {
+        public AdminTS_KomDisp()
+        {
         }
     }
 }

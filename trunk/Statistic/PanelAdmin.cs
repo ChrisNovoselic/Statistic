@@ -25,7 +25,7 @@ namespace Statistic
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
 
-        protected Admin m_admin;
+        protected AdminTS m_admin;
 
         protected List <int>m_listTECComponentIndex;
         private volatile int prevSelectedIndex;
@@ -125,7 +125,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(Admin admin)
+        public PanelAdmin(AdminTS admin)
         {
             this.m_admin = admin;
 
@@ -146,7 +146,7 @@ namespace Statistic
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
         {
             DialogResult result;
-            Admin.Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -162,13 +162,13 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
+                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Admin.Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -186,7 +186,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -195,7 +195,7 @@ namespace Statistic
         public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
             m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
 
-            m_admin.m_typeFields = Admin.TYPE_FIELDS.DYNAMIC;
+            m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
             comboBoxTecComponent.Items.Clear ();
         }
@@ -203,7 +203,7 @@ namespace Statistic
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
-            Admin.Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -219,13 +219,13 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
+                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Admin.Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -244,7 +244,7 @@ namespace Statistic
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -254,16 +254,16 @@ namespace Statistic
         {
             getDataGridViewAdmin();
             
-            Admin.Errors resultSaving;
-            if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
+            HAdmin.Errors resultSaving;
+            if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
             {
                 ClearTables();
 
-                m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
-                if (resultSaving == Admin.Errors.InvalidValue)
+                if (resultSaving == HAdmin.Errors.InvalidValue)
                     MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 else
                     MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -274,7 +274,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGValues(Admin.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private string SetNumberSeparator(string current_str)
@@ -304,7 +304,7 @@ namespace Statistic
         public bool MayToClose()
         {
             DialogResult result;
-            Admin.Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             getDataGridViewAdmin();
 
@@ -318,11 +318,11 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == Admin.Errors.NoError)
+                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
                         return true;
                     else
                     {
-                        if (resultSaving == Admin.Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
                                 return true;
                             else

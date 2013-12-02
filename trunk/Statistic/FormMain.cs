@@ -21,7 +21,7 @@ namespace Statistic
         //public List<TEC> tec;
         private FormConnectionSettings m_formConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
-        public Admin [] m_arAdmin;
+        public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
         private List<TecView> tecViews;
@@ -90,17 +90,17 @@ namespace Statistic
                 администрированиеToolStripMenuItem.Enabled = false;
             else;
 
-            m_arAdmin = new Admin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+            m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
             m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
 
             int i = -1;
             for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                 switch (i) {
                     case (int)FormChangeMode.MANAGER.DISP:
-                        m_arAdmin[i] = new AdminKomDisp();
+                        m_arAdmin[i] = new AdminTS_KomDisp();
                         break;
                     case (int)FormChangeMode.MANAGER.NSS:
-                        m_arAdmin[i] = new AdminNSS();
+                        m_arAdmin[i] = new AdminTS_NSS();
                         break;
                     default:
                         break;

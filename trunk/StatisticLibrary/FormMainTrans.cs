@@ -26,7 +26,7 @@ namespace StatisticCommon
 
         protected System.Windows.Forms.Timer timerService;
 
-        protected Admin[] m_arAdmin;
+        protected HAdmin[] m_arAdmin;
         protected FormConnectionSettings m_formConnectionSettings;
         protected GroupBox[] m_arGroupBox;
 
@@ -251,7 +251,7 @@ namespace StatisticCommon
                 comboBoxTECComponent.Items.Clear();
                 
                 for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                    comboBoxTECComponent.Items.Add(m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[i]].name);
+                    comboBoxTECComponent.Items.Add(((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].name);
 
                 if (comboBoxTECComponent.Items.Count > 0)
                     comboBoxTECComponent.SelectedIndex = 0;
@@ -325,7 +325,7 @@ namespace StatisticCommon
         {
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {
-                if (!(m_arAdmin[i] == null)) m_arAdmin[i].StopDbInterface(); else ;
+                if (!(m_arAdmin[i] == null)) ((AdminTS)m_arAdmin[i]).StopDbInterface(); else ;
             }
 
             Close ();
@@ -520,7 +520,7 @@ namespace StatisticCommon
                 //Первый запуск
                 timerMain.Interval = 1000;
 
-                m_listTECComponentIndex = m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].GetListIndexTECComponent(m_modeTECComponent);
+                m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
 
                 if (m_modeMashine == MODE_MASHINE.AUTO)
                 {
@@ -619,7 +619,7 @@ namespace StatisticCommon
                 switch (m_modeTECComponent)
                 {
                     case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                        m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[m_IndexDB].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                         break;
                     case FormChangeMode.MODE_TECCOMPONENT.TG:
                         break;
@@ -629,21 +629,21 @@ namespace StatisticCommon
                             case (int)CONN_SETT_TYPE.SOURCE:
                                 m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
 
-                                ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                int countComp = ((AdminNSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
 
                                 setUIControlSourceState();
                                 
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
                                 //{
-                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 //}
                                 //else
                                 //    ;
                                 break;
                             case (int)CONN_SETT_TYPE.DEST:
-                                m_arAdmin[m_IndexDB].GetRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 break;
                             default:
                                 break;
