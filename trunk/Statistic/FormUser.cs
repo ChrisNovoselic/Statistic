@@ -133,7 +133,7 @@ namespace Statistic
                         val = "NE\\FamilyIO";
                         break;
                     case "IP":
-                        val = "255.255.255.255";
+                        val = "010.100.255.255";
                         break;
                     case "ID_ROLE":
                         val = 3;
@@ -186,23 +186,24 @@ namespace Statistic
                         break;
                     case INDEX_UICONTROL.TEXTBOX_IP:
                         name_field = "IP";
+                        m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)m_curIndexUIControl].Text;
                         break;
                     case INDEX_UICONTROL.TEXTBOX_DOMAIN:
-                        name_field = "DOMAIN_NAME";
-                        break;
                     case INDEX_UICONTROL.TEXTBOX_USERNAME:
-                        name_field = "USER_NAME";
+                        name_field = "DOMAIN_NAME";
+                        m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)INDEX_UICONTROL.TEXTBOX_DOMAIN].Text + @"\\" +
+                                                                    m_arUIControl[(int)INDEX_UICONTROL.TEXTBOX_USERNAME].Text;
                         break;
                     case INDEX_UICONTROL.TEXTBOX_COMPUTERNAME:
                         name_field = "COMPUTER_NAME";
+                        m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)m_curIndexUIControl].Text;
                         break;
                     default:
                         break;
                 }
 
                 if (name_field.Equals (string.Empty) == false)
-                {
-                    m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)m_curIndexUIControl].Text;
+                {                    
                 }
                 else
                     ;
