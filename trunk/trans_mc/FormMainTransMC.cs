@@ -54,62 +54,13 @@ namespace trans_mc
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            CreateFormConnectionSettings("connsett_mc.ini");
-
             m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
             { { null, null, null, null, null},
             { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
 
             m_arAdmin = new HAdmin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            bool bIgnoreTECInUse = false;
-            //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new AdminMC();
-            ((AdminMC)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-            //((AdminMC)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_date = false;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
-
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminTS_KomDisp();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett();
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_connsett_data = true;
-
-            setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
-
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                //setUIControlConnectionSettings(i); //??? Перенос ДО цикла
-                
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-                m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                //??? Перенос ПОСЛЕ цикла
-                //if (i == (int)(Int16)CONN_SETT_TYPE.DEST)
-                //    (Int16)CONN_SETT_TYPE.DEST
-                //else
-                //    ;
-            }
-
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).StartDbInterface();
-
-            //panelMain.Visible = false;
-
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start();
+            Start();
         }
 
         private void InitializeComponentTransMC()
@@ -176,9 +127,86 @@ namespace trans_mc
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
+        protected override void Start()
+        {
+            int i = -1;
+
+            CreateFormConnectionSettings("connsett_mc.ini");
+
+            bool bIgnoreTECInUse = false;
+            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
+                    m_arAdmin[i] = new AdminMC();
+                else
+                    if (i == (Int16)CONN_SETT_TYPE.DEST)
+                        m_arAdmin[i] = new AdminTS_KomDisp();
+                    else
+                        ;
+                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
+                    //ErrorReport("Ошибка соединения. Перехож в ожидание.");
+                    //setUIControlConnectionSettings(i);
+                    break;
+                }
+                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
+                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
+                    m_arAdmin[i].m_ignore_date = false;
+                else
+                    if (i == (Int16)CONN_SETT_TYPE.DEST)
+                    {
+                        ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                        m_arAdmin[i].m_ignore_date = true;
+                    }
+                    else
+                        ;
+                
+                m_arAdmin[i].m_ignore_connsett_data = true;
+            }
+
+            if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
+            {
+                setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
+
+                for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    //setUIControlConnectionSettings(i); //??? Перенос ДО цикла
+
+                    m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
+
+                    m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
+                    //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                    //??? Перенос ПОСЛЕ цикла
+                    //if (i == (int)(Int16)CONN_SETT_TYPE.DEST)
+                    //    (Int16)CONN_SETT_TYPE.DEST
+                    m_arAdmin[i].StartThreadSourceData();
+                    //else
+                    //    ;
+                }
+
+                //Перенес обратно...
+                //((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).StartDbInterface();
+
+                //panelMain.Visible = false;
+
+                timerMain.Interval = 666; //Признак первой итерации
+                timerMain.Start();
+            }
+            else
+                ;
+        }
+
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
                 (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
             {
                 ClearTables();
@@ -269,11 +297,9 @@ namespace trans_mc
 
         protected override void buttonClose_Click(object sender, EventArgs e)
         {
-            if (!(m_arAdmin[(int)CONN_SETT_TYPE.DEST] == null)) ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).StopDbInterface(); else ;
-
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {
-                //if (!(m_arAdmin[i] == null)) ((AdminTS)m_arAdmin[i]).StopDbInterface(); else ;
+                if (!(m_arAdmin[i] == null)) (m_arAdmin[i]).StopThreadSourceData(); else ;
             }
 
             Close();

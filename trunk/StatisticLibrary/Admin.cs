@@ -160,8 +160,6 @@ namespace StatisticCommon
             states = new List<int /*StatesMachine*/>();
 
             allTECComponents = new List<TECComponent>();
-
-            InitializeSyncState();
         }
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
@@ -224,25 +222,23 @@ namespace StatisticCommon
             return false;
         }
 
-        public virtual void Start()
+        public virtual void Resume()
         {
-            if (started == true)
-            {
-            }
-            else
+            if (started == false)
             {
                 started = true;
             }
+            else
+            {
+            }
         }
 
-        public void Stop()
+        public void Suspend()
         {
-            if (!started)
-                return;
+            if (started == true)
+                started = false;
             else
                 ;
-
-            started = false;
         }
 
         public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -399,6 +395,51 @@ namespace StatisticCommon
         protected abstract bool StateResponse(int /*StatesMachine*/ state, DataTable table);
 
         protected abstract void StateErrors(int /*StatesMachine*/ state, bool response);
+
+        public virtual void StartThreadSourceData()
+        {
+            threadIsWorking = true;
+            taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
+            taskThread.Name = "Интерфейс к данным";
+            taskThread.IsBackground = true;
+
+            semaState = new Semaphore(1, 1);
+
+            InitializeSyncState ();
+
+            semaState.WaitOne();
+            taskThread.Start();
+        }
+
+        public virtual void StopThreadSourceData()
+        {
+            bool joined;
+            threadIsWorking = false;
+            lock (m_lockObj)
+            {
+                newState = true;
+                states.Clear();
+                errored_state = false;
+            }
+
+            if ((!(taskThread == null)) && taskThread.IsAlive)
+            {
+                try { semaState.Release(1); }
+                catch
+                {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - StopThreadSourceData () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
+                }
+
+                joined = taskThread.Join(666);
+                if (joined == false)
+                    taskThread.Abort();
+                else
+                    ;
+            }
+            else ;
+        }
 
         protected void TecView_ThreadFunction(object data)
         {

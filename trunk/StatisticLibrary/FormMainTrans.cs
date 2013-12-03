@@ -158,8 +158,7 @@ namespace StatisticCommon
                 dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
-            {
-                
+            {                
             }
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
@@ -175,6 +174,8 @@ namespace StatisticCommon
                     enabledUIControl(true);
         }
 
+        protected abstract void Start();
+
         private void enabledUIControl (bool enabled) {
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
@@ -186,7 +187,7 @@ namespace StatisticCommon
             if (!(comboBoxTECComponent.Enabled == enabled)) comboBoxTECComponent.Enabled = enabled; else ;
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
             //if (!(m_checkboxModeMashine.Enabled == enabled)) m_checkboxModeMashine.Enabled = enabled; else ;
-            
+
             if (enabled)
             {
                 comboBoxTECComponent.SelectedIndexChanged += new EventHandler(comboBoxTECComponent_SelectedIndexChanged);
@@ -321,12 +322,29 @@ namespace StatisticCommon
             this.BeginInvoke(new DelegateDateFunction(setDatetimePickerMain), date);
         }
 
-        protected virtual void buttonClose_Click(object sender, EventArgs e)
+        private void Stop()
         {
+            ClearTables();
+
+            comboBoxTECComponent.Items.Clear();
+
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {
-                if (!(m_arAdmin[i] == null)) ((AdminTS)m_arAdmin[i]).StopDbInterface(); else ;
+                if (!(m_arAdmin[i] == null)) 
+                {
+                    m_arAdmin[i].StopThreadSourceData();
+                    m_arAdmin[i] = null;
+                }
+                else
+                    ;
             }
+
+            timerMain.Stop();
+        }
+        
+        protected virtual void buttonClose_Click(object sender, EventArgs e)
+        {
+            Stop();
 
             Close ();
         }
@@ -594,6 +612,16 @@ namespace StatisticCommon
         {
             //m_formConnectionSettings.SaveSettingsFile ();
             m_formConnectionSettings.btnOk_Click (null, null);
+            DialogResult dlgRes = m_formConnectionSettings.DialogResult;
+
+            if (dlgRes == System.Windows.Forms.DialogResult.Yes)
+            {
+                Stop();
+
+                Start();
+            }
+            else
+                ;
         }
 
         protected virtual void component_Changed(object sender, EventArgs e)

@@ -237,9 +237,9 @@ namespace StatisticCommon
             return listIndex;
         }
 
-        public override void Start()
+        public override void Resume()
         {
-            base.Start ();
+            base.Resume ();
 
             GetRDGValues (m_typeFields, indxTECComponents);
         }
@@ -1296,53 +1296,18 @@ namespace StatisticCommon
             return bRes;
         }
 
-        public void StartDbInterface()
+        public override void StartThreadSourceData()
         {
             InitDbInterfaces ();
 
-            threadIsWorking = true;
-
             semaDBAccess = new Semaphore(1, 1);
 
-            taskThread = new Thread (new ParameterizedThreadStart(TecView_ThreadFunction));
-            taskThread.Name = "Интерфейс к данным";
-            taskThread.IsBackground = true;
-
-            semaState = new Semaphore(1, 1);
-
-            //InitializeSyncState ();
-
-            semaState.WaitOne();
-            taskThread.Start();
+            base.StartThreadSourceData();
         }
 
-        public void StopDbInterface()
+        public override void StopThreadSourceData()
         {
-            bool joined;
-            threadIsWorking = false;
-            lock (m_lockObj)
-            {
-                newState = true;
-                states.Clear();
-                errored_state = false;
-            }
-
-            if ((! (taskThread == null)) && taskThread.IsAlive)
-            {
-                try { semaState.Release(1); }
-                catch {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - StopDbInterface () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
-                }
-
-                joined = taskThread.Join(1000);
-                if (!joined)
-                    taskThread.Abort();
-                else
-                    ;
-            }
-            else ;
+            base.StopThreadSourceData();
 
             if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceConfigDB < 0)) && (!(m_listenerIdConfigDB < 0)))
             {

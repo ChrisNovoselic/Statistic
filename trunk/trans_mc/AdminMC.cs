@@ -21,9 +21,9 @@ namespace trans_mc
         {
         }
 
-        public override void Start()
+        public override void Resume()
         {
-            base.Start ();
+            base.Resume ();
         }
 
         public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)

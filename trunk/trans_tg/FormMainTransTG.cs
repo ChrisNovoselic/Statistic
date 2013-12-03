@@ -54,77 +54,13 @@ namespace trans_tg
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.TEC;
 
-            CreateFormConnectionSettings("connsett_tg.ini");
-
             m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
             { { null, null, null, null, null},
             { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
 
             m_arAdmin = new AdminTS[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            bool bIgnoreTECInUse = false;
-            //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new AdminTransTG ();
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_date = false;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
-
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminTransTG();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett();
-            ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_connsett_data = true;
-
-            setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
-
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-                m_arAdmin[i].SetDelegateSaveComplete (saveDataGridViewAdminComplete);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                ((AdminTS)m_arAdmin[i]).StartDbInterface();
-            }
-
-            /*
-            // This needs to be declared in a place where it will not go out of scope.
-            // For example, it would be a class variable in a form class.
-            System.IO.FileSystemWatcher watcher = new System.IO.FileSystemWatcher();
-            // This code would go in one of the initialization methods of the class.
-            watcher.Path = "c:\\";
-            // Watch only for changes to *.txt files.
-            watcher.Filter = "*.txt";
-            watcher.IncludeSubdirectories = false;
-            // Enable the component to begin watching for changes.
-            watcher.EnableRaisingEvents = true;
-            // Filter for Last Write changes.
-            watcher.NotifyFilter = System.IO.NotifyFilters.LastWrite;
-            // Example of watching more than one type of change.
-            watcher.NotifyFilter = System.IO.NotifyFilters.LastWrite | System.IO.NotifyFilters.Size;
-            
-            //Асинхронно
-            watcher.Changed += new System.IO.FileSystemEventHandler(this.watcher_Changed);
-            
-            //Сихронно
-            watcher.WaitForChanged(System.IO.WatcherChangeTypes.All);
-            */
-
-            //panelMain.Visible = false;
-
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start();
+            Start();
         }
 
         private void watcher_Changed(object sender, System.IO.FileSystemEventArgs e)
@@ -195,9 +131,92 @@ namespace trans_tg
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
+        protected override void Start()
+        {
+            int i = -1;
+
+            CreateFormConnectionSettings("connsett_tg.ini");
+
+            bool bIgnoreTECInUse = false;
+
+            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                m_arAdmin[i] = new AdminTransTG();
+                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");
+                    //ErrorReport("Ошибка соединения. Перехож в ожидание.");
+                    //setUIControlConnectionSettings(i);
+                    break;
+                }
+                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
+                ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
+                    m_arAdmin[i].m_ignore_date = false;
+                else
+                    if (i == (Int16)CONN_SETT_TYPE.DEST)
+                        m_arAdmin[i].m_ignore_date = true;
+                    else
+                        ;
+
+                m_arAdmin[i].m_ignore_connsett_data = true;
+            }
+
+            if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
+            {
+                setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
+
+                for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
+
+                    m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
+                    //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                    m_arAdmin[i].StartThreadSourceData();
+                }
+
+                /*
+                // This needs to be declared in a place where it will not go out of scope.
+                // For example, it would be a class variable in a form class.
+                System.IO.FileSystemWatcher watcher = new System.IO.FileSystemWatcher();
+                // This code would go in one of the initialization methods of the class.
+                watcher.Path = "c:\\";
+                // Watch only for changes to *.txt files.
+                watcher.Filter = "*.txt";
+                watcher.IncludeSubdirectories = false;
+                // Enable the component to begin watching for changes.
+                watcher.EnableRaisingEvents = true;
+                // Filter for Last Write changes.
+                watcher.NotifyFilter = System.IO.NotifyFilters.LastWrite;
+                // Example of watching more than one type of change.
+                watcher.NotifyFilter = System.IO.NotifyFilters.LastWrite | System.IO.NotifyFilters.Size;
+            
+                //Асинхронно
+                watcher.Changed += new System.IO.FileSystemEventHandler(this.watcher_Changed);
+            
+                //Сихронно
+                watcher.WaitForChanged(System.IO.WatcherChangeTypes.All);
+                */
+
+                //panelMain.Visible = false;
+
+                timerMain.Interval = 666; //Признак первой итерации
+                timerMain.Start();
+            }
+            else
+                ;
+        }
+
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
                 (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
             {
                 ClearTables();

@@ -107,8 +107,13 @@ namespace Statistic
                 }
 
                 //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false);
-
+                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
+                    bRes = false;
+                    break;
+                }
                 if (!(m_arAdmin[i].m_list_tec.Count > 0)) {
                     bRes = false;
                     break;
@@ -199,7 +204,7 @@ namespace Statistic
                             foreach (TEC t in m_arAdmin[i].m_list_tec)
                                 t.StopDbInterfaceForce();
 
-                            m_arAdmin [i].StopDbInterface();
+                            m_arAdmin [i].StopThreadSourceData();
                         }
                         else
                             ;
@@ -246,7 +251,7 @@ namespace Statistic
                 int i = -1;
                 if (!(m_arAdmin == null))
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                        if (!(m_arAdmin [i] == null)) m_arAdmin [i].StopDbInterface(); else ;
+                        if (!(m_arAdmin [i] == null)) m_arAdmin [i].StopThreadSourceData(); else ;
                     }
                 else
                     ;
@@ -624,7 +629,7 @@ namespace Statistic
 
             m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
 
-            m_arAdmin[(int)modeAdmin].Start();
+            m_arAdmin[(int)modeAdmin].Resume();
         }
 
         private void timer_Tick(object sender, EventArgs e)
@@ -635,7 +640,7 @@ namespace Statistic
                 
                 int i = -1;
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    m_arAdmin [i].StartDbInterface();
+                    m_arAdmin [i].StartThreadSourceData();
                 }
 
                 // отображаем вкладки ТЭЦ

@@ -53,52 +53,14 @@ namespace trans_gtp
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            CreateFormConnectionSettings("connsett_gtp.ini");
-
             m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
             { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
             { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
 
+            //Созжание массива для объектов получения данных
             m_arAdmin = new AdminTS[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            //Источник
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new AdminTS_KomDisp();
-            ((AdminTS_KomDisp)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
-            ((AdminTS_KomDisp)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-            ((AdminTS_KomDisp)m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
-
-            //Получатель
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST] = new AdminTS_KomDisp();
-            //m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].SetDelegateTECComponent(FillComboBoxTECComponent);
-            ((AdminTS_KomDisp)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST);
-            ((AdminTS_KomDisp)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_date = true;
-            m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].m_ignore_connsett_data = true;
-
-            for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                setUIControlConnectionSettings(i);
-
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-                m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                ((AdminTS)m_arAdmin[i]).StartDbInterface();
-            }
-
-            //panelMain.Visible = false;
-
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start();
+            Start();
         }
 
         private void InitializeComponentTransGTP()
@@ -229,9 +191,63 @@ namespace trans_gtp
             ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
         }
 
+        protected override void Start()
+        {
+            int i = -1;
+
+            CreateFormConnectionSettings("connsett_gtp.ini");
+
+            //Инициализация объектов получения данных
+            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                m_arAdmin[i] = new AdminTS_KomDisp();
+                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
+                    //ErrorReport("Ошибка соединения. Перехож в ожидание.");
+                    //setUIControlConnectionSettings(i);
+                    break;
+                }
+                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett(i);
+                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
+                {
+                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                }
+                else
+                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+
+                //m_arAdmin[i].m_ignore_date = true;
+                m_arAdmin[i].m_ignore_connsett_data = true;
+
+                setUIControlConnectionSettings(i);
+
+                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
+
+                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
+                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                m_arAdmin[i].StartThreadSourceData();
+            }
+
+            if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
+            {
+                timerMain.Interval = 666; //Признак первой итерации
+                timerMain.Start();
+            }
+            else
+                ;
+        }
+
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
                 (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
             {
                 ClearTables();
