@@ -586,7 +586,8 @@ namespace StatisticCommon
 
         protected virtual void buttonClear_Click(object sender, EventArgs e)
         {
-            m_arAdmin [m_IndexDB].ClearRDGValues(dateTimePickerMain.Value.Date);
+            //m_IndexDB = только DEST
+            ((AdminTS)m_arAdmin [m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
         }
 
         protected /*virtual*/ void buttonSave_Click(object sender, EventArgs e)
@@ -766,7 +767,7 @@ namespace StatisticCommon
         }
 
         protected virtual void SaveRDGValues (bool bCallback) {
-            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
         }
 
         private void notifyIconMain_Click(object sender, EventArgs e)

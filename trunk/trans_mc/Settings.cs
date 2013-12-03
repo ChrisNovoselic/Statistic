@@ -1,15 +1,15 @@
 ﻿namespace trans_mc.Properties {
     
     
-    // This class allows you to handle specific events on the settings class:
-    //  The SettingChanging event is raised before a setting's value is changed.
-    //  The PropertyChanged event is raised after a setting's value is changed.
-    //  The SettingsLoaded event is raised after the setting values are loaded.
-    //  The SettingsSaving event is raised before the setting values are saved.
-    public sealed partial class Settings {
+    // Этот класс позволяет обрабатывать определенные события в классе параметров:
+    //  Событие SettingChanging возникает перед изменением значения параметра.
+    //  Событие PropertyChanged возникает после изменения значения параметра.
+    //  Событие SettingsLoaded возникает после загрузки значений параметров.
+    //  Событие SettingsSaving возникает перед сохранением значений параметров.
+    internal sealed partial class Settings {
         
         public Settings() {
-            // // To add event handlers for saving and changing settings, uncomment the lines below:
+            // // Для добавления обработчиков событий для сохранения и изменения параметров раскомментируйте приведенные ниже строки:
             //
             // this.SettingChanging += this.SettingChangingEventHandler;
             //
@@ -18,11 +18,11 @@
         }
         
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
-            // Add code to handle the SettingChangingEvent event here.
+            // Добавьте здесь код для обработки события SettingChangingEvent.
         }
         
         private void SettingsSavingEventHandler(object sender, System.ComponentModel.CancelEventArgs e) {
-            // Add code to handle the SettingsSaving event here.
+            // Добавьте здесь код для обработки события SettingsSaving.
         }
     }
 }

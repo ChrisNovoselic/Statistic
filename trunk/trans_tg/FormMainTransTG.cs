@@ -347,7 +347,7 @@ namespace trans_tg
 
         protected override void SaveRDGValues(bool bCallback)
         {
-            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             //((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SaveChanges();
         }
 
@@ -376,7 +376,8 @@ namespace trans_tg
 
         protected override void buttonClear_Click(object sender, EventArgs e)
         {
-            m_arAdmin[m_IndexDB].ClearRDGValues(dateTimePickerMain.Value.Date);
+            //m_IndexDB = только DEST
+            ((AdminTS)m_arAdmin[m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
             
             m_dgwAdminTable.ClearTables ();
 

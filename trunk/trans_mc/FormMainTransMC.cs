@@ -49,7 +49,7 @@ namespace trans_mc
             CreateFormConnectionSettings("connsett_mc.ini");
 
             m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
-            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
+            { { null, null, null, null, null },
             { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
 
             m_arAdmin = new HAdmin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -58,8 +58,8 @@ namespace trans_mc
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE] = new AdminMC();
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true);
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].connSettConfigDB = m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.SOURCE);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-            m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+            //m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+            //m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
             m_arAdmin[(Int16)CONN_SETT_TYPE.SOURCE].m_ignore_connsett_data = true;
 
             //Получатель
@@ -85,7 +85,10 @@ namespace trans_mc
 
                 //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
 
-                m_arAdmin[i].StartDbInterface();
+                if (i == (int)(Int16)CONN_SETT_TYPE.DEST)
+                    ((AdminTS)m_arAdmin[i]).StartDbInterface();
+                else
+                    ;
             }
 
             //panelMain.Visible = false;

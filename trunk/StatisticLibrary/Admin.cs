@@ -63,6 +63,10 @@ namespace StatisticCommon
 
         protected DelegateDateFunction setDatetime;
 
+        public volatile List<TEC> m_list_tec;
+        public volatile List<TECComponent> allTECComponents;
+        public int indxTECComponents;
+
         public volatile RDGStruct[] m_prevRDGValues;
         //public RDGStruct[] m_curTimezoneOffsetRDGExcelValues;
         public RDGStruct[] m_curRDGValues;
@@ -87,22 +91,6 @@ namespace StatisticCommon
         public bool m_ignore_connsett_data;
 
         protected bool[,] m_arHaveDates;
-
-        private Semaphore semaDBAccess;
-        private volatile Errors saveResult;
-        private volatile bool saving;
-
-        /* Passwords
-        private Semaphore semaGetPass;
-        private Semaphore semaSetPass;
-        private volatile Errors passResult;
-        private volatile string passReceive;
-        private volatile uint m_idPass;
-        */
-
-        //private Semaphore semaLoadLayout;
-        //private volatile Errors loadLayoutResult;
-        //private LayoutData layoutForLoading;
 
         protected Object m_lockObj;
 
@@ -169,11 +157,42 @@ namespace StatisticCommon
 
             m_lockObj = new Object();
 
-            //semaLoadLayout = new Semaphore(1, 1);
-
-            //delegateFillData = new DelegateFunctionDate(FillData);
-
             states = new List<int /*StatesMachine*/>();
+        }
+
+        public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
+        {
+            //connSettConfigDB = connSett;
+
+            if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+                this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse).tec;
+            else
+            {
+                this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse).tec;
+            }
+
+            //comboBoxTecComponent.Items.Clear ();
+            allTECComponents.Clear();
+
+            foreach (TEC t in this.m_list_tec)
+            {
+                if (t.list_TECComponents.Count > 0)
+                    foreach (TECComponent g in t.list_TECComponents)
+                    {
+                        //comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
+                        allTECComponents.Add(g);
+                    }
+                else
+                {
+                    //comboBoxTecComponent.Items.Add(t.name);
+                    allTECComponents.Add(t.list_TECComponents[0]);
+                }
+            }
+
+            /*if (! (fillTECComponent == null))
+                fillTECComponent ();
+            else
+                ;*/
         }
 
         public virtual bool WasChanged()
@@ -201,11 +220,7 @@ namespace StatisticCommon
             return false;
         }
 
-        public abstract Errors SaveChanges();
-
         public abstract void Start();
-
-        public abstract bool IsRDGExcel (int indx);
 
         public void Stop()
         {
@@ -238,7 +253,7 @@ namespace StatisticCommon
 
         public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
 
-        void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
+        protected void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
         {
             //MessageBox.Show(this, msg, "Œ¯Ë·Í‡", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -258,56 +273,28 @@ namespace StatisticCommon
             //FillOldValues();
         }
 
-        protected abstract void GetAdminDatesRequest(DateTime date);
-
         protected abstract void GetPPBRDatesRequest(DateTime date);
 
-        protected abstract void ClearDates(CONN_SETT_TYPE type);
+        protected abstract bool GetPPBRDatesResponse(DataTable table, DateTime date);
 
-        private void ClearAdminDates()
+        protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode);
+
+        protected abstract bool GetPPBRValuesResponse(DataTable table, DateTime date);        
+
+        protected virtual void ClearDates(CONN_SETT_TYPE type)
         {
-            ClearDates(CONN_SETT_TYPE.ADMIN);
+            int i = 1;
+
+            for (i = 0; i < 24; i++)
+            {
+                m_arHaveDates[(int)type, i] = false;
+            }
         }
 
-        private void ClearPPBRDates()
+        protected void ClearPPBRDates()
         {
             ClearDates(CONN_SETT_TYPE.PBR);
         }
-
-        protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
-        {
-            for (int i = 0, hour; i < table.Rows.Count; i++)
-            {
-                try
-                {
-                    hour = ((DateTime)table.Rows[i][0]).Hour;
-                    if ((hour == 0) && (!(((DateTime)table.Rows[i][0]).Day == date.Day)))
-                        hour = 24;
-                    else
-                        ;
-
-                    m_arHaveDates[(int)type, hour - 1] = true;
-
-                }
-                catch { }
-            }
-
-            return true;
-        }
-
-        private bool GetAdminDatesResponse(DataTable table, DateTime date)
-        {
-            return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
-        }
-
-        private bool GetPPBRDatesResponse(DataTable table, DateTime date)
-        {
-            return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
-        }
-
-        protected abstract string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date);
-        
-        protected abstract void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date);
 
         protected int getPBRNumber(int hour)
         {
@@ -363,13 +350,7 @@ namespace StatisticCommon
             return iNum;
         }
 
-        protected abstract string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date);
-
-        protected abstract void SetPPBRRequest(TEC t, TECComponent comp, DateTime date);
-
-        protected abstract void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date);
-
-        private void ErrorReport(string error_string)
+        protected void ErrorReport(string error_string)
         {
             last_error = error_string;
             last_time_error = DateTime.Now;
@@ -378,7 +359,7 @@ namespace StatisticCommon
             errorReport (error_string);
         }
 
-        private void ActionReport(string action_string)
+        protected void ActionReport(string action_string)
         {
             last_action = action_string;
             last_time_action = DateTime.Now;
@@ -393,6 +374,8 @@ namespace StatisticCommon
         {
             m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
         }
+
+        public abstract bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/);
 
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
 
@@ -526,10 +509,6 @@ namespace StatisticCommon
                 Logging.Logg().LogUnlock();
             }
         }
-
-        public abstract void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback);
-
-        public abstract void ClearRDGValues(DateTime date);
 
         public void CopyCurToPrevRDGValues () {
             for (int i = 0; i < 24; i++)

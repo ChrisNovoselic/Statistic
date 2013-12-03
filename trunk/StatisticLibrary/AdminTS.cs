@@ -35,10 +35,6 @@ namespace StatisticCommon
         //private volatile Errors loadLayoutResult;
         //private LayoutData layoutForLoading;
 
-        public volatile List<TEC> m_list_tec;
-        public volatile List<TECComponent> allTECComponents;
-        public int indxTECComponents;
-
         private List <DbInterface> m_listDbInterfaces;
         private List <int> m_listListenerIdCurrent;
         private int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
@@ -76,8 +72,6 @@ namespace StatisticCommon
             Data,
         }
 
-        protected bool started;
-
         //public bool isActive;
 
         public AdminTS()
@@ -105,32 +99,7 @@ namespace StatisticCommon
             allTECComponents = new List<TECComponent>();
         }
 
-        public virtual bool WasChanged()
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                if (m_prevRDGValues[i].plan != m_curRDGValues[i].plan /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-            }
-
-            return false;
-        }
-
-        public override Errors SaveChanges()
+        public virtual Errors SaveChanges()
         {
             delegateStartWait();
             semaDBAccess.WaitOne();
@@ -280,7 +249,7 @@ namespace StatisticCommon
             GetRDGValues (m_typeFields, indxTECComponents);
         }
 
-        public override bool IsRDGExcel (int indx) {
+        public virtual bool IsRDGExcel (int indx) {
             bool bRes = false;
             if (allTECComponents[indx].tec.m_path_rdg_excel.Length > 0)
                 bRes = true;
@@ -344,15 +313,6 @@ namespace StatisticCommon
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
         public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
-
-        void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
-        {
-            //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(msg, true, true, false);
-            Logging.Logg().LogUnlock();
-        }
 
         public void GetCurrentTime(int indx)
         {
@@ -484,7 +444,7 @@ namespace StatisticCommon
             }
         }
 
-        private void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
+        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
         }
@@ -543,7 +503,7 @@ namespace StatisticCommon
             delegateStopWait();
         }
 
-        private bool GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             bool bRes = true;
 
@@ -731,7 +691,7 @@ namespace StatisticCommon
             return bRes;
         }
 
-        protected override void GetAdminDatesRequest(DateTime date)
+        protected virtual void GetAdminDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
             {
@@ -763,24 +723,9 @@ namespace StatisticCommon
                 ;
         }
 
-        protected override void ClearDates(CONN_SETT_TYPE type)
-        {
-            int i = 1;
-            
-            for (i = 0; i < 24; i++)
-            {
-                m_arHaveDates[(int)type, i] = false;
-            }
-        }
-
         private void ClearAdminDates()
         {
             ClearDates(CONN_SETT_TYPE.ADMIN);
-        }
-
-        private void ClearPPBRDates()
-        {
-            ClearDates(CONN_SETT_TYPE.PBR);
         }
 
         protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
@@ -809,12 +754,12 @@ namespace StatisticCommon
             return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
         }
 
-        private bool GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
 
-        protected override string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
+        protected virtual string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
             
@@ -905,7 +850,7 @@ namespace StatisticCommon
             return resQuery;
         }
         
-        protected override void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
+        protected virtual void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             Logging.Logg().LogLock();
             Logging.Logg().LogToFile("SetAdminValuesRequest", true, true, false);
@@ -1046,7 +991,7 @@ namespace StatisticCommon
             return iNum;
         }
 
-        protected override string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
+        protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
@@ -1119,7 +1064,7 @@ namespace StatisticCommon
             return resQuery;
         }
 
-        protected override void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
+        protected virtual void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = setPPBRQuery(t, comp, date);
 
@@ -1173,7 +1118,7 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbInterface.QUERY_TYPE.UPDATE] + query[(int)DbInterface.QUERY_TYPE.INSERT] + query[(int)DbInterface.QUERY_TYPE.DELETE]);
         }
 
-        protected override void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
+        protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = new string[(int)DbInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
             
@@ -1224,26 +1169,6 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbInterface.QUERY_TYPE.UPDATE] + query[(int)DbInterface.QUERY_TYPE.INSERT] + query[(int)DbInterface.QUERY_TYPE.DELETE]);
         }
 
-        private void ErrorReport(string error_string)
-        {
-            last_error = error_string;
-            last_time_error = DateTime.Now;
-            errored_state = true;
-            
-            errorReport (error_string);
-        }
-
-        private void ActionReport(string action_string)
-        {
-            last_action = action_string;
-            last_time_action = DateTime.Now;
-            actioned_state = true;
-
-            //stsStrip.BeginInvoke(delegateEventUpdate);
-            //delegateEventUpdate ();
-            actionReport(action_string);
-        }
-
         public void Request(int indxDbInterface, int listenerId, string request)
         {
             m_indxDbInterfaceCurrent = indxDbInterface;
@@ -1251,7 +1176,7 @@ namespace StatisticCommon
             m_listDbInterfaces[indxDbInterface].Request(m_listListenerIdCurrent[indxDbInterface], request);
         }
 
-        public bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
             if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (!(m_indxDbInterfaceCurrent < 0))) {
                 //m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
@@ -1267,39 +1192,6 @@ namespace StatisticCommon
             //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
             //else
             //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
-        }
-
-        public void InitTEC (ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse) {
-            //connSettConfigDB = connSett;
-
-            if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse).tec;
-            else {
-                this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse).tec;
-            }
-
-            //comboBoxTecComponent.Items.Clear ();
-            allTECComponents.Clear ();
-
-            foreach (TEC t in this.m_list_tec)
-            {
-                if (t.list_TECComponents.Count > 0)
-                    foreach (TECComponent g in t.list_TECComponents)
-                    {
-                        //comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
-                        allTECComponents.Add(g);
-                    }
-                else
-                {
-                    //comboBoxTecComponent.Items.Add(t.name);
-                    allTECComponents.Add(t.list_TECComponents[0]);
-                }
-            }
-
-            /*if (! (fillTECComponent == null))
-                fillTECComponent ();
-            else
-                ;*/
         }
 
         public int GetIndexTECComponent (int idTEC, int idComp) {
@@ -1575,6 +1467,8 @@ namespace StatisticCommon
                     ActionReport("Сохранение ПЛАНА.");
                     ClearPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     break;
+                default:
+                    break;
             }
 
             return result;
@@ -1768,6 +1662,8 @@ namespace StatisticCommon
                     {
                     }
                     break;
+                default:
+                    break;
             }
 
             if (result == true)
@@ -1790,23 +1686,31 @@ namespace StatisticCommon
                         ErrorReport("Ошибка разбора текущего времени сервера. Переход в ожидание.");
                         if (saving)
                             saveResult = Errors.ParseError;
+                        else
+                            ;
                     }
                     else
                     {
                         ErrorReport("Ошибка получения текущего времени сервера. Переход в ожидание.");
                         if (saving)
                             saveResult = Errors.NoAccess;
+                        else
+                            ;
                     }
+
                     if (saving)
                     {
                         try
                         {
                             semaDBAccess.Release(1);
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                         }
                     }
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.PPBRValues:
                     if (response)
@@ -1846,8 +1750,9 @@ namespace StatisticCommon
                     {
                         semaDBAccess.Release(1);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
                     break;
                 case (int)StatesMachine.AdminDates:
@@ -1865,8 +1770,9 @@ namespace StatisticCommon
                     {
                         semaDBAccess.Release(1);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
                     break;
                 case (int)StatesMachine.SaveAdminValues:
@@ -1876,8 +1782,9 @@ namespace StatisticCommon
                     {
                         semaDBAccess.Release(1);
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
                     break;
                 case (int)StatesMachine.SavePPBRValues:
@@ -1939,7 +1846,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public override void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
+        public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
         {
             lock (m_lockObj)
             {
@@ -1988,10 +1895,10 @@ namespace StatisticCommon
             {
                 if (resultSaving == Errors.InvalidValue)
                     //MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                    MessageBox("Изменение ретроспективы недопустимо!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                    base.MessageBox("Изменение ретроспективы недопустимо!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 else
                     //MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    MessageBox("Не удалось сохранить изменения, возможно отсутствует связь с базой данных.");
+                    base.MessageBox("Не удалось сохранить изменения, возможно отсутствует связь с базой данных.");
             }
         }
 
@@ -2046,7 +1953,7 @@ namespace StatisticCommon
         //    }
         //}
 
-        public override void ClearRDGValues(DateTime date)
+        public virtual void ClearRDGValues(DateTime date)
         {
             if (ClearRDG() == Errors.NoError)
             {
@@ -2083,16 +1990,6 @@ namespace StatisticCommon
             }
         }
 
-        public void CopyCurToPrevRDGValues () {
-            for (int i = 0; i < 24; i++)
-            {
-                m_prevRDGValues[i].plan = m_curRDGValues[i].plan;
-                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
-                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
-                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
-            }
-        }
-
         public void ReConnSettingsRDGSource (ConnectionSettings connSett, int id_source) {
             for (int i = 0; i < m_list_tec.Count; i ++) {
                 if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
@@ -2109,16 +2006,6 @@ namespace StatisticCommon
                     {
                     }
                 }
-            }
-        }
-
-        public virtual void getCurRDGValues (HAdmin source) {
-            for (int i = 0; i < 24; i++)
-            {
-                m_curRDGValues[i].plan = source.m_curRDGValues[i].plan;
-                m_curRDGValues[i].recomendation = source.m_curRDGValues[i].recomendation;
-                m_curRDGValues[i].deviationPercent = source.m_curRDGValues[i].deviationPercent;
-                m_curRDGValues[i].deviation = source.m_curRDGValues[i].deviation;
             }
         }
 
