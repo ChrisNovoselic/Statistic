@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace StatisticCommon
 {
-    public partial class FormMainTrans : FormMainBase
+    public abstract partial class FormMainTrans : FormMainBase
     {
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
@@ -611,52 +611,7 @@ namespace StatisticCommon
             m_formConnectionSettings.ConnectionSettingsEdit = connSett;
         }
 
-        protected void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev) {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
-                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
-            {
-                ClearTables();
-
-                switch (m_modeTECComponent)
-                {
-                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                        ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
-                        break;
-                    case FormChangeMode.MODE_TECCOMPONENT.TG:
-                        break;
-                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
-                        switch (m_IndexDB)
-                        {
-                            case (int)CONN_SETT_TYPE.SOURCE:
-                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
-
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
-
-                                setUIControlSourceState();
-                                
-                                //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
-                                //{
-                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
-                                //}
-                                //else
-                                //    ;
-                                break;
-                            case (int)CONN_SETT_TYPE.DEST:
-                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else
-                ;
-        }
+        protected abstract void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev);
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {

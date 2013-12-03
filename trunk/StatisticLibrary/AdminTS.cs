@@ -95,8 +95,6 @@ namespace StatisticCommon
             m_arHaveDates = new bool[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
             //layoutForLoading = new LayoutData(1);
-
-            allTECComponents = new List<TECComponent>();
         }
 
         public virtual Errors SaveChanges()
@@ -241,10 +239,7 @@ namespace StatisticCommon
 
         public override void Start()
         {
-            if (started)
-                ;
-            else
-                started = true;
+            base.Start ();
 
             GetRDGValues (m_typeFields, indxTECComponents);
         }
@@ -407,7 +402,7 @@ namespace StatisticCommon
             }
         }
 
-        public virtual void GetRDGValues(TYPE_FIELDS mode, int indx, DateTime date)
+        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
             lock (m_lockObj)
             {
@@ -421,7 +416,7 @@ namespace StatisticCommon
                 m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
-                m_typeFields = mode;
+                m_typeFields = (TYPE_FIELDS)mode;
 
                 newState = true;
                 states.Clear();
@@ -1314,16 +1309,11 @@ namespace StatisticCommon
             taskThread.IsBackground = true;
 
             semaState = new Semaphore(1, 1);
-            
-            InitializeSyncState ();
+
+            //InitializeSyncState ();
 
             semaState.WaitOne();
             taskThread.Start();
-        }
-
-        protected virtual void InitializeSyncState ()
-        {
-            m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
         }
 
         public void StopDbInterface()

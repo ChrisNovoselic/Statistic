@@ -139,13 +139,13 @@ namespace StatisticCommon
             {
                 indxEv = WaitHandle.WaitAny(m_waitHandleState);
                 if (indxEv == 0)
-                    base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+                    base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
                 else
                     break;
             }
         }
 
-        public override void GetRDGValues(TYPE_FIELDS mode, int id, DateTime date)
+        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int id, DateTime date)
         {
             //delegateStartWait ();
             fillListIndexTECComponent (id);
@@ -162,7 +162,7 @@ namespace StatisticCommon
                 indxEv = WaitHandle.WaitAny(m_waitHandleState);
                 if (indxEv == 0)
                     if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
-                        base.GetRDGValues(m_typeFields, indx, (DateTime)date);
+                        base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
                     else
                         if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
                             base.GetRDGExcelValues(indx, (DateTime)date);
@@ -229,8 +229,6 @@ namespace StatisticCommon
                 else
                     ;
             }
-
-            return false;
 
             return bRes;
         }

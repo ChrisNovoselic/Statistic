@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
+//using System.Data;
 using System.Drawing;
-using System.Linq;
+//using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -195,6 +195,53 @@ namespace trans_tg
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
+        protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
+        {
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
+            {
+                ClearTables();
+
+                switch (m_modeTECComponent)
+                {
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TG:
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                        switch (m_IndexDB)
+                        {
+                            case (int)CONN_SETT_TYPE.SOURCE:
+                                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
+
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
+
+                                setUIControlSourceState();
+
+                                //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
+                                //{
+                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                //}
+                                //else
+                                //    ;
+                                break;
+                            case (int)CONN_SETT_TYPE.DEST:
+                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+                ;
+        }
+
         protected override void component_Changed(object sender, EventArgs e)
         {
             if (m_IndexDB == (short)CONN_SETT_TYPE.DEST)
@@ -290,7 +337,6 @@ namespace trans_tg
 
             //((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).getDataGridViewAdmin(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]));
             ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).getCurTimezoneOffsetRDGExcelValues(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]));
-
         }
 
         protected override void FillComboBoxTECComponent()
@@ -381,7 +427,7 @@ namespace trans_tg
             
             m_dgwAdminTable.ClearTables ();
 
-            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues((int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
         }
 
         protected override void saveDataGridViewAdminComplete()

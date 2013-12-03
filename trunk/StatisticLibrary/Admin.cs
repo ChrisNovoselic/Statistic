@@ -158,6 +158,10 @@ namespace StatisticCommon
             m_lockObj = new Object();
 
             states = new List<int /*StatesMachine*/>();
+
+            allTECComponents = new List<TECComponent>();
+
+            InitializeSyncState();
         }
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
@@ -220,7 +224,16 @@ namespace StatisticCommon
             return false;
         }
 
-        public abstract void Start();
+        public virtual void Start()
+        {
+            if (started == true)
+            {
+            }
+            else
+            {
+                started = true;
+            }
+        }
 
         public void Stop()
         {
@@ -272,6 +285,8 @@ namespace StatisticCommon
             
             //FillOldValues();
         }
+
+        public abstract void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date);
 
         protected abstract void GetPPBRDatesRequest(DateTime date);
 
@@ -532,7 +547,7 @@ namespace StatisticCommon
 
         public virtual void ResetRDGExcelValues()
         {
-            if (m_waitHandleState.Length > 0)
+            if (m_waitHandleState.Length > 1)
                 ((ManualResetEvent)m_waitHandleState[1]).Reset();
             else
                 ;

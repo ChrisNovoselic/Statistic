@@ -1,3 +1,5 @@
+using System.Windows.Forms;
+
 namespace StatisticCommon
 {
     public class AdminTS_KomDisp : AdminTS

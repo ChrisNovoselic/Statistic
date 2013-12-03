@@ -23,12 +23,7 @@ namespace trans_mc
 
         public override void Start()
         {
-            if (started)
-                ;
-            else
-                started = true;
-
-            //GetRDGValues(m_typeFields, indxTECComponents);
+            base.Start ();
         }
 
         public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
@@ -100,7 +95,7 @@ namespace trans_mc
             {
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
-                    bRes = GetResponse(0, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                    bRes = GetResponse(0, 0, out error, out table/*, false*/);
                     break;
                 default:
                     break;
@@ -189,6 +184,40 @@ namespace trans_mc
             }
             else
                 ;
+        }
+
+        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
+        {
+            lock (m_lockObj)
+            {
+                indxTECComponents = indx;
+
+                ClearValues();
+
+                using_date = false;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                m_prevDate = date.Date;
+                m_curDate = m_prevDate;
+
+                newState = true;
+                states.Clear();
+                states.Add((int)StatesMachine.PPBRValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - AdminMC::GetRDGValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
+                    Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
+                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                    Logging.Logg().LogUnlock();
+                }
+            }
         }
     }
 }

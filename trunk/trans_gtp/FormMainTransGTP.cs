@@ -229,6 +229,30 @@ namespace trans_gtp
             ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
         }
 
+        protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
+        {
+            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) &&
+                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
+            {
+                ClearTables();
+
+                switch (m_modeTECComponent)
+                {
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                        ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TG:
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+                ;
+        }
+
         protected override void CreateFormConnectionSettings(string connSettFileName)
         {
             base.CreateFormConnectionSettings(connSettFileName);

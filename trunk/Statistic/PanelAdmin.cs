@@ -186,7 +186,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -244,7 +244,7 @@ namespace Statistic
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -259,7 +259,7 @@ namespace Statistic
             {
                 ClearTables();
 
-                m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
@@ -274,7 +274,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGValues(AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private string SetNumberSeparator(string current_str)

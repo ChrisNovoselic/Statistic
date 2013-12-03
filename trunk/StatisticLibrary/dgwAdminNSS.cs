@@ -17,6 +17,21 @@ namespace StatisticCommon
 
         DataGridViewCellStyle dgvCellStyleError,
                              dgvCellStyleGTP;
+
+        public DataGridViewAdminNSS()
+        {
+            m_listIds = new List<int[]>();
+
+            dgvCellStyleError = new DataGridViewCellStyle();
+            dgvCellStyleError.BackColor = Color.Red;
+
+            dgvCellStyleGTP = new DataGridViewCellStyle();
+            dgvCellStyleGTP.BackColor = Color.Yellow;
+
+            Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
+
+            //this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminNSS_CellValueChanged);
+        }
         
         protected override void InitializeComponents () {
             base.InitializeComponents ();
@@ -39,20 +54,6 @@ namespace StatisticCommon
             Columns[col].Name = "ToAll";
             Columns[col].ReadOnly = true;
             Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-        }
-
-        public DataGridViewAdminNSS () {
-            m_listIds = new List<int []> ();
-
-            dgvCellStyleError = new DataGridViewCellStyle();
-            dgvCellStyleError.BackColor = Color.Red;
-            
-            dgvCellStyleGTP = new DataGridViewCellStyle();            
-            dgvCellStyleGTP.BackColor = Color.Yellow;
-
-            Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
-
-            //this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminNSS_CellValueChanged);
         }
 
         public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)
