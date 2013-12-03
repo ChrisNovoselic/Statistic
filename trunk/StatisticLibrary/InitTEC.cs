@@ -56,21 +56,21 @@ namespace StatisticCommon
             //Использование статической функции
             list_tec = getListTEC(connSett, bIgnoreTECInUse);
 
-            Logging.Logg ().LogLock ();
-            Logging.Logg().LogToFile("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
-            Logging.Logg().LogUnlock();
+            //Logging.Logg ().LogLock ();
+            //Logging.Logg().LogToFile("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
+            //Logging.Logg().LogUnlock();
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
-                Logging.Logg().LogUnlock();
+                //Logging.Logg().LogLock();
+                //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
+                //Logging.Logg().LogUnlock();
                 
                 if ((m_user.allTEC == 0) || (m_user.Role < 100) || (m_user.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
-                    Logging.Logg().LogUnlock();
+                    //Logging.Logg().LogLock();
+                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
+                    //Logging.Logg().LogUnlock();
                     
                     //Создание объекта ТЭЦ
                     tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
@@ -100,18 +100,18 @@ namespace StatisticCommon
                     tec[indx_tec].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                     tec[indx_tec].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
 
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
-                    Logging.Logg().LogUnlock();
+                    //Logging.Logg().LogLock();
+                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
+                    //Logging.Logg().LogUnlock();
 
                     int indx = -1;
                     for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; ! (c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                     {
                         list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
-                        Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
-                        Logging.Logg().LogUnlock();
+                        //Logging.Logg().LogLock();
+                        //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
+                        //Logging.Logg().LogUnlock();
 
                         for (int j = 0; j < list_TECComponents.Rows.Count; j++)
                         {
@@ -139,9 +139,9 @@ namespace StatisticCommon
                         }
                     }
 
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
-                    Logging.Logg().LogUnlock();
+                    //Logging.Logg().LogLock();
+                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
+                    //Logging.Logg().LogUnlock();
 
                     list_tg = getListTG(connSett, FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
@@ -163,17 +163,17 @@ namespace StatisticCommon
                             ;
                     }
 
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TG = Ok", true, false, false);
-                    Logging.Logg().LogUnlock();
+                    //Logging.Logg().LogLock();
+                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TG = Ok", true, false, false);
+                    //Logging.Logg().LogUnlock();
                 }
                 else
                     ;
             }
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("InitTEC::InitTEC () - exit...", true, false, false);
-            Logging.Logg().LogUnlock();
+            //Logging.Logg().LogLock();
+            //Logging.Logg().LogToFile("InitTEC::InitTEC () - exit...", true, false, false);
+            //Logging.Logg().LogUnlock();
         }
 
         public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse) //indx = {GTP или PC}

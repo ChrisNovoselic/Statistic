@@ -321,7 +321,7 @@ namespace StatisticCommon
             this.BeginInvoke(new DelegateDateFunction(setDatetimePickerMain), date);
         }
 
-        private void buttonClose_Click(object sender, EventArgs e)
+        protected virtual void buttonClose_Click(object sender, EventArgs e)
         {
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {

@@ -266,5 +266,17 @@ namespace trans_mc
             this.PerformLayout();
 
         }
+
+        protected override void buttonClose_Click(object sender, EventArgs e)
+        {
+            if (!(m_arAdmin[(int)CONN_SETT_TYPE.DEST] == null)) ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).StopDbInterface(); else ;
+
+            for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
+            {
+                //if (!(m_arAdmin[i] == null)) ((AdminTS)m_arAdmin[i]).StopDbInterface(); else ;
+            }
+
+            Close();
+        }
     }
 }
