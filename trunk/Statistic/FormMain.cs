@@ -97,7 +97,7 @@ namespace Statistic
             for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                 switch (i) {
                     case (int)FormChangeMode.MANAGER.DISP:
-                        m_arAdmin[i] = new AdminTS_KomDisp();
+                        m_arAdmin[i] = new AdminTS();
                         break;
                     case (int)FormChangeMode.MANAGER.NSS:
                         m_arAdmin[i] = new AdminTS_NSS();

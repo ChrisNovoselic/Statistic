@@ -10,7 +10,7 @@ namespace StatisticCommon
 {
     public class DataGridViewAdminMC : DataGridViewAdmin
     {
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, PMIN, PMAX, TO_ALL, COUNT_COLUMN };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PBR, PMIN, PMAX, TO_ALL, COUNT_COLUMN };
         private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax", "ToAll" };
         private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум", "Дозаполнить" };
 
@@ -38,12 +38,12 @@ namespace StatisticCommon
             // 
             // Plan
             // 
-            //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
-            Columns[(int)DESC_INDEX.PLAN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].Name = arDescStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[(int)DESC_INDEX.PLAN].Width = 70;
-            Columns[(int)DESC_INDEX.PLAN].ReadOnly = true;
+            //Columns[(int)DESC_INDEX.PBR].Frozen = true;
+            Columns[(int)DESC_INDEX.PBR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PBR];
+            Columns[(int)DESC_INDEX.PBR].Name = arDescStringIndex[(int)DESC_INDEX.PBR];
+            Columns[(int)DESC_INDEX.PBR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PBR].Width = 70;
+            Columns[(int)DESC_INDEX.PBR].ReadOnly = true;
             // 
             // Pmin
             // 
@@ -91,7 +91,7 @@ namespace StatisticCommon
             for (int i = 0; i < 24; i++)
             {
                 Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = 
-                Rows[i].Cells[(int)DESC_INDEX.PLAN].Value =
+                Rows[i].Cells[(int)DESC_INDEX.PBR].Value =
                 Rows[i].Cells[(int)DESC_INDEX.PMIN].Value =
                 Rows[i].Cells[(int)DESC_INDEX.PMAX].Value = string.Empty;
             }

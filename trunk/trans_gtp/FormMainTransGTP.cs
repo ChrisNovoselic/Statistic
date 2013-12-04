@@ -218,7 +218,7 @@ namespace trans_gtp
                 else
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
-                //m_arAdmin[i].m_ignore_date = true;
+                m_arAdmin[i].m_ignore_date = true;
                 m_arAdmin[i].m_ignore_connsett_data = true;
 
                 setUIControlConnectionSettings(i);
@@ -245,10 +245,74 @@ namespace trans_gtp
                 ;
         }
 
+        protected override void getDataGridViewAdmin(int indxDB)
+        {
+            //int indxDB = m_IndexDB;
+
+            double value;
+            bool valid;
+
+            for (int i = 0; i < 24; i++)
+            {
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                {
+                    switch (j)
+                    {
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[0] = value;
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[1] = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].ppbr[1];
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[2] = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].ppbr[2];
+                            break;
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
+                            {
+                                //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
+
+                                valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
+                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation = value;
+
+                                break;
+                            }
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
+                            {
+                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                break;
+                            }
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                            {
+                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value, out value);
+                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation = value;
+
+                                break;
+                            }
+                    }
+                }
+            }
+
+            m_arAdmin[indxDB].CopyCurToPrevRDGValues();
+        }
+
+        protected override void updateDataGridViewAdmin(DateTime date)
+        {
+            int indxDB = m_IndexDB;
+
+            for (int i = 0; i < 24; i++)
+            {
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[0].ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation.ToString("F2");
+            }
+
+            //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();
+
+            this.m_dgwAdminTable.Invalidate();
+        }
+
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
-                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
+            if (IsCanSelectedIndexChanged () == true)
             {
                 ClearTables();
 

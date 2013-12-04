@@ -204,10 +204,36 @@ namespace trans_mc
                 ;
         }
 
+        protected override void updateDataGridViewAdmin(DateTime date)
+        {
+            int indxDB = m_IndexDB;
+
+            for (int i = 0; i < 24; i++)
+            {
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                
+                switch (indxDB)
+                {
+                    case (int)CONN_SETT_TYPE.SOURCE:
+                        break;
+                    case (int)CONN_SETT_TYPE.DEST:
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr [0].ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[1].ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].ppbr[2].ToString("F2");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();
+
+            this.m_dgwAdminTable.Invalidate();
+        }
+
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
-                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
+            if (IsCanSelectedIndexChanged () == true)
             {
                 ClearTables();
 
@@ -262,10 +288,6 @@ namespace trans_mc
         }
 
         protected override void getDataGridViewAdmin(int indxDB) //indxDB = DEST (ВСЕГДА)
-        {
-        }
-
-        protected override void setDataGridViewAdmin(DateTime date)
         {
         }
 

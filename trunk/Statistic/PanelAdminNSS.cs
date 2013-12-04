@@ -99,7 +99,7 @@ namespace Statistic
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)
                         {
-                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].plan = Convert.ToDouble (dgwAdminTable.Rows[i].Cells [indx_tg + 1].Value); // '+ 1' за счет DateTime
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].ppbr [0] = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[indx_tg + 1].Value); // '+ 1' за счет DateTime
 
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].recomendation = 0.0;
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].deviationPercent = ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent;
@@ -129,7 +129,7 @@ namespace Statistic
                 else
                     ;
 
-                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].plan.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].ppbr [0].ToString("F2");
                 ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 2, i);
                 ((DataGridViewAdminNSS)this.dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
             }

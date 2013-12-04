@@ -19,6 +19,12 @@ namespace trans_mc
         
         public AdminMC () : base ()
         {
+            Initialize ();
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
         }
 
         public override void Resume()
@@ -218,6 +224,54 @@ namespace trans_mc
                     Logging.Logg().LogUnlock();
                 }
             }
+        }
+
+        public override void getCurRDGValues(HAdmin source)
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].ppbr[0] = ((AdminMC)source).m_curRDGValues[i].ppbr[0];
+                m_curRDGValues[i].ppbr[1] = ((AdminMC)source).m_curRDGValues[i].ppbr[1];
+                m_curRDGValues[i].ppbr[2] = ((AdminMC)source).m_curRDGValues[i].ppbr[2];
+            }
+        }
+
+        public override void CopyCurToPrevRDGValues()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_prevRDGValues[i].ppbr[0] = m_curRDGValues[i].ppbr[0];
+                m_prevRDGValues[i].ppbr[1] = m_curRDGValues[i].ppbr[1];
+                m_prevRDGValues[i].ppbr[2] = m_curRDGValues[i].ppbr[2];
+            }
+        }
+
+        public override void ClearValues()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].ppbr[0] = m_curRDGValues[i].ppbr[1] = m_curRDGValues[i].ppbr[2] = 0.0;
+            }
+
+            //CopyCurToPrevRDGValues();
+        }
+
+        public override bool WasChanged()
+        {
+            int i = -1, j = -1;
+            
+            for (i = 0; i < 24; i++)
+            {
+                for (j = 0; j < 3 /*4 для SN???*/; j++)
+                {
+                    if (! (m_prevRDGValues[i].ppbr [j] == m_curRDGValues[i].ppbr [j]))
+                        return true;
+                    else
+                        ;
+                }
+            }
+
+            return false;
         }
     }
 }

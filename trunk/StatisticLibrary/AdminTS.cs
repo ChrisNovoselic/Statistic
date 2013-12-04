@@ -79,20 +79,11 @@ namespace StatisticCommon
             Initialize ();
         }
 
-        private void Initialize () {
-            //m_strUsedAdminValues = "AdminValuesNew";
-            //m_strUsedPPBRvsPBR = "PPBRvsPBRnew";
+        protected override void Initialize () {
+            base.Initialize ();
 
             m_listDbInterfaces = new List<DbInterface>();
             m_listListenerIdCurrent = new List<int>();
-
-            using_date = false;
-            m_ignore_date = false;
-            m_ignore_connsett_data = false;
-
-            m_curRDGValues = new RDGStruct[24];
-
-            m_arHaveDates = new bool[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
             //layoutForLoading = new LayoutData(1);
         }
@@ -511,13 +502,14 @@ namespace StatisticCommon
         {
             DataTable table = null;
             DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
-            int [] arIndexTables = {0, 1};
+            int [] arIndexTables = {0, 1},
+                arFieldsCount = {-1, -1};
 
             int i = -1, j = -1, k = -1,
                 hour = -1;
 
-            int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
-            if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
+            //int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
+            //if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
             int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR");
             if (offsetPBR > 0) offsetPBR = 0; else ;
@@ -557,6 +549,10 @@ namespace StatisticCommon
             else {
             }
 
+            for (i = 0; i < arTable.Length; i++) {
+                arFieldsCount [i] = arTable [i].Columns.Count;
+            }
+
             table = arTable[arIndexTables [0]].Copy();
             table.Merge(arTable[arIndexTables[1]].Clone (), false);
 
@@ -591,7 +587,13 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[1] * 4 + 1 + offsetPBR_NUMBER + offsetPBR/*"PBR"*/];
+                        for (j = 0; j < 3 /*4 äëÿ SN???*/; j ++)
+                        {
+                            if (!(table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/] is DBNull))
+                                m_curRDGValues[hour - 1].ppbr[j] = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/];
+                            else
+                                m_curRDGValues[hour - 1].ppbr[j] = 0;
+                        }
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
@@ -611,13 +613,23 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * 3 + 1 + offsetPBR_NUMBER + offsetPBR/*"REC"*/];
-                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * 3 + 2 + offsetPBR_NUMBER + offsetPBR/*"IS_PER"*/] == 1;
-                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * 3 + 3 + offsetPBR_NUMBER + offsetPBR/*"DIVIAT"*/];
-                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0))
-                            m_curRDGValues[hour - 1].plan = (double)table.Rows[i][arIndexTables[0] * 4 + 1/* + offsetPBR_NUMBER*//*"PBR"*/];
-                        else
-                            m_curRDGValues[hour - 1].plan = 0;
+                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount [0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
+                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
+                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
+                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0)) {
+                            for (j = 0; j < 3 /*4 äëÿ SN???*/; j ++)
+                            {
+                                if (! (table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*//*"PBR"*/] is DBNull))
+                                    m_curRDGValues[hour - 1].ppbr[j] = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*/ /*"PBR"*/];
+                                else
+                                    m_curRDGValues[hour - 1].ppbr[j] = 0.0;
+                            }
+                        }
+                        else {
+                            m_curRDGValues[hour - 1].ppbr [0] =
+                            m_curRDGValues[hour - 1].ppbr[1] = m_curRDGValues[hour - 1].ppbr[2] = 
+                            0.0;
+                        }
                     }
                     catch { }
                 }
@@ -632,11 +644,11 @@ namespace StatisticCommon
             item = new RDGStruct();
 
             for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j++)
-                item.plan += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
+                item.ppbr [0] += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
 
             item.recomendation = 0;
 
-            if (item.plan > 0)
+            if (item.ppbr[0] > 0)
             {
                 item.deviationPercent = true;
                 item.deviation = 0.2;
@@ -1012,14 +1024,19 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";*/
-                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + " SET " +
+                                        name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].ppbr[0].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " SET " + @"PBR='" + m_curRDGValues[i].plan.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
+                            resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
+                                        " SET " +
+                                        @"PBR='" + m_curRDGValues[i].ppbr[0].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @", Pmin='" + m_curRDGValues[i].ppbr[1].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @", Pmax='" + m_curRDGValues[i].ppbr[2].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @" WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id + "; ";
@@ -1038,7 +1055,7 @@ namespace StatisticCommon
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + "ÏÁÐ" + getPBRNumber(i) +
                                         @"', '" + "0" +
-                                        @"', '" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].ppbr[0].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
@@ -1047,7 +1064,7 @@ namespace StatisticCommon
                                         @"', '" + "ÏÁÐ" + getPBRNumber(i) +
                                         @"', " + comp.m_id +
                                         @", '" + "0" +
-                                        @"', " + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', " + m_curRDGValues[i].ppbr[0].ToString("F1", CultureInfo.InvariantCulture) +
                                         @"),";
                             break;
                         default:
@@ -2045,20 +2062,66 @@ namespace StatisticCommon
             return modeRes;
         }
 
-        public virtual void ResetRDGExcelValues()
+        public override void CopyCurToPrevRDGValues()
         {
-            if (m_waitHandleState.Length > 0)
-                ((ManualResetEvent)m_waitHandleState[1]).Reset();
-            else
-                ;
+            for (int i = 0; i < 24; i++)
+            {
+                m_prevRDGValues[i].ppbr[0] = m_curRDGValues[i].ppbr[0];
+                m_curRDGValues[i].ppbr.CopyTo(m_prevRDGValues[i].ppbr, 0);
+                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
+                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
+                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
+            }
         }
 
-        public virtual void AbortRDGExcelValues()
+        public override void getCurRDGValues(HAdmin source)
         {
-            if (m_waitHandleState.Length > 0)
-                ((ManualResetEvent)m_waitHandleState[1]).Set();
-            else
-                ;
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].ppbr[0] = ((AdminTS)source).m_curRDGValues[i].ppbr[0];
+                ((AdminTS)source).m_curRDGValues[i].ppbr.CopyTo(m_curRDGValues[i].ppbr, 0);
+                m_curRDGValues[i].recomendation = ((AdminTS)source).m_curRDGValues[i].recomendation;
+                m_curRDGValues[i].deviationPercent = ((AdminTS)source).m_curRDGValues[i].deviationPercent;
+                m_curRDGValues[i].deviation = ((AdminTS)source).m_curRDGValues[i].deviation;
+            }
+        }
+
+        public override void ClearValues()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].ppbr[0] =
+                m_curRDGValues[i].ppbr[1] = m_curRDGValues[i].ppbr[2] = 
+                m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
+                m_curRDGValues[i].deviationPercent = false;
+            }
+
+            //CopyCurToPrevRDGValues();
+        }
+
+        public override bool WasChanged()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                if (m_prevRDGValues[i].ppbr[0] != m_curRDGValues[i].ppbr[0] /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
+                    return true;
+                else
+                    ;
+                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                    return true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
+                    return true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
+                    return true;
+                else
+                    ;
+            }
+
+            return false;
         }
     }
 }

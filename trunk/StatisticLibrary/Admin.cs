@@ -16,41 +16,18 @@ namespace StatisticCommon
     public delegate void DelegateDateFunction(DateTime date);
     
     public abstract class HAdmin : object
-    {        
+    {
         public struct /*class*/ RDGStruct
         {
-            public double plan;
+            public double [] ppbr;
             public double recomendation;
             public bool deviationPercent;
             public double deviation;
-            /*
-            public RDGStruct()
-            {
-                this.plan =
-                this.recomendation =
-                this.deviation = 0.0;
-
-                this.deviationPercent = false;
-            }
-            */
         }
 
-        protected struct TecPPBRValues
-        {
-            //public double[] SN;
-            public double[] PBR;
-            //public double[] Pmax;
-            //public double[] Pmin;
-
-            public TecPPBRValues(int t)
-            {
-                //this.SN = new double[25];
-                this.PBR = new double[25];
-                //this.Pmax = new double[24];
-                //this.Pmin = new double[24];
-            }
-        }
-
+        public volatile RDGStruct[] m_prevRDGValues;
+        public RDGStruct[] m_curRDGValues;
+        
         protected DelegateFunc delegateStartWait;
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
@@ -66,10 +43,6 @@ namespace StatisticCommon
         public volatile List<TEC> m_list_tec;
         public volatile List<TECComponent> allTECComponents;
         public int indxTECComponents;
-
-        public volatile RDGStruct[] m_prevRDGValues;
-        //public RDGStruct[] m_curTimezoneOffsetRDGExcelValues;
-        public RDGStruct[] m_curRDGValues;
 
         protected bool is_connection_error;
         protected bool is_data_error;
@@ -133,25 +106,16 @@ namespace StatisticCommon
 
         public HAdmin()
         {
-            Initialize ();
         }
 
-        private void Initialize () {
+        protected virtual void Initialize () {
             started = false;
 
-            m_prevRDGValues = new RDGStruct[24];
-
             is_data_error = is_connection_error = false;
-
-            //TecView tecView = FormMainTrans.selectedTecViews [FormMainTrans.stclTecViews.SelectedIndex];
-
-            //isActive = false;
 
             using_date = false;
             m_ignore_date = false;
             m_ignore_connsett_data = false;
-
-            m_curRDGValues = new RDGStruct[24];
 
             m_arHaveDates = new bool[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
@@ -160,6 +124,15 @@ namespace StatisticCommon
             states = new List<int /*StatesMachine*/>();
 
             allTECComponents = new List<TECComponent>();
+
+            m_curRDGValues = new RDGStruct[24];
+            m_prevRDGValues = new RDGStruct[24];
+
+            for (int i = 0; i < 24; i++)
+            {
+                m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
+                m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
+            }
         }
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
@@ -197,30 +170,7 @@ namespace StatisticCommon
                 ;*/
         }
 
-        public virtual bool WasChanged()
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                if (m_prevRDGValues[i].plan != m_curRDGValues[i].plan /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-            }
-
-            return false;
-        }
+        public abstract bool WasChanged();
 
         public virtual void Resume()
         {
@@ -271,16 +221,7 @@ namespace StatisticCommon
             Logging.Logg().LogUnlock();
         }
 
-        public void ClearValues()
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                m_curRDGValues[i].plan = m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
-                m_curRDGValues[i].deviationPercent = false;
-            }
-            
-            //FillOldValues();
-        }
+        public abstract void ClearValues();
 
         public abstract void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date);
 
@@ -566,25 +507,9 @@ namespace StatisticCommon
             }
         }
 
-        public void CopyCurToPrevRDGValues () {
-            for (int i = 0; i < 24; i++)
-            {
-                m_prevRDGValues[i].plan = m_curRDGValues[i].plan;
-                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
-                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
-                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
-            }
-        }
+        public abstract void CopyCurToPrevRDGValues();
 
-        public virtual void getCurRDGValues (HAdmin source) {
-            for (int i = 0; i < 24; i++)
-            {
-                m_curRDGValues[i].plan = source.m_curRDGValues[i].plan;
-                m_curRDGValues[i].recomendation = source.m_curRDGValues[i].recomendation;
-                m_curRDGValues[i].deviationPercent = source.m_curRDGValues[i].deviationPercent;
-                m_curRDGValues[i].deviation = source.m_curRDGValues[i].deviation;
-            }
-        }
+        public abstract void getCurRDGValues (HAdmin source);
 
         public virtual void ResetRDGExcelValues()
         {

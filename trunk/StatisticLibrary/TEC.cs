@@ -214,14 +214,18 @@ namespace StatisticCommon
                     //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                     //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
                     //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + "Pmin";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + "Pmax";
                 }
                 else
                 {
                     //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                     //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
                     //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmin";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmax";
                 }
             else
                 ;
@@ -241,9 +245,9 @@ namespace StatisticCommon
                         m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR";
 
                     if (selectPBR.Length > 0)
-                        strRes += @", " + selectPBR + " AS PBR";
+                        strRes += @", " + selectPBR;
                     else
-                        ;
+                        ; //Для Бийска нет ПБР
 
                     //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
                     //    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
@@ -268,7 +272,8 @@ namespace StatisticCommon
                         //m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                         //@", " + selectPBR.Split (';')[0] + " AS PBR";
                         m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + "DATE_TIME" + " AS DATE_PBR" +
-                        @", " + "PBR" + " AS PBR";
+                        //@", " + "PBR" + " AS PBR";
+                        @", " + selectPBR.Split(';')[0];
 
                     if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
                         strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
@@ -329,9 +334,7 @@ namespace StatisticCommon
                     }
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = idComponentValueQuery (num_comp);
-
-                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + ";" + selectPBR;
+                    selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(num_comp);
                     break;
                 default:
                     break;
@@ -353,7 +356,7 @@ namespace StatisticCommon
                     selectPBR = selectPBRValueQuery(comp);
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    selectPBR = "PBR, Pmin, Pmax"; //Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
 
                     selectPBR += ";";
 

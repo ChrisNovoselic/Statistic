@@ -314,8 +314,11 @@ namespace trans_tg
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
-                                            " SET " + @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"' WHERE " +
+                                            " SET " +
+                                            @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[0].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[1].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[2].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @" WHERE " +
                                             @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
@@ -337,7 +340,7 @@ namespace trans_tg
                                             @"', '" + "œ¡–" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" +
-                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[0].ToString("F1", CultureInfo.InvariantCulture) +
                                             @"),";
                                 break;
                             default:
