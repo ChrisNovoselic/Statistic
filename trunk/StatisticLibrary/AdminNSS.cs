@@ -74,7 +74,7 @@ namespace StatisticCommon
             m_curRDGValues.CopyTo(curRDGValues, 0);
             
             for (int i = 0; i < m_curRDGValues.Length; i ++) {
-                curRDGValues [i].ppbr [0] += m_curRDGValues [i].recomendation;
+                curRDGValues [i].pbr += m_curRDGValues [i].recomendation;
 
                 //curRDGValues [i].plan = m_curRDGValues [i].plan;
 
@@ -212,7 +212,7 @@ namespace StatisticCommon
 
             for (int i = 0; i < 24; i++)
             {
-                if (m_prevRDGValues[i].ppbr.Equals (m_curRDGValues[i].ppbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
+                if (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
                     return true;
                 else
                     ;

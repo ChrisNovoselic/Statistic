@@ -19,7 +19,10 @@ namespace StatisticCommon
     {
         public struct /*class*/ RDGStruct
         {
-            public double [] ppbr;
+            //public double [] ppbr;
+            public double pbr;
+            public double pmin;
+            public double pmax;
             public double recomendation;
             public bool deviationPercent;
             public double deviation;
@@ -128,11 +131,11 @@ namespace StatisticCommon
             m_curRDGValues = new RDGStruct[24];
             m_prevRDGValues = new RDGStruct[24];
 
-            for (int i = 0; i < 24; i++)
-            {
-                m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
-                m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
-            }
+            //for (int i = 0; i < 24; i++)
+            //{
+            //    m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
+            //    m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
+            //}
         }
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)

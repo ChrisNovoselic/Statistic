@@ -230,9 +230,9 @@ namespace trans_mc
         {
             for (int i = 0; i < 24; i++)
             {
-                m_curRDGValues[i].ppbr[0] = ((AdminMC)source).m_curRDGValues[i].ppbr[0];
-                m_curRDGValues[i].ppbr[1] = ((AdminMC)source).m_curRDGValues[i].ppbr[1];
-                m_curRDGValues[i].ppbr[2] = ((AdminMC)source).m_curRDGValues[i].ppbr[2];
+                m_curRDGValues[i].pbr = ((AdminMC)source).m_curRDGValues[i].pbr;
+                m_curRDGValues[i].pmin = ((AdminMC)source).m_curRDGValues[i].pmin;
+                m_curRDGValues[i].pmax = ((AdminMC)source).m_curRDGValues[i].pmax;
             }
         }
 
@@ -240,9 +240,9 @@ namespace trans_mc
         {
             for (int i = 0; i < 24; i++)
             {
-                m_prevRDGValues[i].ppbr[0] = m_curRDGValues[i].ppbr[0];
-                m_prevRDGValues[i].ppbr[1] = m_curRDGValues[i].ppbr[1];
-                m_prevRDGValues[i].ppbr[2] = m_curRDGValues[i].ppbr[2];
+                m_prevRDGValues[i].pbr = m_curRDGValues[i].pbr;
+                m_prevRDGValues[i].pmin = m_curRDGValues[i].pmin;
+                m_prevRDGValues[i].pmax = m_curRDGValues[i].pmax;
             }
         }
 
@@ -250,7 +250,7 @@ namespace trans_mc
         {
             for (int i = 0; i < 24; i++)
             {
-                m_curRDGValues[i].ppbr[0] = m_curRDGValues[i].ppbr[1] = m_curRDGValues[i].ppbr[2] = 0.0;
+                m_curRDGValues[i].pbr = m_curRDGValues[i].pmin = m_curRDGValues[i].pbr = 0.0;
             }
 
             //CopyCurToPrevRDGValues();
@@ -264,7 +264,7 @@ namespace trans_mc
             {
                 for (j = 0; j < 3 /*4 для SN???*/; j++)
                 {
-                    if (! (m_prevRDGValues[i].ppbr [j] == m_curRDGValues[i].ppbr [j]))
+                    if (! (m_prevRDGValues[i].pbr == m_curRDGValues[i].pbr))
                         return true;
                     else
                         ;

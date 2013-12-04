@@ -337,7 +337,7 @@ namespace trans_tg
                             if (!(indx_owner < 0))
                                 for (int i = 0; i < 24; i++)
                                 {
-                                    ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].ppbr [0] = Convert.ToDouble(m_dgwAdminTable.Rows[i].Cells[indx_comp + 1].Value); // '+ 1' за счет DateTime
+                                    ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].pbr = Convert.ToDouble(m_dgwAdminTable.Rows[i].Cells[indx_comp + 1].Value); // '+ 1' за счет DateTime
 
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].recomendation = 0.0;
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].deviationPercent = ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_owner][i].deviationPercent;
@@ -394,7 +394,7 @@ namespace trans_tg
                 else
                     ;
 
-                m_dgwAdminTable.Rows[i].Cells[m_dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listCurRDGValues[m_dgwAdminTable.Columns.Count - 3][i].ppbr[0].ToString("F2");
+                m_dgwAdminTable.Rows[i].Cells[m_dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listCurRDGValues[m_dgwAdminTable.Columns.Count - 3][i].pbr.ToString("F2");
                 ev = new DataGridViewCellEventArgs(m_dgwAdminTable.Columns.Count - 2, i);
                 ((DataGridViewAdminNSS)m_dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
             }
@@ -437,6 +437,30 @@ namespace trans_tg
                 base.saveDataGridViewAdminComplete ();
             else
                 ;
+        }
+
+        protected override void setDataGridViewAdmin(DateTime date)
+        {
+            //if (WindowState == FormWindowState.Minimized)
+            //if (m_bTransAuto == true)
+            //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            {
+                if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).SuccessGetData == true)
+                {
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
+
+                    this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+
+                    //this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                }
+                else
+                    ;
+            }
+            else
+            {
+                updateDataGridViewAdmin(date);
+            }
         }
     }
 }

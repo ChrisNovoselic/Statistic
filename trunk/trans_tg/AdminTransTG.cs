@@ -34,11 +34,11 @@ namespace trans_tg
         protected override bool GetRDGExcelValuesResponse()
         {
             bool bRes = IsCanUseTECComponents();
+            int i = -1;
 
             if (bRes)
             {
-                int i = -1,
-                    iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
+                int iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
                     rowRDGExcelStart = 1 + iTimeZoneOffset,
                     hour = -1;
                 m_listCurTimezoneOffsetRDGExcelValues.Add (new RDGStruct[iTimeZoneOffset]);
@@ -315,9 +315,9 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                                             " SET " +
-                                            @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[0].ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[1].ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[2].ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
                                             @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
@@ -340,7 +340,7 @@ namespace trans_tg
                                             @"', '" + "œ¡–" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" +
-                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].ppbr[0].ToString("F1", CultureInfo.InvariantCulture) +
+                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                             @"),";
                                 break;
                             default:
