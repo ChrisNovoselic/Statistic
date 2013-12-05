@@ -151,6 +151,11 @@ namespace trans_mc
                     //InitIGO (arg);
                     break;
                 case "PPBR":
+                    table.Columns.Add("DATE_PBR", typeof (DateTime));
+                    table.Columns.Add("PBR", typeof(double));
+                    table.Columns.Add("Pmin", typeof(double));
+                    table.Columns.Add("Pmax", typeof(double));
+
                     DateTime date = DateTime.FromOADate (Double.Parse (args [2]));                    
                     igo = findIGO (Convert.ToInt32 (args [1]));
                     
@@ -176,7 +181,11 @@ namespace trans_mc
                                                         /*it.ObjName это id генерирующего объекта*/
                                                         m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
-                            //techsite.WritePlanValue(igo.IdInner, pvi.DT.SystemToLocalHqEx(), pvi.Type.ToString(), (MySQLtechsite.Params)listPVI[pvi.ObjFactor].Id, pvi.Value);
+                            /*techsite.WritePlanValue(igo.IdInner,
+                                                    pvi.DT.SystemToLocalHqEx(),
+                                                    pvi.Type.ToString(),
+                                                    (MySQLtechsite.Params)listPVI[pvi.ObjFactor].Id,
+                                                    pvi.Value);*/
                         }
                     }
                     else

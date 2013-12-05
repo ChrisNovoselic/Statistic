@@ -212,8 +212,10 @@ namespace trans_gtp
                 ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett(i);
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                 {
-                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
-                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                    //((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+                    //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                    //Для отладки получить ГТП из БД с новой структурой
+                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                 }
                 else
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
