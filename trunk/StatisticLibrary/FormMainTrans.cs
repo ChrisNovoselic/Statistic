@@ -209,22 +209,22 @@ namespace StatisticCommon
                 switch (j)
                 {
                     case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.server;
+                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.server;
                         break;
                     case (Int16)INDX_UICONTROL_DB.PORT:
                         if (m_arUIControlDB[i, j].Enabled)
-                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.port.ToString();
+                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.port.ToString();
                         else
                             ;
                         break;
                     case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.dbName;
+                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.dbName;
                         break;
                     case (Int16)INDX_UICONTROL_DB.USER_ID:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.userName;
+                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.userName;
                         break;
                     case (Int16)INDX_UICONTROL_DB.PASS:
-                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = m_arAdmin[i].connSettConfigDB.password;
+                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.password;
                         break;
                     default:
                         break;

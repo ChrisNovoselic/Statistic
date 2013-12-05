@@ -211,7 +211,7 @@ namespace StatisticCommon
                     needReconnect = false;
                 }
 
-                if (reconnection)
+                if (reconnection == true)
                 {
                     Disconnect();
                     connected = false;
@@ -223,7 +223,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                if (!connected) // не удалось подключиться - не пытаемся получить данные
+                if (connected == false) // не удалось подключиться - не пытаемся получить данные
                     continue;
                 else
                     ;

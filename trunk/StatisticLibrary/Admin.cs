@@ -47,6 +47,10 @@ namespace StatisticCommon
         public volatile List<TECComponent> allTECComponents;
         public int indxTECComponents;
 
+        protected List<DbInterface> m_listDbInterfaces;
+        protected List<int> m_listListenerIdCurrent;
+        protected int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
+
         protected bool is_connection_error;
         protected bool is_data_error;
 
@@ -78,8 +82,6 @@ namespace StatisticCommon
         protected volatile bool newState;
         protected volatile List<int /*StatesMachine*/> states;
 
-        public ConnectionSettings connSettConfigDB;
-
         private enum StateActions
         {
             Request,
@@ -109,6 +111,7 @@ namespace StatisticCommon
 
         public HAdmin()
         {
+            Initialize ();
         }
 
         protected virtual void Initialize () {
@@ -136,6 +139,9 @@ namespace StatisticCommon
             //    m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //    m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //}
+
+            m_listDbInterfaces = new List<DbInterface>();
+            m_listListenerIdCurrent = new List<int>();
         }
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
@@ -330,6 +336,8 @@ namespace StatisticCommon
             m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
         }
 
+        protected abstract bool InitDbInterfaces ();
+
         public abstract bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/);
 
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
@@ -508,6 +516,27 @@ namespace StatisticCommon
                 Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 Logging.Logg().LogUnlock();
             }
+        }
+
+        public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)
+        {
+            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
+
+            if ((allTECComponents[indx].m_id > 0) && (allTECComponents[indx].m_id < 100))
+                modeRes = FormChangeMode.MODE_TECCOMPONENT.TEC;
+            else
+                if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
+                    modeRes = FormChangeMode.MODE_TECCOMPONENT.GTP;
+                else
+                    if ((allTECComponents[indx].m_id > 500) && (allTECComponents[indx].m_id < 1000))
+                        modeRes = FormChangeMode.MODE_TECCOMPONENT.PC;
+                    else
+                        if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
+                            modeRes = FormChangeMode.MODE_TECCOMPONENT.TG;
+                        else
+                            ;
+
+            return modeRes;
         }
 
         public abstract void CopyCurToPrevRDGValues();

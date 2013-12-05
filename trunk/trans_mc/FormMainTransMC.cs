@@ -136,14 +136,18 @@ namespace trans_mc
             bool bIgnoreTECInUse = false;
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
-                    m_arAdmin[i] = new AdminMC();
-                else
-                    if (i == (Int16)CONN_SETT_TYPE.DEST)
+                switch (i)
+                {
+                    case (Int16)CONN_SETT_TYPE.SOURCE:
+                        m_arAdmin[i] = new AdminMC();
+                        break;
+                    case (Int16)CONN_SETT_TYPE.DEST:
                         m_arAdmin[i] = new AdminTS_KomDisp();
-                    else
-                        ;
-                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse); }
+                        break;
+                    default:
+                        break;
+                }
+                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), m_modeTECComponent, bIgnoreTECInUse); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
@@ -151,18 +155,20 @@ namespace trans_mc
                     //setUIControlConnectionSettings(i);
                     break;
                 }
-                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
-                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
-                    m_arAdmin[i].m_ignore_date = false;
-                else
-                    if (i == (Int16)CONN_SETT_TYPE.DEST)
-                    {
+                switch (i)
+                {
+                    case (Int16)CONN_SETT_TYPE.SOURCE:
+                        m_arAdmin[i].m_ignore_date = false;
+                        break;
+                    case (Int16)CONN_SETT_TYPE.DEST:
+                        ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
                         ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                         m_arAdmin[i].m_ignore_date = true;
-                    }
-                    else
-                        ;
-                
+                        break;
+                    default:
+                        break;
+                }
+
                 m_arAdmin[i].m_ignore_connsett_data = true;
             }
 

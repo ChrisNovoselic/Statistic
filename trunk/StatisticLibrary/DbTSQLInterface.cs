@@ -101,7 +101,7 @@ namespace StatisticCommon
                 Logging.Logg().LogUnlock();
             }
 
-            if (m_dbConnection.State != ConnectionState.Closed)
+            if (! (m_dbConnection.State == ConnectionState.Closed))
                 bRes = false;
             else
                 ;

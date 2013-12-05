@@ -11,15 +11,19 @@ namespace trans_mc
 {
     class AdminMC : HAdmin
     {
+        List<int> m_listMCId = new List<int>();
+
         protected enum StatesMachine
         {
+            InitIGO,
             PPBRValues,
             PPBRDates,
         }
-        
+
         public AdminMC () : base ()
         {
-            Initialize ();
+            //m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
+            m_listMCId = new List<int> ();
         }
 
         protected override void Initialize()
@@ -47,6 +51,16 @@ namespace trans_mc
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
+            string query = "PPBR";
+
+            query += ";";
+            query += comp.m_MCId;
+
+            query += ";";
+            query += date.ToOADate ().ToString ();
+
+
+            ((DbMCInterface)m_listDbInterfaces[0]).Request(0, query); //
         }
 
         protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
@@ -63,11 +77,57 @@ namespace trans_mc
             return bRes;
         }
 
+        protected override bool InitDbInterfaces () {
+            bool bRes = true;
+            int i = -1;
+
+            m_listDbInterfaces.Clear();
+
+            m_listListenerIdCurrent.Clear();
+            m_indxDbInterfaceCurrent = -1;
+
+            m_listDbInterfaces.Add(new DbMCInterface("Интерфейс доступа к сервисам Modes-Centre"));
+
+            m_listDbInterfaces[0].Start();
+
+            m_listDbInterfaces[0].SetConnectionSettings("ne1843");
+
+            //Для всех один - идентификатор
+            m_indxDbInterfaceCurrent = 0;
+            m_listDbInterfaces[0].ListenerRegister();
+
+            for (i = 0; i < allTECComponents.Count; i ++)
+            {
+                if (modeTECComponent (i) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                {
+                    m_listMCId.Add (allTECComponents [i].m_MCId);
+                    //m_listDbInterfaces[0].ListenerRegister();
+                }
+                else
+                    ;
+            }
+
+            //List <Modes.BusinessLogic.IGenObject> listIGO = (((DbMCInterface)m_listDbInterfaces[0]).GetListIGO(listMCId));
+
+            return bRes;
+        }
+
+        public override void StartThreadSourceData()
+        {
+            InitDbInterfaces();
+
+            base.StartThreadSourceData();
+        }
+
         protected override bool StateRequest(int /*StatesMachine*/ state)
         {
             bool result = true;
             switch (state)
             {
+                case (int)StatesMachine.InitIGO:
+                    ActionReport("Инициализация объектов Modes-Centre.");
+                    //InitIGO ();
+                    break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
@@ -81,7 +141,7 @@ namespace trans_mc
                     else
                         ;
                     ActionReport("Получение списка сохранённых часовых значений.");
-                    GetPPBRDatesRequest(m_curDate);
+                    //GetPPBRDatesRequest(m_curDate);
                     break;
                 default:
                     break;
@@ -99,8 +159,10 @@ namespace trans_mc
 
             switch (state)
             {
+                case (int)StatesMachine.InitIGO:
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
+                    //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                     bRes = GetResponse(0, 0, out error, out table/*, false*/);
                     break;
                 default:
@@ -115,6 +177,14 @@ namespace trans_mc
             bool result = false;
             switch (state)
             {
+                case (int)StatesMachine.InitIGO:
+                    result = true;
+                    if (result)
+                    {
+                    }
+                    else
+                        ;
+                    break;
                 case (int)StatesMachine.PPBRValues:
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result)
@@ -150,6 +220,9 @@ namespace trans_mc
 
             switch (state)
             {
+                case (int)StatesMachine.InitIGO:
+                    ErrorReport("Ошибка инициализации объектов Modes-Centre. Переход в ожидание.");
+                    break;
                 case (int)StatesMachine.PPBRValues:
                     if (response)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
@@ -192,6 +265,29 @@ namespace trans_mc
                 ;
         }
 
+        private bool InitIGO ()
+        {
+            bool bRes = false;
+
+            string query = "InitIGO;";
+
+            int i = -1;
+            for (i = 0; i < m_listMCId.Count; i ++)
+            {
+                query += m_listMCId [i];
+
+                if ((i + 1) < m_listMCId.Count)
+                    query += ", ";
+                else
+                    ;
+            }
+
+            ((DbMCInterface)m_listDbInterfaces[0]).Request(0, query); //List IGO FROM Modfes-Centre
+
+            bRes = true;
+            return bRes;
+        }
+
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
             lock (m_lockObj)
@@ -208,6 +304,14 @@ namespace trans_mc
 
                 newState = true;
                 states.Clear();
+
+                //if (m_listIGO.Count == 0)
+                //{
+                //    states.Add((int)StatesMachine.InitIGO);
+                //}
+                //else
+                //    ;
+
                 states.Add((int)StatesMachine.PPBRValues);
 
                 try

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Data;
 using System.Threading;
 using System.Data.Common;
@@ -15,9 +16,16 @@ namespace trans_mc
 {
     public class DbMCInterface : DbInterface
     {
+        IApiExternal m_MCApi;
+        Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
+        IList <PlanFactorItem> m_listPFI;
+
+        List <Modes.BusinessLogic.IGenObject> m_listIGO;
+
         public DbMCInterface(string name)
             : base(name)
         {
+            m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
         }
 
         public override void SetConnectionSettings(object mcHostName)
@@ -58,13 +66,6 @@ namespace trans_mc
                 Logging.Logg().LogUnlock();
             }
 
-            bRes = ModesApiFactory.IsInitilized;
-
-            if (bRes == false)
-                return bRes;
-            else
-                ;
-
             lock (lockConnectionSettings)
             {
                 if (needReconnect) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
@@ -86,21 +87,148 @@ namespace trans_mc
                 Logging.Logg().LogExceptionToFile(e, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")");
             }
 
+            bRes = 
+            result =
+            ModesApiFactory.IsInitilized;
+
+            if (bRes == true)
+            {
+                m_MCApi = ModesApiFactory.GetModesApi();
+                m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
+                m_listPFI = m_MCApi.GetPlanFactors();
+            }
+            else
+                ;
+
             return result;
         }
 
         protected override bool Disconnect()
         {
-            bool result = false, bRes = false;
+            bool result = true, bRes = false;
 
             return result;
+        }
+
+        Modes.BusinessLogic.IGenObject addIGO (int idInnner)
+        {
+            foreach (Modes.BusinessLogic.IGenObject igo in m_MCTimeSlice.GenTree)
+            {
+                Console.WriteLine(igo.Description + " [" + igo.GenObjType.Description + "]");
+                //ProcessParams(IGO);
+                ProcessChilds(igo, 1, idInnner);
+            }
+
+            if (m_listIGO[m_listIGO.Count - 1].IdInner == idInnner)
+                return m_listIGO[m_listIGO.Count - 1];
+            else
+                return null;
+        }
+
+        Modes.BusinessLogic.IGenObject findIGO(int idInnner)
+        {
+            foreach (Modes.BusinessLogic.IGenObject igo in m_listIGO)
+            {
+                if (igo.IdInner == idInnner)
+                    return igo;
+                else
+                    ;
+            }
+
+            return null;
         }
 
         protected override bool GetData(DataTable table, object query)
         {
             bool result = false;
+            Modes.BusinessLogic.IGenObject igo;
+
+            string [] args = ((string)query).Split (';');
+            
+            switch (args[0])
+            {
+                case "InitIGO":
+                    //InitIGO (arg);
+                    break;
+                case "PPBR":
+                    DateTime date = DateTime.FromOADate (Double.Parse (args [2]));                    
+                    igo = findIGO (Convert.ToInt32 (args [1]));
+                    
+                    if (igo == null)
+                        igo = addIGO (Convert.ToInt32 (args [1]));
+                    else
+                        ;
+
+                    if (!(igo == null)) {
+                        result = true;
+
+                        IList<PlanValueItem> listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
+
+                        if (listPVI.Count == 0)
+                            Console.WriteLine("    Нет параметров генерации!");
+                        else
+                            ;
+
+                        foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
+                        {
+                            Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
+                                                        pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
+                                                        /*it.ObjName это id генерирующего объекта*/
+                                                        m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
+
+                            //techsite.WritePlanValue(igo.IdInner, pvi.DT.SystemToLocalHqEx(), pvi.Type.ToString(), (MySQLtechsite.Params)listPVI[pvi.ObjFactor].Id, pvi.Value);
+                        }
+                    }
+                    else
+                        ;
+                    break;
+                default:
+                    break;
+            }
 
             return result;
+        }
+
+        void ProcessChilds(Modes.BusinessLogic.IGenObject IGO, int Level, int idInner)
+        {
+            foreach (Modes.BusinessLogic.IGenObject IGOch in IGO.Children)
+            {
+                if (!(IGOch.GenObjType.Id == 15))      //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
+                {
+                    Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
+                    //ProcessParams(IGOch);
+                    if ((IGOch.GenObjType.Id == 3) && (IGOch.IdInner == idInner))
+                    {
+                        //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
+                        m_listIGO.Add (IGOch);
+                    }
+                    else
+                        ;
+
+                    ProcessChilds(IGOch, Level + 1, idInner);
+                }
+                else
+                    ;
+            }
+        }
+
+        private bool InitIGO (string ids)
+        {
+            bool bRes = false;
+
+            string [] arId = ids.Split (',');
+
+            foreach (string id in arId)
+            {
+                foreach (Modes.BusinessLogic.IGenObject IGO in m_MCTimeSlice.GenTree)
+                {
+                    Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
+                    //ProcessParams(IGO);
+                    ProcessChilds(IGO, 1, Convert.ToInt32 (id));
+                }
+            }
+
+            return bRes;
         }
     }
 }

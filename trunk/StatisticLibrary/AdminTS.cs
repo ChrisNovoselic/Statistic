@@ -35,9 +35,7 @@ namespace StatisticCommon
         //private volatile Errors loadLayoutResult;
         //private LayoutData layoutForLoading;
 
-        private List <DbInterface> m_listDbInterfaces;
-        private List <int> m_listListenerIdCurrent;
-        private int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
+        public ConnectionSettings connSettConfigDB;
 
         int m_indxDbInterfaceConfigDB,
             m_listenerIdConfigDB;
@@ -74,16 +72,12 @@ namespace StatisticCommon
 
         //public bool isActive;
 
-        public AdminTS()
+        public AdminTS() : base ()
         {
-            Initialize ();
         }
 
         protected override void Initialize () {
             base.Initialize ();
-
-            m_listDbInterfaces = new List<DbInterface>();
-            m_listListenerIdCurrent = new List<int>();
 
             //layoutForLoading = new LayoutData(1);
         }
@@ -1251,7 +1245,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private bool InitDbInterfaces () {
+        protected override bool InitDbInterfaces () {
             bool bRes = true;
             
             m_listDbInterfaces.Clear ();
@@ -2069,26 +2063,6 @@ namespace StatisticCommon
             if (indx < allTECComponents.Count) strRes = allTECComponents[indx].name; else ;
 
             return strRes;
-        }
-
-        public FormChangeMode.MODE_TECCOMPONENT modeTECComponent (int indx) {
-            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
-            
-            if ((allTECComponents [indx].m_id > 0) && (allTECComponents [indx].m_id < 100))
-                modeRes  = FormChangeMode.MODE_TECCOMPONENT.TEC;
-            else
-                if ((allTECComponents [indx].m_id > 100) && (allTECComponents [indx].m_id < 500))
-                    modeRes  = FormChangeMode.MODE_TECCOMPONENT.GTP;
-                else
-                    if ((allTECComponents [indx].m_id > 500) && (allTECComponents [indx].m_id < 1000))
-                        modeRes  = FormChangeMode.MODE_TECCOMPONENT.PC;
-                    else
-                        if ((allTECComponents [indx].m_id > 1000) && (allTECComponents [indx].m_id < 10000))
-                            modeRes  = FormChangeMode.MODE_TECCOMPONENT.TG;
-                        else
-                            ;
-
-            return modeRes;
         }
 
         public override void CopyCurToPrevRDGValues()

@@ -209,7 +209,7 @@ namespace trans_gtp
                     //setUIControlConnectionSettings(i);
                     break;
                 }
-                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett(i);
+                ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett(i);
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                 {
                     ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
