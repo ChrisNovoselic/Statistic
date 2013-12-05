@@ -138,6 +138,21 @@ namespace trans_mc
             return null;
         }
 
+        public class PPBR_Record
+        {
+            public DateTime date_time,
+                            wr_date_time;
+            public string PBR_number;
+
+            public double? pbr;
+            public double? pmin;
+            public double? pmax;
+            
+            public PPBR_Record()
+            {
+            }
+        }
+
         protected override bool GetData(DataTable table, object query)
         {
             bool result = false;
@@ -155,6 +170,8 @@ namespace trans_mc
                     table.Columns.Add("PBR", typeof(double));
                     table.Columns.Add("Pmin", typeof(double));
                     table.Columns.Add("Pmax", typeof(double));
+                    table.Columns.Add("PBR_NUMBER", typeof(string));
+                    table.Columns.Add("ID_COMPONENT", typeof(Int32));
 
                     DateTime date = DateTime.FromOADate (Double.Parse (args [2]));                    
                     igo = findIGO (Convert.ToInt32 (args [1]));
@@ -168,6 +185,9 @@ namespace trans_mc
                         result = true;
 
                         IList<PlanValueItem> listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
+                        PPBR_Record ppbr = null;
+                        SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
+                        DateTime dateCurrent;
 
                         if (listPVI.Count == 0)
                             Console.WriteLine("    Нет параметров генерации!");
@@ -181,6 +201,41 @@ namespace trans_mc
                                                         /*it.ObjName это id генерирующего объекта*/
                                                         m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
+                            dateCurrent = pvi.DT.SystemToLocalHqEx();
+
+                            if (srtListPPBR.ContainsKey(dateCurrent))
+                                ppbr = srtListPPBR.First(item => item.Key == dateCurrent).Value;
+                            else
+                                ;
+
+                            if (ppbr == null)
+                            {
+                                ppbr = new PPBR_Record();
+                                ppbr.date_time = dateCurrent;
+                                ppbr.wr_date_time = DateTime.Now;
+                                ppbr.PBR_number = pvi.Type.ToString();
+
+                                //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                                srtListPPBR.Add(dateCurrent, ppbr);
+                            }
+                            else
+                                ;
+
+                            switch (m_listPFI[pvi.ObjFactor].Id)
+                            {
+                                case 0:
+                                    ppbr.pbr = pvi.Value;
+                                    break;
+                                case 1:
+                                    ppbr.pmin = pvi.Value;
+                                    break;
+                                case 2:
+                                    ppbr.pmax = pvi.Value;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            
                             /*techsite.WritePlanValue(igo.IdInner,
                                                     pvi.DT.SystemToLocalHqEx(),
                                                     pvi.Type.ToString(),
