@@ -58,7 +58,7 @@ namespace Statistic
             comboBoxRole.SelectedIndexChanged -= comboBoxRole_SelectedIndexChanged;
 
             m_listRolesID = new List<int>();
-            DataTable roles = DbInterface.Select(m_connectionSetttings, "SELECT * FROM roles", out err);
+            DataTable roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles", out err);
             for (i = 0; i < roles.Rows.Count; i++)
             {
                 m_listRolesID.Add(Convert.ToInt32 (roles.Rows[i]["ID"]));
@@ -72,7 +72,7 @@ namespace Statistic
             comboBoxAccess.SelectionChangeCommitted -= comboBoxAccess_SelectionChangeCommitted;
 
             m_listTECID = new List<int>();
-            DataTable tec = DbInterface.Select(m_connectionSetttings, "SELECT ID, NAME_SHR FROM TEC_LIST", out err);
+            DataTable tec = DbTSQLInterface.Select(m_connectionSetttings, "SELECT ID, NAME_SHR FROM TEC_LIST", out err);
 
             m_listTECID.Add(0);
             comboBoxAccess.Items.Add("Все станции");
@@ -102,7 +102,7 @@ namespace Statistic
         {
             int err = 0;
 
-            DbInterface.RecUpdateInsertDelete(m_connectionSetttings, "users", m_users_origin, m_users_edit, out err);
+            DbTSQLInterface.RecUpdateInsertDelete(m_connectionSetttings, "users", m_users_origin, m_users_edit, out err);
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -121,7 +121,7 @@ namespace Statistic
                 switch (m_users_edit.Columns [i].ColumnName)
                 {
                     case "ID":
-                        val = DbInterface.getIdNext(m_connectionSetttings, "users");
+                        val = DbTSQLInterface.getIdNext(m_connectionSetttings, "users");
                         break;
                     case "DESCRIPTION":
                         val = textBoxUserDesc.Text;

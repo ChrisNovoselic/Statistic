@@ -462,7 +462,7 @@ namespace StatisticCommon
             m_listListenerIdCurrent.Clear();
             m_indxDbInterfaceCurrent = -1;
 
-            m_listDbInterfaces.Add(new DbInterface(DbInterface.DBINTERFACE_TYPE.MySQL, "Интерфейс MySQL-БД: Конфигурация"));
+            m_listDbInterfaces.Add(new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, "Интерфейс MySQL-БД: Конфигурация"));
             m_listListenerIdCurrent.Add(-1);
 
             m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;

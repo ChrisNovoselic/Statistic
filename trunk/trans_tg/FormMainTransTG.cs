@@ -236,8 +236,6 @@ namespace trans_tg
                                 ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
                                 int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
 
-                                setUIControlSourceState();
-
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
                                 //{
                                 ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
@@ -251,6 +249,8 @@ namespace trans_tg
                             default:
                                 break;
                         }
+
+                        setUIControlSourceState();
                         break;
                     default:
                         break;
@@ -401,7 +401,7 @@ namespace trans_tg
 
             m_arAdmin[indxDB].CopyCurToPrevRDGValues();
 
-            m_dgwAdminTable.Invalidate();
+            //m_dgwAdminTable.Invalidate();
         }
 
         private void SaveChanges ()
@@ -459,6 +459,7 @@ namespace trans_tg
             }
             else
             {
+                //this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
                 updateDataGridViewAdmin(date);
             }
         }

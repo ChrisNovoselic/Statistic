@@ -120,6 +120,7 @@
     <Compile Include="Passwords.cs" />
     <Compile Include="Users.cs" />
     <Compile Include="AdminTS.cs" />
+    <Compile Include="DbTSQLInterface.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

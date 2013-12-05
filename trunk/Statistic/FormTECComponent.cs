@@ -84,7 +84,7 @@ namespace Statistic
             for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN); i++)
             {
                 if (m_list_data_original[i] == null)
-                    m_list_data_original[i] = DbInterface.Select(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST", out err);
+                    m_list_data_original[i] = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST", out err);
                 else ;
 
                 m_list_data[i] = m_list_data_original[i].Copy ();
@@ -465,7 +465,7 @@ namespace Statistic
                 i = -1;
 
             for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
-                DbInterface.RecUpdateInsertDelete(m_connectionSetttings, FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i], out err);
+                DbTSQLInterface.RecUpdateInsertDelete(m_connectionSetttings, FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i], out err);
             }
 
             buttonClick(DialogResult.Yes);
@@ -670,7 +670,7 @@ namespace Statistic
         private void buttonTECComponentAdd_Click(object sender, EventArgs e)
         {
             m_list_data[comboBoxMode.SelectedIndex].Rows.Add();
-            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbInterface.getIdNext(m_connectionSetttings, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST"); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbTSQLInterface.getIdNext(m_connectionSetttings, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST"); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID_TEC"] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["NAME_SHR"] = m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text;
 

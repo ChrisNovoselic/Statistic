@@ -19,28 +19,28 @@ namespace StatisticCommon
 
             if (!bIgnoreTECInUse) req += " WHERE INUSE=TRUE"; else ;
 
-            return DbInterface.Select(connSett, req, out err);
+            return DbTSQLInterface.Select(connSett, req, out err);
         }
 
         public static DataTable getListTECComponent(ConnectionSettings connSett, string prefix, int id_tec)
         {
             int err = 0;
 
-            return DbInterface.Select(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), out err);
+            return DbTSQLInterface.Select(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), out err);
         }
 
         public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id)
         {
             int err = 0;
 
-            return DbInterface.Select(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), out err);
+            return DbTSQLInterface.Select(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), out err);
         }
 
         public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id)
         {
             int err = 0;
 
-            return DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
+            return DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
         }
 
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
@@ -50,7 +50,7 @@ namespace StatisticCommon
             m_user = new Users(connSett);
 
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
-            DataTable list_tec = null, // = DbInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
+            DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                     list_TECComponents = null, list_tg = null;
 
             //Использование статической функции
@@ -182,19 +182,19 @@ namespace StatisticCommon
 
             int err = 0;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
-            DataTable list_tec= null, // = DbInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
+            DataTable list_tec= null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                     list_TECComponents = null, list_tg = null;
 
             //Использование методов объекта
             //int listenerId = -1;
             //bool err = false;
-            //DbInterface dbInterface = new DbInterface (DbInterface.DBINTERFACE_TYPE.MySQL, 1);
+            //DbInterface dbInterface = new DbInterface (DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL, 1);
             //listenerId = dbInterface.ListenerRegister();
             //dbInterface.Start ();
 
             //dbInterface.SetConnectionSettings(connSett);
 
-            //DbInterface.Select(listenerId, "SELECT * FROM TEC_LIST");
+            //DbTSQLInterface.Select(listenerId, "SELECT * FROM TEC_LIST");
             //dbInterface.GetResponse(listenerId, out err, out list_tec);
 
             //dbInterface.Stop();
@@ -223,9 +223,9 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings (DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int) CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(DbInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
+                tec[i].connSettings (DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int) CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
 
                 tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();

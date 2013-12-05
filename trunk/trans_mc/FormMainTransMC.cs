@@ -217,7 +217,7 @@ namespace trans_mc
                     case (int)CONN_SETT_TYPE.SOURCE:
                         break;
                     case (int)CONN_SETT_TYPE.DEST:
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pmax.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
                         this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pmin.ToString("F2");
                         this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pmax.ToString("F2");
                         break;

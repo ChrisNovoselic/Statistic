@@ -102,7 +102,7 @@ namespace StatisticCommon
         {
             if (used == 0)
             {
-                m_dbInterface = new DbInterface(DbInterface.DBINTERFACE_TYPE.MSSQL, "Èםעונפויס MSSQL-ÁÄ: " + name);
+                m_dbInterface = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Èםעונפויס MSSQL-ÁÄ: " + name);
                 m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
                 m_dbInterface.Start();
                 m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);

@@ -129,7 +129,7 @@ namespace StatisticCommon
             //strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='NE\\ChrjapinAN'";
             strQuery = "SELECT * FROM users" + where;
 
-            users = DbInterface.Select(connSettConfigDB, strQuery, out err);
+            users = DbTSQLInterface.Select(connSettConfigDB, strQuery, out err);
         }
 
         public static void GetUsers(ConnectionSettings connSett, string where, out DataTable users, out int err)
@@ -146,7 +146,7 @@ namespace StatisticCommon
 
             strQuery += " ORDER BY DESCRIPTION";
 
-            users = DbInterface.Select(connSett, strQuery, out err);
+            users = DbTSQLInterface.Select(connSett, strQuery, out err);
         }
     }
 }

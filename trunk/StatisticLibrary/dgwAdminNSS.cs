@@ -31,6 +31,8 @@ namespace StatisticCommon
             Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
 
             //this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminNSS_CellValueChanged);
+
+            this.HorizontalScrollBar.Visible = true;
         }
         
         protected override void InitializeComponents () {
@@ -150,6 +152,7 @@ namespace StatisticCommon
         {
             DataGridViewTextBoxColumn insColumn = new DataGridViewTextBoxColumn ();
             insColumn.Frozen = false;
+            insColumn.Width = 66;
             insColumn.HeaderText = name;
             insColumn.Name = "column" + (Columns.Count - 1);
             insColumn.ReadOnly = false;

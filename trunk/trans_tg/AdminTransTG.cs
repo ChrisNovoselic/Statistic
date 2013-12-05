@@ -246,7 +246,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " SET " +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " SET " +
                                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -267,7 +267,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -313,7 +313,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                                             " SET " +
                                             @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
@@ -335,12 +335,14 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + "œ¡–" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
                                             @"', " + comp.m_id +
-                                            @", '" + "0" +
-                                            @"', " + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
+                                            @", '" + "0" + "'" +
+                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
                                             @"),";
                                 break;
                             default:
@@ -355,7 +357,7 @@ namespace trans_tg
                 Logging.Logg().LogUnlock();
             }
 
-            resQuery[(int)DbInterface.QUERY_TYPE.DELETE] = @"";
+            resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
 
             Logging.Logg().LogLock();
             Logging.Logg().LogToFile("AdminTransTG - setPPBRQuery", true, true, false);

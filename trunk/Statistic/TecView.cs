@@ -3597,9 +3597,10 @@ namespace Statistic
 
                         offsetUDG = 1;
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
-                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count) : m_tablePBRResponse.Columns.Count;
+                        offsetLayout = -1;
 
                         m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
                         table_in = restruct_table_adminValues(table_in);
 
@@ -3628,7 +3629,7 @@ namespace Statistic
                                         //foreach (TECComponent g in tec.list_TECComponents)
                                         for (j = 0; j < m_list_TECComponents.Count; j ++)
                                         {
-                                            valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
+                                            valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
                                             //j++;
                                         }
                                     }
@@ -3679,8 +3680,8 @@ namespace Statistic
                                     {
                                         try
                                         {
-                                            if (!(m_tablePBRResponse.Rows[i][offsetPlan + j] is System.DBNull))
-                                                valuesPBR[j, hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j];
+                                            if (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull))
+                                                valuesPBR[j, hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
                                             else
                                                 ;
 
@@ -3825,7 +3826,7 @@ namespace Statistic
 
                         offsetUDG = 1;
                         offsetPlan = 1;
-                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? offsetPlan + 1 : m_tablePBRResponse.Columns.Count;
+                        offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? offsetPlan + 3 : m_tablePBRResponse.Columns.Count;
 
                         // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                         for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
