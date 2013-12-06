@@ -23,7 +23,7 @@ namespace trans_mc
         {
             InitializeComponentTransMC();
 
-            this.Text = "Конвертер данных плана и административных данных (Modes-Centre ГТП)";
+            this.Text = "Конвертер ПБР (Modes-Centre ГТП)";
 
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminMC();
@@ -142,7 +142,7 @@ namespace trans_mc
                         m_arAdmin[i] = new AdminMC();
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        m_arAdmin[i] = new AdminTS_KomDisp();
+                        m_arAdmin[i] = new AdminTS_MC();
                         break;
                     default:
                         break;
@@ -221,11 +221,14 @@ namespace trans_mc
                 switch (indxDB)
                 {
                     case (int)CONN_SETT_TYPE.SOURCE:
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminMC)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value = ((AdminMC)m_arAdmin[indxDB]).m_curRDGValues[i].pmin.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value = ((AdminMC)m_arAdmin[indxDB]).m_curRDGValues[i].pmax.ToString("F2");
                         break;
                     case (int)CONN_SETT_TYPE.DEST:
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pmin.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value = ((AdminTS_KomDisp)m_arAdmin[indxDB]).m_curRDGValues[i].pmax.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value = ((AdminTS_MC)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value = ((AdminTS_MC)m_arAdmin[indxDB]).m_curRDGValues[i].pmin.ToString("F2");
+                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value = ((AdminTS_MC)m_arAdmin[indxDB]).m_curRDGValues[i].pmax.ToString("F2");
                         break;
                     default:
                         break;
@@ -234,7 +237,7 @@ namespace trans_mc
 
             //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();
 
-            this.m_dgwAdminTable.Invalidate();
+            //this.m_dgwAdminTable.Invalidate();
         }
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
@@ -264,6 +267,8 @@ namespace trans_mc
                     default:
                         break;
                 }
+
+                setUIControlSourceState ();
             }
             else
                 ;
@@ -284,7 +289,13 @@ namespace trans_mc
 
         protected override void setUIControlSourceState()
         {
-            //tbxSourceServerMC.Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.m_path_rdg_excel;
+            if (((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents [m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].m_listMCId.Count > 0) {
+                Properties.Settings sett = new Properties.Settings();
+                tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;
+            }
+            else
+                tbxSourceServerMC.Text = string.Empty;
+
             enabledButtonSourceExport(tbxSourceServerMC.Text.Length > 0 ? true : false);
         }
 
@@ -295,6 +306,34 @@ namespace trans_mc
 
         protected override void getDataGridViewAdmin(int indxDB) //indxDB = DEST (ВСЕГДА)
         {
+            double value;
+            bool valid;
+
+            for (int i = 0; i < 24; i++)
+            {
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                {
+                    switch (j)
+                    {
+                        case (int)DataGridViewAdminMC.DESC_INDEX.PBR: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value, out value);
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = value;
+                            break;
+                        case (int)DataGridViewAdminMC.DESC_INDEX.PMIN: // Pmin
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value, out value);
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pmin = value;
+                            break;
+                        case (int)DataGridViewAdminMC.DESC_INDEX.PMAX: // Pmax
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMAX].Value, out value);
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pmax = value;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            m_arAdmin[indxDB].CopyCurToPrevRDGValues();
         }
 
         private void InitializeComponent()

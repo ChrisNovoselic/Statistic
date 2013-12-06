@@ -10,9 +10,9 @@ namespace StatisticCommon
 {
     public class DataGridViewAdminMC : DataGridViewAdmin
     {
-        public enum DESC_INDEX : ushort { DATE_HOUR, PBR, PMIN, PMAX, TO_ALL, COUNT_COLUMN };
-        private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax", "ToAll" };
-        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум", "Дозаполнить" };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PBR, PMIN, PMAX/*, TO_ALL*/, COUNT_COLUMN };
+        private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax"/*, "ToAll"*/ };
+        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум"/*, "Дозаполнить"*/ };
 
         public DataGridViewAdminMC()
         {
@@ -25,8 +25,8 @@ namespace StatisticCommon
             Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
                                                                                     new DataGridViewTextBoxColumn (),
                                                                                     new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewButtonColumn ()});
+                                                                                    new DataGridViewTextBoxColumn ()/*,
+                                                                                    new DataGridViewButtonColumn ()*/});
             // 
             // DateHour
             // 
@@ -42,7 +42,7 @@ namespace StatisticCommon
             Columns[(int)DESC_INDEX.PBR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PBR];
             Columns[(int)DESC_INDEX.PBR].Name = arDescStringIndex[(int)DESC_INDEX.PBR];
             Columns[(int)DESC_INDEX.PBR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[(int)DESC_INDEX.PBR].Width = 70;
+            Columns[(int)DESC_INDEX.PBR].Width = 126;
             Columns[(int)DESC_INDEX.PBR].ReadOnly = true;
             // 
             // Pmin
@@ -50,6 +50,7 @@ namespace StatisticCommon
             Columns[(int)DESC_INDEX.PMIN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PMIN];
             Columns[(int)DESC_INDEX.PMIN].Name = arDescStringIndex[(int)DESC_INDEX.PMIN];
             Columns[(int)DESC_INDEX.PMIN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PMIN].Width = 126;
             Columns[(int)DESC_INDEX.PMIN].ReadOnly = true;
             // 
             // Pmax
@@ -57,12 +58,13 @@ namespace StatisticCommon
             Columns[(int)DESC_INDEX.PMAX].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PMAX];
             Columns[(int)DESC_INDEX.PMAX].Name = arDescStringIndex[(int)DESC_INDEX.PMAX];
             Columns[(int)DESC_INDEX.PMAX].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PMAX].Width = 126;
             Columns[(int)DESC_INDEX.PMAX].ReadOnly = true;
             // 
             // ToAll
             // 
-            Columns[(int)DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.TO_ALL];
-            Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];
+            /*Columns[(int)DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.TO_ALL];
+            Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];*/
         }
 
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)

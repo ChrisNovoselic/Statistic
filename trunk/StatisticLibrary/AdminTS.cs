@@ -19,9 +19,9 @@ namespace StatisticCommon
 
         public AdminTS.TYPE_FIELDS m_typeFields;
 
-        private Semaphore semaDBAccess;
-        private volatile Errors saveResult;
-        private volatile bool saving;
+        protected Semaphore semaDBAccess;
+        protected volatile Errors saveResult;
+        protected volatile bool saving;
 
         /* Passwords
         private Semaphore semaGetPass;
@@ -2082,12 +2082,12 @@ namespace StatisticCommon
         {
             for (int i = 0; i < 24; i++)
             {
-                m_curRDGValues[i].pbr = ((AdminTS)source).m_curRDGValues[i].pbr;
-                m_curRDGValues[i].pmin = ((AdminTS)source).m_curRDGValues[i].pmin;
-                m_curRDGValues[i].pmax = ((AdminTS)source).m_curRDGValues[i].pmax;
-                m_curRDGValues[i].recomendation = ((AdminTS)source).m_curRDGValues[i].recomendation;
-                m_curRDGValues[i].deviationPercent = ((AdminTS)source).m_curRDGValues[i].deviationPercent;
-                m_curRDGValues[i].deviation = ((AdminTS)source).m_curRDGValues[i].deviation;
+                m_curRDGValues[i].pbr = ((HAdmin)source).m_curRDGValues[i].pbr;
+                m_curRDGValues[i].pmin = ((HAdmin)source).m_curRDGValues[i].pmin;
+                m_curRDGValues[i].pmax = ((HAdmin)source).m_curRDGValues[i].pmax;
+                m_curRDGValues[i].recomendation = ((HAdmin)source).m_curRDGValues[i].recomendation;
+                m_curRDGValues[i].deviationPercent = ((HAdmin)source).m_curRDGValues[i].deviationPercent;
+                m_curRDGValues[i].deviation = ((HAdmin)source).m_curRDGValues[i].deviation;
             }
         }
 

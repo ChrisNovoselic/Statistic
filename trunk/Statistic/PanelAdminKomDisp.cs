@@ -99,7 +99,7 @@ namespace Statistic
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
             }
 
-            this.dgwAdminTable.Invalidate();
+            //this.dgwAdminTable.Invalidate();
 
             m_admin.CopyCurToPrevRDGValues();
         }

@@ -11,7 +11,8 @@
     <RootNamespace>trans_mc_cmd</RootNamespace>
     <AssemblyName>trans_mc_cmd</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -34,10 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Infrastructure">
+    <Reference Include="Infrastructure, Version=1.3.2.46, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\MCApiDLL\Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="ModesApiExternal">
+    <Reference Include="ModesApiExternal, Version=1.3.2.6, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\MCApiDLL\ModesApiExternal.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -50,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CryptoProvider.cs" />
+    <Compile Include="HTECComponentsRecord.cs" />
     <Compile Include="MySQLtechsite.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

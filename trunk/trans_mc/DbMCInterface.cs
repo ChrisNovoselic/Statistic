@@ -147,7 +147,9 @@ namespace trans_mc
             public double? pbr;
             public double? pmin;
             public double? pmax;
-            
+
+            //public int? idInner; //??? Для TEC5_TG36 2 объекта (TG34 + TG56), т.е. 2 IGO
+
             public PPBR_Record()
             {
             }
@@ -156,10 +158,18 @@ namespace trans_mc
         protected override bool GetData(DataTable table, object query)
         {
             bool result = false;
+            int i = -1;
             Modes.BusinessLogic.IGenObject igo;
 
+            table.Reset();
+            table.Locale = System.Globalization.CultureInfo.CurrentCulture;
+
             string [] args = ((string)query).Split (';');
-            
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("DbMCInterface::GetData () - " + query + ")", true, true, false);
+            Logging.Logg().LogUnlock();
+
             switch (args[0])
             {
                 case "InitIGO":
@@ -167,84 +177,121 @@ namespace trans_mc
                     break;
                 case "PPBR":
                     table.Columns.Add("DATE_PBR", typeof (DateTime));
+                    table.Columns.Add("WR_DATE_TIME", typeof(DateTime));
                     table.Columns.Add("PBR", typeof(double));
                     table.Columns.Add("Pmin", typeof(double));
                     table.Columns.Add("Pmax", typeof(double));
                     table.Columns.Add("PBR_NUMBER", typeof(string));
-                    table.Columns.Add("ID_COMPONENT", typeof(Int32));
-
-                    DateTime date = DateTime.FromOADate (Double.Parse (args [2]));                    
-                    igo = findIGO (Convert.ToInt32 (args [1]));
+                    //table.Columns.Add("ID_COMPONENT", typeof(Int32));
                     
-                    if (igo == null)
-                        igo = addIGO (Convert.ToInt32 (args [1]));
-                    else
-                        ;
+                    ////Вариант №1
+                    //PPBR_Record ppbr = null;
+                    //SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
+                    //Вариант №2
+                    DataRow [] ppbr_rows = null;
 
-                    if (!(igo == null)) {
-                        result = true;
+                    DateTime date = DateTime.FromOADate (Double.Parse (args [2]));
+                    string [] idsInner = args[1].Split(',');
+                    bool valid = false;
+                    int idInner = -1;
 
-                        IList<PlanValueItem> listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
-                        PPBR_Record ppbr = null;
-                        SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
-                        DateTime dateCurrent;
-
-                        if (listPVI.Count == 0)
-                            Console.WriteLine("    Нет параметров генерации!");
+                    for (i = 0; i < idsInner.Length; i ++)
+                    {
+                        valid = Int32.TryParse(idsInner[i], out idInner);
+                        
+                        if (valid == false)
+                            continue;
                         else
                             ;
 
-                        foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
-                        {
-                            Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
-                                                        pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
-                                                        /*it.ObjName это id генерирующего объекта*/
-                                                        m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
+                        igo = findIGO(idInner);
 
-                            dateCurrent = pvi.DT.SystemToLocalHqEx();
+                        if (igo == null)
+                            igo = addIGO (idInner);
+                        else
+                            ;
 
-                            if (srtListPPBR.ContainsKey(dateCurrent))
-                                ppbr = srtListPPBR.First(item => item.Key == dateCurrent).Value;
+                        if (!(igo == null)) {
+                            result = true;
+
+                            IList<PlanValueItem> listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
+
+                            DateTime dateCurrent;
+
+                            if (listPVI.Count == 0)
+                                Console.WriteLine("    Нет параметров генерации!");
                             else
                                 ;
 
-                            if (ppbr == null)
+                            foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
                             {
-                                ppbr = new PPBR_Record();
-                                ppbr.date_time = dateCurrent;
-                                ppbr.wr_date_time = DateTime.Now;
-                                ppbr.PBR_number = pvi.Type.ToString();
+                                Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
+                                                            pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
+                                                            /*it.ObjName это id генерирующего объекта*/
+                                                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
-                                //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
-                                srtListPPBR.Add(dateCurrent, ppbr);
-                            }
-                            else
-                                ;
+                                dateCurrent = pvi.DT.SystemToLocalHqEx();
 
-                            switch (m_listPFI[pvi.ObjFactor].Id)
-                            {
-                                case 0:
-                                    ppbr.pbr = pvi.Value;
-                                    break;
-                                case 1:
-                                    ppbr.pmin = pvi.Value;
-                                    break;
-                                case 2:
-                                    ppbr.pmax = pvi.Value;
-                                    break;
-                                default:
-                                    break;
+                                //Получение записи с другими параметрами за это время
+                                ////Вариант №1
+                                //if (srtListPPBR.ContainsKey(dateCurrent))
+                                //    ppbr = srtListPPBR.First(item => item.Key == dateCurrent).Value;
+                                //else
+                                //    ;
+
+                                //Вариант №2
+                                if (table.Rows.Count > 0)
+                                    ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
+                                else
+                                    ;
+
+                                //Обработка получения записи
+                                ////Вариант №1
+                                //if (ppbr == null)
+                                //{
+                                //    ppbr = new PPBR_Record();
+                                //    ppbr.date_time = dateCurrent;
+                                //    ppbr.wr_date_time = DateTime.Now;
+                                //    ppbr.PBR_number = pvi.Type.ToString();
+                                //    //ppbr.idInner = igo.IdInner; //??? Для TEC5_TG36 2 объекта (TG34 + TG56), т.е. 2 IGO
+
+                                //    //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                                //    srtListPPBR.Add(dateCurrent, ppbr);
+                                //}
+                                //else
+                                //    ;
+
+                                //Вариант №2
+                                if ((ppbr_rows == null) || (ppbr_rows.Length == 0))
+                                {
+                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0.0, 0.0, 0.0, pvi.Type.ToString()/*, igo.IdInner*/});
+                                    ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
+                                }
+                                else
+                                    ;
+
+                                switch (m_listPFI[pvi.ObjFactor].Id)
+                                {
+                                    case 0:
+                                        //else.ppbr.pbr = pvi.Value; //Вариант №1
+                                        ppbr_rows [0]["PBR"] = (double)ppbr_rows [0]["PBR"] + pvi.Value; //Вариант №2
+                                        break;
+                                    case 1:
+                                        //ppbr.pmin = pvi.Value; //Вариант №1
+                                        ppbr_rows [0]["PMIN"] = (double)ppbr_rows [0]["PMIN"] + pvi.Value; //Вариант №2
+                                        break;
+                                    case 2:
+                                        //ppbr.pmax = pvi.Value; //Вариант №1
+                                        ppbr_rows [0]["PMAX"] = (double)ppbr_rows [0]["PMAX"] + pvi.Value; //Вариант №2
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
-                            
-                            /*techsite.WritePlanValue(igo.IdInner,
-                                                    pvi.DT.SystemToLocalHqEx(),
-                                                    pvi.Type.ToString(),
-                                                    (MySQLtechsite.Params)listPVI[pvi.ObjFactor].Id,
-                                                    pvi.Value);*/
                         }
+                        else
+                            result = false; //igo == null
                     }
-                    else
-                        ;
                     break;
                 default:
                     break;

@@ -428,23 +428,6 @@ namespace trans_mc_cmd
         }
     }
 
-    class OneRecord
-    {
-        public DateTime date_time,
-                        wr_date_time;
-        public string PBR_number;
-
-        public MySQLtechsite parent;
-
-        public OneRecord()
-        {
-        }
-
-        public void ReadFromDatabase(DateTime date)
-        {
-        }
-    }
-
     static class itssAUX
     {
         /// <summary>

@@ -533,6 +533,9 @@ namespace Statistic
                 else
                     ;
             }
+
+            //tclTecViews.Invalidate ();
+            //this.Invalidate ();
         }
 
         public bool UpdateStatusString()

@@ -43,12 +43,21 @@ namespace StatisticCommon
             return DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
         }
 
-        private int getMCId (DataTable data, int row)
+        private List <int> getMCId (DataTable data, int row)
         {
+            int i = -1;
+            List <int> listRes = new List<int> ();
+
             if ((!(data.Columns.IndexOf("ID_MC") < 0)) && (!(data.Rows[row]["ID_MC"] is DBNull)))
-                return Convert.ToInt32 (data.Rows[row]["ID_MC"]);
+            {
+                string [] ids = data.Rows[row]["ID_MC"].ToString ().Split (',');
+                for (i = 0; i < ids.Length; i ++)
+                    listRes.Add (Convert.ToInt32 (ids [i]));
+            }
             else
-                return -1;
+                ;
+
+            return listRes;
         }
 
         //Ñïèñîê ÂÑÅÕ êîìïîíåíòîâ (ÒÝÖ, ÃÒÏ, ÙÓ, ÒÃ)
@@ -131,7 +140,7 @@ namespace StatisticCommon
 
                             tec[indx_tec].list_TECComponents[indx].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                             tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_TECComponents.Rows[j]["ID"]);
-                            tec[indx_tec].list_TECComponents[indx].m_MCId = getMCId(list_TECComponents, j);
+                            tec[indx_tec].list_TECComponents[indx].m_listMCId = getMCId(list_TECComponents, j);
 
                             list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
 
@@ -244,7 +253,7 @@ namespace StatisticCommon
                     tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
                     tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                     tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
-                    tec[i].list_TECComponents[j].m_MCId = getMCId(list_TECComponents, j);
+                    tec[i].list_TECComponents[j].m_listMCId = getMCId(list_TECComponents, j);
 
                     list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
 

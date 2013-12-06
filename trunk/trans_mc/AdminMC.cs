@@ -11,7 +11,7 @@ namespace trans_mc
 {
     class AdminMC : HAdmin
     {
-        List<int> m_listMCId = new List<int>();
+        List<string> m_listMCId;
 
         protected enum StatesMachine
         {
@@ -23,7 +23,7 @@ namespace trans_mc
         public AdminMC () : base ()
         {
             //m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
-            m_listMCId = new List<int> ();
+            m_listMCId = new List<string> ();
         }
 
         protected override void Initialize()
@@ -38,12 +38,7 @@ namespace trans_mc
 
         public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
-            bool bRes = false;
-
-            table = null;
-
-            error = bRes;
-            return bRes;
+            return m_listDbInterfaces[0].GetResponse(0, out error, out table);
         }
 
         protected override void GetPPBRDatesRequest(DateTime date) {
@@ -52,9 +47,15 @@ namespace trans_mc
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
             string query = "PPBR";
+            int i = -1;
 
             query += ";";
-            query += comp.m_MCId;
+            for (i = 0; i < comp.m_listMCId.Count; i ++)
+            {
+                query += comp.m_listMCId [i];
+
+                if ((i + 1) < comp.m_listMCId.Count) query += ","; else ;
+            }
 
             query += ";";
             query += date.ToOADate ().ToString ();
@@ -73,6 +74,50 @@ namespace trans_mc
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             bool bRes = true;
+            int i = -1, j = -1,
+                hour = -1,
+                offsetPBR = 2;
+
+            for (i = 0; i < table.Rows.Count; i ++)
+            {
+                try
+                    {
+                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
+                            hour = 24;
+                        else
+                            if (hour == 0)
+                                continue;
+                            else
+                                ;
+
+                        //for (j = 0; j < 3 /*4 для SN???*/; j ++)
+                        //{
+                            j = 0;
+                            if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                                m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][offsetPBR + j];
+                            else
+                                m_curRDGValues[hour - 1].pbr = 0;
+                        //}
+
+                        j = 1;
+                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                            m_curRDGValues[hour - 1].pmin = (double)table.Rows[i][offsetPBR + j];
+                        else
+                            m_curRDGValues[hour - 1].pmin = 0;
+
+                        j = 2;
+                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                            m_curRDGValues[hour - 1].pmax = (double)table.Rows[i][offsetPBR + j];
+                        else
+                            m_curRDGValues[hour - 1].pmax = 0;
+
+                        m_curRDGValues[hour - 1].recomendation = 0;
+                        m_curRDGValues[hour - 1].deviationPercent = false;
+                        m_curRDGValues[hour - 1].deviation = 0;
+                    }
+                    catch { }
+            }
 
             return bRes;
         }
@@ -96,16 +141,16 @@ namespace trans_mc
             m_indxDbInterfaceCurrent = 0;
             m_listDbInterfaces[0].ListenerRegister();
 
-            for (i = 0; i < allTECComponents.Count; i ++)
-            {
-                if (modeTECComponent (i) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                {
-                    m_listMCId.Add (allTECComponents [i].m_MCId);
-                    //m_listDbInterfaces[0].ListenerRegister();
-                }
-                else
-                    ;
-            }
+            //for (i = 0; i < allTECComponents.Count; i ++)
+            //{
+            //    if (modeTECComponent (i) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+            //    {
+            //        m_listMCId.Add (allTECComponents [i].m_MCId.ToString ());
+            //        //m_listDbInterfaces[0].ListenerRegister();
+            //    }
+            //    else
+            //        ;
+            //}
 
             //List <Modes.BusinessLogic.IGenObject> listIGO = (((DbMCInterface)m_listDbInterfaces[0]).GetListIGO(listMCId));
 
@@ -117,6 +162,19 @@ namespace trans_mc
             InitDbInterfaces();
 
             base.StartThreadSourceData();
+        }
+
+        public override void StopThreadSourceData()
+        {
+            base.StopThreadSourceData();
+
+            if (m_listDbInterfaces.Count > 0)
+            {
+                m_listDbInterfaces[0].ListenerUnregister(0);
+                m_listDbInterfaces[0].Stop();
+            }
+            else
+                ;
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)
@@ -189,6 +247,7 @@ namespace trans_mc
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result)
                     {
+                        fillData(m_curDate);
                     }
                     else
                         ;

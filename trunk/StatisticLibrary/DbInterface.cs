@@ -13,9 +13,9 @@ namespace StatisticCommon
 {
     public abstract class DbInterface
     {
-        public static int MAX_RETRY = 2;
+        public static int MAX_RETRY = 3;
         public static int MAX_WAIT_COUNT = 25;
-        public static int WAIT_TIME_MS = 100;
+        public static int WAIT_TIME_MS = 66;
 
         private class DbInterfaceListener
         {
@@ -249,14 +249,16 @@ namespace StatisticCommon
                     {
                         result = GetData(m_listListeners [i].dataTable, request);
                     }
-                    catch
+                    catch (DbException e)
                     {
+                        Logging.Logg().LogExceptionToFile(e, "DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - request = " + request);
+                        
                         result = false;
                     }
 
                     lock (lockListeners)
                     {
-                        if (!m_listListeners[i].listenerActive)
+                        if ((!(i < m_listListeners.Count)) || (m_listListeners[i].listenerActive == false))
                             continue;
                         else
                             ;

@@ -7,12 +7,12 @@ namespace StatisticCommon
     public class TECComponentBase
     {
         public string name;
-        public int m_id,
-                    m_MCId;
+        public int m_id;
+        public List <int> m_listMCId;
 
         public TECComponentBase()
         {
-            m_MCId = -1;
+            m_listMCId = null;
         }
     }
 }

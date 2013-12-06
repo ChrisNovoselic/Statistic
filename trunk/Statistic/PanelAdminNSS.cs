@@ -138,7 +138,7 @@ namespace Statistic
 
             m_admin.CopyCurToPrevRDGValues();
 
-            this.dgwAdminTable.Invalidate();
+            //this.dgwAdminTable.Invalidate();
         }
 
         private void updateTextBoxColumn()

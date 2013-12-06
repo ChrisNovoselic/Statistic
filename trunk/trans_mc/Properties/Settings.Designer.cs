@@ -22,5 +22,17 @@ namespace trans_mc.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ne1843")]
+        public string Modes_Centre_Service_Host_Name {
+            get {
+                return ((string)(this["Modes_Centre_Service_Host_Name"]));
+            }
+            set {
+                this["Modes_Centre_Service_Host_Name"] = value;
+            }
+        }
     }
 }
