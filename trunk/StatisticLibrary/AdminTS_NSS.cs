@@ -150,8 +150,8 @@ namespace StatisticCommon
             //delegateStartWait ();
             fillListIndexTECComponent (id);
 
-            //new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
-            threadGetRDGValuesWithDate (date);
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
+            //threadGetRDGValuesWithDate (date);
             //delegateStopWait ();
         }
 
@@ -327,6 +327,11 @@ namespace StatisticCommon
                 ;
 
             return errRes;
+        }
+
+        protected override void InitializeSyncState()
+        {
+            m_waitHandleState = new WaitHandle[2] { new AutoResetEvent(true), new ManualResetEvent(false) };
         }
     }
 }

@@ -189,6 +189,13 @@ namespace Statistic
             base.Activate (active);
 
             ClearTables ();
+
+            //Вариант №1
+            //EventArgs.m_admin.ResetRDGExcelValues();
+            //base.comboBoxTecComponent_SelectionChangeCommitted(this, EventArgs.Empty);
+
+            //Вариант №2
+            //comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
         }
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)

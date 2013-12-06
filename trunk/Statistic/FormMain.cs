@@ -77,7 +77,7 @@ namespace Statistic
         private bool Initialize()
         {
             bool bRes = true;
-            
+
             timer.Interval = 666; //Признак первого старта
 
             m_passwords = new Passwords();
@@ -181,11 +181,25 @@ namespace Statistic
 
         private void Stop(FormClosingEventArgs e = null)
         {
+            int i = -1;
+
             if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
             //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
             {
-                if (!m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].MayToClose())
-                    if (!(e == null)) e.Cancel = true;
+                if (!(m_arAdmin == null))
+                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
+                        if (!(m_arAdmin [i] == null))
+                            if (m_arPanelAdmin[i].MayToClose() == false)
+                                if (!(e == null)) {
+                                    e.Cancel = true;
+                                    break;
+                                }
+                                else
+                                    ;
+                            else
+                                ;
+                        else
+                            ;
                 else
                     ;
             }
@@ -194,8 +208,6 @@ namespace Statistic
 
             timer.Stop();
 
-            int i = -1;
-            
             if (!(m_arAdmin == null))
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     if (!(m_arAdmin [i] == null))
@@ -514,12 +526,19 @@ namespace Statistic
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)
         {
+            StatisticCommon.FormChangeMode.MANAGER modeAdmin = FormChangeMode.MANAGER.NSS;
+
+            if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
+                modeAdmin = FormChangeMode.MANAGER.DISP;
+            else
+                ;
+
             if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count && m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
             {
                 selectedTecViews[m_prevSelectedIndex].Activate(false);
                 selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
                 m_prevSelectedIndex = tclTecViews.SelectedIndex;
-                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
+                m_arPanelAdmin[(int)modeAdmin].Activate(false);
             }
             else
             {
@@ -529,7 +548,7 @@ namespace Statistic
                     ;
 
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
-                    m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(true);
+                    m_arPanelAdmin[(int)modeAdmin].Activate(true);
                 else
                     ;
             }
@@ -695,12 +714,12 @@ namespace Statistic
             {
                 bool have_eror = UpdateStatusString();
 
-                if (have_eror)
+                if (have_eror == true)
                     lblMainState.Text = "ОШИБКА";
                 else
                     ;
 
-                if (!have_eror || !show_error_alert)
+                if ((have_eror == false) || (show_error_alert == false))
                     lblMainState.Text = "";
                 else
                     ;

@@ -28,7 +28,7 @@ namespace Statistic
         protected AdminTS m_admin;
 
         protected List <int>m_listTECComponentIndex;
-        private volatile int prevSelectedIndex;
+        protected volatile int prevSelectedIndex;
 
         public bool isActive;
 
