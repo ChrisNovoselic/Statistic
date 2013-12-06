@@ -354,6 +354,8 @@ namespace Statistic
                 // выбираем список отображаемых вкладок
                 if (formChangeMode.ShowDialog() == DialogResult.OK)
                 {
+                    StartWait();
+
                     if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
                         //this.tec = formChangeMode.tec;
 
@@ -402,7 +404,7 @@ namespace Statistic
                     else
                         ;
 
-                    StartWait();
+                    //StartWait();
                     tclTecViews.TabPages.Clear();
                     selectedTecViews.Clear();
 
@@ -699,6 +701,7 @@ namespace Statistic
 
                 if (formChangeMode.admin_was_checked)
                 {
+                    //Никогда не выполняется...
                     //if (formPassword.ShowDialog() == DialogResult.Yes)
                     {
                         AddTabPageAdmin ();

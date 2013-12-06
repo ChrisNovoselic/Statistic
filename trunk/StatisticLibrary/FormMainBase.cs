@@ -10,7 +10,7 @@ namespace StatisticCommon
     public delegate void DelegateStringFunc(string param);
     public delegate void DelegateBoolFunc(bool param);
 
-    public class FormMainBase : Form
+    public abstract class FormMainBase : Form
     {
         protected FormWait formWait;
 
@@ -98,6 +98,6 @@ namespace StatisticCommon
             }
         }
 
-        protected virtual void EventRaised () { }
+        protected abstract void EventRaised();
     }
 }

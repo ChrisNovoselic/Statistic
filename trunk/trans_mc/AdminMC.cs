@@ -244,6 +244,8 @@ namespace trans_mc
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
+                    delegateStopWait();
+
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result)
                     {
@@ -276,6 +278,8 @@ namespace trans_mc
         protected override void StateErrors(int /*StatesMachine*/ state, bool response)
         {
             bool bClear = false;
+
+            delegateStopWait();
 
             switch (state)
             {
@@ -349,6 +353,7 @@ namespace trans_mc
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
+            delegateStartWait();
             lock (m_lockObj)
             {
                 indxTECComponents = indx;

@@ -188,7 +188,7 @@ namespace Statistic
 
             base.Activate (active);
 
-            ClearTables ();
+            //ClearTables ();
 
             //Вариант №1
             //EventArgs.m_admin.ResetRDGExcelValues();

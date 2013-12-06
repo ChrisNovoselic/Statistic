@@ -273,33 +273,12 @@ namespace StatisticCommon
             }
         }
 
-        public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
-        {
-            this.delegateStartWait = dStart;
-            this.delegateStopWait = dStop;
-            this.delegateEventUpdate = dStatus;
-        }
-
-        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fact)
-        {
-            this.errorReport = ferr;
-            this.actionReport = fact;
-        }
-
-        public void SetDelegateSaveComplete(DelegateFunc f) { saveComplete = f; }
-        
-        public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
-
-        //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
-
-        public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
-
         public void GetCurrentTime(int indx)
         {
             lock (m_lockObj)
             {
                 indxTECComponents = indx;
-                
+
                 newState = true;
                 states.Clear();
 

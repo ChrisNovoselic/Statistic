@@ -10,7 +10,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public partial class FormPassword : Form
+    public partial class FormPassword : FormMainBase
     {
         public enum ID_ROLES : uint {COM_DISP = 1, ADMIN, NSS};
 
@@ -41,8 +41,10 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
             {
+                //StartWait();
                 HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass);
                 tbxPassword.Clear ();
+                //StopWait();
                 switch (errRes)
                 {
                     case HAdmin.Errors.NoAccess:
@@ -109,6 +111,10 @@ namespace Statistic
         private void Password_Shown(object sender, EventArgs e)
         {
             tbxPassword.Focus();
+        }
+
+        protected override void EventRaised()
+        {
         }
     }
 }

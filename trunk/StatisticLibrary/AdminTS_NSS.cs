@@ -72,7 +72,7 @@ namespace StatisticCommon
             //curRDGValues = (RDGStruct[])m_curRDGValues.Clone();
 
             m_curRDGValues.CopyTo(curRDGValues, 0);
-            
+
             for (int i = 0; i < m_curRDGValues.Length; i ++) {
                 curRDGValues [i].pbr += m_curRDGValues [i].recomendation;
 
@@ -127,8 +127,8 @@ namespace StatisticCommon
             //delegateStartWait ();
             fillListIndexTECComponent(id);
 
-            //new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
-            threadGetRDGValuesWithoutDate (null);
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
+            //threadGetRDGValuesWithoutDate (null);
             //delegateStopWait ();
         }
 
