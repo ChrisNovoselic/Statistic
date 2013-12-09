@@ -1,0 +1,83 @@
+using System;
+using System.Collections.Generic;
+//using System.ComponentModel;
+//using System.Data;
+//using System.Drawing;
+//using System.Text;
+//using System.IO;
+//using System.Windows.Forms;
+//using System.Runtime.InteropServices;
+
+namespace StatisticCommon
+{
+    public partial class FormParameters : FormParametersBase
+    {
+        private const int POLL_TIME = 30;
+        private const int ERROR_DELAY = 60;
+        private const int MAX_TRYES = 1;
+
+        public int poll_time;
+        public int error_delay;
+        public int max_tryes;
+
+        public FormParameters(string nameFileINI) : base (nameFileINI)
+        {
+            InitializeComponent();
+
+            this.btnCancel.Location = new System.Drawing.Point(8, 90);
+            this.btnOk.Location = new System.Drawing.Point(89, 90);
+            this.btnReset.Location = new System.Drawing.Point(170, 90);
+
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            
+            loadParam();
+            mayClose = false;
+        }
+
+        public void loadParam()
+        {
+            poll_time = m_FileINI.ReadInt("Main settings", "Polling period", POLL_TIME);
+            if (poll_time < nudnQueryPeriod.Minimum || poll_time > nudnQueryPeriod.Maximum)
+                poll_time = POLL_TIME;
+            poll_time *= 1000;
+
+            error_delay = m_FileINI.ReadInt("Main settings", "Error delay", ERROR_DELAY);
+            if (error_delay < nudnDelayTime.Minimum || error_delay > nudnDelayTime.Maximum)
+                error_delay = ERROR_DELAY;
+
+            max_tryes = m_FileINI.ReadInt("Main settings", "Max attempts count", MAX_TRYES);
+            if (max_tryes < nudnRequeryCount.Minimum || max_tryes > nudnRequeryCount.Maximum)
+                max_tryes = ERROR_DELAY;
+        }
+
+        public void saveParam()
+        {
+            m_FileINI.WriteInt("Main settings", "Polling period", poll_time / 1000);
+            m_FileINI.WriteInt("Main settings", "Error delay", error_delay);
+            m_FileINI.WriteInt("Main settings", "Max attempts count", max_tryes);
+        }
+
+        private void btnOk_Click(object sender, EventArgs e)
+        {
+            poll_time = (int)nudnQueryPeriod.Value * 1000;
+            error_delay = (int)nudnDelayTime.Value;
+            max_tryes = (int)nudnRequeryCount.Value;
+            
+            saveParam();
+            mayClose = true;
+            Close();
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            poll_time = POLL_TIME * 1000;
+            error_delay = ERROR_DELAY;
+            max_tryes = MAX_TRYES;
+
+            nudnQueryPeriod.Value = POLL_TIME;
+            nudnDelayTime.Value = ERROR_DELAY;
+            nudnRequeryCount.Value = MAX_TRYES;
+        }
+    }
+}
