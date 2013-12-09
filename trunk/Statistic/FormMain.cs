@@ -661,7 +661,7 @@ namespace Statistic
             if (timer.Interval == 666)
             {
                 m_passwords.StartDbInterface();
-                
+
                 int i = -1;
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     m_arAdmin [i].StartThreadSourceData();
