@@ -162,7 +162,7 @@ namespace trans_mc
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
-                        ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                        ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                         m_arAdmin[i].m_ignore_date = true;
                         break;
                     default:
@@ -311,7 +311,7 @@ namespace trans_mc
 
             for (int i = 0; i < 24; i++)
             {
-                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminMC.DESC_INDEX.COUNT_COLUMN; j++)
                 {
                     switch (j)
                     {

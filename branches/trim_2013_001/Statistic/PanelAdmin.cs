@@ -38,22 +38,20 @@ namespace Statistic
             this.btnRefresh = new System.Windows.Forms.Button();
             //this.btnLoadLayout = new System.Windows.Forms.Button();
 
-            //this.dgwAdminTable = new DataGridViewAdmin();
+            this.dgwAdminTable = new DataGridViewAdmin();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
             this.gbxDivider = new System.Windows.Forms.GroupBox();
-
+            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
             this.SuspendLayout();
-
-            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
+
+            this.Controls.Add(this.dgwAdminTable);
             //this.Controls.Add(this.btnLoadLayout);
 
             this.Controls.Add(this.btnRefresh);
-
-            //this.Controls.Add(this.dgwAdminTable);
 
             this.Controls.Add(this.mcldrDate);
             this.Controls.Add(this.comboBoxTecComponent);
@@ -102,6 +100,14 @@ namespace Statistic
             this.gbxDivider.TabIndex = 4;
             this.gbxDivider.TabStop = false;
             // 
+            // dgwAdminTable
+            //
+            this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
+            this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
+            this.dgwAdminTable.TabIndex = 1;
+            //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
+            //this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
+            // 
             // btnLoadLayout
             // 
             //this.btnLoadLayout.Location = new System.Drawing.Point(10, 282);
@@ -121,7 +127,7 @@ namespace Statistic
             this.comboBoxTecComponent.TabIndex = 3;
             this.comboBoxTecComponent.SelectionChangeCommitted += new System.EventHandler(this.comboBoxTecComponent_SelectionChangeCommitted);
             this.comboBoxTecComponent.DropDownStyle = ComboBoxStyle.DropDownList;
-            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
             this.ResumeLayout();
         }
 
@@ -134,9 +140,68 @@ namespace Statistic
             isActive = false;
         }
 
-        protected virtual void getDataGridViewAdmin() {}
+        protected void getDataGridViewAdmin() {
+            double value;
+            bool valid;
 
-        public virtual void setDataGridViewAdmin(DateTime date) {}
+            for (int i = 0; i < 24; i++)
+            {
+                for (int j = 0; j < (int)DataGridViewAdmin.DESC_INDEX.TO_ALL; j++)
+                {
+                    switch (j)
+                    {
+                        case (int)DataGridViewAdmin.DESC_INDEX.PLAN: // План
+                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value, out value);
+                            m_admin.m_curRDGValues[i].pbr = value;
+                            //m_admin.m_curRDGValues[i].pmin = 0.0;
+                            //m_admin.m_curRDGValues[i].pmax = 0.0;
+                            break;
+                        case (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION: // Рекомендация
+                            {
+                                //cellValidated(e.RowIndex, (int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION);
+
+                                valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value, out value);
+                                m_admin.m_curRDGValues[i].recomendation = value;
+
+                                break;
+                            }
+                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE:
+                            {
+                                if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value == null))
+                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                else
+                                    m_admin.m_curRDGValues[i].deviationPercent = false;
+
+                                break;
+                            }
+                        case (int)DataGridViewAdmin.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                            {
+                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value, out value);
+                                m_admin.m_curRDGValues[i].deviation = value;
+
+                                break;
+                            }
+                    }
+                }
+            }
+
+            //m_admin.CopyCurRDGValues();
+        }
+
+        public void setDataGridViewAdmin(DateTime date) {
+            for (int i = 0; i < 24; i++)
+            {
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
+            }
+
+            //this.dgwAdminTable.Invalidate();
+
+            m_admin.CopyCurToPrevRDGValues();
+        }
 
         public void CalendarSetDate(DateTime date)
         {
@@ -186,7 +251,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.STATIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -195,7 +260,7 @@ namespace Statistic
         public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
             m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
 
-            m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+            m_admin.m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
 
             comboBoxTecComponent.Items.Clear ();
         }
@@ -244,7 +309,7 @@ namespace Statistic
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.STATIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -259,7 +324,7 @@ namespace Statistic
             {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.STATIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
@@ -274,7 +339,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.STATIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private string SetNumberSeparator(string current_str)
@@ -341,7 +406,9 @@ namespace Statistic
             return false;
         }
 
-        public virtual void ClearTables() {}
+        public void ClearTables() {
+            dgwAdminTable.ClearTables ();
+        }
 
         public virtual void Activate(bool active)
         {

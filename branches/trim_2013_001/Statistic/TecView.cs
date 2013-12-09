@@ -2172,7 +2172,7 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
+            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, AdminTS.TYPE_FIELDS.STATIC));
         }
 
         private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
@@ -4832,7 +4832,7 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                            GetAdminValuesRequest(AdminTS.TYPE_FIELDS.DYNAMIC);
+                            GetAdminValuesRequest(AdminTS.TYPE_FIELDS.STATIC);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();

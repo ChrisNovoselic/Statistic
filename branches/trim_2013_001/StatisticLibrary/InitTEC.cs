@@ -8,7 +8,6 @@ namespace StatisticCommon
     public class InitTEC
     {
         public List<TEC> tec;
-        private Users m_user;
 
         public static DataTable getListTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
@@ -64,7 +63,6 @@ namespace StatisticCommon
         public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
         {
             tec = new List<TEC>();
-            m_user = new Users(connSett);
 
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -83,8 +81,6 @@ namespace StatisticCommon
                 //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
                 //Logging.Logg().LogUnlock();
                 
-                if ((m_user.allTEC == 0) || (m_user.Role < 100) || (m_user.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
-                {
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
                     //Logging.Logg().LogUnlock();
@@ -184,9 +180,6 @@ namespace StatisticCommon
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TG = Ok", true, false, false);
                     //Logging.Logg().LogUnlock();
-                }
-                else
-                    ;
             }
 
             //Logging.Logg().LogLock();

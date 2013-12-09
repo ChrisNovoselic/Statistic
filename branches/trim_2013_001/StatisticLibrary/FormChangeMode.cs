@@ -11,11 +11,10 @@ namespace StatisticCommon
     public partial class FormChangeMode : Form
     {
         public List<TEC> tec;
-        public List<int> tec_index,
-                        TECComponent_index,
-                        across_index,
-                        m_listAcrossIndexCheckedIndices;
-        private CheckBox[] m_arCheckBoxTECComponent;
+        public List<int> tec_index, TECComponent_index
+                        , across_index
+                        , m_listAcrossIndexCheckedIndices;
+        //private CheckBox[] m_arCheckBoxTECComponent;
         public List<int> was_checked;
         public bool /*[]*/ admin_was_checked;
         public bool closing;
@@ -31,10 +30,10 @@ namespace StatisticCommon
 
             this.tec = tec;
 
-            m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
-                                                                                        checkBoxGTP,
-                                                                                        checkBoxPC,
-                                                                                        checkBoxTG };
+            //m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
+            //                                                                            checkBoxGTP,
+            //                                                                            checkBoxPC,
+            //                                                                            checkBoxTG };
 
             admin_was_checked = false; //new bool [2] {false, false};
 
@@ -44,7 +43,9 @@ namespace StatisticCommon
             m_listAcrossIndexCheckedIndices = new List <int> ();
             was_checked = new List<int>();
             
-            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
+            //m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
+            //Искуссивенно
+            checkBox_CheckedChanged (null, EventArgs.Empty);
 
             closing = false;
         }
@@ -52,10 +53,13 @@ namespace StatisticCommon
         public int getModeTECComponent() {
             int iMode = 0;
 
-            for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
-            {
-                if (m_arCheckBoxTECComponent[i].Checked == true) iMode |= (int)Math.Pow (2, i); else ;
-            }
+            //for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
+            //{
+            //    if (m_arCheckBoxTECComponent[i].Checked == true) iMode |= (int)Math.Pow (2, i); else ;
+            //}
+
+            iMode |= (int)Math.Pow(2, (int)MODE_TECCOMPONENT.TEC);
+            iMode |= (int)Math.Pow(2, (int)MODE_TECCOMPONENT.GTP);
 
             return iMode;
         }

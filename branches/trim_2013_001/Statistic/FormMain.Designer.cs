@@ -41,9 +41,6 @@
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemИзменитьПарольНСС = new System.Windows.Forms.ToolStripMenuItem();
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -132,10 +129,7 @@
             this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.настройкиСоединенияToolStripMenuItem,
             this.изменитьПарольДиспетчераToolStripMenuItem,
-            this.изменитьПарольАдминистратораToolStripMenuItem,
-            this.toolStripMenuItemИзменитьПарольНСС,
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
-            this.изментьСоставПользовательToolStripMenuItem});
+            this.изменитьПарольАдминистратораToolStripMenuItem});
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
@@ -153,27 +147,6 @@
             this.изменитьПарольАдминистратораToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
             this.изменитьПарольАдминистратораToolStripMenuItem.Text = "Изменить пароль администратора";
             this.изменитьПарольАдминистратораToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольАдминистратораToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItemИзменитьПарольНСС
-            // 
-            this.toolStripMenuItemИзменитьПарольНСС.Name = "toolStripMenuItemИзменитьПарольНСС";
-            this.toolStripMenuItemИзменитьПарольНСС.Size = new System.Drawing.Size(303, 22);
-            this.toolStripMenuItemИзменитьПарольНСС.Text = "Изменить пароль начальника смены станции";
-            this.toolStripMenuItemИзменитьПарольНСС.Click += new System.EventHandler(this.изменитьПарольНСС_Click);
-            // 
-            // изментьСоставТЭЦГТПЩУToolStripMenuItem
-            // 
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
-            // 
-            // изментьСоставПользовательToolStripMenuItem
-            // 
-            this.изментьСоставПользовательToolStripMenuItem.Name = "изментьСоставПользовательToolStripMenuItem";
-            this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей";
-            this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
             // 
             // параметрыToolStripMenuItem
             // 
@@ -330,9 +303,6 @@
         private System.Windows.Forms.ToolStripMenuItem параметрыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemИзменитьПарольНСС;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
     }
 }
 

@@ -15,7 +15,7 @@ namespace StatisticCommon
 {    
     public class AdminTS : HAdmin
     {
-        public enum TYPE_FIELDS : uint {STATIC, DYNAMIC, COUNT_TYPE_FIELDS};
+        public enum TYPE_FIELDS : uint {STATIC, /*DYNAMIC,*/ COUNT_TYPE_FIELDS};
 
         public AdminTS.TYPE_FIELDS m_typeFields;
 
@@ -796,15 +796,6 @@ namespace StatisticCommon
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
-                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                            break;
                         default:
                             break;
                     }
@@ -820,14 +811,6 @@ namespace StatisticCommon
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"'),";
-                            break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + (comp.m_id) +
-                                        @"),";
                             break;
                         default:
                             break;
@@ -876,13 +859,6 @@ namespace StatisticCommon
                                 @", " + name + "_IS_PER" +
                                 @", " + name + "_DIVIAT) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
-                    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " (DATE, " + @"REC" +
-                                @", " + "IS_PER" +
-                                @", " + "DIVIAT" +
-                                @", " + "ID_COMPONENT" +
-                                @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
-                        break;
                     default:
                         break;
                 }
@@ -919,13 +895,6 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
-                            break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
-                                        @" WHERE " +
-                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
                             break;
                         default:
                             break;
@@ -1030,17 +999,6 @@ namespace StatisticCommon
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
-                                        " SET " +
-                                        @"PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @", Pmax='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @" WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                            break;
                         default:
                             break;
                     }
@@ -1057,17 +1015,6 @@ namespace StatisticCommon
                                         @"', '" + "0" +
                                         @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
-                            break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "œ¡–" + getPBRNumber(i) +
-                                        @"', " + comp.m_id +
-                                        @", '" + "0" + "'" +
-                                        @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @", '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @", '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @"),";
                             break;
                         default:
                             break;
@@ -1090,9 +1037,6 @@ namespace StatisticCommon
                     case AdminTS.TYPE_FIELDS.STATIC:
                         string name = t.NameFieldOfPBRRequest(comp);
                         query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
-                        break;
-                    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     default:
                         break;
@@ -1158,13 +1102,6 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
-                            break;
-                        case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
-                                        @" WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
                             break;
                         default:
                             break;
