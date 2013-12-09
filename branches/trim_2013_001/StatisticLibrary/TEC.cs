@@ -284,18 +284,27 @@ namespace StatisticCommon
                 case AdminTS.TYPE_FIELDS.STATIC:
                     if (num_comp < 0)
                     {
+                        string strDelim = ", ",
+                                comp_selectPBRValueQuery = string.Empty;
                         foreach (TECComponent g in list_TECComponents)
                         {
+                            comp_selectPBRValueQuery = string.Empty;
                             if ((g.m_id > 100) && (g.m_id < 500))
                             {
-                                selectPBR += ", ";
+                                comp_selectPBRValueQuery = selectPBRValueQuery(g);
 
-                                selectPBR += selectPBRValueQuery(g);
+                                if (comp_selectPBRValueQuery.Length > 0)
+                                    selectPBR += (strDelim + comp_selectPBRValueQuery);
+                                else
+                                    ;
                             }
                             else
                                 ;
                         }
-                        selectPBR = selectPBR.Substring(2);
+                        if (selectPBR.Length > strDelim.Length)
+                            selectPBR = selectPBR.Substring(strDelim.Length);
+                        else
+                            ;
                     }
                     else
                     {

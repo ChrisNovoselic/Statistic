@@ -552,7 +552,12 @@ namespace Statistic
             }
 
             //tclTecViews.Invalidate ();
+            //tclTecViews.Refresh ();
             //this.Invalidate ();
+            //this.Refresh ();
+
+            //m_panelAdmin.Invalidate();
+            //m_panelAdmin.Refresh();
         }
 
         public bool UpdateStatusString()

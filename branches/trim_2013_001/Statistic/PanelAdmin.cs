@@ -258,11 +258,22 @@ namespace Statistic
         }
 
         public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
+            int i = -1;
             m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
 
             m_admin.m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
 
             comboBoxTecComponent.Items.Clear ();
+
+            for (i = 0; i < m_listTECComponentIndex.Count; i ++)
+            {
+                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_admin.allTECComponents[m_listTECComponentIndex[i]].name);
+            }
+
+            if (comboBoxTecComponent.Items.Count > 0)
+                comboBoxTecComponent.SelectedIndex = 0;
+            else
+                ;
         }
 
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
