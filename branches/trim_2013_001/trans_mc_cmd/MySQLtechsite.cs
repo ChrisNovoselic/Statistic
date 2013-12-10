@@ -16,16 +16,45 @@ namespace trans_mc_cmd
     /// </summary>
     class MySQLtechsite
     {
+        public enum CONN_SETT_TYPE { CONFIG, PPBR, COUNT_CONN_SETT_TYPE};
+        
         AdminTS m_admin;
         List <int> m_listIndexTECComponent;
         List<int> m_listIDSTECComponent;
         
         public bool Initialized {
-            get { return ((!(m_MySQLConnection == null)) && ((!(m_MySQLConnection.State == ConnectionState.Broken)) && (!(m_MySQLConnection.State == ConnectionState.Closed)))); }
+            get
+            {
+                bool bRes = false;
+
+                if (!(m_MySQLConnections == null))
+                    for (CONN_SETT_TYPE i = CONN_SETT_TYPE.CONFIG; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                    {
+                        bRes = DbTSQLInterface.IsConnected (m_MySQLConnections[(int)i]);
+
+                        if (bRes == false)
+                            break;
+                        else
+                            ;
+                    }
+                else
+                    ;
+
+                if (bRes == true)
+                    if (!(m_listIDSTECComponent.Count > 0))
+                        bRes = false;
+                    else
+                        ;
+                else
+                    ;
+
+                return bRes;
+            }
         }
 
-        public MySqlConnection m_MySQLConnection;
+        public MySqlConnection [] m_MySQLConnections;
         public static string m_strFileNameConnSett = "connsett_mc_cmd.ini";
+        public string m_strTableNamePPBR;
         //public static string m_strNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)";
         public enum Params : int { PBR = 0, Pmin = 1, Pmax = 2, COUNT_PARAMS };
 
@@ -48,8 +77,10 @@ namespace trans_mc_cmd
             {
                 ConnectionSettings connSett = Program.ReadConnSettFromFileINI (new FileINI (Program.m_strFileNameSetup));
                 connSett.password = formConnSett.getConnSett().password;
-                m_MySQLConnection = new MySqlConnection(connSett.GetConnectionStringMySQL());
-                try { m_MySQLConnection.Open (); }
+
+                m_MySQLConnections = new MySqlConnection [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+                m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG] = new MySqlConnection(connSett.GetConnectionStringMySQL());
+                try { m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG].Open(); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
@@ -71,11 +102,14 @@ namespace trans_mc_cmd
                     }
                 }
 
-                if (m_listIDSTECComponent.Count > 0)
-                    ;
-                else
+                if ((DbTSQLInterface.IsConnected(m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG]) == true) &&
+                    (m_listIDSTECComponent.Count > 0))
                 {
+                    m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR] = new MySqlConnection(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR].GetConnectionStringMySQL());
+                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
                 }
+                else
+                    ;
             }
             else
             {
@@ -87,7 +121,7 @@ namespace trans_mc_cmd
         public string TestRead()
         {
             int err = -1;
-            DataTable dataTest = DbTSQLInterface.Select (m_MySQLConnection, "SELECT page FROM settings", null, null, out err);
+            DataTable dataTest = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT page FROM settings", null, null, out err);
             
             if (err == 0)
                 return (dataTest.Rows[0][0].ToString ());
@@ -206,7 +240,7 @@ namespace trans_mc_cmd
             int? iRes = null;
             er = -1;
 
-            DataTable data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            DataTable data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
             if (!(er == 0))
             {
                 string errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
@@ -231,7 +265,7 @@ namespace trans_mc_cmd
             {
                 //NOW() на этом сервере не совпадает с Новосибирским временем
                 //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
-                DbTSQLInterface.ExecNonQuery(m_MySQLConnection, "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
                 if (!(err == 0))
                     itssAUX.PrintErrorMessage("Ошибка записи в базу MySQL на INSERT!");
                 else
@@ -264,7 +298,7 @@ namespace trans_mc_cmd
                     {
                         Console.WriteLine(sUpdate + Environment.NewLine);
                         //Запуск апдейта одной часовой записи
-                        DbTSQLInterface.ExecNonQuery (m_MySQLConnection, sUpdate, null, null, out err);
+                        DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
                         if (!(err == 0))
                             itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::FlushDataToDatabase () - Updated...");
                         else

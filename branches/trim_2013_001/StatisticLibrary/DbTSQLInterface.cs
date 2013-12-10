@@ -444,8 +444,9 @@ namespace StatisticCommon
             if ((!(types == null)) && (!(parametrs == null)))
                 foreach (DbType type in types)
                 {
-                    commandMySQL.Parameters.Add(string.Empty, type);
-                    commandMySQL.Parameters[commandMySQL.Parameters.Count - 1] = (MySqlParameter)parametrs[commandMySQL.Parameters.Count - 1];
+                    //commandMySQL.Parameters.Add(string.Empty, type);
+                    commandMySQL.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count]);
+                    //commandMySQL.Parameters[commandMySQL.Parameters.Count - 1] = (MySqlParameter)parametrs[commandMySQL.Parameters.Count - 1];
                 }
             else
                 ;
@@ -717,6 +718,11 @@ namespace StatisticCommon
                     }
                 }
             }
+        }
+
+        public static bool IsConnected(DbConnection obj)
+        {
+            return (!(obj == null)) && (!(obj.State == ConnectionState.Closed)) && (!(obj.State == ConnectionState.Broken));
         }
     }
 }

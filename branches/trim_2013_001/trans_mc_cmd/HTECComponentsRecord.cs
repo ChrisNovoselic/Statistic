@@ -59,17 +59,7 @@ namespace trans_mc_cmd
             int err = -1,
                 i = -1;
 
-            string pbrFields = string.Empty;
-            for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
-            {
-                pbrFields += par.ToString();
-                if ((par + 1) < MySQLtechsite.Params.COUNT_PARAMS)
-                    pbrFields += ", ";
-                else
-                    ;
-            }
-
-            DbTSQLInterface.Select (parent.m_MySQLConnection, "SELECT " + pbrFields + " FROM PPBRvsPBROfID where date_time = ?", new DbType [] { DbType.DateTime }, new object [] { DT }, out err);
+            DbTSQLInterface.Select(parent.m_MySQLConnections[(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBROfID where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
 
             foreach (KeyValuePair<int, double?[]> pair in m_srtlist_ppbr)
             {
@@ -168,7 +158,7 @@ namespace trans_mc_cmd
             
             date_time = DT;
 
-            DataTable rdr = DbTSQLInterface.Select(parent.m_MySQLConnection, "SELECT * FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            DataTable rdr = DbTSQLInterface.Select(parent.m_MySQLConnections [(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
             if (rdr.Rows.Count > 0)
             {
                 BTEC_PBR = (double?)rdr.Rows[0]["BTEC_PBR"];

@@ -251,7 +251,7 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if ((getModeTECComponent() > 0) && (tec.Count > 0))
+            if ((getModeTECComponent() > 0) && (tec.Count > 0) && (clbMode.Items.Count > 0))
                 clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
             else
                 ;

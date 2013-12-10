@@ -31,7 +31,7 @@ namespace trans_mc_cmd
             else
                 ;
 
-            Console.WriteLine(Environment.NewLine + "DB Статистика Initializing - Please Wait..." + Environment.NewLine);
+            Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait..." + Environment.NewLine);
 
             try { techsite = new MySQLtechsite(); }
             catch (Exception e)
@@ -113,7 +113,8 @@ namespace trans_mc_cmd
 
                 switch (args[0])
                 {
-                    case "/?":
+                    default:
+                    //case "/?":
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
