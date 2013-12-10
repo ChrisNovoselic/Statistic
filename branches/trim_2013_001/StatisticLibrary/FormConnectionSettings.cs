@@ -436,8 +436,21 @@ namespace StatisticCommon
         }
 
         public void setConnSett(int indx, ConnectionSettings connSett)
-        {
-            addConnSett (connSett);
+        {            
+            if (indx < m_connectionSettingsEdit.Count)
+            {
+            }
+            else
+                addConnSett (connSett);
+
+            SelectedIndex = indx;
+
+            tbxServer.Text = connSett.server;
+            tbxDataBase.Text = connSett.dbName;
+            nudnPort.Value = connSett.port;
+            tbxUserId.Text = connSett.userName;
+            mtbxPass.Text = connSett.password;
+            cbxIgnore.Checked = connSett.ignore;
         }
 
         public void addConnSett(ConnectionSettings connSett)

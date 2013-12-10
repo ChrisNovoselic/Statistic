@@ -8,6 +8,8 @@ using System.Data.Common;
 using Modes;
 using ModesApiExternal;
 
+using StatisticCommon;
+
 namespace trans_mc_cmd
 {
     class Program
@@ -18,42 +20,81 @@ namespace trans_mc_cmd
         static IList<PlanFactorItem> LPFI;
 
         static MySQLtechsite techsite;
-        
+
+        public static string m_strFileNameSetup = "setup.ini";
+
         static void Main(string[] args)
         {
             bool bNoWait = false;
-            if (ProcArgs(args, out bNoWait)) return;
+            if (ProcArgs(args, out bNoWait) == true)
+                return;
+            else
+                ;
 
-            techsite = new MySQLtechsite();
+            Console.WriteLine(Environment.NewLine + "DB Статистика Initializing - Please Wait..." + Environment.NewLine);
 
-            Console.WriteLine(Environment.NewLine + "API Initializing - Please Wait..." + Environment.NewLine);
-
-            ModesApiFactory.Initialize(new Properties.Settings().Modes_Centre_Service_Host_Name);
-
-            if (ModesApiFactory.IsInitilized)
+            try { techsite = new MySQLtechsite(); }
+            catch (Exception e)
             {
-                IApiExternal api_ = ModesApiFactory.GetModesApi();
-                LPFI = api_.GetPlanFactors();
-                DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
-                //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
-                //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
-                //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
-                Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt, SyncZone.First, TreeContent.PGObjects, true);
-
-                foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
-                {
-                    Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
-                    ProcessParams(IGO);
-                    ProcessChilds(IGO, 1, api_);
-                }
-
-                Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);     //А время апдейта (поле wr_date_time) Новосибирское
-
-                techsite.FlushDataToDatabase();
             }
-            else itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
+
+            if (techsite.Initialized == true)
+            {
+                Console.WriteLine(Environment.NewLine + "API Initializing - Please Wait..." + Environment.NewLine);
+
+                ModesApiFactory.Initialize(GetNameHostModesCentre(new FileINI(m_strFileNameSetup)));
+
+                if (ModesApiFactory.IsInitilized == true)
+                {
+                    IApiExternal api_ = ModesApiFactory.GetModesApi();
+                    LPFI = api_.GetPlanFactors();
+                    DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
+                    //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
+                    //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
+                    //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+                    Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt, SyncZone.First, TreeContent.PGObjects, true);
+
+                    foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
+                    {
+                        Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
+                        ProcessParams(IGO);
+                        ProcessChilds(IGO, 1, api_);
+                    }
+
+                    Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);     //А время апдейта (поле wr_date_time) Новосибирское
+
+                    techsite.FlushDataToDatabase();
+                }
+                else
+                    itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
+            }
+            else
+                ; //Не инициализировано соединение с БД Статистика
+
             Console.WriteLine("End. Press any key.");
-            if (!bNoWait) Console.ReadKey();
+
+            if (bNoWait == false)
+                Console.ReadKey();
+            else
+                ;
+        }
+
+        private static string GetNameHostModesCentre(FileINI fi)
+        {
+            return fi.ReadString("Параметры соединения с Modes-Centre (trans_mc_cmd.exe)", "ИмяСервер", string.Empty);
+        }
+
+        public static ConnectionSettings ReadConnSettFromFileINI (FileINI fileINI)
+        {
+            ConnectionSettings connSettRes = new ConnectionSettings();
+            string strProgramNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)"; //MySQLtechsite.m_strNameSectionINI
+            connSettRes.server = fileINI.ReadString(strProgramNameSectionINI, "IPСервер", string.Empty);
+            connSettRes.dbName = fileINI.ReadString(strProgramNameSectionINI, "ИмяБД", string.Empty);
+            connSettRes.userName = fileINI.ReadString(strProgramNameSectionINI, "ИмяПользователь", string.Empty);
+            connSettRes.port = 3306;
+            connSettRes.ignore = false;
+
+            return connSettRes;
         }
 
         /// <summary>
@@ -61,20 +102,22 @@ namespace trans_mc_cmd
         /// </summary>
         static bool ProcArgs(string[] args, out bool bNoWait)
         {
-            Properties.Settings sett = new Properties.Settings();
+            //Properties.Settings sett = new Properties.Settings();
             bool bDoExit = false;
 
             bNoWait = false;
 
             if (args.Length > 0)
+            {
+                FileINI fileINI = new FileINI("setup.ini");
+
                 switch (args[0])
                 {
                     case "/?":
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
                         Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
-                        Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + sett.Modes_Centre_Service_Host_Name);
-                        Console.WriteLine(sett.TechsiteMySQLconnectionString);
+                        Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre (fileINI));
                         Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /nowait /setmysqlpassword" + Environment.NewLine);
                         Console.WriteLine("End. Press any key.");
                         Console.ReadKey();
@@ -86,9 +129,13 @@ namespace trans_mc_cmd
                     case "/setmysqlpassword":
                         if (args.Length == 2)
                         {
-                            string sPass = args[1];
-                            sett.accessPart = Connection.CryptoProvider.Encrypt(sPass, "ASfd9");       //Зашифровать и сохранить в конфиге
-                            sett.Save();
+                            ConnectionSettings connSett = ReadConnSettFromFileINI (fileINI);
+                            connSett.password = args[1];
+
+                            FormConnectionSettings formConnSett = new FormConnectionSettings (MySQLtechsite.m_strFileNameConnSett);
+                            formConnSett.setConnSett(0, connSett);
+                            formConnSett.btnOk_Click (null, EventArgs.Empty);
+                            formConnSett.SaveSettingsFile();
                         }
                         else
                             Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");
@@ -96,6 +143,9 @@ namespace trans_mc_cmd
                         bDoExit = true;
                         break;
                 }
+            }
+            else
+                ;
 
             return bDoExit;
         }

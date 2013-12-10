@@ -360,6 +360,55 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
+        public static DataTable Select(MySqlConnection connectionMySQL, string query, DbType [] types, object [] parametrs, out int er)
+        {
+            er = 0;
+
+            DataTable dataTableRes = new DataTable();
+
+            ParametrsValidate (types, parametrs, out er);
+
+            if (er == 0)
+            {
+                MySqlCommand commandMySQL;
+                MySqlDataAdapter adapterMySQL;
+
+                commandMySQL = new MySqlCommand();
+                commandMySQL.Connection = connectionMySQL;
+                commandMySQL.CommandType = CommandType.Text;
+
+                adapterMySQL = new MySqlDataAdapter();
+                adapterMySQL.SelectCommand = commandMySQL;
+
+                commandMySQL.CommandText = query;
+                ParametrsAdd(commandMySQL, types, parametrs);
+
+                dataTableRes.Reset();
+                dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+                try
+                {
+                    if (connectionMySQL.State == ConnectionState.Open)
+                    {
+                        adapterMySQL.Fill(dataTableRes);
+                    }
+                    else
+                        er = -1; //
+                }
+                catch (Exception e)
+                {
+                    logging_catch_db(connectionMySQL, e);
+
+                    er = -1;
+                }
+            }
+            else {
+                // Логгирование в 'ParametrsValidate'
+            }
+
+            return dataTableRes;
+        }
+
         public static DataTable Select(ConnectionSettings connSett, string query, out int er)
         {
             er = 0;
@@ -404,6 +453,84 @@ namespace StatisticCommon
             connectionMySQL.Close();
 
             return dataTableRes;
+        }
+
+        private static void ParametrsAdd(MySqlCommand commandMySQL, DbType[] types, object[] parametrs)
+        {
+            if ((!(types == null)) && (!(parametrs == null)))
+                foreach (DbType type in types)
+                {
+                    commandMySQL.Parameters.Add(string.Empty, type);
+                    commandMySQL.Parameters[commandMySQL.Parameters.Count - 1] = (MySqlParameter)parametrs[commandMySQL.Parameters.Count - 1];
+                }
+            else
+                ;
+        }
+
+        private static void ParametrsValidate (DbType[] types, object[] parametrs, out int err)
+        {
+            err = 0;
+
+            if ((!(types == null)) || (!(parametrs == null)))
+                err = -1;
+            else
+                if ((!(types == null)) && (!(parametrs == null)))
+                {
+                    if (!(types.Length == parametrs.Length))
+                    {
+                        err = -1;
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+
+            if (!(err == 0))
+            {
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
+                Logging.Logg().LogUnlock();
+            }
+            else
+                ;
+        }
+
+        public static void ExecNonQuery(MySqlConnection connectionMySQL, string query, DbType[] types, object[] parametrs, out int er)
+        {
+            er = 0;
+
+            MySqlCommand commandMySQL;
+
+            ParametrsValidate (types, parametrs, out er);
+
+            if (er == 0)
+            {
+                commandMySQL = new MySqlCommand();
+                commandMySQL.Connection = connectionMySQL;
+                commandMySQL.CommandType = CommandType.Text;
+
+                commandMySQL.CommandText = query;
+                ParametrsAdd(commandMySQL, types, parametrs);
+
+                try
+                {
+                    if (connectionMySQL.State == ConnectionState.Open)
+                    {
+                        commandMySQL.ExecuteNonQuery();
+                    }
+                    else
+                        er = -1; //
+                }
+                catch (Exception e)
+                {
+                    logging_catch_db(connectionMySQL, e);
+
+                    er = -1;
+                }
+            }
+            else
+                ;
         }
 
         public static void ExecNonQuery(ConnectionSettings connSett, string query, out int er)
@@ -604,7 +731,7 @@ namespace StatisticCommon
                     DbTSQLInterface.ExecNonQuery(connSett, strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], out err);
                 }
                 else
-                {
+                {  //Ничего удалять не надо
                     if (dataRows.Length == 1)
                     {
                     }

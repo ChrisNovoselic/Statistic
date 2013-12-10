@@ -18,7 +18,7 @@ namespace StatisticCommon
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool WritePrivateProfileString(string lpAppName,
            string lpKeyName, string lpString, string lpFileName);*/
-        protected FIleINI m_FileINI;
+        protected FileINI m_FileINI;
 
         public bool mayClose;
         //private DelegateFunc delegateParamsApply;
@@ -67,7 +67,7 @@ namespace StatisticCommon
 
             this.KeyUp +=new KeyEventHandler(FormParametersBase_KeyUp);
 
-            m_FileINI = new FIleINI(nameFileINI);
+            m_FileINI = new FileINI(nameFileINI);
 
             m_State = 0;
         }
