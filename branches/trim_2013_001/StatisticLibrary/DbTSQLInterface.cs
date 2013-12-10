@@ -413,35 +413,12 @@ namespace StatisticCommon
         {
             er = 0;
 
-            DataTable dataTableRes = new DataTable();
-
+            DataTable dataTableRes = null;
             MySqlConnection connectionMySQL;
-            MySqlCommand commandMySQL;
-            MySqlDataAdapter adapterMySQL;
-
             connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            commandMySQL = new MySqlCommand();
-            commandMySQL.Connection = connectionMySQL;
-            commandMySQL.CommandType = CommandType.Text;
-
-            adapterMySQL = new MySqlDataAdapter();
-            adapterMySQL.SelectCommand = commandMySQL;
-
-            commandMySQL.CommandText = query;
-
-            dataTableRes.Reset();
-            dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
 
             try {
                 connectionMySQL.Open();
-
-                if (connectionMySQL.State == ConnectionState.Open)
-                {
-                    adapterMySQL.Fill(dataTableRes);
-                }
-                else
-                    ; //
             }
             catch (Exception e)
             {
@@ -450,7 +427,14 @@ namespace StatisticCommon
                 er = -1;
             }
 
-            connectionMySQL.Close();
+            if (er == 0)
+            {
+                dataTableRes = Select(connectionMySQL, query, null, null, out er);
+
+                connectionMySQL.Close();
+            }
+            else
+                dataTableRes = new DataTable();
 
             return dataTableRes;
         }
@@ -538,26 +522,12 @@ namespace StatisticCommon
             er = 0;
 
             MySqlConnection connectionMySQL;
-            MySqlCommand commandMySQL;
 
             connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            commandMySQL = new MySqlCommand();
-            commandMySQL.Connection = connectionMySQL;
-            commandMySQL.CommandType = CommandType.Text;
-
-            commandMySQL.CommandText = query;
 
             try
             {
                 connectionMySQL.Open();
-
-                if (connectionMySQL.State == ConnectionState.Open)
-                {
-                    commandMySQL.ExecuteNonQuery();
-                }
-                else
-                    ; //
             }
             catch (Exception e)
             {
@@ -566,7 +536,14 @@ namespace StatisticCommon
                 er = -1;
             }
 
-            connectionMySQL.Close();
+            if (er == 0)
+            {
+                ExecNonQuery(connectionMySQL, query, null, null, out er);
+
+                connectionMySQL.Close();
+            }
+            else
+                ;
         }
 
         public static void ExecNonQuery(string path, string query, out int er)
