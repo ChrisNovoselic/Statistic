@@ -3629,7 +3629,10 @@ namespace Statistic
                                         //foreach (TECComponent g in tec.list_TECComponents)
                                         for (j = 0; j < m_list_TECComponents.Count; j ++)
                                         {
-                                            valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
+                                            if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count)
+                                                valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
+                                            else
+                                                valuesPBR[j, 24] = 0.0;
                                             //j++;
                                         }
                                     }
@@ -3680,10 +3683,10 @@ namespace Statistic
                                     {
                                         try
                                         {
-                                            if (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull))
+                                            if ((offsetPlan + (j * 3) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
                                                 valuesPBR[j, hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
                                             else
-                                                ;
+                                                valuesPBR[j, hour - 1] = 0.0;
 
                                             if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
@@ -3883,7 +3886,7 @@ namespace Statistic
                                         else
                                             ;
 
-                                    if (!(m_tablePBRResponse.Rows[i][offsetPlan] is System.DBNull))
+                                    if ((offsetPlan < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan] is System.DBNull)))
                                         valuesPBR[hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan];
                                     else
                                         ;

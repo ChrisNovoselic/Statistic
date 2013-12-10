@@ -214,9 +214,9 @@ namespace StatisticCommon
                     //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                     //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
                     //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + "Pmin";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_admin + @"_" + "Pmax";
+                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmin";
+                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmax";
                 }
                 else
                 {
@@ -320,13 +320,27 @@ namespace StatisticCommon
                 case AdminTS.TYPE_FIELDS.STATIC:
                     if (num_comp < 0)
                     {
+                        string strDelim = ", ",
+                                comp_selectPBRValueQuery = string.Empty;
                         foreach (TECComponent g in list_TECComponents)
                         {
-                            selectPBR += ", ";
+                            comp_selectPBRValueQuery = string.Empty;
+                            if ((g.m_id > 100) && (g.m_id < 500))
+                            {
+                                comp_selectPBRValueQuery = selectPBRValueQuery(g);
 
-                            selectPBR += selectPBRValueQuery(g);
+                                if (comp_selectPBRValueQuery.Length > 0)
+                                    selectPBR += (strDelim + comp_selectPBRValueQuery);
+                                else
+                                    ;
+                            }
+                            else
+                                ;
                         }
-                        selectPBR = selectPBR.Substring(2);
+                        if (selectPBR.Length > strDelim.Length)
+                            selectPBR = selectPBR.Substring(strDelim.Length);
+                        else
+                            ;
                     }
                     else
                     {
@@ -523,13 +537,17 @@ namespace StatisticCommon
                     {
                         foreach (TECComponent g in list_TECComponents)
                         {
-                            selectAdmin += ", ";
-                            //selectPBR += ", ";
+                            if ((g.m_id > 100) && (g.m_id < 500))
+                            {
+                                selectAdmin += ", ";
+                                //selectPBR += ", ";
 
-                            selectAdmin += selectAdminValueQuery(g);
+                                selectAdmin += selectAdminValueQuery(g);
+                            }
+                            else
+                                ;
                         }
                         selectAdmin = selectAdmin.Substring(2);
-                        //selectPBR = selectPBR.Substring(2);
                     }
                     else
                     {

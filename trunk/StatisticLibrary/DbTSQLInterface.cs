@@ -101,7 +101,7 @@ namespace StatisticCommon
                 Logging.Logg().LogUnlock();
             }
 
-            if (! (m_dbConnection.State == ConnectionState.Closed))
+            if (!(m_dbConnection.State == ConnectionState.Closed))
                 bRes = false;
             else
                 ;
@@ -124,7 +124,8 @@ namespace StatisticCommon
                     ;
 
                 //string connStr = string.Empty;
-                switch (m_connectionType) {
+                switch (m_connectionType)
+                {
                     case DB_TSQL_INTERFACE_TYPE.MSSQL:
                         //connStr = connectionSettings.GetConnectionStringMSSQL();
                         ((SqlConnection)m_dbConnection).ConnectionString = ((ConnectionSettings)m_connectionSettings).GetConnectionStringMSSQL();
@@ -187,7 +188,7 @@ namespace StatisticCommon
         protected override bool Disconnect()
         {
             if (m_dbConnection.State == ConnectionState.Closed)
-                return true; 
+                return true;
             else
                 ;
 
@@ -209,9 +210,9 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                logging_catch_db (m_dbConnection, e);
+                logging_catch_db(m_dbConnection, e);
             }
-            
+
             return result;
         }
 
@@ -224,10 +225,10 @@ namespace StatisticCommon
 
             bool result = false;
 
-            try { m_dbCommand.CommandText = query.ToString (); }
+            try { m_dbCommand.CommandText = query.ToString(); }
             catch (Exception e)
             {
-                Console.Write (e.Message);
+                Console.Write(e.Message);
             }
 
             table.Reset();
@@ -260,7 +261,7 @@ namespace StatisticCommon
             catch (Exception e)
             {
                 needReconnect = true;
-                logging_catch_db (m_dbConnection, e);
+                logging_catch_db(m_dbConnection, e);
             }
 
             return result;
@@ -289,22 +290,24 @@ namespace StatisticCommon
             Logging.Logg().LogUnlock();
         }
 
-        public static string valueForQuery (DataTable table, int row, int col) {
+        public static string valueForQuery(DataTable table, int row, int col)
+        {
             string strRes = string.Empty;
             bool bQuote = false;
 
             if (table.Columns[col].DataType.IsPrimitive == true)
-            //if (table.Columns[col].DataType.IsByRef == false)
+                //if (table.Columns[col].DataType.IsByRef == false)
                 bQuote = false;
             else
                 bQuote = true;
 
-            strRes = (bQuote ? "'" : string.Empty) + (table.Rows[row][col].ToString ().Length > 0 ? table.Rows[row][col] : "NULL") + (bQuote ? "'" : string.Empty);
+            strRes = (bQuote ? "'" : string.Empty) + (table.Rows[row][col].ToString().Length > 0 ? table.Rows[row][col] : "NULL") + (bQuote ? "'" : string.Empty);
 
             return strRes;
         }
 
-        public static DataTable Select (string path, string query, out int er) {
+        public static DataTable Select(string path, string query, out int er)
+        {
             er = 0;
 
             DataTable dataTableRes = new DataTable();
@@ -313,15 +316,16 @@ namespace StatisticCommon
             System.Data.OleDb.OleDbCommand commandOleDB;
             System.Data.OleDb.OleDbDataAdapter adapterOleDB;
 
-            if (path.IndexOf ("xls") > -1)
-                connectionOleDB = new OleDbConnection (ConnectionSettings.GetConnectionStringExcel (path));
+            if (path.IndexOf("xls") > -1)
+                connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringExcel(path));
             else
                 //if (path.IndexOf ("dbf") > -1)
-                    connectionOleDB = new OleDbConnection (ConnectionSettings.GetConnectionStringDBF (path));
-                //else
-                //    ;
+                connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
+            //else
+            //    ;
 
-            if (! (connectionOleDB == null)) {
+            if (!(connectionOleDB == null))
+            {
                 commandOleDB = new OleDbCommand();
                 commandOleDB.Connection = connectionOleDB;
                 commandOleDB.CommandType = CommandType.Text;
@@ -360,39 +364,67 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Select(ConnectionSettings connSett, string query, out int er)
+        public static DataTable Select(MySqlConnection connectionMySQL, string query, DbType[] types, object[] parametrs, out int er)
         {
             er = 0;
 
             DataTable dataTableRes = new DataTable();
 
-            MySqlConnection connectionMySQL;
-            MySqlCommand commandMySQL;
-            MySqlDataAdapter adapterMySQL;
+            ParametrsValidate(types, parametrs, out er);
 
+            if (er == 0)
+            {
+                MySqlCommand commandMySQL;
+                MySqlDataAdapter adapterMySQL;
+
+                commandMySQL = new MySqlCommand();
+                commandMySQL.Connection = connectionMySQL;
+                commandMySQL.CommandType = CommandType.Text;
+
+                adapterMySQL = new MySqlDataAdapter();
+                adapterMySQL.SelectCommand = commandMySQL;
+
+                commandMySQL.CommandText = query;
+                ParametrsAdd(commandMySQL, types, parametrs);
+
+                dataTableRes.Reset();
+                dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+                try
+                {
+                    if (connectionMySQL.State == ConnectionState.Open)
+                    {
+                        adapterMySQL.Fill(dataTableRes);
+                    }
+                    else
+                        er = -1; //
+                }
+                catch (Exception e)
+                {
+                    logging_catch_db(connectionMySQL, e);
+
+                    er = -1;
+                }
+            }
+            else
+            {
+                // Логгирование в 'ParametrsValidate'
+            }
+
+            return dataTableRes;
+        }
+
+        public static DataTable Select(ConnectionSettings connSett, string query, out int er)
+        {
+            er = 0;
+
+            DataTable dataTableRes = null;
+            MySqlConnection connectionMySQL;
             connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
 
-            commandMySQL = new MySqlCommand();
-            commandMySQL.Connection = connectionMySQL;
-            commandMySQL.CommandType = CommandType.Text;
-
-            adapterMySQL = new MySqlDataAdapter();
-            adapterMySQL.SelectCommand = commandMySQL;
-
-            commandMySQL.CommandText = query;
-
-            dataTableRes.Reset();
-            dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
-
-            try {
+            try
+            {
                 connectionMySQL.Open();
-
-                if (connectionMySQL.State == ConnectionState.Open)
-                {
-                    adapterMySQL.Fill(dataTableRes);
-                }
-                else
-                    ; //
             }
             catch (Exception e)
             {
@@ -401,9 +433,93 @@ namespace StatisticCommon
                 er = -1;
             }
 
-            connectionMySQL.Close();
+            if (er == 0)
+            {
+                dataTableRes = Select(connectionMySQL, query, null, null, out er);
+
+                connectionMySQL.Close();
+            }
+            else
+                dataTableRes = new DataTable();
 
             return dataTableRes;
+        }
+
+        private static void ParametrsAdd(MySqlCommand commandMySQL, DbType[] types, object[] parametrs)
+        {
+            if ((!(types == null)) && (!(parametrs == null)))
+                foreach (DbType type in types)
+                {
+                    commandMySQL.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count - 1]);
+                }
+            else
+                ;
+        }
+
+        private static void ParametrsValidate(DbType[] types, object[] parametrs, out int err)
+        {
+            err = 0;
+
+            if ((!(types == null)) || (!(parametrs == null)))
+                err = -1;
+            else
+                if ((!(types == null)) && (!(parametrs == null)))
+                {
+                    if (!(types.Length == parametrs.Length))
+                    {
+                        err = -1;
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+
+            if (!(err == 0))
+            {
+                Logging.Logg().LogLock();
+                Logging.Logg().LogToFile("Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
+                Logging.Logg().LogUnlock();
+            }
+            else
+                ;
+        }
+
+        public static void ExecNonQuery(MySqlConnection connectionMySQL, string query, DbType[] types, object[] parametrs, out int er)
+        {
+            er = 0;
+
+            MySqlCommand commandMySQL;
+
+            ParametrsValidate(types, parametrs, out er);
+
+            if (er == 0)
+            {
+                commandMySQL = new MySqlCommand();
+                commandMySQL.Connection = connectionMySQL;
+                commandMySQL.CommandType = CommandType.Text;
+
+                commandMySQL.CommandText = query;
+                ParametrsAdd(commandMySQL, types, parametrs);
+
+                try
+                {
+                    if (connectionMySQL.State == ConnectionState.Open)
+                    {
+                        commandMySQL.ExecuteNonQuery();
+                    }
+                    else
+                        er = -1; //
+                }
+                catch (Exception e)
+                {
+                    logging_catch_db(connectionMySQL, e);
+
+                    er = -1;
+                }
+            }
+            else
+                ;
         }
 
         public static void ExecNonQuery(ConnectionSettings connSett, string query, out int er)
@@ -411,26 +527,12 @@ namespace StatisticCommon
             er = 0;
 
             MySqlConnection connectionMySQL;
-            MySqlCommand commandMySQL;
 
             connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            commandMySQL = new MySqlCommand();
-            commandMySQL.Connection = connectionMySQL;
-            commandMySQL.CommandType = CommandType.Text;
-
-            commandMySQL.CommandText = query;
 
             try
             {
                 connectionMySQL.Open();
-
-                if (connectionMySQL.State == ConnectionState.Open)
-                {
-                    commandMySQL.ExecuteNonQuery();
-                }
-                else
-                    ; //
             }
             catch (Exception e)
             {
@@ -439,13 +541,20 @@ namespace StatisticCommon
                 er = -1;
             }
 
-            connectionMySQL.Close();
+            if (er == 0)
+            {
+                ExecNonQuery(connectionMySQL, query, null, null, out er);
+
+                connectionMySQL.Close();
+            }
+            else
+                ;
         }
 
         public static void ExecNonQuery(string path, string query, out int er)
         {
             er = 0;
-            
+
             OleDbConnection connectionOleDB = null;
             System.Data.OleDb.OleDbCommand commandOleDB;
 
@@ -453,9 +562,9 @@ namespace StatisticCommon
                 connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringExcel(path));
             else
                 //if (path.IndexOf ("dbf") > -1)
-                    connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
-                //else
-                //    ;
+                connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
+            //else
+            //    ;
 
             if (!(connectionOleDB == null))
             {
@@ -604,7 +713,7 @@ namespace StatisticCommon
                     DbTSQLInterface.ExecNonQuery(connSett, strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], out err);
                 }
                 else
-                {
+                {  //Ничего удалять не надо
                     if (dataRows.Length == 1)
                     {
                     }
