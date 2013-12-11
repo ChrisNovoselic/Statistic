@@ -20,39 +20,44 @@ namespace trans_mc_cmd
         
         AdminTS m_admin;
         List <int> m_listIndexTECComponent;
-        List<int> m_listIDSTECComponent;
+        List<int> m_listIdMCTECComponent;
         
-        public bool Initialized {
+        public int Initialized {
             get
             {
-                bool bRes = false;
+                int iRes = 0;
 
-                if (!(m_MySQLConnections == null))
-                    for (CONN_SETT_TYPE i = CONN_SETT_TYPE.CONFIG; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-                    {
-                        bRes = DbTSQLInterface.IsConnected (m_MySQLConnections[(int)i]);
-
-                        if (bRes == false)
-                            break;
+                //if (!(m_MySQLConnections == null))
+                    //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.CONFIG; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                    //{
+                        //if (DbTSQLInterface.IsConnected (m_MySQLConnections[(int)i]) == true)
+                        if (DbTSQLInterface.IsConnected(m_MySQLConnection) == false)
+                            iRes = 1;
                         else
                             ;
-                    }
-                else
-                    ;
 
-                if (bRes == true)
-                    if (!(m_listIDSTECComponent.Count > 0))
-                        bRes = false;
+                    //    if (!(iRes == 0))
+                    //        break;
+                    //    else
+                    //        ;
+                    //}
+                //else
+                //    ;
+
+                if (iRes == 0)
+                    if (!(m_listIdMCTECComponent.Count > 0))
+                        iRes = -1;
                     else
                         ;
                 else
                     ;
 
-                return bRes;
+                return iRes;
             }
         }
 
-        public MySqlConnection [] m_MySQLConnections;
+        //public MySqlConnection [] m_MySQLConnections;
+        public MySqlConnection m_MySQLConnection;
         public static string m_strFileNameConnSett = "connsett_mc_cmd.ini";
         public string m_strTableNamePPBR;
         //public static string m_strNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)";
@@ -67,46 +72,67 @@ namespace trans_mc_cmd
         SortedList<DateTime, HTECComponentsRecord> HourlyValuesCollection;
         //SortedList<DateTime, OneField> HourlyFieldValues;
 
+        private bool SetMySQLConnect (MySqlConnection conn)
+        {
+            bool bRes = true;
+
+            try { conn.Open(); }
+            catch (Exception e)
+            {
+                Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
+                itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
+            }
+
+            return bRes;
+        }
+
         /// <summary>
         /// Конструктор открывает коннект к базе. Закрывает деструктор.
         /// </summary>
         public MySQLtechsite()
         {
+            bool bRes = false;
+            
             FormConnectionSettings formConnSett = new FormConnectionSettings(m_strFileNameConnSett);
             if (formConnSett.Protected == true)
             {
                 ConnectionSettings connSett = Program.ReadConnSettFromFileINI (new FileINI (Program.m_strFileNameSetup));
                 connSett.password = formConnSett.getConnSett().password;
 
-                m_MySQLConnections = new MySqlConnection [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-                m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG] = new MySqlConnection(connSett.GetConnectionStringMySQL());
-                try { m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG].Open(); }
-                catch (Exception e)
-                {
-                    Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
-                    itssAUX.PrintErrorMessage(e.Message + Environment.NewLine); 
-                }
+                m_MySQLConnection = new MySqlConnection ();
+                m_MySQLConnection = new MySqlConnection(connSett.GetConnectionStringMySQL());
+                bRes = SetMySQLConnect(m_MySQLConnection);
 
-                m_admin = new AdminTS ();
-                m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-                m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                m_listIDSTECComponent = new List<int> ();
-                
-                int i = -1, j = -1;
-                for (i = 0; i < m_listIndexTECComponent.Count; i ++)
+                if (bRes == true)
                 {
-                    for (j = 0; j < m_admin.allTECComponents [m_listIndexTECComponent [i]].m_listMCId.Count; j ++)
+                    m_admin = new AdminTS ();
+                    m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+                    m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                    m_listIdMCTECComponent = new List<int>();
+
+                    int i = -1, j = -1;
+                    for (i = 0; i < m_listIndexTECComponent.Count; i ++)
                     {
-                        m_listIDSTECComponent.Add (m_admin.allTECComponents [m_listIndexTECComponent [i]].m_listMCId [j]);
+                        for (j = 0; j < m_admin.allTECComponents [m_listIndexTECComponent [i]].m_listMCId.Count; j ++)
+                        {
+                            m_listIdMCTECComponent.Add(m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j]);
+                        }
                     }
-                }
 
-                if ((DbTSQLInterface.IsConnected(m_MySQLConnections[(int)CONN_SETT_TYPE.CONFIG]) == true) &&
-                    (m_listIDSTECComponent.Count > 0))
-                {
-                    m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR] = new MySqlConnection(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR].GetConnectionStringMySQL());
-                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
+                    if ((DbTSQLInterface.IsConnected(m_MySQLConnection) == true) &&
+                        (m_listIdMCTECComponent.Count > 0))
+                    {
+                        m_MySQLConnection.Close ();
+                        m_MySQLConnection = null;
+
+                        m_MySQLConnection = new MySqlConnection(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR].GetConnectionStringMySQL());
+                        bRes = SetMySQLConnect(m_MySQLConnection);
+                        m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
+                    }
+                    else
+                    {
+                    }
                 }
                 else
                     ;
@@ -114,19 +140,157 @@ namespace trans_mc_cmd
             else
             {
                 itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::MySQLtechsite () - чтение файла с шифрованными параметрами соединения (" + m_strFileNameConnSett + ")...");
-                itssAUX.PrintErrorMessage("Проверте параметры соединения (" + Program.m_strFileNameSetup + "). Затем запустите программу с аргументом /setpassword..." + Environment.NewLine);
+                itssAUX.PrintErrorMessage("Проверте параметры соединения (" + Program.m_strFileNameSetup + "). Затем запустите программу с аргументом /setmysqlpassword..." + Environment.NewLine);
             }
         }
 
         public string TestRead()
         {
             int err = -1;
-            DataTable dataTest = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT page FROM settings", null, null, out err);
+            DataTable dataTest;
+            //dataTest = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT page FROM settings", null, null, out err);
+            dataTest = DbTSQLInterface.Select(m_MySQLConnection, "SELECT page FROM settings", null, null, out err);
             
             if (err == 0)
                 return (dataTest.Rows[0][0].ToString ());
             else
                 return string.Empty;
+        }
+
+        /*public int GetIdOwnerTECComponentOfIdMC (int id_mc)
+        {
+            int iRes = -1;
+            
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                iRes = m_admin.allTECComponents[indxTECComponent].tec.m_id;
+            }
+            else
+                ;
+
+            return iRes;
+        }*/
+
+        private int GetIndexTECComponentOfIdMC(int id_mc)
+        {
+            int iRes = -1;
+
+            int i = -1, j = -1;
+            for (i = 0; i < m_listIndexTECComponent.Count; i++)
+            {
+                for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count; j++)
+                {
+                    if (id_mc == m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j])
+                        break;
+                    else
+                        ;
+                }
+
+                if (j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count)
+                    break;
+                else
+                    ;
+            }
+
+            if (i < m_listIndexTECComponent.Count)
+            {
+                iRes = m_listIndexTECComponent[i];
+            }
+            else
+                ;
+
+            return iRes;
+        }
+
+        public TECComponent GetTECComponentOfIdMC(int id_mc)
+        {
+            TECComponent compRes = null;
+
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                compRes = m_admin.allTECComponents[indxTECComponent];
+            }
+            else
+                ;
+
+            return compRes;
+        }
+
+        public string GetPrefixTECComponentOfIdMC (int id_mc, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                strRes = GetPrefixOfIndex(indxTECComponent, bOwnerOnly);
+            }
+            else
+                ;
+
+            return strRes;
+        }
+
+        /*public TECComponent GetTECComponent(int id)
+        {
+            TECComponent compRes = m_admin.allTECComponents [m_listIndexTECComponent.IndexOf (id)];
+
+            return compRes;
+        }*/
+
+        private string GetPrefixOfIndex(int indx, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            strRes = m_admin.allTECComponents[indx].tec.prefix_pbr;
+            if (bOwnerOnly == false)
+                if (m_admin.allTECComponents[indx].prefix_pbr.Length > 0)
+                    strRes += (@"_" + m_admin.allTECComponents[indx].prefix_pbr);
+                else
+                    ;
+            else
+                ;
+
+            return strRes;
+        }
+
+        public string GetPrefixOfId (int id, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            int i = -1
+                , indx = -1;
+            for (i = 0; i < m_admin.allTECComponents.Count; i ++)
+            {
+                if (id < 100)
+                {
+                    if (m_admin.allTECComponents [i].tec.m_id == id)
+                        break;
+                    else
+                        ;
+                }
+                else
+                {
+                    if (m_admin.allTECComponents [i].m_id == id)
+                        break;
+                    else
+                        ;
+                }
+            }
+
+            if (i < m_admin.allTECComponents.Count)
+            {
+                strRes = GetPrefixOfIndex (i, bOwnerOnly);
+            }
+            else
+                ;
+
+            return strRes;
         }
 
         /// <summary>
@@ -156,7 +320,7 @@ namespace trans_mc_cmd
             if (HVCrecord == null)
             {
                 //HVCrecord = new OneRecord();
-                HVCrecord = new HTECComponentsRecord(m_listIDSTECComponent);
+                HVCrecord = new HTECComponentsRecord(m_listIdMCTECComponent);
                 HVCrecord.date_time = DT;
                 HVCrecord.parent = this;
                 HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
@@ -168,7 +332,12 @@ namespace trans_mc_cmd
             HVCrecord.PBR_number = sPBRnum;
 
             HVCrecord.SetValues(iStationId, PAR, dGenValue);
+        }
 
+        private void AddCalculatedOwnerValues ()
+        {
+            foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
+                rec.GenerateOwnerValues();
         }
 
         /// <summary>
@@ -176,9 +345,9 @@ namespace trans_mc_cmd
         /// Получасовки только по будущим показателям считаем. По прошлым запрашиваемые через API значения могут расходиться с сохранёнными ранее в базе!
         /// Кроме того, не всегда получасовки окажутся средним арифметическим: после вычисления получасовки до начала следующего часа данные следующего часа могут измениться. В 02:40, например. Данные на 02:30 уже не изменишь, а на 03:00 будут другие.
         /// </summary>
-        private void AddCalculatedHalfHourValues()
+        private void AddCalculatedHalfHourValues(DateTime dtMskNow)
         {
-            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+            //DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
             //List<OneRecord> li = HourlyValuesCollection.Values.Where(item => item.date_time > dtMskNow.AddMinutes(30)).ToList();
             List<HTECComponentsRecord> li = HourlyValuesCollection.Values.Where(item => item.date_time > dtMskNow.AddMinutes(30)).ToList();
 
@@ -187,24 +356,26 @@ namespace trans_mc_cmd
             //foreach (OneRecord rec in HourlyValuesCollection.Values.Where(item => item.date_time > DateTime.Now.AddMinutes(30)).Select(item => item))
             //foreach (OneRecord rec in li.OrderBy(item => item.date_time))     //сортировка по дате
             foreach (HTECComponentsRecord rec in li.OrderBy(item => item.date_time))
-                GenerateHalfHourValues(rec);
+                GenerateHalfHourValues(rec, dtMskNow);
 
         }
 
         /// <summary>
         /// Создаёт "получасовку" по среднему арифметическому между часовыми показателями.
         /// </summary>
-        private void GenerateHalfHourValues(HTECComponentsRecord HVCrec)
+        private void GenerateHalfHourValues(HTECComponentsRecord HVCrec, DateTime dtMskNow)
         {
+            List <int> listIds = HVCrec.m_srtlist_ppbr.Keys.ToList ();
+
             //OneRecord HVClast_rec = HourlyValuesCollection.Last().Value;
             HTECComponentsRecord HVCprev_rec;
-            HTECComponentsRecord HVChalf_hour = new HTECComponentsRecord(m_listIDSTECComponent);
-            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+            HTECComponentsRecord HVChalf_hour = new HTECComponentsRecord(listIds);
+            //DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
 
             if (HVCrec.date_time.AddHours(-1) <= dtMskNow)
             {
                 //Показания в прошлом читаем из базы, из API игнорируем (могут отличаться)
-                HVCprev_rec = new HTECComponentsRecord(m_listIDSTECComponent);
+                HVCprev_rec = new HTECComponentsRecord(listIds);
                 HVCprev_rec.parent = this;
                 HVCprev_rec.ReadFromDatabase(HVCrec.date_time.AddHours(-1));
             }
@@ -222,11 +393,11 @@ namespace trans_mc_cmd
 
                 int i = -1;
                 Params j;
-                for (i = 0; i < m_listIDSTECComponent.Count; i ++)
+                for (i = 0; i < listIds.Count; i++)
                 {
                     for (j = Params.PBR; j < Params.COUNT_PARAMS; j++)
                         //Интерполируем средними арифметическими значениями от соседних часов
-                        HVChalf_hour.m_srtlist_ppbr[m_listIDSTECComponent[i]][(int)j] = (HVCrec.m_srtlist_ppbr[m_listIDSTECComponent[i]][(int)j].GetValueOrDefault(0) + HVCprev_rec.m_srtlist_ppbr[m_listIDSTECComponent[i]][(int)j].GetValueOrDefault(0)) / 2;
+                        HVChalf_hour.m_srtlist_ppbr[listIds[i]][(int)j] = (HVCrec.m_srtlist_ppbr[listIds[i]][(int)j].GetValueOrDefault(0) + HVCprev_rec.m_srtlist_ppbr[listIds[i]][(int)j].GetValueOrDefault(0)) / 2;
                 }
 
                 HourlyValuesCollection.Add(HVChalf_hour.date_time, HVChalf_hour);
@@ -239,16 +410,34 @@ namespace trans_mc_cmd
         {
             int? iRes = null;
             er = -1;
+            string errMsg = string.Empty;
 
-            DataTable data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            DataTable data; 
+            //data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            //data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
             if (!(er == 0))
             {
-                string errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
+                errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
                 itssAUX.PrintErrorMessage(errMsg);
                 throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
             }
             else
-                iRes = (int?)data.Rows[0][0];
+            {
+                if (data.Rows.Count == 1)
+                    iRes = (int?)data.Rows[0][0];
+                else
+                {
+                    if (data.Rows.Count > 1)
+                    {
+                        errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
+                        itssAUX.PrintErrorMessage(errMsg);
+                        throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
+                    }
+                    else
+                        ; //Нет строк вообще - нормально
+                }
+            }
 
             return iRes;
         }
@@ -262,15 +451,17 @@ namespace trans_mc_cmd
             int? iId = GetIdNextRec(DT, out err);
 
             if (!iId.HasValue && (err == 0))
-            {
+            {//Запись (ID) не была найдена - INSERT
                 //NOW() на этом сервере не совпадает с Новосибирским временем
                 //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
-                DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                DbTSQLInterface.ExecNonQuery(m_MySQLConnection, "INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
                 if (!(err == 0))
                     itssAUX.PrintErrorMessage("Ошибка записи в базу MySQL на INSERT!");
                 else
                     ;
 
+                //Возвратим ID новой записи
                 iId = GetIdNextRec (DT, out err);
             }
             else
@@ -287,28 +478,40 @@ namespace trans_mc_cmd
             int err = -1;
             string sUpdate;
 
+            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+
+            Console.WriteLine("Сохраняем данные в БД ППБР..." + Environment.NewLine);
+
             if (!(HourlyValuesCollection == null))
             {
-                AddCalculatedHalfHourValues();
+                AddCalculatedOwnerValues();
+
+                AddCalculatedHalfHourValues(dtMskNow);
 
                 foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
                 {
-                    sUpdate = rec.GenUpdateStatement();
+                    sUpdate = rec.GenUpdateStatement(dtMskNow);
                     if (!(sUpdate == ""))
                     {
                         Console.WriteLine(sUpdate + Environment.NewLine);
+                        
                         //Запуск апдейта одной часовой записи
-                        DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
+                        //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
+                        DbTSQLInterface.ExecNonQuery(m_MySQLConnection, sUpdate, null, null, out err);
+                        
                         if (!(err == 0))
                             itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::FlushDataToDatabase () - Updated...");
                         else
                             ;
                     }
                     else
-                        ;
+                        itssAUX.PrintErrorMessage("Для дата/время: " + rec.date_time.ToString() + " запрос пуст..." + Environment.NewLine);
                 }
 
                 HourlyValuesCollection.Clear();
+
+                m_MySQLConnection.Close ();
+                m_MySQLConnection = null;
             }
             else
                 ; //HourlyValuesCollection пуста

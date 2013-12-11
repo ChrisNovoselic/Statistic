@@ -442,12 +442,30 @@ namespace StatisticCommon
         private static void ParametrsAdd(MySqlCommand commandMySQL, DbType[] types, object[] parametrs)
         {
             if ((!(types == null)) && (!(parametrs == null)))
-                foreach (DbType type in types)
+            {
+                int i = -1;
+                //commandMySQL.Parameters.Clear ();
+
+                //foreach (DbType type in types)
+                for (i = 0; i < types.Length; i ++)
                 {
-                    //commandMySQL.Parameters.Add(string.Empty, type);
-                    commandMySQL.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count]);
+                    //Вариант №1
+                    //commandMySQL.Parameters.Add("", type);
                     //commandMySQL.Parameters[commandMySQL.Parameters.Count - 1] = (MySqlParameter)parametrs[commandMySQL.Parameters.Count - 1];
+
+                    //Вариант №2
+                    //commandMySQL.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count]);
+                    commandMySQL.Parameters.Add(@"" + i.ToString(), parametrs[i]);
+                    //commandMySQL.Parameters.Add(@"", parametrs[i]);
+
+                    //Вариант №3
+                    //commandMySQL.Parameters.Add(parametrs[commandMySQL.Parameters.Count]);
+
+                    //Вариант №4
+                    //commandMySQL.Parameters.Add(@"DateTime", type).Value = parametrs[/*commandMySQL.Parameters.Count*/0];
+                    //commandMySQL.Parameters.Add(@"" + i.ToString (), types[i]).Value = parametrs[i];
                 }
+            }
             else
                 ;
         }
@@ -456,20 +474,23 @@ namespace StatisticCommon
         {
             err = 0;
 
-            if ((!(types == null)) || (!(parametrs == null)))
-                err = -1;
+            if ((types == null) && (parametrs == null))
+                ; //Проверка не нужна
             else
-                if ((!(types == null)) && (!(parametrs == null)))
-                {
-                    if (!(types.Length == parametrs.Length))
+                //if ((!(types == null)) || (!(parametrs == null)))
+                //    err = -1;
+                //else
+                    if ((!(types == null)) && (!(parametrs == null)))
                     {
-                        err = -1;
+                        if (!(types.Length == parametrs.Length))
+                        {
+                            err = -1;
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
-                }
-                else
-                    ;
 
             if (!(err == 0))
             {

@@ -25,7 +25,7 @@ namespace trans_mc_cmd
         /// </summary>
         public MySQLtechsite parent;
 
-        public abstract string GenUpdateStatement();
+        public abstract string GenUpdateStatement(DateTime dtMskNow);
                                                         
         /// <summary>
         /// Читает данные в поля экземпляра класса из базы на указанное время.
@@ -56,29 +56,143 @@ namespace trans_mc_cmd
         {
             bool bRes = true;
 
-            int err = -1,
-                i = -1;
+            int err = -1
+                /*, i = -1*/;
 
-            DbTSQLInterface.Select(parent.m_MySQLConnections[(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBROfID where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            DataTable rec;
+            //rec = DbTSQLInterface.Select(parent.m_MySQLConnections[(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM " + parent.m_strTableNamePPBR + " WHERE date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            rec = DbTSQLInterface.Select(parent.m_MySQLConnection, "SELECT * FROM " + parent.m_strTableNamePPBR + " WHERE date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
 
-            foreach (KeyValuePair<int, double?[]> pair in m_srtlist_ppbr)
+            if ((rec.Rows.Count == 1) && (err == 0))
             {
-                //pair.Key;
-                //pair.Value;
+                string prefix_comp = string.Empty;
 
-                for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                foreach (KeyValuePair<int, double?[]> pair in m_srtlist_ppbr)
                 {
-                    //pair.Value[i] = Convert.ToDouble(rdr[par.ToString()]);
+                    prefix_comp = parent.GetPrefixOfId(pair.Key, false);
+
+                    for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                    {
+                        pair.Value[(int)par] = Convert.ToDouble(rec.Rows[0][prefix_comp + @"_" + par.ToString()]);
+                    }
                 }
+            }
+            else
+            {
+                bRes = false;
+
+                if (rec.Rows.Count > 1)
+                {
+                    //Вообще ошибка! 2-х строк за одну дату НЕ может быть
+                }
+                else
+                    ; //err тоже при анализе следовало бы учитывать...
             }
 
             return bRes;
         }
 
-        public override string GenUpdateStatement() {
+        public override string GenUpdateStatement(DateTime dtMskNow) {
             string strRes = string.Empty;
 
+            string prefix = string.Empty;
+            int? iId = -1;
+            int i = -1;
+
+            if (date_time > dtMskNow)
+            {
+                iId = parent.Insert48HalfHoursIfNeedAndGetId(date_time);
+
+                strRes = "UPDATE PPBRvsPBRnew SET wr_date_time = '@wr_date_time', PBR_number = '@PBR_number'";
+
+                bool bPrefixOwnerOnly = false;
+                string strNameField = string.Empty;
+
+                foreach (KeyValuePair<int, double?[]> pair in m_srtlist_ppbr)
+                {
+                    if ((pair.Key > 0) && (pair.Key < 100))
+                        bPrefixOwnerOnly = true;
+                    else
+                        if ((pair.Key > 100) && (pair.Key < 500))
+                            bPrefixOwnerOnly = false;
+                        else
+                            ;
+                    prefix = parent.GetPrefixOfId(pair.Key, bPrefixOwnerOnly);
+
+                    for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                    {
+                        strNameField = prefix + @"_" + par.ToString ();
+                        strRes += @", " + strNameField + @" = '" + ((double?)pair.Value [(int)par]).ToString () + "'";
+                    }
+                }
+
+                strRes += " WHERE id = @id";
+
+                strRes = strRes.Replace("@wr_date_time", wr_date_time.ToString("u").Replace("Z", ""));
+                strRes = strRes.Replace("@PBR_number", PBR_number);
+                strRes = strRes.Replace("@id", iId.ToString());
+            }
+            else
+                ;
+
             return strRes;
+        }
+
+        private void AddValues(int id, KeyValuePair<int, double?[]> pair_src)
+        {
+            int indx = -1;
+            MySQLtechsite.Params par;
+
+            indx = m_srtlist_ppbr.IndexOfKey(id);
+
+            if (indx < 0)
+            {
+                m_srtlist_ppbr.Add(id, new double?[(int)MySQLtechsite.Params.COUNT_PARAMS]);
+                indx = m_srtlist_ppbr.Keys.IndexOf(id);
+                for (par = MySQLtechsite.Params.PBR; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                    m_srtlist_ppbr.Values[indx][(int)par] = 0.0;
+            }
+            else
+                ;
+
+            for (par = MySQLtechsite.Params.PBR; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                m_srtlist_ppbr.Values[indx][(int)par] += pair_src.Value[(int)par];
+        }
+
+        public void GenerateOwnerValues()
+        {
+            int i = -1
+                , idOwner = -1
+                , indxOwner = -1;
+            MySQLtechsite.Params par;
+            TECComponent comp;
+            List <int> list_idTECComponents = new List<int> ();
+
+            SortedList<int, double?[]> srtlist_ppbrMC = new SortedList<int,double?[]> ();
+            double?[] val_dest;
+
+            //Копия словаря с ID_MC
+            foreach (KeyValuePair <int, double?[]> pair_src in m_srtlist_ppbr)
+            {
+                val_dest = new double?[(int)MySQLtechsite.Params.COUNT_PARAMS];
+                for (par = MySQLtechsite.Params.PBR; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
+                    val_dest[(int)par] = pair_src.Value [(int)par];
+
+                srtlist_ppbrMC.Add(pair_src.Key, val_dest);
+            }
+
+            //Обнуление; подготовка к конвертации ID_MC -> ID
+            m_srtlist_ppbr.Clear ();
+
+            for (i = 0; i < srtlist_ppbrMC.Count; i++)
+            {
+                comp = parent.GetTECComponentOfIdMC(srtlist_ppbrMC.Keys[i]);
+                
+                //Добавление значений за объект
+                AddValues(comp.tec.m_id, srtlist_ppbrMC.ElementAt (i));
+                //Добавление значений за компонент
+                AddValues(comp.m_id, srtlist_ppbrMC.ElementAt(i));                
+            }
         }
 
         public override bool SetValues(int id, MySQLtechsite.Params PAR, double val)
@@ -158,7 +272,9 @@ namespace trans_mc_cmd
             
             date_time = DT;
 
-            DataTable rdr = DbTSQLInterface.Select(parent.m_MySQLConnections [(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            DataTable rdr;
+            //rdr = DbTSQLInterface.Select(parent.m_MySQLConnections [(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            rdr = DbTSQLInterface.Select(parent.m_MySQLConnection, "SELECT * FROM PPBRvsPBRnew where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
             if (rdr.Rows.Count > 0)
             {
                 BTEC_PBR = (double?)rdr.Rows[0]["BTEC_PBR"];
@@ -217,7 +333,7 @@ namespace trans_mc_cmd
             return rdr.Rows.Count > 0 ? true : false;
         }
 
-        public override string GenUpdateStatement()
+        public override string GenUpdateStatement(DateTime dtMskNow)
         {
             //апдейтить только те, у которых ПБР в будущем (не с текущей датой лучше сравнивать, а с номером в индексе ПБР
             /* При очередном UPDATE надо знать, какой график пришёл с ОДУ - ПБР1, ПБР4, ПБР7, ПБР10, ПБР13, ПБР16, ПБР19 или ПБР22.
@@ -229,7 +345,7 @@ namespace trans_mc_cmd
             //PBRHour = byte.Parse(PBR_number.Replace("ПБР", ""));
 
             //if (PBRHour >= date_time.Hour || (PBRHour == 21 && date_time.Hour == 0))
-            if (date_time > TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time")))       //Московское время
+            if (date_time > dtMskNow)       //Московское время
             {
                 iId = parent.Insert48HalfHoursIfNeedAndGetId(date_time);
                 //sUpdate = string.Format("UPDATE PPBRvsPBR_Test SET wr_date_time = '{0}', PBR_number = '{1}' WHERE id = {2}", wr_date_time.ToString("u").Replace("Z", ""), PBR_number, iId.ToString());

@@ -20,25 +20,36 @@ namespace trans_mc_cmd
         static IList<PlanFactorItem> LPFI;
 
         static MySQLtechsite techsite;
+        static bool g_bList;
+        static DateTime g_dtList;
 
         public static string m_strFileNameSetup = "setup.ini";
 
         static void Main(string[] args)
         {
             bool bNoWait = false;
-            if (ProcArgs(args, out bNoWait) == true)
+            if (ProcArgs(args, out bNoWait, out g_bList) == true)
                 return;
             else
                 ;
 
-            Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait..." + Environment.NewLine);
-
-            try { techsite = new MySQLtechsite(); }
-            catch (Exception e)
+            int iTechsiteInitialized = 0;
+            
+            if (g_bList == false)
             {
-            }
+                Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait..." + Environment.NewLine);
 
-            if (techsite.Initialized == true)
+                try { techsite = new MySQLtechsite(); }
+                catch (Exception e)
+                {
+                }
+
+                iTechsiteInitialized = techsite.Initialized;
+            }
+            else
+                ;
+
+            if ((iTechsiteInitialized == 0) || (g_bList == true))
             {
                 Console.WriteLine(Environment.NewLine + "API Initializing - Please Wait..." + Environment.NewLine);
 
@@ -52,7 +63,14 @@ namespace trans_mc_cmd
                     //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
                     //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
                     //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
-                    Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt, SyncZone.First, TreeContent.PGObjects, true);
+
+                    TimeSpan dtSpan = TimeSpan.Zero;
+                    if (g_bList == true)
+                        dtSpan = g_dtList.Date.LocalHqToSystemEx() - dt;
+                    else
+                        ;
+
+                    Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt.AddHours (dtSpan.TotalHours), SyncZone.First, TreeContent.PGObjects, true);
 
                     foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
                     {
@@ -61,15 +79,34 @@ namespace trans_mc_cmd
                         ProcessChilds(IGO, 1, api_);
                     }
 
-                    Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);     //А время апдейта (поле wr_date_time) Новосибирское
+                    if (g_bList == false)
+                    {
+                        //А время апдейта (поле wr_date_time) Новосибирское
+                        Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);
 
-                    techsite.FlushDataToDatabase();
+                        techsite.FlushDataToDatabase();
+                    }
+                    else
+                        ;
                 }
                 else
                     itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
             }
             else
-                ; //Не инициализировано соединение с БД Статистика
+            {//Не инициализировано соединение с БД Статистика
+                if (iTechsiteInitialized > 0)
+                {//Нет соединения с БД (конфигурации или назаначения)
+                }
+                else
+                    switch (iTechsiteInitialized)
+                    {
+                        case -1:
+                            itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::MySQLtechsite () - список идентификаторов ГТП пуст...");
+                            break;
+                        default:
+                            break;
+                    }
+            }
 
             Console.WriteLine("End. Press any key.");
 
@@ -100,50 +137,81 @@ namespace trans_mc_cmd
         /// <summary>
         /// Обрабатывает переданные при вызове параметры. Возвращает флаг необходимости выхода из программы.
         /// </summary>
-        static bool ProcArgs(string[] args, out bool bNoWait)
+        static bool ProcArgs(string[] args, out bool bNoWait, out bool bList)
         {
             //Properties.Settings sett = new Properties.Settings();
             bool bDoExit = false;
 
-            bNoWait = false;
+            bNoWait =
+            bList =
+            false;
 
             if (args.Length > 0)
             {
                 FileINI fileINI = new FileINI("setup.ini");
 
-                switch (args[0])
+                if (!(args[0].IndexOf ("/list") < 0))
                 {
-                    default:
-                    //case "/?":
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
-                        Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre (fileINI));
-                        Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /nowait /setmysqlpassword" + Environment.NewLine);
-                        Console.WriteLine("End. Press any key.");
-                        Console.ReadKey();
-                        bDoExit = true;
-                        break;
-                    case "/nowait":
-                        bNoWait = true;
-                        break;
-                    case "/setmysqlpassword":
-                        if (args.Length == 2)
-                        {
-                            ConnectionSettings connSett = ReadConnSettFromFileINI (fileINI);
-                            connSett.password = args[1];
+                    bList = true;
 
-                            FormConnectionSettings formConnSett = new FormConnectionSettings (MySQLtechsite.m_strFileNameConnSett);
-                            formConnSett.setConnSett(0, connSett);
-                            formConnSett.btnOk_Click (null, EventArgs.Empty);
-                            formConnSett.SaveSettingsFile();
+                    bool bDTParse = false;
+                    string [] list_args = args[0].Split ('=');
+
+                    if (list_args.Length == 2)
+                    {
+                        bDTParse = DateTime.TryParse (list_args[1], out g_dtList);
+                    }
+                    else
+                        ;
+
+                    if (bDTParse == true)
+                        ; //g_dtList = g_dtList.Date.LocalHqToSystemEx();
+                    else
+                        g_dtList = DateTime.Now.Date.LocalHqToSystemEx();
+                }
+                else
+                    if (!(args[0].IndexOf ("/nowait") < 0))
+                    {
+                        bNoWait = true;
+                    }
+                    else
+                        if (!(args[0].IndexOf ("/setmysqlpassword") < 0))
+                        {
+                            if (args.Length == 2)
+                            {
+                                ConnectionSettings connSett = ReadConnSettFromFileINI (fileINI);
+                                connSett.password = args[1];
+
+                                FormConnectionSettings formConnSett = new FormConnectionSettings (MySQLtechsite.m_strFileNameConnSett);
+                                formConnSett.setConnSett(0, connSett);
+                                formConnSett.btnOk_Click (null, EventArgs.Empty);
+                                formConnSett.SaveSettingsFile();
+                            }
+                            else
+                                Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");
+
+                            bDoExit = true;
                         }
                         else
-                            Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");
+                        {//case "/?":
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
 
-                        bDoExit = true;
-                        break;
-                }
+                            string strNameHostMC = GetNameHostModesCentre(fileINI);
+                            if (strNameHostMC == string.Empty)
+                                strNameHostMC = "?not set?";
+                            else
+                                ;
+                            Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre (fileINI));
+
+                            Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /nowait /setmysqlpassword" + Environment.NewLine);
+                            Console.WriteLine("End. Press any key.");
+                            
+                            Console.ReadKey();
+                            
+                            bDoExit = true;
+                        }
             }
             else
                 ;
@@ -166,9 +234,10 @@ namespace trans_mc_cmd
                 if (!(IGOch.GenObjType.Id == 15))      //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
                 {
                     Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
-                    //ProcessParams(IGOch);
+                    //if (g_bList == false) ProcessParams(IGOch); else ;
                     if (IGOch.GenObjType.Id == 3)
-                        GetPlanValuesActual(api_, IGOch);     //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
+                        //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
+                        if (g_bList == false) GetPlanValuesActual(api_, IGOch); else ;
                     else
                         ;
 
