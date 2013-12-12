@@ -494,7 +494,7 @@ namespace trans_mc_cmd
                     if (!(sUpdate == ""))
                     {
                         Console.WriteLine(sUpdate + Environment.NewLine);
-                        
+
                         //Запуск апдейта одной часовой записи
                         //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
                         DbTSQLInterface.ExecNonQuery(m_MySQLConnection, sUpdate, null, null, out err);

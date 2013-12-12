@@ -14,7 +14,7 @@ namespace StatisticCommon {
         private const int COUNT_TG = 8;
         private const char SEP_ID_TG = ',';
         private string [] NAME_TIME = {"min", "hour"};
-        private const string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск"; //"Main settings"
+        private const string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск (Statistic.exe)";
 
         private System.Windows.Forms.TextBox[,] m_array_tbxTG;
         private System.Windows.Forms.Label[,] m_array_lblTG;

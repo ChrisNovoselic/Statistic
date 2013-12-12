@@ -205,7 +205,7 @@ namespace trans_mc_cmd
                                 ;
                             Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre (fileINI));
 
-                            Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /nowait /setmysqlpassword" + Environment.NewLine);
+                            Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /list[=DD.MM.YYYY] /nowait /setmysqlpassword" + Environment.NewLine);
                             Console.WriteLine("End. Press any key.");
                             
                             Console.ReadKey();

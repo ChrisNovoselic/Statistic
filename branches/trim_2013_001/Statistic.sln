@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticCommon", "Statisti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Statistic", "Statistic\Statistic.csproj", "{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_mc", "trans_mc\trans_mc.csproj", "{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_mc_cmd", "trans_mc_cmd\trans_mc_cmd.csproj", "{73753AFE-6547-48A5-B7AB-9B33842644CB}"
 EndProject
 Global
@@ -39,16 +37,6 @@ Global
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}.Release|x86.ActiveCfg = Release|Any CPU
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Debug|x86.ActiveCfg = Debug|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Debug|x86.Build.0 = Debug|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Release|Any CPU.ActiveCfg = Release|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Release|Mixed Platforms.Build.0 = Release|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Release|x86.ActiveCfg = Release|x86
-		{D687A5B6-511A-47C1-B473-1B8D14B0A9F5}.Release|x86.Build.0 = Release|x86
 		{73753AFE-6547-48A5-B7AB-9B33842644CB}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{73753AFE-6547-48A5-B7AB-9B33842644CB}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{73753AFE-6547-48A5-B7AB-9B33842644CB}.Debug|Mixed Platforms.Build.0 = Debug|x86
