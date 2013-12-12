@@ -42,7 +42,7 @@ namespace StatisticCommon
 
         public FormParametersTG parametersTGForm;
 
-        public TEC (int id, string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr) {
+        public TEC (int id, string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
@@ -65,7 +65,7 @@ namespace StatisticCommon
 
             m_strNamesField = new List<string> ();
 
-            if (type () == TEC_TYPE.BIYSK)
+            if ((type () == TEC_TYPE.BIYSK) && (bUseData == true))
                 parametersTGForm = new FormParametersTG ("setup.ini");
             else
                 ;

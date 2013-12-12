@@ -61,7 +61,7 @@ namespace StatisticCommon
         }
 
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
+        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse, bool bUseData)
         {
             tec = new List<TEC>();
             m_user = new Users(connSett);
@@ -95,7 +95,8 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                     list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                     list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                    list_tec.Rows[i]["PREFIX_PBR"].ToString()));
+                                    list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                    bUseData));
 
                     //List <string> listNamesField;
                     //listNamesField = new List<string> ();
@@ -194,7 +195,7 @@ namespace StatisticCommon
             //Logging.Logg().LogUnlock();
         }
 
-        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse) //indx = {GTP или PC}
+        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
         {
             tec = new List<TEC> ();
 
@@ -228,7 +229,8 @@ namespace StatisticCommon
                                 list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                 list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                 list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                list_tec.Rows[i]["PREFIX_PBR"].ToString()));
+                                list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                bUseData));
 
                 //List <string> listNamesField;
                 //listNamesField = new List<string> ();

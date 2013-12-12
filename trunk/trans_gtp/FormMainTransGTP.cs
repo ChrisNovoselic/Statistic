@@ -201,7 +201,7 @@ namespace trans_gtp
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTS_KomDisp();
-                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true); }
+                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
@@ -221,7 +221,7 @@ namespace trans_gtp
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
                 m_arAdmin[i].m_ignore_date = true;
-                m_arAdmin[i].m_ignore_connsett_data = true;
+                //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
 
                 setUIControlConnectionSettings(i);
 

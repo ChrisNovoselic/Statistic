@@ -147,7 +147,7 @@ namespace trans_mc
                     default:
                         break;
                 }
-                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), m_modeTECComponent, bIgnoreTECInUse); }
+                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), m_modeTECComponent, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
@@ -169,7 +169,7 @@ namespace trans_mc
                         break;
                 }
 
-                m_arAdmin[i].m_ignore_connsett_data = true;
+                //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))

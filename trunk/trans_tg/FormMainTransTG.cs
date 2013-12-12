@@ -142,7 +142,7 @@ namespace trans_tg
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTransTG();
-                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse); }
+                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");
@@ -160,7 +160,7 @@ namespace trans_tg
                     else
                         ;
 
-                m_arAdmin[i].m_ignore_connsett_data = true;
+                //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
