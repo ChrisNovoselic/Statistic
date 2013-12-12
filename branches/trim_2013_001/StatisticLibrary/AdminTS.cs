@@ -538,10 +538,25 @@ namespace StatisticCommon
                         {
                             table.Rows [i] [arTable[arIndexTables[1]].Columns [k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
                         }
+
+                        break;
                     }
                     else
                         ;
                 }
+
+                if (!(j < arTable[arIndexTables[1]].Rows.Count))
+                {//Не было найдено соответствия по дате ППБР и админ./данных
+                    for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
+                    {
+                        if (k == 0) //Columns[k].ColumnName == DATE
+                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = table.Rows[i][k];
+                        else
+                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = 0;
+                    }
+                }
+                else
+                    ;
             }
 
             //0 - DATE_ADMIN, 1 - REC, 2 - IS_PER, 3 - DIVIAT, 4 - DATE_PBR, 5 - PBR, 6 - PBR_NUMBER
@@ -1969,7 +1984,7 @@ namespace StatisticCommon
 
             return iRes;
         }
-        
+
         public string GetNameTECComponent(int indx = -1)
         {
             if (indx < 0) indx = indxTECComponents; else ;
@@ -1985,9 +2000,9 @@ namespace StatisticCommon
         {
             for (int i = 0; i < 24; i++)
             {
-                m_prevRDGValues[i].pbr = m_curRDGValues[i].pbr;
-                m_prevRDGValues[i].pmin = m_curRDGValues[i].pmin;
-                m_prevRDGValues[i].pmax = m_curRDGValues[i].pmax;
+                m_prevRDGValues[i].pbr = Math.Round (m_curRDGValues[i].pbr, 2);
+                m_prevRDGValues[i].pmin = Math.Round (m_curRDGValues[i].pmin, 2);
+                m_prevRDGValues[i].pmax = Math.Round(m_curRDGValues[i].pmax, 2);
                 m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
                 m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
                 m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;

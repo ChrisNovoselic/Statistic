@@ -36,22 +36,36 @@ namespace StatisticCommon
 
         public void loadParam()
         {
-            m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.POLL_TIME], m_arParametrSetupDefault[(int)PARAMETR_SETUP.POLL_TIME]);
-            if (m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] < nudnQueryPeriod.Minimum || m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] > nudnQueryPeriod.Maximum)
+            int iDefault = -1;
+
+            m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.POLL_TIME], iDefault);
+            if (((m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] < nudnQueryPeriod.Minimum) || (m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] > nudnQueryPeriod.Maximum)) ||
+                (m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] == iDefault))
+            {
                 m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] = m_arParametrSetupDefault[(int)PARAMETR_SETUP.POLL_TIME];
+                m_FileINI.WriteInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.POLL_TIME], m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME]);
+            }
             else
                 ;
             m_arParametrSetup[(int)PARAMETR_SETUP.POLL_TIME] *= 1000;
 
-            m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.ERROR_DELAY], m_arParametrSetupDefault[(int)PARAMETR_SETUP.ERROR_DELAY]);
-            if (m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] < nudnDelayTime.Minimum || m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] > nudnDelayTime.Maximum)
+            m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.ERROR_DELAY], iDefault);
+            if (((m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] < nudnDelayTime.Minimum) || (m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] > nudnDelayTime.Maximum)) ||
+                (m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] == iDefault))
+            {
                 m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY] = m_arParametrSetupDefault[(int)PARAMETR_SETUP.ERROR_DELAY];
+                m_FileINI.WriteInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.ERROR_DELAY], m_arParametrSetup[(int)PARAMETR_SETUP.ERROR_DELAY]);
+            }
             else
                 ;
 
-            m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.MAX_TRYES], m_arParametrSetupDefault[(int)PARAMETR_SETUP.MAX_TRYES]);
-            if (m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] < nudnRequeryCount.Minimum || m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] > nudnRequeryCount.Maximum)
+            m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] = m_FileINI.ReadInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.MAX_TRYES], iDefault);
+            if (((m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] < nudnRequeryCount.Minimum) || (m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] > nudnRequeryCount.Maximum)) ||
+                (m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] == iDefault))
+            {
                 m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES] = m_arParametrSetupDefault[(int)PARAMETR_SETUP.MAX_TRYES];
+                m_FileINI.WriteInt(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)PARAMETR_SETUP.MAX_TRYES], m_arParametrSetup[(int)PARAMETR_SETUP.MAX_TRYES]);
+            }
             else
                 ;
         }
