@@ -68,7 +68,7 @@ namespace StatisticCommon
 
         protected volatile bool using_date;
         public bool m_ignore_date;
-        public bool m_ignore_connsett_data;
+        protected bool m_ignore_connsett_data;
 
         protected bool[,] m_arHaveDates;
 
@@ -144,15 +144,17 @@ namespace StatisticCommon
             m_listListenerIdCurrent = new List<int>();
         }
 
-        public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse)
+        public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
         {
             //connSettConfigDB = connSett;
 
+            m_ignore_connsett_data = !bUseData;
+
             if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse).tec;
+                this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse, bUseData).tec;
             else
             {
-                this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse).tec;
+                this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse, bUseData).tec;
             }
 
             //comboBoxTecComponent.Items.Clear ();

@@ -106,7 +106,7 @@ namespace trans_mc_cmd
                 if (bRes == true)
                 {
                     m_admin = new AdminTS ();
-                    m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+                    m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
                     m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                     m_listIdMCTECComponent = new List<int>();

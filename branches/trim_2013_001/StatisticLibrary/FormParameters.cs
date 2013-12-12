@@ -12,7 +12,7 @@ namespace StatisticCommon
 {
     public partial class FormParameters : FormParametersBase
     {
-        private enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_TRYES, COUNT_PARAMETR_SETUP };
+        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_TRYES, COUNT_PARAMETR_SETUP };
         private string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count" };
         private int [] m_arParametrSetupDefault = { 30, 60, 1 };
         public int [] m_arParametrSetup = { 30, 60, 1 };

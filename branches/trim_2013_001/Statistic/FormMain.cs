@@ -103,7 +103,7 @@ namespace Statistic
             //    }
 
             //    //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                try { m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false); }
+                try { m_admin.InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");

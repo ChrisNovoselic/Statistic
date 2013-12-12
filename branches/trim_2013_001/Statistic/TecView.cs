@@ -1941,7 +1941,7 @@ namespace Statistic
 
             adminValuesReceived = false;
             currHour = true;
-            currValuesPeriod = parameters.poll_time - 1;
+            currValuesPeriod = parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME] - 1;
             started = true;
 
             tec.StartDbInterface();
@@ -4907,7 +4907,7 @@ namespace Statistic
                     if (result)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
-                        selectedTime = selectedTime.AddSeconds(-parameters.error_delay);
+                        selectedTime = selectedTime.AddSeconds(-parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
                         this.BeginInvoke(delegateSetNowDate, true);
                     }
                     break;
@@ -4987,21 +4987,21 @@ namespace Statistic
                     break;
                 case StatesMachine.CurrentTime:
                     if (response)
-                        ErrorReport("Ошибка разбора текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка разбора текущего времени сервера. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     else
-                        ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     break;
                 case StatesMachine.CurrentHours:
                     if (response)
-                        ErrorReport("Ошибка разбора получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка разбора получасовых значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     else
-                        ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     break;
                 case StatesMachine.CurrentMins:
                     if (response)
-                        ErrorReport("Ошибка разбора трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка разбора трёхминутных значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     else
-                        ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.poll_time.ToString() + " секунд.");
+                        ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
                     break;
                 case StatesMachine.RetroHours:
                     if (response)
@@ -5115,7 +5115,8 @@ namespace Statistic
         {
             Invoke(delegateTickTime);
             if (currHour && isActive)
-                if (((currValuesPeriod++) * 1000) >= parameters.poll_time) {
+                if (((currValuesPeriod++) * 1000) >= parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
+                {
                     currValuesPeriod = 0;
                     NewDateRefresh();
                 }

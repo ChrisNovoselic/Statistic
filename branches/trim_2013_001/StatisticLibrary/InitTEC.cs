@@ -42,16 +42,16 @@ namespace StatisticCommon
             return DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
         }
 
-        private List <int> getMCId (DataTable data, int row)
+        private List<int> getMCId(DataTable data, int row)
         {
             int i = -1;
-            List <int> listRes = new List<int> ();
+            List<int> listRes = new List<int>();
 
             if ((!(data.Columns.IndexOf("ID_MC") < 0)) && (!(data.Rows[row]["ID_MC"] is DBNull)))
             {
-                string [] ids = data.Rows[row]["ID_MC"].ToString ().Split (',');
-                for (i = 0; i < ids.Length; i ++)
-                    listRes.Add (Convert.ToInt32 (ids [i]));
+                string[] ids = data.Rows[row]["ID_MC"].ToString().Split(',');
+                for (i = 0; i < ids.Length; i++)
+                    listRes.Add(Convert.ToInt32(ids[i]));
             }
             else
                 ;
@@ -60,7 +60,7 @@ namespace StatisticCommon
         }
 
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
+        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse, bool bUseData)
         {
             tec = new List<TEC>();
 
@@ -80,18 +80,21 @@ namespace StatisticCommon
                 //Logging.Logg().LogLock();
                 //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
                 //Logging.Logg().LogUnlock();
-                
+
+                //if ((m_user.allTEC == 0) || (m_user.Role < 100) || (m_user.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
+                //{
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
                     //Logging.Logg().LogUnlock();
-                    
+
                     //Создание объекта ТЭЦ
-                    tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
+                    tec.Add(new TEC(Convert.ToInt32(list_tec.Rows[i]["ID"]),
                                     list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                     list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                     list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                     list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                    list_tec.Rows[i]["PREFIX_PBR"].ToString()));
+                                    list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                    bUseData));
 
                     //List <string> listNamesField;
                     //listNamesField = new List<string> ();
@@ -106,7 +109,7 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                         list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
 
@@ -118,7 +121,7 @@ namespace StatisticCommon
                     //Logging.Logg().LogUnlock();
 
                     int indx = -1;
-                    for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; ! (c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
+                    for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; !(c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                     {
                         list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
@@ -180,6 +183,9 @@ namespace StatisticCommon
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TG = Ok", true, false, false);
                     //Logging.Logg().LogUnlock();
+                //}
+                //else
+                //    ;
             }
 
             //Logging.Logg().LogLock();
@@ -187,13 +193,13 @@ namespace StatisticCommon
             //Logging.Logg().LogUnlock();
         }
 
-        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse) //indx = {GTP или PC}
+        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
         {
-            tec = new List<TEC> ();
+            tec = new List<TEC>();
 
             int err = 0;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
-            DataTable list_tec= null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
+            DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                     list_TECComponents = null, list_tg = null;
 
             //Использование методов объекта
@@ -214,14 +220,16 @@ namespace StatisticCommon
             //Использование статической функции
             list_tec = getListTEC(connSett, bIgnoreTECInUse);
 
-            for (int i = 0; i < list_tec.Rows.Count; i ++) {
+            for (int i = 0; i < list_tec.Rows.Count; i++)
+            {
                 //Создание объекта ТЭЦ
-                tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
+                tec.Add(new TEC(Convert.ToInt32(list_tec.Rows[i]["ID"]),
                                 list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                 list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                 list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                 list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                list_tec.Rows[i]["PREFIX_PBR"].ToString()));
+                                list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                bUseData));
 
                 //List <string> listNamesField;
                 //listNamesField = new List<string> ();
@@ -234,18 +242,19 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings (DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int) CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int)CONN_SETT_TYPE.DATA);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
 
-                tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
+                tec[i].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
 
-                list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
-                for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
-                    tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
+                list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]));
+                for (int j = 0; j < list_TECComponents.Rows.Count; j++)
+                {
+                    tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString(), list_TECComponents.Rows[j]["PREFIX_PBR"].ToString()));
                     tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
-                    tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
+                    tec[i].list_TECComponents[j].m_id = Convert.ToInt32(list_TECComponents.Rows[j]["ID"]);
                     tec[i].list_TECComponents[j].m_listMCId = getMCId(list_TECComponents, j);
 
                     list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
@@ -254,8 +263,8 @@ namespace StatisticCommon
                     {
                         tec[i].list_TECComponents[j].TG.Add(new TG(tec[i].list_TECComponents[j]));
                         tec[i].list_TECComponents[j].TG[k].name = list_tg.Rows[k]["NAME_SHR"].ToString();
-                        tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32 (list_tg.Rows[k]["ID"]);
-                        if (! (list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                        tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                        if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
                             tec[i].list_TECComponents[j].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
                         else
                             ;
