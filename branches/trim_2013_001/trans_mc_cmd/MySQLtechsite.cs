@@ -456,6 +456,7 @@ namespace trans_mc_cmd
                 //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
                 //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
                 DbTSQLInterface.ExecNonQuery(m_MySQLConnection, "INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                Console.WriteLine("INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)" + "; @0 = " + DT.ToString() + ", @1 = " + DateTime.Now.ToString () + "; Рез-т = " + err);
                 if (!(err == 0))
                     itssAUX.PrintErrorMessage("Ошибка записи в базу MySQL на INSERT!");
                 else
@@ -486,7 +487,7 @@ namespace trans_mc_cmd
             {
                 AddCalculatedOwnerValues();
 
-                AddCalculatedHalfHourValues(dtMskNow);
+                //AddCalculatedHalfHourValues(dtMskNow);
 
                 foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
                 {

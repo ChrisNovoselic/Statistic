@@ -87,7 +87,7 @@ namespace trans_mc_cmd
                         techsite.FlushDataToDatabase();
                     }
                     else
-                        ;
+                        Console.WriteLine (string.Empty);
                 }
                 else
                     itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
@@ -164,10 +164,12 @@ namespace trans_mc_cmd
                     else
                         ;
 
-                    if (bDTParse == true)
-                        ; //g_dtList = g_dtList.Date.LocalHqToSystemEx();
+                    if (bDTParse == false)
+                        g_dtList = DateTime.Now.Date; //g_dtList = g_dtList.Date.LocalHqToSystemEx();
                     else
-                        g_dtList = DateTime.Now.Date.LocalHqToSystemEx();
+                        ;
+
+                    Console.WriteLine("List plants to " + g_dtList.Date.ToShortDateString () + " ...");
                 }
                 else
                     if (!(args[0].IndexOf ("/nowait") < 0))
