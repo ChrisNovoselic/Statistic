@@ -78,6 +78,12 @@ namespace StatisticCommon
         {
             if (e.ColumnIndex == (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
             {
+                int colStart = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN;
+                if (Columns[colStart].ReadOnly == true)
+                    colStart ++;
+                else
+                    ;
+
                 for (int i = e.RowIndex + 1; i < 24; i++)
                 {
                     //m_curRDGValues[i].plan = m_curRDGValues[e.RowIndex].plan;
@@ -85,7 +91,7 @@ namespace StatisticCommon
                     //m_curRDGValues[i].deviationPercent = m_curRDGValues[e.RowIndex].deviationPercent;
                     //m_curRDGValues[i].deviation = m_curRDGValues[e.RowIndex].deviation;
 
-                    for (int j = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++) {
+                    for (int j = colStart; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++) {
                         Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
                     }
                 }
