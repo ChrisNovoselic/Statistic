@@ -108,7 +108,7 @@ namespace trans_mc_cmd
                     }
             }
 
-            Console.WriteLine("End. Press any key.");
+            Console.Write("End. Press any key...");
 
             if (bNoWait == false)
                 Console.ReadKey();
