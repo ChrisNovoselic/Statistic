@@ -108,12 +108,7 @@ namespace trans_mc_cmd
                     }
             }
 
-            Console.Write("End. Press any key...");
-
-            if (bNoWait == false)
-                Console.ReadKey();
-            else
-                ;
+            messageToExit(bNoWait);
         }
 
         private static string GetNameHostModesCentre(FileINI fi)
@@ -208,9 +203,8 @@ namespace trans_mc_cmd
                             Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre (fileINI));
 
                             Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /list[=DD.MM.YYYY] /nowait /setmysqlpassword" + Environment.NewLine);
-                            Console.WriteLine("End. Press any key.");
                             
-                            Console.ReadKey();
+                            messageToExit (true);
                             
                             bDoExit = true;
                         }
@@ -275,6 +269,18 @@ namespace trans_mc_cmd
                 //Про конвертацию времени: http://msdn.microsoft.com/ru-ru/library/bb397769.aspx
             }
 
+        }
+
+        static void messageToExit (bool bNoWait)
+        {
+            if (bNoWait == false)
+            {
+                Console.Write("End. Press any key...");
+                Console.ReadKey();
+                Console.Write(Environment.NewLine);
+            }
+            else
+                ;
         }
     }
 }
