@@ -11,7 +11,7 @@
     <RootNamespace>Statistic</RootNamespace>
     <AssemblyName>Statistic</AssemblyName>
     <ApplicationIcon>Resources\statistic2.ico</ApplicationIcon>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>

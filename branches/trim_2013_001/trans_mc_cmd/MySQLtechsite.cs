@@ -56,6 +56,8 @@ namespace trans_mc_cmd
             }
         }
 
+        public bool m_bCalculatedHalfHourValues;
+
         //public MySqlConnection [] m_MySQLConnections;
         public MySqlConnection m_MySQLConnection;
         public static string m_strFileNameConnSett = "connsett_mc_cmd.ini";
@@ -89,9 +91,11 @@ namespace trans_mc_cmd
         /// <summary>
         /// Конструктор открывает коннект к базе. Закрывает деструктор.
         /// </summary>
-        public MySQLtechsite()
+        public MySQLtechsite(bool bCalculatedHalfHourValues)
         {
             bool bRes = false;
+
+            m_bCalculatedHalfHourValues = bCalculatedHalfHourValues;
             
             FormConnectionSettings formConnSett = new FormConnectionSettings(m_strFileNameConnSett);
             if (formConnSett.Protected == true)
@@ -299,39 +303,44 @@ namespace trans_mc_cmd
         /// </summary>
         public void WritePlanValue(int iStationId, DateTime DT, string sPBRnum, Params PAR, double dGenValue)
         {
-            //OneRecord HVCrecord = null;
-            HTECComponentsRecord HVCrecord = null;
-
-            if (HourlyValuesCollection == null)
-                //HourlyValuesCollection = new SortedList<DateTime, OneRecord>(50);
-                HourlyValuesCollection = new SortedList<DateTime, HTECComponentsRecord>(50);
-            else
-                ;
-            //А может здесь из базы читать предыдущие значения в коллекцию? Нет. Данные из базы здесь не нужны.
-
-            /*OneField OFthis = HourlyFieldValues.First(item => item.Key == DT && item.Value.sFieldName == PAR.ToString()).Value;     //Не верно, но тема такая
-            if (OFthis == null) OFthis = new OneField();*/
-
-            if (HourlyValuesCollection.ContainsKey(DT))
-                HVCrecord = HourlyValuesCollection.First(item => item.Key == DT).Value;
-            else
-                ;
-
-            if (HVCrecord == null)
+            if (! (m_listIdMCTECComponent.IndexOf (iStationId) < 0))
             {
-                //HVCrecord = new OneRecord();
-                HVCrecord = new HTECComponentsRecord(m_listIdMCTECComponent);
-                HVCrecord.date_time = DT;
-                HVCrecord.parent = this;
-                HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                //OneRecord HVCrecord = null;
+                HTECComponentsRecord HVCrecord = null;
+
+                if (HourlyValuesCollection == null)
+                    //HourlyValuesCollection = new SortedList<DateTime, OneRecord>(50);
+                    HourlyValuesCollection = new SortedList<DateTime, HTECComponentsRecord>(50);
+                else
+                    ;
+                //А может здесь из базы читать предыдущие значения в коллекцию? Нет. Данные из базы здесь не нужны.
+
+                /*OneField OFthis = HourlyFieldValues.First(item => item.Key == DT && item.Value.sFieldName == PAR.ToString()).Value;     //Не верно, но тема такая
+                if (OFthis == null) OFthis = new OneField();*/
+
+                if (HourlyValuesCollection.ContainsKey(DT))
+                    HVCrecord = HourlyValuesCollection.First(item => item.Key == DT).Value;
+                else
+                    ;
+
+                if (HVCrecord == null)
+                {
+                    //HVCrecord = new OneRecord();
+                    HVCrecord = new HTECComponentsRecord(m_listIdMCTECComponent);
+                    HVCrecord.date_time = DT;
+                    HVCrecord.parent = this;
+                    HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                }
+                else
+                    ;
+
+                HVCrecord.wr_date_time = DateTime.Now;
+                HVCrecord.PBR_number = sPBRnum;
+
+                HVCrecord.SetValues(iStationId, PAR, dGenValue);
             }
             else
-                ;
-
-            HVCrecord.wr_date_time = DateTime.Now;
-            HVCrecord.PBR_number = sPBRnum;
-
-            HVCrecord.SetValues(iStationId, PAR, dGenValue);
+                ; //Такого ГТП (с ном. 'iStationId' не найдено)
         }
 
         private void AddCalculatedOwnerValues ()
@@ -414,11 +423,11 @@ namespace trans_mc_cmd
 
             DataTable data; 
             //data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
-            data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM " + m_strTableNamePPBR + " where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
             //data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
             if (!(er == 0))
             {
-                errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
+                errMsg = "Не получен идентификатор для новой записи в '" + m_strTableNamePPBR + "'";
                 itssAUX.PrintErrorMessage(errMsg);
                 throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
             }
@@ -430,7 +439,7 @@ namespace trans_mc_cmd
                 {
                     if (data.Rows.Count > 1)
                     {
-                        errMsg = "Не получен идентификатор для новой записи в 'PPBRvsPBRnew'";
+                        errMsg = "Не получен идентификатор для новой записи в '" + m_strTableNamePPBR + "'";
                         itssAUX.PrintErrorMessage(errMsg);
                         throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
                     }
@@ -487,7 +496,10 @@ namespace trans_mc_cmd
             {
                 AddCalculatedOwnerValues();
 
-                //AddCalculatedHalfHourValues(dtMskNow);
+                if (m_bCalculatedHalfHourValues == true)
+                    AddCalculatedHalfHourValues(dtMskNow);
+                else
+                    ;
 
                 foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
                 {

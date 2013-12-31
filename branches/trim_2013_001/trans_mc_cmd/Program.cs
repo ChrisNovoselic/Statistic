@@ -27,19 +27,25 @@ namespace trans_mc_cmd
 
         static void Main(string[] args)
         {
-            bool bNoWait = false;
-            if (ProcArgs(args, out bNoWait, out g_bList) == true)
+            bool bNoWait,
+                bCalculatedHalfHourValues;
+
+            bNoWait =
+            bCalculatedHalfHourValues =
+            false;
+
+            if (ProcArgs(args, out bNoWait, out g_bList, out bCalculatedHalfHourValues) == true)
                 return;
             else
                 ;
 
             int iTechsiteInitialized = 0;
-            
+
             if (g_bList == false)
             {
                 Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait..." + Environment.NewLine);
 
-                try { techsite = new MySQLtechsite(); }
+                try { techsite = new MySQLtechsite(bCalculatedHalfHourValues); }
                 catch (Exception e)
                 {
                 }
@@ -132,19 +138,26 @@ namespace trans_mc_cmd
         /// <summary>
         /// Обрабатывает переданные при вызове параметры. Возвращает флаг необходимости выхода из программы.
         /// </summary>
-        static bool ProcArgs(string[] args, out bool bNoWait, out bool bList)
+        static bool ProcArgs(string[] args, out bool bNoWait, out bool bList, out bool bCalculatedHalfHourValues)
         {
             //Properties.Settings sett = new Properties.Settings();
             bool bDoExit = false;
 
             bNoWait =
             bList =
+            bCalculatedHalfHourValues =
             false;
+
+            FileINI fileINI = new FileINI("setup.ini");
+
+            string strProgramNameSectionINI = "Параметры записи в БД (trans_mc_cmd.exe)";
+            if (Boolean.TryParse(fileINI.ReadString(strProgramNameSectionINI, "Расчет30минЗначения", string.Empty), out bCalculatedHalfHourValues) == false)
+                bCalculatedHalfHourValues = false;
+            else
+                
 
             if (args.Length > 0)
             {
-                FileINI fileINI = new FileINI("setup.ini");
-
                 if (!(args[0].IndexOf ("/list") < 0))
                 {
                     bList = true;
@@ -268,7 +281,6 @@ namespace trans_mc_cmd
                 //"Russian Standard Time" - это Москва. "N. Central Asia Standard Time" - это Новосибирск.
                 //Про конвертацию времени: http://msdn.microsoft.com/ru-ru/library/bb397769.aspx
             }
-
         }
 
         static void messageToExit (bool bNoWait)

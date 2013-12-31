@@ -48,7 +48,10 @@ namespace trans_mc_cmd
 
             for (i = 0; i < ids.Count; i ++)
             {
-                m_srtlist_ppbr.Add(ids[i], new double?[(int)MySQLtechsite.Params.COUNT_PARAMS]);
+                if (ids[i] > 0)
+                    m_srtlist_ppbr.Add(ids[i], new double?[(int)MySQLtechsite.Params.COUNT_PARAMS]);
+                else
+                    ;
             }
         }
 
@@ -103,7 +106,7 @@ namespace trans_mc_cmd
             {
                 iId = parent.Insert48HalfHoursIfNeedAndGetId(date_time);
 
-                strRes = "UPDATE PPBRvsPBRnew SET wr_date_time = '@wr_date_time', PBR_number = '@PBR_number'";
+                strRes = "UPDATE " + parent.m_strTableNamePPBR + " SET wr_date_time = '@wr_date_time', PBR_number = '@PBR_number'";
 
                 bool bPrefixOwnerOnly = false;
                 string strNameField = string.Empty;
