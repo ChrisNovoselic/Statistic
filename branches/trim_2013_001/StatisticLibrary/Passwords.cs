@@ -201,7 +201,8 @@ namespace StatisticCommon
                 
                 return false;
             }
-
+            else
+                ;
 
             semaSetPass.WaitOne();
             lock (m_lockObj)
@@ -218,6 +219,8 @@ namespace StatisticCommon
 
                 if (password != "")
                     passReceive = hashedString.ToString();
+                else
+                    ;
 
                 try
                 {

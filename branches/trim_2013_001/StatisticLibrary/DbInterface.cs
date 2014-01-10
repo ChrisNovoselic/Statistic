@@ -17,7 +17,7 @@ namespace StatisticCommon
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 66;
 
-        private class DbInterfaceListener
+        protected class DbInterfaceListener
         {
             public volatile bool listenerActive; 
             public volatile bool dataPresent;
@@ -35,12 +35,12 @@ namespace StatisticCommon
                 dataTable = new DataTable ();
             }
         }
-        private List <DbInterfaceListener> m_listListeners;
+        protected List <DbInterfaceListener> m_listListeners;
         //private int maxListeners;
 
         public object m_connectionSettings;
 
-        private object lockListeners;
+        protected object lockListeners;
         protected object lockConnectionSettings;
         private Thread dbThread;
         private Semaphore sem;
@@ -127,8 +127,11 @@ namespace StatisticCommon
                 }
 
                 joined = dbThread.Join(5000);
-                if (!joined)
+                if (joined == false)
+                {
+                    Disconnect ();
                     dbThread.Abort();
+                }
                 else
                     ;
             }
@@ -277,8 +280,9 @@ namespace StatisticCommon
                             m_listListeners[i].requestDB = null;
                         }
                     }
-                }
-            }
+                } //for (int i = 0; i < m_listListeners.Count; i++)
+            } //while (threadIsWorking)
+            
             try
             {
                 sem.Release(1);
@@ -286,6 +290,8 @@ namespace StatisticCommon
             catch
             {
             }
+
+            Disconnect ();
         }
 
         protected abstract bool Connect();

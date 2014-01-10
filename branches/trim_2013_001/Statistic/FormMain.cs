@@ -116,7 +116,6 @@ namespace Statistic
                 }
                 else
                     ;
-                m_admin.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
             //    switch (i)
             //    {
