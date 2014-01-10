@@ -17,6 +17,10 @@ namespace Statistic
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("Старт приложения...", true, true, false);
+            Logging.Logg().LogUnlock();
+
             //InitTEC init = new InitTEC();
 
             FormMain formMain = null;
@@ -54,6 +58,10 @@ namespace Statistic
                 Application.Run(formMain);
             else
                 ;
+
+            Logging.Logg ().LogLock ();
+            Logging.Logg ().LogToFile ("Выход из приложения...", true, true, false);
+            Logging.Logg().LogUnlock();
         }
     }
 }
