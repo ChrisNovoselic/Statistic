@@ -54,13 +54,6 @@ namespace Statistic
             if (m_formConnectionSettings.Protected == true)
             {
                 bShowFormConnectionSettings = ! Initialize();
-                if (bShowFormConnectionSettings == true)
-                {
-                    //throw new Exception("Ошибка инициализации пользовательских компонентов формы.");
-                    //m_formConnectionSettings.ShowDialog(this);
-                }
-                else
-                    ;
             }
             else
             {
@@ -69,7 +62,11 @@ namespace Statistic
 
             if (bShowFormConnectionSettings == true)
             {
-                connectionSettings ();
+                //connectionSettings ();
+
+                string strThrowMsg = "Ошибка инициализации пользовательских компонентов формы";
+                MessageBox.Show(this, strThrowMsg + ".\nОбратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                throw new Exception(strThrowMsg);
             }
             else
                 ;
@@ -222,7 +219,7 @@ namespace Statistic
             //    ;
 
             if (! (m_passwords == null))
-                m_passwords.StopDbInterface();
+                ; //m_passwords.StopDbInterface();
             else
                 ;
         }
@@ -660,8 +657,6 @@ namespace Statistic
         {
             if (timer.Interval == 666)
             {
-                m_passwords.StartDbInterface();
-                
                 int i = -1;
                 //for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     m_admin.StartThreadSourceData();

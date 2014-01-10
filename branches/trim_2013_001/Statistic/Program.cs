@@ -18,7 +18,7 @@ namespace Statistic
             Application.SetCompatibleTextRenderingDefault(false);
 
             Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("Старт приложения...", true, true, false);
+            Logging.Logg().LogToFile("=============Старт приложения...=============", true, true, false);
             Logging.Logg().LogUnlock();
 
             //InitTEC init = new InitTEC();
@@ -27,7 +27,7 @@ namespace Statistic
             try { formMain = new FormMain(); }
             catch (Exception e)
             {
-                Logging.Logg ().LogExceptionToFile (e, "Ошибка запуска приложения.");
+                Logging.Logg().LogExceptionToFile(e, "=============Ошибка запуска приложения...=============");
             }
 
             //mainForm.Show();
@@ -60,7 +60,7 @@ namespace Statistic
                 ;
 
             Logging.Logg ().LogLock ();
-            Logging.Logg ().LogToFile ("Выход из приложения...", true, true, false);
+            Logging.Logg().LogToFile("=============Выход из приложения...=============", true, true, false);
             Logging.Logg().LogUnlock();
         }
     }

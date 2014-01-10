@@ -28,6 +28,7 @@ namespace StatisticCommon
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormAbout));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.llblMailTo = new System.Windows.Forms.LinkLabel();
@@ -38,7 +39,7 @@ namespace StatisticCommon
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = (System.Drawing.Image)global::StatisticCommon.Properties.Resources.statistic2.ToBitmap ();
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(12, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(48, 48);
@@ -52,8 +53,8 @@ namespace StatisticCommon
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(250, 58);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Программа \"Статистика\"\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразработчик" +
-    ": Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин Алексей, e-mail:";
+            this.label1.Text = "Программа \"Статистика\" 1.9.1\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразра" +
+    "ботчик: Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин Алексей, e-mail:";
             // 
             // llblMailTo
             // 
@@ -81,10 +82,10 @@ namespace StatisticCommon
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Location = new System.Drawing.Point(277, 49);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(106, 13);
+            this.linkLabel1.Size = new System.Drawing.Size(98, 13);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "ChrjapinAN@nske.ru";
+            this.linkLabel1.Text = "ChrjapinAN@itss.ru";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
             // FormAbout
