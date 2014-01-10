@@ -75,12 +75,6 @@
     <Compile Include="FormMainBase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormMainTrans.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormMainTrans.designer.cs">
-      <DependentUpon>FormMainTrans.cs</DependentUpon>
-    </Compile>
     <Compile Include="FormParameters.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,9 +126,6 @@
     <EmbeddedResource Include="FormConnectionSettings.resx">
       <DependentUpon>FormConnectionSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormMainTrans.resx">
-      <DependentUpon>FormMainTrans.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FormParameters.resx">
       <DependentUpon>FormParameters.cs</DependentUpon>
     </EmbeddedResource>
@@ -155,18 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\btnDel.JPG" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\statistic2.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\statistic3.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\statistic4.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\statistic5.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

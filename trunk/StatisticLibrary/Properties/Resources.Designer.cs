@@ -89,35 +89,5 @@ namespace StatisticCommon.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
-        /// </summary>
-        internal static System.Drawing.Icon statistic3 {
-            get {
-                object obj = ResourceManager.GetObject("statistic3", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
-        /// </summary>
-        internal static System.Drawing.Icon statistic4 {
-            get {
-                object obj = ResourceManager.GetObject("statistic4", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
-        /// </summary>
-        internal static System.Drawing.Icon statistic5 {
-            get {
-                object obj = ResourceManager.GetObject("statistic5", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
     }
 }
