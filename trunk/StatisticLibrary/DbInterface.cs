@@ -17,7 +17,7 @@ namespace StatisticCommon
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 66;
 
-        private class DbInterfaceListener
+        protected class DbInterfaceListener
         {
             public volatile bool listenerActive; 
             public volatile bool dataPresent;
@@ -35,12 +35,12 @@ namespace StatisticCommon
                 dataTable = new DataTable ();
             }
         }
-        private List <DbInterfaceListener> m_listListeners;
+        protected List <DbInterfaceListener> m_listListeners;
         //private int maxListeners;
 
         public object m_connectionSettings;
 
-        private object lockListeners;
+        protected object lockListeners;
         protected object lockConnectionSettings;
         private Thread dbThread;
         private Semaphore sem;
@@ -283,9 +283,12 @@ namespace StatisticCommon
             {
                 sem.Release(1);
             }
-            catch
+            catch (Exception e)
             {
+                Logging.Logg().LogExceptionToFile(e, "DbInterface::DbInterface_ThreadFunction () - выход...");
             }
+
+            Disconnect();
         }
 
         protected abstract bool Connect();

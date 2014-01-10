@@ -161,7 +161,7 @@ namespace trans_mc
                         m_arAdmin[i].m_ignore_date = false;
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
+                        //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
                         ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                         m_arAdmin[i].m_ignore_date = true;
                         break;

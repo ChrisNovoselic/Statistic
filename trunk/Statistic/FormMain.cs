@@ -85,79 +85,90 @@ namespace Statistic
             m_passwords.SetDelegateReport(ErrorReport, ActionReport);
             m_passwords.connSettConfigDB = m_formConnectionSettings.getConnSett();
 
-            Users user = new Users(m_formConnectionSettings.getConnSett());
-            if (! (user.Role == 2)) //Администратор
-                администрированиеToolStripMenuItem.Enabled = false;
-            else;
-
-            m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
-            m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
-
-            int i = -1;
-            for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                switch (i) {
-                    case (int)FormChangeMode.MANAGER.DISP:
-                        m_arAdmin[i] = new AdminTS();
-                        break;
-                    case (int)FormChangeMode.MANAGER.NSS:
-                        m_arAdmin[i] = new AdminTS_NSS();
-                        break;
-                    default:
-                        break;
-                }
-
-                //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
-                catch (Exception e)
-                {
-                    Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
-                    bRes = false;
-                    break;
-                }
-                if (!(m_arAdmin[i].m_list_tec.Count > 0)) {
-                    bRes = false;
-                    break;
-                }
-                else
-                    ;
-                m_arAdmin[i].connSettConfigDB = m_formConnectionSettings.getConnSett();
-
-                switch (i)
-                {
-                    case (int)FormChangeMode.MANAGER.DISP:
-                        m_arPanelAdmin[i] = new PanelAdminKomDisp(m_arAdmin[i]);
-                        break;
-                    case (int)FormChangeMode.MANAGER.NSS:
-                        m_arPanelAdmin[i] = new PanelAdminNSS(m_arAdmin[i]);
-                        break;
-                    default:
-                        break;
-                }
-
-                m_arAdmin[i].SetDelegateData(m_arPanelAdmin[i].setDataGridViewAdmin);
-                m_arAdmin[i].SetDelegateDatetime(m_arPanelAdmin[i].CalendarSetDate);
-
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+            Users user = null;
+            try { user = new Users(m_formConnectionSettings.getConnSett()); }
+            catch (Exception e)
+            {
+                Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
+                bRes = false;
             }
 
-            formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);
-            m_prevSelectedIndex = 0;
-
-            //formChangeMode = new FormChangeMode();
-            formPassword = new FormPassword(m_passwords);
-            formSetPassword = new FormSetPassword(m_passwords);
-            formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-            formParameters = new FormParameters("setup.ini");
-
-            tecViews = new List<TecView>();
-            selectedTecViews = new List<TecView>();
-
-            prevStateIsAdmin = false;
-            prevStateIsPPBR = false;
-
             if (bRes == true)
-                timer.Start();
+            {
+                if (! (user.Role == 2)) //Администратор
+                    администрированиеToolStripMenuItem.Enabled = false;
+                else;
+
+                m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+                m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
+
+                int i = -1;
+                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
+                    switch (i) {
+                        case (int)FormChangeMode.MANAGER.DISP:
+                            m_arAdmin[i] = new AdminTS();
+                            break;
+                        case (int)FormChangeMode.MANAGER.NSS:
+                            m_arAdmin[i] = new AdminTS_NSS();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
+                    try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_arAdmin[i].InitTEC (); i = " + i);
+                        bRes = false;
+                        break;
+                    }
+                    if (!(m_arAdmin[i].m_list_tec.Count > 0)) {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    switch (i)
+                    {
+                        case (int)FormChangeMode.MANAGER.DISP:
+                            m_arPanelAdmin[i] = new PanelAdminKomDisp(m_arAdmin[i]);
+                            break;
+                        case (int)FormChangeMode.MANAGER.NSS:
+                            m_arPanelAdmin[i] = new PanelAdminNSS(m_arAdmin[i]);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    m_arAdmin[i].SetDelegateData(m_arPanelAdmin[i].setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateDatetime(m_arPanelAdmin[i].CalendarSetDate);
+
+                    m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+                }
+
+                formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);
+                m_prevSelectedIndex = 0;
+
+                //formChangeMode = new FormChangeMode();
+                formPassword = new FormPassword(m_passwords);
+                formSetPassword = new FormSetPassword(m_passwords);
+                formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
+                formParameters = new FormParameters("setup.ini");
+
+                tecViews = new List<TecView>();
+                selectedTecViews = new List<TecView>();
+
+                prevStateIsAdmin = false;
+                prevStateIsPPBR = false;
+
+                if (bRes == true)
+                    timer.Start();
+                else
+                    ;
+            }
             else
                 ;
 
@@ -348,179 +359,186 @@ namespace Statistic
         {
             if (m_formConnectionSettings.Protected == true)
             {
-                int i;
-                //int index;
-                int prevModeComponent = formChangeMode.getModeTECComponent ();
-                // выбираем список отображаемых вкладок
-                if (formChangeMode.ShowDialog() == DialogResult.OK)
+                int i
+                    //, index
+                    , prevModeComponent
+                    ; 
+                if (!(formChangeMode == null))
                 {
-                    StartWait();
-
-                    if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
-                        //this.tec = formChangeMode.tec;
-
-                        prevStateIsAdmin = false;
-
-                        //tecViews.Clear ();
-                        //selectedTecViews.Clear ();
-                    }
-                    else {
-                    }
-
-                    if (tecViews.Count == 0) {
-                        /*
-                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StopDbInterface ();
-                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
-
-                        //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitTEC (formChangeMode.tec);
-                        //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].mode(formChangeMode.getModeTECComponent ());
-                        m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StartDbInterface ();
-                        */
-                        // создаём все tecview
-                        int tec_indx = 0,
-                            comp_indx;
-                        foreach (TEC t in formChangeMode.tec)
-                        {
-                            tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
-                            tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                            tecViews.Add(tecView);
-                            if (t.list_TECComponents.Count > 0)
-                            {
-                                comp_indx = 0;
-                                foreach (TECComponent g in t.list_TECComponents)
-                                {
-                                    tecView = new TecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
-                                    tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                                    tecViews.Add(tecView);
-                                    comp_indx++;
-                                }
-                            }
-                            else
-                                ;
-
-                            tec_indx++;
-                        }
-                    }
-                    else
-                        ;
-
-                    //StartWait();
-                    tclTecViews.TabPages.Clear();
-                    selectedTecViews.Clear();
-
-                    Int16 parametrsTGBiysk = 0;
-                    int tecView_index = -1;
-                    //List<int> list_tecView_index_visible = new List<int>();
-                    List <int> list_tecView_index_checked = new List <int> ();
-                    // отображаем вкладки ТЭЦ
-                    for (i = 0; i < formChangeMode.tec_index.Count; i++) //или TECComponent_index.Count
+                    prevModeComponent = formChangeMode.getModeTECComponent ();
+                    // выбираем список отображаемых вкладок
+                    if (formChangeMode.ShowDialog() == DialogResult.OK)
                     {
-                        if (!(formChangeMode.was_checked.IndexOf(i) < 0))
-                        {
-                            int tec_index = formChangeMode.tec_index [i],
-                                TECComponent_index = formChangeMode.TECComponent_index[i];
+                        StartWait();
 
-                            for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
-                                if ((tecViews [tecView_index].num_TEC == tec_index) && (tecViews [tecView_index].num_TECComponent == TECComponent_index))
-                                    break;
-                                else
-                                    ;
-                            }
+                        if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
+                            //this.tec = formChangeMode.tec;
 
-                            if ((tecView_index < tecViews.Count)) {
-                                list_tecView_index_checked.Add(tecView_index);
+                            prevStateIsAdmin = false;
 
-                                if ((tecViews[tecView_index].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
-                                    parametrsTGBiysk++;
-                                else
-                                    ;
+                            //tecViews.Clear ();
+                            //selectedTecViews.Clear ();
+                        }
+                        else {
+                        }
 
-                                if (TECComponent_index == -1)
+                        if (tecViews.Count == 0) {
+                            /*
+                            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StopDbInterface ();
+                            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
+
+                            //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitTEC (formChangeMode.tec);
+                            //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].mode(formChangeMode.getModeTECComponent ());
+                            m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StartDbInterface ();
+                            */
+                            // создаём все tecview
+                            int tec_indx = 0,
+                                comp_indx;
+                            foreach (TEC t in formChangeMode.tec)
+                            {
+                                tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                                tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                                tecViews.Add(tecView);
+                                if (t.list_TECComponents.Count > 0)
                                 {
-                                    tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
+                                    comp_indx = 0;
+                                    foreach (TECComponent g in t.list_TECComponents)
+                                    {
+                                        tecView = new TecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                                        tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                                        tecViews.Add(tecView);
+                                        comp_indx++;
+                                    }
                                 }
                                 else
-                                    tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name + " - " + m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
+                                    ;
 
-                                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
-                                selectedTecViews.Add(tecViews[tecView_index]);
-
-                                tecViews[tecView_index].Activate(false);
-                                tecViews[tecView_index].Start();
+                                tec_indx++;
                             }
-                            else
-                                ;
                         }
-                        else
-                        {
-                        }
-                    }
-
-                    for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
-                        if (list_tecView_index_checked.IndexOf(tecView_index) < 0)
-                            tecViews[tecView_index].Stop();
                         else
                             ;
-                    }
 
-                    параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
+                        //StartWait();
+                        tclTecViews.TabPages.Clear();
+                        selectedTecViews.Clear();
 
-                    StopWait();
-                    if (formChangeMode.admin_was_checked)
-                    {
-                        if (formChangeMode.IsModeTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP) == true) {
-                            formPassword.SetIdPass(FormPassword.ID_ROLES.COM_DISP);
-                        }
-                        else
-                            formPassword.SetIdPass(FormPassword.ID_ROLES.NSS);
+                        Int16 parametrsTGBiysk = 0;
+                        int tecView_index = -1;
+                        //List<int> list_tecView_index_visible = new List<int>();
+                        List <int> list_tecView_index_checked = new List <int> ();
+                        // отображаем вкладки ТЭЦ
+                        for (i = 0; i < formChangeMode.tec_index.Count; i++) //или TECComponent_index.Count
+                        {
+                            if (!(formChangeMode.was_checked.IndexOf(i) < 0))
+                            {
+                                int tec_index = formChangeMode.tec_index [i],
+                                    TECComponent_index = formChangeMode.TECComponent_index[i];
 
-                        bool bAdminPanelUse = false;
-                        if (prevStateIsAdmin == false)
-                            switch (formPassword.ShowDialog(this)) {
-                                case DialogResult.Yes:
-                                    bAdminPanelUse = true;
-                                    break;
-                                case DialogResult.Retry:
-                                    formSetPassword.SetIdPass (formPassword.GetIdPass ());
-                                    if (formSetPassword.ShowDialog(this) == DialogResult.Yes)
-                                        bAdminPanelUse = true;
+                                for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
+                                    if ((tecViews [tecView_index].num_TEC == tec_index) && (tecViews [tecView_index].num_TECComponent == TECComponent_index))
+                                        break;
                                     else
                                         ;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        else
-                            bAdminPanelUse = true;
+                                }
 
-                        if (bAdminPanelUse)
+                                if ((tecView_index < tecViews.Count)) {
+                                    list_tecView_index_checked.Add(tecView_index);
+
+                                    if ((tecViews[tecView_index].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                                        parametrsTGBiysk++;
+                                    else
+                                        ;
+
+                                    if (TECComponent_index == -1)
+                                    {
+                                        tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
+                                    }
+                                    else
+                                        tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name + " - " + m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
+
+                                    tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
+                                    selectedTecViews.Add(tecViews[tecView_index]);
+
+                                    tecViews[tecView_index].Activate(false);
+                                    tecViews[tecView_index].Start();
+                                }
+                                else
+                                    ;
+                            }
+                            else
+                            {
+                            }
+                        }
+
+                        for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
+                            if (list_tecView_index_checked.IndexOf(tecView_index) < 0)
+                                tecViews[tecView_index].Stop();
+                            else
+                                ;
+                        }
+
+                        параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
+
+                        StopWait();
+                        if (formChangeMode.admin_was_checked)
                         {
-                            StartWait();
-                            AddTabPageAdmin ();
-                            StopWait();
+                            if (formChangeMode.IsModeTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP) == true) {
+                                formPassword.SetIdPass(FormPassword.ID_ROLES.COM_DISP);
+                            }
+                            else
+                                formPassword.SetIdPass(FormPassword.ID_ROLES.NSS);
+
+                            bool bAdminPanelUse = false;
+                            if (prevStateIsAdmin == false)
+                                switch (formPassword.ShowDialog(this)) {
+                                    case DialogResult.Yes:
+                                        bAdminPanelUse = true;
+                                        break;
+                                    case DialogResult.Retry:
+                                        formSetPassword.SetIdPass (formPassword.GetIdPass ());
+                                        if (formSetPassword.ShowDialog(this) == DialogResult.Yes)
+                                            bAdminPanelUse = true;
+                                        else
+                                            ;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            else
+                                bAdminPanelUse = true;
+
+                            if (bAdminPanelUse)
+                            {
+                                StartWait();
+                                AddTabPageAdmin ();
+                                StopWait();
+                            }
+                            else
+                                formChangeMode.admin_was_checked = false;
                         }
                         else
-                            formChangeMode.admin_was_checked = false;
-                    }
-                    else
-                        ;
-
-                    prevStateIsAdmin = formChangeMode.admin_was_checked;
-
-                    if (selectedTecViews.Count > 0)
-                    {
-                        m_prevSelectedIndex = 0;
-                        selectedTecViews[m_prevSelectedIndex].Activate(true);
-                        m_arPanelAdmin[(int)modePanelAdmin].Activate(false);
-                    }
-                    else
-                        if (formChangeMode.admin_was_checked)
-                            m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
-                        else
                             ;
+
+                        prevStateIsAdmin = formChangeMode.admin_was_checked;
+
+                        if (selectedTecViews.Count > 0)
+                        {
+                            m_prevSelectedIndex = 0;
+                            selectedTecViews[m_prevSelectedIndex].Activate(true);
+                            m_arPanelAdmin[(int)modePanelAdmin].Activate(false);
+                        }
+                        else
+                            if (formChangeMode.admin_was_checked)
+                                m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
+                            else
+                                ;
+                    }
+                    else
+                        ; //Отмена выбора закладок
                 }
                 else
-                    ; //Отмена выбора закладок
+                    ;
             }
             else
                 ; //Нет соединения с конфигурационной БД

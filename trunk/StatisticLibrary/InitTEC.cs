@@ -52,7 +52,10 @@ namespace StatisticCommon
             {
                 string [] ids = data.Rows[row]["ID_MC"].ToString ().Split (',');
                 for (i = 0; i < ids.Length; i ++)
-                    listRes.Add (Convert.ToInt32 (ids [i]));
+                    if (ids[i].Length > 0)
+                        listRes.Add(Convert.ToInt32(ids[i]));
+                    else
+                        listRes.Add(-1);
             }
             else
                 ;

@@ -35,11 +35,6 @@ namespace StatisticCommon
         //private volatile Errors loadLayoutResult;
         //private LayoutData layoutForLoading;
 
-        public ConnectionSettings connSettConfigDB;
-
-        int m_indxDbInterfaceConfigDB,
-            m_listenerIdConfigDB;
-
         protected DataTable m_tablePPBRValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
@@ -1250,16 +1245,6 @@ namespace StatisticCommon
             m_listListenerIdCurrent.Clear();
             m_indxDbInterfaceCurrent = -1;
 
-            m_listDbInterfaces.Add(new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, "Интерфейс MySQL-БД: Конфигурация"));
-            m_listListenerIdCurrent.Add(-1);
-
-            m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
-            m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
-
-            m_listDbInterfaces[m_listDbInterfaces.Count - 1].Start();
-
-            m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(connSettConfigDB);
-
             Int16 connSettType = -1;
             Int16 dbType = -1; 
             foreach (TEC t in m_list_tec)
@@ -1311,13 +1296,6 @@ namespace StatisticCommon
                             t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
                             t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
 
-                            if (m_indxDbInterfaceConfigDB < 0) {
-                                m_indxDbInterfaceConfigDB = m_listDbInterfaces.Count - 1;
-                                m_listenerIdConfigDB = m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerRegister();
-                            }
-                            else
-                                ;
-
                             m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
 
                             m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
@@ -1346,12 +1324,8 @@ namespace StatisticCommon
         {
             base.StopThreadSourceData();
 
-            if ((m_listDbInterfaces.Count > 0) && (!(m_indxDbInterfaceConfigDB < 0)) && (!(m_listenerIdConfigDB < 0)))
+            if (m_listDbInterfaces.Count > 0)
             {
-                m_listDbInterfaces[m_indxDbInterfaceConfigDB].ListenerUnregister(m_listenerIdConfigDB);
-                m_indxDbInterfaceConfigDB = -1;
-                m_listenerIdConfigDB = -1;
-
                 foreach (TEC t in m_list_tec)
                 {
                     for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {

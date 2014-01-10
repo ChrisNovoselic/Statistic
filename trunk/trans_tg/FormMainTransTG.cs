@@ -150,7 +150,7 @@ namespace trans_tg
                     //setUIControlConnectionSettings(i);
                     break;
                 }
-                ((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
+                //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
                 ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                     m_arAdmin[i].m_ignore_date = false;

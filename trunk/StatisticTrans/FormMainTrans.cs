@@ -204,7 +204,7 @@ namespace StatisticCommon
 
         protected void setUIControlConnectionSettings(int i)
         {
-            for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
+            /*for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
             {
                 switch (j)
                 {
@@ -229,7 +229,7 @@ namespace StatisticCommon
                     default:
                         break;
                 }
-            }
+            }*/
         }
 
         protected virtual void setUIControlSourceState()
