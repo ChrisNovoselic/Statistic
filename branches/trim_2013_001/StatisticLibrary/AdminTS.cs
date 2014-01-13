@@ -1215,20 +1215,25 @@ namespace StatisticCommon
                     }
 
                     if (isAlready == false) {
+                        string dbNameType = string.Empty;
+
                         switch (connSettType) {
                             case (int)CONN_SETT_TYPE.ADMIN:
                             case (int)CONN_SETT_TYPE.PBR:
                                 dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                                dbNameType = "MySql";
                                 break;
                             case (int)CONN_SETT_TYPE.DATA:
                                 dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                                dbNameType = "MSSQL";
                                 break;
                             default:
+                                dbNameType = string.Empty;
                                 break; 
                         }
 
                         if (! (dbType < 0)) {
-                            m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Интерфейс MySQL-БД: Администратор"));
+                            m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Интерфейс " + dbNameType + "-БД"));
                             m_listListenerIdCurrent.Add (-1);
 
                             t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
