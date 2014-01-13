@@ -147,7 +147,6 @@ namespace StatisticCommon
                             msg_throw = "Ошибка распознавания аргументов командной строки";
                             m_modeMashine = MODE_MASHINE.UNKNOWN;
                         }
-
                 }
 
                 this.WindowState = FormWindowState.Minimized;
