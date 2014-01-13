@@ -48,30 +48,22 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            bool bShowFormConnectionSettings = true;
             m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
             if (m_formConnectionSettings.Protected == true)
             {
-                bShowFormConnectionSettings = ! Initialize();
-                if (bShowFormConnectionSettings == true)
+                if (Initialize() == false)
                 {
-                    //throw new Exception("Ошибка инициализации пользовательских компонентов формы.");
-                    //m_formConnectionSettings.ShowDialog(this);
+                    string strThrowMsg = "Ошибка инициализации пользовательских компонентов формы";
+                    MessageBox.Show(this, strThrowMsg + ".\nОбратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    throw new Exception(strThrowMsg);
                 }
                 else
                     ;
             }
             else
-            {
-                bShowFormConnectionSettings = true;
+            {//Файла с параметрами соединения нет совсем
+                connectionSettings();
             }
-
-            if (bShowFormConnectionSettings == true)
-            {
-                connectionSettings ();
-            }
-            else
-                ;
         }
 
         private bool Initialize()
@@ -238,7 +230,7 @@ namespace Statistic
                 ;
 
             if (! (m_passwords == null))
-                m_passwords.StopDbInterface();
+                ; //m_passwords.StopDbInterface();
             else
                 ;
         }
@@ -678,8 +670,6 @@ namespace Statistic
         {
             if (timer.Interval == 666)
             {
-                m_passwords.StartDbInterface();
-
                 int i = -1;
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     m_arAdmin [i].StartThreadSourceData();
