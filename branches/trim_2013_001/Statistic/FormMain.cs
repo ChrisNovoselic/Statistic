@@ -49,27 +49,23 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            bool bShowFormConnectionSettings = true;
+            //bool bShowFormConnectionSettings = true;
             m_formConnectionSettings = new FormConnectionSettings("connsett.ini");
             if (m_formConnectionSettings.Protected == true)
             {
-                bShowFormConnectionSettings = ! Initialize();
+                if (Initialize() == false)
+                {
+                    string strThrowMsg = "Ошибка инициализации пользовательских компонентов формы";
+                    MessageBox.Show(this, strThrowMsg + ".\nОбратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    throw new Exception(strThrowMsg);
+                }
+                else
+                    ;
             }
             else
-            {
-                //m_formConnectionSettings.ShowDialog(this);
+            {//Файла с параметрами соединения нет совсем
+                connectionSettings();
             }
-
-            if (bShowFormConnectionSettings == true)
-            {
-                //connectionSettings ();
-
-                string strThrowMsg = "Ошибка инициализации пользовательских компонентов формы";
-                MessageBox.Show(this, strThrowMsg + ".\nОбратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                throw new Exception(strThrowMsg);
-            }
-            else
-                ;
         }
 
         private bool Initialize()
