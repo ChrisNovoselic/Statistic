@@ -56,6 +56,8 @@
             this.menuStripMain = new System.Windows.Forms.MenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.конфигурацияБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
@@ -179,7 +181,7 @@
             this.buttonDestSave.TabIndex = 35;
             this.buttonDestSave.Text = "Сохранить";
             this.buttonDestSave.UseVisualStyleBackColor = true;
-            this.buttonDestSave.Click += new System.EventHandler(this.buttonSave_Click);
+            this.buttonDestSave.Click += new System.EventHandler(this.buttonDestSave_Click);
             // 
             // labelDestPort
             // 
@@ -246,7 +248,8 @@
             this.labelDestServerIP.Text = "IP адрес сервера";
             // 
             // mtbxDestPass
-            // 
+            //
+            this.mtbxDestPass.Enabled = false; 
             this.mtbxDestPass.Location = new System.Drawing.Point(128, 133);
             this.mtbxDestPass.Name = "mtbxDestPass";
             this.mtbxDestPass.PasswordChar = '#';
@@ -256,6 +259,7 @@
             // 
             // tbxDestUserId
             // 
+            this.tbxDestUserId.Enabled = false;
             this.tbxDestUserId.Location = new System.Drawing.Point(128, 107);
             this.tbxDestUserId.Name = "tbxDestUserId";
             this.tbxDestUserId.Size = new System.Drawing.Size(160, 20);
@@ -264,6 +268,7 @@
             // 
             // tbxDestNameDatabase
             // 
+            this.tbxDestNameDatabase.Enabled = false;
             this.tbxDestNameDatabase.Location = new System.Drawing.Point(128, 81);
             this.tbxDestNameDatabase.Name = "tbxDestNameDatabase";
             this.tbxDestNameDatabase.Size = new System.Drawing.Size(160, 20);
@@ -272,6 +277,7 @@
             // 
             // tbxDestServerIP
             // 
+            this.tbxDestServerIP.Enabled = false;
             this.tbxDestServerIP.Location = new System.Drawing.Point(128, 27);
             this.tbxDestServerIP.Name = "tbxDestServerIP";
             this.tbxDestServerIP.Size = new System.Drawing.Size(160, 20);
@@ -313,13 +319,14 @@
             this.buttonSourceSave.TabIndex = 36;
             this.buttonSourceSave.Text = "Сохранить";
             this.buttonSourceSave.UseVisualStyleBackColor = true;
-            this.buttonSourceSave.Click += new System.EventHandler(this.buttonSave_Click);
+            this.buttonSourceSave.Click += new System.EventHandler(this.buttonSourceSave_Click);
 
             // 
             // menuStripMain
             // 
             this.menuStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.файлToolStripMenuItem,
+            this.настройкиToolStripMenuItem,
             this.помощьToolStripMenuItem});
             this.menuStripMain.Location = new System.Drawing.Point(0, 0);
             this.menuStripMain.Name = "menuStripMain";
@@ -341,6 +348,21 @@
             this.выходToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
             this.выходToolStripMenuItem.Text = "Выход";
             this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
+            // 
+            // настройкиToolStripMenuItem
+            // 
+            this.настройкиToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.конфигурацияБДToolStripMenuItem});
+            this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
+            this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
+            this.настройкиToolStripMenuItem.Text = "Настройки";
+            // 
+            // выходToolStripMenuItem
+            // 
+            this.конфигурацияБДToolStripMenuItem.Name = "конфигурацияБДToolStripMenuItem";
+            this.конфигурацияБДToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.конфигурацияБДToolStripMenuItem.Text = "БД конфигурации";
+            this.конфигурацияБДToolStripMenuItem.Click += new System.EventHandler(this.конфигурацияБДToolStripMenuItem_Click);
             // 
             // помощьToolStripMenuItem
             // 
@@ -492,6 +514,8 @@
         private System.Windows.Forms.MenuStrip menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem конфигурацияБДToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         protected System.Windows.Forms.StatusStrip statusStripMain;

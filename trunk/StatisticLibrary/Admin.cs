@@ -354,7 +354,7 @@ namespace StatisticCommon
         {
             threadIsWorking = true;
             taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-            taskThread.Name = "Интерфейс к данным";
+            taskThread.Name = "Интерфейс к РДГ";
             taskThread.IsBackground = true;
 
             semaState = new Semaphore(1, 1);

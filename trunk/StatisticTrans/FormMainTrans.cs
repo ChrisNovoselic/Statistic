@@ -15,7 +15,7 @@ namespace StatisticCommon
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
-        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 666666;
+        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 59666;
         private const Int32 TIMER_START_INTERVAL = 666;
         
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
@@ -204,32 +204,38 @@ namespace StatisticCommon
 
         protected void setUIControlConnectionSettings(int i)
         {
-            /*for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
+            if (!(comboBoxTECComponent.SelectedIndex < 0))
             {
-                switch (j)
+                ConnectionSettings connSett = ((AdminTS)m_arAdmin[i]).allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
+                for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
                 {
-                    case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.server;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PORT:
-                        if (m_arUIControlDB[i, j].Enabled)
-                            ((NumericUpDown)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.port.ToString();
-                        else
-                            ;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.dbName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.USER_ID:
-                        ((TextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.userName;
-                        break;
-                    case (Int16)INDX_UICONTROL_DB.PASS:
-                        ((MaskedTextBox)m_arUIControlDB[i, j]).Text = ((AdminTS)m_arAdmin[i]).connSettConfigDB.password;
-                        break;
-                    default:
-                        break;
+                    switch (j)
+                    {
+                        case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.server;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.PORT:
+                            if (m_arUIControlDB[i, j].Enabled)
+                                ((NumericUpDown)m_arUIControlDB[i, j]).Text = connSett.port.ToString();
+                            else
+                                ;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.dbName;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.USER_ID:
+                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.userName;
+                            break;
+                        case (Int16)INDX_UICONTROL_DB.PASS:
+                            ((MaskedTextBox)m_arUIControlDB[i, j]).Text = connSett.password;
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }*/
+            }
+            else
+                ;
         }
 
         protected virtual void setUIControlSourceState()
@@ -380,14 +386,30 @@ namespace StatisticCommon
             groupBoxFocus(((GroupBox)sender));
         }
 
-        private void настройкиToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
         {
             buttonClose_Click (null, null);
+        }
+
+        private void конфигурацияБДToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //m_formConnectionSettings.StartPosition = FormStartPosition.CenterParent;
+            m_formConnectionSettings.ShowDialog(this);
+
+            //Эмуляция нажатия кнопки "Ок"
+            /*
+            m_formConnectionSettings.btnOk_Click(null, null);
+            */
+
+            DialogResult dlgRes = m_formConnectionSettings.DialogResult;
+            if (dlgRes == System.Windows.Forms.DialogResult.Yes)
+            {
+                Stop();
+
+                Start();
+            }
+            else
+                ;
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -591,24 +613,21 @@ namespace StatisticCommon
             ((AdminTS)m_arAdmin [m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
         }
 
-        protected /*virtual*/ void buttonSave_Click(object sender, EventArgs e)
+        protected /*virtual*/ void buttonDestSave_Click(object sender, EventArgs e)
         {
-            //m_formConnectionSettings.SaveSettingsFile ();
-            m_formConnectionSettings.btnOk_Click (null, null);
-            DialogResult dlgRes = m_formConnectionSettings.DialogResult;
+            
+        }
 
-            if (dlgRes == System.Windows.Forms.DialogResult.Yes)
-            {
-                Stop();
+        protected /*virtual*/ void buttonSourceSave_Click(object sender, EventArgs e)
+        {
 
-                Start();
-            }
-            else
-                ;
         }
 
         protected virtual void component_Changed(object sender, EventArgs e)
         {
+            //Не передавать значения в форму с параметрами соединения с БД конфигурации
+            //Раньше эти настройки изменялись на самой форме...
+            /*
             uint indxDB = (uint)m_IndexDB;
             ConnectionSettings connSett = new ConnectionSettings();
 
@@ -620,6 +639,7 @@ namespace StatisticCommon
             connSett.ignore = false;
 
             m_formConnectionSettings.ConnectionSettingsEdit = connSett;
+            */
         }
 
         protected bool IsCanSelectedIndexChanged()

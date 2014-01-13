@@ -110,7 +110,7 @@ namespace trans_tg
             base.buttonSourceExport.Location = new System.Drawing.Point(8, 86);
 
             base.buttonSourceSave.Location = new System.Drawing.Point(151, 86);
-            base.buttonSourceSave.Click -= base.buttonSave_Click;
+            base.buttonSourceSave.Click -= base.buttonSourceSave_Click;
             base.buttonSourceSave.Click += new EventHandler (this.buttonSavePathExcel_Click);
             base.buttonSourceSave.Enabled = false;
 

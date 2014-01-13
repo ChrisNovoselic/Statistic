@@ -1214,7 +1214,7 @@ namespace StatisticCommon
                 ;
 
             return m_listDbInterfaces[indxDbInterface].GetResponse(listenerId, out error, out table);
-            
+
             //if (isTec)
             //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
             //else
@@ -1239,7 +1239,7 @@ namespace StatisticCommon
 
         protected override bool InitDbInterfaces () {
             bool bRes = true;
-            
+
             m_listDbInterfaces.Clear ();
 
             m_listListenerIdCurrent.Clear();
@@ -1256,7 +1256,7 @@ namespace StatisticCommon
                         ;
 
                     dbType = -1;
-                    
+
                     bool isAlready = false;
 
                     foreach (DbTSQLInterface dbi in m_listDbInterfaces) {

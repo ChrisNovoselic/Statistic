@@ -15,6 +15,11 @@ namespace trans_gtp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            StatisticCommon.Logging.Logg().LogLock();
+            StatisticCommon.Logging.Logg().LogToFile("=============Запуск приложения...=============", true, true, false);
+            StatisticCommon.Logging.Logg().LogUnlock();
+
             try { Application.Run(new FormMainTransGTP()); }
             catch (Exception e) { 
                 StatisticCommon.Logging.Logg().LogLock();
@@ -23,6 +28,10 @@ namespace trans_gtp
                 StatisticCommon.Logging.Logg().LogToFile(e.ToString(), false, false, false);
                 StatisticCommon.Logging.Logg().LogUnlock();
             }
+
+            StatisticCommon.Logging.Logg().LogLock();
+            StatisticCommon.Logging.Logg().LogToFile("=============Останов приложения...=============", true, true, false);
+            StatisticCommon.Logging.Logg().LogUnlock();
         }
     }
 }

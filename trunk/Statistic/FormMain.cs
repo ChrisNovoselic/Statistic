@@ -63,7 +63,7 @@ namespace Statistic
             }
             else
             {
-                //m_formConnectionSettings.ShowDialog(this);
+                bShowFormConnectionSettings = true;
             }
 
             if (bShowFormConnectionSettings == true)

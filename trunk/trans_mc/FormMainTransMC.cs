@@ -268,6 +268,7 @@ namespace trans_mc
                         break;
                 }
 
+                setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
                 setUIControlSourceState ();
             }
             else

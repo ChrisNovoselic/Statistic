@@ -61,7 +61,7 @@ namespace Statistic.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Значок).
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
         /// </summary>
         public static System.Drawing.Icon statistic2 {
             get {

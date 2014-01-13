@@ -154,7 +154,8 @@ namespace trans_gtp
             this.labelSourceServerIP.Text = "IP адрес сервера";
             // 
             // mtbxSourcePass
-            // 
+            //
+            this.mtbxSourcePass.Enabled = false; 
             this.mtbxSourcePass.Location = new System.Drawing.Point(129, 131);
             this.mtbxSourcePass.Name = "mtbxSourcePass";
             this.mtbxSourcePass.PasswordChar = '#';
@@ -164,6 +165,7 @@ namespace trans_gtp
             // 
             // tbxSourceUserId
             // 
+            this.tbxSourceUserId.Enabled = false;
             this.tbxSourceUserId.Location = new System.Drawing.Point(129, 105);
             this.tbxSourceUserId.Name = "tbxSourceUserId";
             this.tbxSourceUserId.Size = new System.Drawing.Size(160, 20);
@@ -172,6 +174,7 @@ namespace trans_gtp
             // 
             // tbxSourceNameDatabase
             // 
+            this.tbxSourceNameDatabase.Enabled = false;
             this.tbxSourceNameDatabase.Location = new System.Drawing.Point(129, 79);
             this.tbxSourceNameDatabase.Name = "tbxSourceNameDatabase";
             this.tbxSourceNameDatabase.Size = new System.Drawing.Size(160, 20);
@@ -180,6 +183,7 @@ namespace trans_gtp
             // 
             // tbxSourceServerIP
             // 
+            this.tbxSourceServerIP.Enabled = false;
             this.tbxSourceServerIP.Location = new System.Drawing.Point(129, 25);
             this.tbxSourceServerIP.Name = "tbxSourceServerIP";
             this.tbxSourceServerIP.Size = new System.Drawing.Size(160, 20);
@@ -322,10 +326,12 @@ namespace trans_gtp
             {
                 ClearTables();
 
+                short indexDB = m_IndexDB;
+                
                 switch (m_modeTECComponent)
                 {
                     case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                        ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        ((AdminTS)m_arAdmin[indexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[indexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                         break;
                     case FormChangeMode.MODE_TECCOMPONENT.TG:
                         break;
@@ -334,6 +340,8 @@ namespace trans_gtp
                     default:
                         break;
                 }
+
+                setUIControlConnectionSettings(indexDB);
             }
             else
                 ;

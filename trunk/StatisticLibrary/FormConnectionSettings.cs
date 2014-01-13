@@ -460,8 +460,16 @@ namespace StatisticCommon
 
             m_connectionSettings[m_connectionSettings.Count - 1].port =
             m_connectionSettingsEdit[m_connectionSettingsEdit.Count - 1].port = 3306;
-            
-            cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
+
+            if (m_connectionSettings.Count > 1)
+            {
+                cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
+            }
+            else ;
+
+            if ((cbxConnFor.Items.Count > 1) && (cbxConnFor.Enabled == false))
+                cbxConnFor.Enabled = true;
+            else ;
         }
 
         public void btnOk_Click(object obj, EventArgs ev)
