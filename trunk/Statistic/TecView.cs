@@ -3688,21 +3688,28 @@ namespace Statistic
                                             else
                                                 valuesPBR[j, hour - 1] = 0.0;
 
-                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            if (i < table_in.Rows.Count)
+                                            {
+                                                if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                                    valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                                else
+                                                    valuesREC[j, hour - 1] = 0;
+
+                                                if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                    valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                                else
+                                                    ;
+
+                                                if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                    valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                                else
+                                                    ;
+                                            }
                                             else
+                                            {
                                                 valuesREC[j, hour - 1] = 0;
-
-                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
-                                            else
-                                                ;
-
-                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
-                                            else
-                                                ;
+                                            }
                                         }
                                         catch
                                         {
@@ -3745,21 +3752,29 @@ namespace Statistic
                                         try
                                         {
                                             valuesPBR[j, hour - 1] = 0;
-                                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                                valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+
+                                            if (i < table_in.Rows.Count)
+                                            {
+                                                if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                                    valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                                else
+                                                    valuesREC[j, hour - 1] = 0;
+                                            
+                                                if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                    valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                                else
+                                                    ;
+                                            
+                                                if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                    valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                                else
+                                                    ;
+                                            }
                                             else
+                                            {
                                                 valuesREC[j, hour - 1] = 0;
-                                            
-                                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
-                                            else
-                                                ;
-                                            
-                                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
-                                            else
-                                                ;
+                                            }
                                         }
                                         catch
                                         {
@@ -3891,21 +3906,30 @@ namespace Statistic
                                     else
                                         ;
 
-                                    if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
-                                    //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
-                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+                                    if (i < table_in.Rows.Count)
+                                    {
+                                        if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
+                                        //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
+                                            valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+                                        else
+                                            valuesREC[hour - 1] = 0;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                            valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                        else
+                                            ;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                            valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                        else
+                                            ;
+                                    }
                                     else
+                                    {
                                         valuesREC[hour - 1] = 0;
-
-                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
-                                    else
-                                        ;
-
-                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
-                                    else
-                                        ;
+                                        //valuesISPER[hour - 1] = 0;
+                                        //valuesDIV[hour - 1] = 0;
+                                    }
 
                                     string tmp = "";
                                     if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull)))
@@ -3936,21 +3960,31 @@ namespace Statistic
                                             ;
 
                                     valuesPBR[hour - 1] = 0;
-                                    if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
-                                    //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
-                                        valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+
+                                    if (i < table_in.Rows.Count)
+                                    {
+                                        if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
+                                        //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
+                                            valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+                                        else
+                                            valuesREC[hour - 1] = 0;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                            valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                        else
+                                            ;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                            valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                        else
+                                            ;
+                                    }
                                     else
+                                    {
                                         valuesREC[hour - 1] = 0;
-
-                                    if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
-                                        valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
-                                    else
-                                        ;
-
-                                    if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
-                                        valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
-                                    else
-                                        ;
+                                        //valuesISPER[hour - 1] = 0;
+                                        //valuesDIV[hour - 1] = 0;
+                                    }
 
                                     string tmp = "";
                                     if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull)))

@@ -630,7 +630,6 @@ namespace StatisticCommon
 
         private void component_Changed(object sender, EventArgs e)
         {
-
         }
     }
 }
