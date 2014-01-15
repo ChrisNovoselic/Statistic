@@ -189,16 +189,18 @@ namespace StatisticCommon
             string var1 = @"Provider=Microsoft.ACE.OLEDB.12.0;" +
                         //@"Persist Security Info=false;" +
                         //@"Extended Properties=Excel 12.0 Xml;HDR=YES;" +
-                        @"Extended Properties=Excel 12.0 Xml;" +
+                        @"Extended Properties=Excel 12.0 Xml" + @";" +
                         @"Data Source=" + path + ";",
+                    
                     var2 = @"Provider=Microsoft.Jet.OLEDB.4.0;"  +
                     //@"Extended Properties=Excel 8.0;HDR=YES;Mode=Read;ReadOnly=true;" +
                     //@"Extended Properties=Excel 8.0;HDR=YES;IMEX=1;Mode=Read;ReadOnly=true;" +
                     //@"Extended Properties=Excel 8.0;HDR=YES;IMEX=1;" +
                     //@"Extended Properties=Excel 8.0;HDR=YES;" +
-                    @"Extended Properties=Excel 8.0;" +
+                    @"Extended Properties=""Excel 8.0;ReadOnly=false;"";" +
                     //@"Persist Security Info=false;" +
-                    @"Data Source=" + path + ";";
+                    @"Data Source=" + path + @";";
+                    //@"Data Source=" + path + ";" + @"Jet OLEDB:Database Password=" + @"nss;";
 
             return var1;
         }

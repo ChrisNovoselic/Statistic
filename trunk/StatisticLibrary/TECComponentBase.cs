@@ -8,11 +8,10 @@ namespace StatisticCommon
     {
         public string name;
         public int m_id;
-        public List <int> m_listMCId;
+        public int m_indx_col_rdg_excel;
 
         public TECComponentBase()
         {
-            m_listMCId = null;
         }
     }
 }

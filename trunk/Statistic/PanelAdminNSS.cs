@@ -47,7 +47,7 @@ namespace Statistic
             this.btnExportExcel.Text = "Экспорт в Excel";
             this.btnExportExcel.UseVisualStyleBackColor = true;
             this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
-            this.btnExportExcel.Enabled = false;
+            this.btnExportExcel.Enabled = true;
 
             this.dgwAdminTable = new DataGridViewAdminNSS();
             this.SuspendLayout();
@@ -221,19 +221,30 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.ImpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog exportFolder = new FolderBrowserDialog();
-            exportFolder.ShowDialog(this);
+            //FolderBrowserDialog exportFolder = new FolderBrowserDialog();
+            //exportFolder.ShowDialog(this);
 
-            if (exportFolder.SelectedPath.Length > 0)
-            {
-            }
-            else
-                ;
+            //if (exportFolder.SelectedPath.Length > 0) {
+                getDataGridViewAdmin();
+
+                HAdmin.Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                if (resultSaving == HAdmin.Errors.NoError)
+                {
+                    btnRefresh.PerformClick ();
+                }
+                else
+                {
+                    if (resultSaving == HAdmin.Errors.InvalidValue)
+                        MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                    else
+                        MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            //} else ;
         }
     }
 }

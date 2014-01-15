@@ -238,7 +238,7 @@ namespace trans_tg
 
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
                                 //{
-                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).GetRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).ImpRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 //}
                                 //else
                                 //    ;

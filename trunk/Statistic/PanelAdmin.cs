@@ -20,7 +20,7 @@ namespace Statistic
         protected DataGridViewAdmin dgwAdminTable;
 
         private System.Windows.Forms.Button btnSet;
-        private System.Windows.Forms.Button btnRefresh;
+        protected System.Windows.Forms.Button btnRefresh;
 
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
@@ -162,7 +162,8 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
@@ -219,7 +220,8 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
@@ -253,9 +255,9 @@ namespace Statistic
         private void btnSet_Click(object sender, EventArgs e)
         {
             getDataGridViewAdmin();
-            
-            HAdmin.Errors resultSaving;
-            if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
+
+            HAdmin.Errors resultSaving = m_admin.SaveChanges();
+            if (resultSaving == HAdmin.Errors.NoError)
             {
                 ClearTables();
 
@@ -318,7 +320,8 @@ namespace Statistic
             switch (result)
             {
                 case DialogResult.Yes:
-                    if ((resultSaving = m_admin.SaveChanges()) == HAdmin.Errors.NoError)
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == HAdmin.Errors.NoError)
                         return true;
                     else
                     {

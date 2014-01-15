@@ -45,7 +45,8 @@ namespace StatisticCommon
             PPBRValues,
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
-            RDGExcelValues,
+            ImpRDGExcelValues,
+            ExpRDGExcelValues,
             SaveAdminValues, //Сохранение административных данных
             SavePPBRValues, //Сохранение PPBR
             SaveRDGExcelValues,
@@ -407,7 +408,7 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
         }
 
-        public virtual void GetRDGExcelValues(int indx, DateTime date)
+        public virtual void ImpRDGExcelValues(int indx, DateTime date)
         {
             lock (m_lockObj)
             {
@@ -423,7 +424,7 @@ namespace StatisticCommon
 
                 newState = true;
                 states.Clear();
-                states.Add((int)StatesMachine.RDGExcelValues);
+                states.Add((int)StatesMachine.ImpRDGExcelValues);
 
                 try
                 {
@@ -432,21 +433,102 @@ namespace StatisticCommon
                 catch
                 {
                     Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogToFile("catch - ImpRDGExcelValues () - semaState.Release(1)", true, true, false);
                     Logging.Logg().LogUnlock();
                 }
             }
         }
 
-        private void GetRDGExcelValuesRequest () {
-            int err = 0;
-            string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel;
-            if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
+        public virtual HAdmin.Errors ExpRDGExcelValues(int indx, DateTime date)
+        {
+            delegateStartWait();
+            semaDBAccess.WaitOne();
+            lock (m_lockObj)
+            {
+                indxTECComponents = indx;
+
+                saveResult = Errors.NoAccess;
+                saving = true;
+                using_date = false;
+                m_curDate = m_prevDate;
+
+                newState = true;
+                states.Clear();
+
+                states.Add((int)StatesMachine.ExpRDGExcelValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch
+                {
+                    Logging.Logg().LogLock();
+                    Logging.Logg().LogToFile("catch - SaveRDGExcelValues () - semaState.Release(1)", true, true, false);
+                    Logging.Logg().LogUnlock();
+                }
+            }
+
+            semaDBAccess.WaitOne();
+            try
+            {
+                semaDBAccess.Release(1);
+            }
+            catch
+            {
+            }
+            delegateStopWait();
+            saving = false;
+
+            return saveResult;
+        }
+
+        private void ImpRDGExcelValuesRequest () {
+            int err = 0,
+                i = -1, j = -1,
+                rowOffsetData = 2,
+                iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+            string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel,
+                strSelect = @"SELECT * FROM [Лист1$]";
+            object [] dataRowAddIn = null;
             
+            DataTable tableRDGExcelValuesNextDay;
+            if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
+
             delegateStartWait ();
-            if ((IsCanUseTECComponents () == true) && (path_rdg_excel.Length > 0))
-                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
-                                                                        @"SELECT * FROM [Лист1$]", out err);
+            if ((IsCanUseTECComponents () == true) && (path_rdg_excel.Length > 0)) {
+                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+
+                if ((m_tableRDGExcelValuesResponse.Rows.Count > 0) && (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true))
+                {
+                    while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
+                        m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
+                    
+                    tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+                    if (tableRDGExcelValuesNextDay.Rows.Count > 0)
+                    {
+                        while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
+                            tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
+
+                        for (i = 0; i < iTimeZoneOffset; i ++) {
+                            dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
+                        
+                            for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j ++)
+                            {
+                                dataRowAddIn.SetValue (tableRDGExcelValuesNextDay.Rows [i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок для OleDb не существует
+                            }
+
+                            m_tableRDGExcelValuesResponse.Rows.Add (dataRowAddIn); //Т.к.
+                        }
+                    }
+                    else
+                        ;
+
+                    tableRDGExcelValuesNextDay.Clear ();
+                }
+                else
+                    ;
+            }
             else
                 ;
 
@@ -455,6 +537,13 @@ namespace StatisticCommon
             //Logging.Logg().LogUnlock();
 
             delegateStopWait();
+        }
+
+        protected virtual void ExpRDGExcelValuesRequest()
+        {
+            //Logging.Logg ().LogLock ();
+            //Logging.Logg().LogToFile("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
+            //Logging.Logg().LogUnlock();
         }
 
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -673,9 +762,10 @@ namespace StatisticCommon
             }
         }
 
-        protected virtual bool GetRDGExcelValuesResponse()
+        protected virtual bool ImpRDGExcelValuesResponse()
         {
             bool bRes = IsCanUseTECComponents ();
+            int rowOffsetData = 0;
 
             if (bRes) {
                 int i = -1,
@@ -686,7 +776,7 @@ namespace StatisticCommon
                 if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
 
                 if (bRes) {
-                    for (i = rowRDGExcelStart; i < 24 + 1; i++)
+                    for (i = rowRDGExcelStart; i < m_tableRDGExcelValuesResponse.Rows.Count - rowOffsetData; i++)
                     {
                         hour = i - iTimeZoneOffset;
                         setRDGExcelValuesItem(out m_curRDGValues[hour - 1], i);
@@ -1370,9 +1460,13 @@ namespace StatisticCommon
                     GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
-                case (int)StatesMachine.RDGExcelValues:
+                case (int)StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
-                    GetRDGExcelValuesRequest();
+                    ImpRDGExcelValuesRequest();
+                    break;
+                case (int)StatesMachine.ExpRDGExcelValues:
+                    ActionReport("Экспорт РДГ в книгу Excel.");
+                    ExpRDGExcelValuesRequest();
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
@@ -1452,11 +1546,12 @@ namespace StatisticCommon
             error = true;
             table = null;
 
-            if ((state == (int)StatesMachine.RDGExcelValues) || ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0)))
+            if (((state == (int)StatesMachine.ImpRDGExcelValues) || (state == (int)StatesMachine.ExpRDGExcelValues)) ||
+                ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0)))
             {
                 switch (state)
                 {
-                    case (int)StatesMachine.RDGExcelValues:
+                    case (int)StatesMachine.ImpRDGExcelValues:
                         if ((!(m_tableRDGExcelValuesResponse == null)) && (m_tableRDGExcelValuesResponse.Rows.Count > 24))
                         {
                             error = false;
@@ -1465,6 +1560,11 @@ namespace StatisticCommon
                         }
                         else
                             ;
+                        break;
+                    case (int)StatesMachine.ExpRDGExcelValues:
+                            //??? Всегда успех ???
+                            error = false;
+                            bRes = true;
                         break;
                     case (int)StatesMachine.CurrentTime:
                     case (int)StatesMachine.PPBRValues:
@@ -1537,16 +1637,29 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.RDGExcelValues:
+                case (int)StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
-                    result = GetRDGExcelValuesResponse();
+                    result = ImpRDGExcelValuesResponse();
                     if (result)
                     {
                         fillData(m_prevDate);
                     }
                     else
                         ;
+                    break;
+                case (int)StatesMachine.ExpRDGExcelValues:
+                    ActionReport("Экспорт РДГ в книгу Excel.");
+                    //??? Всегда успех ???
+                    saveResult = Errors.NoError;
+                    try
+                    {
+                        semaDBAccess.Release(1);
+                    }
+                    catch
+                    {
+                    }
+                    result = true;
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
@@ -1701,10 +1814,22 @@ namespace StatisticCommon
                         bClear = true;
                     }
                     break;
-                case (int)StatesMachine.RDGExcelValues:
+                case (int)StatesMachine.ImpRDGExcelValues:
                     ErrorReport("Ошибка импорта РДГ из книги Excel. Переход в ожидание.");
 
                     // ???
+                    break;
+                case (int)StatesMachine.ExpRDGExcelValues:
+                    ErrorReport("Ошибка экспорта РДГ в книгу Excel. Переход в ожидание.");
+                    // ???
+                    saveResult = Errors.NoAccess;
+                    try
+                    {
+                        semaDBAccess.Release(1);
+                    }
+                    catch
+                    {
+                    }
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if (response)

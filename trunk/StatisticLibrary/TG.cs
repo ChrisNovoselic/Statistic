@@ -8,7 +8,6 @@ namespace StatisticCommon
     {
         public enum ID_TIME : int { MINUTES, HOURS, COUNT_ID_TIME };
 
-        public int m_indx_col_rdg_excel;
         public double[] power;
         public bool[] receivedMin;
         public bool[] receivedHourHalf1;

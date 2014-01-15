@@ -3781,7 +3781,7 @@ namespace Statistic
                                         }
                                         //j++;
                                     }
-                                    
+
                                     string tmp = "";
                                     if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetLayout] is System.DBNull)))
                                         tmp = (string)m_tablePBRResponse.Rows[i][offsetLayout];
