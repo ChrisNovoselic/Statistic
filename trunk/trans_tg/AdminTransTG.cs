@@ -31,47 +31,33 @@ namespace trans_tg
             m_listCurTimezoneOffsetRDGExcelValues = new List<RDGStruct[]> ();
         }
 
-        //protected override bool GetRDGExcelValuesResponse()
-        //{
-        //    bool bRes = false;
+        protected override bool ImpRDGExcelValuesResponse()
+        {
+            bool bRes = false;
 
-        //    //bRes = IsCanUseTECComponents();
-        //    //int i = -1;
+            bRes = IsCanUseTECComponents();
+            int i = -1;
 
-        //    //if (bRes)
-        //    //{
-        //    //    int iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
-        //    //        rowRDGExcelStart = 1 + iTimeZoneOffset,
-        //    //        hour = -1;
-        //    //    m_listCurTimezoneOffsetRDGExcelValues.Add (new RDGStruct[iTimeZoneOffset]);
+            if (bRes)
+            {
+                int iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+                m_listCurTimezoneOffsetRDGExcelValues.Add(new RDGStruct[iTimeZoneOffset]);
 
-        //    //    if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
 
-        //    //    if (bRes)
-        //    //    {
-        //    //        for (i = 1 /*rowRDGExcelStart*/; i < 24 + 1; i++)
-        //    //        {
-        //    //            if (i < rowRDGExcelStart)
-        //    //            {
-        //    //                setRDGExcelValuesItem(out m_listCurTimezoneOffsetRDGExcelValues[m_listCurTimezoneOffsetRDGExcelValues.Count - 1][i - 1], i);
-        //    //            }
-        //    //            else
-        //    //            {
-        //    //                hour = i - iTimeZoneOffset;
-        //    //                setRDGExcelValuesItem(out m_curRDGValues[hour - 1], i);
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //    else
-        //    //        ;
-        //    //}
-        //    //else
-        //    //    ;
+                if (bRes)
+                    for (i = 0; i < iTimeZoneOffset; i++)
+                        setRDGExcelValuesItem(out m_listCurTimezoneOffsetRDGExcelValues[m_listCurTimezoneOffsetRDGExcelValues.Count - 1][i], i + 1);
+                else
+                    ;
+            }
+            else
+                ;
 
-        //    bRes = base.GetRDGExcelValuesResponse ();
+            bRes = base.ImpRDGExcelValuesResponse();
 
-        //    return bRes;
-        //}
+            return bRes;
+        }
 
         protected override void ClearDates(CONN_SETT_TYPE type)
         {

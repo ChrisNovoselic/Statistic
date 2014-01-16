@@ -341,7 +341,8 @@ namespace trans_gtp
                         break;
                 }
 
-                setUIControlConnectionSettings(indexDB);
+                setUIControlConnectionSettings((int)CONN_SETT_TYPE.SOURCE);
+                setUIControlConnectionSettings((int)CONN_SETT_TYPE.DEST);
             }
             else
                 ;

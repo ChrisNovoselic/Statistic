@@ -251,6 +251,7 @@ namespace trans_tg
                         }
 
                         setUIControlSourceState();
+                        setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
                         break;
                     default:
                         break;

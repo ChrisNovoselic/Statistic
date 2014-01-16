@@ -499,32 +499,37 @@ namespace StatisticCommon
             if ((IsCanUseTECComponents () == true) && (path_rdg_excel.Length > 0)) {
                 m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls", strSelect, out err);
 
-                if ((m_tableRDGExcelValuesResponse.Rows.Count > 0) && (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true))
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
                 {
                     while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
                         m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
                     
-                    tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls", strSelect, out err);
-                    if (tableRDGExcelValuesNextDay.Rows.Count > 0)
+                    if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
                     {
-                        while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
-                            tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
+                        tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+                        if (tableRDGExcelValuesNextDay.Rows.Count > 0)
+                        {
+                            while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
+                                tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
 
-                        for (i = 0; i < iTimeZoneOffset; i ++) {
-                            dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
+                            for (i = 0; i < iTimeZoneOffset; i ++) {
+                                dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
                         
-                            for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j ++)
-                            {
-                                dataRowAddIn.SetValue (tableRDGExcelValuesNextDay.Rows [i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок для OleDb не существует
-                            }
+                                for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j ++)
+                                {
+                                    dataRowAddIn.SetValue (tableRDGExcelValuesNextDay.Rows [i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок для OleDb не существует
+                                }
 
-                            m_tableRDGExcelValuesResponse.Rows.Add (dataRowAddIn); //Т.к.
+                                m_tableRDGExcelValuesResponse.Rows.Add (dataRowAddIn); //Т.к.
+                            }
                         }
+                        else
+                            ;
+
+                        tableRDGExcelValuesNextDay.Clear ();
                     }
                     else
                         ;
-
-                    tableRDGExcelValuesNextDay.Clear ();
                 }
                 else
                     ;
