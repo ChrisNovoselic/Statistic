@@ -11,13 +11,13 @@ using System.Windows.Forms;
 
 namespace StatisticCommon
 {
-    public delegate void DelegateReadConnSettFunc(out List <ConnectionSettings> listConnSett, out bool err, out string mes);
-    public delegate void DelegateSaveConnSettFunc(List<ConnectionSettings> listConnSett, out bool err);
+    public delegate void DelegateReadConnSettFunc(out List <ConnectionSettings> listConnSett, out int err, out string mes);
+    public delegate void DelegateSaveConnSettFunc(List<ConnectionSettings> listConnSett, out int err);
 
     public partial class FormConnectionSettings : Form
     {
         private List<ConnectionSettings> m_connectionSettingsEdit, m_connectionSettings;
-        bool m_bReady;
+        int m_iReady;
 
         private bool closing;
         private int oldSelectedIndex;
@@ -46,10 +46,10 @@ namespace StatisticCommon
             closing = false;
 
             string msgErr = string.Empty;
-            ReadSettings (out m_connectionSettingsEdit, out m_bReady, out msgErr);
-            if ((m_bReady == false) && (msgErr.Length > 0)) MessageBox.Show(this, msgErr, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); else ;
+            ReadSettings (out m_connectionSettingsEdit, out m_iReady, out msgErr);
+            if ((!(m_iReady == 0)) && (msgErr.Length > 0)) MessageBox.Show(this, msgErr, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); else ;
 
-            if (m_bReady == false)
+            if (!(m_iReady == 0))
             {
                 addConnSett(new ConnectionSettings());
             }
@@ -111,6 +111,25 @@ namespace StatisticCommon
             cbxIgnore.Checked = connSett.ignore;
         }
 
+        private void SetItemText ()
+        {
+            int i = m_connectionSettings.Count - 1;
+            
+            if (m_connectionSettings[i].name.Length > 0)
+                if (i < cbxConnFor.Items.Count)
+                    cbxConnFor.Items[i] = m_connectionSettings[i].name;
+                else
+                    cbxConnFor.Items.Add(m_connectionSettings[i].name);
+            else
+                if (m_connectionSettings.Count > 1)
+                    cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
+                else ;
+
+            if ((cbxConnFor.Items.Count > 1) && (cbxConnFor.Enabled == false))
+                cbxConnFor.Enabled = true;
+            else ;
+        }
+
         public void addConnSett(int indx)
         {
             //if (indx < m_connectionSettingsEdit.Count)
@@ -128,15 +147,7 @@ namespace StatisticCommon
             m_connectionSettings[i].password = m_connectionSettingsEdit[indx].password;
             m_connectionSettings[i].ignore = m_connectionSettingsEdit[indx].ignore;
 
-            if (m_connectionSettings.Count > 1)
-            {
-                cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
-            }
-            else ;
-
-            if ((cbxConnFor.Items.Count > 1) && (cbxConnFor.Enabled == false))
-                cbxConnFor.Enabled = true;
-            else ;
+            SetItemText ();
         }
 
         public void addConnSett(ConnectionSettings connSett)
@@ -147,15 +158,7 @@ namespace StatisticCommon
             m_connectionSettings[m_connectionSettings.Count - 1].port =
             m_connectionSettingsEdit[m_connectionSettingsEdit.Count - 1].port = 3306;
 
-            if (m_connectionSettings.Count > 1)
-            {
-                cbxConnFor.Items.Add("БД конфигурации" + " - Дополн.(" + (cbxConnFor.Items.Count - 0) + ")");
-            }
-            else ;
-
-            if ((cbxConnFor.Items.Count > 1) && (cbxConnFor.Enabled == false))
-                cbxConnFor.Enabled = true;
-            else ;
+            SetItemText ();
         }
 
         public void btnOk_Click(object obj, EventArgs ev)
@@ -212,10 +215,7 @@ namespace StatisticCommon
                 m_connectionSettings[i].ignore = m_connectionSettingsEdit[i].ignore;
             }
 
-            bool er = true;
-            SaveSettings(m_connectionSettings, out er);
-
-            m_bReady = ! er;
+            SaveSettings(m_connectionSettings, out m_iReady);
 
             closing = true;
             this.DialogResult = DialogResult.Yes;
@@ -316,9 +316,9 @@ namespace StatisticCommon
         {
         }
 
-        public bool Ready
+        public int Ready
         {
-            get { return m_bReady; }
+            get { return m_iReady; }
         }
     }
 }

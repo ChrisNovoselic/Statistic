@@ -36,7 +36,6 @@ namespace Statistic
                 //StopWait();
                 switch (errRes)
                 {
-                    case HAdmin.Errors.ParseError:
                     case HAdmin.Errors.NoAccess:
                         this.DialogResult = DialogResult.Abort;
                         closing = true;
@@ -64,6 +63,7 @@ namespace Statistic
                             Close();
                         }
                         break;
+                    case HAdmin.Errors.ParseError:
                     case HAdmin.Errors.NoError:
                         this.DialogResult = DialogResult.Yes;
                         closing = true;

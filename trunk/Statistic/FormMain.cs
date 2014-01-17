@@ -20,8 +20,8 @@ namespace Statistic
     {
         //public List<TEC> tec;
         private FIleConnSett m_fileConnSett;
-        private FormConnectionSettings m_formConnectionSettingsConfigDB,
-            m_formConnectionSettingsSource;
+        private ConnectionSettingsSource m_connSettSource;
+        private List <FormConnectionSettings> m_listFormConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
         public AdminTS [] m_arAdmin;
         //public Users m_user;
@@ -58,8 +58,10 @@ namespace Statistic
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
             m_fileConnSett = new FIleConnSett ("connsett.ini");
-            m_formConnectionSettingsConfigDB = new FormConnectionSettings(m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            m_listFormConnectionSettings = new List<FormConnectionSettings> ();
+            m_listFormConnectionSettings.Add (new FormConnectionSettings(m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
+            m_listFormConnectionSettings.Add(null);
+            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {                
                 if (Initialize() == false)
                 {
@@ -70,7 +72,7 @@ namespace Statistic
             }
             else
             {//Файла с параметрами соединения нет совсем
-                connectionSettings();
+                connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
             }
         }
 
@@ -82,10 +84,10 @@ namespace Statistic
             timer.Interval = 666; //Признак первого старта
 
             m_passwords = new Passwords();
-            m_passwords.connSettConfigDB = m_formConnectionSettingsConfigDB.getConnSett();
+            m_passwords.connSettConfigDB = m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
 
             Users user = null;
-            try { user = new Users(m_formConnectionSettingsConfigDB.getConnSett()); }
+            try { user = new Users(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett()); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
@@ -114,7 +116,7 @@ namespace Statistic
                     }
 
                     //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                    try { m_arAdmin[i].InitTEC(m_formConnectionSettingsConfigDB.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
+                    try { m_arAdmin[i].InitTEC(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
                     catch (Exception e)
                     {
                         Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_arAdmin[i].InitTEC (); i = " + i);
@@ -276,10 +278,10 @@ namespace Statistic
             }
         }
 
-        private int connectionSettings () {
+        private int connectionSettings (CONN_SETT_TYPE type) {
             int iRes = -1;
             DialogResult result;
-            result = m_formConnectionSettingsConfigDB.ShowDialog(this);
+            result = m_listFormConnectionSettings [(int)type].ShowDialog(this);
             if (result == DialogResult.Yes)
             {
                 if (! (tecViews == null)) tecViews.Clear (); else ;
@@ -312,7 +314,7 @@ namespace Statistic
             return iRes;
         }
 
-        private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e)
+        private void closeTecViewsTabPages ()
         {
             if (tclTecViews.TabPages.Count > 0)
                 if (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
@@ -341,6 +343,21 @@ namespace Statistic
                 }
             else
                 ;
+        }
+
+        private void настройкиСоединенияБДКонфToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            настройкиСоединенияToolStripMenuItem_Click(sender, e, CONN_SETT_TYPE.CONFIG_DB);
+        }
+
+        private void настройкиСоединенияБДИсточникToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            настройкиСоединенияToolStripMenuItem_Click (sender, e, CONN_SETT_TYPE.LIST_SOURCE);
+        }
+
+        private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e, CONN_SETT_TYPE type)
+        {
+            closeTecViewsTabPages ();
 
             //???
             //string strPassword = "password";
@@ -355,7 +372,40 @@ namespace Statistic
                 bShowFormConnectionSettings = true;
             }
             else {
-                if (m_formConnectionSettingsConfigDB.Ready == false)
+                if ((!(m_listFormConnectionSettings == null)) &&
+                    (m_listFormConnectionSettings[(int)type] == null) && (!(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB] == null)))
+                {
+                    DelegateReadConnSettFunc delegateRead = null;
+                    DelegateSaveConnSettFunc delegateSave = null;
+
+                    switch (type)
+                    {
+                        case CONN_SETT_TYPE.CONFIG_DB:
+                            delegateRead = m_fileConnSett.ReadSettingsFile;
+                            delegateSave = m_fileConnSett.SaveSettingsFile;
+                            break;
+                        case CONN_SETT_TYPE.LIST_SOURCE:
+                            if (m_connSettSource == null)
+                                m_connSettSource = new ConnectionSettingsSource (m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                            else
+                                ;
+
+                            delegateRead = m_connSettSource.Read;
+                            delegateSave = m_connSettSource.Save;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if ((!(delegateRead == null)) && (!(delegateSave == null)))
+                        m_listFormConnectionSettings[(int)type] = new FormConnectionSettings (delegateRead, delegateSave);
+                    else
+                        Abort (false);
+                }
+                else
+                    ;
+
+                if ((!(m_listFormConnectionSettings[(int)type] == null)) && (!(m_listFormConnectionSettings[(int)type].Ready == 0)))
                 {
                     bShowFormConnectionSettings = true;
                 }
@@ -370,18 +420,14 @@ namespace Statistic
             }
 
             if (bShowFormConnectionSettings == true)
-                connectionSettings ();
+                connectionSettings(type);
             else
                 ;
         }
 
-        private void настройкиСоединенияБДИсточникToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-        }
-
         private void сменитьРежимToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            if (m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 int i
                     //, index
@@ -764,7 +810,7 @@ namespace Statistic
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 if (панельГрафическихToolStripMenuItem.Checked)
                     formGraphicsSettings.Show();
@@ -819,7 +865,7 @@ namespace Statistic
 
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 formParameters.ShowDialog(this);
             else
                 ;
@@ -827,7 +873,7 @@ namespace Statistic
 
         private void параметрыТГБийскToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (TecView tv in tecViews) {
                     if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
@@ -849,7 +895,7 @@ namespace Statistic
             DialogResult dlgRes = formPassword.DialogResult;
             if (dlgRes == DialogResult.Yes)
             {
-                FormTECComponent tecComponent = new FormTECComponent(m_formConnectionSettingsConfigDB.getConnSett());
+                FormTECComponent tecComponent = new FormTECComponent(m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                 if (tecComponent.ShowDialog (this) == DialogResult.Yes) {
                     MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     выходToolStripMenuItem.PerformClick ();
@@ -863,7 +909,7 @@ namespace Statistic
                 if (dlgRes == DialogResult.Abort)
                 {
                     //Errors.NoAccess
-                    connectionSettings();
+                    connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
                 }
                 else
                     ;
@@ -876,7 +922,7 @@ namespace Statistic
             DialogResult dlgRes = formPassword.DialogResult;
             if (dlgRes == DialogResult.Yes)
             {
-                FormUser formUser = new FormUser(m_formConnectionSettingsConfigDB.getConnSett());
+                FormUser formUser = new FormUser(m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                 
                 if (formUser.ShowDialog(this) == DialogResult.Yes)
                 {
@@ -892,7 +938,7 @@ namespace Statistic
                 if (dlgRes == DialogResult.Abort)
                 {
                     //Errors.NoAccess
-                    connectionSettings();
+                    connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
                 }
                 else
                     ;
@@ -915,7 +961,7 @@ namespace Statistic
 
         private void изменитьПарольToolStripMenuItem_Click(object sender, EventArgs e, int id, Passwords.ID_ROLES id_role)
         {
-            if (m_formConnectionSettingsConfigDB.Ready == true)
+            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 formPassword.SetIdPass(id, id_role);
                 DialogResult dlgRes = formPassword.ShowDialog(this);
@@ -926,7 +972,7 @@ namespace Statistic
                 }
                 else
                     if (dlgRes == DialogResult.Abort)
-                        connectionSettings ();
+                        connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
                     else
                         ;
             }

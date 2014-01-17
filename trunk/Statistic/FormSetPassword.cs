@@ -22,6 +22,7 @@ namespace Statistic
             base.SetIdPass(id, id_role);
 
             this.Text = Passwords.getOwnerPass ((int)m_idRolePassword);
+            this.Text = this.Text.Substring (0, this.Text.Length - 1);
         }
 
         protected override void bntOk_Click(object sender, EventArgs e)

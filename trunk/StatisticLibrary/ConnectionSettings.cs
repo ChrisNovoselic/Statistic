@@ -12,8 +12,9 @@ namespace StatisticCommon
 {
     public enum CONN_SETT_TYPE
     {
-        ADMIN, PBR, DATA,
-        COUNT_CONN_SETT_TYPE
+        CONFIG_DB = 0, LIST_SOURCE,
+        ADMIN = 0, PBR = 1, DATA = 2,
+        COUNT_CONN_SETT_TYPE = 3
     };
 
     public class ConnectionSettings

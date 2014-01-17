@@ -56,14 +56,13 @@ namespace StatisticCommon
         private void GetPassword(out int er)
         {
             DataTable passTable = DbTSQLInterface.Select(connSettConfigDB, GetPassRequest(), out er);
-            if ((er == 0) && (!(passTable.Rows[0][0] is DBNull)))
-            {
-                passReceive = passTable.Rows[0][0].ToString();
-            }
+            if (er == 0)
+                if (!(passTable.Rows[0][0] is DBNull))
+                    passReceive = passTable.Rows[0][0].ToString();
+                else
+                    passResult = HAdmin.Errors.ParseError;
             else
-            {
                 passResult = HAdmin.Errors.NoAccess;
-            }
         }
 
         public bool SetPassword(string password, uint id, uint idRolePass)
@@ -108,6 +107,13 @@ namespace StatisticCommon
             return true;
         }
 
+        public static string ToString (string hash)
+        {
+            string strRes = string.Empty;
+
+            return strRes;
+        }
+
         public HAdmin.Errors ComparePassword(string password, uint id, uint id_role)
         {
             int err = -1;
@@ -149,7 +155,7 @@ namespace StatisticCommon
                 //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 MessageBox("Ошибка получения пароля " + getOwnerPass((int)m_idRolePass) + ".");
 
-                return HAdmin.Errors.ParseError;
+                return passResult;
             }
             else
                 ;
@@ -181,7 +187,7 @@ namespace StatisticCommon
         {
             string strRes = string.Empty;
             strRes = "SELECT HASH FROM passwords WHERE ID_ROLE=" + m_idRolePass;
-            
+
             if (m_idPass > 0)
                 strRes += " AND ID =" + m_idPass;
             else
@@ -215,11 +221,11 @@ namespace StatisticCommon
             string query = string.Empty;
 
             if (insert)
-                query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + m_idRolePass + ", '" + password + "')";
+                query = "INSERT INTO passwords (ID_EXT, ID_ROLE, HASH) VALUES (" + m_idRolePass +  ", " + m_idRolePass + ", '" + password + "')";
             else
             {
                 query = "UPDATE passwords SET HASH='" + password + "'";
-                query += " WHERE ID_ROLE=" + m_idRolePass;
+                query += " WHERE ID_EXT=" + m_idPass + " AND ID_ROLE=" + m_idRolePass;
             }
 
             return query;

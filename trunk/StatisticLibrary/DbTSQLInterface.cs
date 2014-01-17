@@ -147,17 +147,7 @@ namespace StatisticCommon
             {
                 m_dbConnection.Open();
                 result = true;
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
-                Logging.Logg().LogUnlock();
+                logging_open_db (m_dbConnection);
             }
             catch (Exception e)
             {
@@ -203,14 +193,7 @@ namespace StatisticCommon
 
                 m_dbConnection.Close();
                 result = true;
-                string s;
-                int pos;
-                pos = m_dbConnection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbConnection.ConnectionString;
-                else
-                    s = m_dbConnection.ConnectionString.Substring(0, pos);
-                Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
+                logging_close_db (m_dbConnection);
 
             }
             catch (Exception e)
@@ -272,16 +255,24 @@ namespace StatisticCommon
             return result;
         }
 
+        private static string ConnectionStringToLog (string strConnSett)
+        {
+            string strRes = string.Empty;
+            int pos = -1;
+
+            pos = strConnSett.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
+            if (pos < 0)
+                strRes = strConnSett;
+            else
+                strRes = strConnSett.Substring(0, pos);
+
+            return strRes;
+        }
+
         private static void logging_catch_db(DbConnection conn, Exception e)
         {
             Logging.Logg().LogLock();
-            string s;
-            int pos;
-            pos = conn.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-            if (pos < 0)
-                s = conn.ConnectionString;
-            else
-                s = conn.ConnectionString.Substring(0, pos);
+            string s = ConnectionStringToLog (conn.ConnectionString);            
 
             Logging.Logg().LogToFile("Обработка исключения при работе с БД", true, true, false);
             Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
@@ -293,6 +284,73 @@ namespace StatisticCommon
             else
                 ;
             Logging.Logg().LogUnlock();
+        }
+
+        private static void logging_close_db (DbConnection conn)
+        {
+            string s = ConnectionStringToLog(conn.ConnectionString);
+
+            Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
+        }
+
+        private static void logging_open_db (DbConnection conn)
+        {
+            string s = ConnectionStringToLog(conn.ConnectionString);
+
+            Logging.Logg().LogLock();
+            Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
+            Logging.Logg().LogUnlock();
+        }
+
+        public static MySqlConnection GetConnection (DB_TSQL_INTERFACE_TYPE type, ConnectionSettings connSett, out int er)
+        {
+            er = 0;
+            
+            MySqlConnection connectionMySQL;
+            string s = connSett.GetConnectionStringMySQL();
+            connectionMySQL = new MySqlConnection(s);
+
+            try
+            {
+                connectionMySQL.Open();
+
+                logging_open_db(connectionMySQL);
+            }
+            catch (Exception e)
+            {
+                connectionMySQL = null;
+                
+                logging_catch_db(connectionMySQL, e);
+
+                er = -1;
+            }
+
+            return connectionMySQL;
+        }
+
+        public static void CloseConnection(MySqlConnection conn, out int er)
+        {
+            er = 0;
+
+            try
+            {
+                if (!(conn.State == ConnectionState.Closed))
+                {
+                    conn.Close();
+
+                    logging_close_db (conn);
+                }
+                else
+                    ;
+            }
+            catch (Exception e)
+            {
+                conn = null;
+
+                logging_catch_db(conn, e);
+
+                er = -1;
+            }
         }
 
         public static string valueForQuery(DataTable table, int row, int col)
@@ -425,24 +483,13 @@ namespace StatisticCommon
 
             DataTable dataTableRes = null;
             MySqlConnection connectionMySQL;
-            connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            try
-            {
-                connectionMySQL.Open();
-            }
-            catch (Exception e)
-            {
-                logging_catch_db(connectionMySQL, e);
-
-                er = -1;
-            }
+            connectionMySQL = GetConnection (DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out er);
 
             if (er == 0)
             {
                 dataTableRes = Select(connectionMySQL, query, null, null, out er);
 
-                connectionMySQL.Close();
+                CloseConnection (connectionMySQL, out er);
             }
             else
                 dataTableRes = new DataTable();
@@ -533,18 +580,7 @@ namespace StatisticCommon
 
             MySqlConnection connectionMySQL;
 
-            connectionMySQL = new MySqlConnection(connSett.GetConnectionStringMySQL());
-
-            try
-            {
-                connectionMySQL.Open();
-            }
-            catch (Exception e)
-            {
-                logging_catch_db(connectionMySQL, e);
-
-                er = -1;
-            }
+            connectionMySQL = GetConnection (DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out er);
 
             if (er == 0)
             {

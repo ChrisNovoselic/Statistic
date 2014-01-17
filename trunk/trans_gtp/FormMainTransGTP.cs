@@ -352,7 +352,7 @@ namespace trans_gtp
         {
             base.CreateFormConnectionSettingsConfigDB(connSettFileName);
 
-            if (m_formConnectionSettingsConfigDB.Ready == false || m_formConnectionSettingsConfigDB.Count < 2)
+            if ((!(m_formConnectionSettingsConfigDB.Ready == 0)) || (m_formConnectionSettingsConfigDB.Count < 2))
             {
                 while (m_formConnectionSettingsConfigDB.Count < 2)
                     m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());

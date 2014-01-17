@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
+using MySql.Data.MySqlClient;
 
 namespace StatisticCommon
 {
@@ -9,8 +10,9 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
         private Users m_user;
+        private MySqlConnection m_connConfigDB;
 
-        public static DataTable getListTEC(ConnectionSettings connSett, bool bIgnoreTECInUse)
+        private DataTable getListTEC(bool bIgnoreTECInUse)
         {
             int err = 0;
 
@@ -19,28 +21,35 @@ namespace StatisticCommon
 
             if (!bIgnoreTECInUse) req += " WHERE INUSE=TRUE"; else ;
 
-            return DbTSQLInterface.Select(connSett, req, out err);
+            return DbTSQLInterface.Select(m_connConfigDB, req, null, null, out err);
         }
 
-        public static DataTable getListTECComponent(ConnectionSettings connSett, string prefix, int id_tec)
+        private DataTable getListTECComponent(string prefix, int id_tec)
         {
             int err = 0;
 
-            return DbTSQLInterface.Select(connSett, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), out err);
+            return DbTSQLInterface.Select(m_connConfigDB, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), null, null, out err);
         }
 
-        public static DataTable getListTG(ConnectionSettings connSett, string prefix, int id)
+        private DataTable getListTG(string prefix, int id)
         {
             int err = 0;
 
-            return DbTSQLInterface.Select(connSett, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), out err);
+            return DbTSQLInterface.Select(m_connConfigDB, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), null, null, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id)
+        public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id_ext, int id_role)
         {
             int err = 0;
 
-            return DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + id.ToString(), out err);
+            return ConnectionSettingsSource.GetConnectionSettings(connSett, id_ext, id_role, out err);
+        }
+
+        private DataTable getConnSettingsOfIdSource(int id_ext, int id_role)
+        {
+            int err = 0;
+
+            return ConnectionSettingsSource.GetConnectionSettings(m_connConfigDB, id_ext, id_role, out err);
         }
 
         private List <int> getMCId (DataTable data, int row)
@@ -66,15 +75,18 @@ namespace StatisticCommon
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
         public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse, bool bUseData)
         {
+            int err = -1;
+
             tec = new List<TEC>();
             m_user = new Users(connSett);
+            m_connConfigDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
 
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                     list_TECComponents = null, list_tg = null;
 
             //Использование статической функции
-            list_tec = getListTEC(connSett, bIgnoreTECInUse);
+            list_tec = getListTEC(bIgnoreTECInUse);
 
             //Logging.Logg ().LogLock ();
             //Logging.Logg().LogToFile("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
@@ -114,9 +126,9 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                         list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"]), -1), (int)CONN_SETT_TYPE.DATA);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1), (int)CONN_SETT_TYPE.ADMIN);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1), (int)CONN_SETT_TYPE.PBR);
 
                     tec[indx_tec].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                     tec[indx_tec].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
@@ -128,7 +140,7 @@ namespace StatisticCommon
                     int indx = -1;
                     for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; ! (c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                     {
-                        list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
+                        list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
                         //Logging.Logg().LogLock();
                         //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
@@ -150,7 +162,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
+                            list_tg = getListTG(FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
 
                             for (int k = 0; k < list_tg.Rows.Count; k++)
                             {
@@ -169,7 +181,7 @@ namespace StatisticCommon
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
                     //Logging.Logg().LogUnlock();
 
-                    list_tg = getListTG(connSett, FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]));
+                    list_tg = getListTG(FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]));
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
@@ -196,6 +208,8 @@ namespace StatisticCommon
                 else
                     ;
             }
+
+            DbTSQLInterface.CloseConnection(m_connConfigDB, out err);
 
             //Logging.Logg().LogLock();
             //Logging.Logg().LogToFile("InitTEC::InitTEC () - exit...", true, false, false);
@@ -226,8 +240,10 @@ namespace StatisticCommon
             //dbInterface.Stop();
             //dbInterface.ListenerUnregister(listenerId);
 
+            m_connConfigDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+
             //Использование статической функции
-            list_tec = getListTEC(connSett, bIgnoreTECInUse);
+            list_tec = getListTEC(bIgnoreTECInUse);
 
             for (int i = 0; i < list_tec.Rows.Count; i ++) {
                 //Создание объекта ТЭЦ
@@ -250,14 +266,14 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings (DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int) CONN_SETT_TYPE.DATA);
-                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
-                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
+                tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR);
 
                 tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
 
-                list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
+                list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]));
                 for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
                     tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
                     tec[i].list_TECComponents[j].name = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
@@ -268,7 +284,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    list_tg = getListTG(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
+                    list_tg = getListTG(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_TECComponents.Rows[j]["ID"]));
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
@@ -282,6 +298,8 @@ namespace StatisticCommon
                     }
                 }
             }
+
+            DbTSQLInterface.CloseConnection (m_connConfigDB, out err);
 
             //ConnectionSettings connSett = new ConnectionSettings();
             //connSett.server = "127.0.0.1";
