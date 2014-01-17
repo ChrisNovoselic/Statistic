@@ -199,13 +199,13 @@ namespace trans_gtp
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_gtp.ini");
+            CreateFormConnectionSettingsConfigDB("connsett_gtp.ini");
 
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTS_KomDisp();
-                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false); }
+                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
@@ -218,7 +218,7 @@ namespace trans_gtp
                 
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                 {
-                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettings.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                     //Для отладки получить ГТП из БД с новой структурой
                     //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
@@ -348,14 +348,14 @@ namespace trans_gtp
                 ;
         }
 
-        protected override void CreateFormConnectionSettings(string connSettFileName)
+        protected override void CreateFormConnectionSettingsConfigDB(string connSettFileName)
         {
-            base.CreateFormConnectionSettings(connSettFileName);
+            base.CreateFormConnectionSettingsConfigDB(connSettFileName);
 
-            if (m_formConnectionSettings.Protected == false || m_formConnectionSettings.Count < 2)
+            if (m_formConnectionSettingsConfigDB.Ready == false || m_formConnectionSettingsConfigDB.Count < 2)
             {
-                while (m_formConnectionSettings.Count < 2)
-                    m_formConnectionSettings.addConnSett(new ConnectionSettings());
+                while (m_formConnectionSettingsConfigDB.Count < 2)
+                    m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
             }
             else
                 ;

@@ -58,7 +58,7 @@ namespace Statistic
             comboBoxRole.SelectedIndexChanged -= comboBoxRole_SelectedIndexChanged;
 
             m_listRolesID = new List<int>();
-            DataTable roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles", out err);
+            DataTable roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles WHERE ID < 500", out err);
             for (i = 0; i < roles.Rows.Count; i++)
             {
                 m_listRolesID.Add(Convert.ToInt32 (roles.Rows[i]["ID"]));

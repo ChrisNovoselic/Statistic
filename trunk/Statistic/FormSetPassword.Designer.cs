@@ -32,8 +32,6 @@ namespace Statistic
             this.tbxNewPassword = new System.Windows.Forms.TextBox();
             this.lblNewPasswordAgain = new System.Windows.Forms.Label();
             this.tbxNewPasswordAgain = new System.Windows.Forms.TextBox();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.параметрыПриложения = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblNewPassword
@@ -76,44 +74,31 @@ namespace Statistic
             // btnOk
             // 
             this.btnOk.Location = new System.Drawing.Point(68, 91);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 2;
-            this.btnOk.Text = "Задать";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
             // параметрыПриложения
             // 
-            this.параметрыПриложения.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.параметрыПриложения.Location = new System.Drawing.Point(149, 91);
-            this.параметрыПриложения.Name = "параметрыПриложения";
-            this.параметрыПриложения.Size = new System.Drawing.Size(75, 23);
-            this.параметрыПриложения.TabIndex = 3;
-            this.параметрыПриложения.Text = "Отмена";
-            this.параметрыПриложения.UseVisualStyleBackColor = true;
-            this.параметрыПриложения.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // FormSetPassword
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.параметрыПриложения;
+            //this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            //this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            //this.CancelButton = this.параметрыПриложения;
             this.ClientSize = new System.Drawing.Size(292, 117);
-            this.Controls.Add(this.параметрыПриложения);
-            this.Controls.Add(this.btnOk);
+            //this.Controls.Add(this.параметрыПриложения);
+            //this.Controls.Add(this.btnOk);
             this.Controls.Add(this.lblNewPasswordAgain);
             this.Controls.Add(this.tbxNewPasswordAgain);
             this.Controls.Add(this.lblNewPassword);
             this.Controls.Add(this.tbxNewPassword);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+            //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            //this.MaximizeBox = false;
             this.Name = "FormSetPassword";
-            this.ShowIcon = false;
-            this.ShowInTaskbar = false;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Shown += new System.EventHandler(this.SetPassword_Shown);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SetPassword_FormClosing);
+            //this.ShowIcon = false;
+            //this.ShowInTaskbar = false;
+            //this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            //this.Shown += new System.EventHandler(this.SetPassword_Shown);
+            //this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SetPassword_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -125,7 +110,5 @@ namespace Statistic
         private System.Windows.Forms.TextBox tbxNewPassword;
         private System.Windows.Forms.Label lblNewPasswordAgain;
         private System.Windows.Forms.TextBox tbxNewPasswordAgain;
-        private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button параметрыПриложения;
     }
 }

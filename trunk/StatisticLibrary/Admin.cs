@@ -150,12 +150,15 @@ namespace StatisticCommon
 
             m_ignore_connsett_data = ! bUseData;
 
-            if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse, bUseData).tec;
+            if (object.ReferenceEquals(null, connSett) == false)
+                if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+                    this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse, bUseData).tec;
+                else
+                {
+                    this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse, bUseData).tec;
+                }
             else
-            {
-                this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse, bUseData).tec;
-            }
+                this.m_list_tec = new List <TEC> ();
 
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();

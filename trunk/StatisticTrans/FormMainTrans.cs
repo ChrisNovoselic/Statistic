@@ -27,7 +27,8 @@ namespace StatisticCommon
         protected System.Windows.Forms.Timer timerService;
 
         protected HAdmin[] m_arAdmin;
-        protected FormConnectionSettings m_formConnectionSettings;
+        private FIleConnSett m_fileConnSett;
+        protected FormConnectionSettings m_formConnectionSettingsConfigDB;
         protected GroupBox[] m_arGroupBox;
 
         protected DataGridViewAdmin m_dgwAdminTable;
@@ -246,9 +247,10 @@ namespace StatisticCommon
             buttonSourceExport.Enabled = enabled;
         }
 
-        protected virtual void CreateFormConnectionSettings(string connSettFileName)
+        protected virtual void CreateFormConnectionSettingsConfigDB(string connSettFileName)
         {
-            m_formConnectionSettings = new FormConnectionSettings(connSettFileName);
+            m_fileConnSett = new FIleConnSett(connSettFileName);
+            m_formConnectionSettingsConfigDB = new FormConnectionSettings(m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
         }
 
         protected virtual void FillComboBoxTECComponent () {
@@ -364,8 +366,8 @@ namespace StatisticCommon
             if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
 
-                if (m_formConnectionSettings.Count > 1)
-                    m_formConnectionSettings.SelectedIndex = m_IndexDB;
+                if (m_formConnectionSettingsConfigDB.Count > 1)
+                    m_formConnectionSettingsConfigDB.SelectedIndex = m_IndexDB;
                 else
                     ;
 
@@ -393,14 +395,14 @@ namespace StatisticCommon
         private void конфигурацияБДToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //m_formConnectionSettings.StartPosition = FormStartPosition.CenterParent;
-            m_formConnectionSettings.ShowDialog(this);
+            m_formConnectionSettingsConfigDB.ShowDialog(this);
 
             //Эмуляция нажатия кнопки "Ок"
             /*
             m_formConnectionSettings.btnOk_Click(null, null);
             */
 
-            DialogResult dlgRes = m_formConnectionSettings.DialogResult;
+            DialogResult dlgRes = m_formConnectionSettingsConfigDB.DialogResult;
             if (dlgRes == System.Windows.Forms.DialogResult.Yes)
             {
                 Stop();

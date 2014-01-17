@@ -14,35 +14,19 @@ namespace StatisticCommon
 {
     public class Passwords : object
     {
-        private MD5CryptoServiceProvider md5;
+        MD5CryptoServiceProvider md5;
 
-        private DelegateFunc delegateStartWait;
-        private DelegateFunc delegateStopWait;
-        private DelegateFunc delegateEventUpdate;
-
-        private DelegateStringFunc errorReport;
-        private DelegateStringFunc actionReport;
-
-        private string getOwnerPass()
+        public enum ID_ROLES : uint { COM_DISP = 1, ADMIN, NSS };
+        public static string getOwnerPass(int id_role)
         {
             string[] ownersPass = { "диспетчера", "администратора", "НССа" };
 
-            return ownersPass[m_idPass - 1];
+            return ownersPass[id_role - 1];
         }
-
-        private bool is_connection_error;
-        private bool is_data_error;
-
-        public volatile string last_error;
-        public DateTime last_time_error;
-        public volatile bool errored_state;
-
-        public volatile string last_action;
-        public DateTime last_time_action;
-        public volatile bool actioned_state;
 
         private volatile HAdmin.Errors passResult;
         private volatile string passReceive;
+        private volatile uint m_idRolePass;
         private volatile uint m_idPass;
         private Object m_lockObj;
 
@@ -57,22 +41,7 @@ namespace StatisticCommon
         {
             md5 = new MD5CryptoServiceProvider();
 
-            is_data_error = is_connection_error = false;
-
             m_lockObj = new Object();
-        }
-
-        public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
-        {
-            this.delegateStartWait = dStart;
-            this.delegateStopWait = dStop;
-            this.delegateEventUpdate = dStatus;
-        }
-
-        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fact)
-        {
-            this.errorReport = ferr;
-            this.actionReport = fact;
         }
 
         void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
@@ -84,9 +53,9 @@ namespace StatisticCommon
             Logging.Logg().LogUnlock();
         }
 
-        private void GetPassword(uint id, out int er)
+        private void GetPassword(out int er)
         {
-            DataTable passTable = DbTSQLInterface.Select(connSettConfigDB, GetPassRequest(m_idPass), out er);
+            DataTable passTable = DbTSQLInterface.Select(connSettConfigDB, GetPassRequest(), out er);
             if ((er == 0) && (!(passTable.Rows[0][0] is DBNull)))
             {
                 passReceive = passTable.Rows[0][0].ToString();
@@ -97,12 +66,13 @@ namespace StatisticCommon
             }
         }
 
-        public bool SetPassword(string password, uint idPass)
+        public bool SetPassword(string password, uint id, uint idRolePass)
         {
             int err = -1;
             passResult = HAdmin.Errors.NoError;
 
-            m_idPass = idPass;
+            m_idPass = id;
+            m_idRolePass = idRolePass;
 
             byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
 
@@ -111,15 +81,12 @@ namespace StatisticCommon
             for (int i = 0; i < hash.Length; i++)
                 hashedString.Append(hash[i].ToString("x2"));
 
-            delegateStartWait();
-            GetPassword(idPass, out err);
+            GetPassword(out err);
 
             if (!(passResult == HAdmin.Errors.NoError))
             {
-                delegateStopWait();
-
                 //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка получения пароля " + getOwnerPass() + ". Пароль не сохранён.");
+                MessageBox("Ошибка получения пароля " + getOwnerPass((int)m_idRolePass) + ". Пароль не сохранён.");
 
                 return false;
             }
@@ -127,23 +94,21 @@ namespace StatisticCommon
                 ;
 
             if (passReceive == null)
-                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), idPass, true), out err);
+                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), true), out err);
             else
-                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), idPass, false), out err);
-
-            delegateStopWait();
+                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), false), out err);
 
             if (passResult != HAdmin.Errors.NoError)
             {
                 //MessageBox.Show(this, "Ошибка сохранения пароля " + getOwnerPass () + ". Пароль не сохранён.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка сохранения пароля " + getOwnerPass() + ". Пароль не сохранён.");
+                MessageBox("Ошибка сохранения пароля " + getOwnerPass((int)m_idRolePass) + ". Пароль не сохранён.");
                 return false;
             }
 
             return true;
         }
 
-        public HAdmin.Errors ComparePassword(string password, uint id)
+        public HAdmin.Errors ComparePassword(string password, uint id, uint id_role)
         {
             int err = -1;
             passResult = HAdmin.Errors.NoError;
@@ -153,6 +118,9 @@ namespace StatisticCommon
             //    return HAdmin.Errors.NoAccess;
             //else
             //    ;
+
+            m_idPass = id;
+            m_idRolePass = id_role;
 
             if (password.Length < 1)
             {
@@ -174,14 +142,12 @@ namespace StatisticCommon
             for (int i = 0; i < hash.Length; i++)
                 hashedString.Append(hash[i].ToString("x2"));
 
-            delegateStartWait();
-            GetPassword(id, out err);
+            GetPassword(out err);
 
-            delegateStopWait();
             if (!(passResult == HAdmin.Errors.NoError))
             {
                 //MessageBox.Show(this, "Ошибка получения пароля " + getOwnerPass () + ".", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox("Ошибка получения пароля " + getOwnerPass() + ".");
+                MessageBox("Ошибка получения пароля " + getOwnerPass((int)m_idRolePass) + ".");
 
                 return HAdmin.Errors.ParseError;
             }
@@ -211,9 +177,17 @@ namespace StatisticCommon
             }
         }
 
-        private string GetPassRequest(uint id)
+        private string GetPassRequest()
         {
-            return "SELECT HASH FROM passwords WHERE ID_ROLE=" + id;
+            string strRes = string.Empty;
+            strRes = "SELECT HASH FROM passwords WHERE ID_ROLE=" + m_idRolePass;
+            
+            if (m_idPass > 0)
+                strRes += " AND ID =" + m_idPass;
+            else
+                ;
+
+            return strRes;
         }
 
         private bool GetPassResponse(DataTable table)
@@ -236,66 +210,19 @@ namespace StatisticCommon
             return true;
         }
 
-        private string SetPassRequest(string password, uint id, bool insert)
+        private string SetPassRequest(string password, bool insert)
         {
             string query = string.Empty;
 
             if (insert)
-                switch (m_idPass)
-                {
-                    case 1:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    case 2:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    case 3:
-                        query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + id + ", '" + password + "')";
-                        break;
-                    default:
-                        break;
-                }
+                query = "INSERT INTO passwords (ID_ROLE, HASH) VALUES (" + m_idRolePass + ", '" + password + "')";
             else
             {
-                switch (m_idPass)
-                {
-                    case 1:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    case 2:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    case 3:
-                        query = "UPDATE passwords SET HASH='" + password + "'";
-                        break;
-                    default:
-                        break;
-                }
-
-                query += " WHERE ID_USER=ID_ROLE AND ID_ROLE=" + id;
+                query = "UPDATE passwords SET HASH='" + password + "'";
+                query += " WHERE ID_ROLE=" + m_idRolePass;
             }
 
             return query;
-        }
-
-        private void ErrorReport(string error_string)
-        {
-            last_error = error_string;
-            last_time_error = DateTime.Now;
-            errored_state = true;
-
-            errorReport(error_string);
-        }
-
-        private void ActionReport(string action_string)
-        {
-            last_action = action_string;
-            last_time_action = DateTime.Now;
-            actioned_state = true;
-
-            //stsStrip.BeginInvoke(delegateEventUpdate);
-            //delegateEventUpdate ();
-            actionReport(action_string);
         }
     }
 }

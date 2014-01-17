@@ -118,6 +118,7 @@
     <Compile Include="Users.cs" />
     <Compile Include="AdminTS.cs" />
     <Compile Include="DbTSQLInterface.cs" />
+    <Compile Include="FileConnSett.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

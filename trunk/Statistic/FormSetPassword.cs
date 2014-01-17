@@ -10,36 +10,28 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public partial class FormSetPassword : Form
+    public partial class FormSetPassword : FormPasswordBase
     {
-        private uint m_idPass;
-
-        private Passwords m_pass;
-        private bool closing;
-
-        public FormSetPassword(Passwords p)
+        public FormSetPassword(Passwords p) : base (p)
         {
             InitializeComponent();
-            m_pass = p;
-            closing = false;
         }
 
-        public void SetIdPass(uint id)
+        public override void SetIdPass(int id, Passwords.ID_ROLES id_role)
         {
-            m_idPass = id;
+            base.SetIdPass(id, id_role);
 
-            string[] ownersPass = { "Коммерческий диспетчер", "Администратор", "НСС" };
-
-            this.Text = ownersPass[m_idPass - 1];
+            this.Text = Passwords.getOwnerPass ((int)m_idRolePassword);
         }
 
-        public uint GetIdPass() { return m_idPass; }
-
-        private void btnOk_Click(object sender, EventArgs e)
+        protected override void bntOk_Click(object sender, EventArgs e)
         {
             if (tbxNewPassword.Text == tbxNewPasswordAgain.Text)
             {
-                m_pass.SetPassword(tbxNewPassword.Text, m_idPass);
+                delegateStartWait ();
+                m_pass.SetPassword(tbxNewPassword.Text, (uint)m_idPassword, (uint)m_idRolePassword);
+                delegateStopWait();
+                
                 closing = true;
                 Close();
             }
@@ -48,12 +40,6 @@ namespace Statistic
                 tbxNewPassword.Text = tbxNewPasswordAgain.Text = "";
                 MessageBox.Show(this, "Вы неправильно повторили пароль.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            closing = true;
-            Close();
         }
 
         private void SetPassword_FormClosing(object sender, FormClosingEventArgs e)
@@ -65,19 +51,24 @@ namespace Statistic
             else
             {
                 closing = false;
-                tbxNewPassword.Text = tbxNewPasswordAgain.Text = "";
+                tbxNewPassword.Text = tbxNewPasswordAgain.Text = string.Empty;
             }
         }
 
         private void tbxNewPasswordAgain_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
-                btnOk_Click(sender, new EventArgs());
+                //btnOk_Click(sender, new EventArgs());
+                btnOk.PerformClick ();
+            else
+                ;
         }
 
-        private void SetPassword_Shown(object sender, EventArgs e)
+        protected override void FormPasswordBase_Shown(object sender, EventArgs e)
         {
             tbxNewPassword.Focus();
         }
+
+        protected override void EventRaised() { }
     }
 }

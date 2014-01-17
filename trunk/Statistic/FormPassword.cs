@@ -10,43 +10,33 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public partial class FormPassword : FormMainBase
+    public partial class FormPassword : FormPasswordBase
     {
-        public enum ID_ROLES : uint {COM_DISP = 1, ADMIN, NSS};
-
-        private ID_ROLES m_idPass;
-
-        private Passwords m_pass;
-        private bool closing;
-
         public FormPassword(Passwords p)
+            : base(p)
         {
             InitializeComponent();
-            m_pass = p;
-            closing = false;
         }
 
-        public void SetIdPass(ID_ROLES id)
+        public override void SetIdPass(int id, Passwords.ID_ROLES id_role)
         {
-            m_idPass = id;
+            base.SetIdPass (id, id_role);
 
-            string[] ownersPass = { "коммерческого диспетчера", "администратора", "НССа" };
-
-            labelOwnerPassword.Text = ownersPass[(int)m_idPass - 1];
+            labelOwnerPassword.Text = Passwords.getOwnerPass((int)m_idRolePassword);
         }
-
-        public uint GetIdPass() { return (uint)m_idPass; }
 
         private void tbxPassword_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                //StartWait();
-                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPass);
+                delegateStartWait();
+                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPassword, (uint)m_idRolePassword);
+                delegateStopWait();
                 tbxPassword.Clear ();
                 //StopWait();
                 switch (errRes)
                 {
+                    case HAdmin.Errors.ParseError:
                     case HAdmin.Errors.NoAccess:
                         this.DialogResult = DialogResult.Abort;
                         closing = true;
@@ -74,7 +64,6 @@ namespace Statistic
                             Close();
                         }
                         break;
-                    case HAdmin.Errors.ParseError:
                     case HAdmin.Errors.NoError:
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
@@ -86,29 +75,26 @@ namespace Statistic
             }
         }
 
-        private void Password_FormClosing(object sender, FormClosingEventArgs e)
+        protected override void FormPasswordBase_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!closing)
-                e.Cancel = true;
-            else
-                closing = false;
+            base.FormPasswordBase_FormClosing (sender, e);
         }
 
-        private void bntOk_Click(object sender, EventArgs e)
+        protected override void bntOk_Click(object sender, EventArgs e)
         {
             KeyEventArgs ee = new KeyEventArgs(Keys.Enter);
             tbxPassword_KeyDown(sender, ee);
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        protected override void btnCancel_Click(object sender, EventArgs e)
         {
             tbxPassword.Text = "";
             this.DialogResult = DialogResult.No;
-            closing = true;
-            Close();
+            
+            base.btnCancel_Click (sender, e);
         }
 
-        private void Password_Shown(object sender, EventArgs e)
+        protected override void FormPasswordBase_Shown(object sender, EventArgs e)
         {
             tbxPassword.Focus();
         }

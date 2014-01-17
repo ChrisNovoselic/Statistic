@@ -135,14 +135,14 @@ namespace trans_tg
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_tg.ini");
+            CreateFormConnectionSettingsConfigDB("connsett_tg.ini");
 
             bool bIgnoreTECInUse = false;
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTransTG();
-                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettings.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
+                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");

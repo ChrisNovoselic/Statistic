@@ -18,6 +18,8 @@ namespace StatisticCommon
 
     public class ConnectionSettings
     {
+        public volatile string name;
+        
         public volatile string server;
         public volatile string dbName;
         public volatile string userName;
@@ -83,7 +85,8 @@ namespace StatisticCommon
 
         public void SetDefault()
         {
-            server = dbName = userName = password = "";
+            name =
+            server = dbName = userName = password = string.Empty;
             port = 1433;
             //ignore = true;
             ignore = false;

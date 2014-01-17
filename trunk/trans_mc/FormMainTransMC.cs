@@ -131,7 +131,7 @@ namespace trans_mc
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mc.ini");
+            CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
             bool bIgnoreTECInUse = false;
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
@@ -147,7 +147,7 @@ namespace trans_mc
                     default:
                         break;
                 }
-                try { m_arAdmin[i].InitTEC(m_formConnectionSettings.getConnSett(), m_modeTECComponent, bIgnoreTECInUse, false); }
+                try { m_arAdmin[i].InitTEC(m_formConnectionSettingsConfigDB.getConnSett(), m_modeTECComponent, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
