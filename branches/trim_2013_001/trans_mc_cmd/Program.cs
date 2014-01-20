@@ -126,13 +126,15 @@ namespace trans_mc_cmd
 
         private static string GetNameHostModesCentre(FileINI fi)
         {
-            return fi.ReadString("Параметры соединения с Modes-Centre (" + AppName + ")", "ИмяСервер", string.Empty);
+            return fi.ReadString("Параметры соединения с Modes-Centre (" + "trans_mc_cmd.exe" + ")", "ИмяСервер", string.Empty);
         }
 
         public static ConnectionSettings ReadConnSettFromFileINI (FileINI fileINI)
         {
             ConnectionSettings connSettRes = new ConnectionSettings();
-            string strProgramNameSectionINI = "Параметры соединения с БД (" + AppName + ")"; //MySQLtechsite.m_strNameSectionINI
+            string strProgramNameSectionINI = string.Empty;
+            strProgramNameSectionINI = "Параметры соединения с БД (" + AppName + ")"; //MySQLtechsite.m_strNameSectionINI
+            //strProgramNameSectionINI = "Параметры соединения с БД (" + "trans_mc_cmd.exe" + ")";
             connSettRes.server = fileINI.ReadString(strProgramNameSectionINI, "IPСервер", string.Empty);
             connSettRes.dbName = fileINI.ReadString(strProgramNameSectionINI, "ИмяБД", string.Empty);
             connSettRes.userName = fileINI.ReadString(strProgramNameSectionINI, "ИмяПользователь", string.Empty);
@@ -157,7 +159,8 @@ namespace trans_mc_cmd
 
             FileINI fileINI = new FileINI("setup.ini");
 
-            string strProgramNameSectionINI = "Main settings (" + AppName + ")";
+            string strProgramNameSectionINI = string.Empty;
+            strProgramNameSectionINI = "Main settings (" + AppName + ")";
             if (Boolean.TryParse(fileINI.ReadString(strProgramNameSectionINI, "СообщениеОтладкаЖурналОС", string.Empty), out g_bWriteToWinEventLog) == false)
                 g_bWriteToWinEventLog = false;
             else
@@ -275,7 +278,8 @@ namespace trans_mc_cmd
                 else
                     ;
 
-                return strRes;
+                //return strRes;
+                return "trans_mc_cmd.exe";
             }
         }
 

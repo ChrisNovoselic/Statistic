@@ -564,7 +564,9 @@ namespace trans_mc_cmd
             if ((Program.WriteToWinEventLog == true) && (bWriteToWinEventLog == true) && (Environment.OSVersion.Version.Major < 6))     //На Windows Vista и выше в журнал таким способом записать прав не хватит
             {
                 //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
-                string sAppName = Program.AppName;
+                string sAppName = string.Empty;
+                sAppName = Program.AppName;
+                //sAppName = "trans_mc_cmd.exe";
                 System.Diagnostics.EventLog.WriteEntry(sAppName, sErrMess, System.Diagnostics.EventLogEntryType.Error);
             }
             else
