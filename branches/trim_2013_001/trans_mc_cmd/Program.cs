@@ -21,6 +21,7 @@ namespace trans_mc_cmd
 
         static MySQLtechsite techsite;
         static bool g_bList;
+        static bool g_bWriteToWinEventLog;
         static DateTime g_dtList;
 
         public static string m_strFileNameSetup = "setup.ini";
@@ -117,15 +118,21 @@ namespace trans_mc_cmd
             messageToExit(bNoWait);
         }
 
+        public static bool WriteToWinEventLog {
+            get {
+                return g_bWriteToWinEventLog;
+            }
+        }
+
         private static string GetNameHostModesCentre(FileINI fi)
         {
-            return fi.ReadString("Параметры соединения с Modes-Centre (trans_mc_cmd.exe)", "ИмяСервер", string.Empty);
+            return fi.ReadString("Параметры соединения с Modes-Centre (" + AppName + ")", "ИмяСервер", string.Empty);
         }
 
         public static ConnectionSettings ReadConnSettFromFileINI (FileINI fileINI)
         {
             ConnectionSettings connSettRes = new ConnectionSettings();
-            string strProgramNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)"; //MySQLtechsite.m_strNameSectionINI
+            string strProgramNameSectionINI = "Параметры соединения с БД (" + AppName + ")"; //MySQLtechsite.m_strNameSectionINI
             connSettRes.server = fileINI.ReadString(strProgramNameSectionINI, "IPСервер", string.Empty);
             connSettRes.dbName = fileINI.ReadString(strProgramNameSectionINI, "ИмяБД", string.Empty);
             connSettRes.userName = fileINI.ReadString(strProgramNameSectionINI, "ИмяПользователь", string.Empty);
@@ -150,11 +157,17 @@ namespace trans_mc_cmd
 
             FileINI fileINI = new FileINI("setup.ini");
 
-            string strProgramNameSectionINI = "Параметры записи в БД (trans_mc_cmd.exe)";
+            string strProgramNameSectionINI = "Main settings (" + AppName + ")";
+            if (Boolean.TryParse(fileINI.ReadString(strProgramNameSectionINI, "СообщениеОтладкаЖурналОС", string.Empty), out g_bWriteToWinEventLog) == false)
+                g_bWriteToWinEventLog = false;
+            else
+                ;
+
+            strProgramNameSectionINI = "Параметры записи в БД (" + AppName + ")";
             if (Boolean.TryParse(fileINI.ReadString(strProgramNameSectionINI, "Расчет30минЗначения", string.Empty), out bCalculatedHalfHourValues) == false)
                 bCalculatedHalfHourValues = false;
             else
-                
+                ;
 
             if (args.Length > 0)
             {
@@ -233,6 +246,36 @@ namespace trans_mc_cmd
             foreach (Modes.BusinessLogic.IVarParam param in IGO.VarParams)
             {
                 Console.WriteLine("Параметр: " + param.Name + " [" + param.Description + "] " + param.GetValue(0));   //пройтись 0...23 - по часам величины
+            }
+        }
+
+        public static string AppName {
+            get {
+                string strRes = System.Environment.CommandLine.Substring(System.Environment.CommandLine.LastIndexOf("\\") + 1).Replace("\"", "").Trim();
+                if (!(strRes.IndexOf ('.') == strRes.LastIndexOf ('.')))
+                {
+                    char delim = '.';
+                    List <int> listPosDelim = new List<int> ();;
+                    int pos = strRes.IndexOf(delim, 0),
+                        indxPos = -1;
+
+                    while (!(pos < 0))
+                    {
+                        listPosDelim.Add (pos);
+                        pos = strRes.IndexOf(delim, pos + 1);                        
+                    }
+
+                    if (listPosDelim.Count > 1)
+                    {
+                        strRes = strRes.Substring(0, listPosDelim[listPosDelim.Count - 2]) + strRes.Substring(listPosDelim[listPosDelim.Count - 1], strRes.Length - listPosDelim[listPosDelim.Count - 1]);
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+
+                return strRes;
             }
         }
 

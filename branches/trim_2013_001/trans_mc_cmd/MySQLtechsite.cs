@@ -558,13 +558,17 @@ namespace trans_mc_cmd
                 Console.WriteLine(sErrMess);
                 Console.ForegroundColor = cc;
             }
+            else
+                ;
 
-            if (bWriteToWinEventLog && Environment.OSVersion.Version.Major < 6)     //На Windows Vista и выше в журнал таким способом записать прав не хватит
+            if ((Program.WriteToWinEventLog == true) && (bWriteToWinEventLog == true) && (Environment.OSVersion.Version.Major < 6))     //На Windows Vista и выше в журнал таким способом записать прав не хватит
             {
                 //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
-                string sAppName = System.Environment.CommandLine.Substring(System.Environment.CommandLine.LastIndexOf("\\") + 1).Replace("\"", "").Trim();
+                string sAppName = Program.AppName;
                 System.Diagnostics.EventLog.WriteEntry(sAppName, sErrMess, System.Diagnostics.EventLogEntryType.Error);
             }
+            else
+                ;
         }
     }
 }
