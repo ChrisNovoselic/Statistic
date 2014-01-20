@@ -217,11 +217,20 @@ namespace StatisticCommon
 
             char[] file = Crypt.to (sb, out err);
 
-            sw.Write(file, 0, file.Length);
-            sw.Close();
+            if (err > 0)
+            {
+                sw.Write(file, 0, err);
 
-            err = 0; //Успешно
-            mayToProtected = true;
+                err = 0; //Успешно
+                mayToProtected = true;
+            }
+            else
+            {
+                err = 1; //Ошибка
+                mayToProtected = false;
+            }
+
+            sw.Close();
         }
     }
 }
