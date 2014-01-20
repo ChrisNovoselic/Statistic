@@ -17,7 +17,7 @@ namespace StatisticCommon
         private int[] m_arParametrSetupDefault = { 30, 60, 1 };
         public int[] m_arParametrSetup = { 30, 60, 1 };
 
-        private const string NAME_SECTION_MAIN = "Main settings (Statistic.exe)";
+        private static string NAME_SECTION_MAIN = "Main settings (" + ProgramBase.AppName + ")";
 
         public FormParameters(string nameFileINI)
             : base(nameFileINI)

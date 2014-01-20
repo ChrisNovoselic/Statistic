@@ -318,9 +318,9 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                connectionMySQL = null;
-                
                 logging_catch_db(connectionMySQL, e);
+                
+                connectionMySQL = null;               
 
                 er = -1;
             }
@@ -345,9 +345,9 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                conn = null;
-
                 logging_catch_db(conn, e);
+                
+                conn = null;
 
                 er = -1;
             }

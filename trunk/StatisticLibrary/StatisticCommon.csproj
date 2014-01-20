@@ -102,6 +102,7 @@
     </Compile>
     <Compile Include="InitTEC.cs" />
     <Compile Include="Logging.cs" />
+    <Compile Include="ProgramBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -120,6 +121,7 @@
     <Compile Include="AdminTS.cs" />
     <Compile Include="DbTSQLInterface.cs" />
     <Compile Include="FileConnSett.cs" />
+    <Compile Include="Crypt.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

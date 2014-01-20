@@ -3,6 +3,8 @@ using System.Collections.Generic;
 //using System.Linq;
 using System.Windows.Forms;
 
+using StatisticCommon;
+
 namespace trans_gtp
 {
     static class Program
@@ -13,25 +15,21 @@ namespace trans_gtp
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            ProgramBase.Start();
 
-            StatisticCommon.Logging.Logg().LogLock();
-            StatisticCommon.Logging.Logg().LogToFile("=============Запуск приложения...=============", true, true, false);
-            StatisticCommon.Logging.Logg().LogUnlock();
-
-            try { Application.Run(new FormMainTransGTP()); }
-            catch (Exception e) { 
-                StatisticCommon.Logging.Logg().LogLock();
-                //StatisticCommon.Logging.Logg().LogToFile("", true, true, false);
-                StatisticCommon.Logging.Logg().LogToFile("Исключение " + e.Message, true, true, false);
-                StatisticCommon.Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                StatisticCommon.Logging.Logg().LogUnlock();
+            FormMainTransGTP formMain = null;
+            try { formMain = new FormMainTransGTP(); }
+            catch (Exception e)
+            {
+                Logging.Logg().LogExceptionToFile(e, "Ошибка запуска приложения.");
             }
 
-            StatisticCommon.Logging.Logg().LogLock();
-            StatisticCommon.Logging.Logg().LogToFile("=============Останов приложения...=============", true, true, false);
-            StatisticCommon.Logging.Logg().LogUnlock();
+            if (!(formMain == null))
+                Application.Run(formMain);
+            else
+                ;
+
+            ProgramBase.Exit();
         }
     }
 }

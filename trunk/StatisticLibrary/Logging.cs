@@ -32,8 +32,7 @@ namespace StatisticCommon
         public static Logging Logg () {
             if (m_this == null)
             {
-                int posAppName = System.Environment.CommandLine.LastIndexOf('\\') + 1;
-                string appName = System.Environment.CommandLine.Substring(posAppName, System.Environment.CommandLine.IndexOf(' ', posAppName) - posAppName - 1);
+                string appName = ProgramBase.AppName;
                 appName = appName.Substring(0, appName.IndexOf ('.'));
                 m_this = new Logging(System.Environment.CurrentDirectory + @"\" + appName + "_" + Environment.MachineName + "_log.txt", false, null, null);
             }

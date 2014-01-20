@@ -14,12 +14,7 @@ namespace Statistic
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("=============Старт приложения...=============", true, true, false);
-            Logging.Logg().LogUnlock();
+            ProgramBase.Start ();
 
             //InitTEC init = new InitTEC();
 
@@ -59,9 +54,7 @@ namespace Statistic
             else
                 ;
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("=============Выход из приложения...=============", true, true, false);
-            Logging.Logg().LogUnlock();
+            ProgramBase.Exit ();
         }
     }
 }
