@@ -232,6 +232,7 @@ namespace StatisticCommon
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Shown +=new System.EventHandler(FormConnectionSettings_Shown);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConnectionSettings_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.nudnPort)).EndInit();
             this.ResumeLayout(false);

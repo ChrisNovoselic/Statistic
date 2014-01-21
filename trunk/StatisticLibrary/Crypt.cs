@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms; //Для MessageBox
 
 namespace StatisticCommon
@@ -71,7 +72,7 @@ namespace StatisticCommon
             return m_this;
         }
 
-        public static StringBuilder un(char[] src, int count, out string msgErr)
+        public StringBuilder un(char[] src, int count, out string msgErr)
         {
             msgErr = string.Empty;
 
@@ -80,7 +81,7 @@ namespace StatisticCommon
 
             uint magic;
             if (count > 0)
-                while (i < count)
+                while ((i + 0) < count)
                 {
                     res.Append((char)(src[i] ^ (char)((key[j] >> (8 * k)) & 0xFF)));
                     i++;
@@ -158,19 +159,19 @@ namespace StatisticCommon
                         i += 4;
                         if (magic != MAGIC)
                         {
-                            msgErr = "Файл с настройками имеет неправильный формат!\nОбратитесь к поставщику программы.";
+                            msgErr = "Зашифрованные данные имеют неправильный формат!\nОбратитесь к поставщику программы.";
                         }
                         else
                             ;
                     }
                 }
             else
-                msgErr = "В Файле с настройками нет данных!\nОбратитесь к поставщику программы.";
+                msgErr = "Нет зашифрованных данных!\nОбратитесь к поставщику программы.";
 
             return res;
         }
 
-        public static char [] to(StringBuilder src, out int err)
+        public char [] to(StringBuilder src, out int err)
         {
             err = 1;
 
@@ -236,6 +237,61 @@ namespace StatisticCommon
             err = i; //Успешно
 
             return res;
+        }
+
+        public byte[] Encrypt(byte[] data, string password)
+        {
+            SymmetricAlgorithm sa = Rijndael.Create();
+            ICryptoTransform ct = sa.CreateEncryptor(
+                (new PasswordDeriveBytes(password, null)).GetBytes(16),
+                new byte[16]);
+
+            MemoryStream ms = new MemoryStream();
+            CryptoStream cs = new CryptoStream(ms, ct, CryptoStreamMode.Write);
+
+            cs.Write(data, 0, data.Length);
+            cs.FlushFinalBlock();
+
+            return ms.ToArray();
+        }
+
+        public string Encrypt(string data, string password)
+        {
+            if (data != "") return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(data), password));
+            else return "";
+        }
+
+        public byte[] Decrypt(byte[] data, string password)
+        {
+            BinaryReader br = new BinaryReader(InternalDecrypt(data, password));
+            return br.ReadBytes((int)br.BaseStream.Length);
+        }
+
+        public string Decrypt(string data, string password)
+        {
+            String result = "";
+            try
+            {
+                CryptoStream cs = InternalDecrypt(Convert.FromBase64String(data), password);
+                StreamReader sr = new StreamReader(cs);
+                result = sr.ReadToEnd();
+                return result;
+            }
+            catch
+            {
+                return result;
+            }
+        }
+
+        CryptoStream InternalDecrypt(byte[] data, string password)
+        {
+            SymmetricAlgorithm sa = Rijndael.Create();
+            ICryptoTransform ct = sa.CreateDecryptor(
+                (new PasswordDeriveBytes(password, null)).GetBytes(16),
+                new byte[16]);
+
+            MemoryStream ms = new MemoryStream(data);
+            return new CryptoStream(ms, ct, CryptoStreamMode.Read);
         }
     }
 }

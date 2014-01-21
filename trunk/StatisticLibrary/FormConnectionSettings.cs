@@ -138,6 +138,7 @@ namespace StatisticCommon
             m_connectionSettings.Add(new ConnectionSettings ());
             
             int i = m_connectionSettings.Count - 1;
+            m_connectionSettings[i].id = m_connectionSettingsEdit[indx].id;
             m_connectionSettings[i].name = m_connectionSettingsEdit[indx].name;
 
             m_connectionSettings[i].server = m_connectionSettingsEdit[indx].server;
@@ -296,6 +297,10 @@ namespace StatisticCommon
                 cbxIgnore.Enabled = false;
             //else
             //    cbxIgnore.Enabled = true;
+        }
+
+        private void FormConnectionSettings_Shown(object sender, EventArgs e)
+        {
         }
 
         private void ConnectionSettings_FormClosing(object sender, FormClosingEventArgs e)

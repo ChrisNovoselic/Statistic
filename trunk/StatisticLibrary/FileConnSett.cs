@@ -36,7 +36,7 @@ namespace StatisticCommon
             int i = 0, j = 0, k = 3,
                 countParts = 0;
 
-            sb = Crypt.un(file, count, out msgErr);
+            sb = Crypt.Crypting().un(file, count, out msgErr);
             if (msgErr.Length > 0)
                 mayToProtected = false;
             else
@@ -215,7 +215,7 @@ namespace StatisticCommon
                 sb.Append(cs.ignore ? "1;" : "0;");
             }
 
-            char[] file = Crypt.to (sb, out err);
+            char[] file = Crypt.Crypting().to(sb, out err);
 
             if (err > 0)
             {

@@ -107,13 +107,6 @@ namespace StatisticCommon
             return true;
         }
 
-        public static string ToString (string hash)
-        {
-            string strRes = string.Empty;
-
-            return strRes;
-        }
-
         public HAdmin.Errors ComparePassword(string password, uint id, uint id_role)
         {
             int err = -1;

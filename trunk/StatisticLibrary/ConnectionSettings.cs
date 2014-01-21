@@ -19,6 +19,7 @@ namespace StatisticCommon
 
     public class ConnectionSettings
     {
+        public volatile int id;
         public volatile string name;
         
         public volatile string server;
