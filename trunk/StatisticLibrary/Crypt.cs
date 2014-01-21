@@ -9,6 +9,8 @@ namespace StatisticCommon
 {
     public class Crypt
     {
+        public static string KEY = "AsDfGhJkL;";
+        
         private static uint MAGIC = 0xA5A55A5A;
         private static int magicPeriod = 10;
         private static uint[] key = {
@@ -72,7 +74,7 @@ namespace StatisticCommon
             return m_this;
         }
 
-        public StringBuilder un(char[] src, int count, out string msgErr)
+        public StringBuilder Decrypt(char[] src, int count, out string msgErr)
         {
             msgErr = string.Empty;
 
@@ -171,7 +173,7 @@ namespace StatisticCommon
             return res;
         }
 
-        public char [] to(StringBuilder src, out int err)
+        public char [] Encrypt(StringBuilder src, out int err)
         {
             err = 1;
 
@@ -257,13 +259,16 @@ namespace StatisticCommon
 
         public string Encrypt(string data, string password)
         {
-            if (data != "") return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(data), password));
-            else return "";
+            if (data.Equals (string.Empty) == false)
+                return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(data), password));
+            else
+                return string.Empty;
         }
 
         public byte[] Decrypt(byte[] data, string password)
         {
             BinaryReader br = new BinaryReader(InternalDecrypt(data, password));
+            
             return br.ReadBytes((int)br.BaseStream.Length);
         }
 

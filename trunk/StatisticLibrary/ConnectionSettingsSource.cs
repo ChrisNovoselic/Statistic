@@ -36,31 +36,24 @@ namespace StatisticCommon
         private static DataTable GetConnectionSettings(DataTable src, int row_src, DataTable psw, int row_psw)
         {
             string errMsg, strPsw;
-            char [] hash = null;
-            byte []prev_hash = null;
-
-            int c = -1, len_hash = -1;
 
             errMsg = strPsw = string.Empty;
 
             if (psw.Rows.Count == 1) {
-                len_hash = psw.Rows[row_psw]["HASH"].ToString().Length / 4;
-                prev_hash = Convert.FromBase64String (psw.Rows[row_psw]["HASH"].ToString());
-                hash = new char[len_hash + 4]; //'+4' согласно алгоритма 'Crypt.un()'
-                for (c = 0; c < len_hash; c ++)
-                {                    
-                    hash [c] = BitConverter.ToChar(prev_hash, c * 4);
-                }
+                //hash = psw.Rows[row_psw]["HASH"].ToString ().ToCharArray ();
+                //len_hash = psw.Rows[row_psw]["HASH"].ToString().Length;
+
+                strPsw = Crypt.Crypting ().Decrypt (psw.Rows[row_psw]["HASH"].ToString (), "AsDfGhJkL;");
             }
             else
                 ;
 
             if (src.Columns.IndexOf ("PASSWORD") < 0)
-                src.Columns.Add ("PASSWORD", Type.GetType ("string"));
+                src.Columns.Add("PASSWORD", typeof(string));
             else
                 ;
 
-            strPsw = Crypt.Crypting().un(hash, len_hash, out errMsg).ToString();
+            //strPsw = Crypt.Crypting().un(hash, len_hash, out errMsg).ToString();
             if (errMsg.Length > 0)
                 strPsw = string.Empty;
             else
@@ -142,9 +135,10 @@ namespace StatisticCommon
         {
             err = 1;
             int i = -1,c = -1;
-            string strQuery, psw;
-            char []hash;
-            StringBuilder sb;
+            string strQuery, psw
+                , hash;
+            //char []hash;
+            //StringBuilder sb;
             
             strQuery = psw = string.Empty;
 
@@ -186,27 +180,20 @@ namespace StatisticCommon
 
                                 if (listConnSett[i].password.Length > 0)
                                 {
-                                    sb = new StringBuilder(listConnSett[i].password);
-                                    hash = Crypt.Crypting().to(sb, out err);
+                                    //sb = new StringBuilder(listConnSett[i].password);
+                                    //hash = Crypt.Crypting().to(sb, out err);
+                                    hash = Crypt.Crypting().Encrypt(listConnSett[i].password, Crypt.KEY);
 
-                                    byte []bytes;
-                                    psw = string.Empty;
-
-                                    if (err > 0)
+                                    //if (err > 0)
+                                    if (hash.Length > 0)
                                     {
-                                        for (c = 0; c < err; c ++)
-                                        {
-                                            bytes = BitConverter.GetBytes (hash [c]);
-                                            psw += Convert.ToBase64String(bytes);
-                                        }
-
                                         if (tablePsw.Rows.Count == 0)
                                         {//INSERT
                                             strQuery += "INSERT INTO passwords (ID_EXT, ID_ROLE, HASH) VALUES (";
 
                                             strQuery += listConnSett[i].id + ", ";
                                             strQuery += 501 + ", ";
-                                            strQuery += "'" + psw + "'";
+                                            strQuery += "'" + hash + "'";
 
                                             strQuery += ");";
                                         }
@@ -215,7 +202,7 @@ namespace StatisticCommon
                                             {//UPDATE
                                                 strQuery += "UPDATE passwords SET ";
 
-                                                strQuery += "HASH='" + psw + "'";
+                                                strQuery += "HASH='" + hash + "'";
 
                                                 strQuery += " WHERE ID_EXT=" + listConnSett[i].id;
                                                 strQuery += " AND ";

@@ -19,11 +19,27 @@ namespace Statistic
             //InitTEC init = new InitTEC();
 
             FormMain formMain = null;
-            try { formMain = new FormMain(); }
+            try {
+                formMain = new FormMain();
+
+                if (!(formMain == null))
+                    Application.Run(formMain);
+                else
+                    ;
+            }
             catch (Exception e)
             {
                 Logging.Logg ().LogExceptionToFile (e, "Ошибка запуска приложения.");
             }
+
+            if (!(formMain == null))
+                try { Application.Run(formMain); }
+                catch (Exception e)
+                {
+                    Logging.Logg ().LogExceptionToFile (e, "Ошибка выполнения приложения.");
+                }
+            else
+                    ;
 
             //mainForm.Show();
             //ToolStripItem [] items;
@@ -48,11 +64,6 @@ namespace Statistic
             //}
             //else
             //    ;
-
-            if (!(formMain == null))
-                Application.Run(formMain);
-            else
-                ;
 
             ProgramBase.Exit ();
         }

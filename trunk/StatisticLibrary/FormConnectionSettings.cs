@@ -29,7 +29,7 @@ namespace StatisticCommon
         public FormConnectionSettings(DelegateReadConnSettFunc r, DelegateSaveConnSettFunc s)
         {
             int i = -1;
-            
+
             InitializeComponent();
 
             ReadSettings = r;
@@ -63,18 +63,23 @@ namespace StatisticCommon
                 tbxServer.Text =
                 m_connectionSettings[0].server =
                 m_connectionSettingsEdit[0].server;
+
                 nudnPort.Value =
                 m_connectionSettings[0].port =
                 m_connectionSettingsEdit[0].port;
+
                 tbxDataBase.Text =
                 m_connectionSettings[0].dbName = 
                 m_connectionSettingsEdit[0].dbName;
+
                 tbxUserId.Text =
                 m_connectionSettings[0].userName =
                 m_connectionSettingsEdit[0].userName;
+
                 mtbxPass.Text =
                 m_connectionSettings[0].password =
                 m_connectionSettingsEdit[0].password;
+
                 cbxIgnore.Checked =
                 m_connectionSettings[0].ignore =
                 m_connectionSettingsEdit[0].ignore;
@@ -184,7 +189,7 @@ namespace StatisticCommon
                             msgError = "Недопустимый IP-адрес";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.WrongPort:
-                           msgError = "Порт должен лежать в пределах [0:65535].";
+                            msgError = "Порт должен лежать в пределах [0:65535].";
                             break;
                         case ConnectionSettings.ConnectionSettingsError.WrongDbName:
                             msgError = "Не задано имя базы данных.";
