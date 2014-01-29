@@ -102,9 +102,9 @@ namespace StatisticCommon
                 states.Add((int)StatesMachine.CurrentTime);
                 states.Add((int)StatesMachine.AdminDates);
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                states.Add((int)StatesMachine.PPBRDates);
+                //states.Add((int)StatesMachine.PPBRDates);
                 states.Add((int)StatesMachine.SaveAdminValues);
-                states.Add((int)StatesMachine.SavePPBRValues);
+                //states.Add((int)StatesMachine.SavePPBRValues);
                 //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
                 try
@@ -1504,23 +1504,19 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
-                    //try { semaDBAccess.Release(1); }
-                    //catch { }
+                    //Нельзя использовать в случае добавления состояния 'SavePPBRValues' в методе 'SaveChanges ()' - перенести в case 'SavePPBRValues' 
+                    try { semaDBAccess.Release(1); }
+                    catch { }
                     result = true;
-                    if (result) { }
+                    if (result == true) { }
                     else ;
                     break;
                 case (int)StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;
-                    try
-                    {
-                        semaDBAccess.Release(1);
-                    }
-                    catch
-                    {
-                    }
+                    //try { semaDBAccess.Release(1); }
+                    //catch { }
                     result = true;
-                    if (result)
+                    if (result == true)
                     {
                         if (!(saveComplete == null)) saveComplete(); else ;
                     }

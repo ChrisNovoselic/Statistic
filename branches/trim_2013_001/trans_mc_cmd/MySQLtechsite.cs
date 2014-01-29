@@ -83,6 +83,8 @@ namespace trans_mc_cmd
             {
                 Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
                 itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
+
+                bRes = false;
             }
 
             return bRes;
@@ -102,6 +104,8 @@ namespace trans_mc_cmd
             {
                 ConnectionSettings connSett = Program.ReadConnSettFromFileINI (new FileINI (Program.m_strFileNameSetup));
                 connSett.password = formConnSett.getConnSett().password;
+
+                Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
 
                 m_MySQLConnection = new MySqlConnection ();
                 m_MySQLConnection = new MySqlConnection(connSett.GetConnectionStringMySQL());

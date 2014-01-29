@@ -44,57 +44,86 @@ namespace trans_mc_cmd
 
             if (g_bList == false)
             {
-                Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait..." + Environment.NewLine);
+                Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait...");
 
                 try { techsite = new MySQLtechsite(bCalculatedHalfHourValues); }
                 catch (Exception e)
                 {
+                    Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
+                    itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
+                    iTechsiteInitialized = 1;
                 }
 
-                iTechsiteInitialized = techsite.Initialized;
+                if (iTechsiteInitialized == 0)
+                    iTechsiteInitialized = techsite.Initialized;
+                else
+                    ;
             }
             else
                 ;
 
             if ((iTechsiteInitialized == 0) || (g_bList == true))
             {
-                Console.WriteLine(Environment.NewLine + "API Initializing - Please Wait..." + Environment.NewLine);
+                Console.WriteLine("Modes-Centre API Initializing - Please Wait..." + Environment.NewLine);
 
                 ModesApiFactory.Initialize(GetNameHostModesCentre(new FileINI(m_strFileNameSetup)));
 
                 if (ModesApiFactory.IsInitilized == true)
                 {
-                    IApiExternal api_ = ModesApiFactory.GetModesApi();
-                    LPFI = api_.GetPlanFactors();
-                    DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
-                    //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
-                    //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
-                    //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
-
-                    TimeSpan dtSpan = TimeSpan.Zero;
-                    if (g_bList == true)
-                        dtSpan = g_dtList.Date.LocalHqToSystemEx() - dt;
-                    else
-                        ;
-
-                    Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt.AddHours (dtSpan.TotalHours), SyncZone.First, TreeContent.PGObjects, true);
-
-                    foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
+                    var bContinue = true;
+                    if (bNoWait == false)
                     {
-                        Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
-                        ProcessParams(IGO);
-                        ProcessChilds(IGO, 1, api_);
-                    }
+                        ConsoleKeyInfo choice;
+                        Console.Write("Continue (Y/N)...");
+                        choice = Console.ReadKey();
+                        //Console.WriteLine(choice.ToString ());
+                        Console.WriteLine(Environment.NewLine);
 
-                    if (g_bList == false)
-                    {
-                        //А время апдейта (поле wr_date_time) Новосибирское
-                        Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);
-
-                        techsite.FlushDataToDatabase();
+                        if (!(choice.Key == ConsoleKey.Y))
+                            bContinue = false;
+                        else
+                            ;
                     }
                     else
-                        Console.WriteLine (string.Empty);
+                    {
+                    }
+
+                    if (bContinue == true)
+                    {
+                        IApiExternal api_ = ModesApiFactory.GetModesApi();
+                        LPFI = api_.GetPlanFactors();
+                        DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
+                        //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
+                        //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
+                        //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+
+                        TimeSpan dtSpan = TimeSpan.Zero;
+                        if (g_bList == true)
+                            dtSpan = g_dtList.Date.LocalHqToSystemEx() - dt;
+                        else
+                            ;
+
+                        Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt.AddHours (dtSpan.TotalHours), SyncZone.First, TreeContent.PGObjects, true);
+
+                        foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
+                        {
+                            Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
+                            ProcessParams(IGO);
+                            ProcessChilds(IGO, 1, api_);
+                        }
+
+                        if (g_bList == false)
+                        {
+                            //А время апдейта (поле wr_date_time) Новосибирское
+                            Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);
+
+                            techsite.FlushDataToDatabase();
+                        }
+                        else
+                            Console.WriteLine (string.Empty);
+                    }
+                    else
+                        ; //Пользователь не захотел продолжать
                 }
                 else
                     itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
@@ -254,32 +283,7 @@ namespace trans_mc_cmd
 
         public static string AppName {
             get {
-                string strRes = System.Environment.CommandLine.Substring(System.Environment.CommandLine.LastIndexOf("\\") + 1).Replace("\"", "").Trim();
-                if (!(strRes.IndexOf ('.') == strRes.LastIndexOf ('.')))
-                {
-                    char delim = '.';
-                    List <int> listPosDelim = new List<int> ();;
-                    int pos = strRes.IndexOf(delim, 0),
-                        indxPos = -1;
-
-                    while (!(pos < 0))
-                    {
-                        listPosDelim.Add (pos);
-                        pos = strRes.IndexOf(delim, pos + 1);                        
-                    }
-
-                    if (listPosDelim.Count > 1)
-                    {
-                        strRes = strRes.Substring(0, listPosDelim[listPosDelim.Count - 2]) + strRes.Substring(listPosDelim[listPosDelim.Count - 1], strRes.Length - listPosDelim[listPosDelim.Count - 1]);
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                //return strRes;
-                return "trans_mc_cmd.exe";
+                return Logging.AppName + ".exe";
             }
         }
 
