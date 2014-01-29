@@ -27,14 +27,36 @@ namespace StatisticCommon
         private const int logRotateFilesMax = 100;
         private int logRotateFiles;
 
+        public static string AppName
+        {
+            get
+            {
+                string appName = string.Empty;
+                int posAppName = System.Environment.CommandLine.LastIndexOf('\\') + 1
+                    , posDelim = -1;
+                //Отсечь параметры (после пробела)
+                posDelim = System.Environment.CommandLine.IndexOf(' ', posAppName);
+                if (!(posDelim < 0))
+                    appName = System.Environment.CommandLine.Substring(posAppName, posDelim - posAppName - 1);
+                else
+                    appName = System.Environment.CommandLine.Substring(posAppName);
+                //Отсечь расширение
+                posDelim = appName.IndexOf('.');
+                if (!(posDelim < 0))
+                    appName = appName.Substring(0, posDelim);
+                else
+                    ;
+
+                return appName;
+            }
+        }
+
         private static Logging m_this = null;
         //private static string m_appName = null;
         public static Logging Logg () {
             if (m_this == null)
             {
-                string appName = ProgramBase.AppName;
-                appName = appName.Substring(0, appName.IndexOf ('.'));
-                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + appName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
             }
             else
                 ;

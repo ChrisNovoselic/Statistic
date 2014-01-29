@@ -31,31 +31,7 @@ namespace StatisticCommon
         {
             get
             {
-                string strRes = System.Environment.CommandLine.Substring(System.Environment.CommandLine.LastIndexOf("\\") + 1).Replace("\"", "").Trim();
-                if (!(strRes.IndexOf('.') == strRes.LastIndexOf('.')))
-                {
-                    char delim = '.';
-                    List<int> listPosDelim = new List<int>(); ;
-                    int pos = strRes.IndexOf(delim, 0),
-                        indxPos = -1;
-
-                    while (!(pos < 0))
-                    {
-                        listPosDelim.Add(pos);
-                        pos = strRes.IndexOf(delim, pos + 1);
-                    }
-
-                    if (listPosDelim.Count > 1)
-                    {
-                        strRes = strRes.Substring(0, listPosDelim[listPosDelim.Count - 2]) + strRes.Substring(listPosDelim[listPosDelim.Count - 1], strRes.Length - listPosDelim[listPosDelim.Count - 1]);
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                return strRes;
+                return Logging.AppName + ".exe";
             }
         }
     }
