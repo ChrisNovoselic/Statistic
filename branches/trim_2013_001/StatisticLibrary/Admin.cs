@@ -70,7 +70,7 @@ namespace StatisticCommon
         public bool m_ignore_date;
         protected bool m_ignore_connsett_data;
 
-        protected bool[,] m_arHaveDates;
+        protected int[,] m_arHaveDates;
 
         protected Object m_lockObj;
 
@@ -123,7 +123,8 @@ namespace StatisticCommon
             m_ignore_date = false;
             m_ignore_connsett_data = false;
 
-            m_arHaveDates = new bool[(int)CONN_SETT_TYPE.PBR + 1, 24];
+            //m_arHaveDates = new bool[(int)CONN_SETT_TYPE.PBR + 1, 24];
+            m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
             m_lockObj = new Object();
 
@@ -250,7 +251,7 @@ namespace StatisticCommon
 
             for (i = 0; i < 24; i++)
             {
-                m_arHaveDates[(int)type, i] = false;
+                m_arHaveDates[(int)type, i] = 0; //false;
             }
         }
 
@@ -559,6 +560,10 @@ namespace StatisticCommon
                 ((ManualResetEvent)m_waitHandleState[1]).Set();
             else
                 ;
+        }
+
+        protected bool IsHaveDates (CONN_SETT_TYPE type, int indx) {
+            return m_arHaveDates [(int)type, indx] > 0 ? true : false;
         }
     }
 }

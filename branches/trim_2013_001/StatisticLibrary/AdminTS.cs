@@ -761,7 +761,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    m_arHaveDates[(int)type, hour - 1] = true;
+                    m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
 
                 }
                 catch { }
@@ -796,7 +796,9 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
-                if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i])
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] == true)
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] > 0)
+                if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
                 {
                     switch (m_typeFields)
                     {
@@ -808,7 +810,10 @@ namespace StatisticCommon
                                         @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'; ";
+                                        @"'" +
+                                        @" AND " +
+                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] +
+                                        @"; ";
                             break;
                         default:
                             break;
@@ -899,7 +904,9 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
-                if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i])
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] == true)
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] > 0)
+                if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
                 {
                     switch (m_typeFields)
                     {
@@ -908,7 +915,10 @@ namespace StatisticCommon
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'; ";
+                                        @"'" +
+                                        @" AND " +
+                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] +
+                                        @"; ";
                             break;
                         default:
                             break;
@@ -997,7 +1007,8 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
-                if (m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i])
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i])
+                if (IsHaveDates (CONN_SETT_TYPE.PBR, i) == true)
                 {
                     switch (m_typeFields)
                     {
@@ -1011,7 +1022,10 @@ namespace StatisticCommon
                                         name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'; ";
+                                        @"'" +
+                                        @" AND " +
+                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
+                                        @"; ";
                             break;
                         default:
                             break;
@@ -1106,7 +1120,8 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
-                if (m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i])
+                //if (m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i])
+                if (IsHaveDates(CONN_SETT_TYPE.PBR, i) == true)
                 {
                     switch (m_typeFields)
                     {
@@ -1115,7 +1130,10 @@ namespace StatisticCommon
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'; ";
+                                        @"'" +
+                                        @" AND " +
+                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
+                                        @"; ";
                             break;
                         default:
                             break;
@@ -1489,7 +1507,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -1498,23 +1516,30 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminDates:
                     ClearAdminDates();
                     result = GetAdminDatesResponse(table, m_curDate);
-                    if (result)
+                    if (result == true)
                     {
                     }
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
-                    //Нельзя использовать в случае добавления состояния 'SavePPBRValues' в методе 'SaveChanges ()' - перенести в case 'SavePPBRValues' 
-                    try { semaDBAccess.Release(1); }
-                    catch { }
+                    if (states.IndexOf(state) == (states.Count - 1))
+                        try { semaDBAccess.Release(1); }
+                        catch { }
+                    else
+                        ;
                     result = true;
                     if (result == true) { }
                     else ;
                     break;
                 case (int)StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;
-                    //try { semaDBAccess.Release(1); }
-                    //catch { }
+                    if (states.IndexOf(state) == (states.Count - 1))
+                        try { semaDBAccess.Release(1); }
+                        catch { }
+                    else
+                        ;
                     result = true;
                     if (result == true)
                     {
@@ -1551,7 +1576,7 @@ namespace StatisticCommon
                 //    break;
                 case (int)StatesMachine.ClearAdminValues:
                     result = true;
-                    if (result) { }
+                    if (result == true) { }
                     else ;
                     break;
                 case (int)StatesMachine.ClearPPBRValues:
@@ -1563,9 +1588,11 @@ namespace StatisticCommon
                     {
                     }
                     result = true;
-                    if (result)
+                    if (result == true)
                     {
                     }
+                    else
+                        ;
                     break;
                 default:
                     break;

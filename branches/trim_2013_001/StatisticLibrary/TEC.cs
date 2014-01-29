@@ -534,7 +534,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
+                    strRes = @"SELECT DATE, ID FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
@@ -553,7 +553,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
