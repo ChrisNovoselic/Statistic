@@ -30,7 +30,7 @@ namespace StatisticCommon
 
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
-        
+
         protected DelegateFunc delegateStartWait;
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
