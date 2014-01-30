@@ -265,7 +265,7 @@ namespace StatisticCommon
 
                         if (request == m_listListeners[i].requestDB)
                         {
-                            if (result)
+                            if (result == true)
                             {
                                 m_listListeners[i].dataPresent = true;
                             }

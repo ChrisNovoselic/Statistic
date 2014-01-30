@@ -4929,57 +4929,69 @@ namespace Statistic
                             result = true;
                             break;
                     }
-                    if (result)
+                    if (result == true)
                     {
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.CurrentTime:
                     result = GetCurrentTimeReponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         selectedTime = selectedTime.AddSeconds(-parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
                         this.BeginInvoke(delegateSetNowDate, true);
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.CurrentHours:
                     ClearValues();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     result = GetHoursResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentHours");
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.CurrentMins:
                     //GenerateMinsTable(seasonJumpE.None, 5, table);
                     result = GetMinsResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentMins");
                         this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.RetroHours:
                     ClearValues();
                     result = GetHoursResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroHours");
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.RetroMins:
                     result = GetMinsResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroMins");
                         this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.PBRValues:
                     ClearPBRValues();
                     result = GetPBRValuesResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -4988,7 +5000,7 @@ namespace Statistic
                 case StatesMachine.AdminValues:
                     ClearAdminValues();
                     result = GetAdminValuesResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour);
@@ -5000,8 +5012,10 @@ namespace Statistic
                     break;
             }
 
-            if (result)
+            if (result == true)
                 errored_state = actioned_state = false;
+            else
+                ;
 
             return result;
         }

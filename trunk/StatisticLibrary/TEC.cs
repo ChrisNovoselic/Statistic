@@ -633,13 +633,13 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
+                    strRes = @"SELECT DATE, ID FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " WHERE" +
+                    strRes = @"SELECT DATE, ID FROM " + m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -659,14 +659,14 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" + 
                             @" AND DATE_TIME > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +

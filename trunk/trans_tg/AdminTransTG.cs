@@ -91,7 +91,7 @@ namespace trans_tg
                         ;
 
                     if ((!(dateTimezoneOffsetRDGExcel.Day == ((DateTime)table.Rows[i][0]).Day)) && (hour > 0))
-                        m_arHaveDates[(int)type, hour - 1] = true;
+                        m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
                     else {
                         hour = hour == 0 ? 24 : hour;
                         m_listTimezoneOffsetHaveDates[(int)type][hour - 1 - (24 + (-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc))] = true;
@@ -143,13 +143,13 @@ namespace trans_tg
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
+                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + " WHERE " +
                           @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " WHERE" +
+                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
@@ -170,14 +170,14 @@ namespace trans_tg
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] +
                             @" WHERE " +
                             @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +

@@ -218,7 +218,7 @@ namespace trans_gtp
                 
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                 {
-                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), 103);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), new int [] {103, 101});
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                     //Для отладки получить ГТП из БД с новой структурой
                     //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
