@@ -247,7 +247,7 @@ namespace trans_mc
                     delegateStopWait();
 
                     result = GetPPBRValuesResponse(table, m_curDate);
-                    if (result == false)
+                    if (result == true)
                     {
                         fillData(m_curDate);
                     }
@@ -257,7 +257,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result == false)
+                    if (result == true)
                     {
                     }
                     else

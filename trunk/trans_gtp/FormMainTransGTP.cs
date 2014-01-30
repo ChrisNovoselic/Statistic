@@ -205,7 +205,10 @@ namespace trans_gtp
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTS_KomDisp();
-                try { ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false); }
+                try {
+                    //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett(i), m_modeTECComponent, true, false);
+                }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
@@ -218,7 +221,7 @@ namespace trans_gtp
                 
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
                 {
-                    ((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), new int [] {103, 101});
+                    //((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), new int [] {103, 101});
                     ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                     //Для отладки получить ГТП из БД с новой структурой
                     //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;

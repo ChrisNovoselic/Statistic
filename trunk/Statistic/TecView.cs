@@ -3573,7 +3573,8 @@ namespace Statistic
 
         private bool GetAdminValuesResponse(DataTable table_in)
         {
-            DateTime date = dtprDate.Value.Date;
+            DateTime date = dtprDate.Value.Date
+                    , dtPBR;
             int hour;
 
             double currPBRe;
@@ -3622,8 +3623,10 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
+                                    dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
+                                    
+                                    hour = dtPBR.Hour;
+                                    if ((hour == 0) && (dtPBR.Day == date.Day))
                                     {
                                         offsetPrev = i;
                                         //foreach (TECComponent g in tec.list_TECComponents)
@@ -3664,12 +3667,16 @@ namespace Statistic
                         {
                             if (i == offsetPrev)
                                 continue;
+                            else
+                                ;
 
                             if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
                             {
                                 try
                                 {
-                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
+
+                                    hour = dtPBR.Hour;
                                     if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
                                         hour = 24;
                                     else
@@ -3688,21 +3695,28 @@ namespace Statistic
                                             else
                                                 valuesPBR[j, hour - 1] = 0.0;
 
-                                            if (i < table_in.Rows.Count)
+                                            DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                            //if (i < table_in.Rows.Count)
+                                            if (row_in.Length > 0)
                                             {
-                                                if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                                    valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
-                                                else
-                                                    valuesREC[j, hour - 1] = 0;
-
-                                                if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                                    valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                                if (row_in.Length > 1)
+                                                    ; //Ошибка....
                                                 else
                                                     ;
 
-                                                if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                                    valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                                if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
+                                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                                    valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                                else
+                                                    valuesREC[j, hour - 1] = 0;
+
+                                                if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
+                                                    valuesISPER[j, hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                                else
+                                                    ;
+
+                                                if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
+                                                    valuesDIV[j, hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
                                                 else
                                                     ;
                                             }
@@ -3853,7 +3867,9 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+                                    dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
+
+                                    hour = dtPBR.Hour;
                                     if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
                                     {
                                         offsetPrev = i;
@@ -3892,8 +3908,10 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
-                                    if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
+                                    dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
+
+                                    hour = dtPBR.Hour;
+                                    if ((hour == 0) && (!(dtPBR.Day == date.Day)))
                                         hour = 24;
                                     else
                                         if (hour == 0)
@@ -3906,21 +3924,28 @@ namespace Statistic
                                     else
                                         ;
 
-                                    if (i < table_in.Rows.Count)
+                                    DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                    //if (i < table_in.Rows.Count)
+                                    if (row_in.Length > 0)
                                     {
-                                        if (!(table_in.Rows[i][offsetUDG] is System.DBNull))
-                                        //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
-                                            valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
-                                        else
-                                            valuesREC[hour - 1] = 0;
-
-                                        if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
-                                            valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                        if (row_in.Length > 1)
+                                            ; //Ошибка....
                                         else
                                             ;
 
-                                        if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
-                                            valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                        if (!(row_in [0][offsetUDG] is System.DBNull))
+                                        //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
+                                            valuesREC[hour - 1] = (double)row_in[0][offsetUDG + 0];
+                                        else
+                                            valuesREC[hour - 1] = 0;
+
+                                        if (!(row_in[0][offsetUDG + 1] is System.DBNull))
+                                            valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1];
+                                        else
+                                            ;
+
+                                        if (!(row_in[0][offsetUDG + 2] is System.DBNull))
+                                            valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2];
                                         else
                                             ;
                                     }
@@ -3942,8 +3967,9 @@ namespace Statistic
                                     else
                                         ;
                                 }
-                                catch
+                                catch (Exception e)
                                 {
+                                    Logging.Logg ().LogExceptionToFile (e, "TecView::GetAdminValueResponse ()...");
                                 }
                             }
                             else
