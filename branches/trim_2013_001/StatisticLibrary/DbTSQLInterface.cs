@@ -195,10 +195,10 @@ namespace StatisticCommon
 
             try
             {
-                lock (lockListeners)
-                {
-                    m_listListeners.Clear ();
-                }
+                //lock (lockListeners)
+                //{
+                //    m_listListeners.Clear ();
+                //}
                 
                 m_dbConnection.Close();
                 result = true;
