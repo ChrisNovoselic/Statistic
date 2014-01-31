@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_mc_cmd", "trans_mc_cm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticTrans", "StatisticTrans\StatisticTrans.csproj", "{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticAnalyzer", "StatisticAnalyzer\StatisticAnalyzer.csproj", "{2133E9D0-7F92-4CE3-B768-A09A3864BB60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,16 @@ Global
 		{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}.Release|x86.ActiveCfg = Release|Any CPU
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Debug|x86.ActiveCfg = Debug|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Debug|x86.Build.0 = Debug|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Release|Any CPU.ActiveCfg = Release|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Release|Mixed Platforms.Build.0 = Release|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Release|x86.ActiveCfg = Release|x86
+		{2133E9D0-7F92-4CE3-B768-A09A3864BB60}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

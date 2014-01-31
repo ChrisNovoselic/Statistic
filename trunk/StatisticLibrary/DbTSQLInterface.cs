@@ -186,10 +186,11 @@ namespace StatisticCommon
 
             try
             {
-                lock (lockListeners)
-                {
-                    m_listListeners.Clear();
-                }
+                //Из-за этого кода не происходит возобновления обмена данными при разарыве/восстановлении соединения
+                //lock (lockListeners)
+                //{
+                //    m_listListeners.Clear();
+                //}
 
                 m_dbConnection.Close();
                 result = true;

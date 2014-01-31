@@ -26,6 +26,8 @@ namespace StatisticCommon
             public double recomendation;
             public bool deviationPercent;
             public double deviation;
+
+            public string pbr_number;
         }
 
         public volatile RDGStruct[] m_prevRDGValues;

@@ -69,7 +69,5 @@ namespace Statistic
         {
             tbxNewPassword.Focus();
         }
-
-        protected override void EventRaised() { }
     }
 }

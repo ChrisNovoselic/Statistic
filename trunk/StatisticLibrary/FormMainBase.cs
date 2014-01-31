@@ -97,7 +97,5 @@ namespace StatisticCommon
                     ;
             }
         }
-
-        protected abstract void EventRaised();
     }
 }

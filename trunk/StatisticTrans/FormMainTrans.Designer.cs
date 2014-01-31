@@ -60,10 +60,6 @@
             this.конфигурацияБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStripMain = new System.Windows.Forms.StatusStrip();
-            this.lblMainState = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
             this.notifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -77,7 +73,6 @@
             this.groupBoxSource.SuspendLayout();
             
             this.menuStripMain.SuspendLayout();
-            this.statusStripMain.SuspendLayout();
             this.contextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -379,44 +374,6 @@
             this.оПрограммеToolStripMenuItem.Text = "О программе";
             this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
             // 
-            // statusStripMain
-            // 
-            this.statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblMainState,
-            this.lblDateError,
-            this.lblDescError});
-            this.statusStripMain.Location = new System.Drawing.Point(0, 546);
-            this.statusStripMain.Name = "statusStripMain";
-            this.statusStripMain.Size = new System.Drawing.Size(841, 22);
-            this.statusStripMain.SizingGrip = false;
-            this.statusStripMain.TabIndex = 5;
-            this.statusStripMain.Text = "Нет текста";
-            // 
-            // lblMainState
-            // 
-            this.lblMainState.AutoSize = false;
-            this.lblMainState.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.lblMainState.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblMainState.ForeColor = System.Drawing.Color.Red;
-            this.lblMainState.Name = "lblMainState";
-            this.lblMainState.Size = new System.Drawing.Size(166, 17);
-            // 
-            // lblDateError
-            // 
-            this.lblDateError.AutoSize = false;
-            this.lblDateError.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.lblDateError.Name = "lblDateError";
-            this.lblDateError.Size = new System.Drawing.Size(166, 17);
-            this.lblDateError.Text = "lblDateError";
-            // 
-            // lblDescError
-            // 
-            this.lblDescError.AutoSize = false;
-            this.lblDescError.Name = "lblDescError";
-            this.lblDescError.Size = new System.Drawing.Size(463, 17);
-            this.lblDescError.Text = "lblDescError";
-            this.lblDescError.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // timerMain
             // 
             this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
@@ -459,7 +416,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(841, 568);
-            this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.menuStripMain);
@@ -479,8 +435,6 @@
             //Source...
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
-            this.statusStripMain.ResumeLayout(false);
-            this.statusStripMain.PerformLayout();
             this.contextMenuStripNotifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -518,11 +472,7 @@
         private System.Windows.Forms.ToolStripMenuItem конфигурацияБДToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
-        protected System.Windows.Forms.StatusStrip statusStripMain;
         protected System.Windows.Forms.Timer timerMain;
-        private System.Windows.Forms.ToolStripStatusLabel lblMainState;
-        private System.Windows.Forms.ToolStripStatusLabel lblDescError;
-        private System.Windows.Forms.ToolStripStatusLabel lblDateError;
         protected System.Windows.Forms.NotifyIcon notifyIconMain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem развернутьToolStripMenuItem;

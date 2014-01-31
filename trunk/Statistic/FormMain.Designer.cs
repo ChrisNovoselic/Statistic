@@ -50,14 +50,9 @@
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tclTecViews = new System.Windows.Forms.TabControl();
-            this.stsStrip = new System.Windows.Forms.StatusStrip();
-            this.lblMainState = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
-            this.lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
-            this.stsStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -227,50 +222,6 @@
             this.tclTecViews.TabIndex = 3;
             this.tclTecViews.SelectedIndexChanged += new System.EventHandler(this.tclTecViews_SelectedIndexChanged);
             // 
-            // stsStrip
-            // 
-            this.stsStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblMainState,
-            this.lblDateError,
-            this.lblDescError});
-            this.stsStrip.Location = new System.Drawing.Point(0, 762);
-            this.stsStrip.Name = "stsStrip";
-            this.stsStrip.Size = new System.Drawing.Size(982, 22);
-            this.stsStrip.TabIndex = 4;
-            // 
-            // lblMainState
-            // 
-            this.lblMainState.AutoSize = false;
-            this.lblMainState.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
-            this.lblMainState.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
-            this.lblMainState.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblMainState.ForeColor = System.Drawing.Color.Red;
-            this.lblMainState.Name = "lblMainState";
-            this.lblMainState.Size = new System.Drawing.Size(150, 17);
-            // 
-            // lblDateError
-            // 
-            this.lblDateError.AutoSize = false;
-            this.lblDateError.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
-            this.lblDateError.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
-            this.lblDateError.Name = "lblDateError";
-            this.lblDateError.Size = new System.Drawing.Size(150, 17);
-            // 
-            // lblDescError
-            // 
-            this.lblDescError.AutoSize = false;
-            this.lblDescError.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
-            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
-            this.lblDescError.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
-            this.lblDescError.Name = "lblDescError";
-            this.lblDescError.Size = new System.Drawing.Size(667, 17);
-            this.lblDescError.Spring = true;
-            // 
             // timer
             // 
             this.timer.Interval = 1000;
@@ -295,7 +246,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(982, 784);
             this.Controls.Add(this.lblLabel);
-            this.Controls.Add(this.stsStrip);
             this.Controls.Add(this.tclTecViews);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -308,8 +258,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
-            this.stsStrip.ResumeLayout(false);
-            this.stsStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -325,10 +273,6 @@
         private System.Windows.Forms.TabControl tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
-        private System.Windows.Forms.StatusStrip stsStrip;
-        private System.Windows.Forms.ToolStripStatusLabel lblMainState;
-        private System.Windows.Forms.ToolStripStatusLabel lblDateError;
-        private System.Windows.Forms.ToolStripStatusLabel lblDescError;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.Timer timer;

@@ -122,6 +122,9 @@
     <Compile Include="DbTSQLInterface.cs" />
     <Compile Include="FileConnSett.cs" />
     <Compile Include="Crypt.cs" />
+    <Compile Include="FormMainBaseWithStatusStrip.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

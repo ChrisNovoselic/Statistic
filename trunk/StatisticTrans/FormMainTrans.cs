@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace StatisticCommon
 {
-    public abstract partial class FormMainTrans : FormMainBase
+    public abstract partial class FormMainTrans : FormMainBaseWithStatusStrip
     {
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
@@ -79,6 +79,16 @@ namespace StatisticCommon
         public FormMainTrans()
         {
             InitializeComponent();
+
+            // m_statusStripMain
+            this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
+            this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
+            // m_lblMainState
+            this.m_lblMainState.Size = new System.Drawing.Size(166, 17);
+            // m_lblDateError
+            this.m_lblDateError.Size = new System.Drawing.Size(166, 17);
+            // m_lblDescError
+            this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
 
             //this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
             notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
@@ -419,8 +429,8 @@ namespace StatisticCommon
             formAbout.ShowDialog(this);
         }
 
-        protected /*virtual*/ void ErrorReport (string msg) {
-            statusStripMain.BeginInvoke(delegateEvent);
+        protected override void ErrorReport (string msg) {
+            m_statusStripMain.BeginInvoke(delegateEvent);
 
             m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
 
@@ -432,12 +442,12 @@ namespace StatisticCommon
                 ;
         }
 
-        protected void ActionReport(string msg)
+        protected override void ActionReport(string msg)
         {
-            statusStripMain.BeginInvoke(delegateEvent);
+            m_statusStripMain.BeginInvoke(delegateEvent);
         }
 
-        public bool UpdateStatusString()
+        protected override bool UpdateStatusString()
         {
             bool have_eror = true;
 
@@ -449,40 +459,30 @@ namespace StatisticCommon
                 {
                     if (m_arAdmin[m_IndexDB].actioned_state == true)
                     {
-                        lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
-                        lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
+                        m_lblDescError.Text = m_arAdmin[m_IndexDB].last_action;
+                        m_lblDateError.Text = m_arAdmin[m_IndexDB].last_time_action.ToString();
                     }
                     else
                         ;
 
                     if (have_eror == true)
                     {
-                        lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
-                        lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
+                        m_lblDescError.Text = m_arAdmin[m_IndexDB].last_error;
+                        m_lblDateError.Text = m_arAdmin[m_IndexDB].last_time_error.ToString();
                     }
                     else
                         ;
                 }
                 else
                 {
-                    lblDescError.Text = string.Empty;
-                    lblDateError.Text = string.Empty;
+                    m_lblDescError.Text = string.Empty;
+                    m_lblDateError.Text = string.Empty;
                 }
             }
             else
                 ;
 
             return have_eror;
-        }
-
-        protected override void EventRaised()
-        {
-            lock (lockEvent)
-            {
-                UpdateStatusString();
-                lblDescError.Invalidate();
-                lblDateError.Invalidate();
-            }
         }
 
         private void trans_auto_start()
@@ -568,18 +568,18 @@ namespace StatisticCommon
                 bool have_eror = UpdateStatusString();
 
                 if (have_eror)
-                    lblMainState.Text = "ОШИБКА";
+                    m_lblMainState.Text = "ОШИБКА";
                 else
                     ;
 
                 if (!have_eror || !show_error_alert)
-                    lblMainState.Text = "";
+                    m_lblMainState.Text = "";
                 else
                     ;
 
                 show_error_alert = !show_error_alert;
-                lblDescError.Invalidate();
-                lblDateError.Invalidate();
+                m_lblDescError.Invalidate();
+                m_lblDateError.Invalidate();
             }
         }
 

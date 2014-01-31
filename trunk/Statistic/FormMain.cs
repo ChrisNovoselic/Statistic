@@ -16,7 +16,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public partial class FormMain : FormMainBase
+    public partial class FormMain : FormMainBaseWithStatusStrip
     {
         //public List<TEC> tec;
         private FIleConnSett m_fileConnSett;
@@ -53,7 +53,16 @@ namespace Statistic
         {
             InitializeComponent();
 
-            delegateEvent = new DelegateFunc(EventRaised);
+            // m_statusStripMain
+            this.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
+            this.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
+            // m_lblMainState
+            this.m_lblMainState.Size = new System.Drawing.Size(150, 17);
+            // m_lblDateError
+            this.m_lblDateError.Size = new System.Drawing.Size(150, 17);
+            // m_lblDescError
+            this.m_lblDescError.Size = new System.Drawing.Size(667, 17);
+
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
@@ -188,16 +197,6 @@ namespace Statistic
             m_prevSelectedIndex = 0;
 
             return bRes;
-        }
-
-        private void ErrorReport(string msg)
-        {
-            stsStrip.BeginInvoke(delegateEvent);
-        }
-
-        private void ActionReport(string msg)
-        {
-            stsStrip.BeginInvoke(delegateEvent);
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -466,7 +465,7 @@ namespace Statistic
                                 comp_indx;
                             foreach (TEC t in formChangeMode.tec)
                             {
-                                tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                                tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], m_statusStripMain, formGraphicsSettings, formParameters);
                                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                 tecViews.Add(tecView);
                                 if (t.list_TECComponents.Count > 0)
@@ -474,7 +473,7 @@ namespace Statistic
                                     comp_indx = 0;
                                     foreach (TECComponent g in t.list_TECComponents)
                                     {
-                                        tecView = new TecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], stsStrip, formGraphicsSettings, formParameters);
+                                        tecView = new TecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], m_statusStripMain, formGraphicsSettings, formParameters);
                                         tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                                         tecViews.Add(tecView);
                                         comp_indx++;
@@ -647,18 +646,18 @@ namespace Statistic
             //this.Invalidate ();
         }
 
-        public bool UpdateStatusString()
+        protected override bool UpdateStatusString()
         {
             bool have_eror = false;
-            lblDescError.Text = lblDateError.Text = "";
+            m_lblDescError.Text = m_lblDateError.Text = "";
             for (int i = 0; i < selectedTecViews.Count; i++)
             {
                 if (selectedTecViews[i].actioned_state && !selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA].ignore)
                 {
                     if (selectedTecViews[i].isActive)
                     {
-                        lblDateError.Text = selectedTecViews[i].last_time_action.ToString();
-                        lblDescError.Text = selectedTecViews[i].last_action;
+                        m_lblDateError.Text = selectedTecViews[i].last_time_action.ToString();
+                        m_lblDescError.Text = selectedTecViews[i].last_action;
                     }
                 }
                 else
@@ -669,8 +668,8 @@ namespace Statistic
                     have_eror = true;
                     if (selectedTecViews[i].isActive)
                     {
-                        lblDateError.Text = selectedTecViews[i].last_time_error.ToString();
-                        lblDescError.Text = selectedTecViews[i].last_error;
+                        m_lblDateError.Text = selectedTecViews[i].last_time_error.ToString();
+                        m_lblDescError.Text = selectedTecViews[i].last_error;
                     }
                 }
                 else
@@ -679,8 +678,8 @@ namespace Statistic
 
             if (m_arAdmin[(int)modePanelAdmin].actioned_state && m_arPanelAdmin[(int)modePanelAdmin].isActive)
             {
-                lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_action.ToString();
-                lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_action;
+                m_lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_action.ToString();
+                m_lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_action;
             }
             else
                 ;
@@ -688,23 +687,13 @@ namespace Statistic
             if (m_arAdmin[(int)modePanelAdmin].errored_state)
             {
                 have_eror = true;
-                lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_error.ToString();
-                lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_error;
+                m_lblDateError.Text = m_arAdmin[(int)modePanelAdmin].last_time_error.ToString();
+                m_lblDescError.Text = m_arAdmin[(int)modePanelAdmin].last_error;
             }
             else
                 ;
 
             return have_eror;
-        }
-
-        protected override void EventRaised()
-        {
-            lock (lockEvent)
-            {
-                UpdateStatusString();
-                lblDescError.Invalidate();
-                lblDateError.Invalidate();
-            }
         }
 
         private void AddTabPageAdmin () {
@@ -787,18 +776,18 @@ namespace Statistic
                 bool have_eror = UpdateStatusString();
 
                 if (have_eror == true)
-                    lblMainState.Text = "ОШИБКА";
+                    m_lblMainState.Text = "ОШИБКА";
                 else
                     ;
 
                 if ((have_eror == false) || (show_error_alert == false))
-                    lblMainState.Text = "";
+                    m_lblMainState.Text = "";
                 else
                     ;
 
                 show_error_alert = !show_error_alert;
-                lblDescError.Invalidate();
-                lblDateError.Invalidate();
+                m_lblDescError.Invalidate();
+                m_lblDateError.Invalidate();
             }
         }
 

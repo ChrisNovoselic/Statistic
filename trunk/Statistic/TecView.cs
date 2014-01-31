@@ -4911,7 +4911,7 @@ namespace Statistic
         {
             error = false;
             table = null;
-            
+
             switch (state)
             {
                 case StatesMachine.Init:

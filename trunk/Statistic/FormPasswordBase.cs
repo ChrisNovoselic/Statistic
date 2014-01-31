@@ -57,9 +57,5 @@ namespace Statistic
         }
 
         protected abstract void FormPasswordBase_Shown(object sender, EventArgs e);
-
-        protected override void EventRaised()
-        {
-        }
     }
 }
