@@ -109,6 +109,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TCPSender.cs" />
     <Compile Include="TEC.cs" />
     <Compile Include="TECComponent.cs" />
     <Compile Include="TECComponentBase.cs" />

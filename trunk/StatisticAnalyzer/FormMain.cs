@@ -7,12 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using System.Net;
+using System.Net.Sockets;
+
+using System.IO;
+
 using StatisticCommon;
 
 namespace StatisticAnalyzer
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
+        FileInfo m_fi;
+        StreamReader m_sr;
+        
         public FormMain()
         {
             InitializeComponent();
@@ -26,6 +34,19 @@ namespace StatisticAnalyzer
             this.m_lblDateError.Size = new System.Drawing.Size(166, 17);
             // m_lblDescError
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
+
+            string fileName = "W:\\Статистика\\Statistic_NE1150_log.txt";
+
+            try
+            {
+                FileInfo f = new FileInfo(fileName);
+                FileStream fs = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+                m_sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
+                m_fi = new FileInfo(fileName);
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         protected override bool UpdateStatusString()

@@ -81,6 +81,7 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="TCPListen.cs" />
     <Compile Include="FormPassword.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -125,6 +126,7 @@
     <Compile Include="FormPasswordBase.designer.cs">
       <DependentUpon>FormPasswordBase.cs</DependentUpon>
     </Compile>
+    <Compile Include="TCPSender.cs" />
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
     </EmbeddedResource>

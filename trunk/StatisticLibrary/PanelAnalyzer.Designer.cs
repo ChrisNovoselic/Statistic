@@ -1,13 +1,13 @@
-﻿namespace StatisticAnalyzer
+﻿namespace StatisticCommon
 {
-    partial class FormMain
+    partial class PanelAnalyzer
     {
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
+        /// <summary> 
         /// Освободить все используемые ресурсы.
         /// </summary>
         /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
@@ -20,7 +20,7 @@
             base.Dispose(disposing);
         }
 
-        #region Код, автоматически созданный конструктором форм Windows
+        #region Код, автоматически созданный конструктором компонентов
 
         /// <summary>
         /// Обязательный метод для поддержки конструктора - не изменяйте
@@ -28,17 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.SuspendLayout();
+            this.ResumeLayout(false);
 
-            this.SuspendLayout ();
-
-            this.ResumeLayout();
-            this.PerformLayout ();
         }
 
         #endregion
+
     }
 }
-

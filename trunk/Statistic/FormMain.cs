@@ -42,6 +42,8 @@ namespace Statistic
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
 
+        TCPListen m_TCPListen;
+
         private void Abort (bool bThrow = false)
         {
             string strThrowMsg = "Ошибка инициализации пользовательских компонентов формы";
@@ -83,6 +85,9 @@ namespace Statistic
             {//Файла с параметрами соединения нет совсем
                 connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
             }
+
+            m_TCPListen = new TCPListen ();
+            m_TCPListen.Accept ();
         }
 
         private bool Initialize()
@@ -255,6 +260,8 @@ namespace Statistic
                 ; //m_passwords.StopDbInterface();
             else
                 ;
+
+            m_TCPListen.Close ();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

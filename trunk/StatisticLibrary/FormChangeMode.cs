@@ -43,7 +43,8 @@ namespace StatisticCommon
             across_index = new List<int>();
             m_listAcrossIndexCheckedIndices = new List <int> ();
             was_checked = new List<int>();
-            
+
+            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.TEC].Checked = true;
             m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
 
             closing = false;

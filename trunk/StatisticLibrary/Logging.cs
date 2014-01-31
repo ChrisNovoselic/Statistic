@@ -72,7 +72,7 @@ namespace StatisticCommon
             fileNameStart = fileName = name;
             sema = new Semaphore(1, 1);
             FileInfo f = new FileInfo(fileName);
-            FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
+            FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
             fi = new FileInfo(fileName);
             logIndex = 0;
