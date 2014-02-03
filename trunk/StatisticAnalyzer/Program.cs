@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
+using StatisticCommon;
+
 namespace StatisticAnalyzer
 {
     static class Program
@@ -15,7 +17,7 @@ namespace StatisticAnalyzer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormMain());
+            Application.Run(new StatisticCommon.FormMainAnalyzer());
         }
     }
 }

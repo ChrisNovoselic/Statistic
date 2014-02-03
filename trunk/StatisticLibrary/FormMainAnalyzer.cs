@@ -12,19 +12,17 @@ using System.Net.Sockets;
 
 using System.IO;
 
-using StatisticCommon;
-
-namespace StatisticAnalyzer
+namespace StatisticCommon
 {
-    public partial class FormMain : FormMainBaseWithStatusStrip
+    public partial class FormMainAnalyzer : Form //: FormMainBaseWithStatusStrip
     {
         FileInfo m_fi;
         StreamReader m_sr;
-        
-        public FormMain()
+
+        public FormMainAnalyzer()
         {
             InitializeComponent();
-
+            /*
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
             this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
@@ -34,8 +32,9 @@ namespace StatisticAnalyzer
             this.m_lblDateError.Size = new System.Drawing.Size(166, 17);
             // m_lblDescError
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
-
+            */
             TCPSender sender = new TCPSender ();
+            sender.Init ();
             sender.Close ();
 
             string fileName = "W:\\Статистика\\Statistic_NE1150_log.txt";
@@ -51,12 +50,13 @@ namespace StatisticAnalyzer
             {
             }
         }
-
+        /*
         protected override bool UpdateStatusString()
         {
             bool have_eror = true;
 
             return have_eror;
         }
+        */
     }
 }

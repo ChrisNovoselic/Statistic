@@ -38,13 +38,18 @@ namespace StatisticCommon
             try
             {
                 m_tcpClient = new TcpClient("localhost", m_port);
+
                 m_networkStream = m_tcpClient.GetStream();
-                m_streamReader = new StreamReader(m_networkStream);
+                //m_streamReader = new StreamReader(m_networkStream);
                 m_streamWriter = new StreamWriter(m_networkStream);
 
                 m_streamWriter.WriteLine("INIT");
                 m_streamWriter.Flush();
 
+                m_networkStream = m_tcpClient.GetStream();
+                m_streamReader = new StreamReader(m_networkStream);
+                //m_streamWriter = new StreamWriter(m_networkStream);
+                
                 response = m_streamReader.ReadLine();
                 if (response == "Ok")
                     ;
@@ -53,6 +58,10 @@ namespace StatisticCommon
             }
 
             catch (SocketException ex)
+            {
+                Console.WriteLine(ex);
+            }
+            catch (IOException ex)
             {
                 Console.WriteLine(ex);
             }

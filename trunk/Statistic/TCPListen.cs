@@ -66,7 +66,7 @@ namespace Statistic
 
             Console.WriteLine("The Server has started on port " + m_port);
 
-            while (m_evClose.WaitOne() == true)
+            while (m_evClose.WaitOne (66) == true)
             {
                 if (tcpListener.Pending() == true) {
                     m_listThreadClient.Add (new TCPReciever(tcpListener.AcceptTcpClient()));

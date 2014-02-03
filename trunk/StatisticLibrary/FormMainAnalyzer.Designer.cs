@@ -1,6 +1,6 @@
-﻿namespace StatisticAnalyzer
+﻿namespace StatisticCommon
 {
-    partial class FormMain
+    partial class FormMainAnalyzer
     {
         /// <summary>
         /// Требуется переменная конструктора.
@@ -28,14 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // FormMainAnalyzer
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(657, 386);
+            this.Name = "FormMainAnalyzer";
+            this.Text = "FormMainAnalyzer";
+            this.ResumeLayout(false);
 
-            this.SuspendLayout ();
-
-            this.ResumeLayout();
-            this.PerformLayout ();
         }
 
         #endregion
