@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing;
+using System.Collections.Generic;
 
 using System.Net;
 using System.Net.Sockets;
@@ -15,9 +16,10 @@ namespace Statistic
     public class TCPListen
     {
         Thread m_thread;
+        List<TCPReciever> m_listThreadClient;
         int m_port;
         ManualResetEvent m_evClose;
-        
+
         public TCPListen()
         {
             InitializeComponent();
@@ -27,12 +29,13 @@ namespace Statistic
             m_thread.Name = "TCP - socket server listen";
             m_thread.IsBackground = true;
 
-            m_evClose = new ManualResetEvent (true); //.Set (0;
+            m_listThreadClient = new List <TCPReciever> ();
+
+            m_evClose = new ManualResetEvent (true); //.Set ();
         }
 
         private void InitializeComponent()
         {
-            
         }
 
         public void Accept () {
@@ -58,48 +61,23 @@ namespace Statistic
 
         private void Thread_Proc(object data)
         {
-            string msgOfClient = "Client connected";
-            StreamWriter streamWriter;
-            StreamReader streamReader;
-            NetworkStream networkStream;
             TcpListener tcpListener = new TcpListener(IPAddress.Any, m_port);
             tcpListener.Start();
 
             Console.WriteLine("The Server has started on port " + m_port);
-            Socket serverSocket = tcpListener.AcceptSocket();
 
-            try
+            while (m_evClose.WaitOne() == true)
             {
-                if (serverSocket.Connected)
-                {
-                    while (m_evClose.WaitOne () == true)
-                    {
-                        Console.WriteLine(msgOfClient);
-                        networkStream = new NetworkStream(serverSocket);
-                        streamWriter = new StreamWriter(networkStream);
-                        streamReader = new StreamReader(networkStream);
-
-                        msgOfClient = streamReader.ReadLine();
-                    }
+                if (tcpListener.Pending() == true) {
+                    m_listThreadClient.Add (new TCPReciever(tcpListener.AcceptTcpClient()));
+                    m_listThreadClient [m_listThreadClient.Count - 1].Start ();
                 }
-                else
-                    ;
-
-                if (serverSocket.Connected)
-                    serverSocket.Close();
-                else
-                    ;
-
-                Console.Read();
-
+                else {
+                }               
             }
-            catch (SocketException ex)
-            {
-                Console.WriteLine(ex);
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine(ex);
+
+            for (int i = 0; i < m_listThreadClient.Count; i ++) {
+                m_listThreadClient [i].Stop ();
             }
         }
     }

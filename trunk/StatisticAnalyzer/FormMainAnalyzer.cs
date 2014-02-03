@@ -35,6 +35,9 @@ namespace StatisticAnalyzer
             // m_lblDescError
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
 
+            TCPSender sender = new TCPSender ();
+            sender.Close ();
+
             string fileName = "W:\\Статистика\\Statistic_NE1150_log.txt";
 
             try

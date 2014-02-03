@@ -14,24 +14,42 @@ namespace StatisticCommon
     {
         int m_port;
 
+        TcpClient m_tcpClient;
+        NetworkStream m_networkStream;
+        StreamReader m_streamReader;
+        StreamWriter m_streamWriter;
+
         public TCPSender()
         {
             InitializeComponent();
 
             m_port = 6666;
-            TcpClient tcpClient;
-            NetworkStream networkStream;
-            StreamReader streamReader;
-            StreamWriter streamWriter;
+            m_tcpClient = null;
+        }
+
+        private void InitializeComponent()
+        {
+
+        }
+
+        public void Init () {
+            string response;
 
             try
             {
-                tcpClient = new TcpClient("localhost", m_port);
-                networkStream = tcpClient.GetStream();
-                streamReader = new StreamReader(networkStream);
-                streamWriter = new StreamWriter(networkStream);
-                streamWriter.WriteLine("Message from the Client...");
-                streamWriter.Flush();
+                m_tcpClient = new TcpClient("localhost", m_port);
+                m_networkStream = m_tcpClient.GetStream();
+                m_streamReader = new StreamReader(m_networkStream);
+                m_streamWriter = new StreamWriter(m_networkStream);
+
+                m_streamWriter.WriteLine("INIT");
+                m_streamWriter.Flush();
+
+                response = m_streamReader.ReadLine();
+                if (response == "Ok")
+                    ;
+                else
+                    ;
             }
 
             catch (SocketException ex)
@@ -40,9 +58,13 @@ namespace StatisticCommon
             }
         }
 
-        private void InitializeComponent()
-        {
-
+        public void Close () {
+            if (!(m_tcpClient == null))
+            {
+                m_tcpClient.Close ();
+            }
+            else
+                ;
         }
     }
 }
