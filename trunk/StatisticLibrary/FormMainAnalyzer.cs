@@ -52,10 +52,10 @@ namespace StatisticCommon
             MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
 
             Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
-            FillDataGridViews(dgvFilterRoles, m_tableRoles, "DESCRIPTION", err, true);
+            FillDataGridViews(ref dgvFilterRoles, m_tableRoles, "DESCRIPTION", err, true);
             
             Users.GetUsers(connDB, string.Empty, @"DESCRIPTION", out m_tableUsers, out err);
-            FillDataGridViews(dgvClient, m_tableUsers, "DESCRIPTION", err);
+            FillDataGridViews(ref dgvClient, m_tableUsers, "DESCRIPTION", err);
 
             m_tcpSender.Init("ne1150.ne.ru");
 
@@ -72,7 +72,7 @@ namespace StatisticCommon
             Close ();
         }
 
-        private void FillDataGridViews(DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
+        private void FillDataGridViews(ref DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
         {
             if (run == 0)
             {
