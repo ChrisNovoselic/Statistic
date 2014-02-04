@@ -48,7 +48,7 @@ namespace Statistic
             if (m_thread.IsAlive)
             {
                 m_evClose.Reset ();
-                
+
                 joined = m_thread.Join(6666);
                 if (joined == false)
                     m_thread.Abort();
@@ -57,6 +57,12 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        void ExitTCPReciever (object tcpReciever)
+        {
+            //((TCPReciever)tcpReciever).Stop ();
+            m_listThreadClient.Remove(((TCPReciever)tcpReciever));
         }
 
         private void Thread_Proc(object data)
@@ -70,6 +76,7 @@ namespace Statistic
             {
                 if (tcpListener.Pending() == true) {
                     m_listThreadClient.Add (new TCPReciever(tcpListener.AcceptTcpClient()));
+                    m_listThreadClient [m_listThreadClient.Count - 1].exitThread = ExitTCPReciever;
                     m_listThreadClient [m_listThreadClient.Count - 1].Start ();
                 }
                 else {

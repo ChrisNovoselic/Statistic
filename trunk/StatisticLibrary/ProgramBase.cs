@@ -6,6 +6,7 @@ namespace StatisticCommon
 {
     public static class ProgramBase
     {
+        //Журналирование старта приложения
         public static void Start()
         {
             Application.EnableVisualStyles();
@@ -16,6 +17,7 @@ namespace StatisticCommon
             Logging.Logg().LogUnlock();
         }
 
+        //Журналирование завершения приложения
         public static void Exit()
         {
             Logging.Logg().LogLock();

@@ -16,13 +16,19 @@ namespace StatisticCommon
 {
     public partial class FormMainAnalyzer : Form //: FormMainBaseWithStatusStrip
     {
+        TCPSender m_tcpSender;
+
+        DataTable m_tableUsers
+                    , m_tableRoles;
+
         FileInfo m_fi;
         StreamReader m_sr;
 
-        public FormMainAnalyzer()
+        public FormMainAnalyzer(ConnectionSettings connSett)
         {
             InitializeComponent();
             /*
+            //При наследовании от ''
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
             this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
@@ -33,24 +39,64 @@ namespace StatisticCommon
             // m_lblDescError
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
             */
-            TCPSender sender = new TCPSender ();
-            sender.Init ();
-            sender.Close ();
 
-            string fileName = "W:\\Статистика\\Statistic_NE1150_log.txt";
+            m_tcpSender = new TCPSender();
+            
+            dgvFilterActives.Rows.Add (2);
+            dgvFilterActives.Rows[0].Cells[0].Value = true; dgvFilterActives.Rows[0].Cells[1].Value = "Активные";
+            dgvFilterActives.Rows[1].Cells[0].Value = true; dgvFilterActives.Rows[1].Cells[1].Value = "Не активные";
+            dgvFilterActives.Enabled = false;
 
-            try
-            {
-                FileInfo f = new FileInfo(fileName);
-                FileStream fs = f.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-                m_sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
-                m_fi = new FileInfo(fileName);
-            }
-            catch (Exception e)
-            {
-            }
+            int err = -1;
+            
+            MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+
+            Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
+            FillDataGridViews(dgvFilterRoles, m_tableRoles, "DESCRIPTION", err, true);
+            
+            Users.GetUsers(connDB, string.Empty, @"DESCRIPTION", out m_tableUsers, out err);
+            FillDataGridViews(dgvClient, m_tableUsers, "DESCRIPTION", err);
+
+            m_tcpSender.Init("ne1150.ne.ru");
+
+            DbTSQLInterface.CloseConnection (connDB, out err);
         }
+
+        private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            m_tcpSender.Close();
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            Close ();
+        }
+
+        private void FillDataGridViews(DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
+        {
+            if (run == 0)
+            {
+                bool bCheckedItem = checkDefault;
+                ctrl.Rows.Clear ();
+                ctrl.Rows.Add (src.Rows.Count);
+
+                for (int i = 0; i < src.Rows.Count; i ++)
+                {
+                    //Проверка активности
+                    //m_tcpSender.Init(m_tableUsers.Rows[i]["COMPUTER_NAME"].ToString ());
+                    //bCheckedItem = m_tcpSender.Connected;
+                    //m_tcpSender.Close ();
+
+                    ctrl.Rows[i].Cells[0].Value = bCheckedItem;
+                    ctrl.Rows[i].Cells[1].Value = src.Rows[i]["DESCRIPTION"].ToString ();
+                }
+            }
+            else
+                ;
+        }
+
         /*
+        //При наследовании от ''
         protected override bool UpdateStatusString()
         {
             bool have_eror = true;

@@ -361,6 +361,12 @@ namespace Statistic
             настройкиСоединенияToolStripMenuItem_Click (sender, e, CONN_SETT_TYPE.LIST_SOURCE);
         }
 
+        private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+            formAnalyzer.ShowDialog (this);
+        }
+
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e, CONN_SETT_TYPE type)
         {
             closeTecViewsTabPages ();

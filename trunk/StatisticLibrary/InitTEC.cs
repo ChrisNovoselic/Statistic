@@ -10,16 +10,16 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
         private Users m_user;
-        private MySqlConnection m_connConfigDB;
+        public static MySqlConnection m_connConfigDB;
 
-        private DataTable getListTEC(bool bIgnoreTECInUse)
+        public static DataTable getListTEC(bool bIgnoreTECInUse)
         {
             int err = 0;
 
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
 
-            if (!bIgnoreTECInUse) req += " WHERE INUSE=TRUE"; else ;
+            if (bIgnoreTECInUse == false) req += " WHERE INUSE=TRUE"; else ;
 
             return DbTSQLInterface.Select(m_connConfigDB, req, null, null, out err);
         }

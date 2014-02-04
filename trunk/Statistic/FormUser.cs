@@ -42,7 +42,9 @@ namespace Statistic
             int err = 0,
                 i = -1;
 
-            Users.GetUsers(m_connectionSetttings, "", out m_users_origin, out err);
+            InitTEC.m_connConfigDB = DbTSQLInterface.GetConnection(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+
+            Users.GetUsers(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
             m_users_edit = m_users_origin.Copy ();
             //m_userRows = m_users_edit.Select();
 
@@ -58,7 +60,9 @@ namespace Statistic
             comboBoxRole.SelectedIndexChanged -= comboBoxRole_SelectedIndexChanged;
 
             m_listRolesID = new List<int>();
-            DataTable roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles WHERE ID < 500", out err);
+            DataTable roles;
+            //roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles WHERE ID < 500", out err);
+            Users.GetRoles(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out roles, out err);
             for (i = 0; i < roles.Rows.Count; i++)
             {
                 m_listRolesID.Add(Convert.ToInt32 (roles.Rows[i]["ID"]));
@@ -68,11 +72,11 @@ namespace Statistic
             comboBoxRole.SelectedIndexChanged += comboBoxRole_SelectedIndexChanged;
 
             m_prevComboBoxAccessSelectedIndex = -1;
-            
+
             comboBoxAccess.SelectionChangeCommitted -= comboBoxAccess_SelectionChangeCommitted;
 
             m_listTECID = new List<int>();
-            DataTable tec = DbTSQLInterface.Select(m_connectionSetttings, "SELECT ID, NAME_SHR FROM TEC_LIST", out err);
+            DataTable tec = InitTEC.getListTEC (true); //Игнорировать столбец 'InUse' - использовать
 
             m_listTECID.Add(0);
             comboBoxAccess.Items.Add("Все станции");
@@ -96,6 +100,8 @@ namespace Statistic
             buttonUserAdd.Enabled = false;
 
             dgvUsers.RowEnter +=new DataGridViewCellEventHandler(dgvUsers_RowEnter);
+
+            DbTSQLInterface.CloseConnection(InitTEC.m_connConfigDB, out err);
         }
 
         private void buttonOk_Click(object sender, EventArgs e)

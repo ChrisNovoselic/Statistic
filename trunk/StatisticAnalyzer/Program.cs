@@ -15,9 +15,14 @@ namespace StatisticAnalyzer
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new StatisticCommon.FormMainAnalyzer());
+            ProgramBase.Start();
+
+            FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini");
+            FormConnectionSettings formConnSett = new FormConnectionSettings(fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
+
+            Application.Run(new StatisticCommon.FormMainAnalyzer(formConnSett.getConnSett ()));
+
+            ProgramBase.Exit ();
         }
     }
 }

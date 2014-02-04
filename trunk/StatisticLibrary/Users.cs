@@ -61,7 +61,11 @@ namespace StatisticCommon
                 else
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
-            GetUsers ("", out dataUsers, out err);
+            MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+            
+            //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
+            //GetUsers(string.Empty, "DESCRIPTION", out dataUsers, out err);
+            GetUsers(connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
 
             if ((err == 0) && (dataUsers.Rows.Count > 0))
             {
@@ -96,6 +100,8 @@ namespace StatisticCommon
                     throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
             }
 
+            DbTSQLInterface.CloseConnection(connDB, out err);
+
             Initialize ();
         }
 
@@ -119,34 +125,55 @@ namespace StatisticCommon
             }
         }
 
-        public void GetUsers(string where, out DataTable users, out int err)
+        private static string getUsersRequest(string where, string orderby)
         {
-            err = 0;            
-            users = new DataTable ();
-
             string strQuery = string.Empty;
             //strQuer//strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='" + Environment.UserDomainName + "\\" + Environment.UserName + "'";
             //strQuery =  "SELECT * FROM users WHERE DOMAIN_NAME='NE\\ChrjapinAN'";
-            strQuery = "SELECT * FROM users" + where;
-
-            users = DbTSQLInterface.Select(connSettConfigDB, strQuery, out err);
-        }
-
-        public static void GetUsers(ConnectionSettings connSett, string where, out DataTable users, out int err)
-        {
-            err = 0;
-            users = new DataTable();
-
-            string strQuery = string.Empty;
             strQuery = "SELECT * FROM users";
             if ((!(where == null)) && (where.Length > 0))
                 strQuery += " WHERE " + where;
             else
                 ;
 
-            strQuery += " ORDER BY DESCRIPTION";
+            if ((!(orderby == null)) && (orderby.Length > 0))
+                strQuery += " ORDER BY " + orderby;
+            else
+                ;
 
-            users = DbTSQLInterface.Select(connSett, strQuery, out err);
+            return strQuery;
+        }
+        
+        public void GetUsers(string where, string orderby, out DataTable users, out int err)
+        {
+            err = 0;            
+            users = new DataTable ();
+
+            users = DbTSQLInterface.Select(connSettConfigDB, getUsersRequest(where, orderby), out err);
+        }
+
+        public static void GetUsers(ConnectionSettings connSett, string where, string orderby, out DataTable users, out int err)
+        {
+            err = 0;
+            users = new DataTable();
+
+            users = DbTSQLInterface.Select(connSett, getUsersRequest(where, orderby), out err);
+        }
+
+        public static void GetUsers(MySql.Data.MySqlClient.MySqlConnection conn, string where, string orderby, out DataTable users, out int err)
+        {
+            err = 0;
+            users = new DataTable();
+
+            users = DbTSQLInterface.Select(conn, getUsersRequest(where, orderby), null, null, out err);
+        }
+
+        public static void GetRoles(MySql.Data.MySqlClient.MySqlConnection conn, string where, string orderby, out DataTable roles, out int err)
+        {
+            err = 0;
+            roles = new DataTable();
+
+            roles = DbTSQLInterface.Select(conn, @"SELECT * FROM ROLES WHERE ID < 500", null, null, out err);
         }
     }
 }
