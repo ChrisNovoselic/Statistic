@@ -273,7 +273,11 @@ namespace StatisticCommon
         private static void logging_catch_db(DbConnection conn, Exception e)
         {
             Logging.Logg().LogLock();
-            string s = ConnectionStringToLog (conn.ConnectionString);            
+            string s = string.Empty;
+            if (!(conn == null))
+                s = ConnectionStringToLog (conn.ConnectionString);
+            else
+                s = @"Объект 'DbConnection' = null";
 
             Logging.Logg().LogToFile("Обработка исключения при работе с БД", true, true, false);
             Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);

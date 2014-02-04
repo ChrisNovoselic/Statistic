@@ -42,7 +42,7 @@ namespace Statistic
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
 
-        TCPListen m_TCPListen;
+        TCPServer m_TCPServer;
 
         private void Abort (bool bThrow = false)
         {
@@ -86,8 +86,8 @@ namespace Statistic
                 connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
             }
 
-            m_TCPListen = new TCPListen ();
-            m_TCPListen.Accept ();
+            m_TCPServer = new TCPServer ();
+            m_TCPServer.Accept ();
         }
 
         private bool Initialize()
@@ -261,7 +261,7 @@ namespace Statistic
             else
                 ;
 
-            m_TCPListen.Close ();
+            m_TCPServer.Close ();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

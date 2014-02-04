@@ -16,7 +16,7 @@ namespace StatisticCommon
 {
     public partial class FormMainAnalyzer : Form //: FormMainBaseWithStatusStrip
     {
-        TCPSender m_tcpSender;
+        TCPClient m_tcpClient;
 
         DataTable m_tableUsers
                     , m_tableRoles;
@@ -40,7 +40,7 @@ namespace StatisticCommon
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
             */
 
-            m_tcpSender = new TCPSender();
+            m_tcpClient = new TCPClient();
             
             dgvFilterActives.Rows.Add (2);
             dgvFilterActives.Rows[0].Cells[0].Value = true; dgvFilterActives.Rows[0].Cells[1].Value = "Активные";
@@ -57,14 +57,14 @@ namespace StatisticCommon
             Users.GetUsers(connDB, string.Empty, @"DESCRIPTION", out m_tableUsers, out err);
             FillDataGridViews(ref dgvClient, m_tableUsers, "DESCRIPTION", err);
 
-            m_tcpSender.Init("ne1150.ne.ru");
+            m_tcpClient.Init("ne1150.ne.ru");
 
             DbTSQLInterface.CloseConnection (connDB, out err);
         }
 
         private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            m_tcpSender.Close();
+            m_tcpClient.Close();
         }
 
         private void buttonClose_Click(object sender, EventArgs e)

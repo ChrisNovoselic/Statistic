@@ -10,7 +10,7 @@ using System.IO;
 
 namespace StatisticCommon
 {
-    public class TCPSender
+    public class TCPClient
     {
         int m_port;
 
@@ -19,7 +19,7 @@ namespace StatisticCommon
         StreamReader m_streamReader;
         StreamWriter m_streamWriter;
 
-        public TCPSender()
+        public TCPClient()
         {
             InitializeComponent();
 
@@ -34,7 +34,14 @@ namespace StatisticCommon
 
         public bool Connected {
             get {
-                return m_tcpClient.Connected;
+                bool bRes = false;
+
+                if (! (m_tcpClient == null))
+                    bRes = m_tcpClient.Connected;
+                else
+                    ;
+
+                return bRes;
             }
         }
 

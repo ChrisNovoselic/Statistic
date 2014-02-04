@@ -115,7 +115,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="TCPSender.cs" />
+    <Compile Include="TCPClient.cs" />
     <Compile Include="TCPClientAsync.cs" />
     <Compile Include="TEC.cs" />
     <Compile Include="TECComponent.cs" />
@@ -133,7 +133,6 @@
     <Compile Include="FormMainBaseWithStatusStrip.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TCPReciever.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

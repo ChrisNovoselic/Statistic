@@ -13,14 +13,14 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class TCPListen
+    public class TCPServer
     {
         Thread m_thread;
         List<TCPReciever> m_listThreadClient;
         int m_port;
         ManualResetEvent m_evClose;
 
-        public TCPListen()
+        public TCPServer()
         {
             InitializeComponent();
             m_port = 6666;
