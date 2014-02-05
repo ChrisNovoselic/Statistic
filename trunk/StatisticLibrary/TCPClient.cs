@@ -89,7 +89,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public void Close () {
+        public void Disconnect () {
             if (Connected == true)
                 SendRecieve ("DISCONNECT");
             else

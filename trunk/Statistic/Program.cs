@@ -19,14 +19,7 @@ namespace Statistic
             //InitTEC init = new InitTEC();
 
             FormMain formMain = null;
-            try {
-                formMain = new FormMain();
-
-                if (!(formMain == null))
-                    Application.Run(formMain);
-                else
-                    ;
-            }
+            try { formMain = new FormMain(); }
             catch (Exception e)
             {
                 Logging.Logg ().LogExceptionToFile (e, "Ошибка запуска приложения.");
@@ -39,7 +32,7 @@ namespace Statistic
                     Logging.Logg ().LogExceptionToFile (e, "Ошибка выполнения приложения.");
                 }
             else
-                    ;
+                ;
 
             //mainForm.Show();
             //ToolStripItem [] items;

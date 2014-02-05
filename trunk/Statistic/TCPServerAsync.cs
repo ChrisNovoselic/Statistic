@@ -4,12 +4,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
+using StatisticCommon;
+
 namespace Statistic{
     /// <summary>
     /// An Asynchronous TCP Server that makes use of system managed threads
     /// and callbacks to stop the server ever locking up.
     /// </summary>
-    public class AsyncTcpServer
+    public class TcpServerAsync
     {
         private TcpListener tcpListener;
         private List<Client> clients;
@@ -19,7 +21,7 @@ namespace Statistic{
         /// </summary>
         /// <param name="localaddr">The Local IP Address for the server.</param>
         /// <param name="port">The port for the server.</param>
-        public AsyncTcpServer(IPAddress localaddr, int port) : this ()
+        public TcpServerAsync(IPAddress localaddr, int port) : this ()
         {
             tcpListener = new TcpListener(localaddr, port);
         }
@@ -28,7 +30,7 @@ namespace Statistic{
         /// Constructor for a new server using an end point
         /// </summary>
         /// <param name="localEP">The local end point for the server.</param>
-        public AsyncTcpServer(IPEndPoint localEP) : this ()
+        public TcpServerAsync(IPEndPoint localEP) : this ()
         {
             tcpListener = new TcpListener(localEP);
         }
@@ -36,7 +38,7 @@ namespace Statistic{
         /// <summary>
         /// Private constructor for the common constructor operations.
         /// </summary>
-        private AsyncTcpServer()
+        private TcpServerAsync()
         {
             this.Encoding = Encoding.Default;
             this.clients = new List<Client>();
@@ -76,7 +78,9 @@ namespace Statistic{
         /// </summary>
         public void Stop()
         {
+            //this.tcpListener.BeginAcceptTcpClient(null, null);
             this.tcpListener.Stop();
+
             lock (this.clients)
             {
                 foreach (Client client in this.clients)
@@ -150,17 +154,32 @@ namespace Statistic{
         /// <param name="result">The async result object</param>
         private void AcceptTcpClientCallback(IAsyncResult result)
         {
-            TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);
-            byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
-            Client client = new Client(tcpClient, buffer);
-            lock (this.clients)
+            TcpClient tcpClient = null;
+            try { tcpClient = tcpListener.EndAcceptTcpClient(result); }
+            catch (Exception e)
             {
-                this.clients.Add(client);
+                //Ожидаемое исключение
+                //Logging.Logg().LogExceptionToFile(e, "TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
+                Console.WriteLine("TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
             }
             
-            NetworkStream networkStream = client.NetworkStream;
-            networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
-            tcpListener.BeginAcceptTcpClient(AcceptTcpClientCallback, null);
+            if (!(tcpClient == null))
+            {
+                Console.WriteLine("Client connected: " + ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address + "...");
+                
+                byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
+                Client client = new Client(tcpClient, buffer);
+                lock (this.clients)
+                {
+                    this.clients.Add(client);
+                }
+            
+                NetworkStream networkStream = client.NetworkStream;
+                networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
+                tcpListener.BeginAcceptTcpClient(AcceptTcpClientCallback, null);
+            }
+            else
+                ;
         }
 
         /// <summary>
@@ -169,27 +188,48 @@ namespace Statistic{
         /// <param name="result">The async result object</param>
         private void ReadCallback(IAsyncResult result)
         {
+            int err = 0;
             Client client = result.AsyncState as Client;
             if (client == null)
-                return;
+                err = -1;
             else
                 ;
 
-            NetworkStream networkStream = client.NetworkStream;
-            int read = networkStream.EndRead(result);
-            if (read == 0)
+            if (err == 0)
             {
-                lock (this.clients)
+                NetworkStream networkStream = client.NetworkStream;
+                int read = networkStream.EndRead(result);
+                if (read == 0)
                 {
-                    this.clients.Remove(client);
-                        return;
+                    try 
+                    {
+                        lock (this.clients)
+                        {
+                            networkStream.Close();
+                            client.TcpClient.Close();
+
+                            this.clients.Remove(client);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        err = -2;
+
+                        Logging.Logg ().LogExceptionToFile (e, @"");
+                    }
+                }
+                else
+                {
+                    string data = this.Encoding.GetString(client.Buffer, 0, read);
+
+                    //Do something with the data object here.
+                    Console.WriteLine(((IPEndPoint)client.TcpClient.Client.LocalEndPoint).Address + ": " + data);
+
+                    networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
                 }
             }
-
-            string data = this.Encoding.GetString(client.Buffer, 0, read);
-            
-            //Do something with the data object here.
-            networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
+            else
+                ;
         }
     }
 

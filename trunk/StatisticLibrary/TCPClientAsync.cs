@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace StatisticCommon
 {
-    public class AsyncTcpClient
+    public class TcpClientAsync
     {
         private IPAddress[] addresses;
         private int port;
@@ -14,12 +14,15 @@ namespace StatisticCommon
         private TcpClient tcpClient;
         private int failedConnectionCount;
 
+        private ManualResetEvent m_evDisconnect
+                                , m_evConnect;
+
         /// <summary>
         /// Construct a new client from a known IP Address
         /// </summary>
         /// <param name="address">The IP Address of the server</param>
         /// <param name="port">The port of the server</param>
-        public AsyncTcpClient(IPAddress address, int port) : this (new[] { address }, port) { }
+        public TcpClientAsync(IPAddress address, int port) : this (new[] { address }, port) { }
 
         /// <summary>
         /// Construct a new client where multiple IP Addresses for
@@ -27,7 +30,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="addresses">The array of known IP Addresses</param>
         /// <param name="port">The port of the server</param>
-        public AsyncTcpClient(IPAddress[] addresses, int port) : this (port)
+        public TcpClientAsync(IPAddress[] addresses, int port) : this (port)
         {
             this.addresses = addresses;
         }
@@ -38,7 +41,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="hostNameOrAddress">The host name or address of the server</param>
         /// <param name="port">The port of the server</param>
-        public AsyncTcpClient(string hostNameOrAddress, int port) : this (port)
+        public TcpClientAsync(string hostNameOrAddress, int port) : this (port)
         {
             addressesSet = new AutoResetEvent(false);
             Dns.BeginGetHostAddresses(hostNameOrAddress, GetHostAddressesCallback, null);
@@ -49,7 +52,7 @@ namespace StatisticCommon
         /// for common operations.
         /// </summary>
         /// <param name="port"></param>
-        private AsyncTcpClient(int port)
+        private TcpClientAsync(int port)
         {
             if (port < 0)
                 throw new ArgumentException();
@@ -59,6 +62,9 @@ namespace StatisticCommon
             this.port = port;
             this.tcpClient = new TcpClient();
             this.Encoding = Encoding.Default;
+
+            m_evConnect = new ManualResetEvent (true);
+            m_evDisconnect = new ManualResetEvent(false);
         }
 
         /// <summary>
@@ -71,6 +77,8 @@ namespace StatisticCommon
         /// </summary>
         public void Connect()
         {
+            m_evConnect.Reset ();
+            
             if (!(addressesSet == null))
                 //Wait for the addresses value to be set
                 addressesSet.WaitOne();
@@ -103,9 +111,20 @@ namespace StatisticCommon
         /// when the write operation has completed.</returns>
         public void Write(byte[] bytes)
         {
-            NetworkStream networkStream = tcpClient.GetStream();
-            //Start async write operation
-            networkStream.BeginWrite(bytes, 0, bytes.Length, WriteCallback, null);
+            if (m_evConnect.WaitOne (66) == true)
+            {
+                NetworkStream networkStream = null;
+                try { networkStream = tcpClient.GetStream(); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Write(byte[] ) - ...");
+                }
+                //Start async write operation
+                networkStream.BeginWrite(bytes, 0, bytes.Length, WriteCallback, null);
+            }
+            else
+                //Нет соединения
+                m_evDisconnect.Set ();
         }
 
         /// <summary>
@@ -116,6 +135,12 @@ namespace StatisticCommon
         {
             NetworkStream networkStream = tcpClient.GetStream();
             networkStream.EndWrite(result);
+
+            if (!(m_evDisconnect == null))
+                m_evDisconnect.Set ();
+            else
+                ;
+
         }
 
         /// <summary>
@@ -132,23 +157,26 @@ namespace StatisticCommon
             {
                 //Increment the failed connection count in a thread safe way
                 Interlocked.Increment(ref failedConnectionCount);
-                
+
                 if (!(failedConnectionCount < addresses.Length))
                 {
                     //We have failed to connect to all the IP Addresses
                     //connection has failed overall.
-                    return;
                 }
                 else
                     ;
+
+                return;
             }
 
             //We are connected successfully.
             NetworkStream networkStream = tcpClient.GetStream();
             byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
-            
+
             //Now we are connected start asyn read operation.
             networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+
+            m_evConnect.Set ();
         }
 
         /// <summary>
@@ -157,36 +185,45 @@ namespace StatisticCommon
         /// <param name="result">The AsyncResult object</param>
         private void ReadCallback(IAsyncResult result)
         {
-            int read;
-            
-            NetworkStream networkStream;
+            int read = 0;
+
+            NetworkStream networkStream = null;
             try
             {
                 networkStream = tcpClient.GetStream(); 
                 read = networkStream.EndRead(result);
             }
-            catch
+            catch (Exception excpt)
             {
                 //An error has occured when reading
-                return;
+                Console.WriteLine("TCPClientAsync::ReadCallback () - An error has occured when reading...type of exception: " + excpt.GetType().FullName);
             }
 
             if (read == 0)
             {
                 //The connection has been closed.
+                Disconnect ();
+
                 return;
             }
             else
                 ;
 
-            byte[] buffer = result.AsyncState as byte[];
-            string data = this.Encoding.GetString(buffer, 0, read);
-            
-            //Do something with the data object here.
-            //Then start reading from the network again.
-            networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+            if (! (networkStream == null))
+            {
+                byte[] buffer = result.AsyncState as byte[];
+                string data = this.Encoding.GetString(buffer, 0, read);
+
+                //Do something with the data object here.
+                Console.WriteLine(((IPEndPoint)tcpClient.Client.LocalEndPoint).Address + ": " + data);
+
+                //Then start reading from the network again.
+                networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+            }
+            else
+                ;
         }
-        
+
         /// <summary>
         /// Callback for Get Host Addresses operation
         /// </summary>
@@ -194,9 +231,31 @@ namespace StatisticCommon
         private void GetHostAddressesCallback(IAsyncResult result)
         {
             addresses = Dns.EndGetHostAddresses(result);
-            
+
             //Signal the addresses are now set
             ((AutoResetEvent)addressesSet).Set();
+        }
+
+        public void Disconnect()
+        {
+            Write (@"DISCONNECT");
+            m_evDisconnect.WaitOne ();
+            
+            if (!(tcpClient == null))
+            {
+                try { 
+                    tcpClient.GetStream ().Close ();
+                    tcpClient.Close();
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg ().LogExceptionToFile (e, "TCPClientAsync::Disconnect () - ...");
+                }
+            }
+            else
+                ;
+
+            m_evConnect.Reset();
         }
     }
 }

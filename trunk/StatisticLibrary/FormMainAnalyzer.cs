@@ -16,7 +16,7 @@ namespace StatisticCommon
 {
     public partial class FormMainAnalyzer : Form //: FormMainBaseWithStatusStrip
     {
-        TCPClient m_tcpClient;
+        TcpClientAsync m_tcpClient;
 
         DataTable m_tableUsers
                     , m_tableRoles;
@@ -40,7 +40,11 @@ namespace StatisticCommon
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
             */
 
-            m_tcpClient = new TCPClient();
+            m_tcpClient = new TcpClientAsync("ne1150.ne.ru", 6666);
+            //m_tcpClient.Init();
+            m_tcpClient.Connect ();
+            
+            m_tcpClient.Write (@"INIT");
             
             dgvFilterActives.Rows.Add (2);
             dgvFilterActives.Rows[0].Cells[0].Value = true; dgvFilterActives.Rows[0].Cells[1].Value = "Активные";
@@ -52,19 +56,24 @@ namespace StatisticCommon
             MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
 
             Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
-            FillDataGridViews(ref dgvFilterRoles, m_tableRoles, "DESCRIPTION", err, true);
+            FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
             
             Users.GetUsers(connDB, string.Empty, @"DESCRIPTION", out m_tableUsers, out err);
-            FillDataGridViews(ref dgvClient, m_tableUsers, "DESCRIPTION", err);
-
-            m_tcpClient.Init("ne1150.ne.ru");
+            FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);            
 
             DbTSQLInterface.CloseConnection (connDB, out err);
         }
 
         private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            m_tcpClient.Close();
+            try
+            {
+                m_tcpClient.Disconnect();
+            }
+            catch (Exception excpt)
+            {
+                Logging.Logg().LogExceptionToFile(excpt, "FormMainAnalyzer...FormClosing () - m_tcpClient.Disconnect()");
+            }
         }
 
         private void buttonClose_Click(object sender, EventArgs e)

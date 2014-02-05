@@ -38,11 +38,11 @@ namespace Statistic
         {
         }
 
-        public void Accept () {
+        public void Start () {
             m_thread.Start ();
         }
 
-        public void Close () {
+        public void Stop () {
             bool joined = false;
 
             if (m_thread.IsAlive)

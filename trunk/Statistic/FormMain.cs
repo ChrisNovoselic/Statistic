@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 
+using System.Net;
+
 //???
 //using System.Security.Cryptography;
 
@@ -42,7 +44,7 @@ namespace Statistic
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
 
-        TCPServer m_TCPServer;
+        TcpServerAsync m_TCPServer;
 
         private void Abort (bool bThrow = false)
         {
@@ -86,8 +88,8 @@ namespace Statistic
                 connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
             }
 
-            m_TCPServer = new TCPServer ();
-            m_TCPServer.Accept ();
+            m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
+            m_TCPServer.Start ();
         }
 
         private bool Initialize()
@@ -261,7 +263,7 @@ namespace Statistic
             else
                 ;
 
-            m_TCPServer.Close ();
+            m_TCPServer.Stop ();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
