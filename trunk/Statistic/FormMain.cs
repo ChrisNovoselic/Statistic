@@ -89,6 +89,7 @@ namespace Statistic
             }
 
             m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
+            m_TCPServer.delegateRead = ReadAnalyzer;
             m_TCPServer.Start ();
         }
 
@@ -110,6 +111,8 @@ namespace Statistic
                 bRes = false;
             }
 
+            bool bUseData = true; //Для объекта 'AdminTS'
+
             if (bRes == true)
             {
                 if (! (user.Role == 2)) //Администратор
@@ -117,7 +120,7 @@ namespace Statistic
                 else;
 
                 m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
-                m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];            
+                m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     switch (i) {
@@ -126,13 +129,14 @@ namespace Statistic
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
                             m_arAdmin[i] = new AdminTS_NSS();
+                            bUseData = false;
                             break;
                         default:
                             break;
                     }
 
                     //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                    try { m_arAdmin[i].InitTEC(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true); }
+                    try { m_arAdmin[i].InitTEC(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData); }
                     catch (Exception e)
                     {
                         Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_arAdmin[i].InitTEC (); i = " + i);
@@ -183,7 +187,19 @@ namespace Statistic
                 if (! (m_arAdmin == null))
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
                         if (!(m_arAdmin[i] == null))
-                            m_arAdmin[i].InitTEC(null, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, true);
+                        {
+                            switch (i)
+                            {
+                                case (int)FormChangeMode.MANAGER.DISP:
+                                    break;
+                                case (int)FormChangeMode.MANAGER.NSS:
+                                    bUseData = false;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            m_arAdmin[i].InitTEC(null, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData);
+                        }
                         else
                             ;
                 else
@@ -729,6 +745,31 @@ namespace Statistic
             m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
 
             m_arAdmin[(int)modeAdmin].Resume();
+        }
+
+        private void ReadAnalyzer (string cmd)
+        {
+            //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
+            switch (cmd.Split ('=') [0].Split (';')[0])
+            {
+                case "INIT":
+                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    break;
+                case "LOG_LOCK":
+                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK;" + Logging.Logg().Suspend());
+                    break;
+                case "LOG_UNLOCK":
+                    Logging.Logg ().Resume ();
+                    
+                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    break;
+                case "DISONNECT":
+                    break;
+                case "":
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void timer_Tick(object sender, EventArgs e)

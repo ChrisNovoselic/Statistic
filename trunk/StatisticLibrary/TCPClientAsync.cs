@@ -8,14 +8,18 @@ namespace StatisticCommon
 {
     public class TcpClientAsync
     {
+        //private enum STATE {READ, WRITE, COUNT_STATE};
+        
         private IPAddress[] addresses;
         private int port;
         private WaitHandle addressesSet;
         private TcpClient tcpClient;
         private int failedConnectionCount;
 
-        private ManualResetEvent m_evDisconnect
-                                , m_evConnect;
+        //private ManualResetEvent[] m_arEvState;
+        private AutoResetEvent m_evWrite;
+
+        public DelegateStringFunc delegateRead;
 
         /// <summary>
         /// Construct a new client from a known IP Address
@@ -63,8 +67,7 @@ namespace StatisticCommon
             this.tcpClient = new TcpClient();
             this.Encoding = Encoding.Default;
 
-            m_evConnect = new ManualResetEvent (true);
-            m_evDisconnect = new ManualResetEvent(false);
+            m_evWrite = new AutoResetEvent (false);
         }
 
         /// <summary>
@@ -77,8 +80,6 @@ namespace StatisticCommon
         /// </summary>
         public void Connect()
         {
-            m_evConnect.Reset ();
-            
             if (!(addressesSet == null))
                 //Wait for the addresses value to be set
                 addressesSet.WaitOne();
@@ -111,7 +112,7 @@ namespace StatisticCommon
         /// when the write operation has completed.</returns>
         public void Write(byte[] bytes)
         {
-            if (m_evConnect.WaitOne (66) == true)
+            if (m_evWrite.WaitOne (666) == true)
             {
                 NetworkStream networkStream = null;
                 try { networkStream = tcpClient.GetStream(); }
@@ -123,8 +124,7 @@ namespace StatisticCommon
                 networkStream.BeginWrite(bytes, 0, bytes.Length, WriteCallback, null);
             }
             else
-                //Нет соединения
-                m_evDisconnect.Set ();
+                ;
         }
 
         /// <summary>
@@ -136,10 +136,7 @@ namespace StatisticCommon
             NetworkStream networkStream = tcpClient.GetStream();
             networkStream.EndWrite(result);
 
-            if (!(m_evDisconnect == null))
-                m_evDisconnect.Set ();
-            else
-                ;
+            m_evWrite.Set();
 
         }
 
@@ -153,7 +150,7 @@ namespace StatisticCommon
             {
                 tcpClient.EndConnect(result);
             }
-            catch
+            catch (Exception e)
             {
                 //Increment the failed connection count in a thread safe way
                 Interlocked.Increment(ref failedConnectionCount);
@@ -166,6 +163,8 @@ namespace StatisticCommon
                 else
                     ;
 
+                Console.WriteLine("TCPClientAsync::ConnectCallback () - An error has occured when call this methode...type of exception: " + e.GetType().FullName);
+
                 return;
             }
 
@@ -176,7 +175,7 @@ namespace StatisticCommon
             //Now we are connected start asyn read operation.
             networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
 
-            m_evConnect.Set ();
+            m_evWrite.Set ();
         }
 
         /// <summary>
@@ -186,8 +185,8 @@ namespace StatisticCommon
         private void ReadCallback(IAsyncResult result)
         {
             int read = 0;
-
             NetworkStream networkStream = null;
+
             try
             {
                 networkStream = tcpClient.GetStream(); 
@@ -196,13 +195,14 @@ namespace StatisticCommon
             catch (Exception excpt)
             {
                 //An error has occured when reading
-                Console.WriteLine("TCPClientAsync::ReadCallback () - An error has occured when reading...type of exception: " + excpt.GetType().FullName);
+                Console.WriteLine("TCPClientAsync::ReadCallback () - An error has occured when call this methode...type of exception: " + excpt.GetType().FullName);
             }
 
             if (read == 0)
+            //if ((read == 0) && (networkStream == null))
             {
                 //The connection has been closed.
-                Disconnect ();
+                m_evWrite.Reset();
 
                 return;
             }
@@ -216,6 +216,8 @@ namespace StatisticCommon
 
                 //Do something with the data object here.
                 Console.WriteLine(((IPEndPoint)tcpClient.Client.LocalEndPoint).Address + ": " + data);
+
+                delegateRead (data);
 
                 //Then start reading from the network again.
                 networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
@@ -238,24 +240,30 @@ namespace StatisticCommon
 
         public void Disconnect()
         {
-            Write (@"DISCONNECT");
-            m_evDisconnect.WaitOne ();
-            
+            m_evWrite.WaitOne (666);
+
             if (!(tcpClient == null))
             {
-                try { 
-                    tcpClient.GetStream ().Close ();
-                    tcpClient.Close();
+                if (tcpClient.Client.Connected == true)
+                {                    
+                    try { tcpClient.Client.Shutdown (SocketShutdown.Both); }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("TCPClientAsync::Disconnect () - tcpClient.Client.Shutdown (SocketShutdown.Both) - An error has occured when call this methode...type exception: " + e.GetType().FullName);
+                    }
+
+                    try { tcpClient.Close(); }
+                    catch (Exception e)
+                    {
+                        //Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Disconnect () - tcpClient.Close()");
+                        Console.WriteLine("TCPClientAsync::Disconnect () - tcpClient.Close () - An error has occured when call this methode...type exception: " + e.GetType().FullName);
+                    }
                 }
-                catch (Exception e)
-                {
-                    Logging.Logg ().LogExceptionToFile (e, "TCPClientAsync::Disconnect () - ...");
-                }
+                else
+                    ;
             }
             else
                 ;
-
-            m_evConnect.Reset();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace trans_tg
             try { formMain = new FormMainTransTG(); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "Ошибка запуска приложения.");
+                Logging.Logg().LogExceptionToFile(e, "!Ошибка! запуска приложения.");
             }
 
             if (!(formMain == null))

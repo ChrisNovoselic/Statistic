@@ -22,6 +22,10 @@ namespace StatisticCommon
 
         public enum QUERY_TYPE { UPDATE, INSERT, DELETE, COUNT_QUERY_TYPE };
 
+        public static string MessageDbOpen = "Соединение с базой установлено";
+        public static string MessageDbClose = "Соединение с базой разорвано";
+        public static string MessageDbException = "Обработка исключения при работе с БД";
+
         private DbConnection m_dbConnection;
         private DbCommand m_dbCommand;
         private DbDataAdapter m_dbAdapter;
@@ -94,11 +98,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной", true, true, false);
-                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                logging_catch_db(m_dbConnection, e);
             }
 
             if (!(m_dbConnection.State == ConnectionState.Closed))
@@ -231,21 +231,24 @@ namespace StatisticCommon
             catch (DbException e)
             {
                 needReconnect = true;
-                Logging.Logg().LogLock();
-                string s;
-                int pos;
-                pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                if (pos < 0)
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
-                else
-                    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
 
-                Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                //Logging.Logg().LogLock();
+                //string s;
+                //int pos;
+                //pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
+                //if (pos < 0)
+                //    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
+                //else
+                //    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
+
+                //Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
+                //Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
+                //Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
+                //Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
+                //Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                //Logging.Logg().LogUnlock();
+
+                logging_catch_db (m_dbConnection, e);
             }
             catch (Exception e)
             {
@@ -273,21 +276,21 @@ namespace StatisticCommon
         private static void logging_catch_db(DbConnection conn, Exception e)
         {
             Logging.Logg().LogLock();
-            string s = string.Empty;
+            string s = string.Empty, log = string.Empty;
             if (!(conn == null))
                 s = ConnectionStringToLog (conn.ConnectionString);
             else
                 s = @"Объект 'DbConnection' = null";
 
-            Logging.Logg().LogToFile("Обработка исключения при работе с БД", true, true, false);
-            Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
+            log = MessageDbException + "# Строка соединения: " + s;
             if (!(e == null))
             {
-                Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                log += "# Ошибка: " + e.Message;
+                log += "# " + e.ToString();
             }
             else
                 ;
+            Logging.Logg().LogToFile(log, true, true, false);
             Logging.Logg().LogUnlock();
         }
 
@@ -295,7 +298,7 @@ namespace StatisticCommon
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
+            Logging.Logg().LogToFile(MessageDbClose + " (" + s + ")", true, true, false);
         }
 
         private static void logging_open_db (DbConnection conn)
@@ -303,7 +306,7 @@ namespace StatisticCommon
             string s = ConnectionStringToLog(conn.ConnectionString);
 
             Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
+            Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, false);
             Logging.Logg().LogUnlock();
         }
 
@@ -627,11 +630,6 @@ namespace StatisticCommon
                     if (connectionOleDB.State == ConnectionState.Open)
                     {
                         commandOleDB.ExecuteNonQuery();
-
-                        Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile(connectionOleDB.ConnectionString, true, true, false);
-                        Logging.Logg().LogToFile(commandOleDB.CommandText, true, false, false);
-                        Logging.Logg().LogUnlock();
                     }
                     else
                         ; //

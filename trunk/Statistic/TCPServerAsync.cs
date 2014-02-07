@@ -16,6 +16,8 @@ namespace Statistic{
         private TcpListener tcpListener;
         private List<Client> clients;
 
+        public DelegateStringFunc delegateRead;
+
         /// <summary>
         /// Constructor for a new server using an IPAddress and Port
         /// </summary>
@@ -160,7 +162,7 @@ namespace Statistic{
             {
                 //Ожидаемое исключение
                 //Logging.Logg().LogExceptionToFile(e, "TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
-                Console.WriteLine("TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
+                Console.WriteLine("TCPServertAsync::AcceptTcpClientCallback () - An error has occured when call this methode...type of exception: " + e.GetType().FullName);
             }
             
             if (!(tcpClient == null))
@@ -224,6 +226,8 @@ namespace Statistic{
 
                     //Do something with the data object here.
                     Console.WriteLine(((IPEndPoint)client.TcpClient.Client.LocalEndPoint).Address + ": " + data);
+
+                    delegateRead (data);
 
                     networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
                 }

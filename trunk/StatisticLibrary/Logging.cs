@@ -71,13 +71,33 @@ namespace StatisticCommon
             logRotateFiles = logRotateFilesDefault;
             fileNameStart = fileName = name;
             sema = new Semaphore(1, 1);
-            FileInfo f = new FileInfo(fileName);
-            FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
             fi = new FileInfo(fileName);
+            FileStream fs = fi.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
             logIndex = 0;
             delegateUpdateLogText = updateLogText;
             delegateClearLogText = clearLogText;
+        }
+
+        public string Suspend()
+        {
+            LogLock();
+
+            LogToFile("Пауза ведения журнала...", true, true, false);
+
+            sw.Close();
+
+            return fi.FullName;
+        }
+
+        public void Resume()
+        {
+            FileStream fs = fi.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+
+            LogToFile("Возобновление ведения журнала...", true, true, false);
+
+            LogUnlock();
         }
 
         public void LogLock()
@@ -132,7 +152,7 @@ namespace StatisticCommon
         private void LogRotateNowLocked()
         {
             sw.Close();
-            if (externalLog)
+            if (externalLog == true)
                 delegateClearLogText();
             else
                 ;
