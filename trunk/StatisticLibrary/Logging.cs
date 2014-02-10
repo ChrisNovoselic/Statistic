@@ -27,6 +27,9 @@ namespace StatisticCommon
         private const int logRotateFilesMax = 100;
         private int logRotateFiles;
 
+        public static string DatetimeStampSeparator = "------------------------------------------------";
+        public static string MessageSeparator = "================================================";
+
         public static string AppName
         {
             get
@@ -121,11 +124,11 @@ namespace StatisticCommon
                 }
 
                 if (separator)
-                    sw.WriteLine("================================================");
+                    sw.WriteLine(MessageSeparator);
                 if (timeStamp)
                 {
                     sw.WriteLine(DateTime.Now.ToString());
-                    sw.WriteLine("------------------------------------------------");
+                    sw.WriteLine(DatetimeStampSeparator);
                 }
                 sw.WriteLine(message);
                 sw.Flush();
