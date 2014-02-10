@@ -24,7 +24,7 @@ namespace StatisticCommon
 
         public static string MessageDbOpen = "Соединение с базой установлено";
         public static string MessageDbClose = "Соединение с базой разорвано";
-        public static string MessageDbException = "Обработка исключения при работе с БД";
+        public static string MessageDbException = "Исключение при работе с БД";
 
         private DbConnection m_dbConnection;
         private DbCommand m_dbCommand;
@@ -282,11 +282,12 @@ namespace StatisticCommon
             else
                 s = @"Объект 'DbConnection' = null";
 
-            log = MessageDbException + "# Строка соединения: " + s;
+            log = MessageDbException;
+            log += Environment.NewLine + "Строка соединения: " + s;
             if (!(e == null))
             {
-                log += "# Ошибка: " + e.Message;
-                log += "# " + e.ToString();
+                log += Environment.NewLine + "Ошибка: " + e.Message;
+                log += Environment.NewLine + e.ToString();
             }
             else
                 ;
@@ -538,7 +539,7 @@ namespace StatisticCommon
             if (!(err == 0))
             {
                 Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
+                Logging.Logg().LogToFile("!Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
                 Logging.Logg().LogUnlock();
             }
             else

@@ -115,35 +115,47 @@ namespace StatisticCommon
 
         public void LogToFile(string message, bool separator, bool timeStamp, bool locking/* = false*/)
         {
-            if (logging)
+            if (logging == true)
             {
-                if (locking)
+                if (locking == true)
                 {
                     LogLock();
                     LogCheckRotate();
                 }
+                else
+                    ;
 
-                if (separator)
+                if (separator == true)
                     sw.WriteLine(MessageSeparator);
-                if (timeStamp)
+                else
+                    ;
+
+                if (timeStamp == true)
                 {
                     sw.WriteLine(DateTime.Now.ToString());
                     sw.WriteLine(DatetimeStampSeparator);
                 }
+                else
+                    ;
+
                 sw.WriteLine(message);
                 sw.Flush();
 
-                if (externalLog)
+                if (externalLog == true)
                 {
-                    if (timeStamp)
-                        delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + "\r\n");
+                    if (timeStamp == true)
+                        delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
                     else
-                        delegateUpdateLogText(message + "\r\n");
+                        delegateUpdateLogText(message + Environment.NewLine);
                 }
+                else
+                    ;
 
-                if (locking)
+                if (locking == true)
                     LogUnlock();
             }
+            else
+                ;
         }
 
         public bool Log
@@ -171,14 +183,14 @@ namespace StatisticCommon
             sw = new StreamWriter(newFilename, false, Encoding.GetEncoding("windows-1251"));
             fi = new FileInfo(newFilename);
         }
-        
+
         private void LogRotateNow()
         {
             LogLock();
             LogRotateNowLocked();
             LogUnlock();
         }
-        
+
         private void LogCheckRotate()
         {
             fi.Refresh();
