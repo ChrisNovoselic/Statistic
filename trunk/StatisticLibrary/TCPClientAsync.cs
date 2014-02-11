@@ -9,17 +9,22 @@ namespace StatisticCommon
     public class TcpClientAsync
     {
         //private enum STATE {READ, WRITE, COUNT_STATE};
-        
-        private IPAddress[] addresses;
-        private int port;
-        private WaitHandle addressesSet;
-        private TcpClient tcpClient;
-        private int failedConnectionCount;
+
+        private IPAddress[] m_addresses;
+        private int m_port;
+        private WaitHandle m_addressesSet,
+                m_addressesGet;
+        private TcpClient m_tcpClient;
+        private int m_failedConnectionCount;
+
+        private string m_ValueToCreate;
 
         //private ManualResetEvent[] m_arEvState;
         private AutoResetEvent m_evWrite;
 
-        public DelegateStringFunc delegateRead;
+        public DelegateStringFunc delegateErrorConnect;
+        public delegate void DelegateTcpAsyncFunc(TcpClient res, string data);
+        public DelegateTcpAsyncFunc delegateConnect, delegateRead;
 
         /// <summary>
         /// Construct a new client from a known IP Address
@@ -36,7 +41,8 @@ namespace StatisticCommon
         /// <param name="port">The port of the server</param>
         public TcpClientAsync(IPAddress[] addresses, int port) : this (port)
         {
-            this.addresses = addresses;
+            m_ValueToCreate = addresses.ToString ();
+            this.m_addresses = addresses;
         }
 
         /// <summary>
@@ -47,8 +53,10 @@ namespace StatisticCommon
         /// <param name="port">The port of the server</param>
         public TcpClientAsync(string hostNameOrAddress, int port) : this (port)
         {
-            addressesSet = new AutoResetEvent(false);
-            Dns.BeginGetHostAddresses(hostNameOrAddress, GetHostAddressesCallback, null);
+            m_ValueToCreate = hostNameOrAddress;
+            m_addressesSet = new AutoResetEvent(false);
+            m_addressesGet = new AutoResetEvent(false);
+            Dns.BeginGetHostAddresses(hostNameOrAddress.Split (';')[0], GetHostAddressesCallback, null);
         }
 
         /// <summary>
@@ -63,33 +71,98 @@ namespace StatisticCommon
             else
                 ;
 
-            this.port = port;
-            this.tcpClient = new TcpClient();
-            this.Encoding = Encoding.Default;
+            this.m_port = port;
+            this.m_tcpClient = new TcpClient();
+            this.m_Encoding = Encoding.Default;
 
             m_evWrite = new AutoResetEvent (false);
+        }
+
+        public TcpClientAsync()
+        {
+            this.m_tcpClient = new TcpClient();
+            this.m_Encoding = Encoding.Default;
+
+            m_evWrite = new AutoResetEvent(false);
         }
 
         /// <summary>
         /// The endoding used to encode/decode string when sending and receiving.
         /// </summary>
-        public Encoding Encoding { get; set; }
+        public Encoding m_Encoding { get; set; }
+
+        public void Connect(IPAddress addresses, int port)
+        {
+            m_ValueToCreate = addresses.ToString ();
+            this.m_addresses = new [] {addresses};
+            this.m_port = port;
+
+            ((AutoResetEvent)m_evWrite).Reset();
+        }
+        
+        public void Connect(IPAddress[] addresses, int port)
+        {
+            m_ValueToCreate = addresses.ToString();
+            this.m_addresses = addresses;
+            this.m_port = port;
+
+            ((AutoResetEvent)m_evWrite).Reset();
+        }
+
+        public void Connect(string hostNameOrAddress, int port)
+        {
+            m_ValueToCreate = hostNameOrAddress;
+            if (m_addressesGet == null)
+                m_addressesGet = new AutoResetEvent (false);
+            else
+                ((AutoResetEvent)m_addressesGet).Reset();
+
+            if (m_addressesSet == null)
+                m_addressesSet = new AutoResetEvent (false);
+            else
+                ((AutoResetEvent)m_addressesSet).Reset();
+
+            this.m_port = port;
+
+            ((AutoResetEvent)m_evWrite).Reset();
+            
+            Dns.BeginGetHostAddresses(hostNameOrAddress.Split (';')[0], GetHostAddressesCallback, null);
+
+            Connect ();
+        }
 
         /// <summary>
         /// Attempts to connect to one of the specified IP Addresses
         /// </summary>
         public void Connect()
         {
-            if (!(addressesSet == null))
+            int indxAddresses = -1;
+            if ((!(m_addressesSet == null)) && (!(m_addressesGet == null)))
                 //Wait for the addresses value to be set
-                addressesSet.WaitOne();
+                indxAddresses = WaitHandle.WaitAny(new WaitHandle[] { m_addressesGet, m_addressesSet });
             else
                 ;
 
-            //Set the failed connection count to 0
-            Interlocked.Exchange(ref failedConnectionCount, 0);
-            //Start the async connect operation
-            tcpClient.BeginConnect(addresses, port, ConnectCallback, null);
+            switch (indxAddresses)
+            {
+                case 0:
+                    ErrorConnect ();
+                    break;
+                case 1:
+                    //Set the failed connection count to 0
+                    Interlocked.Exchange(ref m_failedConnectionCount, 0);
+
+                    if (m_tcpClient.Connected == false)
+                        m_tcpClient = new TcpClient ();
+                    else
+                        ;
+
+                    //Start the async connect operation
+                    m_tcpClient.BeginConnect(m_addresses, m_port, ConnectCallback, null);
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>
@@ -100,7 +173,7 @@ namespace StatisticCommon
         /// when the write operation has completed.</returns>
         public void Write(string data)
         {
-            byte[] bytes = Encoding.GetBytes(data);
+            byte[] bytes = m_Encoding.GetBytes(data);
             Write(bytes);
         }
 
@@ -115,7 +188,7 @@ namespace StatisticCommon
             if (m_evWrite.WaitOne (666) == true)
             {
                 NetworkStream networkStream = null;
-                try { networkStream = tcpClient.GetStream(); }
+                try { networkStream = m_tcpClient.GetStream(); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Write(byte[] ) - ...");
@@ -133,7 +206,7 @@ namespace StatisticCommon
         /// <param name="result">The AsyncResult object</param>
         private void WriteCallback(IAsyncResult result)
         {
-            NetworkStream networkStream = tcpClient.GetStream();
+            NetworkStream networkStream = m_tcpClient.GetStream();
             networkStream.EndWrite(result);
 
             m_evWrite.Set();
@@ -148,17 +221,19 @@ namespace StatisticCommon
         {
             try
             {
-                tcpClient.EndConnect(result);
+                m_tcpClient.EndConnect(result);
             }
             catch (Exception e)
             {
                 //Increment the failed connection count in a thread safe way
-                Interlocked.Increment(ref failedConnectionCount);
+                Interlocked.Increment(ref m_failedConnectionCount);
 
-                if (!(failedConnectionCount < addresses.Length))
+                if (!(m_failedConnectionCount < m_addresses.Length))
                 {
                     //We have failed to connect to all the IP Addresses
                     //connection has failed overall.
+
+                    ErrorConnect ();
                 }
                 else
                     ;
@@ -169,13 +244,25 @@ namespace StatisticCommon
             }
 
             //We are connected successfully.
-            NetworkStream networkStream = tcpClient.GetStream();
-            byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
+            NetworkStream networkStream = m_tcpClient.GetStream();
+            byte[] buffer = new byte[m_tcpClient.ReceiveBufferSize];
 
             //Now we are connected start asyn read operation.
             networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
 
             m_evWrite.Set ();
+
+            delegateConnect(m_tcpClient, null);
+        }
+
+        public bool Equals (TcpClient obj)
+        {
+            return m_tcpClient.Equals (obj);
+        }
+
+        public bool Equals(string ValueToCreate)
+        {
+            return m_ValueToCreate.Equals(ValueToCreate);
         }
 
         /// <summary>
@@ -189,7 +276,7 @@ namespace StatisticCommon
 
             try
             {
-                networkStream = tcpClient.GetStream(); 
+                networkStream = m_tcpClient.GetStream(); 
                 read = networkStream.EndRead(result);
             }
             catch (Exception excpt)
@@ -212,15 +299,18 @@ namespace StatisticCommon
             if (! (networkStream == null))
             {
                 byte[] buffer = result.AsyncState as byte[];
-                string data = this.Encoding.GetString(buffer, 0, read);
+                string data = this.m_Encoding.GetString(buffer, 0, read);
 
                 //Do something with the data object here.
-                Console.WriteLine(((IPEndPoint)tcpClient.Client.LocalEndPoint).Address + ": " + data);
+                Console.WriteLine(((IPEndPoint)m_tcpClient.Client.LocalEndPoint).Address + ": " + data);
 
-                delegateRead (data);
+                delegateRead(m_tcpClient, data);
 
-                //Then start reading from the network again.
-                networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+                if ((!(m_tcpClient == null)) && (m_tcpClient.Connected == true))
+                    //Then start reading from the network again.
+                    networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+                else
+                    ;
             }
             else
                 ;
@@ -232,38 +322,55 @@ namespace StatisticCommon
         /// <param name="result">The AsyncResult object</param>
         private void GetHostAddressesCallback(IAsyncResult result)
         {
-            addresses = Dns.EndGetHostAddresses(result);
+            try {
+                m_addresses = Dns.EndGetHostAddresses(result);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("TCPClientAsync::GetHostAddressesCallback () - Dns.EndGetHostAddresses()");
 
-            //Signal the addresses are now set
-            ((AutoResetEvent)addressesSet).Set();
+                ((AutoResetEvent)m_addressesGet).Set();
+                
+                return;
+            }
+
+            //Signal the m_addresses are now set
+            ((AutoResetEvent)m_addressesSet).Set();
         }
 
         public void Disconnect()
         {
             m_evWrite.WaitOne (666);
 
-            if (!(tcpClient == null))
+            if (!(m_tcpClient == null))
             {
-                if (tcpClient.Client.Connected == true)
+                if (m_tcpClient.Client.Connected == true)
                 {                    
-                    try { tcpClient.Client.Shutdown (SocketShutdown.Both); }
+                    try { m_tcpClient.Client.Shutdown (SocketShutdown.Both); }
                     catch (Exception e)
                     {
                         Console.WriteLine("TCPClientAsync::Disconnect () - tcpClient.Client.Shutdown (SocketShutdown.Both) - An error has occured when call this methode...type exception: " + e.GetType().FullName);
                     }
 
-                    try { tcpClient.Close(); }
+                    try { m_tcpClient.Close(); }
                     catch (Exception e)
                     {
                         //Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Disconnect () - tcpClient.Close()");
                         Console.WriteLine("TCPClientAsync::Disconnect () - tcpClient.Close () - An error has occured when call this methode...type exception: " + e.GetType().FullName);
                     }
+
+                    //m_tcpClient = null;
                 }
                 else
                     ;
             }
             else
                 ;
+        }
+
+        private void ErrorConnect ()
+        {
+            delegateErrorConnect(m_ValueToCreate);
         }
     }
 }

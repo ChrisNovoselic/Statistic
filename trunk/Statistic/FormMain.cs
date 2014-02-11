@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Net.Sockets;
 
 using System.Net;
 
@@ -747,21 +748,21 @@ namespace Statistic
             m_arAdmin[(int)modeAdmin].Resume();
         }
 
-        private void ReadAnalyzer (string cmd)
+        private void ReadAnalyzer (TcpClient res, string cmd)
         {
             //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
             switch (cmd.Split ('=') [0].Split (';')[0])
             {
                 case "INIT":
-                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "LOG_LOCK":
-                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK;" + Logging.Logg().Suspend());
+                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK;" + Logging.Logg().Suspend());
                     break;
                 case "LOG_UNLOCK":
                     Logging.Logg ().Resume ();
                     
-                    m_TCPServer.Write(cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "DISONNECT":
                     break;

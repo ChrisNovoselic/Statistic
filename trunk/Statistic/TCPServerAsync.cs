@@ -16,7 +16,7 @@ namespace Statistic{
         private TcpListener tcpListener;
         private List<Client> clients;
 
-        public DelegateStringFunc delegateRead;
+        public TcpClientAsync.DelegateTcpAsyncFunc delegateRead;
 
         /// <summary>
         /// Constructor for a new server using an IPAddress and Port
@@ -146,8 +146,13 @@ namespace Statistic{
         private void WriteCallback(IAsyncResult result)
         {
             TcpClient tcpClient = result.AsyncState as TcpClient;
-            NetworkStream networkStream = tcpClient.GetStream();
-            networkStream.EndWrite(result);
+            if (tcpClient.Connected == true)
+            {
+                NetworkStream networkStream = tcpClient.GetStream();
+                networkStream.EndWrite(result);
+            }
+            else
+                ;
         }
 
         /// <summary>
@@ -227,7 +232,7 @@ namespace Statistic{
                     //Do something with the data object here.
                     Console.WriteLine(((IPEndPoint)client.TcpClient.Client.LocalEndPoint).Address + ": " + data);
 
-                    delegateRead (data);
+                    delegateRead(client.TcpClient, data);
 
                     networkStream.BeginRead(client.Buffer, 0, client.Buffer.Length, ReadCallback, client);
                 }

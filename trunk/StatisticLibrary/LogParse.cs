@@ -67,7 +67,11 @@ namespace StatisticCommon
                 else
                     ;
 
-                m_semAllowed.Release();
+                try { m_semAllowed.Release(); }
+                catch (Exception e)
+                {
+                    Console.WriteLine("LogParse::Stop () - m_semAllowed.Release() - поток не был запущен");
+                }
             }
             else
                 ;

@@ -18,6 +18,9 @@ namespace StatisticCommon
     public partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip
     {
         TcpClientAsync m_tcpClient;
+        List<TcpClientAsync> m_listTCPClientUsers;
+        Thread m_threadChecked;
+        bool m_bThreadCheckedAllowed;
         LogParse m_LogParse;
 
         DataTable m_tableUsers
@@ -28,6 +31,7 @@ namespace StatisticCommon
         int m_prevDatetimeRowIndex;
 
         private const string list_sorted = @"DESCRIPTION";
+        private const string NameFieldToConnect = "COMPUTER_NAME";
 
         public FormMainAnalyzer(ConnectionSettings connSett)
         {
@@ -74,22 +78,56 @@ namespace StatisticCommon
 
             m_LogParse = new LogParse ();
             m_LogParse.Exit = LogParseExit;
+
+            m_listTCPClientUsers = new List<TcpClientAsync> ();
+            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
+            {
+                //Проверка активности
+                m_listTCPClientUsers.Add (new TcpClientAsync());
+                m_listTCPClientUsers [i].delegateConnect = ConnectToChecked;
+                m_listTCPClientUsers[i].delegateErrorConnect = ErrorConnectToChecked;
+                m_listTCPClientUsers[i].delegateRead = Read;
+                //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
+            }
+
+            m_bThreadCheckedAllowed = true;
+
+            m_threadChecked = new Thread(Thread_ProcChecked);
+            m_threadChecked.IsBackground = true;
+            m_threadChecked.Name = "Поток опроса состояния пользователей";
+            m_threadChecked.Start ();
+        }
+
+        private void Thread_ProcChecked (object data)
+        {
+            while (m_bThreadCheckedAllowed == true)
+            {
+                ProcChecked ();
+            }
+        }
+
+        private void ProcChecked()
+        {
+            int i = -1;
+            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
+            {
+                //Проверка активности
+                m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][NameFieldToConnect].ToString() + ";" + i, 6666);
+            }
         }
 
         private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            m_tcpClient.Write(@"DISCONNECT");
-
-            try
-            {
-                m_tcpClient.Disconnect();
-            }
-            catch (Exception excpt)
-            {
-                Logging.Logg().LogExceptionToFile(excpt, "FormMainAnalyzer...FormClosing () - m_tcpClient.Disconnect()");
-            }
+            Disconnect ();
 
             m_LogParse.Stop();
+
+            m_bThreadCheckedAllowed = false;
+            bool joined = m_threadChecked.Join (6666);
+            if (joined == false)
+                m_threadChecked.Abort ();
+            else
+                ;
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -97,26 +135,94 @@ namespace StatisticCommon
             Close ();
         }
 
+        private void Disconnect ()
+        {
+            if (!(m_tcpClient == null))
+            {
+                m_tcpClient.Write(@"DISCONNECT");
+                m_tcpClient.Disconnect();
+
+                m_tcpClient = null;
+            }
+            else
+                ;
+        }
+
         private void dgvClient_SelectionChanged(object sender, EventArgs e)
         {
             if (!(m_tcpClient == null))
             {
-                m_tcpClient.Write (@"DISCONNECT");
-                m_tcpClient.Disconnect ();
+                Disconnect ();
             }
             else
                 ;
-            m_tcpClient = null;
 
             if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
             {
                 m_LogParse.Stop();
 
-                m_tcpClient = new TcpClientAsync("localhost", 6666);
-                m_tcpClient.delegateRead = Read;
-                m_tcpClient.Connect();
+                dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
-                m_tcpClient.Write(@"INIT=?");
+                BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
+                BeginInvoke(new DelegateFunc(TabLoggingClearText));
+
+                m_tcpClient = new TcpClientAsync();
+                m_tcpClient.delegateRead = Read;
+                m_tcpClient.delegateConnect = ConnectToLogRead;
+                m_tcpClient.delegateErrorConnect = ErrorConnectToLogRead;
+
+                //m_tcpClient.Connect("localhost", 6666);
+                m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+            }
+            else
+                ;
+        }
+
+        private int getIndexTcpClient (TcpClient obj)
+        {
+            int i = -1;
+            for (i = 0; i < m_listTCPClientUsers.Count; i++)
+            {
+                if (m_listTCPClientUsers[i].Equals (obj) == true)
+                    break;
+                else
+                    ;
+            }
+
+            return i;
+        }
+
+        private void ConnectToChecked(TcpClient res, string data)
+        {
+            int indxTcpClient = getIndexTcpClient (res);
+
+            if (indxTcpClient < m_listTCPClientUsers.Count)
+                m_listTCPClientUsers[indxTcpClient].Write(@"INIT=?");
+            else
+                ;
+        }
+
+        private void ConnectToLogRead(TcpClient res, string data)
+        {
+            m_tcpClient.Write("LOG_LOCK=?");
+        }
+
+        private void ErrorConnectToChecked(string ValueToCreate)
+        {
+            Console.WriteLine("FormAnalyzer::ErrorConnect () - {0}, индекс: {1}", ValueToCreate.Split(';')[0], ValueToCreate.Split(';')[1]);
+            dgvClient.Rows [Convert.ToInt32 (ValueToCreate.Split(';')[1])].Cells[0].Value = false;
+        }
+
+        private void ErrorConnectToLogRead(string ValueToCreate)
+        {
+            if (!(m_tcpClient == null))
+            {
+                if (m_tcpClient.Equals(ValueToCreate) == true)
+                {
+                    
+                }
+                else
+                    ;
             }
             else
                 ;
@@ -196,7 +302,20 @@ namespace StatisticCommon
                 ;
         }
 
-        void Read (string rec)
+        private void StartLogParse (string full_path)
+        {
+            FileInfo fi = new FileInfo(full_path);
+            FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
+
+            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+            m_LogParse.Start(sr.ReadToEnd());
+
+            sr.Close();
+        }
+
+        void Read (TcpClient res, string rec)
         {
              //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
             switch (rec.Split ('=') [0].Split (';')[0])
@@ -204,7 +323,17 @@ namespace StatisticCommon
                 case "INIT":
                     if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
-                        m_tcpClient.Write("LOG_LOCK=?");
+                        int indxTcpClient = getIndexTcpClient (res);
+
+                        if (indxTcpClient < m_listTCPClientUsers.Count)
+                        {
+                            dgvClient.Rows[indxTcpClient].Cells[0].Value = true;
+                            m_listTCPClientUsers [indxTcpClient].Write (@"DISCONNECT");
+
+                            m_listTCPClientUsers [indxTcpClient].Disconnect ();
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
@@ -213,15 +342,7 @@ namespace StatisticCommon
                     if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
                         //rec.Split('=')[1].Split(';')[1] - полный путь лог-файла
-                        FileInfo fi = new FileInfo(rec.Split('=')[1].Split(';')[1]);
-                        FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-                        StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
-
-                        dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                        m_LogParse.Start(sr.ReadToEnd());
-
-                        sr.Close ();
+                        StartLogParse(rec.Split('=')[1].Split(';')[1]);
 
                         m_tcpClient.Write("LOG_UNLOCK=?");                        
                     }
@@ -231,6 +352,7 @@ namespace StatisticCommon
                 case "LOG_UNLOCK":
                     if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
                     {
+                        Disconnect ();
                     }
                     else
                         ;
