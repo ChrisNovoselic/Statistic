@@ -61,6 +61,7 @@ namespace StatisticCommon
                 else
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
+            Logging.Logg().LogDebugToFile("Users::Users () - получение объекта MySqlConnection...");
             MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
             
             //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
@@ -106,9 +107,7 @@ namespace StatisticCommon
         }
 
         private void Initialize () {
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("Users::Initialize ()", true, false, false);
-            Logging.Logg().LogUnlock();   
+            Logging.Logg().LogDebugToFile ("Users::Initialize () - Ok");
         }
 
         public int Role {

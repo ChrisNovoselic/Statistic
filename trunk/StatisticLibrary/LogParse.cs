@@ -10,14 +10,25 @@ namespace StatisticCommon
 {
     public class LogParse
     {
-        public enum TYPE_LOGMESSAGE { START, STOP, DBOPEN, DBCLOSE, DBEXCEPTION, ERROR, DEBUG, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
+        public enum TYPE_LOGMESSAGE { START, STOP,
+                                    DBOPEN, DBCLOSE, DBEXCEPTION,
+                                    ERROR, DEBUG,
+                                    DETAIL,
+                                    SEPARATOR, SEPARATOR_DATETIME,
+                                    UNKNOWN, COUNT_TYPE_LOGMESSAGE };
         public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
                                             "БД открыть", "БД закрыть", "БД исключение",
-                                            "Ошибка", "Отладка", "Неопределенный тип" };
+                                            "Ошибка", "Отладка",
+                                            "Детализация",
+                                            "Раздел./сообщ.", "Раздел./дата/время",
+                                            "Неопределенный тип" };
 
         private string[] SIGNATURE_LOGMESSAGE = { ProgramBase.MessageWellcome, ProgramBase.MessageExit,
                                                     DbTSQLInterface.MessageDbOpen, DbTSQLInterface.MessageDbClose, DbTSQLInterface.MessageDbException,
-                                                    "!Ошибка!", "!Отладка!", "Неопределенный тип" };
+                                                    "!Ошибка!", "!Отладка!",
+                                                    string.Empty,
+                                                    Logging.MessageSeparator, Logging.DatetimeStampSeparator,
+                                                    string.Empty, "Неопределенный тип" };
 
         private Thread m_thread;
         private DataTable m_tableLog;
@@ -81,13 +92,14 @@ namespace StatisticCommon
 
         private void Thread_Proc (object data)
         {
-            string line,
-                   msg;
-            int typeMsg = -1;
+            string line;
+            TYPE_LOGMESSAGE typeMsg;
             DateTime dtMsg;
             bool bValid = false;
 
-            line = msg = string.Empty;
+            line = string.Empty;
+
+            typeMsg = TYPE_LOGMESSAGE.UNKNOWN;
 
             StringReader content = new StringReader(data as string);
 
@@ -95,80 +107,131 @@ namespace StatisticCommon
 
             Console.WriteLine("Начало обработки лог-файла. Размер: {0}", (data as string).Length);
 
-            do
+            //Чтение 1-ой строки лог-файла
+            line = content.ReadLine();
+            
+            while (!(line == null))
             {
-                try
+                //Проверка на разделитель сообщение-сообщение
+                if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == true)
                 {
-                    content.ReadLine();
-
+                    //Следующая строка - дата/время
                     line = content.ReadLine();
+
+                    //Попытка разбора дата/время
                     bValid = DateTime.TryParse(line, out dtMsg);
                     if (bValid == true)
                     {
+                        //Следующая строка - разделитель дата/время-сообщение
                         content.ReadLine();
-
+                        //Следующая строка - сообщение
                         line = content.ReadLine();
                     }
                     else
                     {
+                        //Установка дата/время предыдущего сообщения
+                        if (m_tableLog.Rows.Count > 0)
+                            dtMsg = (DateTime)m_tableLog.Rows[m_tableLog.Rows.Count - 1]["DATE_TIME"];
+                        else
+                            ; //dtMsg = new DateTime(1666, 06, 06, 06, 06, 06);
+                    }
+                }
+                else
+                {
+                    //Попытка разбора дата/время
+                    bValid = DateTime.TryParse(line, out dtMsg);
+                    if (bValid == true)
+                    {
+                        //Следующая строка - разделитель дата/время-сообщение
+                        content.ReadLine();
+                        //Следующая строка - сообщение
+                        line = content.ReadLine();
+                    }
+                    else
+                    {
+                        //Установка дата/время предыдущего сообщения
                         //dtMsg = new DateTime(1666, 06, 06, 06, 06, 06);
                         dtMsg = (DateTime)m_tableLog.Rows[m_tableLog.Rows.Count - 1]["DATE_TIME"];
-                    }
 
-                    //string.Console.Write("[" + dtMsg.ToString() + "]: ");
-
-                    if (line == null)
-                    {
-                        //BeginInvoke(delegateAppendText, string.Empty);
-                        break;
-                    }
-                    else
-                        ;
-
-                    msg = line;
-                    //Console.WriteLine(msg);
-
-                    typeMsg = -1;
-
-                    //Определение типа сообщения
-                    TYPE_LOGMESSAGE i;
-                    for (i = 0; i < TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE - 1; i++) //'- 1' чтобы не учитывать UNKNOWN
-                    {
-                        if (msg.Contains(SIGNATURE_LOGMESSAGE[(int)i]) == true)
-                            break;
+                        if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR_DATETIME]) == true)
+                        {
+                            //Следующая строка - сообщение
+                            line = content.ReadLine();
+                        }
                         else
-                            ;
+                        {
+                            //Строка содержит сообщение/детализация сообщения
+                        }
                     }
-
-                    //Был ли определен тип сообщения
-                    if (i < TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE)
-                        typeMsg = (int)i;
-                    else
-                        //Не опредеоен
-                        typeMsg = (int)TYPE_LOGMESSAGE.UNKNOWN;
-
-                    //Добавление строки в таблицу с собщениями
-                    m_tableLog.Rows.Add(new object[] { dtMsg, typeMsg, msg });
-
-                    if (typeMsg == (int)TYPE_LOGMESSAGE.START)
-                    {
-                        //Добавление строки в 'dgvDatetimeStart'
-                        //BeginInvoke(delegateAppendDatetimeStart, "false" + ";" + dtMsg);
-                    }
-                    else
-                        ;
-
-                    //Добавление строки в 'textBoxLog'
-                    //BeginInvoke(delegateAppendText, "[" + dtMsg + "]: " + msg + Environment.NewLine);
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
 
+                if (line == null)
+                {
                     break;
                 }
+                else
+                    ;
+
+                //Проверка на разделитель сообщение-сообщение
+                if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == true)
+                {
+                    continue;
+                }
+                else
+                {
+                    if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.START]) == true)
+                    {
+                        typeMsg = TYPE_LOGMESSAGE.START;
+                    }
+                    else
+                        if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.STOP]) == true)
+                        {
+                            typeMsg = TYPE_LOGMESSAGE.STOP;
+                        }
+                        else
+                            if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBOPEN]) == true)
+                            {
+                                typeMsg = TYPE_LOGMESSAGE.DBOPEN;
+                            }
+                            else
+                                if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBCLOSE]) == true)
+                                {
+                                    typeMsg = TYPE_LOGMESSAGE.DBCLOSE;
+                                }
+                                else
+                                    if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBEXCEPTION]) == true)
+                                    {
+                                        typeMsg = TYPE_LOGMESSAGE.DBEXCEPTION;
+                                    }
+                                    else
+                                        if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.ERROR]) == true)
+                                        {
+                                            typeMsg = TYPE_LOGMESSAGE.ERROR;
+                                        }
+                                        else
+                                            if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DEBUG]) == true)
+                                            {
+                                                typeMsg = TYPE_LOGMESSAGE.DEBUG;
+                                            }
+                                            else
+                                                typeMsg = TYPE_LOGMESSAGE.DETAIL;
+
+                    //Добавление строки в таблицу с собщениями
+                    m_tableLog.Rows.Add(new object[] { dtMsg, (int)typeMsg, line });
+
+                    //Чтение строки сообщения
+                    line = content.ReadLine();
+
+                    while ((!(line == null)) && (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == false))
+                    {
+                        //Добавление строки в таблицу с собщениями
+                        m_tableLog.Rows.Add(new object[] { dtMsg, (int)TYPE_LOGMESSAGE.DETAIL, line });
+                        
+                        //Чтение строки сообщения
+                        line = content.ReadLine();
+                    }
+                }
             }
-            while (m_bAllowed == true);
 
             Console.WriteLine("Окончание обработки лог-файла. Обработано строк: {0}", m_tableLog.Rows.Count);
 

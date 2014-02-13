@@ -148,7 +148,7 @@ namespace StatisticCommon
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
         {
-            //connSettConfigDB = connSett;
+            Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
 
             m_ignore_connsett_data = ! bUseData;
 
@@ -167,6 +167,8 @@ namespace StatisticCommon
 
             foreach (TEC t in this.m_list_tec)
             {
+                Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
+                
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
                     {

@@ -1058,60 +1058,6 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
-        protected int getPBRNumber(int hour)
-        {
-            int iNum = -1;
-
-            switch (hour)
-            {
-                case 0:
-                case 1:
-                    iNum = 1;
-                    break;
-                case 2:
-                case 3:
-                    iNum = 3;
-                    break;
-                case 4:
-                case 5:
-                    iNum = 5;
-                    break;
-                case 6:
-                case 7:
-                    iNum = 7;
-                    break;
-                case 8:
-                case 9:
-                    iNum = 9;
-                    break;
-                case 10:
-                case 11:
-                    iNum = 11;
-                    break;
-                case 12:
-                case 13:
-                    iNum = 13;
-                    break;
-                case 14:
-                case 15:
-                    iNum = 15;
-                    break;
-                case 16:
-                case 17:
-                    iNum = 17;
-                    break;
-                case 18:
-                case 19:
-                    iNum = 19;
-                    break;
-                default:
-                    iNum = 21;
-                    break;
-            }
-
-            return iNum;
-        }
-
         protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
@@ -1167,13 +1113,14 @@ namespace StatisticCommon
                 }
                 else
                 {
+                    int pbrNumber = getPBRNumber(DateTime.Now.Hour);
                     // запись отсутствует, запоминаем значения
                     switch (m_typeFields)
                     {
                         case AdminTS.TYPE_FIELDS.STATIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "ПБР" + getPBRNumber(i) +
+                                        @"', '" + "ПБР" + pbrNumber +
                                         @"', '" + "0" +
                                         @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
@@ -1181,7 +1128,7 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "ПБР" + getPBRNumber(i) +
+                                        @"', '" + "ПБР" + pbrNumber +
                                         @"', " + comp.m_id +
                                         @", '" + "0" + "'" +
                                         @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +

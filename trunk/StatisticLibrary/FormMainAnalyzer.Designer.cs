@@ -76,6 +76,8 @@
             this.tabControlAnalyzer.SelectedIndex = 0;
             this.tabControlAnalyzer.Size = new System.Drawing.Size(561, 324);
             this.tabControlAnalyzer.TabIndex = 3;
+            this.tabControlAnalyzer.SelectedIndexChanged += new System.EventHandler(this.tabControlAnalyzer_SelectedIndexChanged);
+            this.tabControlAnalyzer.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControlAnalyzer_Selected);
             // 
             // tabPageLogging
             // 

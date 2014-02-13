@@ -79,23 +79,7 @@ namespace StatisticCommon
             m_LogParse = new LogParse ();
             m_LogParse.Exit = LogParseExit;
 
-            m_listTCPClientUsers = new List<TcpClientAsync> ();
-            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
-            {
-                //Проверка активности
-                m_listTCPClientUsers.Add (new TcpClientAsync());
-                m_listTCPClientUsers [i].delegateConnect = ConnectToChecked;
-                m_listTCPClientUsers[i].delegateErrorConnect = ErrorConnectToChecked;
-                m_listTCPClientUsers[i].delegateRead = Read;
-                //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
-            }
-
-            m_bThreadCheckedAllowed = true;
-
-            m_threadChecked = new Thread(Thread_ProcChecked);
-            m_threadChecked.IsBackground = true;
-            m_threadChecked.Name = "Поток опроса состояния пользователей";
-            m_threadChecked.Start ();
+            Thread_ProcCheckedStart ();
         }
 
         private void Thread_ProcChecked (object data)
@@ -122,12 +106,40 @@ namespace StatisticCommon
 
             m_LogParse.Stop();
 
+            Thread_ProcCheckedStop ();
+        }
+
+        private void Thread_ProcCheckedStart()
+        {
+            m_listTCPClientUsers = new List<TcpClientAsync>();
+            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
+            {
+                //Проверка активности
+                m_listTCPClientUsers.Add(new TcpClientAsync());
+                m_listTCPClientUsers[i].delegateConnect = ConnectToChecked;
+                m_listTCPClientUsers[i].delegateErrorConnect = ErrorConnect;
+                m_listTCPClientUsers[i].delegateRead = Read;
+                //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
+            }
+            
+            m_bThreadCheckedAllowed = true;
+
+            m_threadChecked = new Thread(Thread_ProcChecked);
+            m_threadChecked.IsBackground = true;
+            m_threadChecked.Name = "Поток опроса состояния пользователей";
+            m_threadChecked.Start();
+        }
+
+        private void Thread_ProcCheckedStop ()
+        {
             m_bThreadCheckedAllowed = false;
-            bool joined = m_threadChecked.Join (6666);
+            bool joined = m_threadChecked.Join(6666);
             if (joined == false)
-                m_threadChecked.Abort ();
+                m_threadChecked.Abort();
             else
                 ;
+
+            m_listTCPClientUsers.Clear ();
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
@@ -168,8 +180,22 @@ namespace StatisticCommon
 
                 m_tcpClient = new TcpClientAsync();
                 m_tcpClient.delegateRead = Read;
-                m_tcpClient.delegateConnect = ConnectToLogRead;
-                m_tcpClient.delegateErrorConnect = ErrorConnectToLogRead;
+
+                switch (tabControlAnalyzer.SelectedIndex)
+                {
+                    case 0:
+                        //Если активна 0-я вкладка (лог-файл)
+                        m_tcpClient.delegateConnect = ConnectToLogRead;
+                        break;
+                    case 1:
+                        //Если активна 1-я вкладка (вкладки)
+                        m_tcpClient.delegateConnect = ConnectToTab;
+                        break;
+                    default:
+                        break;
+                }
+
+                m_tcpClient.delegateErrorConnect = ErrorConnect;
 
                 //m_tcpClient.Connect("localhost", 6666);
                 m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
@@ -207,25 +233,20 @@ namespace StatisticCommon
             m_tcpClient.Write("LOG_LOCK=?");
         }
 
-        private void ErrorConnectToChecked(string ValueToCreate)
+        private void ConnectToTab(TcpClient res, string data)
         {
-            Console.WriteLine("FormAnalyzer::ErrorConnect () - {0}, индекс: {1}", ValueToCreate.Split(';')[0], ValueToCreate.Split(';')[1]);
-            dgvClient.Rows [Convert.ToInt32 (ValueToCreate.Split(';')[1])].Cells[0].Value = false;
+            m_tcpClient.Write("TAB_VISIBLE=?");
         }
 
-        private void ErrorConnectToLogRead(string ValueToCreate)
+        private void ErrorConnect(string ValueToCreate)
         {
-            if (!(m_tcpClient == null))
-            {
-                if (m_tcpClient.Equals(ValueToCreate) == true)
-                {
-                    
-                }
-                else
-                    ;
-            }
+            int indx = Convert.ToInt32 (ValueToCreate.Split(';')[1]);
+
+            Console.WriteLine("FormAnalyzer::ErrorConnect () - {0}, индекс: {1}", ValueToCreate.Split(';')[0], ValueToCreate.Split(';')[1]);
+            if (indx < dgvClient.Rows.Count) //m_tableUsers, m_listTcpClient
+                dgvClient.Rows [indx].Cells[0].Value = false;
             else
-                ;
+                ; //Отработка ошибки соединения для пользователя УЖЕ отсутствующего в списке
         }
 
         private void FillDataGridViews(ref DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
@@ -317,12 +338,14 @@ namespace StatisticCommon
 
         void Read (TcpClient res, string rec)
         {
-             //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
-            switch (rec.Split ('=') [0].Split (';')[0])
+            bool bResOk = rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase);
+
+            if (bResOk == true)
             {
-                case "INIT":
-                    if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
-                    {
+                //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
+                switch (rec.Split ('=') [0].Split (';')[0])
+                {
+                    case "INIT":
                         int indxTcpClient = getIndexTcpClient (res);
 
                         if (indxTcpClient < m_listTCPClientUsers.Count)
@@ -334,43 +357,41 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                    }
-                    else
-                        ;
-                    break;
-                case "LOG_LOCK":
-                    if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
-                    {
+                        break;
+                    case "LOG_LOCK":
                         //rec.Split('=')[1].Split(';')[1] - полный путь лог-файла
                         StartLogParse(rec.Split('=')[1].Split(';')[1]);
 
-                        m_tcpClient.Write("LOG_UNLOCK=?");                        
-                    }
-                    else
-                        ;
-                    break;
-                case "LOG_UNLOCK":
-                    if (rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase) == true)
-                    {
+                        m_tcpClient.Write("LOG_UNLOCK=?");
+                        break;
+                    case "LOG_UNLOCK":
                         Disconnect ();
-                    }
-                    else
-                        ;
-                    break;
-                case "":
-                    break;
-                default:
-                    break;
+                        break;
+                    case "TAB_VISIBLE":
+                        //rec.Split('=')[1].Split(';')[1] - список отображаемых вкладок пользователя
+                        Disconnect();
+                        break;
+                    case "DISCONNECT":
+                        break;
+                    case "":
+                        break;
+                    default:
+                        break;
+                }
             }
+            else
+                ;
         }
 
         private void dgvFilterRoles_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int i = -1, err = -1;
             string where = string.Empty;
-            
+
             if (e.ColumnIndex == 0)
             {
+                Thread_ProcCheckedStop ();
+
                 dgvFilterRoles.Rows [e.RowIndex].Cells [0].Value = ! bool.Parse (dgvFilterRoles.Rows [e.RowIndex].Cells [0].Value.ToString ());
 
                 for (i = 0; i < m_tableRoles.Rows.Count; i ++)
@@ -397,6 +418,8 @@ namespace StatisticCommon
 
                 Users.GetUsers(m_connSettConfigDB, where, list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
+
+                Thread_ProcCheckedStart();
             }
             else
                 ;
@@ -462,7 +485,10 @@ namespace StatisticCommon
             i = m_LogParse.Select(-1, dgvDatetimeStart.Rows[rowIndex].Cells[1].Value.ToString(), strDatetimeEnd, ref rows);
             for (i = 0; i < rows.Length; i++)
             {
-                TabLoggingAppendText ("[" + rows[i]["DATE_TIME"] + "]: " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
+                if (Convert.ToInt32(rows[i]["TYPE"]) == (int)LogParse.TYPE_LOGMESSAGE.DETAIL)
+                    TabLoggingAppendText("    " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
+                else
+                    TabLoggingAppendText ("[" + rows[i]["DATE_TIME"] + "]: " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
 
                 arTypeLogMsgCounter[Convert.ToInt32 (rows[i]["TYPE"])] ++;
             }
@@ -473,6 +499,16 @@ namespace StatisticCommon
             {
                 dgvTypeMessage.Rows [i].Cells [2].Value = arTypeLogMsgCounter [i];
             }
+        }
+
+        private void tabControlAnalyzer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabControlAnalyzer_Selected(object sender, TabControlEventArgs e)
+        {
+
         }
 
         /*

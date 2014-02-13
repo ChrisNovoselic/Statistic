@@ -136,6 +136,8 @@ namespace Statistic
                             break;
                     }
 
+                    Logging.Logg().LogDebugToFile("FormMain::Initialize () - Создание объекта m_arAdmin[i]; i = " + i);
+
                     //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
                     try { m_arAdmin[i].InitTEC(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData); }
                     catch (Exception e)
@@ -761,7 +763,10 @@ namespace Statistic
                     break;
                 case "LOG_UNLOCK":
                     Logging.Logg ().Resume ();
-                    
+
+                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    break;
+                case "TAB_VISIBLE":
                     m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "DISONNECT":

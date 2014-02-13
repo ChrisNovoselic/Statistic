@@ -15,9 +15,9 @@ namespace StatisticCommon
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
-        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 59666;
+        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
         private const Int32 TIMER_START_INTERVAL = 666;
-        
+
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
         protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };

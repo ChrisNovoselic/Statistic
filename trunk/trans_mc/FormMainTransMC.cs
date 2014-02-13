@@ -13,9 +13,17 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTrans
     {
+        struct SETUP_INI
+        {
+            public bool mc_ignore_date,
+                ts_ignore_date;
+        }
+
         private System.Windows.Forms.Label labelSourceServerMC;
         private System.Windows.Forms.TextBox tbxSourceServerMC;
         private System.Windows.Forms.Button buttonServerMC;
+
+        private SETUP_INI m_SetupINI;
 
         List<bool> m_listIsDataTECComponents;
 
@@ -41,6 +49,27 @@ namespace trans_mc
             this.panelMain.Controls.Add(this.m_dgwAdminTable);
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.ResumeLayout(false);
+
+            string sec, key;
+            FIleINI fileINI = new FIleINI ("setup.ini");
+            sec = "Интерпретация данных (" + ProgramBase.AppName + ")";
+            key = "ИгнорДатаВремя-ModesCentre";
+            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.mc_ignore_date) == false)
+            {
+                m_SetupINI.mc_ignore_date = false;
+                fileINI.WriteString(sec, key, m_SetupINI.mc_ignore_date.ToString());
+            }
+            else
+                ;
+
+            key = "ИгнорДатаВремя-techsite";
+            if (bool.TryParse (fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.ts_ignore_date) == false)
+            {
+                m_SetupINI.ts_ignore_date = false;
+                fileINI.WriteString(sec, key, m_SetupINI.ts_ignore_date.ToString ());
+            }
+            else
+                ;
 
             m_listIsDataTECComponents = new List<bool>();
 
@@ -151,19 +180,19 @@ namespace trans_mc
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
-                    //ErrorReport("Ошибка соединения. Перехож в ожидание.");
+                    //ErrorReport("Ошибка соединения. Переход в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;
                 }
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i].m_ignore_date = false;
+                        m_arAdmin[i].m_ignore_date = m_SetupINI.mc_ignore_date;
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
                         ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                        m_arAdmin[i].m_ignore_date = true;
+                        m_arAdmin[i].m_ignore_date = m_SetupINI.ts_ignore_date;
                         break;
                     default:
                         break;

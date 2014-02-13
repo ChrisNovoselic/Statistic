@@ -86,7 +86,7 @@ namespace StatisticCommon
         {
             LogLock();
 
-            LogToFile("Пауза ведения журнала...", true, true, false);
+            LogDebugToFile("Пауза ведения журнала...", false);
 
             sw.Close();
 
@@ -98,7 +98,7 @@ namespace StatisticCommon
             FileStream fs = fi.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
 
-            LogToFile("Возобновление ведения журнала...", true, true, false);
+            LogDebugToFile("Возобновление ведения журнала...", false);
 
             LogUnlock();
         }
@@ -228,11 +228,25 @@ namespace StatisticCommon
             }
         }
 
+        public void LogErrorToFile(string message, bool bLock = true)
+        {
+            if (bLock == true) LogLock(); else ;
+            LogToFile("!Отладка!: " + message, true, true, false);
+            if (bLock == true) LogUnlock(); else ;
+        }
+
+        public void LogDebugToFile(string message, bool bLock = true)
+        {
+            if (bLock == true) LogLock(); else ;
+            LogToFile("!Отладка!: " + message, true, true, false);
+            if (bLock == true) LogUnlock(); else ;
+        }
+
         public void LogExceptionToFile(Exception e, string message)
         {
             LogLock();
-            LogToFile("Обработка исключения: " + message, true, true, false);
-            LogToFile("Исключение: " + e.Message, false, false, false);
+            LogToFile("!Исключение!: " + message, true, true, false);
+            LogToFile(e.Message, false, false, false);
             LogToFile(e.ToString(), false, false, false);
             LogUnlock();
         }
