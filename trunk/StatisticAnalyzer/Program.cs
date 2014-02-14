@@ -20,7 +20,7 @@ namespace StatisticAnalyzer
             FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini");
             FormConnectionSettings formConnSett = new FormConnectionSettings(fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
 
-            Application.Run(new StatisticCommon.FormMainAnalyzer(formConnSett.getConnSett ()));
+            Application.Run(new StatisticCommon.FormMainAnalyzer(formConnSett.getConnSett(), new InitTEC(formConnSett.getConnSett(), true, false).tec));
 
             ProgramBase.Exit ();
         }

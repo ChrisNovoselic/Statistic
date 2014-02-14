@@ -28,12 +28,18 @@ namespace StatisticCommon
 
         ConnectionSettings m_connSettConfigDB;
 
+        CheckBox [] m_arCheckBoxMode;
+
         int m_prevDatetimeRowIndex;
 
         private const string list_sorted = @"DESCRIPTION";
         private const string NameFieldToConnect = "COMPUTER_NAME";
 
-        public FormMainAnalyzer(ConnectionSettings connSett)
+        List <TEC> m_listTEC;
+
+        Dictionary <int, int []> m_dicTabVisibleIdItems;
+
+        public FormMainAnalyzer(ConnectionSettings connSett, List <TEC> tec)
         {
             InitializeComponent();
             /*
@@ -49,7 +55,15 @@ namespace StatisticCommon
             this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
             */
 
+            m_arCheckBoxMode = new CheckBox[] { checkBoxTEC, checkBoxGTP, checkBoxPC, checkBoxTG };
+
             m_connSettConfigDB = connSett;
+            m_listTEC = tec;
+
+            m_dicTabVisibleIdItems = new Dictionary<int,int[]> ();
+            FillDataGridViewTabVisible ();
+
+            int i = -1;
 
             dgvFilterActives.Rows.Add (2);
             dgvFilterActives.Rows[0].Cells[0].Value = true; dgvFilterActives.Rows[0].Cells[1].Value = "Активные";
@@ -69,7 +83,7 @@ namespace StatisticCommon
             DbTSQLInterface.CloseConnection (connDB, out err);
 
             dgvTypeMessage.Rows.Add((int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE);
-            for (LogParse.TYPE_LOGMESSAGE i = 0; i < LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
+            for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
             {
                 dgvTypeMessage.Rows [(int)i].Cells [0].Value = true;
                 dgvTypeMessage.Rows[(int)i].Cells[1].Value = LogParse.DESC_LOGMESSAGE[(int)i];
@@ -171,34 +185,45 @@ namespace StatisticCommon
 
             if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
             {
-                m_LogParse.Stop();
+                bool bUpdate = true;
+                if (((tabControlAnalyzer.SelectedIndex == 0) && ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))) && (e == null))
+                    bUpdate = false;
+                else
+                    ;
 
-                dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
-                BeginInvoke(new DelegateFunc(TabLoggingClearText));
-
-                m_tcpClient = new TcpClientAsync();
-                m_tcpClient.delegateRead = Read;
-
-                switch (tabControlAnalyzer.SelectedIndex)
+                if (bUpdate == true)
                 {
-                    case 0:
-                        //Если активна 0-я вкладка (лог-файл)
-                        m_tcpClient.delegateConnect = ConnectToLogRead;
-                        break;
-                    case 1:
-                        //Если активна 1-я вкладка (вкладки)
-                        m_tcpClient.delegateConnect = ConnectToTab;
-                        break;
-                    default:
-                        break;
+                    m_tcpClient = new TcpClientAsync();
+                    m_tcpClient.delegateRead = Read;
+
+                    switch (tabControlAnalyzer.SelectedIndex)
+                    {
+                        case 0:
+                            m_LogParse.Stop();
+
+                            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+                            BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
+                            BeginInvoke(new DelegateFunc(TabLoggingClearText));
+                            
+                            //Если активна 0-я вкладка (лог-файл)
+                            m_tcpClient.delegateConnect = ConnectToLogRead;
+                            break;
+                        case 1:
+                            //Если активна 1-я вкладка (вкладки)
+                            m_tcpClient.delegateConnect = ConnectToTab;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    m_tcpClient.delegateErrorConnect = ErrorConnect;
+
+                    //m_tcpClient.Connect("localhost", 6666);
+                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
                 }
-
-                m_tcpClient.delegateErrorConnect = ErrorConnect;
-
-                //m_tcpClient.Connect("localhost", 6666);
-                m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                else
+                    ; //Обновлять нет необходимости
             }
             else
                 ;
@@ -368,7 +393,52 @@ namespace StatisticCommon
                         Disconnect ();
                         break;
                     case "TAB_VISIBLE":
-                        //rec.Split('=')[1].Split(';')[1] - список отображаемых вкладок пользователя
+                        string [] recParameters = rec.Split('=')[1].Split(';'); //список отображаемых вкладок пользователя
+                        int i = -1,
+                            mode = -1
+                            //, key = -1
+                            ;
+                        int [] IdItems;
+                        string [] indexes = null;
+                        bool bChecked = false;
+
+                        if (recParameters.Length > 1)
+                        {
+                            mode = Convert.ToInt32 (recParameters [1]);
+
+                            //Состояние эл-ов упр-я 'CheckBox' (ТЭЦ, ГТП, ТГ, ЩУ)
+                            for (i = 0; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i ++)
+                                if (FormChangeMode.IsModeTECComponent(mode, (FormChangeMode.MODE_TECCOMPONENT)i) == true)
+                                    m_arCheckBoxMode [i].CheckState = CheckState.Checked;
+                                else
+                                    m_arCheckBoxMode[i].CheckState = CheckState.Unchecked;
+
+                            if (recParameters.Length > 2)
+                            {
+                                indexes = recParameters[2].Split(',');
+                                //arIndexes = recParameters[2].Split(',').ToArray <int> ();
+
+                                IdItems = new int [indexes.Length];
+                                for (i = 0; i < indexes.Length; i++)
+                                    IdItems [i] = Convert.ToInt32(indexes[i]);
+
+                                foreach (KeyValuePair <int, int []> pair in m_dicTabVisibleIdItems)
+                                {
+                                    if (IdItems.Contains (pair.Key) == true)
+                                        bChecked = true;
+                                    else
+                                        bChecked = false;
+
+                                    dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = bChecked;
+                                }
+                            }
+                            else
+                                ; //Не отображается ни одна вкладка
+                        }
+                        else
+                        {// !Ошибка! Не переданы индексы отображаемых вкладок
+                        }
+
                         Disconnect();
                         break;
                     case "DISCONNECT":
@@ -503,12 +573,78 @@ namespace StatisticCommon
 
         private void tabControlAnalyzer_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            dgvClient_SelectionChanged (null, null);
         }
 
         private void tabControlAnalyzer_Selected(object sender, TabControlEventArgs e)
         {
 
+        }
+
+        private void FillDataGridViewTabVisible ()
+        {
+            int tec_indx = 0,
+                comp_indx = 0,
+                across_indx = -1
+                , col = -1;
+
+            if (!(m_listTEC == null))
+                foreach (TEC t in m_listTEC)
+                {
+                    tec_indx ++;
+                    comp_indx = 0;
+
+                    col = (tec_indx - 1) * 2 + 1;
+
+                    //Добавть 2 столбца (CheckBox, TextBox)
+                    dgvTabVisible.Columns.AddRange (new DataGridViewColumn [] {new DataGridViewCheckBoxColumn (false), new DataGridViewTextBoxColumn ()});
+
+                    this.dgvTabVisible.Columns [col - 1].Frozen = false;
+                    this.dgvTabVisible.Columns[col - 1].HeaderText = "Use";
+                    this.dgvTabVisible.Columns[col - 1].Name = "dataGridViewTabVisibleCheckBoxColumnUse";
+                    this.dgvTabVisible.Columns[col - 1].ReadOnly = true;
+                    this.dgvTabVisible.Columns[col - 1].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                    this.dgvTabVisible.Columns[col - 1].Width = 25;
+
+                    this.dgvTabVisible.Columns[col].Frozen = false;
+                    this.dgvTabVisible.Columns[col].HeaderText = "Desc";
+                    this.dgvTabVisible.Columns[col].Name = "dataGridViewTabVisibleTextBoxColumnDesc";
+                    this.dgvTabVisible.Columns[col].ReadOnly = true;
+                    this.dgvTabVisible.Columns[col].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                    this.dgvTabVisible.Columns[col].Width = 145;
+
+                    across_indx++;
+
+                    if (dgvTabVisible.Rows.Count < (comp_indx + 1))
+                        dgvTabVisible.Rows.Add ();
+                    else
+                        ;
+
+                    dgvTabVisible.Rows [comp_indx].Cells [col].Value = t.name;
+                    m_dicTabVisibleIdItems.Add(t.m_id, new int[] { comp_indx, col - 1 });
+
+                    if (t.list_TECComponents.Count > 0)
+                    {
+                        foreach (TECComponent g in t.list_TECComponents)
+                        {
+                            comp_indx++;
+                            
+                            across_indx++;
+
+                            if (dgvTabVisible.Rows.Count < (comp_indx + 1))
+                                dgvTabVisible.Rows.Add();
+                            else
+                                ;
+
+                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name + " - " + g.name;
+                            m_dicTabVisibleIdItems.Add(g.m_id, new int[] { comp_indx, col - 1 });
+                        }
+                    }
+                    else
+                        ;
+                }
+            else
+                ; //m_listTEC == null
         }
 
         /*

@@ -27,7 +27,7 @@ namespace StatisticCommon
         public DelegateTcpAsyncFunc delegateConnect, delegateRead;
 
         /// <summary>
-        /// Construct a new client from a known IP Address
+        /// Конструктор по известному IP-адресу
         /// </summary>
         /// <param name="address">The IP Address of the server</param>
         /// <param name="port">The port of the server</param>
@@ -46,11 +46,11 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Construct a new client where the address or host name of
-        /// the server is known.
+        /// Конструктор по IP-адресу или сетевому имени компьютера
+        /// известному в домене.
         /// </summary>
-        /// <param name="hostNameOrAddress">The host name or address of the server</param>
-        /// <param name="port">The port of the server</param>
+        /// <param name="hostNameOrAddress">Сетевое имя или IP-адрес</param>
+        /// <param name="port">Номер порт для подключения к серверу</param>
         public TcpClientAsync(string hostNameOrAddress, int port) : this (port)
         {
             m_ValueToCreate = hostNameOrAddress;
@@ -60,8 +60,8 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Private constuctor called by other constuctors
-        /// for common operations.
+        /// Защищенный конструктор для других конструкторов
+        /// общий для нескольких операций.
         /// </summary>
         /// <param name="port"></param>
         private TcpClientAsync(int port)
@@ -87,7 +87,7 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// The endoding used to encode/decode string when sending and receiving.
+        /// Объект, использующийся для кодировки/декодировки отправляемых/получаемых сообщений.
         /// </summary>
         public Encoding m_Encoding { get; set; }
 
@@ -132,13 +132,13 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Attempts to connect to one of the specified IP Addresses
+        /// Попытка соединения по какому-либо из заданных IP-адресов
         /// </summary>
         public void Connect()
         {
             int indxAddresses = -1;
             if ((!(m_addressesSet == null)) && (!(m_addressesGet == null)))
-                //Wait for the addresses value to be set
+                //Ожидание пока адрес не будет установлен или произойдет ошибка при его опрежелении из DNS
                 indxAddresses = WaitHandle.WaitAny(new WaitHandle[] { m_addressesGet, m_addressesSet });
             else
                 ;
@@ -149,7 +149,7 @@ namespace StatisticCommon
                     ErrorConnect ();
                     break;
                 case 1:
-                    //Set the failed connection count to 0
+                    //Установить счетчик сбойных подключений в '0'
                     Interlocked.Exchange(ref m_failedConnectionCount, 0);
 
                     if (m_tcpClient.Connected == false)
@@ -166,11 +166,11 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Writes a string to the network using the defualt encoding.
+        /// Запись строки в поток с использованием кодировки по умолчанию.
         /// </summary>
-        /// <param name="data">The string to write</param>
-        /// <returns>A WaitHandle that can be used to detect
-        /// when the write operation has completed.</returns>
+        /// <param name="data">Строка для записи</param>
+        /// <returns>A WaitHandle может использоваться для определения
+        /// завершения операции записи.</returns>
         public void Write(string data)
         {
             byte[] bytes = m_Encoding.GetBytes(data);
@@ -178,43 +178,49 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Writes an array of bytes to the network.
+        /// Запись массива байтов в поток записи открытого соединения
         /// </summary>
-        /// <param name="bytes">The array to write</param>
-        /// <returns>A WaitHandle that can be used to detect
-        /// when the write operation has completed.</returns>
+        /// <param name="bytes">Массив для записи</param>
+        /// <returns>WaitHandle может использоваться для определения
+        /// завершения операции записи.</returns>
         public void Write(byte[] bytes)
         {
             if (m_evWrite.WaitOne (666) == true)
             {
+                //Запись разрешена
                 NetworkStream networkStream = null;
                 try { networkStream = m_tcpClient.GetStream(); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Write(byte[] ) - ...");
                 }
-                //Start async write operation
+                //Начало операции асинхронной записи
                 networkStream.BeginWrite(bytes, 0, bytes.Length, WriteCallback, null);
             }
             else
-                ;
+                ; //Запись запрещена при этом происходит потеря сообщения 'bytes'
         }
 
         /// <summary>
-        /// Callback for Write operation
+        ///Функция возврата для операции записи
         /// </summary>
         /// <param name="result">The AsyncResult object</param>
         private void WriteCallback(IAsyncResult result)
         {
-            NetworkStream networkStream = m_tcpClient.GetStream();
-            networkStream.EndWrite(result);
+            if (m_tcpClient.Connected == true)
+            {
+                NetworkStream networkStream = m_tcpClient.GetStream();
+                networkStream.EndWrite(result);
+            }
+            else
+                ;
 
             m_evWrite.Set();
 
         }
 
         /// <summary>
-        /// Callback for Connect operation
+        /// Функция возврата для операции соединения
         /// </summary>
         /// <param name="result">The AsyncResult object</param>
         private void ConnectCallback(IAsyncResult result)
@@ -225,14 +231,11 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                //Increment the failed connection count in a thread safe way
+                //Инкрементация количества сбойных попыток установить соединение
                 Interlocked.Increment(ref m_failedConnectionCount);
 
                 if (!(m_failedConnectionCount < m_addresses.Length))
-                {
-                    //We have failed to connect to all the IP Addresses
-                    //connection has failed overall.
-
+                {//Сбой соединения для всех IP-адресов
                     ErrorConnect ();
                 }
                 else
@@ -243,15 +246,17 @@ namespace StatisticCommon
                 return;
             }
 
-            //We are connected successfully.
+            //Запрос на соединение завершился успешно
             NetworkStream networkStream = m_tcpClient.GetStream();
             byte[] buffer = new byte[m_tcpClient.ReceiveBufferSize];
 
-            //Now we are connected start asyn read operation.
+            //Подключены и ожидаем сообщения
             networkStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
 
+            //Событие готовности к записи
             m_evWrite.Set ();
 
+            //Внешний метод обработки события "успешное соединение"
             delegateConnect(m_tcpClient, null);
         }
 

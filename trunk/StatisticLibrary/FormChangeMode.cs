@@ -10,11 +10,13 @@ namespace StatisticCommon
 {
     public partial class FormChangeMode : Form
     {
-        public List<TEC> tec;
-        public List<int> tec_index,
-                        TECComponent_index,
-                        across_index,
-                        m_listAcrossIndexCheckedIndices;
+        public List<TEC> m_list_tec;
+        public List<int> m_list_tec_index,
+                        m_list_TECComponent_index
+                        , m_list_across_index
+                        , m_listAcrossIndexCheckedIndices
+                        , m_list_IdItem
+                        ;
         private CheckBox[] m_arCheckBoxTECComponent;
         public List<int> was_checked;
         public bool /*[]*/ admin_was_checked;
@@ -29,7 +31,7 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
-            this.tec = tec;
+            this.m_list_tec = tec;
 
             m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
                                                                                         checkBoxGTP,
@@ -38,10 +40,11 @@ namespace StatisticCommon
 
             admin_was_checked = false; //new bool [2] {false, false};
 
-            tec_index = new List<int>();
-            TECComponent_index = new List<int>();
-            across_index = new List<int>();
+            m_list_tec_index = new List<int>();
+            m_list_TECComponent_index = new List<int>();
+            m_list_across_index = new List<int>();
             m_listAcrossIndexCheckedIndices = new List <int> ();
+            m_list_IdItem = new List<int>();
             was_checked = new List<int>();
 
             m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.TEC].Checked = true;
@@ -50,6 +53,10 @@ namespace StatisticCommon
             closing = false;
         }
 
+        /// <summary>
+        /// Возвращает режим (int), выбранный пользователем
+        /// для формирования списка компонентов
+        /// </summary>
         public int getModeTECComponent() {
             int iMode = 0;
 
@@ -66,6 +73,28 @@ namespace StatisticCommon
             int offset = 0;
 
             if ((getModeTECComponent() & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
+            {
+                bRes = true;
+            }
+            else
+                ;
+
+            return bRes;
+        }
+
+        /// <summary>
+        /// Метод (статический) проверки является ли тип режима составляющим для режима
+        /// выбранного пользователем для отображения списка вкладок
+        /// </summary>
+        /// <param name="checkMode">Режим для проверки</param>
+        /// <param name="mode">Тип для режима</param>
+        /// <returns></returns>
+        public static bool IsModeTECComponent(int checkMode, MODE_TECCOMPONENT mode)
+        {
+            bool bRes = false;
+            int offset = 0;
+
+            if ((checkMode & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
             {
                 bRes = true;
             }
@@ -94,34 +123,43 @@ namespace StatisticCommon
             return @"ПБР - " + arNameAdminValues[(int)mode];
         }
 
+        private void FillListAcrossIndexCheckedIndicies ()
+        {
+            foreach (int indx in m_list_across_index)
+            {
+                if (clbMode.CheckedIndices.IndexOf(m_list_across_index.IndexOf(indx)) < 0)
+                    if (!(m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0))
+                        m_listAcrossIndexCheckedIndices.RemoveAt(m_listAcrossIndexCheckedIndices.IndexOf(indx));
+                    else
+                        ;
+                else                    
+                    if (m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0)
+                        m_listAcrossIndexCheckedIndices.Add(indx);
+                    else
+                        ;
+            }
+        }
+
         private void FillListBoxTab()
         {
-            if (!(tec == null))
+            if (!(m_list_tec == null))
             {
                 int tec_indx = 0, comp_indx = 0, across_indx = -1;
- 
-                foreach (int indx in across_index)
-                {
-                    if (clbMode.CheckedIndices.IndexOf(across_index.IndexOf(indx)) < 0)
-                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0))
-                            m_listAcrossIndexCheckedIndices.RemoveAt(m_listAcrossIndexCheckedIndices.IndexOf(indx));
-                        else
-                            ;
-                    else                    
-                        if (m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0)
-                            m_listAcrossIndexCheckedIndices.Add(indx);
-                        else
-                            ;
-                }
+
+                FillListAcrossIndexCheckedIndicies ();
 
                 clbMode.Items.Clear();
 
-                tec_index.Clear();
-                TECComponent_index.Clear();
-                across_index.Clear();
+                m_list_IdItem.Clear ();
+
+                m_list_tec_index.Clear();
+                m_list_TECComponent_index.Clear();
+                
+                m_list_across_index.Clear();
+                
                 //was_checked.Clear ();
 
-                foreach (TEC t in tec)
+                foreach (TEC t in m_list_tec)
                 {
                     across_indx++;
 
@@ -129,10 +167,12 @@ namespace StatisticCommon
                     {
                         clbMode.Items.Add(t.name);
 
-                        tec_index.Add(tec_indx);
-                        TECComponent_index.Add(-1);
+                        m_list_IdItem.Add(t.m_id);
 
-                        across_index.Add (across_indx);
+                        m_list_tec_index.Add(tec_indx);
+                        m_list_TECComponent_index.Add(-1);
+
+                        m_list_across_index.Add(across_indx);
 
                         if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
                             clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
@@ -155,10 +195,12 @@ namespace StatisticCommon
                             {
                                 clbMode.Items.Add(t.name + " - " + g.name);
 
-                                tec_index.Add(tec_indx);
-                                TECComponent_index.Add(comp_indx);
+                                m_list_IdItem.Add(g.m_id);
 
-                                across_index.Add(across_indx);
+                                m_list_tec_index.Add(tec_indx);
+                                m_list_TECComponent_index.Add(comp_indx);
+
+                                m_list_across_index.Add(across_indx);
 
                                 if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
                                     clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
@@ -177,7 +219,7 @@ namespace StatisticCommon
                     tec_indx++;
                 }
 
-                if ((getModeTECComponent() > 0) && (tec.Count > 0))
+                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0))
                     if (IsModeTECComponent (MODE_TECCOMPONENT.GTP)) {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                     }
@@ -210,6 +252,9 @@ namespace StatisticCommon
                 else
                     was_checked.Add(clbMode.CheckedIndices[i]);
             }
+
+            FillListAcrossIndexCheckedIndicies ();
+
             this.DialogResult = DialogResult.OK;
             closing = true;
             Close();
@@ -248,7 +293,7 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if ((getModeTECComponent() > 0) && (tec.Count > 0) && (clbMode.Items.Count > 0))
+            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0))
                 clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
             else
                 ;
@@ -257,6 +302,23 @@ namespace StatisticCommon
         private void checkBox_CheckedChanged(object sender, EventArgs e)
         {
             FillListBoxTab();
+        }
+
+        public string getIdItemsCheckedIndicies ()
+        {
+            string strRes = string.Empty;
+            int i = -1;
+
+            for (i = 0; i < was_checked.Count; i ++)
+            {
+                strRes += m_list_IdItem[was_checked[i]];
+                if ((i + 1) < was_checked.Count)
+                    strRes += ",";
+                else
+                    ;
+            }
+
+            return strRes;
         }
     }
 }

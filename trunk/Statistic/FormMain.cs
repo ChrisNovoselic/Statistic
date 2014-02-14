@@ -117,7 +117,11 @@ namespace Statistic
             if (bRes == true)
             {
                 if (! (user.Role == 2)) //Администратор
-                    администрированиеToolStripMenuItem.Enabled = false;
+                {
+                    параметрыToolStripMenuItem.Enabled =
+                    администрированиеToolStripMenuItem.Enabled =
+                    false;
+                }
                 else;
 
                 m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
@@ -136,7 +140,7 @@ namespace Statistic
                             break;
                     }
 
-                    Logging.Logg().LogDebugToFile("FormMain::Initialize () - Создание объекта m_arAdmin[i]; i = " + i);
+                    //Logging.Logg().LogDebugToFile("FormMain::Initialize () - Создание объекта m_arAdmin[i]; i = " + i);
 
                     //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
                     try { m_arAdmin[i].InitTEC(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData); }
@@ -354,7 +358,7 @@ namespace Statistic
                     tclTecViews.TabPages.Clear();
                     selectedTecViews.Clear();
 
-                    for (int i = 0; i < formChangeMode.tec_index.Count; i++)
+                    for (int i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
                     {
                         tecViews [i].Stop ();
                     }
@@ -384,7 +388,7 @@ namespace Statistic
 
         private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), formChangeMode.m_list_tec);
             formAnalyzer.ShowDialog (this);
         }
 
@@ -497,7 +501,7 @@ namespace Statistic
                             // создаём все tecview
                             int tec_indx = 0,
                                 comp_indx;
-                            foreach (TEC t in formChangeMode.tec)
+                            foreach (TEC t in formChangeMode.m_list_tec)
                             {
                                 tecView = new TecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], m_statusStripMain, formGraphicsSettings, formParameters);
                                 tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
@@ -531,12 +535,12 @@ namespace Statistic
                         //List<int> list_tecView_index_visible = new List<int>();
                         List <int> list_tecView_index_checked = new List <int> ();
                         // отображаем вкладки ТЭЦ
-                        for (i = 0; i < formChangeMode.tec_index.Count; i++) //или TECComponent_index.Count
+                        for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++) //или TECComponent_index.Count
                         {
                             if (!(formChangeMode.was_checked.IndexOf(i) < 0))
                             {
-                                int tec_index = formChangeMode.tec_index [i],
-                                    TECComponent_index = formChangeMode.TECComponent_index[i];
+                                int tec_index = formChangeMode.m_list_tec_index[i],
+                                    TECComponent_index = formChangeMode.m_list_TECComponent_index[i];
 
                                 for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index ++) {
                                     if ((tecViews [tecView_index].num_TEC == tec_index) && (tecViews [tecView_index].num_TECComponent == TECComponent_index))
@@ -555,10 +559,11 @@ namespace Statistic
 
                                     if (TECComponent_index == -1)
                                     {
-                                        tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
+                                        //tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name);
                                     }
                                     else
-                                        tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name + " - " + m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + " - " + formChangeMode.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name);
 
                                     tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                     selectedTecViews.Add(tecViews[tecView_index]);
@@ -767,7 +772,19 @@ namespace Statistic
                     m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "TAB_VISIBLE":
-                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    int i = -1,
+                        mode = formChangeMode.getModeTECComponent ();
+                    string strIdItems = string.Empty,
+                            mes = "OK" + ";";
+                    mes += mode;
+
+                    strIdItems = formChangeMode.getIdItemsCheckedIndicies ();
+                    if (strIdItems.Equals (string.Empty) == false)
+                        mes += "; " + strIdItems;
+                    else
+                        ;
+
+                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + mes);
                     break;
                 case "DISONNECT":
                     break;
@@ -789,16 +806,16 @@ namespace Statistic
 
                 // отображаем вкладки ТЭЦ
                 int index;
-                for (i = 0; i < formChangeMode.tec_index.Count; i++)
+                for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
                 {
-                    TEC t = m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.tec_index[i]];
+                    TEC t = m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
 
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
-                        if (formChangeMode.TECComponent_index[formChangeMode.was_checked[index]] == -1)
+                        if (formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]] == -1)
                             tclTecViews.TabPages.Add(t.name);
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.TECComponent_index[formChangeMode.was_checked[index]]].name);
+                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name);
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);

@@ -148,7 +148,7 @@ namespace StatisticCommon
 
         public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
         {
-            Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
+            //Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
 
             m_ignore_connsett_data = ! bUseData;
 
@@ -167,7 +167,7 @@ namespace StatisticCommon
 
             foreach (TEC t in this.m_list_tec)
             {
-                Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
+                //Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
                 
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
@@ -266,9 +266,19 @@ namespace StatisticCommon
             ClearDates(CONN_SETT_TYPE.PBR);
         }
 
-        protected int getPBRNumber(int hour)
+        protected int getPBRNumber(int hour = -1)
         {
             int iNum = -1;
+
+            if (hour < 0)
+            {
+                if (m_ignore_date == true)
+                    hour = DateTime.Now.Hour;
+                else
+                    hour = serverTime.Hour;
+            }
+            else
+                ;
 
             switch (hour)
             {

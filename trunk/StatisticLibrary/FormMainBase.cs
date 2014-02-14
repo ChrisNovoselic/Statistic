@@ -10,6 +10,7 @@ namespace StatisticCommon
     public delegate void DelegateStringFunc(string param);
     public delegate void DelegateBoolFunc(bool param);
     public delegate void DelegateObjectFunc(object obj);
+    public delegate void DelegateRefObjectFunc(ref object obj);
 
     public abstract class FormMainBase : Form
     {

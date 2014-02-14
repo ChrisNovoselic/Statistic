@@ -1096,7 +1096,8 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] +
                                         " SET " +
-                                        @"PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @"PBR_NUMBER='œ¡–" + getPBRNumber().ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmax='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @" WHERE " +

@@ -109,7 +109,7 @@ namespace StatisticCommon
 
             //Чтение 1-ой строки лог-файла
             line = content.ReadLine();
-            
+
             while (!(line == null))
             {
                 //Проверка на разделитель сообщение-сообщение

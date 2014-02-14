@@ -55,13 +55,21 @@
             this.dgvClient = new System.Windows.Forms.DataGridView();
             this.dataGridViewClientCheckBoxColumnActive = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.dataGridViewClientTextBoxColumnDesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgvTabVisible = new System.Windows.Forms.DataGridView();
+            this.checkBoxTEC = new System.Windows.Forms.CheckBox();
+            this.checkBoxTG = new System.Windows.Forms.CheckBox();
+            this.checkBoxGTP = new System.Windows.Forms.CheckBox();
+            this.checkBoxPC = new System.Windows.Forms.CheckBox();
+            this.checkBoxAdmin = new System.Windows.Forms.CheckBox();
             this.tabControlAnalyzer.SuspendLayout();
             this.tabPageLogging.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTypeMessage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDatetimeStart)).BeginInit();
+            this.tabPageTabes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActives)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoles)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvClient)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTabVisible)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControlAnalyzer
@@ -210,6 +218,12 @@
             // 
             // tabPageTabes
             // 
+            this.tabPageTabes.Controls.Add(this.checkBoxAdmin);
+            this.tabPageTabes.Controls.Add(this.checkBoxPC);
+            this.tabPageTabes.Controls.Add(this.checkBoxGTP);
+            this.tabPageTabes.Controls.Add(this.checkBoxTG);
+            this.tabPageTabes.Controls.Add(this.checkBoxTEC);
+            this.tabPageTabes.Controls.Add(this.dgvTabVisible);
             this.tabPageTabes.Location = new System.Drawing.Point(4, 22);
             this.tabPageTabes.Name = "tabPageTabes";
             this.tabPageTabes.Padding = new System.Windows.Forms.Padding(3);
@@ -375,6 +389,78 @@
             this.dataGridViewClientTextBoxColumnDesc.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridViewClientTextBoxColumnDesc.Width = 145;
             // 
+            // dgvTabVisible
+            // 
+            this.dgvTabVisible.AllowUserToAddRows = false;
+            this.dgvTabVisible.AllowUserToDeleteRows = false;
+            this.dgvTabVisible.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.dgvTabVisible.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvTabVisible.ColumnHeadersVisible = false;
+            this.dgvTabVisible.Location = new System.Drawing.Point(6, 54);
+            this.dgvTabVisible.MultiSelect = false;
+            this.dgvTabVisible.Name = "dgvTabVisible";
+            this.dgvTabVisible.RowHeadersVisible = false;
+            this.dgvTabVisible.RowTemplate.Height = 18;
+            this.dgvTabVisible.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTabVisible.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.dgvTabVisible.Size = new System.Drawing.Size(547, 211);
+            this.dgvTabVisible.TabIndex = 15;
+            // 
+            // checkBoxTEC
+            // 
+            this.checkBoxTEC.AutoSize = true;
+            this.checkBoxTEC.Enabled = false;
+            this.checkBoxTEC.Location = new System.Drawing.Point(6, 6);
+            this.checkBoxTEC.Name = "checkBoxTEC";
+            this.checkBoxTEC.Size = new System.Drawing.Size(48, 17);
+            this.checkBoxTEC.TabIndex = 16;
+            this.checkBoxTEC.Text = "ТЭЦ";
+            this.checkBoxTEC.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxTG
+            // 
+            this.checkBoxTG.AutoSize = true;
+            this.checkBoxTG.Enabled = false;
+            this.checkBoxTG.Location = new System.Drawing.Point(6, 29);
+            this.checkBoxTG.Name = "checkBoxTG";
+            this.checkBoxTG.Size = new System.Drawing.Size(39, 17);
+            this.checkBoxTG.TabIndex = 17;
+            this.checkBoxTG.Text = "ТГ";
+            this.checkBoxTG.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxGTP
+            // 
+            this.checkBoxGTP.AutoSize = true;
+            this.checkBoxGTP.Enabled = false;
+            this.checkBoxGTP.Location = new System.Drawing.Point(112, 6);
+            this.checkBoxGTP.Name = "checkBoxGTP";
+            this.checkBoxGTP.Size = new System.Drawing.Size(47, 17);
+            this.checkBoxGTP.TabIndex = 18;
+            this.checkBoxGTP.Text = "ГТП";
+            this.checkBoxGTP.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxPC
+            // 
+            this.checkBoxPC.AutoSize = true;
+            this.checkBoxPC.Enabled = false;
+            this.checkBoxPC.Location = new System.Drawing.Point(112, 29);
+            this.checkBoxPC.Name = "checkBoxPC";
+            this.checkBoxPC.Size = new System.Drawing.Size(44, 17);
+            this.checkBoxPC.TabIndex = 19;
+            this.checkBoxPC.Text = "ЩУ";
+            this.checkBoxPC.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxAdmin
+            // 
+            this.checkBoxAdmin.AutoSize = true;
+            this.checkBoxAdmin.Enabled = false;
+            this.checkBoxAdmin.Location = new System.Drawing.Point(6, 275);
+            this.checkBoxAdmin.Name = "checkBoxAdmin";
+            this.checkBoxAdmin.Size = new System.Drawing.Size(48, 17);
+            this.checkBoxAdmin.TabIndex = 20;
+            this.checkBoxAdmin.Text = "ПБР";
+            this.checkBoxAdmin.UseVisualStyleBackColor = true;
+            // 
             // FormMainAnalyzer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -400,9 +486,12 @@
             this.tabPageLogging.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTypeMessage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDatetimeStart)).EndInit();
+            this.tabPageTabes.ResumeLayout(false);
+            this.tabPageTabes.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActives)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoles)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvClient)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTabVisible)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -436,6 +525,12 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn2;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCount;
+        private System.Windows.Forms.CheckBox checkBoxAdmin;
+        private System.Windows.Forms.CheckBox checkBoxPC;
+        private System.Windows.Forms.CheckBox checkBoxGTP;
+        private System.Windows.Forms.CheckBox checkBoxTG;
+        private System.Windows.Forms.CheckBox checkBoxTEC;
+        private System.Windows.Forms.DataGridView dgvTabVisible;
     }
 }
 
