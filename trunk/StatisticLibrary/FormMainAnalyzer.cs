@@ -174,6 +174,16 @@ namespace StatisticCommon
                 ;
         }
 
+        private void SetModeVisibleTabs (int mode)
+        {
+            //Состояние эл-ов упр-я 'CheckBox' (ТЭЦ, ГТП, ТГ, ЩУ)
+            for (int i = 0; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+                if (FormChangeMode.IsModeTECComponent(mode, (FormChangeMode.MODE_TECCOMPONENT)i) == true)
+                    m_arCheckBoxMode[i].CheckState = CheckState.Checked;
+                else
+                    m_arCheckBoxMode[i].CheckState = CheckState.Unchecked;
+        }
+
         private void dgvClient_SelectionChanged(object sender, EventArgs e)
         {
             if (!(m_tcpClient == null))
@@ -186,8 +196,14 @@ namespace StatisticCommon
             if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
             {
                 bool bUpdate = true;
-                if (((tabControlAnalyzer.SelectedIndex == 0) && ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))) && (e == null))
-                    bUpdate = false;
+                if (tabControlAnalyzer.SelectedIndex == 0)
+                    if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
+                        if (e == null)
+                            bUpdate = false;
+                        else
+                            ;
+                    else
+                        ;
                 else
                     ;
 
@@ -199,10 +215,12 @@ namespace StatisticCommon
                     switch (tabControlAnalyzer.SelectedIndex)
                     {
                         case 0:
+                            //Останов потока разбора лог-файла пред. пользователя
                             m_LogParse.Stop();
 
                             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
+                            //Очистить элементы управления с данными от пред. лог-файла
                             BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
                             BeginInvoke(new DelegateFunc(TabLoggingClearText));
                             
@@ -210,6 +228,10 @@ namespace StatisticCommon
                             m_tcpClient.delegateConnect = ConnectToLogRead;
                             break;
                         case 1:
+                            //Очистить элементы управления с данными от пред. пользователя
+                            BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
+                            BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
+
                             //Если активна 1-я вкладка (вкладки)
                             m_tcpClient.delegateConnect = ConnectToTab;
                             break;
@@ -348,6 +370,12 @@ namespace StatisticCommon
                 ;
         }
 
+        private void TabVisibliesClearChecked ()
+        {
+            foreach (KeyValuePair<int, int[]> pair in m_dicTabVisibleIdItems)
+                dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = false;
+        }
+
         private void StartLogParse (string full_path)
         {
             FileInfo fi = new FileInfo(full_path);
@@ -406,12 +434,7 @@ namespace StatisticCommon
                         {
                             mode = Convert.ToInt32 (recParameters [1]);
 
-                            //Состояние эл-ов упр-я 'CheckBox' (ТЭЦ, ГТП, ТГ, ЩУ)
-                            for (i = 0; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i ++)
-                                if (FormChangeMode.IsModeTECComponent(mode, (FormChangeMode.MODE_TECCOMPONENT)i) == true)
-                                    m_arCheckBoxMode [i].CheckState = CheckState.Checked;
-                                else
-                                    m_arCheckBoxMode[i].CheckState = CheckState.Unchecked;
+                            BeginInvoke (new DelegateIntFunc (SetModeVisibleTabs), mode);
 
                             if (recParameters.Length > 2)
                             {
@@ -433,7 +456,8 @@ namespace StatisticCommon
                                 }
                             }
                             else
-                                ; //Не отображается ни одна вкладка
+                                //Не отображается ни одна вкладка
+                                TabVisibliesClearChecked ();
                         }
                         else
                         {// !Ошибка! Не переданы индексы отображаемых вкладок
