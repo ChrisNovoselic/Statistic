@@ -148,7 +148,7 @@ namespace Statistic
             WinterToSummer,
             SummerToWinter,
         }
-        
+
         private struct valuesS
         {
             public volatile double[] valuesFact;
@@ -5158,13 +5158,23 @@ namespace Statistic
         
         private void TickTime()
         {
-            serverTime = serverTime.AddSeconds(1);
-            lblServerTime.Text = serverTime.ToString("HH:mm:ss");
+            try 
+            {
+                serverTime = serverTime.AddSeconds(1);
+                lblServerTime.Text = serverTime.ToString("HH:mm:ss");
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         private void TimerCurrent_Tick(Object stateInfo)
         {
-            Invoke(delegateTickTime);
+            try { Invoke(delegateTickTime); }
+            catch (Exception e)
+            {
+                return;
+            }
             if (currHour && isActive)
                 if (((currValuesPeriod++) * 1000) >= parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
                 {
@@ -5183,12 +5193,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной (timerCurrent)", true, true, false);
-                Logging.Logg().LogToFile("Имя ТЭЦ: " + tec.name, false, false, false);
-                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogExceptionToFile(e, @"Обращение к переменной 'timerCurrent'");
             }
         }
     }

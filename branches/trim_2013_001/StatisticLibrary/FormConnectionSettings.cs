@@ -603,7 +603,7 @@ namespace StatisticCommon
 
         private void ConnectionSettings_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!closing)
+            if (closing == false)
                 e.Cancel = true;
             else
                 closing = false;

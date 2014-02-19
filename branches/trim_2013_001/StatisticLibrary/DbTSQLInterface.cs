@@ -94,11 +94,11 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной", true, true, false);
-                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                string msg = string.Empty;
+                msg += "!Исключение! обращения к переменной" + Environment.NewLine;
+                msg += "Исключение " + e.Message + Environment.NewLine;
+                msg += e.ToString();
+                Logging.Logg().LogToFile(msg, true, true, true);
             }
 
             if (! (m_dbConnection.State == ConnectionState.Closed))
@@ -154,9 +154,7 @@ namespace StatisticCommon
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogToFile("Соединение с базой установлено (" + s + ")", true, true, true);
             }
             catch (Exception e)
             {
@@ -209,7 +207,7 @@ namespace StatisticCommon
                     s = m_dbConnection.ConnectionString;
                 else
                     s = m_dbConnection.ConnectionString.Substring(0, pos);
-                Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, false);
+                Logging.Logg().LogToFile("Соединение с базой разорвано (" + s + ")", true, true, true);
 
             }
             catch (Exception e)
@@ -246,8 +244,7 @@ namespace StatisticCommon
             catch (DbException e)
             {
                 needReconnect = true;
-                Logging.Logg().LogLock();
-                string s;
+                string msg = string.Empty, s;
                 int pos;
                 pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
                 if (pos < 0)
@@ -255,12 +252,13 @@ namespace StatisticCommon
                 else
                     s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
 
-                Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
-                Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                msg += "Ошибка получения данных" + Environment.NewLine;
+                msg += "Строка соединения " + s + Environment.NewLine;
+                msg += "Запрос " + Environment.NewLine;
+                msg += "Ошибка " + e.Message + Environment.NewLine;
+                msg += e.ToString();
+
+                Logging.Logg().LogToFile(msg, true, true, true);
             }
             catch (Exception e)
             {
@@ -273,8 +271,7 @@ namespace StatisticCommon
 
         private static void logging_catch_db(DbConnection conn, Exception e)
         {
-            Logging.Logg().LogLock();
-            string s;
+            string msg = string.Empty, s;
             int pos;
             pos = conn.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
             if (pos < 0)
@@ -282,16 +279,17 @@ namespace StatisticCommon
             else
                 s = conn.ConnectionString.Substring(0, pos);
 
-            Logging.Logg().LogToFile("Обработка исключения при работе с БД", true, true, false);
-            Logging.Logg().LogToFile("Строка соединения: " + s, false, false, false);
+            msg += "Обработка исключения при работе с БД" + Environment.NewLine;
+            msg += "Строка соединения: " + s + Environment.NewLine;
             if (!(e == null))
             {
-                Logging.Logg().LogToFile("Ошибка: " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
+                msg += "Ошибка: " + e.Message + Environment.NewLine;
+                msg += e.ToString();
             }
             else
                 ;
-            Logging.Logg().LogUnlock();
+
+            Logging.Logg().LogToFile(msg, true, true, true);
         }
 
         public static string valueForQuery (DataTable table, int row, int col) {
@@ -499,9 +497,7 @@ namespace StatisticCommon
 
             if (!(err == 0))
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogToFile("Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, true);
             }
             else
                 ;
@@ -604,10 +600,10 @@ namespace StatisticCommon
                     {
                         commandOleDB.ExecuteNonQuery();
 
-                        Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile(connectionOleDB.ConnectionString, true, true, false);
-                        Logging.Logg().LogToFile(commandOleDB.CommandText, true, false, false);
-                        Logging.Logg().LogUnlock();
+                        string msg = string.Empty;
+                        msg += @"!Отладка!" + connectionOleDB.ConnectionString + Environment.NewLine;
+                        msg += connectionOleDB.ConnectionString;
+                        Logging.Logg().LogToFile(commandOleDB.CommandText, true, true, true);
                     }
                     else
                         ; //

@@ -23,6 +23,8 @@ namespace StatisticCommon
         protected volatile Errors saveResult;
         protected volatile bool saving;
 
+        public DelegateStringFunc delegateMessageBox;
+
         /* Passwords
         private Semaphore semaGetPass;
         private Semaphore semaSetPass;
@@ -95,9 +97,7 @@ namespace StatisticCommon
                 newState = true;
                 states.Clear();
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("SaveChanges () - states.Clear()", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogToFile("SaveChanges () - states.Clear()", true, true, true);
 
                 states.Add((int)StatesMachine.CurrentTime);
                 states.Add((int)StatesMachine.AdminDates);
@@ -113,9 +113,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SaveChanges () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("!Отладка! catch - SaveChanges () - semaState.Release(1)", true, true, true);
                 }
             }
 
@@ -148,9 +146,7 @@ namespace StatisticCommon
                 newState = true;
                 states.Clear();
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("ClearRDG () - states.Clear()", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogToFile("!Отладка! ClearRDG () - states.Clear()", true, true, true);
 
                 states.Add((int)StatesMachine.CurrentTime);
                 states.Add((int)StatesMachine.AdminDates);
@@ -166,9 +162,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - ClearRDG () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("!Отладка! catch - ClearRDG () - semaState.Release(1)", true, true, true);
                 }
             }
 
@@ -265,9 +259,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - Reinit () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("catch - Reinit () - semaState.Release(1)", true, true, true);
                 }
             }
         }
@@ -281,10 +273,6 @@ namespace StatisticCommon
                 newState = true;
                 states.Clear();
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("GetCurrentTime () - states.Clear()", true, true, false);
-                Logging.Logg().LogUnlock();
-
                 states.Add((int)StatesMachine.CurrentTime);
 
                 try
@@ -293,9 +281,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("catch - GetCurrentTime () - semaState.Release(1)", true, true, true);
                 }
             }
         }
@@ -358,9 +344,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("!Отладка! catch - GetRDGValues () - semaState.Release(1)", true, true, true);
                 }
             }
         }
@@ -392,12 +376,12 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGValues () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
-                    Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                    Logging.Logg().LogUnlock();
+                    string msg = string.Empty;
+                    msg += "Исключение обращения к переменной (semaState)" + Environment.NewLine;
+                    msg += "Исключение " + e.Message + Environment.NewLine;
+                    msg += e.ToString();
+
+                    Logging.Logg().LogToFile(msg, true, true, true);
                 }
             }
         }
@@ -435,9 +419,7 @@ namespace StatisticCommon
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("catch - GetRDGExcelValues () - semaState.Release(1)", true, true, true);
                 }
             }
         }
@@ -861,9 +843,7 @@ namespace StatisticCommon
         
         protected virtual void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("SetAdminValuesRequest", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile("SetAdminValuesRequest", true, true, true);
 
             string[] query = setAdminValuesQuery(t, comp, date);
 
@@ -929,9 +909,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("ClearAdminValuesRequest", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile("ClearAdminValuesRequest", true, true, true);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1096,9 +1074,7 @@ namespace StatisticCommon
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss") +
                                    //@"';";
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("Admin - SetPPBRRequest", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile("Admin - SetPPBRRequest", true, true, true);
             
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1144,9 +1120,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("ClearPPBRRequest", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile("ClearPPBRRequest", true, true, true);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1801,9 +1775,7 @@ namespace StatisticCommon
                         newState = true;
                         states.Clear();
 
-                        Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, false);
-                        Logging.Logg().LogUnlock();
+                        Logging.Logg().LogToFile("SaveRDGValues () - states.Clear()", true, true, true);
 
                         //states.Add((int)StatesMachine.CurrentTime);
                         states.Add((int)StatesMachine.PPBRValues);
@@ -1815,9 +1787,7 @@ namespace StatisticCommon
                         }
                         catch
                         {
-                            Logging.Logg().LogLock();
-                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, false);
-                            Logging.Logg().LogUnlock();
+                            Logging.Logg().LogToFile("catch - SaveRDGValues () - semaState.Release(1)", true, true, true);
                         }
                     }
                 else
@@ -1910,9 +1880,7 @@ namespace StatisticCommon
                     }
                     catch
                     {
-                        Logging.Logg().LogLock();
-                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaState.Release(1)", true, true, false);
-                        Logging.Logg().LogUnlock();
+                        Logging.Logg().LogToFile("catch - ClearRDGValues () - semaState.Release(1)", true, true, true);
                     }
                 }
             }

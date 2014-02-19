@@ -68,6 +68,11 @@ namespace Statistic
             }
         }
 
+        ~FormMain ()
+        {
+            Logging.Logg().LogToFile("FormMain::~FormMain () - ...", true, true, true);
+        }
+
         private bool Initialize()
         {
             bool bRes = true;
@@ -127,6 +132,8 @@ namespace Statistic
 
                 m_admin.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 m_admin.SetDelegateReport(ErrorReport, ActionReport);
+
+                m_admin.delegateMessageBox = MessageBoxDebug;
             //}
 
             formChangeMode = new FormChangeMode(m_admin.m_list_tec);
@@ -202,7 +209,9 @@ namespace Statistic
                         if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
                         {                
                             foreach (TEC t in m_admin.m_list_tec)
+                            {
                                 t.StopDbInterfaceForce();
+                            }
 
                             m_admin.StopThreadSourceData();
                         }
@@ -218,6 +227,11 @@ namespace Statistic
                 ; //m_passwords.StopDbInterface();
             else
                 ;
+        }
+
+        private void MessageBoxDebug (string msg)
+        {
+            MessageBox.Show (this, msg, "!Отладка!");
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

@@ -228,9 +228,7 @@ namespace StatisticCommon
         {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(msg, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(msg, true, true, true);
         }
 
         public abstract void ClearValues();
@@ -382,9 +380,7 @@ namespace StatisticCommon
                 try { semaState.Release(1); }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - StopThreadSourceData () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogToFile("catch - StopThreadSourceData () - semaState.Release(1)", true, true, true);
                 }
 
                 joined = taskThread.Join(666);
@@ -512,12 +508,13 @@ namespace StatisticCommon
             }
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
-                Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", true, true, false);
-                Logging.Logg().LogToFile("Исключение: " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                string msg = string.Empty;
+                msg += "catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)" + Environment.NewLine;
+                msg += "Исключение обращения к переменной (semaState)" + Environment.NewLine;
+                msg += "Исключение: " + e.Message + Environment.NewLine;
+                msg += e.ToString();
+
+                Logging.Logg().LogToFile(msg, true, true, true);
             }
         }
 

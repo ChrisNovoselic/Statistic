@@ -77,9 +77,7 @@ namespace StatisticCommon
         {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(msg, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(msg, true, true, true);
         }
 
         private void GetPassword (uint id, out int er)

@@ -228,7 +228,7 @@ namespace StatisticCommon
 
         private void ChangeMode_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!closing)
+            if (closing == false)
                 e.Cancel = true;
             else
                 closing = false;

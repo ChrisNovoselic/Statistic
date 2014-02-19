@@ -164,10 +164,15 @@ namespace Statistic
 
         private void rbtnLine_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbtnBar.Checked)
+            if (rbtnBar.Checked == true)
                 graphTypes = GraphTypes.Bar;
-            if (rbtnLine.Checked)
+            else
+                ;
+
+            if (rbtnLine.Checked == true)
                 graphTypes = GraphTypes.Linear;
+            else
+                ;
 
             delegateUpdateActiveGui();
         }

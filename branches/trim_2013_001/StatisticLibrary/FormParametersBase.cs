@@ -74,7 +74,7 @@ namespace StatisticCommon
 
         public void Parameters_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!mayClose)
+            if (mayClose == false)
                 e.Cancel = true;
             else
                 mayClose = false;

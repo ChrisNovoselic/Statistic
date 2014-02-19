@@ -19,26 +19,32 @@ namespace StatisticCommon
 
         public void StartWaitForm()
         {
-            if (!started)
+            if (started == false)
             {
                 started = true;
-                this.ShowDialog();
+                this.ShowDialog(Parent);
             }
+            else
+                ;
         }
 
         public void StopWaitForm()
         {
-            if (started)
+            if (started == true)
             {
                 started = false;
                 this.Close();
             }
+            else
+                ;
         }
 
         private void WaitForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (started)
+            if (started == true)
                 e.Cancel = true;
+            else
+                ;
         }
     }
 }

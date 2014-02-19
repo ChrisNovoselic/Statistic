@@ -58,7 +58,7 @@ namespace Statistic
 
         private void SetPassword_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!closing)
+            if (closing == false)
             {
                 e.Cancel = true;
             }
@@ -73,6 +73,8 @@ namespace Statistic
         {
             if (e.KeyCode == Keys.Enter)
                 btnOk_Click(sender, new EventArgs());
+            else
+                ;
         }
 
         private void SetPassword_Shown(object sender, EventArgs e)

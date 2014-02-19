@@ -31,7 +31,10 @@ namespace StatisticCommon
         public String ReadString(String Section, String Key, String Default)
         {
             StringBuilder StrBu = new StringBuilder(255);
-            GetPrivateProfileString(Section, Key, Default, StrBu, 255, m_NameFileINI);
+            
+            try { GetPrivateProfileString(Section, Key, Default, StrBu, 255, m_NameFileINI); }
+            catch (Exception e) { }
+            
             return StrBu.ToString();
         }
 
@@ -39,18 +42,21 @@ namespace StatisticCommon
         {
             int value;
             string s;
-            s = ReadString(Section, Key, "");
-            if (s == "")
+            s = ReadString(Section, Key, string.Empty);
+            if (s == string.Empty)
                 value = Default;
             else
                 if (!int.TryParse(s, out value))
                     value = Default;
+                else
+                    ;
             return value;
         }
 
         public void WriteString(String Section, String Key, String Value)
         {
-            WritePrivateProfileString(Section, Key, Value, m_NameFileINI);
+            try { WritePrivateProfileString(Section, Key, Value, m_NameFileINI); }
+            catch (Exception e) { }
         }
 
         public void WriteInt(String Section, String Key, int Value)
