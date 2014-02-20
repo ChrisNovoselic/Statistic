@@ -2641,7 +2641,7 @@ namespace Statistic
                 }
                 catch (Exception excpt)
                 {
-                    Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)");
+                    Logging.Logg().LogExceptionToFile(excpt, "TecView::GetCurrentTimeReponse () - (DateTime)table.Rows[0][0]");
 
                     return false;
                 }
@@ -2708,6 +2708,8 @@ namespace Statistic
                                 t++;
                                 break;
                             }
+                            else
+                                ;
                         }
                     }
                 }
@@ -2724,6 +2726,8 @@ namespace Statistic
                             t++;
                             break;
                         }
+                        else
+                            ;
                     }
                 }
             }
@@ -2746,8 +2750,10 @@ namespace Statistic
                     string error = "Ошибка определения идентификаторов датчиков в строке ";
                     for (int j = 0; j < table.Rows.Count; j++)
                         error += table.Rows[j][0].ToString() + " = " + table.Rows[j][1].ToString() + ", ";
+
                     error = error.Substring(0, error.LastIndexOf(","));
                     ErrorReport(error);
+
                     return false;
                 }
             }
@@ -5116,6 +5122,9 @@ namespace Statistic
                 {
                     if (states.Count == 0)
                         continue;
+                    else
+                        ;
+
                     currentState = states[index];
                     newState = false;
                 }
@@ -5129,6 +5138,8 @@ namespace Statistic
                     {
                         if (error)
                             StateRequest(currentState);
+                        else
+                            ;
 
                         error = false;
                         for (int j = 0; j < DbInterface.MAX_WAIT_COUNT && !dataPresent && !error && !newState; j++)
@@ -5141,6 +5152,8 @@ namespace Statistic
                     bool responseIsOk = true;
                     if (dataPresent && !error && !newState)
                         responseIsOk = StateResponse(currentState, table);
+                    else
+                        ;
 
                     if ((!responseIsOk || !dataPresent || error) && !newState)
                     {
@@ -5152,6 +5165,8 @@ namespace Statistic
                                 states.Clear();
                                 newState = true;
                             }
+                            else
+                                ;
                         }
                     }
 
@@ -5161,8 +5176,14 @@ namespace Statistic
                     {
                         if (index == states.Count)
                             break;
-                        if (newState)
+                        else
+                            ;
+
+                        if (newState == true)
                             break;
+                        else
+                            ;
+
                         currentState = states[index];
                     }
                 }
