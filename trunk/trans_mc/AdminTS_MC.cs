@@ -35,9 +35,7 @@ namespace trans_mc
                 newState = true;
                 states.Clear();
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("AdminTS_MC::SaveChanges () - states.Clear()", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogDebugToFile("AdminTS_MC::SaveChanges () - states.Clear()");
 
                 states.Add((int)StatesMachine.CurrentTime);
                 //states.Add((int)StatesMachine.AdminDates);
@@ -53,9 +51,7 @@ namespace trans_mc
                 }
                 catch
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - SaveChanges () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogDebugToFile("catch - SaveChanges () - semaState.Release(1)");
                 }
             }
 

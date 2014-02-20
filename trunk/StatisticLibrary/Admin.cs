@@ -234,9 +234,7 @@ namespace StatisticCommon
         {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(msg, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(msg, true, true, true);
         }
 
         public abstract void ClearValues();
@@ -396,11 +394,9 @@ namespace StatisticCommon
             if ((!(taskThread == null)) && taskThread.IsAlive)
             {
                 try { semaState.Release(1); }
-                catch
+                catch (Exception e)
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - StopThreadSourceData () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogExceptionToFile(e, "HAdmin::StopThreadSourceData () - semaState.Release(1)");
                 }
 
                 joined = taskThread.Join(666);
@@ -528,12 +524,7 @@ namespace StatisticCommon
             }
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("catch - (Admin)TecView_ThreadFunction () - semaState.Release(1)", true, true, false);
-                Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", true, true, false);
-                Logging.Logg().LogToFile("Исключение: " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogExceptionToFile(e, "HAdmin::TecView_ThreadFunction () - semaState.Release(1)");
             }
         }
 

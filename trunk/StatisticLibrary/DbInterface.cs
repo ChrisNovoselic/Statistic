@@ -185,11 +185,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной sem (вызов: sem.Release ())", true, true, false);
-                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogExceptionToFile(e, "DbInterface::SetConnectionSettings () - обращение к переменной sem (вызов: sem.Release ())");
             }
         }
 

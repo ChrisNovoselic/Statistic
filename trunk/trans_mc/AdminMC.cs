@@ -384,12 +384,7 @@ namespace trans_mc
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogLock();
-                    Logging.Logg().LogToFile("catch - AdminMC::GetRDGValues () - semaState.Release(1)", true, true, false);
-                    Logging.Logg().LogToFile("Исключение обращения к переменной (semaState)", false, false, false);
-                    Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                    Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                    Logging.Logg().LogUnlock();
+                    Logging.Logg().LogExceptionToFile(e, "AdminMC::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }

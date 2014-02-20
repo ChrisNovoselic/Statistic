@@ -266,9 +266,7 @@ namespace trans_tg
             }
             else
             {
-                Logging.Logg ().LogLock ();
-                Logging.Logg().LogToFile("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogDebugToFile("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count);
             }
 
             return resQuery;
@@ -335,17 +333,13 @@ namespace trans_tg
                     }
                 }
             }
-            else{
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, true, true, false);
-                Logging.Logg().LogUnlock();
+            else {
+                Logging.Logg().LogDebugToFile("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count);
             }
 
             resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("AdminTransTG - setPPBRQuery", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogDebugToFile("AdminTransTG::setPPBRQuery ()");
 
             return resQuery;
         }

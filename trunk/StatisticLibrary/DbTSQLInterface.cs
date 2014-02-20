@@ -24,7 +24,7 @@ namespace StatisticCommon
 
         public static string MessageDbOpen = "Соединение с базой установлено";
         public static string MessageDbClose = "Соединение с базой разорвано";
-        public static string MessageDbException = "Исключение при работе с БД";
+        public static string MessageDbException = "!Исключение! при работе с БД";
 
         private DbConnection m_dbConnection;
         private DbCommand m_dbCommand;
@@ -232,22 +232,6 @@ namespace StatisticCommon
             {
                 needReconnect = true;
 
-                //Logging.Logg().LogLock();
-                //string s;
-                //int pos;
-                //pos = m_dbAdapter.SelectCommand.Connection.ConnectionString.IndexOf("Password", StringComparison.CurrentCultureIgnoreCase);
-                //if (pos < 0)
-                //    s = m_dbAdapter.SelectCommand.Connection.ConnectionString;
-                //else
-                //    s = m_dbAdapter.SelectCommand.Connection.ConnectionString.Substring(0, pos);
-
-                //Logging.Logg().LogToFile("Ошибка получения данных", true, true, false);
-                //Logging.Logg().LogToFile("Строка соединения " + s, false, false, false);
-                //Logging.Logg().LogToFile("Запрос " + m_dbAdapter.SelectCommand.CommandText, false, false, false);
-                //Logging.Logg().LogToFile("Ошибка " + e.Message, false, false, false);
-                //Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                //Logging.Logg().LogUnlock();
-
                 logging_catch_db (m_dbConnection, e);
             }
             catch (Exception e)
@@ -275,7 +259,6 @@ namespace StatisticCommon
 
         private static void logging_catch_db(DbConnection conn, Exception e)
         {
-            Logging.Logg().LogLock();
             string s = string.Empty, log = string.Empty;
             if (!(conn == null))
                 s = ConnectionStringToLog (conn.ConnectionString);
@@ -291,8 +274,7 @@ namespace StatisticCommon
             }
             else
                 ;
-            Logging.Logg().LogToFile(log, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(log, true, true, true);
         }
 
         private static void logging_close_db (DbConnection conn)
@@ -306,9 +288,7 @@ namespace StatisticCommon
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, true);
         }
 
         public static MySqlConnection GetConnection (DB_TSQL_INTERFACE_TYPE type, ConnectionSettings connSett, out int er)
@@ -538,9 +518,7 @@ namespace StatisticCommon
 
             if (!(err == 0))
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("!Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogErrorToFile("!Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны");
             }
             else
                 ;

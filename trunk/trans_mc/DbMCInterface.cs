@@ -59,11 +59,7 @@ namespace trans_mc
             }
             catch (Exception e)
             {
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Исключение обращения к переменной", true, true, false);
-                Logging.Logg().LogToFile("Исключение " + e.Message, false, false, false);
-                Logging.Logg().LogToFile(e.ToString(), false, false, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogExceptionToFile(e, "DbMCInterface::Connect ()");
             }
 
             lock (lockConnectionSettings)
@@ -78,9 +74,7 @@ namespace trans_mc
             {
                 ModesApiFactory.Initialize((string)m_connectionSettings);
 
-                Logging.Logg().LogLock();
-                Logging.Logg().LogToFile("Соединение с Modes-Centre (" + (string)m_connectionSettings + ")", true, true, false);
-                Logging.Logg().LogUnlock();
+                Logging.Logg().LogDebugToFile("Соединение с Modes-Centre (" + (string)m_connectionSettings + ")");
             }
             catch (Exception e)
             {
@@ -166,9 +160,7 @@ namespace trans_mc
 
             string [] args = ((string)query).Split (';');
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile("DbMCInterface::GetData () - " + query + ")", true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogDebugToFile("DbMCInterface::GetData () - " + query + ")");
 
             switch (args[0])
             {

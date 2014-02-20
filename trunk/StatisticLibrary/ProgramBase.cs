@@ -15,17 +15,13 @@ namespace StatisticCommon
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(MessageWellcome, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(MessageWellcome, true, true, true);
         }
 
         //Журналирование завершения приложения
         public static void Exit()
         {
-            Logging.Logg().LogLock();
-            Logging.Logg().LogToFile(MessageExit, true, true, false);
-            Logging.Logg().LogUnlock();
+            Logging.Logg().LogToFile(MessageExit, true, true, true);
         }
 
         public static void Abort()

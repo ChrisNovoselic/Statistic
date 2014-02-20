@@ -9,14 +9,14 @@ namespace StatisticCommon
 {
     public class Logging
     {
-        private string fileNameStart;
-        private string fileName;
+        private string m_fileNameStart;
+        private string m_fileName;
         private bool externalLog;
         private DelegateStringFunc delegateUpdateLogText;
         private DelegateFunc delegateClearLogText;
         private Semaphore sema;
-        private StreamWriter sw;
-        private FileInfo fi;
+        private LogStreamWriter m_sw;
+        private FileInfo m_fi;
         private bool logging = true;
         private bool logRotate = true;
         private const int logRotateSizeDefault = 1024 * 1024 * 5;
@@ -72,11 +72,12 @@ namespace StatisticCommon
             externalLog = extLog;
             logRotateSize = logRotateSizeDefault;
             logRotateFiles = logRotateFilesDefault;
-            fileNameStart = fileName = name;
+            m_fileNameStart = m_fileName = name;
             sema = new Semaphore(1, 1);
-            fi = new FileInfo(fileName);
-            FileStream fs = fi.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+
+            m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
+            m_fi = new FileInfo(m_fileName);
+            
             logIndex = 0;
             delegateUpdateLogText = updateLogText;
             delegateClearLogText = clearLogText;
@@ -88,15 +89,14 @@ namespace StatisticCommon
 
             LogDebugToFile("Пауза ведения журнала...", false);
 
-            sw.Close();
+            m_sw.Close();
 
-            return fi.FullName;
+            return m_fi.FullName;
         }
 
         public void Resume()
         {
-            FileStream fs = fi.Open(FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-            sw = new StreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+            m_sw = new LogStreamWriter(m_fi.FullName, true, Encoding.GetEncoding("windows-1251"));
 
             LogDebugToFile("Возобновление ведения журнала...", false);
 
@@ -125,21 +125,52 @@ namespace StatisticCommon
                 else
                     ;
 
+                string msg = string.Empty;
                 if (separator == true)
-                    sw.WriteLine(MessageSeparator);
+                    msg += MessageSeparator + Environment.NewLine;
                 else
                     ;
 
                 if (timeStamp == true)
                 {
-                    sw.WriteLine(DateTime.Now.ToString());
-                    sw.WriteLine(DatetimeStampSeparator);
+                    msg += DateTime.Now.ToString() + Environment.NewLine;
+                    msg += DatetimeStampSeparator + Environment.NewLine;
                 }
                 else
                     ;
 
-                sw.WriteLine(message);
-                sw.Flush();
+                msg += message + Environment.NewLine;
+
+                if (File.Exists(m_fileName) == true)
+                {
+                    try
+                    {
+                        if ((m_sw == null) || (m_fi == null))
+                        {
+                            //Вариант №1
+                            //FileInfo f = new FileInfo(m_fileName);
+                            //FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
+                            //m_sw = new LogStreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+                            //Вариант №2                        
+                            m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
+
+                            m_fi = new FileInfo(m_fileName);
+                        }
+                        else
+                            ;
+
+                        m_sw.Write(msg);
+                        m_sw.Flush();
+                    }
+                    catch (Exception e)
+                    {
+                        /*m_sw.Close ();*/
+                        m_sw = null;
+                        m_fi = null;
+                    }
+                }
+                else
+                    ;
 
                 if (externalLog == true)
                 {
@@ -153,35 +184,53 @@ namespace StatisticCommon
 
                 if (locking == true)
                     LogUnlock();
+                else
+                    ;
             }
-            else
-                ;
         }
 
+        /*
         public bool Log
         {
             get { return logging; }
             set { logging = value; }
         }
+        */
+        private string LogFileName()
+        {
+            string strRes = string.Empty;
+            if (logIndex == 0)
+                strRes = Path.GetDirectoryName(m_fileName) + "\\" + Path.GetFileNameWithoutExtension(m_fileName) + Path.GetExtension(m_fileName);
+            else
+                strRes = Path.GetDirectoryName(m_fileName) + "\\" + Path.GetFileNameWithoutExtension(m_fileName) + logIndex.ToString() + Path.GetExtension(m_fileName);
+
+            return strRes;
+        }
 
         private void LogRotateNowLocked()
         {
-            sw.Close();
             if (externalLog == true)
                 delegateClearLogText();
             else
                 ;
 
-            logIndex = (logIndex + 1) % logRotateFiles;
+            try
+            {
+                m_sw.Close();
 
-            string newFilename;
-            if (logIndex == 0)
-                newFilename = Path.GetDirectoryName(fileNameStart) + "\\" + Path.GetFileNameWithoutExtension(fileNameStart) + Path.GetExtension(fileNameStart);
-            else
-                newFilename = Path.GetDirectoryName(fileNameStart) + "\\" + Path.GetFileNameWithoutExtension(fileNameStart) + logIndex.ToString() + Path.GetExtension(fileNameStart);
-            
-            sw = new StreamWriter(newFilename, false, Encoding.GetEncoding("windows-1251"));
-            fi = new FileInfo(newFilename);
+                logIndex = (logIndex + 1) % logRotateFiles;
+
+                m_fileName = LogFileName();
+
+                m_sw = new LogStreamWriter(m_fileName, false, Encoding.GetEncoding("windows-1251"));
+                m_fi = new FileInfo(m_fileName);
+            }
+            catch (Exception e)
+            {
+                /*m_sw.Close ();*/
+                m_sw = null;
+                m_fi = null;
+            }
         }
 
         private void LogRotateNow()
@@ -193,9 +242,27 @@ namespace StatisticCommon
 
         private void LogCheckRotate()
         {
-            fi.Refresh();
-            if (fi.Length > logRotateSize)
-                LogRotateNowLocked();
+            if (!(m_fi == null))
+            {
+                if (File.Exists (m_fileName) == true)
+                    try {
+                        m_fi.Refresh();
+
+                        if (m_fi.Length > logRotateSize)
+                            LogRotateNowLocked();
+                        else
+                            ;
+                    }
+                    catch (Exception e)
+                    {
+                        //m_fi = null;
+                    }
+                else
+                    ;
+            }
+            else
+                ;
+
         }
 
         public bool LogRotate
@@ -231,7 +298,7 @@ namespace StatisticCommon
         public void LogErrorToFile(string message, bool bLock = true)
         {
             if (bLock == true) LogLock(); else ;
-            LogToFile("!Отладка!: " + message, true, true, false);
+            LogToFile("!Ошибка!: " + message, true, true, false);
             if (bLock == true) LogUnlock(); else ;
         }
 
@@ -245,10 +312,41 @@ namespace StatisticCommon
         public void LogExceptionToFile(Exception e, string message)
         {
             LogLock();
-            LogToFile("!Исключение!: " + message, true, true, false);
-            LogToFile(e.Message, false, false, false);
-            LogToFile(e.ToString(), false, false, false);
+
+            string msg = string.Empty;
+            msg += "!Исключение! обработка: " + message + Environment.NewLine;
+            msg += "Исключение: " + e.Message;
+            msg += e.ToString();
+
+            LogToFile(msg, true, true, false);
+
             LogUnlock();
+        }
+
+        internal class LogStreamWriter : StreamWriter
+        {
+            /*
+            public LogStreamWriter(FileStream fs, System.Text.Encoding e)
+                : base(fs, e)
+            {
+            }
+            */
+
+            public LogStreamWriter(string path, bool append, System.Text.Encoding e)
+                : base(path, append, e)
+            {
+            }
+
+            ~LogStreamWriter()
+            {
+                this.Dispose();
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                try { base.Dispose(disposing); }
+                catch (Exception e) { }
+            }
         }
     }
 }
