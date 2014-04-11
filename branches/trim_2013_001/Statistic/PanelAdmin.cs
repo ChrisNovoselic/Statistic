@@ -371,7 +371,7 @@ namespace Statistic
             folders.RootFolder = Environment.SpecialFolder.Desktop;
             folders.SelectedPath = @"D:\Temp";
 
-            if (folders.ShowDialog (Parent) == DialogResult.OK)
+            if (folders.ShowDialog(((FormMain)Parent).formParameters) == DialogResult.OK)
                 m_admin.GetPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
             else
                 ;
