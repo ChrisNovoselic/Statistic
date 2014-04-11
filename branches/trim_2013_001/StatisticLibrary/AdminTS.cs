@@ -41,6 +41,8 @@ namespace StatisticCommon
         //int m_indxDbInterfaceConfigDB,
         //    m_listenerIdConfigDB;
 
+        string m_PPBRCSVDirectory; //Для возможности импорта ПБР из *.csv
+
         protected DataTable m_tablePPBRValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
@@ -55,6 +57,7 @@ namespace StatisticCommon
             SaveAdminValues, //Сохранение административных данных
             SavePPBRValues, //Сохранение PPBR
             SaveRDGExcelValues,
+            PPBRCSVValues,
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
             //GetPass,
             //SetPassInsert,
@@ -102,9 +105,9 @@ namespace StatisticCommon
                 states.Add((int)StatesMachine.CurrentTime);
                 states.Add((int)StatesMachine.AdminDates);
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                //states.Add((int)StatesMachine.PPBRDates);
+                states.Add((int)StatesMachine.PPBRDates);
                 states.Add((int)StatesMachine.SaveAdminValues);
-                //states.Add((int)StatesMachine.SavePPBRValues);
+                states.Add((int)StatesMachine.SavePPBRValues);
                 //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
                 try
@@ -395,12 +398,49 @@ namespace StatisticCommon
             Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
         }
 
+        public void GetPPBRCSVValues(int indx, DateTime date, string dir)
+        {
+            lock (m_lockObj)
+            {
+                indxTECComponents = indx;
+                m_PPBRCSVDirectory = dir;
+
+                m_tablePPBRValuesResponse.Clear ();
+                m_tablePPBRValuesResponse = null;
+
+                for (int i = 0; i < 24; i++)
+                {
+                    m_curRDGValues[i].pbr =
+                    m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 0;
+                }
+
+                using_date = false;
+                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                m_prevDate = date.Date;
+                m_curDate = m_prevDate;
+
+                newState = true;
+                states.Clear();
+                states.Add((int)StatesMachine.PPBRCSVValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch
+                {
+                    Logging.Logg().LogToFile("catch - GetPPBRCSVValues () - semaState.Release(1)", true, true, true);
+                }
+            }
+        }
+
         public virtual void GetRDGExcelValues(int indx, DateTime date)
         {
             lock (m_lockObj)
             {
                 indxTECComponents = indx;
-                
+
                 ClearValues();
 
                 using_date = false;
@@ -441,6 +481,85 @@ namespace StatisticCommon
             //Logging.Logg().LogUnlock();
 
             delegateStopWait();
+        }
+
+        private string getNameFileSessionPPBRCSVValues (int num_pbr) {
+            int offset_day = -1,
+                num_session = -1;
+
+            if (num_pbr == 23) {
+                num_session = 1;
+                offset_day = 1;
+            }
+            else {
+                num_session = num_pbr + 2;
+                offset_day = 0;
+            }
+
+            return @"ГТП(генерация) Сессия(" +
+                num_session +
+                @") от " +
+                (m_curDate.AddDays(offset_day)).Date.GetDateTimeFormats()[0];
+        }
+
+        private void GetPPBRCSVValuesRequest()
+        {
+            int err = 0,
+                num_pbr = 23;
+
+            if ((m_curDate.Date == DateTime.Now.Date) && (! (allTECComponents[indxTECComponents].name_future == string.Empty)))
+            {
+                string  strCSVExt = @".csv"
+                    , strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr)
+                    , strPPBRCSVNameFileTemp = string.Empty;
+
+                delegateStartWait();
+
+                while ((num_pbr > 0) && (File.Exists(m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt) == false)) {
+                    num_pbr -= 2;
+                    strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr);
+                }
+
+                if ((num_pbr > 0) && (num_pbr > serverTime.Hour)) {
+                    strPPBRCSVNameFileTemp = strPPBRCSVNameFile;
+
+                    strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace("(", string.Empty);
+                    strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(")", string.Empty);
+                    strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(".", string.Empty);
+                    strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(" ", string.Empty);
+
+                    strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
+                    strPPBRCSVNameFileTemp = m_PPBRCSVDirectory + strPPBRCSVNameFileTemp + strCSVExt;
+
+                    File.Copy(strPPBRCSVNameFile, strPPBRCSVNameFileTemp, true);
+
+                    if (!(m_tablePPBRValuesResponse == null)) m_tablePPBRValuesResponse.Clear(); else ;
+
+                    if ((IsCanUseTECComponents() == true) && (strPPBRCSVNameFileTemp.Length > 0))
+                        m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_PATH" + System.IO.Path.GetDirectoryName(strPPBRCSVNameFileTemp),
+                                                                                @"SELECT * FROM [" +
+                                                                                System.IO.Path.GetFileName(strPPBRCSVNameFileTemp) +
+                                                                                @"]"
+                                                                                + @" WHERE GTP_ID='" +
+                                                                                allTECComponents[indxTECComponents].name_future +
+                                                                                @"'"
+                                                                                , out err);
+                    else
+                        ;
+
+                    //Logging.Logg ().LogLock ();
+                    //Logging.Logg().LogToFile("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
+                    //Logging.Logg().LogUnlock();
+
+                    File.Delete (strPPBRCSVNameFileTemp);
+                }
+                else
+                    ;
+
+                delegateStopWait();
+            }
+            else
+                ;
         }
 
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -668,7 +787,7 @@ namespace StatisticCommon
 
                 if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
 
-                if (bRes) {
+                if (bRes == true) {
                     for (i = rowRDGExcelStart; i < 24 + 1; i++)
                     {
                         hour = i - iTimeZoneOffset;
@@ -690,6 +809,28 @@ namespace StatisticCommon
             }
             else
                 ;
+
+            return bRes;
+        }
+
+        protected bool GetPPBRCSVValuesResponse()
+        {
+            bool bRes = m_tablePPBRValuesResponse.Rows.Count > 0 ? true : false,
+                bValParse = false;
+            int i = -1,
+                h = -1;
+            double val = 0.0;
+
+            for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i ++) {
+                h = Int32.Parse (m_tablePPBRValuesResponse.Rows [i]["SESSION_INTERVAL"].ToString ()) + 1;
+
+                bValParse = Double.TryParse(m_tablePPBRValuesResponse.Rows[i]["TotalBR"].ToString(), out val);
+                if (bValParse == true) m_curRDGValues[h - 1].pbr = val; else ;
+                bValParse = Double.TryParse(m_tablePPBRValuesResponse.Rows[i]["PminBR"].ToString(), out val);
+                if (bValParse == true) m_curRDGValues[h - 1].pmin = val; else ;
+                bValParse = Double.TryParse(m_tablePPBRValuesResponse.Rows[i]["PmaxBR"].ToString(), out val);
+                if (bValParse == true) m_curRDGValues[h - 1].pmax = val; else ;
+            }
 
             return bRes;
         }
@@ -1144,7 +1285,7 @@ namespace StatisticCommon
                 ;
 
             return m_listDbInterfaces[indxDbInterface].GetResponse(listenerId, out error, out table);
-            
+
             //if (isTec)
             //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
             //else
@@ -1169,7 +1310,7 @@ namespace StatisticCommon
 
         protected override bool InitDbInterfaces () {
             bool bRes = true;
-            
+
             m_listDbInterfaces.Clear ();
 
             m_listListenerIdCurrent.Clear();
@@ -1304,6 +1445,10 @@ namespace StatisticCommon
                     ActionReport("Импорт РДГ из Excel.");
                     GetRDGExcelValuesRequest();
                     break;
+                case (int)StatesMachine.PPBRCSVValues:
+                    ActionReport("Импорт из формата CSV.");
+                    GetPPBRCSVValuesRequest();
+                    break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
@@ -1382,12 +1527,24 @@ namespace StatisticCommon
             error = true;
             table = null;
 
-            if ((state == (int)StatesMachine.RDGExcelValues) || ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0)))
+            if ((state == (int)StatesMachine.RDGExcelValues) ||
+                (state == (int)StatesMachine.PPBRCSVValues) ||
+                ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0)))
             {
                 switch (state)
                 {
                     case (int)StatesMachine.RDGExcelValues:
                         if ((!(m_tableRDGExcelValuesResponse == null)) && (m_tableRDGExcelValuesResponse.Rows.Count > 24))
+                        {
+                            error = false;
+
+                            bRes = true;
+                        }
+                        else
+                            ;
+                        break;
+                    case (int)StatesMachine.PPBRCSVValues:
+                        if ((!(m_tablePPBRValuesResponse == null)) && (m_tablePPBRValuesResponse.Rows.Count > 0))
                         {
                             error = false;
 
@@ -1471,6 +1628,17 @@ namespace StatisticCommon
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = GetRDGExcelValuesResponse();
+                    if (result)
+                    {
+                        fillData(m_prevDate);
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.PPBRCSVValues:
+                    ActionReport("Импорт ПБР из формата CSV.");
+                    //result = GetRDGExcelValuesResponse(table, m_curDate);
+                    result = GetPPBRCSVValuesResponse();
                     if (result)
                     {
                         fillData(m_prevDate);
@@ -1638,6 +1806,11 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.RDGExcelValues:
                     ErrorReport("Ошибка импорта РДГ из книги Excel. Переход в ожидание.");
+
+                    // ???
+                    break;
+                case (int)StatesMachine.PPBRCSVValues:
+                    ErrorReport("Ошибка импорта из формата CSV. Переход в ожидание.");
 
                     // ???
                     break;
@@ -1965,7 +2138,7 @@ namespace StatisticCommon
 
             string strRes = string.Empty;
 
-            if (indx < allTECComponents.Count) strRes = allTECComponents[indx].name; else ;
+            if (indx < allTECComponents.Count) strRes = allTECComponents[indx].name_shr; else ;
 
             return strRes;
         }

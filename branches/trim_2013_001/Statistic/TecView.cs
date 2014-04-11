@@ -989,11 +989,11 @@ namespace Statistic
 
                             lblName.AutoSize = true;
                             lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                            lblName.Name = "lblName" + tg.name;
+                            lblName.Name = "lblName" + tg.name_shr;
                             lblName.AutoSize = false;
                             lblName.Size = new System.Drawing.Size(32, 13);
                             lblName.TabIndex = 4;
-                            lblName.Text = tg.name;
+                            lblName.Text = tg.name_shr;
 
                             tgsName.Add(lblName);
 
@@ -1005,7 +1005,7 @@ namespace Statistic
                             lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
                             lblValue.ForeColor = System.Drawing.Color.LimeGreen;
                             lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                            lblValue.Name = "lblValue" + tg.name;
+                            lblValue.Name = "lblValue" + tg.name_shr;
                             lblValue.Size = new System.Drawing.Size(63, 27);
                             lblValue.AutoSize = false;
                             lblValue.TabIndex = 5;
@@ -1034,11 +1034,11 @@ namespace Statistic
 
                     lblName.AutoSize = true;
                     lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                    lblName.Name = "lblName" + tg.name;
+                    lblName.Name = "lblName" + tg.name_shr;
                     lblName.AutoSize = false;
                     lblName.Size = new System.Drawing.Size(32, 13);
                     lblName.TabIndex = 4 + countTG;
-                    lblName.Text = tg.name;
+                    lblName.Text = tg.name_shr;
 
                     tgsName.Add(lblName);
 
@@ -1050,7 +1050,7 @@ namespace Statistic
                     lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
                     lblValue.ForeColor = System.Drawing.Color.LimeGreen;
                     lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                    lblValue.Name = "lblValue" + tg.name;
+                    lblValue.Name = "lblValue" + tg.name_shr;
                     lblValue.Size = new System.Drawing.Size(63, 27);
                     lblValue.AutoSize = false;
                     lblValue.TabIndex = 5;
@@ -1824,12 +1824,12 @@ namespace Statistic
                         {
                             ws.Cells[0, 0].Value = tec.name;
                             foreach (TECComponent g in tec.list_TECComponents)
-                                ws.Cells[0, 0].Value += ", " + g.name;
+                                ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
 
                     if (valuesHours.addonValues && hour == valuesHours.hourAddon)
@@ -1966,12 +1966,12 @@ namespace Statistic
                         {
                             ws.Cells[0, 0].Value = tec.name;
                             foreach (TECComponent g in tec.list_TECComponents)
-                                ws.Cells[0, 0].Value += ", " + g.name;
+                                ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name;
+                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
                     
                     ws.Cells[1, 0].Value = "Мощность на " + dtprDate.Value.ToShortDateString();
@@ -2839,7 +2839,7 @@ namespace Statistic
                     {
                         for (k = 0; k < tec.list_TECComponents[j].TG.Count; k++)
                         {
-                            if (tec.list_TECComponents[j].TG[k].name == s)
+                            if (tec.list_TECComponents[j].TG[k].name_shr == s)
                             {
                                 found = true;
                                 tec.list_TECComponents[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
@@ -2856,7 +2856,7 @@ namespace Statistic
                 {
                     for (int k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
                     {
-                        if (tec.list_TECComponents[num_TECComponent].TG[k].name == s)
+                        if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr == s)
                         {
                             tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
                             tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.HOURS] =
@@ -2910,7 +2910,7 @@ namespace Statistic
                     for (int j = 0; j < m_list_TECComponents.Count; j++) {
                         for (int k = 0; k < ((TECComponent)m_list_TECComponents[j]).TG.Count; k++, indxTG ++)
                         {
-                            tgs[(int)i].Add(((TECComponent)m_list_TECComponents[j]).TG[k].name.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
+                            tgs[(int)i].Add(((TECComponent)m_list_TECComponents[j]).TG[k].name_shr.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
                         }
                     }
                 }
@@ -2919,8 +2919,8 @@ namespace Statistic
                 {
                     for (int j = 0; j < ((TECComponent)m_list_TECComponents[i]).TG.Count; j++)
                     {
-                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name];
-                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name_shr];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name_shr];
                         sensorId2TG[t] = ((TECComponent)m_list_TECComponents[i]).TG[j];
                         //sensorId2TGHours[t] = tec.list_TECComponents[i].TG[j];
                         t++;
@@ -2959,13 +2959,13 @@ namespace Statistic
                 for (TG.ID_TIME i = TG.ID_TIME.MINUTES; i < TG.ID_TIME.COUNT_ID_TIME; i++)
                     for (int j = 0; j < m_list_TECComponents.Count; j++) {
                         indxTG = listIdTGTEC.IndexOf(m_list_TECComponents[j].m_id);
-                        tgs[(int)i].Add(m_list_TECComponents[j].name.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
+                        tgs[(int)i].Add(m_list_TECComponents[j].name_shr.ToString(), tec.parametersTGForm.ParamsGetTgId(i, indxTG));
                     }
 
                 for (int i = 0; i < m_list_TECComponents.Count; i++)
                 {
-                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][((TG)m_list_TECComponents[i]).name];
-                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][((TG)m_list_TECComponents[i]).name];
+                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][((TG)m_list_TECComponents[i]).name_shr];
+                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][((TG)m_list_TECComponents[i]).name_shr];
                     sensorId2TG[t] = ((TG)m_list_TECComponents[i]);
                     //sensorId2TGHours[t] = tec.list_TECComponents[num_gtp].TG[i];
                     t++;

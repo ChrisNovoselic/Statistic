@@ -156,7 +156,7 @@ namespace StatisticCommon
                                 (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
                                 (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
-                                clbMode.Items.Add(t.name + " - " + g.name);
+                                clbMode.Items.Add(t.name + " - " + g.name_shr);
 
                                 tec_index.Add(tec_indx);
                                 TECComponent_index.Add(comp_indx);

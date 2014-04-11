@@ -203,6 +203,14 @@ namespace StatisticCommon
             return var1;
         }
 
+        public static string GetConnectionStringCSV(string path)
+        {
+            string var1 = @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + path + @"';Extended Properties='text;HDR=Yes;FMT=Delimited'",
+                    var2 = @"";
+
+            return var1;
+        }
+
         public static string GetConnectionStringDBF(string path)
         {
             string var1 = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" +

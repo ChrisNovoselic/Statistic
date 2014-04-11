@@ -21,6 +21,7 @@ namespace Statistic
 
         private System.Windows.Forms.Button btnSet;
         private System.Windows.Forms.Button btnRefresh;
+        private System.Windows.Forms.Button btnImportCSV;
 
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         private System.Windows.Forms.GroupBox gbxDivider;
@@ -36,7 +37,7 @@ namespace Statistic
         {
             this.btnSet = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
-            //this.btnLoadLayout = new System.Windows.Forms.Button();
+            this.btnImportCSV = new System.Windows.Forms.Button();
 
             this.dgwAdminTable = new DataGridViewAdmin();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
@@ -47,9 +48,9 @@ namespace Statistic
 
             this.Controls.Add(this.btnSet);
             this.Controls.Add(this.btnRefresh);
+            this.Controls.Add(this.btnImportCSV);
 
             this.Controls.Add(this.dgwAdminTable);
-            //this.Controls.Add(this.btnLoadLayout);
 
             this.Controls.Add(this.btnRefresh);
 
@@ -91,6 +92,16 @@ namespace Statistic
             this.btnRefresh.Text = "Обновить из базы";
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
+            // 
+            // btnImportCSV
+            // 
+            this.btnImportCSV.Location = new System.Drawing.Point(10, 281);
+            this.btnImportCSV.Name = "btnImportCSV";
+            this.btnImportCSV.Size = new System.Drawing.Size(154, 23);
+            this.btnImportCSV.TabIndex = 2;
+            this.btnImportCSV.Text = "Импорт из формата CSV";
+            this.btnImportCSV.UseVisualStyleBackColor = true;
+            this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
             // 
             // gbxDivider
             // 
@@ -267,7 +278,7 @@ namespace Statistic
 
             for (i = 0; i < m_listTECComponentIndex.Count; i ++)
             {
-                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_admin.allTECComponents[m_listTECComponentIndex[i]].name);
+                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_admin.allTECComponents[m_listTECComponentIndex[i]].name_shr);
             }
 
             if (comboBoxTecComponent.Items.Count > 0)
@@ -351,6 +362,19 @@ namespace Statistic
             ClearTables();
 
             m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.STATIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+        }
+
+        private void btnImportCSV_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folders = new FolderBrowserDialog ();
+            folders.ShowNewFolderButton = false;
+            folders.RootFolder = Environment.SpecialFolder.Desktop;
+            folders.SelectedPath = @"D:\Temp";
+
+            if (folders.ShowDialog (Parent) == DialogResult.OK)
+                m_admin.GetPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
+            else
+                ;
         }
 
         private string SetNumberSeparator(string current_str)
