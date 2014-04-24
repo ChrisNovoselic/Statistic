@@ -369,9 +369,9 @@ namespace Statistic
             FolderBrowserDialog folders = new FolderBrowserDialog ();
             folders.ShowNewFolderButton = false;
             folders.RootFolder = Environment.SpecialFolder.Desktop;
-            folders.SelectedPath = @"D:\Temp";
+            folders.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //@"D:\Temp";
 
-            if (folders.ShowDialog(((FormMain)Parent).formParameters) == DialogResult.OK)
+            if (folders.ShowDialog(((FormMain)Parent.Parent.Parent).formParameters) == DialogResult.OK)
                 m_admin.GetPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
             else
                 ;
