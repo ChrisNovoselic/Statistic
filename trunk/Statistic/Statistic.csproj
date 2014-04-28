@@ -78,7 +78,9 @@
     <Compile Include="FormGraphicsSettings.designer.cs">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormMain.cs" />
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>

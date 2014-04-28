@@ -214,7 +214,8 @@ namespace StatisticCommon
 
         protected void setUIControlConnectionSettings(int i)
         {
-            if (!(comboBoxTECComponent.SelectedIndex < 0))
+            if (!(comboBoxTECComponent.SelectedIndex < 0) &&
+                (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < ((AdminTS)m_arAdmin[i]).allTECComponents.Count))
             {
                 ConnectionSettings connSett = ((AdminTS)m_arAdmin[i]).allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
                 for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
