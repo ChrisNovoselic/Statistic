@@ -368,13 +368,13 @@ namespace StatisticCommon
             System.Data.OleDb.OleDbCommand commandOleDB;
             System.Data.OleDb.OleDbDataAdapter adapterOleDB;
 
-            if (path.IndexOf("xls") > -1)
+            if (path.IndexOf(".xls") > -1)
                 connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringExcel(path));
             else
-                //if (path.IndexOf ("dbf") > -1)
-                connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
-            //else
-            //    ;
+                if (path.IndexOf("CSV_PATH") > -1)
+                    connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringCSV(path.Remove(0, 8)));
+                else
+                    connectionOleDB = new OleDbConnection(ConnectionSettings.GetConnectionStringDBF(path));
 
             if (!(connectionOleDB == null))
             {

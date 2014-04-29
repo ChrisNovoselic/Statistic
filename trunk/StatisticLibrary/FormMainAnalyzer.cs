@@ -660,7 +660,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name + " - " + g.name;
+                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name + " - " + g.name_shr;
                             m_dicTabVisibleIdItems.Add(g.m_id, new int[] { comp_indx, col - 1 });
                         }
                     }
