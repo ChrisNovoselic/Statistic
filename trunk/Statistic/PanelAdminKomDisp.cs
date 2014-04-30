@@ -15,14 +15,31 @@ namespace Statistic
 {
     public class PanelAdminKomDisp : PanelAdmin
     {
+        private System.Windows.Forms.Button btnImportCSV;
+        
         protected override void InitializeComponents()
         {
             base.InitializeComponents ();
 
+            this.btnImportCSV = new System.Windows.Forms.Button();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
+
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
+
             this.Controls.Add(this.dgwAdminTable);
+            this.Controls.Add(this.btnImportCSV);
+
+            // 
+            // btnImportCSV
+            // 
+            this.btnImportCSV.Location = new System.Drawing.Point(10, 281);
+            this.btnImportCSV.Name = "btnImportCSV";
+            this.btnImportCSV.Size = new System.Drawing.Size(154, 23);
+            this.btnImportCSV.TabIndex = 2;
+            this.btnImportCSV.Text = "Импорт из формата CSV";
+            this.btnImportCSV.UseVisualStyleBackColor = true;
+            this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
             // 
             // dgwAdminTable
             //
@@ -130,6 +147,19 @@ namespace Statistic
                 m_admin.indxTECComponents = m_listTECComponentIndex[0];
                 comboBoxTecComponent.SelectedIndex = 0;
             }
+            else
+                ;
+        }
+
+        private void btnImportCSV_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folders = new FolderBrowserDialog();
+            folders.ShowNewFolderButton = false;
+            folders.RootFolder = Environment.SpecialFolder.Desktop;
+            folders.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //@"D:\Temp";
+
+            if (folders.ShowDialog(((FormMain)Parent.Parent.Parent).formParameters) == DialogResult.OK)
+                ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
             else
                 ;
         }

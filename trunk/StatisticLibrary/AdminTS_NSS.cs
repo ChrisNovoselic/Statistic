@@ -56,6 +56,11 @@ namespace StatisticCommon
         }
 
         public AdminTS_NSS () {
+            delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
+            delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
+            delegateImportForeignValuesResponse = ImpRDGExcelValuesResponse;
+            //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
+
             m_listCurRDGValues = new List<RDGStruct[]> ();
             m_listTECComponentIndexDetail = new List<int> ();
             m_listResSaveChanges = new List <Errors> ();
@@ -257,9 +262,44 @@ namespace StatisticCommon
             return bRes;
         }
 
-        protected override bool ImpRDGExcelValuesResponse()
+        protected virtual /*override*/ bool ImpRDGExcelValuesResponse()
         {
-            bool bRes = base.ImpRDGExcelValuesResponse();
+            //bool bRes = base.ImpRDGExcelValuesResponse();
+            bool bRes = IsCanUseTECComponents();
+            int rowOffsetData = 0;
+
+            if (bRes)
+            {
+                int i = -1,
+                    iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
+                    rowRDGExcelStart = 1 + iTimeZoneOffset,
+                    hour = -1;
+
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+
+                if (bRes)
+                {
+                    for (i = rowRDGExcelStart; i < m_tableRDGExcelValuesResponse.Rows.Count - rowOffsetData; i++)
+                    {
+                        hour = i - iTimeZoneOffset;
+                        setRDGExcelValuesItem(out m_curRDGValues[hour - 1], i);
+                    }
+
+                    /*for (i = hour; i < 24 + 1; i++)
+                    {
+                        hour = i;
+
+                        m_curRDGValues.plan[hour - 1] = 0;
+                        m_curRDGValues.recommendations[hour - 1] = 0;
+                        m_curRDGValues.deviationPercent[hour - 1] = false;
+                        m_curRDGValues.diviation[hour - 1] = 0;
+                    }*/
+                }
+                else
+                    ;
+            }
+            else
+                ;
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
 
@@ -332,8 +372,9 @@ namespace StatisticCommon
             return errRes;
         }
 
-        protected override void ExpRDGExcelValuesRequest()
+        protected void /*bool*/ ExpRDGExcelValuesRequest()
         {
+            //bool bRes = true;
             Boolean bMidnightValues = false;
             int err = 0,
                 i = -1,
@@ -488,7 +529,6 @@ namespace StatisticCommon
                     else
                         ;
 
-
                     //strUpdate = strUpdate.Substring (0, strUpdate.Length - 2);
 
                     //strUpdate = @"UPDATE [Лист1$] SET " + strUpdate + @" WHERE A" + (i + 2) + "='" + ((i.ToString ().Length < 2) ? @"0" + i.ToString () : i.ToString ()) + @"'";
@@ -500,15 +540,84 @@ namespace StatisticCommon
                 excelApp.DisplayAlerts = bPrevExcelAppDisplayAlerts;
                 excelApp.Quit();                
 
-                base.ExpRDGExcelValuesRequest();
+                //base.ExpRDGExcelValuesRequest();
             }
             else
                 ;
+
+            //return bRes;
         }
 
         protected override void InitializeSyncState()
         {
             m_waitHandleState = new WaitHandle[2] { new AutoResetEvent(true), new ManualResetEvent(false) };
+        }
+
+        private void /*bool*/ ImpRDGExcelValuesRequest()
+        {
+            //bool bRes = true;
+            int err = 0,
+                i = -1, j = -1,
+                rowOffsetData = 2,
+                iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+            string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel,
+                strSelect = @"SELECT * FROM [Лист1$]";
+            object[] dataRowAddIn = null;
+
+            DataTable tableRDGExcelValuesNextDay;
+            if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
+
+            delegateStartWait();
+            if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
+            {
+                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
+                {
+                    while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
+                        m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
+
+                    if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
+                    {
+                        tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+                        if (tableRDGExcelValuesNextDay.Rows.Count > 0)
+                        {
+                            while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
+                                tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
+
+                            for (i = 0; i < iTimeZoneOffset; i++)
+                            {
+                                dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
+
+                                for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j++)
+                                {
+                                    dataRowAddIn.SetValue(tableRDGExcelValuesNextDay.Rows[i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок для OleDb не существует
+                                }
+
+                                m_tableRDGExcelValuesResponse.Rows.Add(dataRowAddIn); //Т.к.
+                            }
+                        }
+                        else
+                            ;
+
+                        tableRDGExcelValuesNextDay.Clear();
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+            else
+                ;
+
+            //Logging.Logg ().LogLock ();
+            //Logging.Logg().LogToFile("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
+            //Logging.Logg().LogUnlock();
+
+            delegateStopWait();
+
+            //return bRes;
         }
     }
 }

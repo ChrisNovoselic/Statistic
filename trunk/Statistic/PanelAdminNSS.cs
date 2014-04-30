@@ -30,7 +30,7 @@ namespace Statistic
             // 
             // btnImportExcel
             // 
-            this.btnImportExcel.Location = new System.Drawing.Point(10, 279);
+            this.btnImportExcel.Location = new System.Drawing.Point(10, 281);
             this.btnImportExcel.Name = "btnImportExcel";
             this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
             this.btnImportExcel.TabIndex = 667;
@@ -40,7 +40,7 @@ namespace Statistic
             // 
             // btnExportExcel
             // 
-            this.btnExportExcel.Location = new System.Drawing.Point(10, 309);
+            this.btnExportExcel.Location = new System.Drawing.Point(10, 311);
             this.btnExportExcel.Name = "btnExportExcel";
             this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
             this.btnExportExcel.TabIndex = 668;

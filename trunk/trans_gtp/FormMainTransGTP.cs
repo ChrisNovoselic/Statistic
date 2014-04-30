@@ -357,7 +357,7 @@ namespace trans_gtp
 
             if ((!(m_formConnectionSettingsConfigDB.Ready == 0)) || (m_formConnectionSettingsConfigDB.Count < 2))
             {
-                while (m_formConnectionSettingsConfigDB.Count < 2)
+                while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
                     m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
             }
             else
