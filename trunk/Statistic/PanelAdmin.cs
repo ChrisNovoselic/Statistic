@@ -185,7 +185,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -194,7 +194,7 @@ namespace Statistic
         public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
             m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
 
-            m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+            //m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
             comboBoxTecComponent.Items.Clear ();
         }
@@ -244,7 +244,7 @@ namespace Statistic
             if (bRequery) {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -259,7 +259,7 @@ namespace Statistic
             {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
@@ -274,7 +274,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGValues((int)AdminTS.TYPE_FIELDS.DYNAMIC, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         private string SetNumberSeparator(string current_str)

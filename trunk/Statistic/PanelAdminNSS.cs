@@ -186,6 +186,14 @@ namespace Statistic
         {
             visibleControlRDGExcel();
 
+            if (active == true)
+                ; //m_admin.Resume ();
+            else {
+                //m_admin.Suspend();
+
+                ((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables ();
+            }
+
             base.Activate (active);
 
             //ClearTables ();

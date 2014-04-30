@@ -227,7 +227,7 @@ namespace trans_gtp
                     //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                 }
                 else
-                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC; //AdminTS.TYPE_FIELDS.DYNAMIC;
 
                 m_arAdmin[i].m_ignore_date = true;
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор

@@ -120,14 +120,17 @@ namespace StatisticCommon
         {
             int indxEv = -1;
 
-            foreach (int indx in m_listTECComponentIndexDetail)
-            {
-                indxEv = WaitHandle.WaitAny (m_waitHandleState);
-                if (indxEv == 0)
-                    base.GetRDGValues(m_typeFields, indx);
-                else
-                    break;
-            }
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (int indx in m_listTECComponentIndexDetail)
+                {
+                    indxEv = WaitHandle.WaitAny (m_waitHandleState);
+                    if (indxEv == 0)
+                        base.GetRDGValues(m_typeFields, indx);
+                    else
+                        break;
+                }
+            //}
         }
 
         public override void GetRDGValues(TYPE_FIELDS mode, int id)
@@ -143,14 +146,18 @@ namespace StatisticCommon
         private void threadGetRDGValuesWithDate(object date)
         {
             int indxEv = -1;
-            foreach (int indx in m_listTECComponentIndexDetail)
-            {
-                indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                if (indxEv == 0)
-                    base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
-                else
-                    break;
-            }
+
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (int indx in m_listTECComponentIndexDetail)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                        base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
+                    else
+                        break;
+                }
+            //}
         }
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int id, DateTime date)
@@ -165,20 +172,24 @@ namespace StatisticCommon
 
         private void threadGetRDGExcelValues (object date) {
             int indxEv = -1;
-            foreach (int indx in m_listTECComponentIndexDetail)
-            {
-                indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                if (indxEv == 0)
-                    if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                        base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
-                    else
-                        if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                            base.ImpRDGExcelValues(indx, (DateTime)date);
+
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (int indx in m_listTECComponentIndexDetail)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                        if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                            base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
                         else
-                            ;
-                else
-                    break;
-            }
+                            if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                base.ImpRDGExcelValues(indx, (DateTime)date);
+                            else
+                                ;
+                    else
+                        break;
+                }
+            //}
         }
 
         public override void ImpRDGExcelValues(int id, DateTime date)

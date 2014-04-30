@@ -36,7 +36,7 @@ namespace Statistic
         private FormChangeMode formChangeMode;
         private TecView tecView;
         private int m_prevSelectedIndex;
-        private bool prevStateIsAdmin;
+        private int prevStateIsAdmin;
         private bool prevStateIsPPBR;
         //public static object lockFile = new object();
         //public static string logPath;
@@ -174,6 +174,8 @@ namespace Statistic
 
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                     m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                    m_arAdmin[i].m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                 }
 
                 formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);                
@@ -221,7 +223,7 @@ namespace Statistic
             tecViews = new List<TecView>();
             selectedTecViews = new List<TecView>();
 
-            prevStateIsAdmin = false;
+            prevStateIsAdmin = -1;
             prevStateIsPPBR = false;
 
             m_prevSelectedIndex = 0;
@@ -365,8 +367,8 @@ namespace Statistic
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
 
-                    formChangeMode.admin_was_checked =
-                    prevStateIsAdmin = false;
+                    formChangeMode.admin_was_checked = false;
+                    prevStateIsAdmin = -1;
 
                     StopWait();
 
@@ -481,7 +483,7 @@ namespace Statistic
                         if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
                             //this.tec = formChangeMode.tec;
 
-                            prevStateIsAdmin = false;
+                            //prevStateIsAdmin = -1;
 
                             //tecViews.Clear ();
                             //selectedTecViews.Clear ();
@@ -588,6 +590,7 @@ namespace Statistic
 
                         параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
 
+                        bool bAdminPanelUse = false;
                         StopWait();
                         if (formChangeMode.admin_was_checked)
                         {
@@ -597,8 +600,9 @@ namespace Statistic
                             else
                                 formPassword.SetIdPass(0, Passwords.ID_ROLES.NSS);
 
-                            bool bAdminPanelUse = false;
-                            if (prevStateIsAdmin == false)
+                            //if (prevStateIsAdmin == false)
+                            //if (prevStateIsAdmin < 0)
+                            if (! (prevStateIsAdmin == (int)modePanelAdmin))
                                 switch (formPassword.ShowDialog(this)) {
                                     case DialogResult.Yes:
                                         bAdminPanelUse = true;
@@ -616,11 +620,13 @@ namespace Statistic
                             else
                                 bAdminPanelUse = true;
 
-                            if (bAdminPanelUse)
+                            if (bAdminPanelUse == true)
                             {
                                 StartWait();
                                 AddTabPageAdmin ();
                                 StopWait();
+
+                                m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
                             }
                             else
                                 formChangeMode.admin_was_checked = false;
@@ -628,19 +634,29 @@ namespace Statistic
                         else
                             ;
 
-                        prevStateIsAdmin = formChangeMode.admin_was_checked;
-
                         if (selectedTecViews.Count > 0)
                         {
                             m_prevSelectedIndex = 0;
                             selectedTecViews[m_prevSelectedIndex].Activate(true);
-                            m_arPanelAdmin[(int)modePanelAdmin].Activate(false);
                         }
                         else
-                            if (formChangeMode.admin_was_checked)
-                                m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
+                            if (formChangeMode.admin_was_checked == true)
+                                ;
                             else
                                 ;
+
+                        //Проверить предыдущий выбор типа панели 'администратора'
+                        if (! (prevStateIsAdmin < 0))
+                            //Одна из панелей 'администратора' в предыдущем наборе вкладок отображалась (активация/деактивация)
+                            m_arPanelAdmin[prevStateIsAdmin].Activate(false);
+                        else
+                            ;
+
+                        //Запомнить текущий выбор типа панели 'администратора'
+                        if (bAdminPanelUse == true)
+                            prevStateIsAdmin = (int)modePanelAdmin; //formChangeMode.admin_was_checked;
+                        else
+                            prevStateIsAdmin = -1;
                     }
                     else
                         ; //Отмена выбора закладок

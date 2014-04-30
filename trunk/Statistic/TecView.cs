@@ -409,7 +409,7 @@ namespace Statistic
             this.btnSetNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSetNow.Location = new System.Drawing.Point(6, 643);
             this.btnSetNow.Name = "btnSetNow";
-            this.btnSetNow.Size = new System.Drawing.Size(93, 23);
+            this.btnSetNow.Size = new System.Drawing.Size(129, 23);
             this.btnSetNow.TabIndex = 2;
             this.btnSetNow.Text = "Текущий час";
             this.btnSetNow.UseVisualStyleBackColor = true;
@@ -783,7 +783,7 @@ namespace Statistic
             // lblServerTime
             // 
             this.lblServerTime.AutoSize = false;
-            this.lblServerTime.Location = new System.Drawing.Point(0, 1);
+            this.lblServerTime.Location = new System.Drawing.Point(0, 2);
             this.lblServerTime.Name = "lblServerTime";
             this.lblServerTime.Size = new System.Drawing.Size(67, 20);
             this.lblServerTime.TabIndex = 5;
@@ -795,7 +795,7 @@ namespace Statistic
             // lblLayoutNumber
             // 
             this.lblLayoutNumber.AutoSize = false;
-            this.lblLayoutNumber.Location = new System.Drawing.Point(0, 22);
+            this.lblLayoutNumber.Location = new System.Drawing.Point(0, 24);
             this.lblLayoutNumber.Name = "lblLayoutNumber";
             this.lblLayoutNumber.Size = new System.Drawing.Size(67, 20);
             this.lblLayoutNumber.TabIndex = 5;
@@ -2286,7 +2286,7 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
+            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, m_admin.m_typeFields));
         }
 
         private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
@@ -5044,7 +5044,8 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                            GetAdminValuesRequest(AdminTS.TYPE_FIELDS.DYNAMIC);
+                            //GetAdminValuesRequest(AdminTS.TYPE_FIELDS.DYNAMIC);
+                            GetAdminValuesRequest(m_admin.m_typeFields);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();
