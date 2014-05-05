@@ -139,7 +139,7 @@ namespace Statistic
 
             for (int i = 0; i < m_listTECComponentIndex.Count; i++)
             {
-                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
+                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
             }
 
             if (comboBoxTecComponent.Items.Count > 0)

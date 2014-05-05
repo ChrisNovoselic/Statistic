@@ -644,7 +644,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    dgvTabVisible.Rows [comp_indx].Cells [col].Value = t.name;
+                    dgvTabVisible.Rows [comp_indx].Cells [col].Value = t.name_shr;
                     m_dicTabVisibleIdItems.Add(t.m_id, new int[] { comp_indx, col - 1 });
 
                     if (t.list_TECComponents.Count > 0)
@@ -660,7 +660,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name + " - " + g.name_shr;
+                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name_shr + " - " + g.name_shr;
                             m_dicTabVisibleIdItems.Add(g.m_id, new int[] { comp_indx, col - 1 });
                         }
                     }

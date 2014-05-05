@@ -165,7 +165,7 @@ namespace StatisticCommon
 
                     if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
-                        clbMode.Items.Add(t.name);
+                        clbMode.Items.Add(t.name_shr);
 
                         m_list_IdItem.Add(t.m_id);
 
@@ -193,7 +193,7 @@ namespace StatisticCommon
                                 (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
                                 (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
-                                clbMode.Items.Add(t.name + " - " + g.name_shr);
+                                clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
 
                                 m_list_IdItem.Add(g.m_id);
 

@@ -216,7 +216,7 @@ namespace StatisticCommon
                 if (listIdTEC.IndexOf(indx) < 0) {
                     listIdTEC.Add (indx);
                     
-                    listRes.Add(comp.tec.name);
+                    listRes.Add(comp.tec.name_shr);
                 }
                 else
                     ;

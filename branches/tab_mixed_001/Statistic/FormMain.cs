@@ -176,6 +176,11 @@ namespace Statistic
 
                 formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);                
 
+                //Формирование контекстного меню со списком объектов
+                for (i = 0; i < formChangeMode.m_list_tec.Count; i ++) {
+                    m_ContextMenuStripListTecViews.Items.Add(formChangeMode.m_list_tec [i].name_shr);
+                }
+
                 //formChangeMode = new FormChangeMode();
                 formPassword = new FormPassword(m_passwords);
                 formSetPassword = new FormSetPassword(m_passwords);
@@ -475,6 +480,8 @@ namespace Statistic
                     {
                         StartWait();
 
+                        //Формирование контекстного меню со списком объектов
+
                         if ((! (prevModeComponent == formChangeMode.getModeTECComponent()))) {
                             //this.tec = formChangeMode.tec;
 
@@ -557,10 +564,10 @@ namespace Statistic
                                     if (TECComponent_index == -1)
                                     {
                                         //tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
-                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + new string(' ', 3));
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name_shr + new string(' ', 3));
                                     }
                                     else
-                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + " - " + formChangeMode.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name_shr + new string(' ', 3));
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name_shr + " - " + formChangeMode.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name_shr + new string(' ', 3));
 
                                     tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                     selectedTecViews.Add(tecViews[tecView_index]);
@@ -824,9 +831,9 @@ namespace Statistic
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
                         if (formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]] == -1)
-                            tclTecViews.TabPages.Add(t.name + new string(' ', 3));
+                            tclTecViews.TabPages.Add(t.name_shr + new string(' ', 3));
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr + new string(' ', 3));
+                            tclTecViews.TabPages.Add(t.name_shr + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr + new string(' ', 3));
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);

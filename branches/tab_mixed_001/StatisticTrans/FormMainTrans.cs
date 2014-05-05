@@ -270,7 +270,7 @@ namespace StatisticCommon
                 comboBoxTECComponent.Items.Clear();
                 
                 for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                    comboBoxTECComponent.Items.Add(((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].tec.name + " - " + ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].name_shr);
+                    comboBoxTECComponent.Items.Add(((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].name_shr);
 
                 if (comboBoxTECComponent.Items.Count > 0)
                     comboBoxTECComponent.SelectedIndex = 0;
