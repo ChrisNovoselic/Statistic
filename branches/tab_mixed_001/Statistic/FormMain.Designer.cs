@@ -50,7 +50,7 @@
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tclTecViews = new System.Windows.Forms.TabControl();
+            this.tclTecViews = new HTabCtrlEx (); //System.Windows.Forms.TabControl();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
@@ -279,7 +279,7 @@
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сменитьРежимToolStripMenuItem;
-        private System.Windows.Forms.TabControl tclTecViews;
+        private HTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem текущееСостояниеПользовательToolStripMenuItem;

@@ -37,10 +37,6 @@ namespace Statistic
         private TecView tecView;
         private int m_prevSelectedIndex;
         private int prevStateIsAdmin;
-        private bool prevStateIsPPBR;
-        //public static object lockFile = new object();
-        //public static string logPath;
-        //public static Logging log;
         public FormGraphicsSettings formGraphicsSettings;
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
@@ -224,7 +220,6 @@ namespace Statistic
             selectedTecViews = new List<TecView>();
 
             prevStateIsAdmin = -1;
-            prevStateIsPPBR = false;
 
             m_prevSelectedIndex = 0;
 
@@ -562,10 +557,10 @@ namespace Statistic
                                     if (TECComponent_index == -1)
                                     {
                                         //tclTecViews.TabPages.Add(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[tec_index].name);
-                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name);
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + new string(' ', 3));
                                     }
                                     else
-                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + " - " + formChangeMode.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name_shr);
+                                        tclTecViews.TabPages.Add(formChangeMode.m_list_tec[tec_index].name + " - " + formChangeMode.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name_shr + new string(' ', 3));
 
                                     tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                     selectedTecViews.Add(tecViews[tecView_index]);
@@ -757,12 +752,12 @@ namespace Statistic
 
             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
             {
-                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP));
+                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.GTP) + new string (' ', 3));
                 mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                 modeAdmin = FormChangeMode.MANAGER.DISP;
             }
             else
-                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC)); //PC или TG не важно
+                tclTecViews.TabPages.Add(formChangeMode.getNameAdminValues(FormChangeMode.MODE_TECCOMPONENT.TEC) + new string(' ', 3)); //PC или TG не важно
 
             tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
@@ -829,9 +824,9 @@ namespace Statistic
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
                         if (formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]] == -1)
-                            tclTecViews.TabPages.Add(t.name);
+                            tclTecViews.TabPages.Add(t.name + new string(' ', 3));
                         else
-                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr);
+                            tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr + new string(' ', 3));
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
