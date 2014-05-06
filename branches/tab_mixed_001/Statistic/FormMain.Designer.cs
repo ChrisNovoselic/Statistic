@@ -73,16 +73,9 @@
             // 
             // ContextMenuStrip
             // 
-            /*this.m_ContextMenuStripListTecViews.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            new System.Windows.Forms.ToolStripMenuItem ("reytery4y"),
-            new System.Windows.Forms.ToolStripMenuItem ("ertrt"),
-            new System.Windows.Forms.ToolStripMenuItem ("erty"),
-            new System.Windows.Forms.ToolStripMenuItem ("eryy4rty")});*/
-            this.menuStrip.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip.Name = "ContextMenuStripListTecViews";
-            //this.menuStrip.Size = new System.Drawing.Size(982, 24);
-            //this.menuStrip.TabIndex = 2;
-            this.menuStrip.Text = "Контекстное меню";
+            this.m_ContextMenuStripListTecViews.Location = new System.Drawing.Point(0, 0);
+            this.m_ContextMenuStripListTecViews.Name = "ContextMenuStripListTecViews";
+            this.m_ContextMenuStripListTecViews.Text = "Контекстное меню";
             // 
             // файлToolStripMenuItem
             // 

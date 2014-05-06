@@ -22,14 +22,22 @@ namespace StatisticCommon
         public bool /*[]*/ admin_was_checked;
         public bool closing;
 
+        public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
+        DelegateFunc f_сменить–ежим;
+
         //private ConnectionSettings m_connSet;
 
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
         public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER };
 
-        public FormChangeMode(List <TEC> tec)
+        public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*/, DelegateFunc changeMode)
         {
             InitializeComponent();
+            this.Text = @"¬ыбор режима";
+
+            m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
+            m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
+            f_сменить–ежим = changeMode;
 
             this.m_list_tec = tec;
 
@@ -142,6 +150,8 @@ namespace StatisticCommon
 
         private void FillListBoxTab()
         {
+            if (! (m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Clear(); else ;
+            
             if (!(m_list_tec == null))
             {
                 int tec_indx = 0, comp_indx = 0, across_indx = -1;
@@ -166,6 +176,7 @@ namespace StatisticCommon
                     if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
                         clbMode.Items.Add(t.name_shr);
+                        if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr); else ;
 
                         m_list_IdItem.Add(t.m_id);
 
@@ -174,8 +185,9 @@ namespace StatisticCommon
 
                         m_list_across_index.Add(across_indx);
 
-                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
+                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
                             clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
+                        }
                         else
                             ;
                     }
@@ -194,6 +206,7 @@ namespace StatisticCommon
                                 (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
                                 clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
+                                if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr + " - " + g.name_shr); else ;
 
                                 m_list_IdItem.Add(g.m_id);
 
@@ -202,8 +215,9 @@ namespace StatisticCommon
 
                                 m_list_across_index.Add(across_indx);
 
-                                if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0))
+                                if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
                                     clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
+                                }
                                 else
                                     ;
                             }
@@ -255,9 +269,50 @@ namespace StatisticCommon
 
             FillListAcrossIndexCheckedIndicies ();
 
-            this.DialogResult = DialogResult.OK;
-            closing = true;
-            Close();
+            //ѕроверить фиктивность вызова метода
+            if (! (e == EventArgs.Empty)) {
+                this.DialogResult = DialogResult.OK;
+                closing = true;
+                Close();
+            }
+            else
+                ;
+
+            f_сменить–ежим();
+        }
+
+        private void clbMode_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (!(m_MainFormContextMenuStripListTecViews == null))
+                ((ToolStripMenuItem)m_MainFormContextMenuStripListTecViews.Items[e.Index]).CheckState = e.NewValue;
+            else ;
+        }
+
+        private void MainFormContextMenuStripListTecViews_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            int indx = m_MainFormContextMenuStripListTecViews.Items.IndexOf (e.ClickedItem);
+            bool bChecked = false;
+            switch (((ToolStripMenuItem)m_MainFormContextMenuStripListTecViews.Items[indx]).CheckState) {
+                case CheckState.Checked:
+                    break;
+                case CheckState.Indeterminate:
+                    break;
+                case CheckState.Unchecked:
+                    bChecked = true;
+                    break;
+                default:
+                    break;
+            }
+            clbMode.SetItemChecked(indx, bChecked);
+
+            btnOk_Click (null, EventArgs.Empty);
+        }
+
+        public void SetItemChecked(int indxCheckedIndicies, bool bChecked)
+        {
+            clbMode.SetItemChecked(clbMode.CheckedIndices[indxCheckedIndicies], bChecked);
+
+            btnOk_Click(null, EventArgs.Empty);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -270,10 +325,16 @@ namespace StatisticCommon
 
         private void ChangeMode_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!closing)
+            if (closing == false)
                 e.Cancel = true;
-            else
+            else {
                 closing = false;
+
+                //if (this.DialogResult == System.Windows.Forms.DialogResult.OK)
+                //    f_сменить–ежим();
+                //else
+                //    ;
+            }
         }
 
         private void btnSetAll_Click(object sender, EventArgs e)

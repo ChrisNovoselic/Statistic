@@ -15,8 +15,8 @@ namespace Statistic
 {
     public partial class HTabCtrlEx : System.Windows.Forms.TabControl
     {
-        public delegate void OnHeaderCloseDelegate(object sender, CloseEventArgs e);
-        public event OnHeaderCloseDelegate OnClose;
+        public delegate void DelegateOnCloseTab(object sender, CloseTabEventArgs e);
+        public event DelegateOnCloseTab OnClose;
 
         public HTabCtrlEx()
         {
@@ -154,7 +154,7 @@ namespace Statistic
                     //Fire Event to Client
                     if (! (OnClose == null))
                     {
-                        OnClose(this, new CloseEventArgs(SelectedIndex));
+                        OnClose(this, new CloseTabEventArgs(SelectedIndex, this.TabPages[SelectedIndex].Text/*.TrimEnd()*/));
                     }
                     else
                         ;
@@ -163,12 +163,14 @@ namespace Statistic
         }
     }
 
-    public class CloseEventArgs : EventArgs
+    public class CloseTabEventArgs : EventArgs
     {
         private int nTabIndex = -1;
-        public CloseEventArgs(int nTabIndex)
+        private string strHeaderText = string.Empty;
+        public CloseTabEventArgs(int nTabIndex, string text)
         {
             this.nTabIndex = nTabIndex;
+            this.strHeaderText = text;
         }
         /// <summary>
         /// Get/Set the tab index value where the close button is clicked
@@ -185,5 +187,19 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Get/Set the tab index value where the close button is clicked
+        /// </summary>
+        public string TabHeaderText
+        {
+            get
+            {
+                return this.strHeaderText;
+            }
+            set
+            {
+                this.strHeaderText = value;
+            }
+        }
     }
 }

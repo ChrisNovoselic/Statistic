@@ -212,12 +212,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\close.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\close1.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\closeInActive.ico" />
   </ItemGroup>
   <ItemGroup>

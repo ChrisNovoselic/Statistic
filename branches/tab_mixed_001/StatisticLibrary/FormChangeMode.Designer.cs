@@ -78,6 +78,7 @@ namespace StatisticCommon
             this.clbMode.Name = "clbMode";
             this.clbMode.Size = new System.Drawing.Size(197, 214);
             this.clbMode.TabIndex = 4;
+            this.clbMode.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(clbMode_ItemCheck); 
             // 
             // btnSetAll
             // 
