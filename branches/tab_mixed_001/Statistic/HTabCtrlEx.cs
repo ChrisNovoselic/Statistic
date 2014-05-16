@@ -21,7 +21,6 @@ namespace Statistic
         public HTabCtrlEx()
         {
             InitializeComponent();
-            this.TabStop = false;
         }
 
         public HTabCtrlEx(IContainer container)
@@ -55,19 +54,23 @@ namespace Statistic
             {
                 Image img;
                 tabTextArea = (RectangleF)this.GetTabRect(nIndex);
-                if (nIndex != this.SelectedIndex)
-                {
-                    img = Statistic.Properties.Resources.closeNonActive.ToBitmap();
+                if (nIndex > 0) {
+                    if (! (nIndex == this.SelectedIndex))
+                    {
+                        img = Statistic.Properties.Resources.closeNonActive.ToBitmap();
+                    }
+                    else
+                    {
+                        img = Statistic.Properties.Resources.closeInActive.ToBitmap();
+                    }
+
+                    using (img)
+                    {
+                        e.Graphics.DrawImage(img, tabTextArea.X + tabTextArea.Width - 16, 5, 13, 13);
+                    }
                 }
                 else
-                {
-                    img = Statistic.Properties.Resources.closeInActive.ToBitmap();
-                }
-
-                using (img)
-                {
-                    e.Graphics.DrawImage(img, tabTextArea.X + tabTextArea.Width - 16, 5, 13, 13);
-                }
+                    ;
 
                 string str = this.TabPages[nIndex].Text;
                 StringFormat stringFormat = new StringFormat();
@@ -96,12 +99,12 @@ namespace Statistic
         protected override void OnMouseMove(MouseEventArgs e)
         {
 
-            if (!DesignMode)
+            if (DesignMode == false)
             {
                 Image img;
                 Graphics g = CreateGraphics();
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                for (int nIndex = 0; nIndex < this.TabCount; nIndex++)
+                for (int nIndex = 1; nIndex < this.TabCount; nIndex++)
                 {
                     RectangleF tabTextArea = (RectangleF)this.GetTabRect(nIndex);
                     tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
@@ -134,7 +137,7 @@ namespace Statistic
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (!DesignMode)
+            if ((DesignMode == false) && (SelectedIndex > 0))
             {
                 RectangleF tabTextArea = (RectangleF)this.GetTabRect(SelectedIndex);
                 tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
@@ -160,6 +163,12 @@ namespace Statistic
                         ;
                 }
             }
+        }
+
+        public void TabPagesClear()
+        {
+            while (TabPages.Count > 1)
+                TabPages.RemoveAt (TabPages.Count - 1);
         }
     }
 

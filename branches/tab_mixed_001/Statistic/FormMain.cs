@@ -223,7 +223,7 @@ namespace Statistic
 
             prevStateIsAdmin = -1;
 
-            m_prevSelectedIndex = 0;
+            m_prevSelectedIndex = 1;
 
             return bRes;
         }
@@ -235,7 +235,7 @@ namespace Statistic
             //ToolStripItem []items = m_ContextMenuStripListTecViews.Items.Find (e.TabHeaderText, true);
             //formChangeMode.SetItemChecked(m_ContextMenuStripListTecViews.Items.IndexOf(items [0]), false);            
 
-            formChangeMode.SetItemChecked(e.TabIndex, false);            
+            formChangeMode.SetItemChecked(e.TabIndex - 1, false);            
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -364,7 +364,7 @@ namespace Statistic
                 else
                 {
                     StartWait();
-                    tclTecViews.TabPages.Clear();
+                    tclTecViews.TabPagesClear();
                     selectedTecViews.Clear();
 
                     for (int i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
@@ -514,7 +514,7 @@ namespace Statistic
                 ;
 
             //StartWait();
-            tclTecViews.TabPages.Clear();
+            tclTecViews.TabPagesClear();
             selectedTecViews.Clear();
 
             Int16 parametrsTGBiysk = 0;
@@ -627,8 +627,8 @@ namespace Statistic
 
             if (selectedTecViews.Count > 0)
             {
-                m_prevSelectedIndex = 0;
-                selectedTecViews[m_prevSelectedIndex].Activate(true);
+                m_prevSelectedIndex = 1;
+                //selectedTecViews[m_prevSelectedIndex - 1].Activate(true);
             }
             else
                 if (formChangeMode.admin_was_checked == true)
@@ -676,21 +676,26 @@ namespace Statistic
             else
                 ;
 
-            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count && m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
+            if ((tclTecViews.SelectedIndex > 0) &&
+                (tclTecViews.SelectedIndex - 1 < selectedTecViews.Count) &&
+                (m_prevSelectedIndex > 0) &&
+                (m_prevSelectedIndex - 1 < selectedTecViews.Count))
             {
-                selectedTecViews[m_prevSelectedIndex].Activate(false);
-                selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
+                selectedTecViews[m_prevSelectedIndex - 1].Activate(false);
+                selectedTecViews[tclTecViews.SelectedIndex - 1].Activate(true);
                 m_prevSelectedIndex = tclTecViews.SelectedIndex;
-                m_arPanelAdmin[(int)modeAdmin].Activate(false);
+                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Activate(false);
+                m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS].Activate(false);
             }
             else
             {
-                if (m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
-                    selectedTecViews[m_prevSelectedIndex].Activate(false);
+                if ((m_prevSelectedIndex > 0) &&
+                    (m_prevSelectedIndex - 1 < selectedTecViews.Count))
+                    selectedTecViews[m_prevSelectedIndex - 1].Activate(false);
                 else
                     ;
 
-                if (tclTecViews.SelectedIndex == selectedTecViews.Count)
+                if (tclTecViews.SelectedIndex - 1 == selectedTecViews.Count)
                     m_arPanelAdmin[(int)modeAdmin].Activate(true);
                 else
                     ;
@@ -845,8 +850,9 @@ namespace Statistic
 
                 if ((! (selectedTecViews == null)) && (selectedTecViews.Count > 0))
                 {
-                    m_prevSelectedIndex = 0;
-                    selectedTecViews[m_prevSelectedIndex].Activate(true);
+                    m_prevSelectedIndex = 1;
+                    //selectedTecViews[m_prevSelectedIndex].Activate(true);
+                    //tclTecViews.SelectedIndex = 1;
                 }
                 else
                     ;
@@ -912,7 +918,8 @@ namespace Statistic
 
         private void UpdateActiveGui()
         {
-            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
+            if ((tclTecViews.SelectedIndex > 0) &&
+                (tclTecViews.SelectedIndex < selectedTecViews.Count))
                 selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
             else
                 ;
