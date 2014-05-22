@@ -41,14 +41,21 @@ namespace StatisticCommon
         {
             bool bRes = false;
 
-            if ((csLeft.server == csRight.server) &&
-                (csLeft.dbName == csRight.dbName) &&
-                (csLeft.userName == csRight.userName) &&
-                (csLeft.password == csRight.password) &&
-                (csLeft.port == csRight.port))
-                bRes = true;
+            if ((object.ReferenceEquals (csRight, null) == false) &&
+                object.ReferenceEquals (csLeft, null) == false)
+                if ((csLeft.server == csRight.server) &&
+                    (csLeft.dbName == csRight.dbName) &&
+                    (csLeft.userName == csRight.userName) &&
+                    (csLeft.password == csRight.password) &&
+                    (csLeft.port == csRight.port))
+                    bRes = true;
+                else
+                    ;
             else
-                ;
+                if (object.ReferenceEquals(csLeft, null) == true)
+                    bRes = true;
+                else
+                    ;
 
             return bRes;
         }

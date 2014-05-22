@@ -1327,60 +1327,65 @@ namespace StatisticCommon
                         ;
 
                     dbType = -1;
-                    
-                    bool isAlready = false;
 
-                    foreach (DbTSQLInterface dbi in m_listDbInterfaces) {
-                        //if (! (t.connSetts [0] == cs))
-                        //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
-                        if (((ConnectionSettings)dbi.m_connectionSettings) == t.connSetts[connSettType])
-                        //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
-                        {
-                            isAlready = true;
+                    if (object.ReferenceEquals (t.connSetts[connSettType], null) == false) {                    
+                        bool isAlready = false;
 
-                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.IndexOf(dbi);
-                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[t.m_arIndxDbInterfaces[connSettType]].ListenerRegister();
+                        foreach (DbTSQLInterface dbi in m_listDbInterfaces) {
+                            //if (! (t.connSetts [0] == cs))
+                            //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
+                            if (((ConnectionSettings)dbi.m_connectionSettings) == t.connSetts[connSettType])
+                            //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
+                            {
+                                isAlready = true;
 
-                            break;
+                                t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.IndexOf(dbi);
+                                t.m_arListenerIds[connSettType] = m_listDbInterfaces[t.m_arIndxDbInterfaces[connSettType]].ListenerRegister();
+
+                                break;
+                            }
+                            else
+                                ;
+                        }
+
+                        if (isAlready == false) {
+                            string dbNameType = string.Empty;
+
+                            switch (connSettType) {
+                                case (int)CONN_SETT_TYPE.ADMIN:
+                                case (int)CONN_SETT_TYPE.PBR:
+                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                                    dbNameType = "MySql";
+                                    break;
+                                case (int)CONN_SETT_TYPE.DATA_FACT:
+                                case (int)CONN_SETT_TYPE.DATA_TM:
+                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                                    dbNameType = "MSSQL";
+                                    break;
+                                default:
+                                    dbNameType = string.Empty;
+                                    break; 
+                            }
+
+                            if (! (dbType < 0)) {
+                                m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Èםעונפויס " + dbNameType + "-ÁÄ"));
+                                m_listListenerIdCurrent.Add (-1);
+
+                                t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
+                                t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
+
+                                m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
+
+                                m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
+                            }
+                            else
+                                ;
                         }
                         else
-                            ;
-                    }
-
-                    if (isAlready == false) {
-                        string dbNameType = string.Empty;
-
-                        switch (connSettType) {
-                            case (int)CONN_SETT_TYPE.ADMIN:
-                            case (int)CONN_SETT_TYPE.PBR:
-                                dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
-                                dbNameType = "MySql";
-                                break;
-                            case (int)CONN_SETT_TYPE.DATA:
-                                dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
-                                dbNameType = "MSSQL";
-                                break;
-                            default:
-                                dbNameType = string.Empty;
-                                break; 
-                        }
-
-                        if (! (dbType < 0)) {
-                            m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Èםעונפויס " + dbNameType + "-ÁÄ"));
-                            m_listListenerIdCurrent.Add (-1);
-
-                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
-                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
-
-                            m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
-
-                            m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
-                        }
-                        else
-                            ;
+                            ; //isAlready == true
                     }
                     else
-                        ;
+                        ; //t.connSetts[connSettType] == null
                 }
             }
 
@@ -1405,12 +1410,15 @@ namespace StatisticCommon
                 foreach (TEC t in m_list_tec)
                 {
                     for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {
-                        if ((m_ignore_connsett_data == true) && (connSettType == CONN_SETT_TYPE.DATA))
+                        if ((m_ignore_connsett_data == true) && ((connSettType == CONN_SETT_TYPE.DATA_FACT) || (connSettType == CONN_SETT_TYPE.DATA_TM)))
                             continue;
                         else
                             ;
 
-                        m_listDbInterfaces[t.m_arIndxDbInterfaces[(int)connSettType]].ListenerUnregister(t.m_arListenerIds[(int)connSettType]);
+                        if (! (t.m_arIndxDbInterfaces[(int)connSettType] < 0))
+                            m_listDbInterfaces[t.m_arIndxDbInterfaces[(int)connSettType]].ListenerUnregister(t.m_arListenerIds[(int)connSettType]);
+                        else
+                            ;
                     }
                 }
 

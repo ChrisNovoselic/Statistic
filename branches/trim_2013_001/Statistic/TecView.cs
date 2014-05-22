@@ -2143,7 +2143,7 @@ namespace Statistic
                     ;
             }
 
-            tec.StopDbInterface();
+            tec.StopDbInterfaces();
 
             errored_state = false;
         }
@@ -2165,7 +2165,7 @@ namespace Statistic
 
         private void GetCurrentTimeRequest()
         {
-            tec.Request("SELECT getdate()");
+            tec.Request(CONN_SETT_TYPE.DATA_FACT, "SELECT getdate()");
         }
 
         private void GetSensorsFactRequest()
@@ -2178,16 +2178,17 @@ namespace Statistic
                              @"DEVICES.CODE = DATA.OBJECT AND " +
                              @"SENSORS.CODE = DATA.ITEM " +
                              @"WHERE DATA.PARNUMBER = 12 AND " +
-                             @"SENSORS.NAME LIKE 'ТГ%P%+'"; 
+                             //@"SENSORS.NAME LIKE 'ТГ%P%+'";
+                             @"SENSORS.NAME LIKE '" + tec.m_strTemplateNameSgnDataFact + "'";
 
-            tec.Request(request);
+            tec.Request(CONN_SETT_TYPE.DATA_FACT, request);
         }
 
         private void GetSensorsTMRequest()
         {
-            string request = @"";
+            string request = @"SELECT ID FROM [dbo].[reals_rv] WHERE [DESCRIPTION] LIKE '" + tec.m_strTemplateNameSgnDataTM + "'";
 
-            tec.Request(request);
+            tec.Request(CONN_SETT_TYPE.DATA_TM, request);
         }
         
         private void GetHoursRequest(DateTime date)
@@ -2236,7 +2237,7 @@ namespace Statistic
                     break;
             }
 
-            tec.Request(request);
+            tec.Request(CONN_SETT_TYPE.DATA_FACT, request);
         }
 
         private void GetMinsRequest(int hour)
@@ -2289,7 +2290,7 @@ namespace Statistic
                     break;
             }
 
-            tec.Request(request);
+            tec.Request(CONN_SETT_TYPE.DATA_FACT, request);
         }
 
         private void GetPBRValuesRequest () {
@@ -2770,10 +2771,10 @@ namespace Statistic
                 valuesMins.valuesUDGe[i] = 0;
         }
 
-        private TG FindTGById(int id, int id_type)
+        private TG FindTGByIdFact(int id, int id_type)
         {
             for (int i = 0; i < sensorId2TG.Length; i++)
-                if (sensorId2TG[i].ids [id_type] == id)
+                if (sensorId2TG[i].ids_fact [id_type] == id)
                     return sensorId2TG[i];
 
             return null;
@@ -2805,7 +2806,7 @@ namespace Statistic
             return true;
         }
 
-        private bool GetSensorsResponse(DataTable table)
+        private bool GetSensorsFactResponse(DataTable table)
         {
             string s;
             int t = 0, pos;
@@ -2850,8 +2851,8 @@ namespace Statistic
                             if (tec.list_TECComponents[j].TG[k].name_shr == s)
                             {
                                 found = true;
-                                tec.list_TECComponents[j].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
-                                tec.list_TECComponents[j].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                                tec.list_TECComponents[j].TG[k].ids_fact[(int)TG.ID_TIME.MINUTES] =
+                                tec.list_TECComponents[j].TG[k].ids_fact[(int)TG.ID_TIME.HOURS] =
                                 int.Parse(table.Rows[i][1].ToString());
                                 sensorId2TG[t] = tec.list_TECComponents[j].TG[k];
                                 t++;
@@ -2866,8 +2867,8 @@ namespace Statistic
                     {
                         if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr == s)
                         {
-                            tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.MINUTES] =
-                            tec.list_TECComponents[num_TECComponent].TG[k].ids[(int)TG.ID_TIME.HOURS] =
+                            tec.list_TECComponents[num_TECComponent].TG[k].ids_fact[(int)TG.ID_TIME.MINUTES] =
+                            tec.list_TECComponents[num_TECComponent].TG[k].ids_fact[(int)TG.ID_TIME.HOURS] =
                             int.Parse(table.Rows[i][1].ToString());
                             sensorId2TG[t] = tec.list_TECComponents[num_TECComponent].TG[k];
                             t++;
@@ -2883,11 +2884,11 @@ namespace Statistic
                 {
                     if (sensorsString.Equals (string.Empty) == true)
                     {
-                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                     else
                     {
-                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].ids [(int) TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                 }
                 else
@@ -2903,6 +2904,13 @@ namespace Statistic
             return true;
         }
 
+        private bool GetSensorsTMResponse(DataTable table)
+        {
+            bool bRes = true;
+
+            return true;
+        }
+        
         private void GetSensors()
         {
             Dictionary<string, int>[] tgs = new Dictionary<string, int>[(int)TG.ID_TIME.COUNT_ID_TIME];
@@ -2927,21 +2935,21 @@ namespace Statistic
                 {
                     for (int j = 0; j < ((TECComponent)m_list_TECComponents[i]).TG.Count; j++)
                     {
-                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name_shr];
-                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name_shr];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][tec.list_TECComponents[i].TG[j].name_shr];
+                        ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][tec.list_TECComponents[i].TG[j].name_shr];
                         sensorId2TG[t] = ((TECComponent)m_list_TECComponents[i]).TG[j];
                         //sensorId2TGHours[t] = tec.list_TECComponents[i].TG[j];
                         t++;
 
                         if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
 
                         if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                     }
                 }
             }
@@ -2972,21 +2980,21 @@ namespace Statistic
 
                 for (int i = 0; i < m_list_TECComponents.Count; i++)
                 {
-                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][((TG)m_list_TECComponents[i]).name_shr];
-                    ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][((TG)m_list_TECComponents[i]).name_shr];
+                    ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES] = tgs[(int)TG.ID_TIME.MINUTES][((TG)m_list_TECComponents[i]).name_shr];
+                    ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS] = tgs[(int)TG.ID_TIME.HOURS][((TG)m_list_TECComponents[i]).name_shr];
                     sensorId2TG[t] = ((TG)m_list_TECComponents[i]);
                     //sensorId2TGHours[t] = tec.list_TECComponents[num_gtp].TG[i];
                     t++;
 
                     if (sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals (string.Empty) == true)
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
 
                     if (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == true)
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TG)m_list_TECComponents[i]).ids[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                 }
             }
         }
@@ -3131,7 +3139,7 @@ namespace Statistic
                     if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id, (int) TG.ID_TIME.HOURS);
+                    tgTmp = FindTGByIdFact(id, (int) TG.ID_TIME.HOURS);
 
                     if (tgTmp == null)
                         return false;
@@ -3368,7 +3376,7 @@ namespace Statistic
                     if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id, (int) TG.ID_TIME.MINUTES);
+                    tgTmp = FindTGByIdFact(id, (int) TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
@@ -4779,7 +4787,7 @@ namespace Statistic
             //resValues[6] = dt;
             //resValues[7] = sensorId2TG[indx_tg].ids[indx_id_time];
 
-            resValues[0] = sensorId2TG[indx_tg].ids[indx_id_time];
+            resValues[0] = sensorId2TG[indx_tg].ids_fact[indx_id_time];
             resValues[1] = dt;
             //2 - season
             resValues[3] = 30 + indx_halfhours * 2;
@@ -5013,7 +5021,6 @@ namespace Statistic
                             GetSensorsTMRequest();
                             break;
                         case TEC.TEC_TYPE.BIYSK:
-                            GetSensors();
                             break;
                         default:
                             break;
@@ -5072,10 +5079,19 @@ namespace Statistic
             
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachine.Init_Fact:
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
-                            return tec.GetResponse(out error, out table);
+                            return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
+                        case TEC.TEC_TYPE.BIYSK:
+                            return true;
+                    }
+                    break;
+                case StatesMachine.Init_TM:
+                    switch (tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
                         case TEC.TEC_TYPE.BIYSK:
                             return true;
                     }
@@ -5085,7 +5101,7 @@ namespace Statistic
                 case StatesMachine.CurrentMins:
                 case StatesMachine.RetroHours:
                 case StatesMachine.RetroMins:
-                    return tec.GetResponse(out error, out table);
+                    return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
                 case StatesMachine.PBRValues:
                     return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     //return true; //Имитация получения данных плана
@@ -5104,10 +5120,23 @@ namespace Statistic
             bool result = false;
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachine.Init_Fact:
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
-                            result = GetSensorsResponse(table);
+                            result = GetSensorsFactResponse(table);
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            result = true;
+                            break;
+                    }
+                    if (result)
+                    {
+                    }
+                    break;
+                case StatesMachine.Init_TM:
+                    switch (tec.type ()) {
+                        case TEC.TEC_TYPE.COMMON:
+                            result = GetSensorsTMResponse(table);
                             break;
                         case TEC.TEC_TYPE.BIYSK:
                             result = true;
@@ -5194,7 +5223,8 @@ namespace Statistic
         {
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachine.Init_Fact:
+                case StatesMachine.Init_TM:
                     if (response)
                         ErrorReport("Ошибка разбора идентификаторов датчиков. Переход в ожидание.");
                     else

@@ -210,7 +210,7 @@ namespace Statistic
                         {                
                             foreach (TEC t in m_admin.m_list_tec)
                             {
-                                t.StopDbInterfaceForce();
+                                t.StopDbInterfacesForce();
                             }
 
                             m_admin.StopThreadSourceData();
@@ -572,9 +572,10 @@ namespace Statistic
             lblDescError.Text = lblDateError.Text = "";
             for (int i = 0; i < selectedTecViews.Count; i++)
             {
-                if (selectedTecViews[i].actioned_state && !selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA].ignore)
+                if ((selectedTecViews[i].actioned_state == true) && ((selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                    (selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
                 {
-                    if (selectedTecViews[i].isActive)
+                    if (selectedTecViews[i].isActive == true)
                     {
                         lblDateError.Text = selectedTecViews[i].last_time_action.ToString();
                         lblDescError.Text = selectedTecViews[i].last_action;
@@ -583,10 +584,11 @@ namespace Statistic
                 else
                     ;
 
-                if (selectedTecViews[i].errored_state && !selectedTecViews[i].tec.connSetts[(int)CONN_SETT_TYPE.DATA].ignore)
+                if ((selectedTecViews[i].errored_state == true) && ((selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                    (selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
                 {
                     have_eror = true;
-                    if (selectedTecViews[i].isActive)
+                    if (selectedTecViews[i].isActive == true)
                     {
                         lblDateError.Text = selectedTecViews[i].last_time_error.ToString();
                         lblDescError.Text = selectedTecViews[i].last_error;
@@ -596,7 +598,7 @@ namespace Statistic
                     ;
             }
 
-            if (m_admin.actioned_state && m_panelAdmin.isActive)
+            if ((m_admin.actioned_state = true) && (m_panelAdmin.isActive == true))
             {
                 lblDateError.Text = m_admin.last_time_action.ToString();
                 lblDescError.Text = m_admin.last_action;
@@ -604,7 +606,7 @@ namespace Statistic
             else
                 ;
 
-            if (m_admin.errored_state)
+            if (m_admin.errored_state == true)
             {
                 have_eror = true;
                 lblDateError.Text = m_admin.last_time_error.ToString();
@@ -613,7 +615,7 @@ namespace Statistic
             else
                 ;
 
-            if (m_passwords.actioned_state)
+            if (m_passwords.actioned_state == true)
             {
                 lblDateError.Text = m_passwords.last_time_action.ToString();
                 lblDescError.Text = m_passwords.last_action;
@@ -621,7 +623,7 @@ namespace Statistic
             else
                 ;
 
-            if (m_passwords.errored_state)
+            if (m_passwords.errored_state == true)
             {
                 have_eror = true;
                 lblDateError.Text = m_passwords.last_time_error.ToString();

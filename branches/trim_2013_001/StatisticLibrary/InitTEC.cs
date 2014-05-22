@@ -121,6 +121,8 @@ namespace StatisticCommon
 
                     tec[indx_tec].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                     tec[indx_tec].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
+                    tec[i].m_strTemplateNameSgnDataTM = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_TM"].ToString();
+                    tec[i].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
 
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
@@ -252,12 +254,15 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int)CONN_SETT_TYPE.DATA);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA_FACT"].ToString(), out err), (int)CONN_SETT_TYPE.DATA_FACT);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA_TM"].ToString(), out err), (int)CONN_SETT_TYPE.DATA_TM);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
 
                 tec[i].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                 tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
+                tec[i].m_strTemplateNameSgnDataTM = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_TM"].ToString();
+                tec[i].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
 
                 list_TECComponents = getListTECComponent(connSett, FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]));
                 for (int j = 0; j < list_TECComponents.Rows.Count; j++)

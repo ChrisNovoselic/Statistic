@@ -24,14 +24,19 @@ namespace StatisticCommon
 
         public int m_timezone_offset_msc { get; set; }
         public string m_path_rdg_excel { get; set;}
+        public string m_strTemplateNameSgnDataTM,
+                    m_strTemplateNameSgnDataFact;
 
         public List<TECComponent> list_TECComponents;
 
         public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
-        public int[] m_arListenerIds; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
-        public int[] m_arIndxDbInterfaces; //Индексы 'DbInterface' в 'PanelAdmin.cs' для 'AdminValues', 'PBR' (1-ый элемент ВСЕГДА = -1, т.е. не используется, т.к. для 'Data' есть 'm_dbInterface')
+        //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
+        //Вообще, нужен список, но заранее известно, что для каждого источника данных для ТЭЦ один клиент
+        public /*List <int>*/int [] m_arListenerIds;
+        //Индексы 'DbInterface' в 'PanelAdmin.cs' для 'AdminValues', 'PBR' (1-ый элемент ВСЕГДА = -1, т.е. не используется, т.к. для 'Data' есть 'm_dbInterface')
+        public int[] m_arIndxDbInterfaces;
 
         private bool is_connection_error;
         private bool is_data_error;
@@ -92,22 +97,27 @@ namespace StatisticCommon
 
         public void Request(CONN_SETT_TYPE indx_src, string request)
         {
-            m_dbInterface.Request(m_arListenerIds[(int)indx_src], request);
+            m_arDBInterfaces[(int)indx_src].Request(m_arListenerIds[(int)indx_src], request);
         }
 
         public bool GetResponse(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
-            return m_dbInterface.GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
+            return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
         }
 
         public void StartDbInterface()
         {
             if (used == 0)
             {
-                m_dbInterface = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name);
-                m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
-                m_dbInterface.Start();
-                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                m_arDBInterfaces = new DbTSQLInterface[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name);
+                    m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
+                    m_arDBInterfaces[i].Start();
+                    m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
+                }
             }
             used++;
             if (used > list_TECComponents.Count)
@@ -116,13 +126,21 @@ namespace StatisticCommon
                 ;
         }
 
-        public void StopDbInterface()
+        private void stopDbInterfaces () {
+            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                m_arDBInterfaces[i].Stop ();
+                //for (int j = 0; j < m_arListenerIds[i].Count; j ++)
+                    m_arDBInterfaces[i].ListenerUnregister(m_arListenerIds[i]/*[j]*/);
+            }
+        }
+
+        public void StopDbInterfaces()
         {
             used--;
             if (used == 0)
             {
-                m_dbInterface.Stop();
-                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
+                stopDbInterfaces ();
             }
             else
                 ;
@@ -133,12 +151,11 @@ namespace StatisticCommon
                 ;
         }
 
-        public void StopDbInterfaceForce()
+        public void StopDbInterfacesForce()
         {
             if (used > 0)
             {
-                m_dbInterface.Stop();
-                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
+                stopDbInterfaces ();
             }
             else
                 ;
@@ -148,7 +165,13 @@ namespace StatisticCommon
         {
             if (used > 0)
             {
-                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    if (! (m_arDBInterfaces[i] == null))
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts [i]);
+                    else
+                        ;
+                }                
             }
             else
                 ;
@@ -157,13 +180,21 @@ namespace StatisticCommon
         public int connSettings (DataTable source, int type) {
             int iRes = 0;
 
-            connSetts[type] = new ConnectionSettings();
-            connSetts[type].server = source.Rows[0]["IP"].ToString();
-            connSetts[type].port = Int32.Parse(source.Rows[0]["PORT"].ToString());
-            connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
-            connSetts[type].userName = source.Rows[0]["UID"].ToString();
-            connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
-            connSetts[type].ignore = Boolean.Parse(source.Rows[0]["IGNORE"].ToString()); //== "1";
+            if (source.Rows.Count == 1) {
+                connSetts[type] = new ConnectionSettings();
+                connSetts[type].server = source.Rows[0]["IP"].ToString();
+                connSetts[type].port = Int32.Parse(source.Rows[0]["PORT"].ToString());
+                connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
+                connSetts[type].userName = source.Rows[0]["UID"].ToString();
+                connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
+                connSetts[type].ignore = Boolean.Parse(source.Rows[0]["IGNORE"].ToString()); //== "1";
+            }
+            else {
+                if (source.Rows.Count == 0)
+                    iRes = -1;
+                else
+                    iRes = -2;
+            }
 
             return iRes;
         }

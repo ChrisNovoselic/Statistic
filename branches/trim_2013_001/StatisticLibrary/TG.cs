@@ -17,7 +17,7 @@ namespace StatisticCommon
         public bool receivedHourHalf2Addon;
         //public int id;
         public int [] ids_fact; //Для особенной ТЭЦ (Бийск)
-        public int[] ids_tm; 
+        public int id_tm; 
         public TECComponent m_owner;
 
         public TG(TECComponent comp)
@@ -28,7 +28,7 @@ namespace StatisticCommon
             receivedHourHalf1 = new bool[24];
             receivedHourHalf2 = new bool[24];
 
-            ids = new int[(int) ID_TIME.COUNT_ID_TIME];
+            ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
         }
     }
 }
