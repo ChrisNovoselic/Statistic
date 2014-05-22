@@ -26,7 +26,7 @@ namespace Statistic
         private System.Windows.Forms.Panel pnlCommon;
         private System.Windows.Forms.Label lblCommonPVal;
         private System.Windows.Forms.Label lblCommonP;
-        private System.Windows.Forms.Label lblPBRRecVal;
+        private System.Windows.Forms.Label lblPBRrecVal;
         private System.Windows.Forms.Label lblPBRrec;
         private System.Windows.Forms.Label lblAverPVal;
         private System.Windows.Forms.Label lblAverP;
@@ -55,7 +55,7 @@ namespace Statistic
         private ZedGraph.ZedGraphControl zedGraphMins;
         private ZedGraph.ZedGraphControl zedGraphHours;
         private System.Windows.Forms.Label lblServerTime;
-        private System.Windows.Forms.Label lblLayoutNumber;
+        private System.Windows.Forms.Label lblPBRNumber;
 
         // контекстные меню
         private System.Windows.Forms.ContextMenuStrip contextMenuStripMins;
@@ -211,7 +211,7 @@ namespace Statistic
         private void InitializeComponent()
         {
             this.lblServerTime = new System.Windows.Forms.Label();
-            this.lblLayoutNumber = new System.Windows.Forms.Label();
+            this.lblPBRNumber = new System.Windows.Forms.Label();
             this.zedGraphMins = new ZedGraphControl();
             this.zedGraphHours = new ZedGraphControl();
             this.dgwHours = new System.Windows.Forms.DataGridView();
@@ -222,7 +222,7 @@ namespace Statistic
             this.UDGeHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DeviationHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlCommon = new System.Windows.Forms.Panel();
-            this.lblPBRRecVal = new System.Windows.Forms.Label();
+            this.lblPBRrecVal = new System.Windows.Forms.Label();
             this.lblPBRrec = new System.Windows.Forms.Label();
             this.lblCommonPVal = new System.Windows.Forms.Label();
             this.lblCommonP = new System.Windows.Forms.Label();
@@ -274,17 +274,19 @@ namespace Statistic
             this.Controls.Add(this.pnlCommon);
             this.Controls.Add(this.pnlTG);
             this.Controls.Add(this.dtprDate);
+            this./*pnlCommon.*/Controls.Add(this.lblServerTime);
+            this./*pnlCommon.*/Controls.Add(this.lblPBRNumber);
             this.Controls.Add(this.btnSetNow);
             this.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Location = new System.Drawing.Point(40, 58);
+            this.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.THIS].pt);
             this.Name = "pnlView";
-            this.Size = new System.Drawing.Size(705, 727);
+            this.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.THIS].sz);
             this.TabIndex = 0;
             // 
             // zedGraphMin
             // 
             this.zedGraphMins.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.zedGraphMins.Location = new System.Drawing.Point(0, 0);
+            this.zedGraphMins.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.zedGraphMins].pt);
             this.zedGraphMins.Name = "zedGraphMin";
             this.zedGraphMins.ScrollGrace = 0;
             this.zedGraphMins.ScrollMaxX = 0;
@@ -293,7 +295,7 @@ namespace Statistic
             this.zedGraphMins.ScrollMinX = 0;
             this.zedGraphMins.ScrollMinY = 0;
             this.zedGraphMins.ScrollMinY2 = 0;
-            this.zedGraphMins.Size = new System.Drawing.Size(592, 471);
+            this.zedGraphMins.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.zedGraphMins].sz);
             this.zedGraphMins.TabIndex = 0;
             this.zedGraphMins.IsEnableHEdit = false;
             this.zedGraphMins.IsEnableHPan = false;
@@ -312,7 +314,7 @@ namespace Statistic
             // zedGraphHour
             // 
             this.zedGraphHours.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.zedGraphHours.Location = new System.Drawing.Point(0, 0);
+            this.zedGraphHours.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.zedGraphHours].pt);
             this.zedGraphHours.Name = "zedGraphHour";
             this.zedGraphHours.ScrollGrace = 0;
             this.zedGraphHours.ScrollMaxX = 0;
@@ -321,7 +323,7 @@ namespace Statistic
             this.zedGraphHours.ScrollMinX = 0;
             this.zedGraphHours.ScrollMinY = 0;
             this.zedGraphHours.ScrollMinY2 = 0;
-            this.zedGraphHours.Size = new System.Drawing.Size(592, 471);
+            this.zedGraphHours.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.zedGraphMins].sz);
             this.zedGraphHours.TabIndex = 0;
             this.zedGraphHours.IsEnableHEdit = false;
             this.zedGraphHours.IsEnableHPan = false;
@@ -349,11 +351,11 @@ namespace Statistic
             this.PBReHour,
             this.UDGeHour,
             this.DeviationHour});
-            this.dgwHours.Location = new System.Drawing.Point(3, 3);
+            this.dgwHours.Location = new System.Drawing.Point(arPlacement [(int)CONTROLS.dgwHours].pt);
             this.dgwHours.Name = "dgwHour";
             this.dgwHours.ReadOnly = true;
             this.dgwHours.RowHeadersVisible = false;
-            this.dgwHours.Size = new System.Drawing.Size(329, 299);
+            this.dgwHours.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.dgwHours].sz);
             this.dgwHours.TabIndex = 7;
             this.dgwHours.RowTemplate.Resizable = DataGridViewTriState.False;
             // 
@@ -408,9 +410,9 @@ namespace Statistic
             // btnSetNow
             //
             this.btnSetNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSetNow.Location = new System.Drawing.Point(6, 643);
+            this.btnSetNow.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.btnSetNow].pt);
             this.btnSetNow.Name = "btnSetNow";
-            this.btnSetNow.Size = new System.Drawing.Size(93, 23);
+            this.btnSetNow.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.btnSetNow].sz);
             this.btnSetNow.TabIndex = 2;
             this.btnSetNow.Text = "Текущий час";
             this.btnSetNow.UseVisualStyleBackColor = true;
@@ -420,24 +422,19 @@ namespace Statistic
             // 
             this.pnlCommon.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlCommon.Controls.Add(this.lblPBRRecVal);
+            this.pnlCommon.Controls.Add(this.lblPBRrecVal);
             this.pnlCommon.Controls.Add(this.lblPBRrec);
-            this.pnlCommon.Controls.Add(this.lblServerTime);
-            this.pnlCommon.Controls.Add(this.lblLayoutNumber);
+            //Перенос под 'dtprDate'
+            //this.pnlCommon.Controls.Add(this.lblServerTime);
+            //this.pnlCommon.Controls.Add(this.lblPBRNumber);
             this.pnlCommon.Controls.Add(this.lblCommonPVal);
             this.pnlCommon.Controls.Add(this.lblCommonP);
             this.pnlCommon.Controls.Add(this.lblAverPVal);
             this.pnlCommon.Controls.Add(this.lblAverP);
-            this.pnlCommon.Location = new System.Drawing.Point(140, 620);
+            this.pnlCommon.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.pnlCommon].pt);
             this.pnlCommon.Name = "pnlCommon";
-            this.pnlCommon.Size = new System.Drawing.Size(562, 46);
+            this.pnlCommon.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.pnlCommon].sz);
             this.pnlCommon.TabIndex = 6;
-
-            int[,] arLocation =
-                {{80, 6}, {115, 0},
-                {195, 6}, {230, 0},
-                {310, 6}, {345, 0}}
-                                ;
 
             // 
             // lblCommonPVal
@@ -447,19 +444,19 @@ namespace Statistic
             this.lblCommonPVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblCommonPVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblCommonPVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCommonPVal.Location = new System.Drawing.Point(arLocation[1, 0], arLocation[1, 1]);
+            this.lblCommonPVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal].pt);
             this.lblCommonPVal.Name = "lblCommonPVal";
             this.lblCommonPVal.AutoSize = false;
-            this.lblCommonPVal.Size = new System.Drawing.Size(74, 27);
+            this.lblCommonPVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal].sz);
             this.lblCommonPVal.TabIndex = 1;
             this.lblCommonPVal.Text = "0";
             // 
             // lblCommonP
             // 
             this.lblCommonP.AutoSize = true;
-            this.lblCommonP.Location = new System.Drawing.Point(arLocation[0, 0], arLocation[0, 1]);
+            this.lblCommonP.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonP].pt);
             this.lblCommonP.Name = "lblCommonP";
-            this.lblCommonP.Size = new System.Drawing.Size(53, 13);
+            this.lblCommonP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonP].sz);
             this.lblCommonP.TabIndex = 0;
             this.lblCommonP.Text = "P тек";//"Суммарная мощность генераторов";
             // 
@@ -470,42 +467,42 @@ namespace Statistic
             this.lblAverPVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblAverPVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblAverPVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblAverPVal.Location = new System.Drawing.Point(arLocation[3, 0], arLocation[3, 1]);
+            this.lblAverPVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblAverPVal].pt);
             this.lblAverPVal.Name = "lblAverPVal";
             this.lblAverPVal.AutoSize = false;
-            this.lblAverPVal.Size = new System.Drawing.Size(74, 27);
+            this.lblAverPVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblAverPVal].sz);
             this.lblAverPVal.TabIndex = 1;
             this.lblAverPVal.Text = "0";
             // 
             // lblAverP
             // 
             this.lblAverP.AutoSize = true;
-            this.lblAverP.Location = new System.Drawing.Point(arLocation[2, 0], arLocation[2, 1]);
+            this.lblAverP.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblAverP].pt);
             this.lblAverP.Name = "lblCommonP";
-            this.lblAverP.Size = new System.Drawing.Size(53, 13);
+            this.lblAverP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblAverP].sz);
             this.lblAverP.TabIndex = 0;
             this.lblAverP.Text = "P ср";//"Средняя мощность за час";
             // 
-            // lblPBRRecVal
+            // lblPBRrecVal
             // 
-            this.lblPBRRecVal.AutoSize = true;
-            this.lblPBRRecVal.BackColor = System.Drawing.Color.Black;
-            this.lblPBRRecVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPBRRecVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblPBRRecVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblPBRRecVal.Location = new System.Drawing.Point(arLocation[5, 0], arLocation[5, 1]);
-            this.lblPBRRecVal.Name = "lblPBRRecVal";
-            this.lblPBRRecVal.AutoSize = false;
-            this.lblPBRRecVal.Size = new System.Drawing.Size(74, 27);
-            this.lblPBRRecVal.TabIndex = 3;
-            this.lblPBRRecVal.Text = "0";
+            this.lblPBRrecVal.AutoSize = true;
+            this.lblPBRrecVal.BackColor = System.Drawing.Color.Black;
+            this.lblPBRrecVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPBRrecVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblPBRrecVal.ForeColor = System.Drawing.Color.Yellow;
+            this.lblPBRrecVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblPBRrecVal].pt);
+            this.lblPBRrecVal.Name = "lblPBRrecVal";
+            this.lblPBRrecVal.AutoSize = false;
+            this.lblPBRrecVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRrecVal].sz);
+            this.lblPBRrecVal.TabIndex = 3;
+            this.lblPBRrecVal.Text = "0";
             // 
             // lblPBRrec
             // 
             this.lblPBRrec.AutoSize = true;
-            this.lblPBRrec.Location = new System.Drawing.Point(arLocation[4, 0], arLocation[4, 1]);
+            this.lblPBRrec.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblPBRrec].pt);
             this.lblPBRrec.Name = "lblPBRrec";
-            this.lblPBRrec.Size = new System.Drawing.Size(43, 13);
+            this.lblPBRrec.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRrec].sz);
             this.lblPBRrec.TabIndex = 2;
             this.lblPBRrec.Text = "P рек";//"Рекомендуемая мощность";
             // 
@@ -513,17 +510,17 @@ namespace Statistic
             // 
             this.pnlTG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlTG.Location = new System.Drawing.Point(3, 666);
+            this.pnlTG.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.pnlTG].pt);
             this.pnlTG.Name = "pnlTG";
-            this.pnlTG.Size = new System.Drawing.Size(699, 58);
+            this.pnlTG.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.pnlTG].sz);
             this.pnlTG.TabIndex = 5;
             // 
             // dtprDate
             // 
             this.dtprDate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.dtprDate.Location = new System.Drawing.Point(6, 622);
+            this.dtprDate.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.dtprDate].pt);
             this.dtprDate.Name = "dtprDate";
-            this.dtprDate.Size = new System.Drawing.Size(130, 20);
+            this.dtprDate.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.dtprDate].sz);
             this.dtprDate.TabIndex = 4;
             this.dtprDate.ValueChanged += new System.EventHandler(this.dtprDate_ValueChanged);
             // 
@@ -532,9 +529,9 @@ namespace Statistic
             this.pnlGraphHours.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlGraphHours.Location = new System.Drawing.Point(338, 3);
+            this.pnlGraphHours.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.pnlGraphHours].pt);
             this.pnlGraphHours.Name = "pnlGraphHour";
-            this.pnlGraphHours.Size = new System.Drawing.Size(377, 299);
+            this.pnlGraphHours.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.pnlGraphHours].sz);
             this.pnlGraphHours.TabIndex = 3;
             this.pnlGraphHours.Controls.Add(zedGraphHours);
             // 
@@ -543,9 +540,9 @@ namespace Statistic
             this.pnlGraphMins.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlGraphMins.Location = new System.Drawing.Point(338, 3);
+            this.pnlGraphMins.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.pnlGraphMins].pt);
             this.pnlGraphMins.Name = "pnlGraphMin";
-            this.pnlGraphMins.Size = new System.Drawing.Size(377, 294);
+            this.pnlGraphMins.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.pnlGraphMins].sz);
             this.pnlGraphMins.TabIndex = 2;
             this.pnlGraphMins.Controls.Add(zedGraphMins);
             // 
@@ -563,11 +560,11 @@ namespace Statistic
             this.PBReMin,
             this.UDGeMin,
             this.DeviationMin});
-            this.dgwMins.Location = new System.Drawing.Point(3, 3);
+            this.dgwMins.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.dgwMins].pt);
             this.dgwMins.Name = "dgwMin";
             this.dgwMins.ReadOnly = true;
             this.dgwMins.RowHeadersVisible = false;
-            this.dgwMins.Size = new System.Drawing.Size(329, 294);
+            this.dgwMins.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.dgwMins].sz);
             this.dgwMins.TabIndex = 0;
             this.dgwMins.RowTemplate.Resizable = DataGridViewTriState.False;
             // 
@@ -624,7 +621,7 @@ namespace Statistic
             this.stctrView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.stctrView.Location = new System.Drawing.Point(0, 3);
+            this.stctrView.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.stctrView].pt);
             this.stctrView.Name = "stctrView";
             this.stctrView.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -637,7 +634,7 @@ namespace Statistic
             // 
             this.stctrView.Panel2.Controls.Add(this.dgwHours);
             this.stctrView.Panel2.Controls.Add(this.pnlGraphHours);
-            this.stctrView.Size = new System.Drawing.Size(702, 613);
+            this.stctrView.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.stctrView].sz);
             this.stctrView.SplitterDistance = 301;
             this.stctrView.TabIndex = 7;
             // 
@@ -783,27 +780,29 @@ namespace Statistic
             // 
             // lblServerTime
             // 
+            this.lblServerTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblServerTime.AutoSize = false;
-            this.lblServerTime.Location = new System.Drawing.Point(0, 1);
+            this.lblServerTime.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblServerTime].pt);
             this.lblServerTime.Name = "lblServerTime";
-            this.lblServerTime.Size = new System.Drawing.Size(67, 20);
+            this.lblServerTime.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblServerTime].sz);
             this.lblServerTime.TabIndex = 5;
             this.lblServerTime.Text = "--:--:--";
             this.lblServerTime.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblServerTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblServerTime.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // lblLayoutNumber
+            // lblPBRNumber
             // 
-            this.lblLayoutNumber.AutoSize = false;
-            this.lblLayoutNumber.Location = new System.Drawing.Point(0, 22);
-            this.lblLayoutNumber.Name = "lblLayoutNumber";
-            this.lblLayoutNumber.Size = new System.Drawing.Size(67, 20);
-            this.lblLayoutNumber.TabIndex = 5;
-            this.lblLayoutNumber.Text = "---";
-            this.lblLayoutNumber.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblLayoutNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblLayoutNumber.TextAlign = ContentAlignment.MiddleCenter;
+            this.lblPBRNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblPBRNumber.AutoSize = false;
+            this.lblPBRNumber.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblPBRNumber].pt);
+            this.lblPBRNumber.Name = "lblPBRNumber";
+            this.lblPBRNumber.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRNumber].sz);
+            this.lblPBRNumber.TabIndex = 5;
+            this.lblPBRNumber.Text = "---";
+            this.lblPBRNumber.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblPBRNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblPBRNumber.TextAlign = ContentAlignment.MiddleCenter;
 
             ((System.ComponentModel.ISupportInitialize)(this.dgwHours)).EndInit();
             this.pnlCommon.ResumeLayout(false);
@@ -814,6 +813,52 @@ namespace Statistic
             this.stctrView.ResumeLayout(false);
             this.ResumeLayout(false);
         }
+
+        private class HPlacement {
+            public Size pt; public Point sz;
+            public HPlacement (int x, int y, int w, int h) {
+                pt.Width = x; pt.Height = y; sz.X = w; sz.Y = h;
+            }
+        };
+
+        private enum CONTROLS : uint { THIS,
+                                        pnlCommon,
+                                        pnlTG,
+                                        stctrView,
+                                        pnlGraphHours, pnlGraphMins,
+                                        dgwHours, dgwMins,
+                                        zedGraphHours, zedGraphMins,
+                                        lblCommonP, lblCommonPVal,
+                                        lblAverP, lblAverPVal,
+                                        lblPBRrec, lblPBRrecVal,
+                                        lblCurrentE, lblCurrentEVal,
+                                        lblHourE, lblHourEVal,
+                                        lblDevE, lblDevEVal,
+                                        dtprDate,
+                                        lblServerTime,
+                                        btnSetNow,
+                                        lblPBRNumber,
+                                        COUNT_CONTROLS
+        };
+        HPlacement[] arPlacement =
+                {   new HPlacement (40, 58, 705, 727), //THIS
+                    new HPlacement (170, 620, 562, 46), //pnlCommon
+                    new HPlacement (/*3, 666, 699, 58*/170, 666, 562, 58), //pnlTG
+                    new HPlacement (0, 3, 702, 613), //stctrView
+                    new HPlacement (338, 3, 377, 299), new HPlacement (338, 3, 377, /*294*/299), //pnlGraphHours, pnlGraphMins
+                    new HPlacement (3, 3, 329, 299), new HPlacement (3, 3, 329, /*294*/299), //dgwHours, dgwMins
+                    new HPlacement (0, 0, 592, 471), new HPlacement (0, 0, 592, 471), //zedGraphHours, zedGraphMins
+                    new HPlacement (6, 6, 53, 13), new HPlacement (34, 0, 74, 27), //lblCommonP, lblCommonPVal
+                    new HPlacement (121, 6, 53, 13), new HPlacement (156, 0, 74, 27), //lblAverP, lblAverPVal
+                    new HPlacement (236, 6, 53, 13), new HPlacement (271, 0, 74, 27),
+                    new HPlacement (386, 6, 53, 13), new HPlacement (421, 0, 74, 27), //lblCurrentE, lblCurrentEVal
+                    new HPlacement (501, 6, 53, 13), new HPlacement (536, 0, 74, 27), //lblDevE, lblDevEVal
+                    new HPlacement (616, 6, 53, 13), new HPlacement (651, 0, 79, 27),
+                    new HPlacement (6, 622, 140, 20), //dtprDate
+                    new HPlacement (/*0, 1, 67, 20*/6, 648, 140, 20), //lblServerTime
+                    new HPlacement (/*6, 643, 93, 23*/6, 674, 140, 23), //btnSetNow
+                    new HPlacement (/*0, 22, 67, 20*/6, 704, 140, 20) //lblPBRNumber
+                };
 
         private void InitializeComponentEng6 () {
             this.lblCurrentE = new System.Windows.Forms.Label ();
@@ -830,22 +875,13 @@ namespace Statistic
             this.pnlCommon.Controls.Add(this.lblDevE);
             this.pnlCommon.Controls.Add(this.lblDevEVal);
 
-            int [,] arLocation =
-                                {{460, 6}, {495, 0},
-                                {575, 6}, {610, 0},
-                                {690, 6}, {725, 0}}
-                /*{{80, 42}, {120, 48},
-                {210, 42}, {240, 48},
-                {325, 42}, {360, 48}}*/
-                                ;
-
             // 
             // lblCurrentE
             // 
             this.lblCurrentE.AutoSize = true;
-            this.lblCurrentE.Location = new System.Drawing.Point(arLocation[0, 0], arLocation[0, 1]);
+            this.lblCurrentE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCurrentE].pt);
             this.lblCurrentE.Name = "lblCurrentE";
-            this.lblCurrentE.Size = new System.Drawing.Size(53, 13);
+            this.lblCurrentE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCurrentE].sz);
             this.lblCurrentE.TabIndex = 0;
             this.lblCurrentE.Text = "Е тек";//"Суммарная мощность генераторов";
             // 
@@ -856,10 +892,10 @@ namespace Statistic
             this.lblCurrentEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblCurrentEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblCurrentEVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCurrentEVal.Location = new System.Drawing.Point(arLocation[1, 0], arLocation[1, 1]);
+            this.lblCurrentEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCurrentEVal].pt);
             this.lblCurrentEVal.Name = "lblCurrentEVal";
             this.lblCurrentEVal.AutoSize = false;
-            this.lblCurrentEVal.Size = new System.Drawing.Size(74, 27);
+            this.lblCurrentEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCurrentEVal].sz);
             this.lblCurrentEVal.TabIndex = 1;
             this.lblCurrentEVal.Text = "0";
             this.lblCurrentEVal.TextAlign = ContentAlignment.MiddleCenter;
@@ -867,9 +903,9 @@ namespace Statistic
             // lblHourE
             // 
             this.lblHourE.AutoSize = true;
-            this.lblHourE.Location = new System.Drawing.Point(arLocation[2, 0], arLocation[2, 1]);
+            this.lblHourE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblHourE].pt);
             this.lblHourE.Name = "lblHourE";
-            this.lblHourE.Size = new System.Drawing.Size(53, 13);
+            this.lblHourE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblHourE].sz);
             this.lblHourE.TabIndex = 0;
             this.lblHourE.Text = "Е час";//"Средняя мощность за час";
             // 
@@ -880,10 +916,10 @@ namespace Statistic
             this.lblHourEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblHourEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblHourEVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblHourEVal.Location = new System.Drawing.Point(arLocation[3, 0], arLocation[3, 1]);
+            this.lblHourEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblHourEVal].pt);
             this.lblHourEVal.Name = "lblHourEVal";
             this.lblHourEVal.AutoSize = false;
-            this.lblHourEVal.Size = new System.Drawing.Size(74, 27);
+            this.lblHourEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblHourEVal].sz);
             this.lblHourEVal.TabIndex = 1;
             this.lblHourEVal.Text = "0";
             this.lblHourEVal.TextAlign = ContentAlignment.MiddleCenter;
@@ -891,9 +927,9 @@ namespace Statistic
             // lblDevE
             // 
             this.lblDevE.AutoSize = true;
-            this.lblDevE.Location = new System.Drawing.Point(arLocation[4, 0], arLocation[4, 1]);
+            this.lblDevE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblDevE].pt);
             this.lblDevE.Name = "lblDevE";
-            this.lblDevE.Size = new System.Drawing.Size(43, 13);
+            this.lblDevE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblDevE].sz);
             this.lblDevE.TabIndex = 2;
             this.lblDevE.Text = "Откл";//"Рекомендуемая мощность";
             // 
@@ -904,10 +940,10 @@ namespace Statistic
             this.lblDevEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblDevEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.lblDevEVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblDevEVal.Location = new System.Drawing.Point(arLocation[5, 0], arLocation[5, 1]);
+            this.lblDevEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblDevEVal].pt);
             this.lblDevEVal.Name = "lblDevEVal";
             this.lblDevEVal.AutoSize = false;
-            this.lblDevEVal.Size = new System.Drawing.Size(79, 27);
+            this.lblDevEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblDevEVal].sz);
             this.lblDevEVal.TabIndex = 3;
             this.lblDevEVal.Text = "0";
             this.lblDevEVal.TextAlign = ContentAlignment.MiddleCenter;
@@ -2622,10 +2658,10 @@ namespace Statistic
             lblHourEVal.Text = (valueEBefore + valueECur + valueEFuture).ToString("F2");
 
             if (adminValuesReceived && currHour) {
-                lblPBRRecVal.Text = recomendation.ToString("F2");
+                lblPBRrecVal.Text = recomendation.ToString("F2");
             }
             else {
-                lblPBRRecVal.Text = "---";
+                lblPBRrecVal.Text = "---";
             }
 
             double summ = 0;
@@ -2710,7 +2746,7 @@ namespace Statistic
                 lblHourEVal.ForeColor = System.Drawing.Color.OrangeRed;
             }
 
-            lblLayoutNumber.Text = lastLayout;
+            lblPBRNumber.Text = lastLayout;
         }
 
         private void ClearValues()
