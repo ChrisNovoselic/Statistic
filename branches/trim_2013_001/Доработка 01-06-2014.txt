@@ -1,0 +1,40 @@
+ALTER TABLE `techsite_cfg`.`TG_LIST` ADD COLUMN `NAME_SIGNAL_MST` VARCHAR(16) NOT NULL  AFTER `ID_PC` ; 
+
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#1G_I_10_V' WHERE `ID`='1001';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#2G_I_10_V' WHERE `ID`='1002';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#3G_I_10_V' WHERE `ID`='1003';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#4G_I_10_V' WHERE `ID`='1004';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#5G_I_10_V' WHERE `ID`='1005';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G3_I_10_V' WHERE `ID`='1006';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G4_I_10_V' WHERE `ID`='1007';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G5_I_10_V' WHERE `ID`='1008';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT6_I_10_V' WHERE `ID`='1009';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT7_I_10_V' WHERE `ID`='1010';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT8_I_10_V' WHERE `ID`='1011';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT9_I_10_V' WHERE `ID`='1012';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#1G_I_10_V' WHERE `ID`='1013';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#5G_I_10_V' WHERE `ID`='1014';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#7G_I_10_V' WHERE `ID`='1015';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#8G_I_10_V' WHERE `ID`='1016';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#9G_I_10_V' WHERE `ID`='1017';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#10G_I_10_V' WHERE `ID`='1018';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#11G_I_10_V' WHERE `ID`='1019';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#12G_I_10_V' WHERE `ID`='1020';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#13G_I_10_V' WHERE `ID`='1021';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#14G_I_10_V' WHERE `ID`='1022';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG3_I_10_V' WHERE `ID`='1023';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG4_I_10_V' WHERE `ID`='1024';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG5_I_10_V' WHERE `ID`='1025';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG6_I_10_V' WHERE `ID`='1026';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG7_I_10_V' WHERE `ID`='1027';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG8_I_10_V' WHERE `ID`='1028';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG1_I_10_V' WHERE `ID`='1029';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG2_I_10_V' WHERE `ID`='1030';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG3_I_10_V' WHERE `ID`='1031';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG4_I_10_V' WHERE `ID`='1032';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG5_I_10_V' WHERE `ID`='1033';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG6_I_10_V' WHERE `ID`='1034';
+
+UPDATE `techsite_cfg`.`SOURCE` SET `ID`='11' WHERE `ID`='1'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='21' WHERE `ID`='2'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='31' WHERE `ID`='3'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='41' WHERE `ID`='4'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='51' WHERE `ID`='5'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='61' WHERE `ID`='6'; INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('12', '192.168.30.102', '1433', 'HISTORY', 'client', '0', '¡“›÷ (“Ã-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('13', '192.168.30.103', '1433', 'HISTORY', 'client', '0', '¡“›÷ (“Ã-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('22', '192.168.32.128', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-2 (“Ã-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('23', '192.168.32.129', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-2 (“Ã-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('32', '192.168.33.157', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-3 (“Ã-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('33', '192.168.33.158', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-3 (“Ã-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('42', '192.168.34.177', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-4 (“Ã-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('43', '192.168.34.177', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-4 (“Ã-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('52', '192.168.35.202', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-5 (“Ã-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('53', '192.168.35.203', '1433', 'HISTORY', 'client', '0', 'Õ“›÷-5 (“Ã-2)', 'client');
+
+UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='11' WHERE `ID`='1'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='21' WHERE `ID`='2'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='31' WHERE `ID`='3'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='41' WHERE `ID`='4'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='51' WHERE `ID`='5'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='61' WHERE `ID`='6';

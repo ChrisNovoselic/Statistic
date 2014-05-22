@@ -16,7 +16,8 @@ namespace StatisticCommon
         public bool receivedHourHalf1Addon;
         public bool receivedHourHalf2Addon;
         //public int id;
-        public int [] ids; //Для особенной ТЭЦ (Бийск)
+        public int [] ids_fact; //Для особенной ТЭЦ (Бийск)
+        public int[] ids_tm; 
         public TECComponent m_owner;
 
         public TG(TECComponent comp)

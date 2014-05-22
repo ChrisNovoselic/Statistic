@@ -38,7 +38,7 @@ namespace StatisticCommon
         
         private int used;
 
-        private DbInterface m_dbInterface; //Для данных (SQL сервер)
+        private DbInterface  [] m_arDBInterfaces; //Для данных (SQL сервер)
 
         public FormParametersTG parametersTGForm;
 
@@ -59,7 +59,7 @@ namespace StatisticCommon
             m_arListenerIds = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             m_arIndxDbInterfaces = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            for (int i = (int)CONN_SETT_TYPE.DATA; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
                 m_arListenerIds [i] =
                 m_arIndxDbInterfaces [i] =
                 -1;
@@ -90,14 +90,14 @@ namespace StatisticCommon
             m_strNamesField.Add(pbr_number); //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        public void Request(string request)
+        public void Request(CONN_SETT_TYPE indx_src, string request)
         {
-            m_dbInterface.Request(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], request);
+            m_dbInterface.Request(m_arListenerIds[(int)indx_src], request);
         }
 
-        public bool GetResponse(out bool error, out DataTable table)
+        public bool GetResponse(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
-            return m_dbInterface.GetResponse(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], out error, out table);
+            return m_dbInterface.GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
         }
 
         public void StartDbInterface()

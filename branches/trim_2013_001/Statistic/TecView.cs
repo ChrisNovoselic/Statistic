@@ -138,7 +138,8 @@ namespace Statistic
 
         private enum StatesMachine
         { 
-            Init,
+            Init_Fact,
+            Init_TM,
             CurrentTime,
             CurrentHours,
             CurrentMins,
@@ -2167,7 +2168,7 @@ namespace Statistic
             tec.Request("SELECT getdate()");
         }
 
-        private void GetSensorsRequest()
+        private void GetSensorsFactRequest()
         {
             string request = @"SELECT DISTINCT SENSORS.NAME, SENSORS.ID " +
                              @"FROM DEVICES " +
@@ -2178,6 +2179,13 @@ namespace Statistic
                              @"SENSORS.CODE = DATA.ITEM " +
                              @"WHERE DATA.PARNUMBER = 12 AND " +
                              @"SENSORS.NAME LIKE 'ТГ%P%+'"; 
+
+            tec.Request(request);
+        }
+
+        private void GetSensorsTMRequest()
+        {
+            string request = @"";
 
             tec.Request(request);
         }
@@ -4688,7 +4696,8 @@ namespace Statistic
             }
             else
             {
-                states.Add(StatesMachine.Init);
+                states.Add(StatesMachine.Init_Fact);
+                states.Add(StatesMachine.Init_TM);
                 states.Add(StatesMachine.CurrentTime);
             }
 
@@ -4983,14 +4992,28 @@ namespace Statistic
         {
             switch (state)
             {
-                case StatesMachine.Init:
+                case StatesMachine.Init_Fact:
                     ActionReport("Получение идентификаторов датчиков.");
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
-                            GetSensorsRequest();
+                            GetSensorsFactRequest();
                             break;
                         case TEC.TEC_TYPE.BIYSK:
                             GetSensors ();
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case StatesMachine.Init_TM:
+                    ActionReport("Получение идентификаторов датчиков.");
+                    switch (tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            GetSensorsTMRequest();
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            GetSensors();
                             break;
                         default:
                             break;

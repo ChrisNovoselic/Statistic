@@ -1321,7 +1321,7 @@ namespace StatisticCommon
             foreach (TEC t in m_list_tec)
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
-                    if ((m_ignore_connsett_data == true) && (connSettType == (int)CONN_SETT_TYPE.DATA))
+                    if ((m_ignore_connsett_data == true) && ((connSettType == (int)CONN_SETT_TYPE.DATA_FACT) && (connSettType == (int)CONN_SETT_TYPE.DATA_TM)))
                         continue;
                     else
                         ;

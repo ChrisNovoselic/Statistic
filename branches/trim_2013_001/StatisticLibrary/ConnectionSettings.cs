@@ -12,7 +12,7 @@ namespace StatisticCommon
 {
     public enum CONN_SETT_TYPE
     {
-        ADMIN, PBR, DATA,
+        ADMIN, PBR, DATA_FACT, DATA_TM,
         COUNT_CONN_SETT_TYPE
     };
 

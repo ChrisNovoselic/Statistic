@@ -114,7 +114,8 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                         list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_FACT"])), (int)CONN_SETT_TYPE.DATA_FACT);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"])), (int)CONN_SETT_TYPE.DATA_TM);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
 
