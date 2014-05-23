@@ -85,22 +85,23 @@ namespace Statistic
         private DelegateFunc delegateStopWait;
         private DelegateFunc delegateEventUpdate;
 
-        private DelegateFunc delegateFillDefMins;
-        private DelegateFunc delegateFillDefHours;
+        //private DelegateFunc delegateFillDefMins;
+        //private DelegateFunc delegateFillDefHours;
 
-        private DelegateIntFunc delegateFillMins;
-        private DelegateFunc delegateFillHours;
-        private DelegateIntFunc delegateDrawMins;
-        private DelegateFunc delegateDrawHours;
+        //private DelegateIntFunc delegateFillMins;
+        //private DelegateFunc delegateFillHours;
+        //private DelegateIntFunc delegateDrawMins;
+        //private DelegateFunc delegateDrawHours;
 
         private DelegateBoolFunc delegateSetNowDate;
 
-        private DelegateFunc delegateShowTGPower;
-        private DelegateFunc delegateShowCommonPower;
+        //private DelegateFunc delegateShowTGPower;
+        //private DelegateFunc delegateShowCommonPower;
 
-        private DelegateIntIntFunc delegateUpdateGUI;
+        private DelegateIntIntFunc delegateUpdateGUI_Fact;
+        private DelegateFunc delegateUpdateGUI_TM;
 
-        private DelegateStringFunc delegateShowValues;
+        //private DelegateStringFunc delegateShowValues;
 
         private object lockValue;
         
@@ -141,8 +142,9 @@ namespace Statistic
             Init_Fact,
             Init_TM,
             CurrentTime,
-            CurrentHours,
-            CurrentMins,
+            CurrentHours_Fact,
+            CurrentMins_Fact,
+            Current_TM,
             RetroHours,
             RetroMins,
             PBRValues,
@@ -182,7 +184,8 @@ namespace Statistic
 
         private double recomendation;
 
-        private volatile string sensorsString = "";
+        private volatile string sensorsString_Fact = "";
+        private volatile string sensorsString_TM = "";
         private volatile string [] sensorsStrings = {"", ""}; //Только для особенной ТЭЦ (Бийск)
 
         private TG[] sensorId2TG;
@@ -1111,22 +1114,23 @@ namespace Statistic
             this.dgwMins.Rows.Add(21);
             this.dgwHours.Rows.Add(25);
 
-            delegateFillDefMins = new DelegateFunc(FillDefaultMins);
-            delegateFillDefHours = new DelegateFunc(FillDefaultHours);
+            //delegateFillDefMins = new DelegateFunc(FillDefaultMins);
+            //delegateFillDefHours = new DelegateFunc(FillDefaultHours);
 
-            delegateFillMins = new DelegateIntFunc(FillGridMins);
-            delegateFillHours = new DelegateFunc(FillGridHours);
-            delegateDrawMins = new DelegateIntFunc(DrawGraphMins);
-            delegateDrawHours = new DelegateFunc(DrawGraphHours);
+            //delegateFillMins = new DelegateIntFunc(FillGridMins);
+            //delegateFillHours = new DelegateFunc(FillGridHours);
+            //delegateDrawMins = new DelegateIntFunc(DrawGraphMins);
+            //delegateDrawHours = new DelegateFunc(DrawGraphHours);
 
             delegateSetNowDate = new DelegateBoolFunc(SetNowDate);
 
-            delegateShowTGPower = new DelegateFunc(ShowTGPower);
-            delegateShowCommonPower = new DelegateFunc(ShowCommonPower);
+            //delegateShowTGPower = new DelegateFunc(ShowTGPower);
+            //delegateShowCommonPower = new DelegateFunc(ShowCommonPower);
 
-            delegateUpdateGUI = new DelegateIntIntFunc(UpdateGUI);
+            delegateUpdateGUI_Fact = new DelegateIntIntFunc(UpdateGUI_Fact);
+            delegateUpdateGUI_TM = new DelegateFunc(UpdateGUI_TM);
 
-            delegateShowValues = new DelegateStringFunc(ShowValues);
+            //delegateShowValues = new DelegateStringFunc(ShowValues);
 
             delegateTickTime = new DelegateFunc(TickTime);
 
@@ -2184,7 +2188,15 @@ namespace Statistic
             errored_state = false;
         }
 
-        private void UpdateGUI(int hour, int min)
+        private void UpdateGUI_TM()
+        {
+            lock (lockValue)
+            {
+                ShowTMPower ();
+            }
+        }
+
+        private void UpdateGUI_Fact(int hour, int min)
         {
             lock (lockValue)
             {
@@ -2222,7 +2234,7 @@ namespace Statistic
 
         private void GetSensorsTMRequest()
         {
-            string request = @"SELECT ID FROM [dbo].[reals_rv] WHERE [DESCRIPTION] LIKE '" + tec.m_strTemplateNameSgnDataTM + "'";
+            string request = @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + tec.m_strTemplateNameSgnDataTM + "'";
 
             tec.Request(CONN_SETT_TYPE.DATA_TM, request);
         }
@@ -2247,7 +2259,7 @@ namespace Statistic
                                 @"' AND " +
                                 @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
                                 @"' " +
-                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString_Fact +
                                 @") " +
                                 @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                     break;
@@ -2301,7 +2313,7 @@ namespace Statistic
                              @"' AND " +
                              @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
                              @"' " +
-                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString +
+                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString_Fact +
                              @") " +
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                     break;
@@ -2327,6 +2339,21 @@ namespace Statistic
             }
 
             tec.Request(CONN_SETT_TYPE.DATA_FACT, request);
+        }
+
+        private void GetCurrentTMRequest () {
+            string request = @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[last_changed_at], [dbo].[states_real_his].[value] " +
+                            @"FROM [dbo].[states_real_his] " +
+                            @"INNER JOIN " +
+                                @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
+                                @"FROM [dbo].[states_real_his] " +
+                                @"GROUP BY [id]) AS t2 " +
+                            @"ON ([dbo].[states_real_his].[id] = t2.[id] AND [dbo].[states_real_his].[last_changed_at] = t2.last_changed_at AND (" +
+	                        sensorsString_TM +
+                            @"))";
+
+
+            tec.Request(CONN_SETT_TYPE.DATA_TM, request);
         }
 
         private void GetPBRValuesRequest () {
@@ -2573,6 +2600,10 @@ namespace Statistic
             dgwHours.Rows[itemscount].Cells[1].Value = sumFact.ToString("F2");
             dgwHours.Rows[itemscount].Cells[4].Value = sumUDGe.ToString("F2");
             dgwHours.Rows[itemscount].Cells[5].Value = sumDiviation.ToString("F2");
+        }
+
+        private void ShowTMPower()
+        {
         }
 
         private void ShowTGPower()
@@ -2842,101 +2873,122 @@ namespace Statistic
             return true;
         }
 
+        private string getNameTG (string templateNameBD, string nameBD) {
+            //Подстрока для 1-го '%'
+            int pos = -1;
+            string strRes = nameBD.Substring(templateNameBD.IndexOf ('%'));
+
+            //Поиск 1-й НЕ ЦИФРы
+            pos = 0;
+            while (pos < strRes.Length)
+            {
+                if ((strRes[pos] < '0') || (strRes[pos] > '9'))
+                    break;
+                else
+                    ;
+
+                pos++;
+            }
+            //Проверка - ВСЕ символы строки до конца ЦИФРы
+            if (!(pos < strRes.Length))
+                return strRes;
+            else
+                ;
+
+            strRes = strRes.Substring(0, pos);
+
+            strRes = "ТГ" + strRes;
+
+            return strRes;
+        }
+
+        private void ErrorReportSensors (ref DataTable src) {
+            string error = "Ошибка определения идентификаторов датчиков в строке ";
+            for (int j = 0; j < src.Rows.Count; j++)
+                error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
+
+            error = error.Substring(0, error.LastIndexOf(","));
+            ErrorReport(error);
+        }
+
         private bool GetSensorsFactResponse(DataTable table)
         {
             string s;
-            int t = 0, pos;
+            int t = 0;
+
             for (int i = 0; i < table.Rows.Count; i++)
             {
-                // формирую правильное имя турбиногенератора
-                s = table.Rows[i][0].ToString().ToUpper();
-                s = s.Substring(2, s.IndexOf("P") - 2);
-
-                pos = 0;
-                while (pos < s.Length)
-                {
-                    if (s[pos] >= '0' && s[pos] <= '9')
-                        break;
-                    pos++;
-                }
-                if (pos >= s.Length)
-                    continue;
-
-                s = s.Substring(pos);
-
-                pos = 0;
-                while (pos < s.Length)
-                {
-                    if (s[pos] < '0' || s[pos] > '9')
-                        break;
-                    pos++;
-                }
-
-                s = s.Substring(0, pos);
-
-                s = "ТГ" + s;
+                //Шаблон для '[0](["NAME"])' 'ТГ%P%+'
+                //Формирование правильное имя турбиногенератора
+                s = getNameTG (tec.m_strTemplateNameSgnDataFact, table.Rows[i][0].ToString().ToUpper());
 
                 if (num_TECComponent < 0)
-                {
-                    bool found = false;
+                {//ТЭЦ в полном составе
                     int j, k;
-                    for (j = 0; j < tec.list_TECComponents.Count && !found; j++)
+                    for (j = 0; j < tec.list_TECComponents.Count; j++)
                     {
                         for (k = 0; k < tec.list_TECComponents[j].TG.Count; k++)
                         {
-                            if (tec.list_TECComponents[j].TG[k].name_shr == s)
+                            if (tec.list_TECComponents[j].TG[k].name_shr.Equals (s) == true)
                             {
-                                found = true;
                                 tec.list_TECComponents[j].TG[k].ids_fact[(int)TG.ID_TIME.MINUTES] =
                                 tec.list_TECComponents[j].TG[k].ids_fact[(int)TG.ID_TIME.HOURS] =
-                                int.Parse(table.Rows[i][1].ToString());
+                                    int.Parse(table.Rows[i][1].ToString());
+
                                 sensorId2TG[t] = tec.list_TECComponents[j].TG[k];
                                 t++;
+
+                                //Прерывание внешнего цикла
+                                j = tec.list_TECComponents.Count;
                                 break;
                             }
+                            else
+                                ;
                         }
                     }
                 }
                 else
-                {
+                {// Для не ТЭЦ в полном составе (ГТП, ЩУ, ТГ)
                     for (int k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
                     {
                         if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr == s)
                         {
                             tec.list_TECComponents[num_TECComponent].TG[k].ids_fact[(int)TG.ID_TIME.MINUTES] =
                             tec.list_TECComponents[num_TECComponent].TG[k].ids_fact[(int)TG.ID_TIME.HOURS] =
-                            int.Parse(table.Rows[i][1].ToString());
+                                int.Parse(table.Rows[i][1].ToString());
+
                             sensorId2TG[t] = tec.list_TECComponents[num_TECComponent].TG[k];
+
                             t++;
                             break;
                         }
+                        else
+                            ;
                     }
                 }
             }
 
             for (int i = 0; i < sensorId2TG.Length; i++)
             {
-                if (sensorId2TG[i] != null)
+                if (! (sensorId2TG[i] == null))
                 {
-                    if (sensorsString.Equals (string.Empty) == true)
+                    if (sensorsString_Fact.Equals (string.Empty) == true)
                     {
-                        sensorsString = "SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsString_Fact = "SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                     else
                     {
-                        sensorsString += " OR SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsString_Fact += " OR SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                 }
                 else
                 {
-                    string error = "Ошибка определения идентификаторов датчиков в строке ";
-                    for (int j = 0; j < table.Rows.Count; j++)
-                        error += table.Rows[j][0].ToString() + " = " + table.Rows[j][1].ToString() + ", ";
-                    error = error.Substring(0, error.LastIndexOf(","));
-                    ErrorReport(error);
+                    ErrorReportSensors (ref table);
+
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -2944,7 +2996,71 @@ namespace Statistic
         {
             bool bRes = true;
 
-            return true;
+            string s;
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                //Шаблон для '[0](["NAME"])'
+                //Формирование правильное имя турбиногенератора
+                s = getNameTG (tec.m_strTemplateNameSgnDataTM, table.Rows[i][0].ToString().ToUpper());
+
+                if (num_TECComponent < 0)
+                {//ТЭЦ в полном составе
+                    int j = -1;
+                    for (j = 0; j < tec.list_TECComponents.Count; j++)
+                    {
+                        int k = -1;
+                        for (k = 0; k < tec.list_TECComponents[j].TG.Count; k++)
+                        {
+                            if (tec.list_TECComponents[j].TG[k].name_shr.Equals (s) == true)
+                            {
+                                tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
+                                //Прерывание внешнего цикла
+                                j = tec.list_TECComponents.Count;
+                                break;
+                            }
+                            else
+                                ;
+                        }
+                    }
+                }
+                else
+                {// Для не ТЭЦ в полном составе (ГТП, ЩУ, ТГ)
+                    int k = -1;
+                    for (k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
+                    {
+                        if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr.Equals (s) == true)
+                        {
+                            tec.list_TECComponents[num_TECComponent].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
+                            break;
+                        }
+                        else
+                            ;
+                    }
+                }
+            }
+
+            for (int i = 0; i < sensorId2TG.Length; i++)
+            {
+                if (!(sensorId2TG[i] == null))
+                {
+                    if (sensorsString_TM.Equals(string.Empty) == true)
+                    {
+                        sensorsString_TM = "[dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                    }
+                    else
+                    {
+                        sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                    }
+                }
+                else
+                {
+                    ErrorReportSensors(ref table);
+
+                    return false;
+                }
+            }
+
+            return bRes;
         }
         
         private void GetSensors()
@@ -3287,6 +3403,13 @@ namespace Statistic
             lastReceivedHour = lastHour;
 
             return true;
+        }
+
+        private bool GetCurrentTMResponse(DataTable table)
+        {
+            bool bRes = true;
+
+            return bRes;
         }
 
         private bool GetMinsResponse(DataTable table)
@@ -4727,9 +4850,11 @@ namespace Statistic
             newState = true;
             states.Clear();
 
-            if ((sensorsString.Equals(string.Empty) == false) || ((sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
+            if ((sensorsString_Fact.Equals(string.Empty) == false) ||
+                (sensorsString_TM.Equals(string.Empty) == false) ||
+                ((sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
             {
-                if (currHour)
+                if (currHour == true)
                 {
                     states.Add(StatesMachine.CurrentTime);
                 }
@@ -4745,8 +4870,9 @@ namespace Statistic
                 states.Add(StatesMachine.CurrentTime);
             }
 
-            states.Add(StatesMachine.CurrentHours);
-            states.Add(StatesMachine.CurrentMins);
+            states.Add(StatesMachine.CurrentHours_Fact);
+            states.Add(StatesMachine.CurrentMins_Fact);
+            states.Add(StatesMachine.Current_TM);
             states.Add(StatesMachine.PBRValues);
             states.Add(StatesMachine.AdminValues);
         }
@@ -5066,15 +5192,20 @@ namespace Statistic
                     ActionReport("Получение текущего времени сервера.");
                     GetCurrentTimeRequest();
                     break;
-                case StatesMachine.CurrentHours:
+                case StatesMachine.CurrentHours_Fact:
                     ActionReport("Получение получасовых значений.");
                     adminValuesReceived = false;
                     GetHoursRequest(selectedTime.Date);
                     break;
-                case StatesMachine.CurrentMins:
+                case StatesMachine.CurrentMins_Fact:
                     ActionReport("Получение трёхминутных значений.");
                     adminValuesReceived = false;
                     GetMinsRequest(lastHour);
+                    break;
+                case StatesMachine.Current_TM:
+                    ActionReport("Получение текущих значений.");
+                    //adminValuesReceived = false;
+                    GetCurrentTMRequest();
                     break;
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
@@ -5133,11 +5264,13 @@ namespace Statistic
                     }
                     break;
                 case StatesMachine.CurrentTime:
-                case StatesMachine.CurrentHours:
-                case StatesMachine.CurrentMins:
+                case StatesMachine.CurrentHours_Fact:
+                case StatesMachine.CurrentMins_Fact:
                 case StatesMachine.RetroHours:
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
+                case StatesMachine.Current_TM:
+                    return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
                 case StatesMachine.PBRValues:
                     return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     //return true; //Имитация получения данных плана
@@ -5191,39 +5324,53 @@ namespace Statistic
                         this.BeginInvoke(delegateSetNowDate, true);
                     }
                     break;
-                case StatesMachine.CurrentHours:
+                case StatesMachine.CurrentHours_Fact:
                     ClearValues();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     result = GetHoursResponse(table);
                     if (result)
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentHours");
                     }
+                    else
+                        ;
                     break;
-                case StatesMachine.CurrentMins:
+                case StatesMachine.CurrentMins_Fact:
                     //GenerateMinsTable(seasonJumpE.None, 5, table);
                     result = GetMinsResponse(table);
                     if (result)
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentMins");
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
+                    else
+                        ;
+                    break;
+                case StatesMachine.Current_TM:
+                    //GenerateMinsTable(seasonJumpE.None, 5, table);
+                    result = GetCurrentTMResponse(table);
+                    if (result)
+                    {
+                        this.BeginInvoke(delegateUpdateGUI_TM);
+                    }
+                    else
+                        ;
                     break;
                 case StatesMachine.RetroHours:
                     ClearValues();
                     result = GetHoursResponse(table);
                     if (result)
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroHours");
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.RetroMins:
                     result = GetMinsResponse(table);
                     if (result)
                     {
-                        //this.BeginInvoke(delegateShowValues, "StatesMachine.RetroMins");
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
+                    else
+                        ;
                     break;
                 case StatesMachine.PBRValues:
                     ClearPBRValues();
@@ -5242,7 +5389,7 @@ namespace Statistic
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour);
                         adminValuesReceived = true;
-                        this.BeginInvoke(delegateUpdateGUI, lastHour, lastMin);
+                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
                     else
                         ;
@@ -5257,58 +5404,60 @@ namespace Statistic
 
         private void StateErrors(StatesMachine state, bool response)
         {
+            string reason = string.Empty,
+                    waiting = string.Empty;
+
             switch (state)
             {
                 case StatesMachine.Init_Fact:
+                    reason = @"идентификаторов датчиков (факт.)";
+                    waiting = @"Переход в ожидание";
+                    break;
                 case StatesMachine.Init_TM:
-                    if (response)
-                        ErrorReport("Ошибка разбора идентификаторов датчиков. Переход в ожидание.");
-                    else
-                        ErrorReport("Ошибка получения идентификаторов датчиков. Переход в ожидание.");
+                    reason = @"идентификаторов датчиков (телемеханика)";
+                    waiting = @"Переход в ожидание";
                     break;
                 case StatesMachine.CurrentTime:
-                    if (response)
-                        ErrorReport("Ошибка разбора текущего времени сервера. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
-                    else
-                        ErrorReport("Ошибка получения текущего времени сервера. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
+                    reason = @"текущего времени сервера";
+                    waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
-                case StatesMachine.CurrentHours:
-                    if (response)
-                        ErrorReport("Ошибка разбора получасовых значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
-                    else
-                        ErrorReport("Ошибка получения получасовых значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
+                case StatesMachine.CurrentHours_Fact:
+                    reason = @"получасовых значений";
+                    waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
-                case StatesMachine.CurrentMins:
-                    if (response)
-                        ErrorReport("Ошибка разбора трёхминутных значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
-                    else
-                        ErrorReport("Ошибка получения трёхминутных значений. Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд.");
+                case StatesMachine.CurrentMins_Fact:
+                    reason = @"трёхминутных значений";
+                    waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
+                case StatesMachine.Current_TM:
+                    reason = @"текущих значений";
+                    waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
                 case StatesMachine.RetroHours:
-                    if (response)
-                        ErrorReport("Ошибка разбора получасовых значений. Переход в ожидание.");
-                    else
-                        ErrorReport("Ошибка получения получасовых значений. Переход в ожидание.");
+                    reason = @"получасовых значений";
+                    waiting = @"Переход в ожидание";
                     break;
                 case StatesMachine.RetroMins:
-                    if (response)
-                        ErrorReport("Ошибка разбора трёхминутных значений. Переход в ожидание.");
-                    else
-                        ErrorReport("Ошибка получения трёхминутных значений. Переход в ожидание.");
+                    reason = @"трёхминутных значений";
+                    waiting = @"Переход в ожидание";
                     break;
                 case StatesMachine.PBRValues:
-                    if (response)
-                        ErrorReport("Ошибка разбора данных плана.");
-                    else
-                        ErrorReport("Ошибка получения данных плана.");
+                    reason = @"данных плана";
                     break;
                 case StatesMachine.AdminValues:
-                    if (response)
-                        ErrorReport("Ошибка разбора административных данных.");
-                    else
-                        ErrorReport("Ошибка получения административных данных.");
+                    reason = @"административных значений";
                     break;
             }
+
+            if (response)
+                reason = @"разбора " + reason;
+            else
+                reason = @"получения " + reason;
+
+            if (waiting.Equals (string.Empty) == true)
+                ErrorReport("Ошибка " + reason + ". " + waiting + ".");
+            else
+                ErrorReport("Ошибка " + reason + ".");
         }
 
         private void TecView_ThreadFunction(object data)
