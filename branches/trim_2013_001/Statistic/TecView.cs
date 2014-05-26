@@ -444,7 +444,6 @@ namespace Statistic
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.FACT;
-            this.lblCommonPVals[typeVal].AutoSize = true;
             this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
             this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -459,7 +458,6 @@ namespace Statistic
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.TM;
-            this.lblCommonPVals[typeVal].AutoSize = true;
             this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
             this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -482,8 +480,7 @@ namespace Statistic
             this.lblCommonP.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblAverPVal
-            // 
-            this.lblAverPVal.AutoSize = true;
+            //
             this.lblAverPVal.BackColor = System.Drawing.Color.Black;
             this.lblAverPVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblAverPVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -506,8 +503,7 @@ namespace Statistic
             this.lblAverP.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblPBRrecVal
-            // 
-            this.lblPBRrecVal.AutoSize = true;
+            //
             this.lblPBRrecVal.BackColor = System.Drawing.Color.Black;
             this.lblPBRrecVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblPBRrecVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -1106,7 +1102,7 @@ namespace Statistic
             lblName.AutoSize = true;
             lblName.Location = new System.Drawing.Point(positionXName, positionYName);
             lblName.Name = "lblName" + name_shr;
-            lblName.AutoSize = false;
+            //lblName.AutoSize = false;
             lblName.Size = new System.Drawing.Size(32, 13);
             lblName.TabIndex = 4 + countTG;
             lblName.Text = name_shr;
@@ -1135,7 +1131,6 @@ namespace Statistic
 
         private void createTGLabelValue(ref System.Windows.Forms.Label lblRes, string name_shr, float val, int positionXValue, int positionYValue)
         {
-            lblRes.AutoSize = true;
             lblRes.BackColor = System.Drawing.Color.Black;
             lblRes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             lblRes.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));

@@ -35,6 +35,8 @@
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,7 +89,9 @@
             // видToolStripMenuItem
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.панельГрафическихToolStripMenuItem});
+            this.панельГрафическихToolStripMenuItem,
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem,
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem});
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -99,6 +103,22 @@
             this.панельГрафическихToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
             this.панельГрафическихToolStripMenuItem.Text = "Панель графических параметров";
             this.панельГрафическихToolStripMenuItem.CheckedChanged += new System.EventHandler(this.панельГрафическихToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияТекущаяМощностьГТПгToolStripMenuItem
+            // 
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem.CheckOnClick = true;
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Name = "значенияТекущаяМощностьГТПгToolStripMenuItem";
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Text = "Значения текщей мощности ГТПг";
+            this.значенияТекущаяМощностьГТПгToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьГТПгToolStripMenuItem_CheckedChanged);
+            // 
+            // мониторингПоследняяМинутаЧасToolStripMenuItem
+            // 
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem.CheckOnClick = true;
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Name = "мониторингПоследняяМинутаЧасToolStripMenuItem";
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Text = "Мониторинг - последняя минута часа";
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem.CheckedChanged += new System.EventHandler(this.мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged);
             // 
             // настройкиToolStripMenuItem
             // 
@@ -276,7 +296,6 @@
             this.stsStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -300,6 +319,8 @@
         private System.Windows.Forms.Label lblLabel;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem панельГрафическихToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;

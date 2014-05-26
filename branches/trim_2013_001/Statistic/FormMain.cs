@@ -22,6 +22,7 @@ namespace Statistic
         private FormConnectionSettings m_formConnectionSettings;
         //private PanelAdmin [] m_arPanelAdmin;
         PanelAdmin m_panelAdmin;
+        PanelCurPower m_panelCurPower;
         //public AdminTS [] m_arAdmin;
         AdminTS m_admin;
         public Passwords m_passwords;
@@ -717,6 +718,8 @@ namespace Statistic
                 else
                     ;
 
+                m_panelCurPower = new PanelCurPower (m_admin.m_list_tec);
+
                 timer.Interval = 1000;
             }
 
@@ -758,6 +761,32 @@ namespace Statistic
             else
                 ;
 
+        }
+
+        private void значенияТекущаяМощностьГТПгToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            string nameTab = "P тек ГТПг";
+            //if (((ToolStripMenuItem) sender).Checked == true) {
+            if (значенияТекущаяМощностьГТПгToolStripMenuItem.Checked == true)
+            {
+                tclTecViews.TabPages.Add(nameTab, nameTab);
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelCurPower);
+            }
+            else {
+                tclTecViews.TabPages.RemoveByKey(nameTab);
+            }
+        }
+
+        private void мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            string nameTab = "Монитор P-2%";
+            if (((ToolStripMenuItem) sender).Checked == true) {
+                tclTecViews.TabPages.Add(nameTab, nameTab);
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(new PanelLastMinutes());
+            }
+            else {
+                tclTecViews.TabPages.RemoveByKey(nameTab);
+            }
         }
 
         public void HideGraphicsSettings()

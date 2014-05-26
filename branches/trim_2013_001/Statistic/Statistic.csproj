@@ -102,6 +102,24 @@
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelCurPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelCurPower.Designer.cs">
+      <DependentUpon>PanelCurPower.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PanelLastMinutes.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelLastMinutes.Designer.cs">
+      <DependentUpon>PanelLastMinutes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PanelTecCurPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTecCurPower.Designer.cs">
+      <DependentUpon>PanelTecCurPower.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TecView.cs">
