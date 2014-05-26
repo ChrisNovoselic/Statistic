@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing;
+//using System.Drawing;
 
 using StatisticCommon;
 
@@ -27,7 +27,7 @@ namespace Statistic
             this.Name = "pnlView";
             this.Size = new System.Drawing.Size(705, 747);
 
-            this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
 
             m_listTECCurrentPower = new List<PanelTecCurPower> ();
             PanelTecCurPower ptcp;

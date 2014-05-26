@@ -444,86 +444,32 @@ namespace Statistic
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.FACT;
-            this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
-            this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCommonPVals[typeVal].ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCommonPVals[typeVal].Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal_Fact].pt);
-            this.lblCommonPVals[typeVal].Name = "lblCommonPVal" + "_" + typeVal.ToString ();
-            this.lblCommonPVals[typeVal].AutoSize = false;
-            this.lblCommonPVals[typeVal].Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal_Fact].sz);
-            this.lblCommonPVals[typeVal].TabIndex = 1;
-            this.lblCommonPVals[typeVal].Text = "0";
+            createLabelVal(ref this.lblCommonPVals[typeVal], (int)CONTROLS.lblCommonPVal_Fact, "lblCommonPVal" + "_" + typeVal.ToString(), "0", Color.LimeGreen);
             // 
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.TM;
-            this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
-            this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCommonPVals[typeVal].ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCommonPVals[typeVal].Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal_TM].pt);
-            this.lblCommonPVals[typeVal].Name = "lblCommonPVal" + "_" + typeVal.ToString ();
-            this.lblCommonPVals[typeVal].AutoSize = false;
-            this.lblCommonPVals[typeVal].Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal_TM].sz);
-            this.lblCommonPVals[typeVal].TabIndex = 1;
-            this.lblCommonPVals[typeVal].Text = "0";
+            createLabelVal(ref this.lblCommonPVals[typeVal], (int)CONTROLS.lblCommonPVal_TM, "lblCommonPVal" + "_" + typeVal.ToString(), "0", Color.LimeGreen);
             // 
-            // lblCommonP
+            // lblCommonP - Суммарная мощность генераторов
             // 
-            this.lblCommonP.AutoSize = true;
-            this.lblCommonP.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonP].pt);
-            this.lblCommonP.Name = "lblCommonP";
-            this.lblCommonP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonP].sz);
-            this.lblCommonP.TabIndex = 0;
-            this.lblCommonP.Text = "P тек";//"Суммарная мощность генераторов";
-            this.lblCommonP.TextAlign = ContentAlignment.MiddleRight;
+            createLabel(ref this.lblCommonP, (int)CONTROLS.lblCommonP, "lblCommonP", "P тек");
             // 
             // lblAverPVal
             //
-            this.lblAverPVal.BackColor = System.Drawing.Color.Black;
-            this.lblAverPVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAverPVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblAverPVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblAverPVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblAverPVal].pt);
-            this.lblAverPVal.Name = "lblAverPVal";
-            this.lblAverPVal.AutoSize = false;
-            this.lblAverPVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblAverPVal].sz);
-            this.lblAverPVal.TabIndex = 1;
-            this.lblAverPVal.Text = "0";
+            createLabelVal(ref this.lblAverPVal, (int)CONTROLS.lblAverPVal, "lblAverPVal", "0", Color.LimeGreen);
             // 
             // lblAverP
             // 
-            this.lblAverP.AutoSize = true;
-            this.lblAverP.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblAverP].pt);
-            this.lblAverP.Name = "lblCommonP";
-            this.lblAverP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblAverP].sz);
-            this.lblAverP.TabIndex = 0;
-            this.lblAverP.Text = "P ср";//"Средняя мощность за час";
-            this.lblAverP.TextAlign = ContentAlignment.MiddleRight;
+            createLabel(ref this.lblAverP, (int)CONTROLS.lblAverP, "lblAverP", "P ср");
             // 
-            // lblPBRrecVal
+            // lblPBRrecVal - Рекомендуемая мощность
             //
-            this.lblPBRrecVal.BackColor = System.Drawing.Color.Black;
-            this.lblPBRrecVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPBRrecVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblPBRrecVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblPBRrecVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblPBRrecVal].pt);
-            this.lblPBRrecVal.Name = "lblPBRrecVal";
-            this.lblPBRrecVal.AutoSize = false;
-            this.lblPBRrecVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRrecVal].sz);
-            this.lblPBRrecVal.TabIndex = 3;
-            this.lblPBRrecVal.Text = "0";
+            createLabelVal(ref this.lblPBRrecVal, (int)CONTROLS.lblPBRrecVal, "lblPBRrecVal", "0", Color.Yellow);
             // 
             // lblPBRrec
             // 
-            this.lblPBRrec.AutoSize = true;
-            this.lblPBRrec.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblPBRrec].pt);
-            this.lblPBRrec.Name = "lblPBRrec";
-            this.lblPBRrec.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRrec].sz);
-            this.lblPBRrec.TabIndex = 2;
-            this.lblPBRrec.Text = "P рек";//"Рекомендуемая мощность";
-            this.lblPBRrec.TextAlign = ContentAlignment.MiddleRight;
+            createLabel(ref this.lblPBRrec, (int)CONTROLS.lblPBRrec, "lblPBRrec", "P рек");
             // 
             // pnlTG
             // 
@@ -901,77 +847,53 @@ namespace Statistic
             this.pnlCommon.Controls.Add(this.lblDevE);            
 
             // 
-            // lblCurrentE
+            // lblCurrentE - Суммарная мощность генераторов
             // 
-            this.lblCurrentE.AutoSize = true;
-            this.lblCurrentE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCurrentE].pt);
-            this.lblCurrentE.Name = "lblCurrentE";
-            this.lblCurrentE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCurrentE].sz);
-            this.lblCurrentE.TabIndex = 0;
-            this.lblCurrentE.Text = "Е тек";//"Суммарная мощность генераторов";
+            createLabel(ref this.lblCurrentE, (int)CONTROLS.lblCurrentE, "lblCurrentE", "Е тек");
             // 
             // lblCurrentEVal
             // 
-            //this.lblCurrentEVal.AutoSize = true;
-            this.lblCurrentEVal.BackColor = System.Drawing.Color.Black;
-            this.lblCurrentEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblCurrentEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCurrentEVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCurrentEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCurrentEVal].pt);
-            this.lblCurrentEVal.Name = "lblCurrentEVal";
-            this.lblCurrentEVal.AutoSize = false;
-            this.lblCurrentEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCurrentEVal].sz);
-            this.lblCurrentEVal.TabIndex = 1;
-            this.lblCurrentEVal.Text = "0";
-            this.lblCurrentEVal.TextAlign = ContentAlignment.MiddleCenter;
+            createLabelVal(ref this.lblCurrentEVal, (int)CONTROLS.lblCurrentEVal, "lblCurrentEVal", "0", Color.LimeGreen);
             // 
-            // lblHourE
+            // lblHourE - Средняя мощность за час
             // 
-            this.lblHourE.AutoSize = true;
-            this.lblHourE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblHourE].pt);
-            this.lblHourE.Name = "lblHourE";
-            this.lblHourE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblHourE].sz);
-            this.lblHourE.TabIndex = 0;
-            this.lblHourE.Text = "Е час";//"Средняя мощность за час";
+            createLabel(ref this.lblHourE, (int)CONTROLS.lblHourE, "lblHourE", "Е час");
             // 
             // lblHourEVal
             // 
-            //this.lblHourEVal.AutoSize = true;
-            this.lblHourEVal.BackColor = System.Drawing.Color.Black;
-            this.lblHourEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblHourEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblHourEVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblHourEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblHourEVal].pt);
-            this.lblHourEVal.Name = "lblHourEVal";
-            this.lblHourEVal.AutoSize = false;
-            this.lblHourEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblHourEVal].sz);
-            this.lblHourEVal.TabIndex = 1;
-            this.lblHourEVal.Text = "0";
-            this.lblHourEVal.TextAlign = ContentAlignment.MiddleCenter;
+            createLabelVal(ref this.lblHourEVal, (int)CONTROLS.lblHourEVal, "lblHourEVal", "0", Color.Yellow);
             // 
-            // lblDevE
+            // lblDevE - "Рекомендуемая мощность"
             // 
-            this.lblDevE.AutoSize = true;
-            this.lblDevE.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblDevE].pt);
-            this.lblDevE.Name = "lblDevE";
-            this.lblDevE.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblDevE].sz);
-            this.lblDevE.TabIndex = 2;
-            this.lblDevE.Text = "Откл";//"Рекомендуемая мощность";
+            createLabel(ref this.lblDevE, (int)CONTROLS.lblDevE, "lblDevE", "Откл");
             // 
             // lblDevEVal
             // 
-            //this.lblDevEVal.AutoSize = true;
-            this.lblDevEVal.BackColor = System.Drawing.Color.Black;
-            this.lblDevEVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblDevEVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblDevEVal.ForeColor = System.Drawing.Color.Yellow;
-            this.lblDevEVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblDevEVal].pt);
-            this.lblDevEVal.Name = "lblDevEVal";
-            this.lblDevEVal.AutoSize = false;
-            this.lblDevEVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblDevEVal].sz);
-            this.lblDevEVal.TabIndex = 3;
-            this.lblDevEVal.Text = "0";
-            this.lblDevEVal.TextAlign = ContentAlignment.MiddleCenter;
+            createLabelVal(ref this.lblDevEVal, (int)CONTROLS.lblDevEVal, "lblDevEVal", "0", Color.Yellow);
+        }
+
+        private void createLabel (ref System.Windows.Forms.Label lbl, int indx, string name, string text) {
+            lbl.AutoSize = true;
+            lbl.Location = new Point(arPlacement[indx].pt);
+            lbl.Name = name;
+            lbl.Size = new Size(arPlacement[indx].sz);
+            //this.lblDevE.TabIndex = 2;
+            lbl.Text = text;
+        }
+
+        private void createLabelVal(ref System.Windows.Forms.Label lbl, int indx, string name, string text, Color clrText)
+        {
+            lbl.BackColor = Color.Black;
+            lbl.BorderStyle = BorderStyle.Fixed3D;
+            lbl.Font = new Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            lbl.ForeColor = clrText;
+            lbl.Location = new Point(arPlacement[indx].pt);
+            lbl.Name = name;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(arPlacement[indx].sz);
+            //lbl.TabIndex = 3;
+            lbl.Text = "0";
+            lbl.TextAlign = ContentAlignment.MiddleCenter;
         }
 
         public TecView(TEC tec, int num_tec, int num_comp, AdminTS admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)

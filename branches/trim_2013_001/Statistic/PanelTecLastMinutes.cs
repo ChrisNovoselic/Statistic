@@ -8,14 +8,14 @@ using System.Windows.Forms;
 
 namespace Statistic
 {
-    public partial class PanelLastMinutes : TableLayoutPanel
+    public partial class PanelTecLastMinutes : TableLayoutPanel
     {
-        public PanelLastMinutes()
+        public PanelTecLastMinutes()
         {
             InitializeComponent();
         }
 
-        public PanelLastMinutes(IContainer container)
+        public PanelTecLastMinutes(IContainer container)
         {
             container.Add(this);
 
