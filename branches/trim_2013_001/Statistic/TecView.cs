@@ -846,7 +846,7 @@ namespace Statistic
         HPlacement[] arPlacement =
                 {   new HPlacement (40, 58, 705, 727), //THIS
                     new HPlacement (170, 620, 562, 46), //pnlCommon
-                    new HPlacement (/*3, 666, 699, 58*/170, 666, 562, 58), //pnlTG
+                    new HPlacement (/*3, 666, 699, 58*/170, 646, 562, 58), //pnlTG
                     new HPlacement (0, 3, 702, 613), //stctrView
                     new HPlacement (338, 3, 377, 299), new HPlacement (338, 3, 377, /*294*/299), //pnlGraphHours, pnlGraphMins
                     new HPlacement (3, 3, 329, 299), new HPlacement (3, 3, 329, /*294*/299), //dgwHours, dgwMins
@@ -2352,7 +2352,6 @@ namespace Statistic
 	                        sensorsString_TM +
                             @"))";
 
-
             tec.Request(CONN_SETT_TYPE.DATA_TM, request);
         }
 
@@ -3393,6 +3392,8 @@ namespace Statistic
                                         lastHourHalfError = true;
                                         break;
                                     }
+                                    else
+                                        ;
                                 }
                             }
                         }
@@ -3462,8 +3463,9 @@ namespace Statistic
                         lastMin = ((selectedTime.Minute) / 3) + 1;
                     }
                 }
-                /*f2.FillMinValues(lastMin, selectedTime, valuesMins.valuesFact);
-                f2.ShowDialog();*/
+                else
+                    ;
+
                 return true;
             }
 
@@ -3471,8 +3473,13 @@ namespace Statistic
             {
                 if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                     return false;
+                else
+                    ;
+
                 if (season > max_season)
                     max_season = season;
+                else
+                    ;
             }
 
             if (currHour)
@@ -3483,6 +3490,8 @@ namespace Statistic
                     valuesHours.hourAddon = lastHour - 1;
                     need_season = max_season;
                 }
+                else
+                    ;
             }
             else
             {
@@ -3490,6 +3499,8 @@ namespace Statistic
                 {
                     need_season = max_season;
                 }
+                else
+                    ;
             }
 
             for (i = 0; !end && min < 21; min++)
@@ -3514,11 +3525,18 @@ namespace Statistic
                         end = true;
                         break;
                     }
+                    else
+                        ;
 
                     if (!DateTime.TryParse(table.Rows[i][1].ToString(), out dt))
                         return false;
+                    else
+                        ;
+
                     if (!int.TryParse(table.Rows[i][2].ToString(), out season))
                         return false;
+                    else
+                        ;
 
                     if (season != need_season)
                     {
@@ -3526,19 +3544,27 @@ namespace Statistic
                         i++;
                         break;
                     }
+                    else
+                        ;
 
                     if (dt.CompareTo(dtNeeded) != 0)
                     {
                         break;
                     }
+                    else
+                        ;
 
                     if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
+                    else
+                        ;
 
                     tgTmp = FindTGByIdFact(id, (int) TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
+                    else
+                        ;
 
                     if (!double.TryParse(table.Rows[i][3].ToString(), out value))
                         return false;
@@ -3573,6 +3599,8 @@ namespace Statistic
                         lastMin = min + 1;
                     }
                 }
+                else
+                    ;
             }
 
             /*f2.FillMinValues(lastMin, selectedTime, valuesMins.valuesFact);
@@ -3583,6 +3611,8 @@ namespace Statistic
                 lastMinError = true;
                 lastMin = ((selectedTime.Minute - 1) / 3) + 1;
             }
+            else
+                ;
 
             return true;
         }
