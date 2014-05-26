@@ -24,7 +24,7 @@ namespace Statistic
         private System.Windows.Forms.Panel pnlTG;
         private System.Windows.Forms.DateTimePicker dtprDate;
         private System.Windows.Forms.Panel pnlCommon;
-        private System.Windows.Forms.Label lblCommonPVal;
+        private System.Windows.Forms.Label [] lblCommonPVals = {new System.Windows.Forms.Label (), new System.Windows.Forms.Label ()};
         private System.Windows.Forms.Label lblCommonP;
         private System.Windows.Forms.Label lblPBRrecVal;
         private System.Windows.Forms.Label lblPBRrec;
@@ -191,7 +191,7 @@ namespace Statistic
         private TG[] sensorId2TG;
 
         private List<System.Windows.Forms.Label> tgsName;
-        private List<System.Windows.Forms.Label> tgsValue;
+        private List<System.Windows.Forms.Label>[] tgsValues = { new List<System.Windows.Forms.Label>(), new List<System.Windows.Forms.Label>() };
 
         public volatile TEC tec;
         public volatile int num_TEC;
@@ -227,7 +227,7 @@ namespace Statistic
             this.pnlCommon = new System.Windows.Forms.Panel();
             this.lblPBRrecVal = new System.Windows.Forms.Label();
             this.lblPBRrec = new System.Windows.Forms.Label();
-            this.lblCommonPVal = new System.Windows.Forms.Label();
+            //this.lblCommonPVal = new System.Windows.Forms.Label();
             this.lblCommonP = new System.Windows.Forms.Label();
             this.lblAverPVal = new System.Windows.Forms.Label();
             this.lblAverP = new System.Windows.Forms.Label();
@@ -430,7 +430,8 @@ namespace Statistic
             //Перенос под 'dtprDate'
             //this.pnlCommon.Controls.Add(this.lblServerTime);
             //this.pnlCommon.Controls.Add(this.lblPBRNumber);
-            this.pnlCommon.Controls.Add(this.lblCommonPVal);
+            this.pnlCommon.Controls.Add(this.lblCommonPVals [(int)TG.INDEX_VALUE.FACT]);
+            this.pnlCommon.Controls.Add(this.lblCommonPVals[(int)TG.INDEX_VALUE.TM]);
             this.pnlCommon.Controls.Add(this.lblCommonP);
             this.pnlCommon.Controls.Add(this.lblAverPVal);
             this.pnlCommon.Controls.Add(this.lblAverP);
@@ -438,21 +439,37 @@ namespace Statistic
             this.pnlCommon.Name = "pnlCommon";
             this.pnlCommon.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.pnlCommon].sz);
             this.pnlCommon.TabIndex = 6;
-
+            int typeVal = -1;
             // 
-            // lblCommonPVal
+            // lblCommonPVal_Fact
             // 
-            this.lblCommonPVal.AutoSize = true;
-            this.lblCommonPVal.BackColor = System.Drawing.Color.Black;
-            this.lblCommonPVal.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblCommonPVal.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.lblCommonPVal.ForeColor = System.Drawing.Color.LimeGreen;
-            this.lblCommonPVal.Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal].pt);
-            this.lblCommonPVal.Name = "lblCommonPVal";
-            this.lblCommonPVal.AutoSize = false;
-            this.lblCommonPVal.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal].sz);
-            this.lblCommonPVal.TabIndex = 1;
-            this.lblCommonPVal.Text = "0";
+            typeVal = (int)TG.INDEX_VALUE.FACT;
+            this.lblCommonPVals[typeVal].AutoSize = true;
+            this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
+            this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblCommonPVals[typeVal].ForeColor = System.Drawing.Color.LimeGreen;
+            this.lblCommonPVals[typeVal].Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal_Fact].pt);
+            this.lblCommonPVals[typeVal].Name = "lblCommonPVal" + "_" + typeVal.ToString ();
+            this.lblCommonPVals[typeVal].AutoSize = false;
+            this.lblCommonPVals[typeVal].Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal_Fact].sz);
+            this.lblCommonPVals[typeVal].TabIndex = 1;
+            this.lblCommonPVals[typeVal].Text = "0";
+            // 
+            // lblCommonPVal_Fact
+            // 
+            typeVal = (int)TG.INDEX_VALUE.TM;
+            this.lblCommonPVals[typeVal].AutoSize = true;
+            this.lblCommonPVals[typeVal].BackColor = System.Drawing.Color.Black;
+            this.lblCommonPVals[typeVal].BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.lblCommonPVals[typeVal].Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.lblCommonPVals[typeVal].ForeColor = System.Drawing.Color.LimeGreen;
+            this.lblCommonPVals[typeVal].Location = new System.Drawing.Point(arPlacement[(int)CONTROLS.lblCommonPVal_TM].pt);
+            this.lblCommonPVals[typeVal].Name = "lblCommonPVal" + "_" + typeVal.ToString ();
+            this.lblCommonPVals[typeVal].AutoSize = false;
+            this.lblCommonPVals[typeVal].Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonPVal_TM].sz);
+            this.lblCommonPVals[typeVal].TabIndex = 1;
+            this.lblCommonPVals[typeVal].Text = "0";
             // 
             // lblCommonP
             // 
@@ -462,6 +479,7 @@ namespace Statistic
             this.lblCommonP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblCommonP].sz);
             this.lblCommonP.TabIndex = 0;
             this.lblCommonP.Text = "P тек";//"Суммарная мощность генераторов";
+            this.lblCommonP.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblAverPVal
             // 
@@ -485,6 +503,7 @@ namespace Statistic
             this.lblAverP.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblAverP].sz);
             this.lblAverP.TabIndex = 0;
             this.lblAverP.Text = "P ср";//"Средняя мощность за час";
+            this.lblAverP.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblPBRrecVal
             // 
@@ -508,6 +527,7 @@ namespace Statistic
             this.lblPBRrec.Size = new System.Drawing.Size(arPlacement[(int)CONTROLS.lblPBRrec].sz);
             this.lblPBRrec.TabIndex = 2;
             this.lblPBRrec.Text = "P рек";//"Рекомендуемая мощность";
+            this.lblPBRrec.TextAlign = ContentAlignment.MiddleRight;
             // 
             // pnlTG
             // 
@@ -831,7 +851,8 @@ namespace Statistic
                                         pnlGraphHours, pnlGraphMins,
                                         dgwHours, dgwMins,
                                         zedGraphHours, zedGraphMins,
-                                        lblCommonP, lblCommonPVal,
+                                        lblCommonP, lblCommonPVal_Fact,
+                                        lblCommonPVal_TM,
                                         lblAverP, lblAverPVal,
                                         lblPBRrec, lblPBRrecVal,
                                         lblCurrentE, lblCurrentEVal,
@@ -843,24 +864,29 @@ namespace Statistic
                                         lblPBRNumber,
                                         COUNT_CONTROLS
         };
+
+        const int delimXCommonVal = 115, delimXCommonPair = 35,
+                widthPanelDateTime = 135,
+                widthLabelName = 30;
         HPlacement[] arPlacement =
-                {   new HPlacement (40, 58, 705, 727), //THIS
-                    new HPlacement (170, 620, 562, 46), //pnlCommon
-                    new HPlacement (/*3, 666, 699, 58*/170, 646, 562, 58), //pnlTG
+                {   new HPlacement (40, 58, 705, 747), //THIS
+                    new HPlacement (140, 618, 562, 56), //pnlCommon
+                    new HPlacement (/*3, 666, 699, 58*/170, 672, 562, 73), //pnlTG
                     new HPlacement (0, 3, 702, 613), //stctrView
                     new HPlacement (338, 3, 377, 299), new HPlacement (338, 3, 377, /*294*/299), //pnlGraphHours, pnlGraphMins
                     new HPlacement (3, 3, 329, 299), new HPlacement (3, 3, 329, /*294*/299), //dgwHours, dgwMins
                     new HPlacement (0, 0, 592, 471), new HPlacement (0, 0, 592, 471), //zedGraphHours, zedGraphMins
-                    new HPlacement (6, 6, 53, 13), new HPlacement (34, 0, 74, 27), //lblCommonP, lblCommonPVal
-                    new HPlacement (121, 6, 53, 13), new HPlacement (156, 0, 74, 27), //lblAverP, lblAverPVal
-                    new HPlacement (236, 6, 53, 13), new HPlacement (271, 0, 74, 27),
-                    new HPlacement (386, 6, 53, 13), new HPlacement (421, 0, 74, 27), //lblCurrentE, lblCurrentEVal
-                    new HPlacement (501, 6, 53, 13), new HPlacement (536, 0, 74, 27), //lblDevE, lblDevEVal
-                    new HPlacement (616, 6, 53, 13), new HPlacement (651, 0, 79, 27),
-                    new HPlacement (6, 622, 140, 20), //dtprDate
-                    new HPlacement (/*0, 1, 67, 20*/6, 648, 140, 20), //lblServerTime
-                    new HPlacement (/*6, 643, 93, 23*/6, 674, 140, 23), //btnSetNow
-                    new HPlacement (/*0, 22, 67, 20*/6, 704, 140, 20) //lblPBRNumber
+                    new HPlacement (4, 6, widthLabelName, 13), new HPlacement (35, 0, 74, 27), //lblCommonP, lblCommonPVal
+                                                    new HPlacement (35, 29, 74, 27),
+                    new HPlacement (115, 6, widthLabelName, 13), new HPlacement (145, 0, 74, 27), //lblAverP, lblAverPVal
+                    new HPlacement (225, 6, widthLabelName, 13), new HPlacement (255, 0, 74, 27),
+                    new HPlacement (350, 6, widthLabelName, 13), new HPlacement (380, 0, 74, 27), //lblCurrentE, lblCurrentEVal
+                    new HPlacement (460, 6, widthLabelName, 13), new HPlacement (490, 0, 74, 27), //lblDevE, lblDevEVal
+                    new HPlacement (570, 6, widthLabelName, 13), new HPlacement (600, 0, 79, 27),
+                    new HPlacement (6, 622, widthPanelDateTime, 20), //dtprDate
+                    new HPlacement (/*0, 1, 67, 20*/6, 650, 135, 20), //lblServerTime
+                    new HPlacement (/*6, 643, 93, 23*/6, 678, widthPanelDateTime, 23), //btnSetNow
+                    new HPlacement (/*0, 22, 67, 20*/6, 716, widthPanelDateTime, 20) //lblPBRNumber
                 };
 
         private void InitializeComponentEng6 () {
@@ -871,12 +897,12 @@ namespace Statistic
             this.lblDevE = new System.Windows.Forms.Label();
             this.lblDevEVal = new System.Windows.Forms.Label();
 
-            this.pnlCommon.Controls.Add(this.lblCurrentE);
             this.pnlCommon.Controls.Add(this.lblCurrentEVal);
-            this.pnlCommon.Controls.Add(this.lblHourE);
+            this.pnlCommon.Controls.Add(this.lblCurrentE);
             this.pnlCommon.Controls.Add(this.lblHourEVal);
-            this.pnlCommon.Controls.Add(this.lblDevE);
+            this.pnlCommon.Controls.Add(this.lblHourE);
             this.pnlCommon.Controls.Add(this.lblDevEVal);
+            this.pnlCommon.Controls.Add(this.lblDevE);            
 
             // 
             // lblCurrentE
@@ -1001,7 +1027,7 @@ namespace Statistic
             stsStrip = sts;
 
             tgsName = new List<System.Windows.Forms.Label>();
-            tgsValue = new List<System.Windows.Forms.Label>();
+            //tgsValues = new List<System.Windows.Forms.Label> ();
             this.tec = tec;
             this.num_TEC = num_tec;
             this.num_TECComponent = num_comp;
@@ -1024,41 +1050,9 @@ namespace Statistic
                     {
                         if (tg_ids.IndexOf (tg.m_id) == -1) {
                             tg_ids.Add(tg.m_id);
-                            countTG++;
-                            System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
 
-                            lblName.AutoSize = true;
-                            lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                            lblName.Name = "lblName" + tg.name_shr;
-                            lblName.AutoSize = false;
-                            lblName.Size = new System.Drawing.Size(32, 13);
-                            lblName.TabIndex = 4;
-                            lblName.Text = tg.name_shr;
-
-                            tgsName.Add(lblName);
-
-                            System.Windows.Forms.Label lblValue = new System.Windows.Forms.Label();
-
-                            lblValue.AutoSize = true;
-                            lblValue.BackColor = System.Drawing.Color.Black;
-                            lblValue.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-                            lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                            lblValue.ForeColor = System.Drawing.Color.LimeGreen;
-                            lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                            lblValue.Name = "lblValue" + tg.name_shr;
-                            lblValue.Size = new System.Drawing.Size(63, 27);
-                            lblValue.AutoSize = false;
-                            lblValue.TabIndex = 5;
-                            lblValue.Text = value.ToString();
-
-                            tgsValue.Add(lblValue);
-
-                            positionXName += 69;
-                            positionXValue += 69;
-
-
-                            this.pnlTG.Controls.Add(lblName);
-                            this.pnlTG.Controls.Add(lblValue);
+                            positionYValue = 19;
+                            addTGView(ref tg.name_shr, ref value, ref positionXName, ref positionXValue, ref positionYName, ref positionYValue);
                         }
                         else
                             ;
@@ -1069,41 +1063,8 @@ namespace Statistic
             {
                 foreach (TG tg in tec.list_TECComponents[num_comp].TG)
                 {
-                    countTG++;
-                    System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
-
-                    lblName.AutoSize = true;
-                    lblName.Location = new System.Drawing.Point(positionXName, positionYName);
-                    lblName.Name = "lblName" + tg.name_shr;
-                    lblName.AutoSize = false;
-                    lblName.Size = new System.Drawing.Size(32, 13);
-                    lblName.TabIndex = 4 + countTG;
-                    lblName.Text = tg.name_shr;
-
-                    tgsName.Add(lblName);
-
-                    System.Windows.Forms.Label lblValue = new System.Windows.Forms.Label();
-
-                    lblValue.AutoSize = true;
-                    lblValue.BackColor = System.Drawing.Color.Black;
-                    lblValue.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-                    lblValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                    lblValue.ForeColor = System.Drawing.Color.LimeGreen;
-                    lblValue.Location = new System.Drawing.Point(positionXValue, positionYValue);
-                    lblValue.Name = "lblValue" + tg.name_shr;
-                    lblValue.Size = new System.Drawing.Size(63, 27);
-                    lblValue.AutoSize = false;
-                    lblValue.TabIndex = 5;
-                    lblValue.Text = value.ToString();
-
-                    tgsValue.Add(lblValue);
-
-                    positionXName += 69;
-                    positionXValue += 69;
-
-
-                    this.pnlTG.Controls.Add(lblName);
-                    this.pnlTG.Controls.Add(lblValue);
+                    positionYValue = 19;
+                    addTGView(ref tg.name_shr, ref value, ref positionXName, ref positionXValue, ref positionYName, ref positionYValue);
 
                     m_list_TECComponents.Add (tg);
                 }
@@ -1135,6 +1096,56 @@ namespace Statistic
             delegateTickTime = new DelegateFunc(TickTime);
 
             states = new List<StatesMachine>();
+        }
+
+        private void addTGView(ref string name_shr, ref float val, ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
+        {
+            countTG++;
+            System.Windows.Forms.Label lblName = new System.Windows.Forms.Label();
+
+            lblName.AutoSize = true;
+            lblName.Location = new System.Drawing.Point(positionXName, positionYName);
+            lblName.Name = "lblName" + name_shr;
+            lblName.AutoSize = false;
+            lblName.Size = new System.Drawing.Size(32, 13);
+            lblName.TabIndex = 4 + countTG;
+            lblName.Text = name_shr;
+
+            tgsName.Add(lblName);
+
+            System.Windows.Forms.Label lblValue = null;
+
+            lblValue = new System.Windows.Forms.Label();
+            createTGLabelValue (ref lblValue, name_shr + TG.INDEX_VALUE.FACT.ToString (), val, positionXValue, positionYValue);
+            tgsValues [(int)TG.INDEX_VALUE.FACT].Add(lblValue);
+
+            positionYValue += 29;
+
+            lblValue = new System.Windows.Forms.Label();
+            createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.TM.ToString(), val, positionXValue, positionYValue);
+            tgsValues[(int)TG.INDEX_VALUE.TM].Add(lblValue);
+
+            positionXName += 69;
+            positionXValue += 69;
+
+            this.pnlTG.Controls.Add(lblName);
+            this.pnlTG.Controls.Add(tgsValues[(int)TG.INDEX_VALUE.FACT][tgsValues[(int)TG.INDEX_VALUE.FACT].Count - 1]);
+            this.pnlTG.Controls.Add(tgsValues[(int)TG.INDEX_VALUE.TM][tgsValues[(int)TG.INDEX_VALUE.TM].Count - 1]);
+        }
+
+        private void createTGLabelValue(ref System.Windows.Forms.Label lblRes, string name_shr, float val, int positionXValue, int positionYValue)
+        {
+            lblRes.AutoSize = true;
+            lblRes.BackColor = System.Drawing.Color.Black;
+            lblRes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            lblRes.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            lblRes.ForeColor = System.Drawing.Color.LimeGreen;
+            lblRes.Location = new System.Drawing.Point(positionXValue, positionYValue);
+            lblRes.Name = "lblValue" + name_shr;
+            lblRes.Size = new System.Drawing.Size(63, 27);
+            lblRes.AutoSize = false;
+            lblRes.TabIndex = 5;
+            lblRes.Text = val.ToString();
         }
 
         public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -2603,6 +2614,45 @@ namespace Statistic
 
         private void ShowTMPower()
         {
+            int i = 0;
+            if (num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            {
+                foreach (TECComponent g in tec.list_TECComponents)
+                {
+                    if (g.m_id < 500)
+                        //Только ГТП
+                        foreach (TG tg in g.TG)
+                        {
+                            if (tg.id_tm > 0)
+                            {
+                                tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
+                                
+                            }
+                            else
+                            {
+                                tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = "---";
+                            }
+                            i++;
+                        }
+                    else
+                        ;
+                }
+            }
+            else
+            {
+                foreach (TG t in tec.list_TECComponents[num_TECComponent].TG)
+                {
+                    if (t.id_tm > 0)
+                    {
+                        tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = t.power_TM.ToString("F2");
+                    }
+                    else
+                    {
+                        tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = "---";
+                    }
+                    i++;
+                }
+            }
         }
 
         private void ShowTGPower()
@@ -2622,18 +2672,18 @@ namespace Statistic
                         //Только ГТП
                         foreach (TG tg in g.TG)
                         {
-                            if (tg.receivedMin[min])
+                            if (tg.receivedMin[min] == true)
                             {
-                                tgsValue[i].Text = tg.power[min].ToString("F2");
+                                tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = tg.power[min].ToString("F2");
                                 if (currHour)
-                                    tgsValue[i].ForeColor = System.Drawing.Color.LimeGreen;
+                                    tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                                 else
-                                    tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                                    tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.OrangeRed;
                             }
                             else
                             {
-                                tgsValue[i].Text = "---";
-                                tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                                tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = "---";
+                                tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.OrangeRed;
                             }
                             i++;
                         }
@@ -2645,18 +2695,18 @@ namespace Statistic
             {
                 foreach (TG t in tec.list_TECComponents[num_TECComponent].TG)
                 {
-                    if (t.receivedMin[min])
+                    if (t.receivedMin[min] == true)
                     {
-                        tgsValue[i].Text = t.power[min].ToString("F2");
+                        tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = t.power[min].ToString("F2");
                         if (currHour)
-                            tgsValue[i].ForeColor = System.Drawing.Color.LimeGreen;
+                            tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                         else
-                            tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                            tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.OrangeRed;
                     }
                     else
                     {
-                        tgsValue[i].Text = "---";
-                        tgsValue[i].ForeColor = System.Drawing.Color.OrangeRed;
+                        tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = "---";
+                        tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.OrangeRed;
                     }
                     i++;
                 }
@@ -2680,7 +2730,7 @@ namespace Statistic
             for (int i = 0; i < sensorId2TG.Length; i++)
                 value += sensorId2TG[i].power[min];
 
-            lblCommonPVal.Text = value.ToString("F2");
+            lblCommonPVals[(int)TG.INDEX_VALUE.FACT].Text = value.ToString("F2");
             valueECur = value / 20;
             lblCurrentEVal.Text = valueECur.ToString("F2");
 
@@ -2754,12 +2804,12 @@ namespace Statistic
                         {
                             ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
                             lblAverPVal.ForeColor = System.Drawing.Color.OrangeRed;
-                            lblCommonPVal.ForeColor = System.Drawing.Color.OrangeRed;
+                            lblCommonPVals[(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         else
                         {
                             lblAverPVal.ForeColor = System.Drawing.Color.LimeGreen;
-                            lblCommonPVal.ForeColor = System.Drawing.Color.LimeGreen;
+                            lblCommonPVals[(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
 
                             lblCurrentEVal.ForeColor = System.Drawing.Color.LimeGreen;
                             lblHourEVal.ForeColor = System.Drawing.Color.Yellow;
@@ -2769,8 +2819,8 @@ namespace Statistic
             }
             else
             {
-                lblAverPVal.ForeColor = 
-                lblCommonPVal.ForeColor = 
+                lblAverPVal.ForeColor =
+                lblCommonPVals[(int)TG.INDEX_VALUE.FACT].ForeColor = 
 
                 lblCurrentEVal.ForeColor =
                 lblHourEVal.ForeColor = System.Drawing.Color.OrangeRed;
@@ -2837,11 +2887,25 @@ namespace Statistic
                 valuesMins.valuesUDGe[i] = 0;
         }
 
-        private TG FindTGByIdFact(int id, int id_type)
+        private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
         {
             for (int i = 0; i < sensorId2TG.Length; i++)
-                if (sensorId2TG[i].ids_fact [id_type] == id)
-                    return sensorId2TG[i];
+                switch (indxVal) {
+                    case TG.INDEX_VALUE.FACT:
+                        if (sensorId2TG[i].ids_fact [(int)id_type] == id)
+                            return sensorId2TG[i];
+                        else
+                            ;
+                        break;
+                    case TG.INDEX_VALUE.TM:
+                        if (sensorId2TG[i].id_tm == id)
+                            return sensorId2TG[i];
+                        else
+                            ;
+                        break;
+                    default:
+                        break;
+                }
 
             return null;
         }
@@ -3290,7 +3354,7 @@ namespace Statistic
                     if (!int.TryParse(table.Rows[i][0].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGByIdFact(id, (int) TG.ID_TIME.HOURS);
+                    tgTmp = FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
 
                     if (tgTmp == null)
                         return false;
@@ -3409,6 +3473,54 @@ namespace Statistic
         private bool GetCurrentTMResponse(DataTable table)
         {
             bool bRes = true;
+            int i = -1,
+                id = -1;
+            double value = -1;
+            TG tgTmp;
+
+            foreach (TECComponent g in tec.list_TECComponents)
+            {
+                foreach (TG t in g.TG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.power_TM = 0;
+                    }
+                }
+            }
+
+            for (i = 0; i < table.Rows.Count; i++)
+            {
+                if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
+                    return false;
+                else
+                    ;
+                
+                tgTmp = FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME) (-1));
+
+                if (tgTmp == null)
+                    return false;
+                else
+                    ;
+
+                if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                    return false;
+                else
+                    ;
+
+                switch (tec.type())
+                {
+                    case TEC.TEC_TYPE.COMMON:
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        value *= 20;
+                        break;
+                    default:
+                        break;
+                }
+
+                tgTmp.power_TM = value;
+            }
 
             return bRes;
         }
@@ -3559,7 +3671,7 @@ namespace Statistic
                     else
                         ;
 
-                    tgTmp = FindTGByIdFact(id, (int) TG.ID_TIME.MINUTES);
+                    tgTmp = FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;

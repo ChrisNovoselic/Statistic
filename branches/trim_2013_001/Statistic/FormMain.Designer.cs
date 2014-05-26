@@ -187,7 +187,7 @@
             this.tclTecViews.Location = new System.Drawing.Point(0, 24);
             this.tclTecViews.Name = "tclTecViews";
             this.tclTecViews.SelectedIndex = 0;
-            this.tclTecViews.Size = new System.Drawing.Size(982, 735);
+            this.tclTecViews.Size = new System.Drawing.Size(982, /*735*/755);
             this.tclTecViews.TabIndex = 3;
             this.tclTecViews.SelectedIndexChanged += new System.EventHandler(this.tclTecViews_SelectedIndexChanged);
             // 
@@ -257,7 +257,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(982, 784);
+            this.ClientSize = new System.Drawing.Size(982, /*784*/804);
             this.Controls.Add(this.lblLabel);
             this.Controls.Add(this.stsStrip);
             this.Controls.Add(this.tclTecViews);

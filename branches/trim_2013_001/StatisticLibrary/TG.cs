@@ -7,9 +7,11 @@ namespace StatisticCommon
     public class TG : TECComponentBase
     {
         public enum ID_TIME : int { MINUTES, HOURS, COUNT_ID_TIME };
+        public enum INDEX_VALUE : int { FACT, TM, COUNT_INDEX_VALUE };
 
         public int m_indx_col_rdg_excel;
         public double[] power;
+        public double power_TM;
         public bool[] receivedMin;
         public bool[] receivedHourHalf1;
         public bool[] receivedHourHalf2;
