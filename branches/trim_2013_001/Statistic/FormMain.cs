@@ -539,7 +539,10 @@ namespace Statistic
             else
                 ;
 
-            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count && m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
+            if ((! (tclTecViews.SelectedIndex < 0)) && //Текущая вкладка выбрана
+                (tclTecViews.SelectedIndex < selectedTecViews.Count) && //Текущая вкладка 'TecView'
+                (! (m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
+                (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
             {
                 selectedTecViews[m_prevSelectedIndex].Activate(false);
                 selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
@@ -548,11 +551,14 @@ namespace Statistic
             }
             else
             {
-                if (m_prevSelectedIndex >= 0 && m_prevSelectedIndex < selectedTecViews.Count)
+                //Деактивация предыдущей вкладки, если она была 'TecView'
+                if ((!(m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
+                    (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
                     selectedTecViews[m_prevSelectedIndex].Activate(false);
                 else
                     ;
 
+                //Активация вкладки ПБР-диспетчер
                 if (tclTecViews.SelectedIndex == selectedTecViews.Count)
                     m_panelAdmin.Activate(true);
                 else
@@ -720,8 +726,9 @@ namespace Statistic
                     ;
 
                 m_panelCurPower = new PanelCurPower (m_admin.m_list_tec, stsStrip, formParameters);
-                m_panelCurPower.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                m_panelCurPower.SetDelegate(delegateEvent);
                 m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec);
+                //m_panelLastMinutes.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
                 timer.Interval = 1000;
             }

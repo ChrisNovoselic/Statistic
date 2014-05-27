@@ -311,6 +311,156 @@ namespace StatisticCommon
             return strRes;
         }
 
+        public string sensorsFactRequest()
+        {
+            return @"SELECT DISTINCT SENSORS.NAME, SENSORS.ID " +
+                    @"FROM DEVICES " +
+                    @"INNER JOIN SENSORS ON " +
+                    @"DEVICES.ID = SENSORS.STATIONID " +
+                    @"INNER JOIN DATA ON " +
+                    @"DEVICES.CODE = DATA.OBJECT AND " +
+                    @"SENSORS.CODE = DATA.ITEM " +
+                    @"WHERE DATA.PARNUMBER = 12 AND " +
+                    //@"SENSORS.NAME LIKE 'ТГ%P%+'";
+                    @"SENSORS.NAME LIKE '" + m_strTemplateNameSgnDataFact + @"'";
+        }
+
+        public string sensorsTMRequest()
+        {
+            return @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
+        }
+
+        public string minsRequest(DateTime usingDate, int hour, string sensors)
+        {
+            if (hour == 24)
+                hour = 23;
+            else
+                ;
+
+            usingDate = usingDate.Date.AddHours(hour);
+            string request = string.Empty;
+
+            switch (type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                             @"FROM DEVICES " +
+                             @"INNER JOIN SENSORS ON " +
+                             @"DEVICES.ID = SENSORS.STATIONID " +
+                             @"INNER JOIN DATA ON " +
+                             @"DEVICES.CODE = DATA.OBJECT AND " +
+                             @"SENSORS.CODE = DATA.ITEM AND " +
+                             @"DATA.DATA_DATE >= '" + usingDate.ToString("yyyy.MM.dd HH:00:00") +
+                             @"' AND " +
+                             @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
+                             @"' " +
+                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensors +
+                             @") " +
+                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensors +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
+
+            return request;
+        }
+
+        public string hoursRequest(DateTime usingDate, string sensors)
+        {
+            string request;
+
+            switch (type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                                @"FROM DEVICES " +
+                                @"INNER JOIN SENSORS ON " +
+                                @"DEVICES.ID = SENSORS.STATIONID " +
+                                @"INNER JOIN DATA ON " +
+                                @"DEVICES.CODE = DATA.OBJECT AND " +
+                                @"SENSORS.CODE = DATA.ITEM AND " +
+                                @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+                                @"' AND " +
+                                @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                                @"' " +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensors +
+                                @") " +
+                                @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensors +
+                             @") " +
+                        //@"ORDER BY IZM_TII.TIME";
+                             @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
+
+            return request;
+        }
+
+        public static string getNameTG(string templateNameBD, string nameBD)
+        {
+            //Подстрока для 1-го '%'
+            int pos = -1;
+            string strRes = nameBD.Substring(templateNameBD.IndexOf('%'));
+
+            //Поиск 1-й НЕ ЦИФРы
+            pos = 0;
+            while (pos < strRes.Length)
+            {
+                if ((strRes[pos] < '0') || (strRes[pos] > '9'))
+                    break;
+                else
+                    ;
+
+                pos++;
+            }
+            //Проверка - ВСЕ символы строки до конца ЦИФРы
+            if (!(pos < strRes.Length))
+                return strRes;
+            else
+                ;
+
+            strRes = strRes.Substring(0, pos);
+
+            strRes = "ТГ" + strRes;
+
+            return strRes;
+        }
+
         public string GetPBRValueQuery(int num_comp, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,
