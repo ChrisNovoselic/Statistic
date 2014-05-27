@@ -105,7 +105,7 @@ namespace StatisticCommon
             return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
         }
 
-        public void StartDbInterface()
+        public void StartDbInterfaces()
         {
             if (used == 0)
             {
@@ -119,7 +119,11 @@ namespace StatisticCommon
                     m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
                 }
             }
+            else
+                ;
+
             used++;
+
             if (used > list_TECComponents.Count)
                 used = list_TECComponents.Count;
             else
@@ -440,6 +444,18 @@ namespace StatisticCommon
             }
 
             return strRes;
+        }
+
+        public string currentTMRequest (string sensors) {
+            return @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[last_changed_at], [dbo].[states_real_his].[value] " +
+                            @"FROM [dbo].[states_real_his] " +
+                            @"INNER JOIN " +
+                                @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
+                                @"FROM [dbo].[states_real_his] " +
+                                @"GROUP BY [id]) AS t2 " +
+                            @"ON ([dbo].[states_real_his].[id] = t2.[id] AND [dbo].[states_real_his].[last_changed_at] = t2.last_changed_at AND (" +
+                            sensors +
+                            @"))";
         }
 
         public string GetAdminValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode)

@@ -23,6 +23,7 @@ namespace Statistic
         //private PanelAdmin [] m_arPanelAdmin;
         PanelAdmin m_panelAdmin;
         PanelCurPower m_panelCurPower;
+        PanelLastMinutes m_panelLastMinutes;
         //public AdminTS [] m_arAdmin;
         AdminTS m_admin;
         public Passwords m_passwords;
@@ -691,7 +692,7 @@ namespace Statistic
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
                         selectedTecViews.Add(tecViews[i]);
 
-                        t.StartDbInterface();
+                        //t.StartDbInterfaces();
                         tecViews[i].Activate(false);
                         tecViews[i].Start();
                     }
@@ -718,7 +719,9 @@ namespace Statistic
                 else
                     ;
 
-                m_panelCurPower = new PanelCurPower (m_admin.m_list_tec);
+                m_panelCurPower = new PanelCurPower (m_admin.m_list_tec, stsStrip, formParameters);
+                m_panelCurPower.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec);
 
                 timer.Interval = 1000;
             }
@@ -782,7 +785,7 @@ namespace Statistic
             string nameTab = "Монитор P-2%";
             if (((ToolStripMenuItem) sender).Checked == true) {
                 tclTecViews.TabPages.Add(nameTab, nameTab);
-                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(new PanelLastMinutes());
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelLastMinutes);
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);

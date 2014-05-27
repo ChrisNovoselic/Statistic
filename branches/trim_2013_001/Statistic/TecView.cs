@@ -184,9 +184,9 @@ namespace Statistic
 
         private double recomendation;
 
-        private volatile string sensorsString_Fact = "";
+        //private volatile string sensorsString_Fact = "";
         private volatile string sensorsString_TM = "";
-        private volatile string [] sensorsStrings = {"", ""}; //Только для особенной ТЭЦ (Бийск)
+        private volatile string [] sensorsStrings_Fact = {"", ""}; //Только для особенной ТЭЦ (Бийск)
 
         private TG[] sensorId2TG;
 
@@ -444,32 +444,32 @@ namespace Statistic
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.FACT;
-            createLabelVal(ref this.lblCommonPVals[typeVal], (int)CONTROLS.lblCommonPVal_Fact, "lblCommonPVal" + "_" + typeVal.ToString(), "0", Color.LimeGreen);
+            createLabelVal(ref this.lblCommonPVals[typeVal], CONTROLS.lblCommonPVal_Fact, "0", Color.LimeGreen);
             // 
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.TM;
-            createLabelVal(ref this.lblCommonPVals[typeVal], (int)CONTROLS.lblCommonPVal_TM, "lblCommonPVal" + "_" + typeVal.ToString(), "0", Color.LimeGreen);
+            createLabelVal(ref this.lblCommonPVals[typeVal], CONTROLS.lblCommonPVal_TM, "0", Color.LimeGreen);
             // 
             // lblCommonP - Суммарная мощность генераторов
             // 
-            createLabel(ref this.lblCommonP, (int)CONTROLS.lblCommonP, "lblCommonP", "P тек");
+            createLabel(ref this.lblCommonP, CONTROLS.lblCommonP, "P тек");
             // 
             // lblAverPVal
             //
-            createLabelVal(ref this.lblAverPVal, (int)CONTROLS.lblAverPVal, "lblAverPVal", "0", Color.LimeGreen);
+            createLabelVal(ref this.lblAverPVal, CONTROLS.lblAverPVal, "0", Color.LimeGreen);
             // 
             // lblAverP
             // 
-            createLabel(ref this.lblAverP, (int)CONTROLS.lblAverP, "lblAverP", "P ср");
+            createLabel(ref this.lblAverP, CONTROLS.lblAverP, "P ср");
             // 
             // lblPBRrecVal - Рекомендуемая мощность
             //
-            createLabelVal(ref this.lblPBRrecVal, (int)CONTROLS.lblPBRrecVal, "lblPBRrecVal", "0", Color.Yellow);
+            createLabelVal(ref this.lblPBRrecVal, CONTROLS.lblPBRrecVal, "0", Color.Yellow);
             // 
             // lblPBRrec
             // 
-            createLabel(ref this.lblPBRrec, (int)CONTROLS.lblPBRrec, "lblPBRrec", "P рек");
+            createLabel(ref this.lblPBRrec, CONTROLS.lblPBRrec, "P рек");
             // 
             // pnlTG
             // 
@@ -849,48 +849,49 @@ namespace Statistic
             // 
             // lblCurrentE - Суммарная мощность генераторов
             // 
-            createLabel(ref this.lblCurrentE, (int)CONTROLS.lblCurrentE, "lblCurrentE", "Е тек");
+            createLabel(ref this.lblCurrentE, CONTROLS.lblCurrentE, "Е тек");
             // 
             // lblCurrentEVal
             // 
-            createLabelVal(ref this.lblCurrentEVal, (int)CONTROLS.lblCurrentEVal, "lblCurrentEVal", "0", Color.LimeGreen);
+            createLabelVal(ref this.lblCurrentEVal, CONTROLS.lblCurrentEVal, "0", Color.LimeGreen);
             // 
             // lblHourE - Средняя мощность за час
             // 
-            createLabel(ref this.lblHourE, (int)CONTROLS.lblHourE, "lblHourE", "Е час");
+            createLabel(ref this.lblHourE, CONTROLS.lblHourE, "Е час");
             // 
             // lblHourEVal
             // 
-            createLabelVal(ref this.lblHourEVal, (int)CONTROLS.lblHourEVal, "lblHourEVal", "0", Color.Yellow);
+            createLabelVal(ref this.lblHourEVal, CONTROLS.lblHourEVal, "0", Color.Yellow);
             // 
             // lblDevE - "Рекомендуемая мощность"
             // 
-            createLabel(ref this.lblDevE, (int)CONTROLS.lblDevE, "lblDevE", "Откл");
+            createLabel(ref this.lblDevE, CONTROLS.lblDevE, "Откл");
             // 
             // lblDevEVal
             // 
-            createLabelVal(ref this.lblDevEVal, (int)CONTROLS.lblDevEVal, "lblDevEVal", "0", Color.Yellow);
+            createLabelVal(ref this.lblDevEVal, CONTROLS.lblDevEVal, "0", Color.Yellow);
         }
 
-        private void createLabel (ref System.Windows.Forms.Label lbl, int indx, string name, string text) {
+        private void createLabel(ref System.Windows.Forms.Label lbl, CONTROLS indx, string text)
+        {
             lbl.AutoSize = true;
-            lbl.Location = new Point(arPlacement[indx].pt);
-            lbl.Name = name;
-            lbl.Size = new Size(arPlacement[indx].sz);
+            lbl.Location = new Point(arPlacement[(int)indx].pt);
+            lbl.Name = indx.ToString ();
+            lbl.Size = new Size(arPlacement[(int)indx].sz);
             //this.lblDevE.TabIndex = 2;
             lbl.Text = text;
         }
 
-        private void createLabelVal(ref System.Windows.Forms.Label lbl, int indx, string name, string text, Color clrText)
+        private void createLabelVal(ref System.Windows.Forms.Label lbl, CONTROLS indx, string text, Color clrText)
         {
             lbl.BackColor = Color.Black;
             lbl.BorderStyle = BorderStyle.Fixed3D;
             lbl.Font = new Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             lbl.ForeColor = clrText;
-            lbl.Location = new Point(arPlacement[indx].pt);
-            lbl.Name = name;
+            lbl.Location = new Point(arPlacement[(int)indx].pt);
+            lbl.Name = indx.ToString ();
             lbl.AutoSize = false;
-            lbl.Size = new Size(arPlacement[indx].sz);
+            lbl.Size = new Size(arPlacement[(int)indx].sz);
             //lbl.TabIndex = 3;
             lbl.Text = "0";
             lbl.TextAlign = ContentAlignment.MiddleCenter;
@@ -2018,7 +2019,7 @@ namespace Statistic
 
         public void Start()
         {
-            if (started)
+            if (started == true)
                 return;
 
             adminValuesReceived = false;
@@ -2026,11 +2027,11 @@ namespace Statistic
             currValuesPeriod = parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME] - 1;
             started = true;
 
-            tec.StartDbInterface();
+            tec.StartDbInterfaces();
             threadIsWorking = true;
 
             taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-            taskThread.Name = "Интерфейс к данным";
+            taskThread.Name = @"Интерфейс к данным: " + tec.name;
             taskThread.IsBackground = true;
 
             sem = new Semaphore(1, 1);
@@ -2079,7 +2080,7 @@ namespace Statistic
 
         public void Stop()
         {
-            if (!started)
+            if (started == false)
                 return;
             else
                 ;
@@ -2187,7 +2188,7 @@ namespace Statistic
                                 @"' AND " +
                                 @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
                                 @"' " +
-                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsString_Fact +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] +
                                 @") " +
                                 @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                     break;
@@ -2203,7 +2204,7 @@ namespace Statistic
                              @"' AND " +
                              @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
                              @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.HOURS] +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings_Fact [(int)TG.ID_TIME.HOURS] +
                              @") " +
                              //@"ORDER BY IZM_TII.TIME";
                              @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
@@ -2241,7 +2242,7 @@ namespace Statistic
                              @"' AND " +
                              @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
                              @"' " +
-                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsString_Fact +
+                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] +
                              @") " +
                              @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                     break;
@@ -2257,7 +2258,7 @@ namespace Statistic
                              @"' AND " +
                              @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
                              @"' WHERE IZM_TII.PERIOD = 180 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings[(int)TG.ID_TIME.MINUTES] +
+                             @"IZM_TII.IDCHANNEL IN(" + sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] +
                              @") " +
                              @"ORDER BY IZM_TII.TIME";
                     break;
@@ -2270,17 +2271,7 @@ namespace Statistic
         }
 
         private void GetCurrentTMRequest () {
-            string request = @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[last_changed_at], [dbo].[states_real_his].[value] " +
-                            @"FROM [dbo].[states_real_his] " +
-                            @"INNER JOIN " +
-                                @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-                                @"FROM [dbo].[states_real_his] " +
-                                @"GROUP BY [id]) AS t2 " +
-                            @"ON ([dbo].[states_real_his].[id] = t2.[id] AND [dbo].[states_real_his].[last_changed_at] = t2.last_changed_at AND (" +
-	                        sensorsString_TM +
-                            @"))";
-
-            tec.Request(CONN_SETT_TYPE.DATA_TM, request);
+            tec.Request(CONN_SETT_TYPE.DATA_TM, tec.currentTMRequest(sensorsString_TM));
         }
 
         private void GetPBRValuesRequest () {
@@ -2952,13 +2943,13 @@ namespace Statistic
             {
                 if (! (sensorId2TG[i] == null))
                 {
-                    if (sensorsString_Fact.Equals (string.Empty) == true)
+                    if (sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == true)
                     {
-                        sensorsString_Fact = "SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] = "SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                     else
                     {
-                        sensorsString_Fact += " OR SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
+                        sensorsStrings_Fact [(int)TG.ID_TIME.MINUTES] += " OR SENSORS.ID = " + sensorId2TG[i].ids_fact[(int)TG.ID_TIME.MINUTES/*HOURS*/].ToString();
                     }
                 }
                 else
@@ -2968,6 +2959,9 @@ namespace Statistic
                     return false;
                 }
             }
+
+            //Для обычной ТЭЦ - идентификаторы мин., час одинаковы
+            sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] = sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES];
 
             return true;
         }
@@ -3073,15 +3067,15 @@ namespace Statistic
                         //sensorId2TGHours[t] = tec.list_TECComponents[i].TG[j];
                         t++;
 
-                        if (sensorsStrings[(int)TG.ID_TIME.MINUTES] == "")
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
+                        if (sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] == "")
+                            sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
+                            sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
 
-                        if (sensorsStrings[(int)TG.ID_TIME.HOURS] == "")
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
+                        if (sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] == "")
+                            sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] = ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                         else
-                            sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
+                            sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] += ", " + ((TECComponent)m_list_TECComponents[i]).TG[j].ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                     }
                 }
             }
@@ -3118,15 +3112,15 @@ namespace Statistic
                     //sensorId2TGHours[t] = tec.list_TECComponents[num_gtp].TG[i];
                     t++;
 
-                    if (sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals (string.Empty) == true)
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
+                    if (sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES].Equals (string.Empty) == true)
+                        sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.MINUTES] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
+                        sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.MINUTES].ToString();
 
-                    if (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == true)
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
+                    if (sensorsStrings_Fact[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == true)
+                        sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] = ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                     else
-                        sensorsStrings[(int)TG.ID_TIME.HOURS] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
+                        sensorsStrings_Fact[(int)TG.ID_TIME.HOURS] += ", " + ((TG)m_list_TECComponents[i]).ids_fact[(int)TG.ID_TIME.HOURS].ToString();
                 }
             }
         }
@@ -4909,9 +4903,8 @@ namespace Statistic
             newState = true;
             states.Clear();
 
-            if ((sensorsString_Fact.Equals(string.Empty) == false) ||
-                (sensorsString_TM.Equals(string.Empty) == false) ||
-                ((sensorsStrings[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
+            if ((sensorsString_TM.Equals(string.Empty) == false) ||
+                ((sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings_Fact[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
             {
                 if (currHour == true)
                 {
@@ -5613,7 +5606,7 @@ namespace Statistic
             {
                 return;
             }
-            if (currHour && isActive)
+            if ((currHour == true) && (isActive == true))
                 if (((currValuesPeriod++) * 1000) >= parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
                 {
                     currValuesPeriod = 0;

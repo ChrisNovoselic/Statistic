@@ -92,6 +92,12 @@
     <Compile Include="FormWait.Designer.cs">
       <DependentUpon>FormWait.cs</DependentUpon>
     </Compile>
+    <Compile Include="HLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="HLabel.Designer.cs">
+      <DependentUpon>HLabel.cs</DependentUpon>
+    </Compile>
     <Compile Include="InitTEC.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
