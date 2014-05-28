@@ -97,12 +97,22 @@ namespace StatisticCommon
 
         public void Request(CONN_SETT_TYPE indx_src, string request)
         {
-            m_arDBInterfaces[(int)indx_src].Request(m_arListenerIds[(int)indx_src], request);
+            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (! (m_arListenerIds[(int)indx_src] < 0)))
+                m_arDBInterfaces[(int)indx_src].Request(m_arListenerIds[(int)indx_src], request);
+            else
+                ;
         }
 
         public bool GetResponse(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
-            return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
+            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
+                return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
+            else {
+                error = true;
+                table = null;
+                
+                return false;
+            }
         }
 
         public void StartDbInterfaces()
@@ -113,10 +123,14 @@ namespace StatisticCommon
 
                 for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
-                    m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name);
-                    m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
-                    m_arDBInterfaces[i].Start();
-                    m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
+                    if (! (connSetts[i] == null)) {
+                        m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name);
+                        m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
+                        m_arDBInterfaces[i].Start();
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
+                    }
+                    else
+                        ;
                 }
             }
             else
@@ -133,9 +147,17 @@ namespace StatisticCommon
         private void stopDbInterfaces () {
             for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arDBInterfaces[i].Stop ();
-                //for (int j = 0; j < m_arListenerIds[i].Count; j ++)
-                    m_arDBInterfaces[i].ListenerUnregister(m_arListenerIds[i]/*[j]*/);
+                if (! (m_arDBInterfaces[i] == null))
+                {
+                    m_arDBInterfaces[i].Stop ();
+                    //for (int j = 0; j < m_arListenerIds[i].Count; j ++)
+                        if (! (m_arListenerIds[i] < 0))
+                            m_arDBInterfaces[i].ListenerUnregister(m_arListenerIds[i]/*[j]*/);
+                        else
+                            ;
+                }
+                else
+                    ;
             }
         }
 
@@ -436,6 +458,25 @@ namespace StatisticCommon
             //Подстрока для 1-го '%'
             int pos = -1;
             string strRes = nameBD.Substring(templateNameBD.IndexOf('%'));
+
+            //Поиск 1-й ЦИФРы
+            pos = 0;
+            while (pos < strRes.Length)
+            {
+                if ((! (strRes[pos] < '0')) && (! (strRes[pos] > '9')))
+                    break;
+                else
+                    ;
+
+                pos++;
+            }
+            //Проверка - ВСЕ символы строки до конца ЦИФРы
+            if (!(pos < strRes.Length))
+                return strRes;
+            else
+                ;
+
+            strRes = strRes.Substring(pos);
 
             //Поиск 1-й НЕ ЦИФРы
             pos = 0;

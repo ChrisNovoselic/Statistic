@@ -114,10 +114,6 @@
     <Compile Include="PanelLastMinutes.Designer.cs">
       <DependentUpon>PanelLastMinutes.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelTecLastMinutes.cs" />
-    <Compile Include="PanelTecLastMinutes.Designer.cs">
-      <DependentUpon>PanelTecLastMinutes.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TecView.cs">

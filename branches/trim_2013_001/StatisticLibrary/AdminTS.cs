@@ -312,11 +312,8 @@ namespace StatisticCommon
             }
             else
             {
-                DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
-                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
-                else
-                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                serverTime = ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
+
                 ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
             }
 
@@ -1749,10 +1746,12 @@ namespace StatisticCommon
             }
 
             if (result == true)
-                errored_state = actioned_state = false;
+                errored_state = m_actioned_state = false;
             else
                 ;
 
+            //Console.WriteLine(@"AdminTS::StateResponse ({0}) - actioned_state = {1}", state, m_actioned_state);
+            
             return result;
         }
 

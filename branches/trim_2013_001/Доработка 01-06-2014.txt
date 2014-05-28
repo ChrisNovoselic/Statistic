@@ -57,3 +57,12 @@ ALTER TABLE `techsite_cfg`.`TEC_LIST` ADD COLUMN `TEMPLATE_NAME_SGN_DATA_TM` VAR
 
 --Добавить значения для столбцов с шаблонами наименований сигналов "факт", "ТМ"
 UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='BT#%G_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='1'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T2#G%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='2'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T3#%G_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='3'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T4#TG%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='4'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T5#TG%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='5'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='6';
+
+--Добавить источник Бийск СОТИАССО 'SOURCE'
+INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('62', '10.100.104.248', '1433', 'HISTORY', 'cllient', '0', 'БиТЭЦ (ТМ-1)', 'client'); 
+
+--Изменить источник СОТИАССО 'TEC_LIST'
+UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='62' WHERE `ID`='6';
+
+--Изменить шаблон сигналов ТГ 'TEC_LIST' для Бийской ТЭЦ
+UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='BiTEC#TG%_I_10_V' WHERE `ID`='6'; 

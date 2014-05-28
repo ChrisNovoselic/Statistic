@@ -449,7 +449,7 @@ namespace Statistic
             // lblCommonPVal_Fact
             // 
             typeVal = (int)TG.INDEX_VALUE.TM;
-            createLabelVal(ref this.lblCommonPVals[typeVal], CONTROLS.lblCommonPVal_TM, "0", Color.LimeGreen);
+            createLabelVal(ref this.lblCommonPVals[typeVal], CONTROLS.lblCommonPVal_TM, "0", Color.Green);
             // 
             // lblCommonP - Суммарная мощность генераторов
             // 
@@ -954,7 +954,7 @@ namespace Statistic
             int positionXName = 15, positionXValue = 4, positionYName = 6, positionYValue = 19;
             float value = 0;
             countTG = 0;
-            List <int> tg_ids = new List <int> ();
+            List <int> tg_ids = new List <int> (); //Локальный список для предотвращения повтрной обработки ТГ
             m_list_TECComponents = new List <TECComponentBase> ();
             if (num_comp < 0) // значит этот view будет суммарным для всех ГТП
             {
@@ -967,6 +967,7 @@ namespace Statistic
 
                     foreach (TG tg in g.TG)
                     {
+                        //Проверка обработки ТГ
                         if (tg_ids.IndexOf (tg.m_id) == -1) {
                             tg_ids.Add(tg.m_id);
 
@@ -1035,13 +1036,15 @@ namespace Statistic
             System.Windows.Forms.Label lblValue = null;
 
             lblValue = new System.Windows.Forms.Label();
-            createTGLabelValue (ref lblValue, name_shr + TG.INDEX_VALUE.FACT.ToString (), val, positionXValue, positionYValue);
+            createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.FACT.ToString(), val, System.Drawing.Color.LimeGreen, positionXValue, positionYValue);
+            lblValue.TextAlign = ContentAlignment.MiddleCenter;
             tgsValues [(int)TG.INDEX_VALUE.FACT].Add(lblValue);
 
             positionYValue += 29;
 
             lblValue = new System.Windows.Forms.Label();
-            createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.TM.ToString(), val, positionXValue, positionYValue);
+            createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.TM.ToString(), val, Color.Green, positionXValue, positionYValue);
+            lblValue.TextAlign = ContentAlignment.MiddleCenter;
             tgsValues[(int)TG.INDEX_VALUE.TM].Add(lblValue);
 
             positionXName += 69;
@@ -1052,12 +1055,12 @@ namespace Statistic
             this.pnlTG.Controls.Add(tgsValues[(int)TG.INDEX_VALUE.TM][tgsValues[(int)TG.INDEX_VALUE.TM].Count - 1]);
         }
 
-        private void createTGLabelValue(ref System.Windows.Forms.Label lblRes, string name_shr, float val, int positionXValue, int positionYValue)
+        private void createTGLabelValue(ref System.Windows.Forms.Label lblRes, string name_shr, float val, Color clr, int positionXValue, int positionYValue)
         {
             lblRes.BackColor = System.Drawing.Color.Black;
             lblRes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             lblRes.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            lblRes.ForeColor = System.Drawing.Color.LimeGreen;
+            lblRes.ForeColor = clr;
             lblRes.Location = new System.Drawing.Point(positionXValue, positionYValue);
             lblRes.Name = "lblValue" + name_shr;
             lblRes.Size = new System.Drawing.Size(63, 27);
@@ -2047,12 +2050,7 @@ namespace Statistic
             FillDefaultMins();
             FillDefaultHours();
 
-            DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
-            if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
-            else
-                selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
-
+            selectedTime = HAdmin.ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
             serverTime = selectedTime;
 
             evTimerCurrent = new ManualResetEvent (true);
@@ -2529,11 +2527,14 @@ namespace Statistic
                 for (int j = 0; j < min; j++)
                     valueEBefore += sensorId2TG[i].power[j] / 20;
 
-            double value = 0;
-            for (int i = 0; i < sensorId2TG.Length; i++)
+            double value = 0, value_TM = 0.0;
+            for (int i = 0; i < sensorId2TG.Length; i++) {
                 value += sensorId2TG[i].power[min];
+                value_TM += sensorId2TG[i].power_TM;
+            }
 
             lblCommonPVals[(int)TG.INDEX_VALUE.FACT].Text = value.ToString("F2");
+            lblCommonPVals[(int)TG.INDEX_VALUE.TM].Text = value_TM.ToString("F2");
             valueECur = value / 20;
             lblCurrentEVal.Text = valueECur.ToString("F2");
 

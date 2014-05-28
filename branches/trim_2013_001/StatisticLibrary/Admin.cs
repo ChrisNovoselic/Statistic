@@ -60,7 +60,14 @@ namespace StatisticCommon
 
         public volatile string last_action;
         public DateTime last_time_action;
-        public volatile bool actioned_state;
+        public bool actioned_state {
+            get { return m_actioned_state; }
+            set {
+                m_actioned_state = value;
+            }
+        }
+
+        protected bool m_actioned_state;
 
         public DateTime m_prevDate;
         protected DateTime serverTime,
@@ -325,8 +332,10 @@ namespace StatisticCommon
         {
             last_action = action_string;
             last_time_action = DateTime.Now;
-            actioned_state = true;
+            m_actioned_state = true;
 
+            //Console.WriteLine(@"HAdmin::ActionReport () - actioned_state = {0}", m_actioned_state);
+            
             //stsStrip.BeginInvoke(delegateEventUpdate);
             //delegateEventUpdate ();
             actionReport(action_string);
@@ -561,6 +570,20 @@ namespace StatisticCommon
 
         protected bool IsHaveDates (CONN_SETT_TYPE type, int indx) {
             return m_arHaveDates [(int)type, indx] > 0 ? true : false;
+        }
+
+        public static DateTime ToCurrentTimeZone (DateTime dt) {
+            DateTime dtRes;
+            int hourAdding = 0;
+            DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(dt.Year);
+            if (TimeZone.IsDaylightSavingTime(dt, daylight) == true)
+                hourAdding = 1;
+            else
+                ;
+
+            //dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById (TimeZone.CurrentTimeZone.StandardName));
+            dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById (@"Russian Standard Time"));
+            return dtRes; 
         }
     }
 }

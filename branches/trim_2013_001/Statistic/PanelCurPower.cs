@@ -14,31 +14,33 @@ using StatisticCommon;
 namespace Statistic
 {
     public partial class PanelCurPower : TableLayoutPanel
-    {       
-        private List<PanelTecCurPower> m_listTECCurrentPower;
-
+    {
         enum StatesMachine : int {Init_TM, Current_TM};
 
         public DelegateFunc delegateEventUpdate;
 
-        public int m_iPeriodUpdate;
+        public int m_msecPeriodUpdate;
 
-        public static volatile string last_error;
-        public static DateTime last_time_error;
-        public static volatile bool errored_state;
+        public volatile string last_error;
+        public  DateTime last_time_error;
+        public volatile bool errored_state;
 
-        public static volatile string last_action;
-        public static DateTime last_time_action;
-        public static volatile bool actioned_state;
+        public volatile string last_action;
+        public  DateTime last_time_action;
+        public volatile bool actioned_state;
+        
+        public bool m_bIsActive;
 
         public StatusStrip m_stsStrip;
+
+        const int DEBUG_INDEX_TEC = -1;
 
         public PanelCurPower(List<TEC> listTec, StatusStrip stsStrip, FormParameters par)
         {
             InitializeComponent();
 
             m_stsStrip = stsStrip;
-            m_iPeriodUpdate = par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME];
+            m_msecPeriodUpdate = par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME];
 
             this.RowStyles.Add(new RowStyle (SizeType.AutoSize));
 
@@ -50,7 +52,6 @@ namespace Statistic
 
             this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
 
-            m_listTECCurrentPower = new List<PanelTecCurPower> ();
             PanelTecCurPower ptcp;
 
             this.ColumnCount = listTec.Count;
@@ -58,10 +59,7 @@ namespace Statistic
             {
                 ptcp = new PanelTecCurPower(listTec[i]);
                 this.Controls.Add(ptcp, i, 0);
-                
-                m_listTECCurrentPower.Add(ptcp);
-                //ptcp.Location = new Point (1 + i * widthTec, 1);
-                //ptcp.Size = new Size(widthTec, this.Height);
+
 
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / listTec.Count));                
             }
@@ -76,6 +74,44 @@ namespace Statistic
         public void SetDelegate(DelegateFunc dStatus)
         {
             this.delegateEventUpdate = dStatus;
+        }
+
+        public void Start () {
+            int i = 0;
+            foreach (Control ctrl in this.Controls) {
+                if (ctrl is PanelTecCurPower) {
+                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Start(); else ;
+                    i++;
+                }
+                else
+                    ;
+            }
+        }
+
+        public void Stop () {
+            int i = 0;
+            foreach (Control ctrl in this.Controls) {
+                if (ctrl is PanelTecCurPower) {
+                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Stop(); else ;
+                    i ++;
+                }
+                else
+                    ;
+            }
+        }
+
+        public void Activate (bool active) {
+            m_bIsActive = active;
+
+            int i = 0;
+            foreach (Control ctrl in this.Controls) {
+                if (ctrl is PanelTecCurPower) {
+                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Activate(active); else ;
+                    i ++;
+                }
+                else
+                    ;
+            }
         }
 
         partial class PanelTecCurPower
@@ -123,11 +159,11 @@ namespace Statistic
 
             public TEC m_tec;
 
-            private TG[] sensorId2TG;
+            private List <TG> m_listSensorId2TG;
 
             enum StatesMachine : int { Init_TM, Current_TM };
 
-            //FormParameters m_parameters;
+            DateTime m_dtLastChangedAt;
 
             private object lockValue;
 
@@ -168,11 +204,11 @@ namespace Statistic
                 int i = -1;
 
                 m_arLabelStyles = new HLabelStyles[(int)INDEX_LABEL.COUNT_INDEX_LABEL];
-                m_arLabelStyles[(int)INDEX_LABEL.NAME] = new HLabelStyles(Color.White, Color.Blue, 22F, ContentAlignment.MiddleCenter);
+                m_arLabelStyles[(int)INDEX_LABEL.NAME] = new HLabelStyles(Color.Black, Color.Gray, 22F, ContentAlignment.MiddleCenter);
                 m_arLabelStyles[(int)INDEX_LABEL.DATETIME] = new HLabelStyles(Color.LimeGreen, Color.Gray, 24F, ContentAlignment.MiddleCenter);
                 m_arLabelStyles[(int)INDEX_LABEL.VALUE_TOTAL] = new HLabelStyles(Color.LimeGreen, Color.Black, 24F, ContentAlignment.MiddleCenter);
-                m_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT] = new HLabelStyles(Color.Yellow, Color.Green, 14F, ContentAlignment.TopLeft);
-                m_arLabelStyles[(int)INDEX_LABEL.NAME_TG] = new HLabelStyles(Color.LightSteelBlue, Color.Yellow, 14F, ContentAlignment.MiddleLeft);
+                m_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT] = new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.TopLeft);
+                m_arLabelStyles[(int)INDEX_LABEL.NAME_TG] = new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.MiddleLeft);
                 m_arLabelStyles[(int)INDEX_LABEL.VALUE_TG] = new HLabelStyles(Color.LimeGreen, Color.Black, 14F, ContentAlignment.MiddleCenter);
 
                 m_dictLabelVal = new Dictionary<int, Label>();
@@ -200,20 +236,29 @@ namespace Statistic
                             cntnt = @"--:--:--";
                             break;
                         case (int)INDEX_LABEL.VALUE_TOTAL:
-                            cntnt = 0.ToString("F2");
+                            cntnt = @"---";
                             break;
                         default:
                             break;
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, m_arLabelStyles[i]);
+                    //Предусмотрим обработчик при изменении значения
+                    if (i == (int)INDEX_LABEL.VALUE_TOTAL)
+                        m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
+                    else
+                        ;
                     this.Controls.Add(m_arLabel[i], 0, i);
                     this.SetColumnSpan(m_arLabel[i], 3);
                 }
 
+                //m_list_TECComponents = new List <TECComponentBase> ();
                 foreach (TECComponent g in m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
+                        //Добавить ГТП в список компонентов
+                        //m_list_TECComponents.Add(g);
+
                         //Добавить наименование ГТП
                         Label lblTECComponent = HLabel.createLabel(g.name_shr, m_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
                         this.Controls.Add(lblTECComponent, 0, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
@@ -223,8 +268,10 @@ namespace Statistic
                             //Добавить наименование ТГ
                             this.Controls.Add(HLabel.createLabel(tg.name_shr, m_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 1, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
                             //Добавить значение ТГ
-                            m_dictLabelVal.Add(/*tg.id_tm*/m_dictLabelVal.Count, HLabel.createLabel(0.ToString("F2"), m_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
-                            this.Controls.Add(m_dictLabelVal[m_dictLabelVal.Count - 1], 2, m_dictLabelVal.Count - 1 + COUNT_FIXED_ROWS);
+                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(0.ToString("F2"), m_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
+                            this.Controls.Add(m_dictLabelVal[tg.m_id], 2, m_dictLabelVal.Count - 1 + COUNT_FIXED_ROWS);
+                            m_dictLabelVal[tg.m_id].Text = @"---";
+                            m_dictLabelVal[tg.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
                         }
 
                         this.SetRowSpan(lblTECComponent, g.TG.Count);
@@ -242,6 +289,12 @@ namespace Statistic
                 {
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((double)(100 - (10 * COUNT_FIXED_ROWS)) / (this.RowCount - COUNT_FIXED_ROWS), 1)));
                 }
+
+                lockValue = new object();
+                m_listSensorId2TG = new List <TG> (); //[this.RowCount - COUNT_FIXED_ROWS];
+                sensorsString_TM = string.Empty;
+                m_states = new List<StatesMachine>();
+                delegateUpdateGUI_TM = ShowTMPower;
             }
 
             public void Start()
@@ -267,7 +320,7 @@ namespace Statistic
                 m_taskThread.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, (((PanelCurPower)Parent).m_iPeriodUpdate - 1) * 1000);
+                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1);
 
                 m_bUpdate = false;
             }
@@ -310,7 +363,7 @@ namespace Statistic
 
                 lock (lockValue)
                 {
-                    errored_state = false;
+                    ((PanelCurPower)Parent).errored_state = false;
                 }
             }
 
@@ -332,9 +385,10 @@ namespace Statistic
 
             public void Activate(bool active)
             {
-                if (active)
+                m_bIsActive = active;
+
+                if (m_bIsActive == true)
                 {
-                    m_bIsActive = true;
                     lock (lockValue)
                     {
                         ChangeState();
@@ -350,13 +404,12 @@ namespace Statistic
                 }
                 else
                 {
-                    m_bIsActive = false;
                     lock (lockValue)
                     {
                         m_bIsNewState = true;
                         m_states.Clear();
-                        errored_state =
-                        actioned_state = false;
+                        ((PanelCurPower)Parent).errored_state =
+                        ((PanelCurPower)Parent).actioned_state = false;
                     }
                 }
             }
@@ -365,9 +418,9 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    last_error = error_string;
-                    last_time_error = DateTime.Now;
-                    errored_state = true;
+                    ((PanelCurPower)Parent).last_error = error_string;
+                    ((PanelCurPower)Parent).last_time_error = DateTime.Now;
+                    ((PanelCurPower)Parent).errored_state = true;
                     ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
                 }
             }
@@ -376,11 +429,42 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    last_action = action_string;
-                    last_time_action = DateTime.Now;
-                    actioned_state = true;
+                    ((PanelCurPower)Parent).last_action = action_string;
+                    ((PanelCurPower)Parent).last_time_action = DateTime.Now;
+                    ((PanelCurPower)Parent).actioned_state = true;
                     ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
                 }
+            }
+
+            private void ShowTMPower () {
+                double dblTotalPower_TM = 0.0;
+                foreach (TG tg in m_listSensorId2TG) {
+                    if (tg.id_tm > 0)
+                        m_dictLabelVal [tg.m_id].Text = tg.power_TM.ToString (@"F2");
+                    else
+                        m_dictLabelVal[tg.m_id].Text = @"---";
+                        
+                    dblTotalPower_TM += tg.power_TM;
+                }
+
+                m_arLabel[(int)INDEX_LABEL.VALUE_TOTAL].Text = dblTotalPower_TM.ToString(@"F2");
+                m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt);
+                m_arLabel[(int)INDEX_LABEL.DATETIME].Text = m_dtLastChangedAt.ToString(@"HH:mm:ss");
+            }
+
+            private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {
+                double val = -1.0;
+                Color clr;
+                if (double.TryParse(((Label)sender).Text, out val) == true) {
+                    if (val > 1)
+                        clr = Color.LimeGreen;
+                    else
+                        clr = Color.Green;
+                }
+                else
+                    clr = Color.Green;
+
+                ((Label)sender).ForeColor = clr;
             }
 
             private void GetCurrentTMRequest()
@@ -426,12 +510,17 @@ namespace Statistic
                     else
                         ;
 
+                    if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
+                        return false;
+                    else
+                        ;
+
                     switch (m_tec.type())
                     {
                         case TEC.TEC_TYPE.COMMON:
                             break;
                         case TEC.TEC_TYPE.BIYSK:
-                            value *= 20;
+                            //value *= 20;
                             break;
                         default:
                             break;
@@ -445,18 +534,18 @@ namespace Statistic
 
             private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
             {
-                for (int i = 0; i < sensorId2TG.Length; i++)
+                for (int i = 0; i < m_listSensorId2TG.Count; i++)
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if (sensorId2TG[i].ids_fact[(int)id_type] == id)
-                                return sensorId2TG[i];
+                            if (m_listSensorId2TG[i].ids_fact[(int)id_type] == id)
+                                return m_listSensorId2TG[i];
                             else
                                 ;
                             break;
                         case TG.INDEX_VALUE.TM:
-                            if (sensorId2TG[i].id_tm == id)
-                                return sensorId2TG[i];
+                            if (m_listSensorId2TG[i].id_tm == id)
+                                return m_listSensorId2TG[i];
                             else
                                 ;
                             break;
@@ -495,7 +584,7 @@ namespace Statistic
                                 {
                                     m_tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
 
-                                    sensorId2TG[sensorId2TG.Length - 1] = m_tec.list_TECComponents[j].TG[k];
+                                    m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]); ;
 
                                     //Прерывание внешнего цикла
                                     j = m_tec.list_TECComponents.Count;
@@ -522,17 +611,17 @@ namespace Statistic
                     }*/
                 }
 
-                for (int i = 0; i < sensorId2TG.Length; i++)
+                for (int i = 0; i < m_listSensorId2TG.Count; i++)
                 {
-                    if (!(sensorId2TG[i] == null))
+                    if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == true)
                         {
-                            sensorsString_TM = "[dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                            sensorsString_TM = "[dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                         }
                         else
                         {
-                            sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                            sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                         }
                     }
                     else
@@ -565,10 +654,11 @@ namespace Statistic
                         switch (m_tec.type())
                         {
                             case TEC.TEC_TYPE.COMMON:
+                            case TEC.TEC_TYPE.BIYSK:
                                 GetSensorsTMRequest();
                                 break;
-                            case TEC.TEC_TYPE.BIYSK:
-                                break;
+                            //case TEC.TEC_TYPE.BIYSK:
+                                //break;
                             default:
                                 break;
                         }
@@ -593,9 +683,10 @@ namespace Statistic
                         switch (m_tec.type())
                         {
                             case TEC.TEC_TYPE.COMMON:
-                                return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
                             case TEC.TEC_TYPE.BIYSK:
-                                return true;
+                                return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                            //case TEC.TEC_TYPE.BIYSK:
+                                //return true;
                         }
                         break;
                     case StatesMachine.Current_TM:
@@ -616,11 +707,12 @@ namespace Statistic
                         switch (m_tec.type())
                         {
                             case TEC.TEC_TYPE.COMMON:
+                            case TEC.TEC_TYPE.BIYSK:
                                 result = GetSensorsTMResponse(table);
                                 break;
-                            case TEC.TEC_TYPE.BIYSK:
-                                result = true;
-                                break;
+                            //case TEC.TEC_TYPE.BIYSK:
+                                //result = true;
+                                //break;
                         }
                         if (result == true)
                         {
@@ -641,8 +733,8 @@ namespace Statistic
                 if (result == true)
                     lock (lockValue)
                     {
-                        errored_state =
-                        actioned_state = false;
+                        ((PanelCurPower)Parent).errored_state =
+                        ((PanelCurPower)Parent).actioned_state = false;
                     }
                 else
                     ;
@@ -652,7 +744,8 @@ namespace Statistic
 
             private void StateErrors(StatesMachine state, bool response)
             {
-                string reason = string.Empty,
+                string  error = string.Empty,
+                        reason = string.Empty,
                         waiting = string.Empty;
 
                 switch (state)
@@ -663,7 +756,7 @@ namespace Statistic
                         break;
                     case StatesMachine.Current_TM:
                         reason = @"текущих значений";
-                        waiting = @"Ожидание " + ((PanelCurPower)Parent).m_iPeriodUpdate.ToString() + " секунд";
+                        waiting = @"Ожидание " + (((PanelCurPower)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
                         break;
                 }
 
@@ -672,10 +765,14 @@ namespace Statistic
                 else
                     reason = @"получения " + reason;
 
+                error = "Ошибка " + reason + ".";
+
                 if (waiting.Equals(string.Empty) == true)
-                    ErrorReport("Ошибка " + reason + ". " + waiting + ".");
+                    error += " " + waiting + ".";
                 else
-                    ErrorReport("Ошибка " + reason + ".");
+                    ;
+
+                ErrorReport(error);
             }
 
             private void TecView_ThreadFunction(object data)
@@ -708,7 +805,7 @@ namespace Statistic
                                 StateRequest(currentState);
 
                             error = false;
-                            for (int j = 0; j < DbInterface.MAX_WAIT_COUNT && !dataPresent && !error && !m_bIsNewState; j++)
+                            for (int j = 0; (j < DbInterface.MAX_WAIT_COUNT) && (dataPresent == false) && (error == false) && (m_bIsNewState == false); j++)
                             {
                                 System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
                                 dataPresent = StateCheckResponse(currentState, out error, out table);
@@ -757,16 +854,19 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ChangeState();
+                    if (m_bIsActive == true) {
+                        ChangeState();
 
-                    try
-                    {
-                        m_semaState.Release(1);
+                        try
+                        {
+                            m_semaState.Release(1);
+                        }
+                        catch
+                        {
+                        }
                     }
-                    catch
-                    {
-                    }
-
+                    else
+                        ;
                 }
             }
         }

@@ -254,7 +254,7 @@ namespace StatisticCommon
 
                 msg += "Ошибка получения данных" + Environment.NewLine;
                 msg += "Строка соединения " + s + Environment.NewLine;
-                msg += "Запрос " + Environment.NewLine;
+                msg += "Запрос: " + query + Environment.NewLine;
                 msg += "Ошибка " + e.Message + Environment.NewLine;
                 msg += e.ToString();
 

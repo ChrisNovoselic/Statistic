@@ -27,8 +27,8 @@ namespace Statistic
         //public AdminTS [] m_arAdmin;
         AdminTS m_admin;
         public Passwords m_passwords;
-        private List<TecView> tecViews;
-        private List<TecView> selectedTecViews;
+        private List</*Panel*/TecView> tecViews;
+        private List</*Panel*/TecView> selectedTecViews;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
@@ -449,7 +449,7 @@ namespace Statistic
                                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                 selectedTecViews.Add(tecViews[tecView_index]);
 
-                                tecViews[tecView_index].Activate(false);
+                                ((TecView)tecViews[tecView_index]).Activate(false);
                                 tecViews[tecView_index].Start();
                             }
                             else
@@ -578,35 +578,46 @@ namespace Statistic
         {
             bool have_eror = false;
             lblDescError.Text = lblDateError.Text = "";
-            for (int i = 0; i < selectedTecViews.Count; i++)
+            TecView selTecView = null;
+
+            //for (int i = 0; i < selectedTecViews.Count; i++)
+            if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             {
-                if ((selectedTecViews[i].actioned_state == true) && ((selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                    (selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                selTecView = selectedTecViews[m_prevSelectedIndex];
+
+                if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                    (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
                 {
-                    if (selectedTecViews[i].isActive == true)
+                    if (selTecView.isActive == true)
                     {
-                        lblDateError.Text = selectedTecViews[i].last_time_action.ToString();
-                        lblDescError.Text = selectedTecViews[i].last_action;
+                        lblDateError.Text = selTecView.last_time_action.ToString();
+                        lblDescError.Text = selTecView.last_action;
                     }
+                    else
+                        ;
                 }
                 else
                     ;
 
-                if ((selectedTecViews[i].errored_state == true) && ((selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                    (selectedTecViews[i].tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                    (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
                 {
                     have_eror = true;
-                    if (selectedTecViews[i].isActive == true)
+                    if (selTecView.isActive == true)
                     {
-                        lblDateError.Text = selectedTecViews[i].last_time_error.ToString();
-                        lblDescError.Text = selectedTecViews[i].last_error;
+                        lblDateError.Text = selTecView.last_time_error.ToString();
+                        lblDescError.Text = selTecView.last_error;
                     }
+                    else
+                        ;
                 }
                 else
                     ;
             }
 
-            if ((m_admin.actioned_state = true) && (m_panelAdmin.isActive == true))
+            //Console.WriteLine (@"m_admin.actioned_state = {0}", m_admin.actioned_state);
+
+            if ((m_admin.actioned_state == true) && (m_panelAdmin.isActive == true))
             {
                 lblDateError.Text = m_admin.last_time_action.ToString();
                 lblDescError.Text = m_admin.last_action;
@@ -619,6 +630,23 @@ namespace Statistic
                 have_eror = true;
                 lblDateError.Text = m_admin.last_time_error.ToString();
                 lblDescError.Text = m_admin.last_error;
+            }
+            else
+                ;
+
+            if ((m_panelCurPower.actioned_state == true) && (m_panelCurPower.m_bIsActive == true))
+            {
+                lblDateError.Text = m_panelCurPower.last_time_action.ToString();
+                lblDescError.Text = m_panelCurPower.last_action;
+            }
+            else
+                ;
+
+            if (m_panelCurPower.errored_state == true)
+            {
+                have_eror = true;
+                lblDateError.Text = m_panelCurPower.last_time_error.ToString();
+                lblDescError.Text = m_panelCurPower.last_error;
             }
             else
                 ;
@@ -727,6 +755,8 @@ namespace Statistic
 
                 m_panelCurPower = new PanelCurPower (m_admin.m_list_tec, stsStrip, formParameters);
                 m_panelCurPower.SetDelegate(delegateEvent);
+                m_panelCurPower.Start();
+
                 m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec);
                 //m_panelLastMinutes.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
 
@@ -781,9 +811,12 @@ namespace Statistic
             {
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelCurPower);
+
+                m_panelCurPower.Activate(true);
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
+                m_panelCurPower.Activate(false);
             }
         }
 
