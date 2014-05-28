@@ -114,15 +114,7 @@
     <Compile Include="PanelLastMinutes.Designer.cs">
       <DependentUpon>PanelLastMinutes.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelTecCurPower.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelTecCurPower.Designer.cs">
-      <DependentUpon>PanelTecCurPower.cs</DependentUpon>
-    </Compile>
-    <Compile Include="PanelTecLastMinutes.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="PanelTecLastMinutes.cs" />
     <Compile Include="PanelTecLastMinutes.Designer.cs">
       <DependentUpon>PanelTecLastMinutes.cs</DependentUpon>
     </Compile>
