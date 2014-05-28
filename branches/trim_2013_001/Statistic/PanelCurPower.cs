@@ -15,6 +15,18 @@ namespace Statistic
 {
     public partial class PanelCurPower : TableLayoutPanel
     {
+        enum INDEX_LABEL : int { NAME, DATETIME, VALUE_TOTAL, NAME_COMPONENT, NAME_TG, VALUE_TG, COUNT_INDEX_LABEL };
+        const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TOTAL + 1;
+
+        Label[] m_arLabel;
+        Dictionary<int, Label> m_dictLabelVal;
+        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, Color.Gray, 22F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.LimeGreen, Color.Gray, 24F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.LimeGreen, Color.Black, 24F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.TopLeft),
+                                                new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.MiddleLeft),
+                                                new HLabelStyles(Color.LimeGreen, Color.Black, 14F, ContentAlignment.MiddleCenter)};
+        
         enum StatesMachine : int {Init_TM, Current_TM};
 
         public DelegateFunc delegateEventUpdate;
@@ -59,7 +71,6 @@ namespace Statistic
             {
                 ptcp = new PanelTecCurPower(listTec[i]);
                 this.Controls.Add(ptcp, i, 0);
-
 
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / listTec.Count));                
             }
@@ -150,12 +161,8 @@ namespace Statistic
 
         private partial class PanelTecCurPower : TableLayoutPanel
         {
-            enum INDEX_LABEL : int { NAME, DATETIME, VALUE_TOTAL, NAME_COMPONENT, NAME_TG, VALUE_TG, COUNT_INDEX_LABEL };
-            const int COUNT_FIXED_ROWS = 3;
-
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
-            HLabelStyles[] m_arLabelStyles;
 
             public TEC m_tec;
 
@@ -203,14 +210,6 @@ namespace Statistic
             {
                 int i = -1;
 
-                m_arLabelStyles = new HLabelStyles[(int)INDEX_LABEL.COUNT_INDEX_LABEL];
-                m_arLabelStyles[(int)INDEX_LABEL.NAME] = new HLabelStyles(Color.Black, Color.Gray, 22F, ContentAlignment.MiddleCenter);
-                m_arLabelStyles[(int)INDEX_LABEL.DATETIME] = new HLabelStyles(Color.LimeGreen, Color.Gray, 24F, ContentAlignment.MiddleCenter);
-                m_arLabelStyles[(int)INDEX_LABEL.VALUE_TOTAL] = new HLabelStyles(Color.LimeGreen, Color.Black, 24F, ContentAlignment.MiddleCenter);
-                m_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT] = new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.TopLeft);
-                m_arLabelStyles[(int)INDEX_LABEL.NAME_TG] = new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.MiddleLeft);
-                m_arLabelStyles[(int)INDEX_LABEL.VALUE_TG] = new HLabelStyles(Color.LimeGreen, Color.Black, 14F, ContentAlignment.MiddleCenter);
-
                 m_dictLabelVal = new Dictionary<int, Label>();
                 m_arLabel = new Label[(int)INDEX_LABEL.VALUE_TOTAL + 1];
 
@@ -241,7 +240,7 @@ namespace Statistic
                         default:
                             break;
                     }
-                    m_arLabel[i] = HLabel.createLabel(cntnt, m_arLabelStyles[i]);
+                    m_arLabel[i] = HLabel.createLabel(cntnt, PanelCurPower.s_arLabelStyles[i]);
                     //Предусмотрим обработчик при изменении значения
                     if (i == (int)INDEX_LABEL.VALUE_TOTAL)
                         m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
@@ -260,15 +259,15 @@ namespace Statistic
                         //m_list_TECComponents.Add(g);
 
                         //Добавить наименование ГТП
-                        Label lblTECComponent = HLabel.createLabel(g.name_shr, m_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
+                        Label lblTECComponent = HLabel.createLabel(g.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
                         this.Controls.Add(lblTECComponent, 0, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
 
                         foreach (TG tg in g.TG)
                         {
                             //Добавить наименование ТГ
-                            this.Controls.Add(HLabel.createLabel(tg.name_shr, m_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 1, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
+                            this.Controls.Add(HLabel.createLabel(tg.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 1, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
                             //Добавить значение ТГ
-                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(0.ToString("F2"), m_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
+                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(0.ToString("F2"), PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
                             this.Controls.Add(m_dictLabelVal[tg.m_id], 2, m_dictLabelVal.Count - 1 + COUNT_FIXED_ROWS);
                             m_dictLabelVal[tg.m_id].Text = @"---";
                             m_dictLabelVal[tg.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);

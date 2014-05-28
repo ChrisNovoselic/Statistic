@@ -2733,7 +2733,8 @@ namespace Statistic
             else
             {
                 //selectedTime = System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
-                //ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+                selectedTime = HAdmin.ToCurrentTimeZone(DateTime.Now);
+                ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
                 return false;
             }
 
@@ -4727,7 +4728,7 @@ namespace Statistic
 
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
-            if (update)
+            if (update == true)
             {
                 if (dtprDate.Value.Date != selectedTime.Date)
                     currHour = false;
@@ -4744,7 +4745,7 @@ namespace Statistic
         {
             currHour = true;
 
-            if (received)
+            if (received == true)
             {
                 update = false;
                 dtprDate.Value = selectedTime;
