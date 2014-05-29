@@ -53,13 +53,13 @@ namespace StatisticCommon
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(250, 58);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Программа \"Статистика\" 1.9.3\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразра" +
-    "ботчик: Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин Алексей, e-mail:";
+            this.label1.Text = "ПО \"Статистика\" 1.9.4\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразработчик:" +
+                " Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин А.Н., e-mail:";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(277, 36);
+            this.llblMailTo.Location = new System.Drawing.Point(257, 36);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -80,7 +80,7 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(277, 49);
+            this.linkLabel1.Location = new System.Drawing.Point(257, 49);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(98, 13);
             this.linkLabel1.TabIndex = 3;
@@ -92,7 +92,7 @@ namespace StatisticCommon
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(393, 97);
+            this.ClientSize = new System.Drawing.Size(374, 102);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.llblMailTo);

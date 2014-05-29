@@ -18,10 +18,10 @@ namespace Statistic
         List <Label> m_listLabelDateTime;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
-        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.Gray, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.LimeGreen, Color.Black, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGoldenrodYellow, 12F, ContentAlignment.MiddleLeft)};
+        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleLeft)};
         static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
 
         static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
@@ -160,6 +160,11 @@ namespace Statistic
 
         public void Activate(bool active)
         {
+            if (m_bIsActive == active)
+                return;
+            else
+                ;
+
             m_bIsActive = active;
 
             int i = 0;
@@ -411,6 +416,11 @@ namespace Statistic
 
             public void Activate(bool active)
             {
+                if (m_bIsActive == active)
+                    return;
+                else
+                    ;
+
                 m_bIsActive = active;
 
                 if (m_bIsActive == true)

@@ -306,13 +306,13 @@ namespace Statistic
             else
                 ;
 
-            ////Деактивация
-            //if ((!(m_prevSelectedIndex < 0)) && (!(m_prevSelectedIndex == tclTecViews.SelectedIndex)) && (m_prevSelectedIndex < tclTecViews.TabPages.Count))
-            //{
-            //    activateTabPage(m_prevSelectedIndex, false);
-            //}
-            //else
-            //    ;
+            //Деактивация
+            if ((!(m_prevSelectedIndex < 0)) && (!(m_prevSelectedIndex == tclTecViews.SelectedIndex)) && (m_prevSelectedIndex < tclTecViews.TabPages.Count))
+            {
+                activateTabPage(m_prevSelectedIndex, false);
+            }
+            else
+                ;
 
             m_prevSelectedIndex = tclTecViews.SelectedIndex;
         }
@@ -529,7 +529,7 @@ namespace Statistic
                                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
                                 //selectedTecViews.Add(tecViews[tecView_index]);
 
-                                ((TecView)tecViews[tecView_index]).Activate(false);
+                                //((TecView)tecViews[tecView_index]).Activate(false);
                                 tecViews[tecView_index].Start();
                             }
                             else
@@ -669,12 +669,13 @@ namespace Statistic
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (tclTecViews.TabPages.Count > 0))
             {
-                
-                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls [0] is TecView) {
-                    selTecView = (TecView) tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                    if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                        (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is TecView)
+                {
+                    selTecView = (TecView)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
+
+                    if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                        (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                     {
                         if (selTecView.isActive == true)
                         {
@@ -687,8 +688,8 @@ namespace Statistic
                     else
                         ;
 
-                    if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                        (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                    if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                        (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                     {
                         have_eror = true;
                         if (selTecView.isActive == true)
@@ -702,42 +703,77 @@ namespace Statistic
                     else
                         ;
                 }
-                else {
-                    if ((m_admin.actioned_state == true) && (m_panelAdmin.isActive == true))
+                else
+                {
+                    if (m_panelAdmin.isActive == true)
                     {
-                        lblDateError.Text = m_admin.last_time_action.ToString();
-                        lblDescError.Text = m_admin.last_action;
+                        if (m_admin.actioned_state == true)
+                        {
+                            lblDateError.Text = m_admin.last_time_action.ToString();
+                            lblDescError.Text = m_admin.last_action;
+                        }
+                        else
+                            ;
+
+                        if (m_admin.errored_state == true)
+                        {
+                            have_eror = true;
+                            lblDateError.Text = m_admin.last_time_error.ToString();
+                            lblDescError.Text = m_admin.last_error;
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
 
-                    if (m_admin.errored_state == true)
+                    if (m_panelCurPower.m_bIsActive == true)
                     {
-                        have_eror = true;
-                        lblDateError.Text = m_admin.last_time_error.ToString();
-                        lblDescError.Text = m_admin.last_error;
+                        if (m_panelCurPower.actioned_state == true)
+                        {
+                            lblDateError.Text = m_panelCurPower.last_time_action.ToString();
+                            lblDescError.Text = m_panelCurPower.last_action;
+                        }
+                        else
+                            ;
+
+                        if (m_panelCurPower.errored_state == true)
+                        {
+                            have_eror = true;
+                            lblDateError.Text = m_panelCurPower.last_time_error.ToString();
+                            lblDescError.Text = m_panelCurPower.last_error;
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
 
-                    if ((m_panelCurPower.actioned_state == true) && (m_panelCurPower.m_bIsActive == true))
+                    if (m_panelLastMinutes.m_bIsActive == true)
                     {
-                        lblDateError.Text = m_panelCurPower.last_time_action.ToString();
-                        lblDescError.Text = m_panelCurPower.last_action;
-                    }
-                    else
-                        ;
+                        if (m_panelLastMinutes.actioned_state == true)
+                        {
+                            lblDateError.Text = m_panelLastMinutes.last_time_action.ToString();
+                            lblDescError.Text = m_panelLastMinutes.last_action;
+                        }
+                        else
+                            ;
 
-                    if (m_panelCurPower.errored_state == true)
-                    {
-                        have_eror = true;
-                        lblDateError.Text = m_panelCurPower.last_time_error.ToString();
-                        lblDescError.Text = m_panelCurPower.last_error;
+                        if (m_panelLastMinutes.errored_state == true)
+                        {
+                            have_eror = true;
+                            lblDateError.Text = m_panelLastMinutes.last_time_error.ToString();
+                            lblDescError.Text = m_panelLastMinutes.last_error;
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
                 }
             }
+            else
+                ;
 
             if (m_passwords.actioned_state == true)
             {
@@ -815,7 +851,7 @@ namespace Statistic
                         //selectedTecViews.Add(tecViews[i]);
 
                         //t.StartDbInterfaces();
-                        tecViews[i].Activate(false);
+                        //tecViews[i].Activate(false);
                         tecViews[i].Start();
                     }
                     else
@@ -843,11 +879,11 @@ namespace Statistic
 
                 m_panelCurPower = new PanelCurPower (m_admin.m_list_tec, stsStrip, formParameters);
                 m_panelCurPower.SetDelegate(delegateEvent);
-                m_panelCurPower.Start();
+                //m_panelCurPower.Start();
 
                 m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec, stsStrip, m_admin);
-                m_panelLastMinutes.SetDelegate(delegateStartWait);
-                m_panelLastMinutes.Start();
+                m_panelLastMinutes.SetDelegate(delegateEvent);
+                //m_panelLastMinutes.Start();
 
                 timer.Interval = 1000;
             }
@@ -901,11 +937,14 @@ namespace Statistic
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelCurPower);
 
-                m_panelCurPower.Activate(true);
+                //m_panelCurPower.Activate(true);
+                m_panelCurPower.Start();
+                ActivateTabPage();
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
-                m_panelCurPower.Activate(false);
+                //m_panelCurPower.Activate(false);
+                m_panelCurPower.Stop();
             }
         }
 
@@ -916,11 +955,15 @@ namespace Statistic
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelLastMinutes);
 
-                m_panelLastMinutes.Activate(true);
+                //m_panelLastMinutes.Activate(true);
+                m_panelLastMinutes.Start();
+
+                ActivateTabPage();
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
-                m_panelLastMinutes.Activate(false);
+                //m_panelLastMinutes.Activate(false);
+                m_panelLastMinutes.Stop();
             }
         }
 

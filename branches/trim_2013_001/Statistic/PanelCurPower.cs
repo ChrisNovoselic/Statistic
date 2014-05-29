@@ -15,17 +15,26 @@ namespace Statistic
 {
     public partial class PanelCurPower : TableLayoutPanel
     {
-        enum INDEX_LABEL : int { NAME, DATETIME, VALUE_TOTAL, NAME_COMPONENT, NAME_TG, VALUE_TG, COUNT_INDEX_LABEL };
+        enum INDEX_LABEL : int { NAME,
+                                DATETIME,
+                                VALUE_TOTAL,
+                                NAME_COMPONENT,
+                                VALUE_COMPONENT,
+                                NAME_TG,
+                                VALUE_TG,
+                                COUNT_INDEX_LABEL
+        };
         const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TOTAL + 1;
 
         Label[] m_arLabel;
         Dictionary<int, Label> m_dictLabelVal;
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, Color.Gray, 22F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.LimeGreen, Color.Gray, 24F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.LimeGreen, Color.Black, 24F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.TopLeft),
-                                                new HLabelStyles(Color.Black, Color.Gray, 14F, ContentAlignment.MiddleLeft),
-                                                new HLabelStyles(Color.LimeGreen, Color.Black, 14F, ContentAlignment.MiddleCenter)};
+        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, Color.LightGray, 22F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 24F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 24F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleRight)};
         
         enum StatesMachine : int {Init_TM, Current_TM};
 
@@ -52,8 +61,6 @@ namespace Statistic
             m_stsStrip = stsStrip;
             m_msecPeriodUpdate = par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME];
 
-            this.RowStyles.Add(new RowStyle (SizeType.AutoSize));
-
             this.Dock = DockStyle.Fill;
 
             //this.Location = new System.Drawing.Point(40, 58);
@@ -64,14 +71,22 @@ namespace Statistic
 
             PanelTecCurPower ptcp;
 
-            this.ColumnCount = listTec.Count;
-            for (int i = 0; i < listTec.Count; i++)
+            int i = -1;
+
+            this.ColumnCount = 3;
+            this.RowCount = listTec.Count / this.ColumnCount;
+
+            for (i = 0; i < listTec.Count; i++)
             {
                 ptcp = new PanelTecCurPower(listTec[i]);
-                this.Controls.Add(ptcp, i, 0);
-
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / listTec.Count));                
+                this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
+
+            for (i = 0; i < this.ColumnCount; i++)
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / this.ColumnCount));
+
+            for (i = 0; i < this.RowCount; i++)
+                this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
         public PanelCurPower(IContainer container, List<TEC> listTec, StatusStrip stsStrip, FormParameters par)
@@ -110,6 +125,11 @@ namespace Statistic
         }
 
         public void Activate (bool active) {
+            if (m_bIsActive == active)
+                return;
+            else
+                ;
+
             m_bIsActive = active;
 
             int i = 0;
@@ -211,9 +231,11 @@ namespace Statistic
 
                 this.Dock = DockStyle.Fill;
                 //Свойства колонок
+                this.ColumnCount = 4;
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
 
                 //Видимая граница для отладки
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
@@ -237,14 +259,16 @@ namespace Statistic
                             break;
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, PanelCurPower.s_arLabelStyles[i]);
-                    //Предусмотрим обработчик при изменении значения
-                    if (i == (int)INDEX_LABEL.VALUE_TOTAL)
-                        m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
-                    else
-                        ;
+                    ////Предусмотрим обработчик при изменении значения
+                    //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
+                    //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
+                    //else
+                    //    ;
                     this.Controls.Add(m_arLabel[i], 0, i);
-                    this.SetColumnSpan(m_arLabel[i], 3);
+                    this.SetColumnSpan(m_arLabel[i], this.ColumnCount);
                 }
+
+                this.RowCount = COUNT_FIXED_ROWS;
 
                 //m_list_TECComponents = new List <TECComponentBase> ();
                 foreach (TECComponent g in m_tec.list_TECComponents)
@@ -256,20 +280,25 @@ namespace Statistic
 
                         //Добавить наименование ГТП
                         Label lblTECComponent = HLabel.createLabel(g.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
-                        this.Controls.Add(lblTECComponent, 0, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
+                        this.Controls.Add(lblTECComponent, 0, this.RowCount);
+                        m_dictLabelVal.Add(g.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
+                        this.Controls.Add(m_dictLabelVal[g.m_id], 1, this.RowCount);
+                        //m_dictLabelVal[g.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
 
                         foreach (TG tg in g.TG)
                         {
                             //Добавить наименование ТГ
-                            this.Controls.Add(HLabel.createLabel(tg.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 1, m_dictLabelVal.Count + COUNT_FIXED_ROWS);
+                            this.Controls.Add(HLabel.createLabel(tg.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 2, this.RowCount);
                             //Добавить значение ТГ
-                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(0.ToString("F2"), PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
-                            this.Controls.Add(m_dictLabelVal[tg.m_id], 2, m_dictLabelVal.Count - 1 + COUNT_FIXED_ROWS);
-                            m_dictLabelVal[tg.m_id].Text = @"---";
-                            m_dictLabelVal[tg.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
+                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
+                            this.Controls.Add(m_dictLabelVal[tg.m_id], 3, this.RowCount);
+                            //m_dictLabelVal[tg.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
+
+                            this.RowCount++;
                         }
 
                         this.SetRowSpan(lblTECComponent, g.TG.Count);
+                        this.SetRowSpan(m_dictLabelVal[g.m_id], g.TG.Count);
                     }
                     else
                         ;
@@ -279,7 +308,7 @@ namespace Statistic
                 for (i = 0; i < COUNT_FIXED_ROWS; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
-                this.RowCount = m_dictLabelVal.Count + COUNT_FIXED_ROWS;
+                //this.RowCount = m_dictLabelVal.Count + COUNT_FIXED_ROWS;
                 for (i = 0; i < this.RowCount - COUNT_FIXED_ROWS; i++)
                 {
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((double)(100 - (10 * COUNT_FIXED_ROWS)) / (this.RowCount - COUNT_FIXED_ROWS), 1)));
@@ -380,6 +409,11 @@ namespace Statistic
 
             public void Activate(bool active)
             {
+                if (m_bIsActive == active)
+                    return;
+                else
+                    ;
+
                 m_bIsActive = active;
 
                 if (m_bIsActive == true)
@@ -432,14 +466,32 @@ namespace Statistic
             }
 
             private void ShowTMPower () {
-                double dblTotalPower_TM = 0.0;
-                foreach (TG tg in m_listSensorId2TG) {
-                    if (tg.id_tm > 0)
-                        m_dictLabelVal [tg.m_id].Text = tg.power_TM.ToString (@"F2");
-                    else
-                        m_dictLabelVal[tg.m_id].Text = @"---";
+                double dblTotalPower_TM = 0.0
+                        , dblTECComponentPower_TM = 0.0;
+                foreach (TECComponent g in m_tec.list_TECComponents)
+                {
+                    if ((g.m_id > 100) && (g.m_id < 500))
+                    {
+                        dblTECComponentPower_TM = 0.0;
                         
-                    dblTotalPower_TM += tg.power_TM;
+                        foreach (TG tg in g.TG)
+                        {
+                            if (tg.id_tm > 0)
+                                if (tg.power_TM > 1)
+                                {
+                                    m_dictLabelVal[tg.m_id].Text = tg.power_TM.ToString(@"F2");
+                                    dblTECComponentPower_TM += tg.power_TM;
+                                }
+                                else
+                                    m_dictLabelVal[tg.m_id].Text = 0.ToString(@"F0");
+                            else
+                                m_dictLabelVal[tg.m_id].Text = @"---";
+                        }
+
+                        dblTotalPower_TM += dblTECComponentPower_TM;
+                    }
+                    else
+                        ;
                 }
 
                 m_arLabel[(int)INDEX_LABEL.VALUE_TOTAL].Text = dblTotalPower_TM.ToString(@"F2");

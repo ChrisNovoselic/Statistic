@@ -2054,7 +2054,8 @@ namespace Statistic
             serverTime = selectedTime;
 
             evTimerCurrent = new ManualResetEvent (true);
-            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
+            //timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
+            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, 1000);
             
             //timerCurrent = new System.Windows.Forms.Timer ();
             //timerCurrent.Tick += TimerCurrent_Tick;
@@ -3173,12 +3174,12 @@ namespace Statistic
 
                 dtNeeded = dtNeeded.AddMinutes(30);
 
-                if (!jump_backward)
+                if (jump_backward == false)
                 {
-                    if (jump_forward)
+                    if (jump_forward == true)
                         valuesHours.season = seasonJumpE.WinterToSummer;
 
-                    if (!end)
+                    if (end == false)
                         half++;
 
                     hourVal += halfVal;
@@ -3188,7 +3189,7 @@ namespace Statistic
                     valuesHours.season = seasonJumpE.SummerToWinter;
                     valuesHours.addonValues = true;
 
-                    if (!end)
+                    if (end == false)
                         halfAddon++;
 
                     hourValAddon += halfVal;
@@ -5485,7 +5486,7 @@ namespace Statistic
             ((ManualResetEvent)stateInfo).WaitOne ();
             try
             {
-                timerCurrent.Change(1000, Timeout.Infinite);
+                //timerCurrent.Change(1000, Timeout.Infinite);
             }
             catch (Exception e)
             {
