@@ -28,7 +28,7 @@ namespace Statistic
         AdminTS m_admin;
         public Passwords m_passwords;
         private List</*Panel*/TecView> tecViews;
-        private List</*Panel*/TecView> selectedTecViews;
+        //private List</*Panel*/TecView> selectedTecViews;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
@@ -139,7 +139,7 @@ namespace Statistic
             //}
 
             formChangeMode = new FormChangeMode(m_admin.m_list_tec);
-            m_prevSelectedIndex = 0;
+            m_prevSelectedIndex = -1;
 
             //formChangeMode = new FormChangeMode();
             formPassword = new FormPassword(m_passwords);
@@ -148,7 +148,7 @@ namespace Statistic
             formParameters = new FormParameters("setup.ini");
 
             tecViews = new List<TecView>();
-            selectedTecViews = new List<TecView>();
+            //selectedTecViews = new List<TecView>();
 
             prevStateIsAdmin = false;
             prevStateIsPPBR = false;
@@ -209,7 +209,9 @@ namespace Statistic
             //    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
             //        if (!(m_arAdmin [i] == null))
                         if ((e.Cancel == false) && ((!(m_admin == null)) && (!(m_admin.m_list_tec == null))))
-                        {                
+                        {
+                            StopTabPages ();
+                            
                             foreach (TEC t in m_admin.m_list_tec)
                             {
                                 t.StopDbInterfacesForce();
@@ -229,6 +231,90 @@ namespace Statistic
                 ; //m_passwords.StopDbInterface();
             else
                 ;
+        }
+
+        private void StopTabPages () {
+            //for (i = 0; i < formChangeMode.tec_index.Count; i++)
+            foreach (TecView tv in tecViews)
+            {
+                tv.Stop();
+            }
+
+            if (!(tecViews == null)) tecViews.Clear(); else ;
+
+            tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
+            
+            tclTecViews.TabPages.Clear();
+
+            tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
+
+            //selectedTecViews.Clear();
+
+            значенияТекущаяМощностьГТПгToolStripMenuItem.Checked = false;
+            мониторингПоследняяМинутаЧасToolStripMenuItem.Checked = false;
+
+            m_panelCurPower.Stop();
+            m_panelLastMinutes.Stop();
+        }
+
+        private void ClearTabPages () {
+            List <int> indxRemove = new List<int> ();
+
+            foreach (TabPage tab in tclTecViews.TabPages) {
+                if ((tab.Controls[0] is TecView) || (tab.Controls[0] is PanelAdmin))
+                    indxRemove.Add(tclTecViews.TabPages.IndexOf (tab));
+                else
+                    ;
+            }
+
+            activateTabPage (tclTecViews.SelectedIndex, false);
+
+            tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
+
+            for (int i = indxRemove.Count - 1; ! (i < 0); i --) {
+                tclTecViews.TabPages.RemoveAt(indxRemove [i]);
+            }
+
+            tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
+
+            //selectedTecViews.Clear();
+        }
+
+        private void activateTabPage (int indx, bool active) {
+            if (!(indx < 0))
+                if (tclTecViews.TabPages[indx].Controls [0] is TecView)
+                    ((TecView)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                else
+                    if (tclTecViews.TabPages[indx].Controls [0] is PanelCurPower)
+                        ((PanelCurPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                    else
+                        if (tclTecViews.TabPages[indx].Controls [0] is PanelLastMinutes)
+                            ((PanelLastMinutes)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                        else
+                            if (tclTecViews.TabPages[indx].Controls [0] is PanelAdmin)
+                                ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                            else
+                                ;
+            else
+                ;
+        }
+
+        private void ActivateTabPage () {
+            //selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
+            if (! (tclTecViews.SelectedIndex < 0))
+                activateTabPage(tclTecViews.SelectedIndex, true);
+            else
+                ;
+
+            ////Деактивация
+            //if ((!(m_prevSelectedIndex < 0)) && (!(m_prevSelectedIndex == tclTecViews.SelectedIndex)) && (m_prevSelectedIndex < tclTecViews.TabPages.Count))
+            //{
+            //    activateTabPage(m_prevSelectedIndex, false);
+            //}
+            //else
+            //    ;
+
+            m_prevSelectedIndex = tclTecViews.SelectedIndex;
         }
 
         private void MessageBoxDebug (string msg)
@@ -261,7 +347,7 @@ namespace Statistic
             result = m_formConnectionSettings.ShowDialog(this);
             if (result == DialogResult.Yes)
             {
-                if (! (tecViews == null)) tecViews.Clear (); else ;
+                StopTabPages ();
 
                 if (timer.Enabled) timer.Stop(); else ;
                 int i = -1;
@@ -295,13 +381,8 @@ namespace Statistic
                 else
                 {
                     StartWait();
-                    tclTecViews.TabPages.Clear();
-                    selectedTecViews.Clear();
-
-                    for (int i = 0; i < formChangeMode.tec_index.Count; i++)
-                    {
-                        tecViews [i].Stop ();
-                    }
+                    
+                    StopTabPages ();
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs ());
 
@@ -409,8 +490,7 @@ namespace Statistic
                         ;
 
                     //StartWait();
-                    tclTecViews.TabPages.Clear();
-                    selectedTecViews.Clear();
+                    ClearTabPages ();
 
                     Int16 parametrsTGBiysk = 0;
                     int tecView_index = -1;
@@ -447,7 +527,7 @@ namespace Statistic
                                     tclTecViews.TabPages.Add(m_admin.m_list_tec[tec_index].name + " - " + m_admin.m_list_tec[tec_index].list_TECComponents[TECComponent_index].name_shr);
 
                                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
-                                selectedTecViews.Add(tecViews[tecView_index]);
+                                //selectedTecViews.Add(tecViews[tecView_index]);
 
                                 ((TecView)tecViews[tecView_index]).Activate(false);
                                 tecViews[tecView_index].Start();
@@ -511,17 +591,21 @@ namespace Statistic
 
                     prevStateIsAdmin = formChangeMode.admin_was_checked;
 
-                    if (selectedTecViews.Count > 0)
-                    {
-                        m_prevSelectedIndex = 0;
-                        selectedTecViews[m_prevSelectedIndex].Activate(true);
-                        m_panelAdmin.Activate(false);
-                    }
-                    else
-                        if (formChangeMode.admin_was_checked)
-                            m_panelAdmin.Activate(true);
-                        else
-                            ;
+                    //Активировать 1-ю вкладку с 'TecView'
+                    //if (selectedTecViews.Count > 0)
+                    //{
+                    //    m_prevSelectedIndex = 0;
+                    //    //selectedTecViews[m_prevSelectedIndex].Activate(true);
+                    //    ((TecView)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0]).Activate(true);
+                    //    m_panelAdmin.Activate(false);
+                    //}
+                    //else
+                    //    if (formChangeMode.admin_was_checked)
+                    //        m_panelAdmin.Activate(true);
+                    //    else
+                    //        ;
+
+                    ActivateTabPage ();
                 }
                 else
                     ; //Отмена выбора закладок
@@ -539,31 +623,32 @@ namespace Statistic
             else
                 ;
 
-            if ((! (tclTecViews.SelectedIndex < 0)) && //Текущая вкладка выбрана
-                (tclTecViews.SelectedIndex < selectedTecViews.Count) && //Текущая вкладка 'TecView'
-                (! (m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
-                (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
-            {
-                selectedTecViews[m_prevSelectedIndex].Activate(false);
-                selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
-                m_prevSelectedIndex = tclTecViews.SelectedIndex;
-                m_panelAdmin.Activate(false);
-            }
-            else
-            {
-                //Деактивация предыдущей вкладки, если она была 'TecView'
-                if ((!(m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
-                    (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
-                    selectedTecViews[m_prevSelectedIndex].Activate(false);
-                else
-                    ;
-
-                //Активация вкладки ПБР-диспетчер
-                if (tclTecViews.SelectedIndex == selectedTecViews.Count)
-                    m_panelAdmin.Activate(true);
-                else
-                    ;
-            }
+            //if ((! (tclTecViews.SelectedIndex < 0)) && //Текущая вкладка выбрана
+            //    (tclTecViews.SelectedIndex < selectedTecViews.Count) && //Текущая вкладка 'TecView'
+            //    (! (m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
+            //    (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
+            //{
+            //    selectedTecViews[m_prevSelectedIndex].Activate(false);
+            //    selectedTecViews[tclTecViews.SelectedIndex].Activate(true);
+            //    m_prevSelectedIndex = tclTecViews.SelectedIndex;
+            //    m_panelAdmin.Activate(false);
+            //}
+            //else
+            //{
+            //    //Деактивация предыдущей вкладки, если она была 'TecView'
+            //    if ((!(m_prevSelectedIndex < 0)) && //Предыдущая вкладка была выбранной
+            //        (m_prevSelectedIndex < selectedTecViews.Count)) //Предыдущая вкладка была 'TecView'
+            //        selectedTecViews[m_prevSelectedIndex].Activate(false);
+            //    else
+            //        ;
+            //
+            //    //Активация вкладки ПБР-диспетчер
+            //    if (tclTecViews.SelectedIndex == selectedTecViews.Count)
+            //        m_panelAdmin.Activate(true);
+            //    else
+            //        ;
+            //}
+            ActivateTabPage ();
 
             //tclTecViews.Invalidate ();
             //tclTecViews.Refresh ();
@@ -581,75 +666,78 @@ namespace Statistic
             TecView selTecView = null;
 
             //for (int i = 0; i < selectedTecViews.Count; i++)
-            if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
+            //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
+            if ((!(m_prevSelectedIndex < 0)) && (tclTecViews.TabPages.Count > 0))
             {
-                selTecView = selectedTecViews[m_prevSelectedIndex];
+                
+                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls [0] is TecView) {
+                    selTecView = (TecView) tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                    (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
-                {
-                    if (selTecView.isActive == true)
+                    if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                        (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
                     {
-                        lblDateError.Text = selTecView.last_time_action.ToString();
-                        lblDescError.Text = selTecView.last_action;
+                        if (selTecView.isActive == true)
+                        {
+                            lblDateError.Text = selTecView.last_time_action.ToString();
+                            lblDescError.Text = selTecView.last_action;
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        ;
+
+                    if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                        (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                    {
+                        have_eror = true;
+                        if (selTecView.isActive == true)
+                        {
+                            lblDateError.Text = selTecView.last_time_error.ToString();
+                            lblDescError.Text = selTecView.last_error;
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
                 }
-                else
-                    ;
-
-                if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                    (selTecView.tec.connSetts [(int) CONN_SETT_TYPE.DATA_TM].ignore == false)))
-                {
-                    have_eror = true;
-                    if (selTecView.isActive == true)
+                else {
+                    if ((m_admin.actioned_state == true) && (m_panelAdmin.isActive == true))
                     {
-                        lblDateError.Text = selTecView.last_time_error.ToString();
-                        lblDescError.Text = selTecView.last_error;
+                        lblDateError.Text = m_admin.last_time_action.ToString();
+                        lblDescError.Text = m_admin.last_action;
+                    }
+                    else
+                        ;
+
+                    if (m_admin.errored_state == true)
+                    {
+                        have_eror = true;
+                        lblDateError.Text = m_admin.last_time_error.ToString();
+                        lblDescError.Text = m_admin.last_error;
+                    }
+                    else
+                        ;
+
+                    if ((m_panelCurPower.actioned_state == true) && (m_panelCurPower.m_bIsActive == true))
+                    {
+                        lblDateError.Text = m_panelCurPower.last_time_action.ToString();
+                        lblDescError.Text = m_panelCurPower.last_action;
+                    }
+                    else
+                        ;
+
+                    if (m_panelCurPower.errored_state == true)
+                    {
+                        have_eror = true;
+                        lblDateError.Text = m_panelCurPower.last_time_error.ToString();
+                        lblDescError.Text = m_panelCurPower.last_error;
                     }
                     else
                         ;
                 }
-                else
-                    ;
             }
-
-            //Console.WriteLine (@"m_admin.actioned_state = {0}", m_admin.actioned_state);
-
-            if ((m_admin.actioned_state == true) && (m_panelAdmin.isActive == true))
-            {
-                lblDateError.Text = m_admin.last_time_action.ToString();
-                lblDescError.Text = m_admin.last_action;
-            }
-            else
-                ;
-
-            if (m_admin.errored_state == true)
-            {
-                have_eror = true;
-                lblDateError.Text = m_admin.last_time_error.ToString();
-                lblDescError.Text = m_admin.last_error;
-            }
-            else
-                ;
-
-            if ((m_panelCurPower.actioned_state == true) && (m_panelCurPower.m_bIsActive == true))
-            {
-                lblDateError.Text = m_panelCurPower.last_time_action.ToString();
-                lblDescError.Text = m_panelCurPower.last_action;
-            }
-            else
-                ;
-
-            if (m_panelCurPower.errored_state == true)
-            {
-                have_eror = true;
-                lblDateError.Text = m_panelCurPower.last_time_error.ToString();
-                lblDescError.Text = m_panelCurPower.last_error;
-            }
-            else
-                ;
 
             if (m_passwords.actioned_state == true)
             {
@@ -724,7 +812,7 @@ namespace Statistic
                             tclTecViews.TabPages.Add(t.name + " - " + t.list_TECComponents[formChangeMode.TECComponent_index[formChangeMode.was_checked[index]]].name_shr);
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
-                        selectedTecViews.Add(tecViews[i]);
+                        //selectedTecViews.Add(tecViews[i]);
 
                         //t.StartDbInterfaces();
                         tecViews[i].Activate(false);
@@ -734,10 +822,10 @@ namespace Statistic
                         ;
                 }
 
-                if ((! (selectedTecViews == null)) && (selectedTecViews.Count > 0))
+                //if ((! (selectedTecViews == null)) && (selectedTecViews.Count > 0))
+                if (tclTecViews.TabPages.Count > 0)
                 {
-                    m_prevSelectedIndex = 0;
-                    selectedTecViews[m_prevSelectedIndex].Activate(true);
+                    ActivateTabPage ();
                 }
                 else
                     ;
@@ -757,8 +845,9 @@ namespace Statistic
                 m_panelCurPower.SetDelegate(delegateEvent);
                 m_panelCurPower.Start();
 
-                m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec);
-                //m_panelLastMinutes.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+                m_panelLastMinutes = new PanelLastMinutes(m_admin.m_list_tec, stsStrip, m_admin);
+                m_panelLastMinutes.SetDelegate(delegateStartWait);
+                m_panelLastMinutes.Start();
 
                 timer.Interval = 1000;
             }
@@ -826,9 +915,12 @@ namespace Statistic
             if (((ToolStripMenuItem) sender).Checked == true) {
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelLastMinutes);
+
+                m_panelLastMinutes.Activate(true);
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
+                m_panelLastMinutes.Activate(false);
             }
         }
 
@@ -839,8 +931,10 @@ namespace Statistic
 
         private void UpdateActiveGui()
         {
-            if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
-                selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
+            //if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
+            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is TecView)
+                //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
+                ((TecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
             else
                 ;
         }

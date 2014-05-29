@@ -14,8 +14,8 @@ namespace StatisticCommon
     public abstract class DbInterface
     {
         public static int MAX_RETRY = 3;
-        public static int MAX_WAIT_COUNT = 266; //25
-        public static int WAIT_TIME_MS = 666; //66
+        public static int MAX_WAIT_COUNT = 66; //25
+        public static int WAIT_TIME_MS = 66; //66
 
         protected class DbInterfaceListener
         {

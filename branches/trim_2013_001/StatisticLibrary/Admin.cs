@@ -585,5 +585,7 @@ namespace StatisticCommon
             dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById (@"Russian Standard Time"));
             return dtRes; 
         }
+
+        public static int DEBUG_INDEX_TEC = 0;
     }
 }

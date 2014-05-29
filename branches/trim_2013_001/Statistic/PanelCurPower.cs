@@ -45,8 +45,6 @@ namespace Statistic
 
         public StatusStrip m_stsStrip;
 
-        const int DEBUG_INDEX_TEC = -1;
-
         public PanelCurPower(List<TEC> listTec, StatusStrip stsStrip, FormParameters par)
         {
             InitializeComponent();
@@ -91,7 +89,7 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Start(); else ;
+                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Start(); else ;
                     i++;
                 }
                 else
@@ -103,7 +101,7 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Stop(); else ;
+                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Stop(); else ;
                     i ++;
                 }
                 else
@@ -117,7 +115,7 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((DEBUG_INDEX_TEC == -1) || (i == DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Activate(active); else ;
+                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecCurPower)ctrl).Activate(active); else ;
                     i ++;
                 }
                 else
@@ -179,7 +177,7 @@ namespace Statistic
                         m_bUpdate;
 
             private volatile string sensorsString_TM;
-
+                           
             private Thread m_taskThread;
             private Semaphore m_semaState;
             private volatile bool m_bThreadIsWorking;
@@ -187,8 +185,6 @@ namespace Statistic
             private volatile List<StatesMachine> m_states;
             private ManualResetEvent m_evTimerCurrent;
             private System.Threading.Timer m_timerCurrent;
-
-            //private volatile string sensorsString_TM;
 
             private DelegateFunc delegateUpdateGUI_TM;
 
@@ -310,13 +306,13 @@ namespace Statistic
                 m_bThreadIsWorking = true;
 
                 m_taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-                m_taskThread.Name = @"Интерфейс к данным: " + @"текущие значения...";
+                m_taskThread.Name = @"Интерфейс к данным (" + GetType ().Name + "): " + m_tec.name + @"текущие значения...";
                 m_taskThread.IsBackground = true;
 
                 m_semaState = new Semaphore(1, 1);
 
                 m_semaState.WaitOne();
-                m_taskThread.Start();
+                m_taskThread.Start();              
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1);
@@ -453,12 +449,17 @@ namespace Statistic
 
             private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {
                 double val = -1.0;
+                int ext = 2;
                 Color clr;
                 if (double.TryParse(((Label)sender).Text, out val) == true) {
                     if (val > 1)
                         clr = Color.LimeGreen;
-                    else
+                    else {
                         clr = Color.Green;
+                        ext = 0;
+                    }
+
+                    ((Label)sender).Text = val.ToString (@"F" + ext.ToString ());
                 }
                 else
                     clr = Color.Green;

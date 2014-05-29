@@ -37,11 +37,9 @@ namespace StatisticCommon
         {
         }
 
-        public HLabel(IContainer container, Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align)
+        public HLabel(IContainer container, Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align) : this (pt, sz, foreColor, backColor, szFont, align)
         {
             container.Add(this);
-
-            InitializeComponent();
         }
 
         public static Label createLabel(string name, HLabelStyles prop)

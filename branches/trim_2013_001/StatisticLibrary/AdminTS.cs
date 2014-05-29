@@ -15,7 +15,7 @@ namespace StatisticCommon
 {    
     public class AdminTS : HAdmin
     {
-        public enum TYPE_FIELDS : uint {STATIC, /*DYNAMIC,*/ COUNT_TYPE_FIELDS};
+        public enum TYPE_FIELDS : int {UNKNOWUN = -1, STATIC, /*DYNAMIC,*/ COUNT_TYPE_FIELDS};
 
         public AdminTS.TYPE_FIELDS m_typeFields;
 

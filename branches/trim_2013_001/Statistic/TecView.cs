@@ -151,14 +151,14 @@ namespace Statistic
             AdminValues,
         }
 
-        private enum seasonJumpE
+        public enum seasonJumpE
         {
             None,
             WinterToSummer,
             SummerToWinter,
         }
 
-        private struct valuesS
+        public struct valuesS
         {
             public volatile double[] valuesFact;
             public volatile double[] valuesPBR;
@@ -3274,7 +3274,7 @@ namespace Statistic
                     return false;
                 else
                     ;
-                
+
                 tgTmp = FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME) (-1));
 
                 if (tgTmp == null)
@@ -3292,7 +3292,7 @@ namespace Statistic
                     case TEC.TEC_TYPE.COMMON:
                         break;
                     case TEC.TEC_TYPE.BIYSK:
-                        value *= 20;
+                        //value *= 20;
                         break;
                     default:
                         break;
@@ -3541,7 +3541,7 @@ namespace Statistic
                 bRes = true;
             else
                 ;
-            
+
             return bRes;
         }
 
@@ -5100,9 +5100,8 @@ namespace Statistic
                     switch (tec.type())
                     {
                         case TEC.TEC_TYPE.COMMON:
-                            GetSensorsTMRequest();
-                            break;
                         case TEC.TEC_TYPE.BIYSK:
+                            GetSensorsTMRequest();
                             break;
                         default:
                             break;
@@ -5178,9 +5177,9 @@ namespace Statistic
                     switch (tec.type())
                     {
                         case TEC.TEC_TYPE.COMMON:
-                            return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
                         case TEC.TEC_TYPE.BIYSK:
-                            return true;
+                            return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                            break;
                     }
                     break;
                 case StatesMachine.CurrentTime:
@@ -5225,10 +5224,8 @@ namespace Statistic
                 case StatesMachine.Init_TM:
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
-                            result = GetSensorsTMResponse(table);
-                            break;
                         case TEC.TEC_TYPE.BIYSK:
-                            result = true;
+                            result = GetSensorsTMResponse(table);
                             break;
                     }
                     if (result)
