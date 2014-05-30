@@ -13,6 +13,40 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    partial class PanelCurPower
+    {
+        /// <summary>
+        /// Требуется переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Код, автоматически созданный конструктором компонентов
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
+        }
+
+        #endregion
+    }
+    
     public partial class PanelCurPower : TableLayoutPanel
     {
         enum INDEX_LABEL : int { NAME,
@@ -28,13 +62,14 @@ namespace Statistic
 
         Label[] m_arLabel;
         Dictionary<int, Label> m_dictLabelVal;
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, Color.LightGray, 22F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 24F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 24F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleRight)};
+        static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
+        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBakColorLabel, 22F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 18F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 18F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 14F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 14F, ContentAlignment.MiddleRight)};
         
         enum StatesMachine : int {Init_TM, Current_TM};
 
@@ -476,27 +511,34 @@ namespace Statistic
                         
                         foreach (TG tg in g.TG)
                         {
-                            if (tg.id_tm > 0)
-                                if (tg.power_TM > 1)
-                                {
-                                    m_dictLabelVal[tg.m_id].Text = tg.power_TM.ToString(@"F2");
-                                    dblTECComponentPower_TM += tg.power_TM;
-                                }
-                                else
-                                    m_dictLabelVal[tg.m_id].Text = 0.ToString(@"F0");
+                            if (tg.id_tm > 0) {
+                                dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], tg.power_TM);
+                            }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";
                         }
 
-                        dblTotalPower_TM += dblTECComponentPower_TM;
+                        dblTotalPower_TM += setTextToLabelVal(m_dictLabelVal[g.m_id], dblTECComponentPower_TM);
                     }
                     else
                         ;
                 }
 
-                m_arLabel[(int)INDEX_LABEL.VALUE_TOTAL].Text = dblTotalPower_TM.ToString(@"F2");
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TOTAL], dblTotalPower_TM);
                 m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt);
                 m_arLabel[(int)INDEX_LABEL.DATETIME].Text = m_dtLastChangedAt.ToString(@"HH:mm:ss");
+            }
+
+            private double setTextToLabelVal (Label lblVal, double val) {
+                if (val > 1)
+                {
+                    lblVal.Text = val.ToString(@"F2");
+                    return val;
+                }
+                else
+                    lblVal.Text = 0.ToString(@"F0");
+
+                return 0;
             }
 
             private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {
@@ -536,10 +578,7 @@ namespace Statistic
                 {
                     foreach (TG t in g.TG)
                     {
-                        for (i = 0; i < t.power.Length; i++)
-                        {
-                            t.power_TM = 0;
-                        }
+                        t.power_TM = 0;
                     }
                 }
 

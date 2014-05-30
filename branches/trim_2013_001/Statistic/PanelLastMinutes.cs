@@ -13,15 +13,50 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    partial class PanelLastMinutes
+    {
+        /// <summary>
+        /// Требуется переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Код, автоматически созданный конструктором компонентов
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
+        }
+
+        #endregion
+    }
+    
     public partial class PanelLastMinutes : TableLayoutPanel
     {
         List <Label> m_listLabelDateTime;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
-        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, Color.LightGray, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, Color.LightGray, 12F, ContentAlignment.MiddleLeft)};
+        static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
+        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 12F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleLeft)};
         static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
 
         static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
@@ -230,7 +265,7 @@ namespace Statistic
                         m_bIsStarted,
                         m_bUpdate;
 
-            private TecView.valuesS valuesHours;
+            private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
 
             DataTable m_tablePBRResponse;
 
@@ -315,12 +350,13 @@ namespace Statistic
                 m_states = new List<StatesMachine>();
                 //delegateUpdateGUI_TM = ShowTMPower;
 
-                valuesHours = new TecView.valuesS();
-                valuesHours.valuesFact = new double[24];
-                valuesHours.valuesPBR = new double[24];
-                valuesHours.valuesPBRe = new double[24];
-                valuesHours.valuesUDGe = new double[24];
-                valuesHours.valuesDiviation = new double[24];
+                m_dictValuesHours = new Dictionary<int,TecView.valuesTECComponent> ();
+                foreach (TECComponent c in m_list_TECComponents)
+                {
+                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(25));
+                }
+
+                delegateUpdateGUI_TM = ShowLastMinutesTM;
             }
 
             public void Start()
@@ -344,6 +380,8 @@ namespace Statistic
 
                 m_semaState.WaitOne();
                 m_taskThread.Start();
+
+                ClearValues();
 
                 //Милисекунды до первого запуска функции таймера
                 double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 1, 0) - DateTime.Now).TotalMilliseconds;
@@ -472,10 +510,12 @@ namespace Statistic
                 }
             }
 
-            private void ShowLastMinutes()
+            private void ShowLastMinutesTM()
             {
-                foreach (TG tg in m_listSensorId2TG)
+                foreach (TECComponent g in m_list_TECComponents)
                 {
+                    for (int i = 0; i < 24; i ++)
+                        m_dictLabelVal [g.m_id][i].Text = m_dictValuesHours [g.m_id].valuesLastMinute [i].ToString (@"F2");
                 }
             }
 
@@ -496,66 +536,67 @@ namespace Statistic
                 ((Label)sender).ForeColor = clr;
             }
 
-            private void GetCurrentTMRequest()
+            private void GetLastMinutesTMRequest()
             {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.currentTMRequest(sensorsString_TM));
+                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.lastMinutesTMRequest(sensorsString_TM));
             }
 
-            private bool GetCurrentTMResponse(DataTable table)
+            private bool GetLastMinutesTMResponse(DataTable table_in)
             {
                 bool bRes = true;
                 int i = -1,
-                    id = -1;
+                    hour = -1,
+                    offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone ().TotalHours;
                 double value = -1;
-                TG tgTmp;
+                DateTime dtVal;
+                DataRow [] tgRows = null;
 
                 foreach (TECComponent g in m_tec.list_TECComponents)
                 {
-                    foreach (TG t in g.TG)
+                    foreach (TG tg in g.TG)
                     {
-                        for (i = 0; i < t.power.Length; i++)
+                        for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
                         {
-                            t.power_TM = 0;
+                            tg.power_LastMinutesTM[i] = 0;
+                        }
+
+                        tgRows = table_in.Select (@"[ID]=" + tg.id_tm);
+                        
+                        for (i = 0; i < tgRows.Length; i++)
+                        {
+                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                return false;
+                            else
+                                ;
+
+                            //if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
+                            //    return false;
+                            //else
+                            //    ;
+
+                            switch (m_tec.type())
+                            {
+                                case TEC.TEC_TYPE.COMMON:
+                                    break;
+                                case TEC.TEC_TYPE.BIYSK:
+                                    //value *= 20;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                return false;
+                            else
+                                ;
+
+                            hour = dtVal.Hour + offsetUTC;
+                            if (! (hour < 24)) hour -= 24; else ;
+
+                            tg.power_LastMinutesTM[hour] = value;
+                            m_dictValuesHours [g.m_id].valuesLastMinute [hour] += value;
                         }
                     }
-                }
-
-                for (i = 0; i < table.Rows.Count; i++)
-                {
-                    if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                        return false;
-                    else
-                        ;
-
-                    tgTmp = FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
-
-                    if (tgTmp == null)
-                        return false;
-                    else
-                        ;
-
-                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                        return false;
-                    else
-                        ;
-
-                    //if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
-                    //    return false;
-                    //else
-                    //    ;
-
-                    switch (m_tec.type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            //value *= 20;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    tgTmp.power_TM = value;
                 }
 
                 return bRes;
@@ -695,7 +736,7 @@ namespace Statistic
                     case StatesMachine.LastMinutes_TM:
                         ActionReport("Получение текущих значений.");
                         //adminValuesReceived = false;
-                        GetCurrentTMRequest();
+                        GetLastMinutesTMRequest();
                         break;
                     case StatesMachine.PBRValues:
                         ActionReport("Получение данных плана.");
@@ -756,7 +797,8 @@ namespace Statistic
                         }
                         break;
                     case StatesMachine.LastMinutes_TM:
-                        result = GetCurrentTMResponse(table);
+                        ClearValues (); //Пока пустая???
+                        result = GetLastMinutesTMResponse(table);
                         if (result == true)
                         {
                         }
@@ -961,19 +1003,13 @@ namespace Statistic
             private bool GetAdminValuesResponse(DataTable table_in)
             {
                 DateTime date = DateTime.Now.Date
-                                , dtPBR;
+                         , dtPBR;
                 int hour;
 
-                double currPBRe;
                 int offsetPrev = -1
                     //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
                     , i = -1, j = -1,
                     offsetUDG, offsetPlan, offsetLayout;
-                
-                double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
-                double[,] valuesREC = new double[m_list_TECComponents.Count, 25];
-                int[,] valuesISPER = new int[m_list_TECComponents.Count, 25];
-                double[,] valuesDIV = new double[m_list_TECComponents.Count, 25];
 
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
@@ -1010,9 +1046,9 @@ namespace Statistic
                                 for (j = 0; j < m_list_TECComponents.Count; j++)
                                 {
                                     if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count)
-                                        valuesPBR[j, 24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
+                                        m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
                                     else
-                                        valuesPBR[j, 24] = 0.0;
+                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[24] = 0.0;
                                     //j++;
                                 }
                             }
@@ -1066,7 +1102,7 @@ namespace Statistic
                                 try
                                 {
                                     if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
-                                        valuesPBR[j, hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
+                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
                                     else
                                         ;
 
@@ -1080,23 +1116,23 @@ namespace Statistic
 
                                         if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = (double)row_in[0][offsetUDG + j * 3];
                                         else
-                                            valuesREC[j, hour - 1] = 0;
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
 
                                         if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            valuesISPER[j, hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            valuesDIV[j, hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                            m_dictValuesHours [m_list_TECComponents[j].m_id].valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        valuesREC[j, hour - 1] = 0;
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
                                     }
                                 }
                                 catch
@@ -1127,29 +1163,29 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    valuesPBR[j, hour - 1] = 0;
+                                     m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour - 1] = 0;
 
                                     if (i < table_in.Rows.Count)
                                     {
                                         if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
                                         else
-                                            valuesREC[j, hour - 1] = 0;
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
 
                                         if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        valuesREC[j, hour - 1] = 0;
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
                                     }
                                 }
                                 catch
@@ -1168,37 +1204,24 @@ namespace Statistic
                 {
                     for (j = 0; j < m_list_TECComponents.Count; j++)
                     {
-                        valuesHours.valuesPBR[i] += valuesPBR[j, i];
                         if (i == 0)
                         {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
-                            valuesHours.valuesPBRe[i] += currPBRe;
+                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe [i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[24]) / 2;
                         }
                         else
                         {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
-                            valuesHours.valuesPBRe[i] += currPBRe;
+                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i - 1]) / 2;
                         }
 
-                        valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesUDGe[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i];
 
-                        if (valuesISPER[j, i] == 1)
-                            valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                        if (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[i] == 1)
+                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] +
+                                                                                                    m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i]) * m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i] / 100;
                         else
-                            valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i];
                     }
-                    /*valuesHours.valuesPBR[i] = 0.20;
-                    valuesHours.valuesPBRe[i] = 0.20;
-                    valuesHours.valuesUDGe[i] = 0.20;
-                    valuesHours.valuesDiviation[i] = 0.05;*/
                 }
-                
-                //Внимание!!! Сезон не учитывается
-                    valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-                    valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-                    valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-                    valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
-                
                 
                 return true;
             }
@@ -1427,6 +1450,15 @@ namespace Statistic
                     table_in_restruct = table_in;
 
                 return table_in_restruct;
+            }
+
+            private void ClearValues()
+            {
+                foreach (TECComponent g in m_list_TECComponents)
+                {
+                    for (int i = 0; i < m_dictValuesHours[g.m_id].valuesLastMinute.Length; i++)
+                        m_dictValuesHours[g.m_id].valuesLastMinute[i] = 0.0;
+                }
             }
         }
     }

@@ -74,10 +74,11 @@ namespace StatisticCommon
             Data,
         }
 
-        //public bool isActive;
+        private bool m_bSavePPBRValues; //Признак разреш./запрета записи ПБР-значений
 
         public AdminTS() : base ()
         {
+            m_bSavePPBRValues = false;
         }
 
         protected override void Initialize () {
@@ -107,7 +108,7 @@ namespace StatisticCommon
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
                 states.Add((int)StatesMachine.PPBRDates);
                 states.Add((int)StatesMachine.SaveAdminValues);
-                states.Add((int)StatesMachine.SavePPBRValues);
+                if (m_bSavePPBRValues == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
                 //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
                 try
@@ -351,6 +352,9 @@ namespace StatisticCommon
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
+            //Запретить запись ПБР-значений
+            m_bSavePPBRValues = false;
+
             lock (m_lockObj)
             {
                 indxTECComponents = indx;
@@ -397,6 +401,9 @@ namespace StatisticCommon
 
         public void GetPPBRCSVValues(int indx, DateTime date, string dir)
         {
+            //Разрешить запись ПБР-значений
+            m_bSavePPBRValues = true;
+
             lock (m_lockObj)
             {
                 indxTECComponents = indx;

@@ -158,9 +158,37 @@ namespace Statistic
             SummerToWinter,
         }
 
-        public struct valuesS
+        public class valuesTECComponent
+        {
+            public volatile double[] valuesLastMinute;
+
+            public volatile double[] valuesPBR;
+            public volatile double[] valuesPBRe;
+            public volatile double[] valuesUDGe;
+            public volatile double[] valuesREC;
+            public volatile double[] valuesISPER; //Признак ед.изм. 'valuesDIV'
+            public volatile double[] valuesDIV; //Значение из БД
+            public volatile double[] valuesDiviation; //Значение в ед.изм.
+            
+            public valuesTECComponent(int sz)
+            {
+                valuesLastMinute = new double[sz];
+                
+                valuesPBR = new double[sz];
+                valuesPBRe = new double[sz];
+                valuesUDGe = new double[sz];
+                valuesREC = new double [sz];
+                valuesISPER = new double [sz];
+                valuesDIV = new double[sz];
+                valuesDiviation = new double[sz];
+            }
+        }
+
+        public class valuesTEC
         {
             public volatile double[] valuesFact;
+            //public volatile double[] valuesCurrentTM;
+            public volatile double[] valuesLastMinutesTM;
             public volatile double[] valuesPBR;
             public volatile double[] valuesPBRe;
             public volatile double[] valuesUDGe;
@@ -173,10 +201,29 @@ namespace Statistic
             public int hourAddon;
             public seasonJumpE season;
             public bool addonValues;
+
+            public valuesTEC(int sz)
+            {
+                valuesFact = new double [sz];
+                //valuesCurrentTM = new double[sz];
+                valuesLastMinutesTM = new double [sz];
+                valuesPBR = new double [sz];
+                valuesPBRe = new double [sz];
+                valuesUDGe = new double [sz];
+                valuesDiviation = new double[sz];
+                valuesFactAddon = 0.0;
+                valuesPBRAddon = 0.0;
+                valuesPBReAddon = 0.0;
+                valuesUDGeAddon = 0.0;
+                valuesDiviationAddon = 0.0;
+                hourAddon = 0;
+                season = seasonJumpE.None;
+                addonValues = false;
+            }
         }
 
-        private valuesS valuesMins;
-        private valuesS valuesHours;
+        private valuesTEC m_valuesMins;
+        private valuesTEC m_valuesHours;
         private DateTime selectedTime;
         private DateTime serverTime;
 
@@ -929,19 +976,9 @@ namespace Statistic
 
             lockValue = new object();
 
-            valuesMins = new valuesS();
-            valuesMins.valuesFact = new double[21];
-            valuesMins.valuesPBR = new double[21];
-            valuesMins.valuesPBRe = new double[21];
-            valuesMins.valuesUDGe = new double[21];
-            valuesMins.valuesDiviation = new double[21];
+            m_valuesMins = new valuesTEC(21);
 
-            valuesHours = new valuesS();
-            valuesHours.valuesFact = new double[24];
-            valuesHours.valuesPBR = new double[24];
-            valuesHours.valuesPBRe = new double[24];
-            valuesHours.valuesUDGe = new double[24];
-            valuesHours.valuesDiviation = new double[24];
+            m_valuesHours = new valuesTEC(24);
 
             stsStrip = sts;
 
@@ -1101,10 +1138,10 @@ namespace Statistic
             
             this.dgwHours.Rows.Clear();
 
-            if (valuesHours.season == seasonJumpE.SummerToWinter)
+            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 count = 25;
             else
-                if (valuesHours.season == seasonJumpE.WinterToSummer)
+                if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                     count = 23;
                 else
                     count = 24;
@@ -1113,20 +1150,20 @@ namespace Statistic
 
             for (int i = 0; i < count; i++)
             {
-                if (valuesHours.season == seasonJumpE.SummerToWinter)
+                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 {
-                    if (i <= valuesHours.hourAddon)
+                    if (i <= m_valuesHours.hourAddon)
                         this.dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
                     else
-                        if (i == valuesHours.hourAddon + 1)
+                        if (i == m_valuesHours.hourAddon + 1)
                             this.dgwHours.Rows[i].Cells[0].Value = i.ToString() + "*";
                         else
                             this.dgwHours.Rows[i].Cells[0].Value = i.ToString();
                 }
                 else
-                    if (valuesHours.season == seasonJumpE.WinterToSummer)
+                    if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                     {
-                        if (i < valuesHours.hourAddon)
+                        if (i < m_valuesHours.hourAddon)
                             this.dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
                         else
                             this.dgwHours.Rows[i].Cells[0].Value = (i + 2).ToString();
@@ -1170,8 +1207,8 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
-                valuesFact[i] = valuesMins.valuesFact[i + 1];
-                valuesUDGe[i] = valuesMins.valuesUDGe[i + 1];
+                valuesFact[i] = m_valuesMins.valuesFact[i + 1];
+                valuesUDGe[i] = m_valuesMins.valuesUDGe[i + 1];
             }
 
             //double[] valuesPDiviation = new double[itemscount];
@@ -1185,8 +1222,8 @@ namespace Statistic
             for (int i = 0; i < itemscount; i++)
             {
                 names[i] = ((i + 1) * 3).ToString();
-                //valuesPDiviation[i] = valuesMins.valuesUDGe[i] + valuesMins.valuesDiviation[i];
-                //valuesODiviation[i] = valuesMins.valuesUDGe[i] - valuesMins.valuesDiviation[i];
+                //valuesPDiviation[i] = m_valuesMins.valuesUDGe[i] + m_valuesMins.valuesDiviation[i];
+                //valuesODiviation[i] = m_valuesMins.valuesUDGe[i] - m_valuesMins.valuesDiviation[i];
 
                 if (currHour)
                 {
@@ -1319,7 +1356,7 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
             
-            if (valuesHours.addonValues && hour == valuesHours.hourAddon)
+            if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + "* час";
             else
@@ -1381,10 +1418,10 @@ namespace Statistic
 
             int itemscount;
 
-            if (valuesHours.season == seasonJumpE.SummerToWinter)
+            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 itemscount = 25;
             else
-                if (valuesHours.season == seasonJumpE.WinterToSummer)
+                if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                     itemscount = 23;
                 else
                     itemscount = 24;
@@ -1401,63 +1438,63 @@ namespace Statistic
             bool noValues = true;
             for (int i = 0; i < itemscount; i++)
             {
-                if (valuesHours.season == seasonJumpE.SummerToWinter)
+                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 {
-                    if (i <= valuesHours.hourAddon)
+                    if (i <= m_valuesHours.hourAddon)
                     {
                         names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = valuesHours.valuesUDGe[i] + valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = valuesHours.valuesUDGe[i] - valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = valuesHours.valuesUDGe[i];
-                        valuesFact[i] = valuesHours.valuesFact[i];
+                        valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_valuesHours.valuesFact[i];
                     }
                     else
-                        if (i == valuesHours.hourAddon + 1)
+                        if (i == m_valuesHours.hourAddon + 1)
                         {
                             names[i] = i.ToString() + "*";
-                            valuesPDiviation[i] = valuesHours.valuesUDGeAddon + valuesHours.valuesDiviationAddon;
-                            valuesODiviation[i] = valuesHours.valuesUDGeAddon - valuesHours.valuesDiviationAddon;
-                            valuesUDGe[i] = valuesHours.valuesUDGeAddon;
-                            valuesFact[i] = valuesHours.valuesFactAddon;
+                            valuesPDiviation[i] = m_valuesHours.valuesUDGeAddon + m_valuesHours.valuesDiviationAddon;
+                            valuesODiviation[i] = m_valuesHours.valuesUDGeAddon - m_valuesHours.valuesDiviationAddon;
+                            valuesUDGe[i] = m_valuesHours.valuesUDGeAddon;
+                            valuesFact[i] = m_valuesHours.valuesFactAddon;
                         }
                         else
                         {
                             this.dgwHours.Rows[i].Cells[0].Value = i.ToString();
                             names[i] = i.ToString();
-                            valuesPDiviation[i] = valuesHours.valuesUDGe[i - 1] + valuesHours.valuesDiviation[i - 1];
-                            valuesODiviation[i] = valuesHours.valuesUDGe[i - 1] - valuesHours.valuesDiviation[i - 1];
-                            valuesUDGe[i] = valuesHours.valuesUDGe[i - 1];
-                            valuesFact[i] = valuesHours.valuesFact[i - 1];
+                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i - 1] + m_valuesHours.valuesDiviation[i - 1];
+                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i - 1] - m_valuesHours.valuesDiviation[i - 1];
+                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i - 1];
+                            valuesFact[i] = m_valuesHours.valuesFact[i - 1];
                         }
 
                 }
                 else
-                    if (valuesHours.season == seasonJumpE.WinterToSummer)
+                    if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                     {
-                        if (i < valuesHours.hourAddon)
+                        if (i < m_valuesHours.hourAddon)
                         {
                             names[i] = (i + 1).ToString();
-                            valuesPDiviation[i] = valuesHours.valuesUDGe[i] + valuesHours.valuesDiviation[i];
-                            valuesODiviation[i] = valuesHours.valuesUDGe[i] - valuesHours.valuesDiviation[i];
-                            valuesUDGe[i] = valuesHours.valuesUDGe[i];
-                            valuesFact[i] = valuesHours.valuesFact[i];
+                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
+                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
+                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
+                            valuesFact[i] = m_valuesHours.valuesFact[i];
                         }
                         else
                         {
                             names[i] = (i + 2).ToString();
-                            valuesPDiviation[i] = valuesHours.valuesUDGe[i + 1] + valuesHours.valuesDiviation[i + 1];
-                            valuesODiviation[i] = valuesHours.valuesUDGe[i + 1] - valuesHours.valuesDiviation[i + 1];
-                            valuesUDGe[i] = valuesHours.valuesUDGe[i + 1];
-                            valuesFact[i] = valuesHours.valuesFact[i + 1];
+                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i + 1] + m_valuesHours.valuesDiviation[i + 1];
+                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i + 1] - m_valuesHours.valuesDiviation[i + 1];
+                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i + 1];
+                            valuesFact[i] = m_valuesHours.valuesFact[i + 1];
                         }
                     }
                     else
                     {
                         names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = valuesHours.valuesUDGe[i] + valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = valuesHours.valuesUDGe[i] - valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = valuesHours.valuesUDGe[i];
-                        valuesFact[i] = valuesHours.valuesFact[i];
+                        valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_valuesHours.valuesFact[i];
                     }
 
                 if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
@@ -1538,10 +1575,10 @@ namespace Statistic
                 {
                     int valuescount;
 
-                    if (valuesHours.season == seasonJumpE.SummerToWinter)
+                    if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                         valuescount = lastHour + 1;
                     else
-                        if (valuesHours.season == seasonJumpE.WinterToSummer)
+                        if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                             valuescount = lastHour - 1;
                         else
                             valuescount = lastHour;
@@ -1656,31 +1693,31 @@ namespace Statistic
                 lock (lockValue)
                 {
                     currHour = false;
-                    if (valuesHours.season == seasonJumpE.SummerToWinter)
+                    if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                     {
-                        if (index <= valuesHours.hourAddon)
+                        if (index <= m_valuesHours.hourAddon)
                         {
                             lastHour = index;
-                            valuesHours.addonValues = false;
+                            m_valuesHours.addonValues = false;
                         }
                         else
                         {
-                            if (index == valuesHours.hourAddon + 1)
+                            if (index == m_valuesHours.hourAddon + 1)
                             {
                                 lastHour = index - 1;
-                                valuesHours.addonValues = true;
+                                m_valuesHours.addonValues = true;
                             }
                             else
                             {
                                 lastHour = index - 1;
-                                valuesHours.addonValues = false;
+                                m_valuesHours.addonValues = false;
                             }
                         }
                     }
                     else
-                        if (valuesHours.season == seasonJumpE.WinterToSummer)
+                        if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                         {
-                            if (index < valuesHours.hourAddon)
+                            if (index < m_valuesHours.hourAddon)
                                 lastHour = index;
                             else
                                 lastHour = index + 1;
@@ -1805,7 +1842,7 @@ namespace Statistic
                         ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
 
-                    if (valuesHours.addonValues && hour == valuesHours.hourAddon)
+                    if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
                         ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + dtprDate.Value.ToShortDateString();
                     else
                         ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + dtprDate.Value.ToShortDateString();
@@ -2182,25 +2219,25 @@ namespace Statistic
             int min = lastMin;
             if (min != 0)
                 min--;
-            for (int i = 0; i < valuesMins.valuesFact.Length - 1; i++)
+            for (int i = 0; i < m_valuesMins.valuesFact.Length - 1; i++)
             {
-                dgwMins.Rows[i].Cells[1].Value = valuesMins.valuesFact[i + 1].ToString("F2");
-                sumFact += valuesMins.valuesFact[i + 1];
+                dgwMins.Rows[i].Cells[1].Value = m_valuesMins.valuesFact[i + 1].ToString("F2");
+                sumFact += m_valuesMins.valuesFact[i + 1];
 
-                dgwMins.Rows[i].Cells[2].Value = valuesMins.valuesPBR[i].ToString("F2");
-                dgwMins.Rows[i].Cells[3].Value = valuesMins.valuesPBRe[i].ToString("F2");
-                dgwMins.Rows[i].Cells[4].Value = valuesMins.valuesUDGe[i].ToString("F2");
-                sumUDGe += valuesMins.valuesUDGe[i];
-                if (i < min && valuesMins.valuesUDGe[i] != 0)
+                dgwMins.Rows[i].Cells[2].Value = m_valuesMins.valuesPBR[i].ToString("F2");
+                dgwMins.Rows[i].Cells[3].Value = m_valuesMins.valuesPBRe[i].ToString("F2");
+                dgwMins.Rows[i].Cells[4].Value = m_valuesMins.valuesUDGe[i].ToString("F2");
+                sumUDGe += m_valuesMins.valuesUDGe[i];
+                if (i < min && m_valuesMins.valuesUDGe[i] != 0)
                 {
-                    dgwMins.Rows[i].Cells[5].Value = ((double)(valuesMins.valuesFact[i + 1] - valuesMins.valuesUDGe[i])).ToString("F2");
-                    //if (Math.Abs(valuesMins.valuesFact[i + 1] - valuesMins.valuesUDGe[i]) > valuesMins.valuesDiviation[i]
-                    //    && valuesMins.valuesDiviation[i] != 0)
+                    dgwMins.Rows[i].Cells[5].Value = ((double)(m_valuesMins.valuesFact[i + 1] - m_valuesMins.valuesUDGe[i])).ToString("F2");
+                    //if (Math.Abs(m_valuesMins.valuesFact[i + 1] - m_valuesMins.valuesUDGe[i]) > m_valuesMins.valuesDiviation[i]
+                    //    && m_valuesMins.valuesDiviation[i] != 0)
                     //    dgwMins.Rows[i].Cells[5].Style = dgvCellStyleError;
                     //else
                     dgwMins.Rows[i].Cells[5].Style = dgvCellStyleCommon;
 
-                    sumDiviation += valuesMins.valuesFact[i + 1] - valuesMins.valuesUDGe[i];
+                    sumDiviation += m_valuesMins.valuesFact[i + 1] - m_valuesMins.valuesUDGe[i];
                 }
                 else
                 {
@@ -2219,7 +2256,7 @@ namespace Statistic
                 if (min > 20)
                     min = 20;
                 dgwMins.Rows[20].Cells[1].Value = (sumFact / min).ToString("F2");
-                dgwMins.Rows[20].Cells[4].Value = valuesMins.valuesUDGe[0].ToString("F2");
+                dgwMins.Rows[20].Cells[4].Value = m_valuesMins.valuesUDGe[0].ToString("F2");
                 dgwMins.Rows[20].Cells[5].Value = (sumDiviation / min).ToString("F2");
             }
         }
@@ -2233,12 +2270,12 @@ namespace Statistic
             int receivedHour = lastReceivedHour;
             int itemscount;
 
-            if (valuesHours.season == seasonJumpE.SummerToWinter)
+            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
             {
                 itemscount = 25;
             }
             else
-                if (valuesHours.season == seasonJumpE.WinterToSummer)
+                if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                 {
                     itemscount = 23;
                 }
@@ -2249,26 +2286,26 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
-                if (valuesHours.season == seasonJumpE.SummerToWinter)
+                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 {
-                    if (i <= valuesHours.hourAddon)
+                    if (i <= m_valuesHours.hourAddon)
                     {
-                        dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFact[i].ToString("F2");
-                        sumFact += valuesHours.valuesFact[i];
+                        dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i].ToString("F2");
+                        sumFact += m_valuesHours.valuesFact[i];
 
-                        dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBR[i].ToString("F2");
-                        dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBRe[i].ToString("F2");
-                        dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGe[i].ToString("F2");
-                        sumUDGe += valuesHours.valuesUDGe[i];
-                        if (i < receivedHour && valuesHours.valuesUDGe[i] != 0)
+                        dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBR[i].ToString("F2");
+                        dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBRe[i].ToString("F2");
+                        dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGe[i].ToString("F2");
+                        sumUDGe += m_valuesHours.valuesUDGe[i];
+                        if (i < receivedHour && m_valuesHours.valuesUDGe[i] != 0)
                         {
-                            dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i])).ToString("F2");
-                            if (Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]) > valuesHours.valuesDiviation[i]
-                                && valuesHours.valuesDiviation[i] != 0)
+                            dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i])).ToString("F2");
+                            if (Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]) > m_valuesHours.valuesDiviation[i]
+                                && m_valuesHours.valuesDiviation[i] != 0)
                                 dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                             else
                                 dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            sumDiviation += Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]);
+                            sumDiviation += Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]);
                         }
                         else
                         {
@@ -2277,24 +2314,24 @@ namespace Statistic
                         }
                     }
                     else
-                        if (i == valuesHours.hourAddon + 1)
+                        if (i == m_valuesHours.hourAddon + 1)
                         {
-                            dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFactAddon.ToString("F2");
-                            sumFact += valuesHours.valuesFactAddon;
+                            dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFactAddon.ToString("F2");
+                            sumFact += m_valuesHours.valuesFactAddon;
 
-                            dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBRAddon.ToString("F2");
-                            dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBReAddon.ToString("F2");
-                            dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGeAddon.ToString("F2");
-                            sumUDGe += valuesHours.valuesUDGeAddon;
-                            if (i <= receivedHour && valuesHours.valuesUDGeAddon != 0)
+                            dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBRAddon.ToString("F2");
+                            dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBReAddon.ToString("F2");
+                            dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGeAddon.ToString("F2");
+                            sumUDGe += m_valuesHours.valuesUDGeAddon;
+                            if (i <= receivedHour && m_valuesHours.valuesUDGeAddon != 0)
                             {
-                                dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFactAddon - valuesHours.valuesUDGeAddon)).ToString("F2");
-                                if (Math.Abs(valuesHours.valuesFactAddon - valuesHours.valuesUDGeAddon) > valuesHours.valuesDiviationAddon
-                                    && valuesHours.valuesDiviationAddon != 0)
+                                dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFactAddon - m_valuesHours.valuesUDGeAddon)).ToString("F2");
+                                if (Math.Abs(m_valuesHours.valuesFactAddon - m_valuesHours.valuesUDGeAddon) > m_valuesHours.valuesDiviationAddon
+                                    && m_valuesHours.valuesDiviationAddon != 0)
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                                 else
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(valuesHours.valuesFactAddon - valuesHours.valuesUDGeAddon);
+                                sumDiviation += Math.Abs(m_valuesHours.valuesFactAddon - m_valuesHours.valuesUDGeAddon);
                             }
                             else
                             {
@@ -2304,22 +2341,22 @@ namespace Statistic
                         }
                         else
                         {
-                            dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFact[i - 1].ToString("F2");
-                            sumFact += valuesHours.valuesFact[i - 1];
+                            dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i - 1].ToString("F2");
+                            sumFact += m_valuesHours.valuesFact[i - 1];
 
-                            dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBR[i - 1].ToString("F2");
-                            dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBRe[i - 1].ToString("F2");
-                            dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGe[i - 1].ToString("F2");
-                            sumUDGe += valuesHours.valuesUDGe[i - 1];
-                            if (i <= receivedHour && valuesHours.valuesUDGe[i - 1] != 0)
+                            dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBR[i - 1].ToString("F2");
+                            dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBRe[i - 1].ToString("F2");
+                            dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGe[i - 1].ToString("F2");
+                            sumUDGe += m_valuesHours.valuesUDGe[i - 1];
+                            if (i <= receivedHour && m_valuesHours.valuesUDGe[i - 1] != 0)
                             {
-                                dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFact[i - 1] - valuesHours.valuesUDGe[i - 1])).ToString("F2");
-                                if (Math.Abs(valuesHours.valuesFact[i - 1] - valuesHours.valuesUDGe[i - 1]) > valuesHours.valuesDiviation[i - 1]
-                                    && valuesHours.valuesDiviation[i - 1] != 0)
+                                dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFact[i - 1] - m_valuesHours.valuesUDGe[i - 1])).ToString("F2");
+                                if (Math.Abs(m_valuesHours.valuesFact[i - 1] - m_valuesHours.valuesUDGe[i - 1]) > m_valuesHours.valuesDiviation[i - 1]
+                                    && m_valuesHours.valuesDiviation[i - 1] != 0)
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                                 else
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(valuesHours.valuesFact[i - 1] - valuesHours.valuesUDGe[i - 1]);
+                                sumDiviation += Math.Abs(m_valuesHours.valuesFact[i - 1] - m_valuesHours.valuesUDGe[i - 1]);
                             }
                             else
                             {
@@ -2330,26 +2367,26 @@ namespace Statistic
 
                 }
                 else
-                    if (valuesHours.season == seasonJumpE.WinterToSummer)
+                    if (m_valuesHours.season == seasonJumpE.WinterToSummer)
                     {
-                        if (i < valuesHours.hourAddon)
+                        if (i < m_valuesHours.hourAddon)
                         {
-                            dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFact[i].ToString("F2");
-                            sumFact += valuesHours.valuesFact[i];
+                            dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i].ToString("F2");
+                            sumFact += m_valuesHours.valuesFact[i];
 
-                            dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBR[i].ToString("F2");
-                            dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBRe[i].ToString("F2");
-                            dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGe[i].ToString("F2");
-                            sumUDGe += valuesHours.valuesUDGe[i];
-                            if (i < receivedHour && valuesHours.valuesUDGe[i] != 0)
+                            dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBR[i].ToString("F2");
+                            dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBRe[i].ToString("F2");
+                            dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGe[i].ToString("F2");
+                            sumUDGe += m_valuesHours.valuesUDGe[i];
+                            if (i < receivedHour && m_valuesHours.valuesUDGe[i] != 0)
                             {
-                                dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i])).ToString("F2");
-                                if (Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]) > valuesHours.valuesDiviation[i]
-                                    && valuesHours.valuesDiviation[i] != 0)
+                                dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i])).ToString("F2");
+                                if (Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]) > m_valuesHours.valuesDiviation[i]
+                                    && m_valuesHours.valuesDiviation[i] != 0)
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                                 else
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]);
+                                sumDiviation += Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]);
                             }
                             else
                             {
@@ -2359,22 +2396,22 @@ namespace Statistic
                         }
                         else
                         {
-                            dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFact[i + 1].ToString("F2");
-                            sumFact += valuesHours.valuesFact[i + 1];
+                            dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i + 1].ToString("F2");
+                            sumFact += m_valuesHours.valuesFact[i + 1];
 
-                            dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBR[i + 1].ToString("F2");
-                            dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBRe[i + 1].ToString("F2");
-                            dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGe[i + 1].ToString("F2");
-                            sumUDGe += valuesHours.valuesUDGe[i + 1];
-                            if (i < receivedHour - 1 && valuesHours.valuesUDGe[i + 1] != 0)
+                            dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBR[i + 1].ToString("F2");
+                            dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBRe[i + 1].ToString("F2");
+                            dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGe[i + 1].ToString("F2");
+                            sumUDGe += m_valuesHours.valuesUDGe[i + 1];
+                            if (i < receivedHour - 1 && m_valuesHours.valuesUDGe[i + 1] != 0)
                             {
-                                dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFact[i + 1] - valuesHours.valuesUDGe[i + 1])).ToString("F2");
-                                if (Math.Abs(valuesHours.valuesFact[i + 1] - valuesHours.valuesUDGe[i + 1]) > valuesHours.valuesDiviation[i + 1]
-                                    && valuesHours.valuesDiviation[i + 1] != 0)
+                                dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFact[i + 1] - m_valuesHours.valuesUDGe[i + 1])).ToString("F2");
+                                if (Math.Abs(m_valuesHours.valuesFact[i + 1] - m_valuesHours.valuesUDGe[i + 1]) > m_valuesHours.valuesDiviation[i + 1]
+                                    && m_valuesHours.valuesDiviation[i + 1] != 0)
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                                 else
                                     dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(valuesHours.valuesFact[i + 1] - valuesHours.valuesUDGe[i + 1]);
+                                sumDiviation += Math.Abs(m_valuesHours.valuesFact[i + 1] - m_valuesHours.valuesUDGe[i + 1]);
                             }
                             else
                             {
@@ -2385,22 +2422,22 @@ namespace Statistic
                     }
                     else
                     {
-                        dgwHours.Rows[i].Cells[1].Value = valuesHours.valuesFact[i].ToString("F2");
-                        sumFact += valuesHours.valuesFact[i];
+                        dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i].ToString("F2");
+                        sumFact += m_valuesHours.valuesFact[i];
 
-                        dgwHours.Rows[i].Cells[2].Value = valuesHours.valuesPBR[i].ToString("F2");
-                        dgwHours.Rows[i].Cells[3].Value = valuesHours.valuesPBRe[i].ToString("F2");
-                        dgwHours.Rows[i].Cells[4].Value = valuesHours.valuesUDGe[i].ToString("F2");
-                        sumUDGe += valuesHours.valuesUDGe[i];
-                        if (i < receivedHour && valuesHours.valuesUDGe[i] != 0)
+                        dgwHours.Rows[i].Cells[2].Value = m_valuesHours.valuesPBR[i].ToString("F2");
+                        dgwHours.Rows[i].Cells[3].Value = m_valuesHours.valuesPBRe[i].ToString("F2");
+                        dgwHours.Rows[i].Cells[4].Value = m_valuesHours.valuesUDGe[i].ToString("F2");
+                        sumUDGe += m_valuesHours.valuesUDGe[i];
+                        if (i < receivedHour && m_valuesHours.valuesUDGe[i] != 0)
                         {
-                            dgwHours.Rows[i].Cells[5].Value = ((double)(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i])).ToString("F2");
-                            if (Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]) > valuesHours.valuesDiviation[i]
-                                && valuesHours.valuesDiviation[i] != 0)
+                            dgwHours.Rows[i].Cells[5].Value = ((double)(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i])).ToString("F2");
+                            if (Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]) > m_valuesHours.valuesDiviation[i]
+                                && m_valuesHours.valuesDiviation[i] != 0)
                                 dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
                             else
                                 dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            sumDiviation += Math.Abs(valuesHours.valuesFact[i] - valuesHours.valuesUDGe[i]);
+                            sumDiviation += Math.Abs(m_valuesHours.valuesFact[i] - m_valuesHours.valuesUDGe[i]);
                         }
                         else
                         {
@@ -2560,7 +2597,7 @@ namespace Statistic
                 if (currHour)
                 {
                     for (int i = 1; i < lastMin; i++)
-                        summ += valuesMins.valuesFact[i];
+                        summ += m_valuesMins.valuesFact[i];
                     if (min != 0)
                         lblAverPVal.Text = (summ / min).ToString("F2");
                     else
@@ -2572,17 +2609,17 @@ namespace Statistic
                     if (hour == 24)
                         hour = 23;
 
-                    if (valuesHours.addonValues && hour == valuesHours.hourAddon)
-                        summ = valuesHours.valuesFactAddon;
+                    if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
+                        summ = m_valuesHours.valuesFactAddon;
                     else
-                        summ = valuesHours.valuesFact[hour];
+                        summ = m_valuesHours.valuesFact[hour];
 
                     lblAverPVal.Text = summ.ToString("F2");
                 }
 
                 //if (! ([lastHour] == 0))
-                if (lastHour < valuesHours.valuesUDGe.Length) {
-                    lblDevEVal.Text = ((((valueEBefore + valueECur + valueEFuture) - valuesHours.valuesUDGe[lastHour]) / valuesHours.valuesUDGe[lastHour]) * 100).ToString("F2") + "%";
+                if (lastHour < m_valuesHours.valuesUDGe.Length) {
+                    lblDevEVal.Text = ((((valueEBefore + valueECur + valueEFuture) - m_valuesHours.valuesUDGe[lastHour]) / m_valuesHours.valuesUDGe[lastHour]) * 100).ToString("F2") + "%";
                 }
                 else
                     lblDevEVal.Text = "---";
@@ -2643,30 +2680,30 @@ namespace Statistic
         private void ClearValuesMins()
         {
             for (int i = 0; i < 21; i++)
-                valuesMins.valuesFact[i] =
-                valuesMins.valuesDiviation[i] =
-                valuesMins.valuesPBR[i] =
-                valuesMins.valuesPBRe[i] =
-                valuesMins.valuesUDGe[i] = 0;
+                m_valuesMins.valuesFact[i] =
+                m_valuesMins.valuesDiviation[i] =
+                m_valuesMins.valuesPBR[i] =
+                m_valuesMins.valuesPBRe[i] =
+                m_valuesMins.valuesUDGe[i] = 0;
         }
 
         private void ClearValuesHours()
         {
             for (int i = 0; i < 24; i++)
-                valuesHours.valuesFact[i] =
-                valuesHours.valuesDiviation[i] =
-                valuesHours.valuesPBR[i] =
-                valuesHours.valuesPBRe[i] =
-                valuesHours.valuesUDGe[i] = 0;
+                m_valuesHours.valuesFact[i] =
+                m_valuesHours.valuesDiviation[i] =
+                m_valuesHours.valuesPBR[i] =
+                m_valuesHours.valuesPBRe[i] =
+                m_valuesHours.valuesUDGe[i] = 0;
             
-            valuesHours.valuesFactAddon =
-            valuesHours.valuesDiviationAddon =
-            valuesHours.valuesPBRAddon =
-            valuesHours.valuesPBReAddon =
-            valuesHours.valuesUDGeAddon = 0;
-            valuesHours.season = seasonJumpE.None;
-            valuesHours.hourAddon = 0;
-            valuesHours.addonValues = false;
+            m_valuesHours.valuesFactAddon =
+            m_valuesHours.valuesDiviationAddon =
+            m_valuesHours.valuesPBRAddon =
+            m_valuesHours.valuesPBReAddon =
+            m_valuesHours.valuesUDGeAddon = 0;
+            m_valuesHours.season = seasonJumpE.None;
+            m_valuesHours.hourAddon = 0;
+            m_valuesHours.addonValues = false;
         }
 
         private void ClearPBRValues () {
@@ -2675,21 +2712,21 @@ namespace Statistic
         private void ClearAdminValues()
         {
             for (int i = 0; i < 24; i++)
-                valuesHours.valuesDiviation[i] =
-                valuesHours.valuesPBR[i] =
-                valuesHours.valuesPBRe[i] =
-                valuesHours.valuesUDGe[i] = 0;
+                m_valuesHours.valuesDiviation[i] =
+                m_valuesHours.valuesPBR[i] =
+                m_valuesHours.valuesPBRe[i] =
+                m_valuesHours.valuesUDGe[i] = 0;
 
-            valuesHours.valuesDiviationAddon =
-            valuesHours.valuesPBRAddon =
-            valuesHours.valuesPBReAddon =
-            valuesHours.valuesUDGeAddon = 0;
+            m_valuesHours.valuesDiviationAddon =
+            m_valuesHours.valuesPBRAddon =
+            m_valuesHours.valuesPBReAddon =
+            m_valuesHours.valuesUDGeAddon = 0;
             
             for (int i = 0; i < 21; i++)
-                valuesMins.valuesDiviation[i] =
-                valuesMins.valuesPBR[i] =
-                valuesMins.valuesPBRe[i] =
-                valuesMins.valuesUDGe[i] = 0;
+                m_valuesMins.valuesDiviation[i] =
+                m_valuesMins.valuesPBR[i] =
+                m_valuesMins.valuesPBRe[i] =
+                m_valuesMins.valuesUDGe[i] = 0;
         }
 
         private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
@@ -3064,7 +3101,7 @@ namespace Statistic
                         lastHourError = true;
                     }
                 }
-                /*f2.FillHourValues(lastHour, selectedTime, valuesHours.valuesFact);
+                /*f2.FillHourValues(lastHour, selectedTime, m_valuesHours.valuesFact);
                 f2.ShowDialog();*/
                 return true;
             }
@@ -3076,16 +3113,16 @@ namespace Statistic
                     if (!jump_backward)
                     {
                         if (jump_forward)
-                            valuesHours.hourAddon = hour; // уточнить
-                        valuesHours.valuesFact[hour] = hourVal / 2000;
+                            m_valuesHours.hourAddon = hour; // уточнить
+                        m_valuesHours.valuesFact[hour] = hourVal / 2000;
                         hour++;
                         half = 0;
                         hourVal = 0;
                     }
                     else
                     {
-                        valuesHours.valuesFactAddon = hourValAddon / 2000;
-                        valuesHours.hourAddon = hour - 1;
+                        m_valuesHours.valuesFactAddon = hourValAddon / 2000;
+                        m_valuesHours.hourAddon = hour - 1;
                         hourValAddon = 0;
                         prev_season = season;
                         halfAddon++;
@@ -3177,7 +3214,7 @@ namespace Statistic
                 if (jump_backward == false)
                 {
                     if (jump_forward == true)
-                        valuesHours.season = seasonJumpE.WinterToSummer;
+                        m_valuesHours.season = seasonJumpE.WinterToSummer;
 
                     if (end == false)
                         half++;
@@ -3186,8 +3223,8 @@ namespace Statistic
                 }
                 else
                 {
-                    valuesHours.season = seasonJumpE.SummerToWinter;
-                    valuesHours.addonValues = true;
+                    m_valuesHours.season = seasonJumpE.SummerToWinter;
+                    m_valuesHours.addonValues = true;
 
                     if (end == false)
                         halfAddon++;
@@ -3196,7 +3233,7 @@ namespace Statistic
                 }
             }
 
-            /*f2.FillHourValues(lastHour, selectedTime, valuesHours.valuesFact);
+            /*f2.FillHourValues(lastHour, selectedTime, m_valuesHours.valuesFact);
             f2.ShowDialog();*/
 
             if (currHour)
@@ -3378,8 +3415,8 @@ namespace Statistic
             {
                 if (need_season != max_season)
                 {
-                    valuesHours.addonValues = true;
-                    valuesHours.hourAddon = lastHour - 1;
+                    m_valuesHours.addonValues = true;
+                    m_valuesHours.hourAddon = lastHour - 1;
                     need_season = max_season;
                 }
                 else
@@ -3387,7 +3424,7 @@ namespace Statistic
             }
             else
             {
-                if (valuesHours.addonValues)
+                if (m_valuesHours.addonValues)
                 {
                     need_season = max_season;
                 }
@@ -3403,7 +3440,7 @@ namespace Statistic
                 }
                 else
                 {
-                    valuesMins.valuesFact[min] = 0;
+                    m_valuesMins.valuesFact[min] = 0;
                     minVal = 0;
                 }
 
@@ -3487,7 +3524,7 @@ namespace Statistic
 
                     if (!end)
                     {
-                        valuesMins.valuesFact[min] = minVal / 1000;
+                        m_valuesMins.valuesFact[min] = minVal / 1000;
                         lastMin = min + 1;
                     }
                 }
@@ -3495,7 +3532,7 @@ namespace Statistic
                     ;
             }
 
-            /*f2.FillMinValues(lastMin, selectedTime, valuesMins.valuesFact);
+            /*f2.FillMinValues(lastMin, selectedTime, m_valuesMins.valuesFact);
             f2.ShowDialog();*/
 
             if (lastMin <= ((selectedTime.Minute - 1) / 3))
@@ -4050,36 +4087,36 @@ namespace Statistic
                         {
                             for (j = 0; j < m_list_TECComponents.Count; j++)
                             {
-                                valuesHours.valuesPBR[i] += valuesPBR[j, i];
+                                m_valuesHours.valuesPBR[i] += valuesPBR[j, i];
                                 if (i == 0)
                                 {
                                     currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
-                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                    m_valuesHours.valuesPBRe[i] += currPBRe;
                                 }
                                 else
                                 {
                                     currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
-                                    valuesHours.valuesPBRe[i] += currPBRe;
+                                    m_valuesHours.valuesPBRe[i] += currPBRe;
                                 }
 
-                                valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+                                m_valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
 
                                 if (valuesISPER[j, i] == 1)
-                                    valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                                    m_valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
                                 else
-                                    valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                                    m_valuesHours.valuesDiviation[i] += valuesDIV[j, i];
                             }
-                            /*valuesHours.valuesPBR[i] = 0.20;
-                            valuesHours.valuesPBRe[i] = 0.20;
-                            valuesHours.valuesUDGe[i] = 0.20;
-                            valuesHours.valuesDiviation[i] = 0.05;*/
+                            /*m_valuesHours.valuesPBR[i] = 0.20;
+                            m_valuesHours.valuesPBRe[i] = 0.20;
+                            m_valuesHours.valuesUDGe[i] = 0.20;
+                            m_valuesHours.valuesDiviation[i] = 0.05;*/
                         }
-                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                         {
-                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                            m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
                         }
                     }
                     else
@@ -4263,32 +4300,32 @@ namespace Statistic
 
                         for (i = 0; i < 24; i++)
                         {
-                            valuesHours.valuesPBR[i] = valuesPBR[i];
+                            m_valuesHours.valuesPBR[i] = valuesPBR[i];
                             if (i == 0)
                             {
                                 currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
-                                valuesHours.valuesPBRe[i] = currPBRe;
+                                m_valuesHours.valuesPBRe[i] = currPBRe;
                             }
                             else
                             {
                                 currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
-                                valuesHours.valuesPBRe[i] = currPBRe;
+                                m_valuesHours.valuesPBRe[i] = currPBRe;
                             }
 
-                            valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+                            m_valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
 
                             if (valuesISPER[i] == 1)
-                                valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                                m_valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
                             else
-                                valuesHours.valuesDiviation[i] = valuesDIV[i];
+                                m_valuesHours.valuesDiviation[i] = valuesDIV[i];
                         }
 
-                        if (valuesHours.season == seasonJumpE.SummerToWinter)
+                        if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                         {
-                            valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-                            valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-                            valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-                            valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+                            m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+                            m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
                         }
                         else
                             ;
@@ -4455,37 +4492,37 @@ namespace Statistic
             //            {
             //                for (int j = 0; j < tec.list_TECComponents.Count; j++)
             //                {
-            //                    /*valuesHours.valuesPBR[i] += valuesPBR[j, i];
+            //                    /*m_valuesHours.valuesPBR[i] += valuesPBR[j, i];
             //                    if (i == 0)
             //                    {
             //                        currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
-            //                        valuesHours.valuesPBRe[i] += currPBRe;
+            //                        m_valuesHours.valuesPBRe[i] += currPBRe;
             //                    }
             //                    else
             //                    {
             //                        currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
-            //                        valuesHours.valuesPBRe[i] += currPBRe;
+            //                        m_valuesHours.valuesPBRe[i] += currPBRe;
             //                    }*/
             //                    currPBRe = 0;
 
-            //                    valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+            //                    m_valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
 
             //                    if (valuesISPER[j, i] == 1)
-            //                        valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+            //                        m_valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
             //                    else
-            //                        valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+            //                        m_valuesHours.valuesDiviation[i] += valuesDIV[j, i];
             //                }
-            //                /*valuesHours.valuesPBR[i] = 0.20;
-            //                valuesHours.valuesPBRe[i] = 0.20;
-            //                valuesHours.valuesUDGe[i] = 0.20;
-            //                valuesHours.valuesDiviation[i] = 0.05;*/
+            //                /*m_valuesHours.valuesPBR[i] = 0.20;
+            //                m_valuesHours.valuesPBRe[i] = 0.20;
+            //                m_valuesHours.valuesUDGe[i] = 0.20;
+            //                m_valuesHours.valuesDiviation[i] = 0.05;*/
             //            }
-            //            if (valuesHours.season == seasonJumpE.SummerToWinter)
+            //            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
             //            {
-            //                valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-            //                valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-            //                valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-            //                valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+            //                m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
             //            }
             //        }
             //        else
@@ -4623,33 +4660,33 @@ namespace Statistic
 
             //            for (int i = 0; i < 24; i++)
             //            {
-            //                /*valuesHours.valuesPBR[i] = valuesPBR[i];
+            //                /*m_valuesHours.valuesPBR[i] = valuesPBR[i];
             //                if (i == 0)
             //                {
             //                    currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
-            //                    valuesHours.valuesPBRe[i] = currPBRe;
+            //                    m_valuesHours.valuesPBRe[i] = currPBRe;
             //                }
             //                else
             //                {
             //                    currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
-            //                    valuesHours.valuesPBRe[i] = currPBRe;
+            //                    m_valuesHours.valuesPBRe[i] = currPBRe;
             //                }*/
             //                currPBRe = 0;
 
-            //                valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+            //                m_valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
 
             //                if (valuesISPER[i] == 1)
-            //                    valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+            //                    m_valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
             //                else
-            //                    valuesHours.valuesDiviation[i] = valuesDIV[i];
+            //                    m_valuesHours.valuesDiviation[i] = valuesDIV[i];
             //            }
 
-            //            if (valuesHours.season == seasonJumpE.SummerToWinter)
+            //            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
             //            {
-            //                valuesHours.valuesPBRAddon = valuesHours.valuesPBR[valuesHours.hourAddon];
-            //                valuesHours.valuesPBReAddon = valuesHours.valuesPBRe[valuesHours.hourAddon];
-            //                valuesHours.valuesUDGeAddon = valuesHours.valuesUDGe[valuesHours.hourAddon];
-            //                valuesHours.valuesDiviationAddon = valuesHours.valuesDiviation[valuesHours.hourAddon];
+            //                m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+            //                m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
             //            }
             //        }
             //        break;
@@ -4663,10 +4700,10 @@ namespace Statistic
 
             for (i = 0; i < 21; i++)
             {
-                valuesMins.valuesPBR[i] = valuesHours.valuesPBR[hour];
-                valuesMins.valuesPBRe[i] = valuesHours.valuesPBRe[hour];
-                valuesMins.valuesUDGe[i] = valuesHours.valuesUDGe[hour];
-                valuesMins.valuesDiviation[i] = valuesHours.valuesDiviation[hour];
+                m_valuesMins.valuesPBR[i] = m_valuesHours.valuesPBR[hour];
+                m_valuesMins.valuesPBRe[i] = m_valuesHours.valuesPBRe[hour];
+                m_valuesMins.valuesUDGe[i] = m_valuesHours.valuesUDGe[hour];
+                m_valuesMins.valuesDiviation[i] = m_valuesHours.valuesDiviation[hour];
             }
 
             return true;
@@ -4677,7 +4714,7 @@ namespace Statistic
             if (hour == 24)
                 hour = 23;
 
-            if (valuesHours.valuesUDGe[hour] == 0)
+            if (m_valuesHours.valuesUDGe[hour] == 0)
             {
                 recomendation = 0;
                 return;
@@ -4685,24 +4722,24 @@ namespace Statistic
 
             if (!currHour)
             {
-                recomendation = valuesHours.valuesUDGe[hour];
+                recomendation = m_valuesHours.valuesUDGe[hour];
                 return;
             }
 
             if (lastMin < 2)
             {
-                recomendation = valuesHours.valuesUDGe[hour];
+                recomendation = m_valuesHours.valuesUDGe[hour];
                 return;
             }
 
             double factSum = 0;
             for (int i = 1; i < lastMin; i++)
-                factSum += valuesMins.valuesFact[i];
+                factSum += m_valuesMins.valuesFact[i];
 
             if (lastMin == 21)
                 recomendation = 0;
             else
-                recomendation = (valuesHours.valuesUDGe[hour] * 20 - factSum) / (20 - (lastMin - 1));
+                recomendation = (m_valuesHours.valuesUDGe[hour] * 20 - factSum) / (20 - (lastMin - 1));
 
             if (recomendation < 0)
                 recomendation = 0;

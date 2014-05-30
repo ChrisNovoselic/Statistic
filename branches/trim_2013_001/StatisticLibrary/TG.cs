@@ -12,6 +12,7 @@ namespace StatisticCommon
         public int m_indx_col_rdg_excel;
         public double[] power;
         public double power_TM;
+        public double[] power_LastMinutesTM;
         public bool[] receivedMin;
         public bool[] receivedHourHalf1;
         public bool[] receivedHourHalf2;
@@ -26,6 +27,7 @@ namespace StatisticCommon
         {
             this.m_owner = comp;
             power = new double[21];
+            power_LastMinutesTM = new double[25];
             receivedMin = new bool[21];
             receivedHourHalf1 = new bool[24];
             receivedHourHalf2 = new bool[24];

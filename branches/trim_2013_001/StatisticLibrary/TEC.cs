@@ -649,6 +649,32 @@ namespace StatisticCommon
                             @"))";
         }
 
+        public string lastMinutesTMRequest(string sensors)
+        {
+            DateTime dtQuery;
+            //Если данные в БД по мск
+            //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
+            //Если данные в БД по ГринвичУ
+            dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes); 
+
+            string query = string.Empty;
+            //query =@"SELECT [dbo].[states_real_his].[id], AVG([dbo].[states_real_his].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+            //        @"FROM [dbo].[states_real_his] " +
+            //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
+	        //        @"AND (" + sensors + @") " +
+            //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
+
+            query = @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[value] as value,  [dbo].[states_real_his].[last_changed_at] " +
+                    @"FROM [dbo].[states_real_his] " +
+                    @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dtQuery.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dtQuery.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                    @"AND (" + sensors + @")";
+
+            //Для 1-го запроса замену НЕ выполнять
+            query = query.Replace("states_real_his", "states_real_his_0");
+
+            return query;
+        }
+
         public string GetAdminValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,

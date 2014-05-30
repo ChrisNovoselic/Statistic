@@ -669,7 +669,6 @@ namespace Statistic
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (tclTecViews.TabPages.Count > 0))
             {
-
                 if (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is TecView)
                 {
                     selTecView = (TecView)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
