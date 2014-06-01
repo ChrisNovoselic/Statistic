@@ -702,18 +702,18 @@ namespace Statistic
                     }*/
                 }
 
+                sensorsString_TM = string.Empty;
+
                 for (int i = 0; i < m_listSensorId2TG.Count; i++)
                 {
                     if (!(m_listSensorId2TG[i] == null))
                     {
-                        if (sensorsString_TM.Equals(string.Empty) == true)
-                        {
-                            sensorsString_TM = "[dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                        }
+                        if (sensorsString_TM.Equals(string.Empty) == false)
+                            sensorsString_TM += @" OR ";
                         else
-                        {
-                            sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                        }
+                            ;
+
+                        sensorsString_TM += "[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                     }
                     else
                     {

@@ -105,15 +105,10 @@
     <Compile Include="PanelCurPower.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelCurPower.Designer.cs">
-      <DependentUpon>PanelCurPower.cs</DependentUpon>
-    </Compile>
     <Compile Include="PanelLastMinutes.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelLastMinutes.Designer.cs">
-      <DependentUpon>PanelLastMinutes.cs</DependentUpon>
-    </Compile>
+    <Compile Include="PanelQuickData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TecView.cs">

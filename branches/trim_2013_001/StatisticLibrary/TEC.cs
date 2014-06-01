@@ -638,39 +638,44 @@ namespace StatisticCommon
         }
 
         public string currentTMRequest (string sensors) {
-            return @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[last_changed_at], [dbo].[states_real_his].[value] " +
-                            @"FROM [dbo].[states_real_his] " +
+            string query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
+                            @"FROM [dbo].[NAME_TABLE] " +
                             @"INNER JOIN " +
                                 @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-                                @"FROM [dbo].[states_real_his] " +
+                                @"FROM [dbo].[NAME_TABLE] " +
                                 @"GROUP BY [id]) AS t2 " +
-                            @"ON ([dbo].[states_real_his].[id] = t2.[id] AND [dbo].[states_real_his].[last_changed_at] = t2.last_changed_at AND (" +
+                            @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
                             sensors +
                             @"))";
+
+            query = query.Replace(@"NAME_TABLE", @"states_real_his");
+
+            return query;
         }
 
-        public string lastMinutesTMRequest(string sensors)
+        public string lastMinutesTMRequest(DateTime dt, string sensors)
         {
-            DateTime dtQuery;
             //Если данные в БД по мск
             //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
             //Если данные в БД по ГринвичУ
-            dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes); 
+            dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes); 
 
             string query = string.Empty;
-            //query =@"SELECT [dbo].[states_real_his].[id], AVG([dbo].[states_real_his].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
-            //        @"FROM [dbo].[states_real_his] " +
+            //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+            //        @"FROM [dbo].[NAME_TABLE] " +
             //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
 	        //        @"AND (" + sensors + @") " +
             //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
 
-            query = @"SELECT [dbo].[states_real_his].[id], [dbo].[states_real_his].[value] as value,  [dbo].[states_real_his].[last_changed_at] " +
-                    @"FROM [dbo].[states_real_his] " +
-                    @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dtQuery.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dtQuery.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+            query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
+                    @"FROM [dbo].[NAME_TABLE] " +
+                    @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
                     @"AND (" + sensors + @")";
 
-            //Для 1-го запроса замену НЕ выполнять
-            query = query.Replace("states_real_his", "states_real_his_0");
+            //Для 1-го запроса
+            //query = query.Replace("NAME_TABLE", "states_real_his");
+            //Для 2-го запроса
+            query = query.Replace("NAME_TABLE", "states_real_his_0");
 
             return query;
         }

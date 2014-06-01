@@ -43,6 +43,7 @@ namespace Statistic
         private System.Windows.Forms.DataGridViewTextBoxColumn PBReHour;
         private System.Windows.Forms.DataGridViewTextBoxColumn UDGeHour;
         private System.Windows.Forms.DataGridViewTextBoxColumn DeviationHour;
+        private System.Windows.Forms.DataGridViewTextBoxColumn LastMinutes_TM;
         private System.Windows.Forms.DataGridView dgwMins;
         private System.Windows.Forms.DataGridViewTextBoxColumn Min;
         private System.Windows.Forms.DataGridViewTextBoxColumn FactMin;
@@ -145,6 +146,7 @@ namespace Statistic
             CurrentHours_Fact,
             CurrentMins_Fact,
             Current_TM,
+            LastMinutes_TM,
             RetroHours,
             RetroMins,
             PBRValues,
@@ -271,6 +273,7 @@ namespace Statistic
             this.PBReHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.UDGeHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DeviationHour = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.LastMinutes_TM = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlCommon = new System.Windows.Forms.Panel();
             this.lblPBRrecVal = new System.Windows.Forms.Label();
             this.lblPBRrec = new System.Windows.Forms.Label();
@@ -400,7 +403,8 @@ namespace Statistic
             this.PBRHour,
             this.PBReHour,
             this.UDGeHour,
-            this.DeviationHour});
+            this.DeviationHour,
+            this.LastMinutes_TM});
             this.dgwHours.Location = new System.Drawing.Point(arPlacement [(int)CONTROLS.dgwHours].pt);
             this.dgwHours.Name = "dgwHour";
             this.dgwHours.ReadOnly = true;
@@ -456,6 +460,14 @@ namespace Statistic
             this.DeviationHour.ReadOnly = true;
             this.DeviationHour.Width = 50;
             this.DeviationHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // LastMinutes_TM
+            // 
+            this.LastMinutes_TM.HeaderText = "Мин.59";
+            this.LastMinutes_TM.Name = "LastMinutes_TM";
+            this.LastMinutes_TM.ReadOnly = true;
+            this.LastMinutes_TM.Width = 60;
+            this.LastMinutes_TM.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             //
             // btnSetNow
             //
@@ -2205,6 +2217,10 @@ namespace Statistic
             tec.Request(CONN_SETT_TYPE.DATA_TM, tec.currentTMRequest(sensorsString_TM));
         }
 
+        private void GetLastMinutesTMRequest () {
+            tec.Request(CONN_SETT_TYPE.DATA_TM, tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
+        }
+
         private void GetPBRValuesRequest () {
             m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, dtprDate.Value.Date, AdminTS.TYPE_FIELDS.STATIC));
         }
@@ -2618,7 +2634,8 @@ namespace Statistic
                 }
 
                 //if (! ([lastHour] == 0))
-                if (lastHour < m_valuesHours.valuesUDGe.Length) {
+                if ((lastHour < m_valuesHours.valuesUDGe.Length) && (!(m_valuesHours.valuesUDGe[lastHour] == 0)))
+                {
                     lblDevEVal.Text = ((((valueEBefore + valueECur + valueEFuture) - m_valuesHours.valuesUDGe[lastHour]) / m_valuesHours.valuesUDGe[lastHour]) * 100).ToString("F2") + "%";
                 }
                 else
@@ -2919,18 +2936,18 @@ namespace Statistic
                 }
             }
 
+            sensorsString_TM = string.Empty;
+
             for (int i = 0; i < sensorId2TG.Length; i++)
             {
                 if (!(sensorId2TG[i] == null))
                 {
-                    if (sensorsString_TM.Equals(string.Empty) == true)
-                    {
-                        sensorsString_TM = "[dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
-                    }
+                    if (sensorsString_TM.Equals(string.Empty) == false)
+                        sensorsString_TM += @" OR ";
                     else
-                    {
-                        sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + sensorId2TG[i].id_tm.ToString();
-                    }
+                        ;
+
+                    sensorsString_TM += "[dbo].[NAME_TABLE].[ID] = " + sensorId2TG[i].id_tm.ToString();
                 }
                 else
                 {
@@ -3338,6 +3355,13 @@ namespace Statistic
 
                 tgTmp.power_TM = value;
             }
+
+            return bRes;
+        }
+
+        private bool GetLastMinutesTMResponse(DataTable table_in)
+        {
+            bool bRes = true;
 
             return bRes;
         }
@@ -4831,6 +4855,7 @@ namespace Statistic
             states.Add(StatesMachine.CurrentHours_Fact);
             states.Add(StatesMachine.CurrentMins_Fact);
             states.Add(StatesMachine.Current_TM);
+            states.Add(StatesMachine.LastMinutes_TM);
             states.Add(StatesMachine.PBRValues);
             states.Add(StatesMachine.AdminValues);
         }
@@ -4880,241 +4905,7 @@ namespace Statistic
             last_time_action = DateTime.Now;
             actioned_state = true;
             stsStrip.BeginInvoke(delegateEventUpdate);
-        }
-
-        private void ShowValues(string caption)
-        {
-            /*MessageBox.Show(this, "state = " + state + "\naction = " + action + "\ndate = " + dtprDate.Value.ToString() +
-                            "\nnow_date = " + DateTime.Now.ToString() + "\ngmt0 = " + System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).ToString() +
-                            "\nselectedTime = " + selectedTime.ToString() + "lastHour = " + lastHour + "\nlastMin = " + lastMin + "\ncurrHour = " + currHour + 
-                            "\nadminValuesReceived = " + adminValuesReceived, caption, MessageBoxButtons.OK);*/
-
-            MessageBox.Show(this, "", caption, MessageBoxButtons.OK);
-        }
-
-        object[] generateValues(DateTime dt, int indx_tg, int indx_halfhours, int indx_id_time, int season)
-        {
-            //Согласно структуры запросов 'GetHoursRequest' и 'GetMinsRequest'
-            int indx_season = 2; //8
-            object [] resValues = new object [9];
-
-            //resValues[0] = "ТГ-" + indx_tg;
-            //resValues[1] = 0;
-            //resValues[2] = 0;
-            //resValues[3] = 0;
-            //resValues[4] = 0;
-            //resValues[5] = 30 + indx_halfhours * 2;
-            //resValues[6] = dt;
-            //resValues[7] = sensorId2TG[indx_tg].ids[indx_id_time];
-
-            resValues[0] = sensorId2TG[indx_tg].ids_fact[indx_id_time];
-            resValues[1] = dt;
-            //2 - season
-            resValues[3] = 30 + indx_halfhours * 2;
-            resValues[4] = "ТГ-" + indx_tg;
-            resValues[5] = 0;
-            resValues[6] = 0;
-            resValues[7] = 0;
-            resValues[8] = 0;
-
-            if (season == 0) //Нет перехода на зимнее/летнее время
-                resValues[indx_season] = dt.Year * 2 + 1;
-            else
-                if (season == -1) //С переходом на зимнее время
-                    if (indx_halfhours < 6)
-                        resValues[indx_season] = dt.Year * 2 + 1;
-                    else
-                        resValues[indx_season] = dt.Year * 2 + 2;
-                else
-                    if (season == 1) //С переходом на летнее время
-                        if (indx_halfhours < 4)
-                            resValues[indx_season] = dt.Year * 2;
-                        else
-                            resValues[indx_season] = dt.Year * 2 + 1;
-                    else
-                        ;                
-
-            return resValues;
-        }
-        
-        void GenerateHoursTable(seasonJumpE season, int hours, DataTable table)
-        {
-            int count = hours * 2;
-            DateTime date = DateTime.Now.Date.AddMinutes(30);
-
-            table.Clear();
-
-            if (season == seasonJumpE.None)
-            {
-                // генерирую время без переходов
-                for (int i = 0; i < count; i++)
-                {
-                    for (int j = 0; j < countTG; j++)
-                    {
-                        table.Rows.Add(generateValues (date, j, i, (int) TG.ID_TIME.HOURS, 0));
-                    }
-
-                    date = date.AddMinutes(30);
-                }
-            }
-            else
-            {
-                if (season == seasonJumpE.SummerToWinter)
-                {
-                    // генерирую время с переходом на зимнее время
-                    for (int i = 0; i < count; i++)
-                    {
-                        for (int j = 0; j < countTG; j++)
-                        {
-                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
-                        }
-                        if (i == 4 || i == 5)
-                        {
-                            for (int j = 0; j < countTG; j++)
-                            {
-                                //object[] values = new object[9];
-                                //values[0] = "ТГ-" + j;
-                                //values[1] = 0;
-                                //values[2] = 0;
-                                //values[3] = 0;
-                                //values[4] = 0;
-                                //values[5] = 30 + i * 2;
-                                //values[6] = date;
-                                //values[7] = sensorId2TG[j].id;
-                                //values[8] = date.Year * 2 + 2;
-                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
-                            }
-                        }
-
-                        date = date.AddMinutes(30);
-                    }
-                }
-                else
-                {
-                    //генерирую время с переходом на летнее время
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (i != 4 && i != 5)
-                        {
-                            for (int j = 0; j < countTG; j++)
-                            {
-                                //object[] values = new object[9];
-                                //values[0] = "ТГ-" + j;
-                                //values[1] = 0;
-                                //values[2] = 0;
-                                //values[3] = 0;
-                                //values[4] = 0;
-                                //values[5] = 30 + i * 2;
-                                //values[6] = date;
-                                //values[7] = sensorId2TG[j].id;
-                                //if (i < 4)
-                                //    values[8] = date.Year * 2;
-                                //else
-                                //    values[8] = date.Year * 2 + 1;
-                                table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, 1));
-                            }
-                        }
-
-                        date = date.AddMinutes(30);
-                    }
-                }
-            }
-        }
-
-        void GenerateMinsTable(seasonJumpE season, int mins, DataTable table)
-        {
-            int count = mins + 1;
-            DateTime date = DateTime.Now.Date;
-
-            table.Clear();
-
-            if (season == seasonJumpE.None)
-            {
-                // генерирую время без переходов
-                for (int i = 0; i < count; i++)
-                {
-                    for (int j = 0; j < countTG; j++)
-                    {
-                        //object[] values = new object[9];
-                        //values[0] = "ТГ-" + j;
-                        //values[1] = 0;
-                        //values[2] = 0;
-                        //values[3] = 0;
-                        //values[4] = 0;
-                        //values[5] = 30 + i * 2;
-                        //values[6] = date;
-                        //values[7] = sensorId2TG[j].id;
-                        //values[8] = date.Year * 2 + 1;
-                        table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 0));
-                    }
-
-                    date = date.AddMinutes(3);
-                }
-            }
-            else
-            {
-                if (season == seasonJumpE.SummerToWinter)
-                {
-                    // генерирую время с переходом на зимнее время
-                    for (int i = 0; i < count; i++)
-                    {
-                        for (int j = 0; j < countTG; j++)
-                        {
-                            //object[] values = new object[9];
-                            //values[0] = "ТГ-" + j;
-                            //values[1] = 0;
-                            //values[2] = 0;
-                            //values[3] = 0;
-                            //values[4] = 0;
-                            //values[5] = 30 + i * 2;
-                            //values[6] = date;
-                            //values[7] = sensorId2TG[j].id;
-                            //values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
-                        }
-                        for (int j = 0; j < countTG; j++)
-                        {
-                            //object[] values = new object[9];
-                            //values[0] = "ТГ-" + j;
-                            //values[1] = 0;
-                            //values[2] = 0;
-                            //values[3] = 0;
-                            //values[4] = 0;
-                            //values[5] = 30 + i * 2;
-                            //values[6] = date;
-                            //values[7] = sensorId2TG[j].id;
-                            //values[8] = date.Year * 2 + 2;
-                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
-                        }
-
-                        date = date.AddMinutes(3);
-                    }
-                }
-                else
-                {
-                    //генерирую время с переходом на летнее время
-                    for (int i = 0; i < count; i++)
-                    {
-                        for (int j = 0; j < countTG; j++)
-                        {
-                            //object[] values = new object[9];
-                            //values[0] = "ТГ-" + j;
-                            //values[1] = 0;
-                            //values[2] = 0;
-                            //values[3] = 0;
-                            //values[4] = 0;
-                            //values[5] = 30 + i * 2;
-                            //values[6] = date;
-                            //values[7] = sensorId2TG[j].id;
-                            //values[8] = date.Year * 2 + 1;
-                            table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, 1));
-                        }
-
-                        date = date.AddMinutes(3);
-                    }
-                }
-            }
-        }
+        }        
 
         private void StateRequest(StatesMachine state)
         {
@@ -5161,8 +4952,11 @@ namespace Statistic
                     break;
                 case StatesMachine.Current_TM:
                     ActionReport("Получение текущих значений.");
-                    //adminValuesReceived = false;
                     GetCurrentTMRequest();
+                    break;
+                case StatesMachine.LastMinutes_TM:
+                    ActionReport("Получение текущих значений 59 мин.");
+                    GetLastMinutesTMRequest();
                     break;
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
@@ -5227,6 +5021,7 @@ namespace Statistic
                 case StatesMachine.RetroMins:
                     return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
                 case StatesMachine.Current_TM:
+                case StatesMachine.LastMinutes_TM:
                     return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
                 case StatesMachine.PBRValues:
                     return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
@@ -5300,11 +5095,18 @@ namespace Statistic
                         ;
                     break;
                 case StatesMachine.Current_TM:
-                    //GenerateMinsTable(seasonJumpE.None, 5, table);
                     result = GetCurrentTMResponse(table);
                     if (result)
                     {
                         this.BeginInvoke(delegateUpdateGUI_TM);
+                    }
+                    else
+                        ;
+                    break;
+                case StatesMachine.LastMinutes_TM:
+                    result = GetLastMinutesTMResponse(table);
+                    if (result)
+                    {
                     }
                     else
                         ;
@@ -5386,6 +5188,10 @@ namespace Statistic
                     break;
                 case StatesMachine.Current_TM:
                     reason = @"текущих значений";
+                    waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
+                case StatesMachine.LastMinutes_TM:
+                    reason = @"текущих значений 59 мин.";
                     waiting = @"Ожидание " + parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
                 case StatesMachine.RetroHours:

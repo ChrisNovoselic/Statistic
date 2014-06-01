@@ -55,8 +55,8 @@ namespace Statistic
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
         static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 12F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleLeft)};
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 8F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter)};
         static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
 
         static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
@@ -104,37 +104,11 @@ namespace Statistic
             this.RowCount = 1;
 
             //Создание панели с дата/время
-            TableLayoutPanel panelDateTime = new TableLayoutPanel();
-            panelDateTime.Dock = DockStyle.Fill;
-            panelDateTime.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-            panelDateTime.ColumnCount = 1;
-            panelDateTime.RowCount = 24 + COUNT_FIXED_ROWS; //Наименования: ТЭЦ + компонент ТЭЦ
+            PanelDateTime panelDateTime = new PanelDateTime();
 
-            DateTime datetimeNow = DateTime.Now.Date;
-            //Пустая ячейка (дата)
-            panelDateTime.Controls.Add(new HLabel(s_arLabelStyles[(int)INDEX_LABEL.DATETIME]), 0, 0);
-            ((HLabel)panelDateTime.Controls[0]).Text = datetimeNow.Date.ToString(@"dd:MM.yyyy");
-            panelDateTime.SetRowSpan(panelDateTime.Controls[0], COUNT_FIXED_ROWS);
-
-            m_listLabelDateTime = new List<Label> ();
-
-            datetimeNow = datetimeNow.AddMinutes(59);
-            for (i = 0; i < 24; i ++) {
-                m_listLabelDateTime.Add(HLabel.createLabel(datetimeNow.ToString(@"HH:mm"), s_arLabelStyles[(int)INDEX_LABEL.DATETIME]));
-
-                panelDateTime.Controls.Add(m_listLabelDateTime[m_listLabelDateTime.Count - 1], 0, i + COUNT_FIXED_ROWS);
-
-                datetimeNow = datetimeNow.AddHours(1);
-            }
-
-            for (i = 0; i < (24 + COUNT_FIXED_ROWS - 1); i++)
-            {
-                panelDateTime.RowStyles.Add(fRowStyle());
-            }
-            
-            int iPercentColDatetime = 6;
+            float fPercentColDatetime = 8F;
             this.Controls.Add(panelDateTime, 0, 0);
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, iPercentColDatetime));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, fPercentColDatetime));
 
             int iCountSubColumns = 0;
             
@@ -148,7 +122,7 @@ namespace Statistic
             //кол-во "подстолбцов" в столбцах до их создания неизвестно
             for (i = 0; i < listTec.Count; i++)
             {
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, (100 - iPercentColDatetime) / iCountSubColumns * ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, ((float)100 - fPercentColDatetime) / iCountSubColumns * ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent));
             }
         }
 
@@ -212,6 +186,92 @@ namespace Statistic
                 }
                 else
                     ;
+            }
+        }
+
+        partial class PanelDateTime
+        {
+            /// <summary>
+            /// Требуется переменная конструктора.
+            /// </summary>
+            private System.ComponentModel.IContainer components = null;
+
+            /// <summary> 
+            /// Освободить все используемые ресурсы.
+            /// </summary>
+            /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && (components != null))
+                {
+                    components.Dispose();
+                }
+                base.Dispose(disposing);
+            }
+
+            #region Код, автоматически созданный конструктором компонентов
+
+            /// <summary>
+            /// Обязательный метод для поддержки конструктора - не изменяйте
+            /// содержимое данного метода при помощи редактора кода.
+            /// </summary>
+            private void InitializeComponent()
+            {
+                components = new System.ComponentModel.Container();
+            }
+
+            #endregion
+        }
+
+        private partial class PanelDateTime : TableLayoutPanel
+        {
+            private Dictionary<int, Label> m_dictLabelTime;
+
+            public PanelDateTime()
+            {
+                InitializeComponent();
+
+                Initialize();
+            }
+
+            public PanelDateTime(IContainer container)
+                : this()
+            {
+                container.Add(this);
+            }
+
+            private void Initialize()
+            {
+                int i = -1;
+           
+                this.Dock = DockStyle.Fill;
+                this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
+                this.RowCount = 24 + COUNT_FIXED_ROWS;
+
+                DateTime dtNow = DateTime.Now.Date;
+
+                //Добавить дату
+                Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
+                this.Controls.Add(lblDate, 0, 0);
+                this.SetRowSpan(lblDate, COUNT_FIXED_ROWS);
+
+                m_dictLabelTime = new Dictionary<int,Label> ();
+
+                dtNow = dtNow.AddMinutes(59);
+                for (i = 0; i < 24; i++)
+                {
+                    m_dictLabelTime[i] = HLabel.createLabel(dtNow.ToString (@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
+                    this.Controls.Add(m_dictLabelTime[i], 0, i + COUNT_FIXED_ROWS);
+
+                    dtNow = dtNow.AddHours(1);
+                }
+
+                for (i = 0; i < (24 + COUNT_FIXED_ROWS - 1); i++)
+                {
+                    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                }
+
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 6F));
             }
         }
 
@@ -514,8 +574,17 @@ namespace Statistic
             {
                 foreach (TECComponent g in m_list_TECComponents)
                 {
-                    for (int i = 0; i < 24; i ++)
-                        m_dictLabelVal [g.m_id][i].Text = m_dictValuesHours [g.m_id].valuesLastMinute [i].ToString (@"F2");
+                    for (int i = 0; i < 24; i++)
+                    {
+                        m_dictLabelVal[g.m_id][i].Text = m_dictValuesHours[g.m_id].valuesLastMinute[i].ToString(@"F2");
+
+                        if (m_dictValuesHours[g.m_id].valuesUDGe [i] > 1)
+                        {
+                            m_dictLabelVal[g.m_id][i].BackColor = Color.Red;
+                        }
+                        else
+                            ;
+                    }
                 }
             }
 
@@ -538,7 +607,7 @@ namespace Statistic
 
             private void GetLastMinutesTMRequest()
             {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.lastMinutesTMRequest(sensorsString_TM));
+                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
             }
 
             private bool GetLastMinutesTMResponse(DataTable table_in)
@@ -681,18 +750,18 @@ namespace Statistic
                     }*/
                 }
 
+                sensorsString_TM = string.Empty;
+
                 for (int i = 0; i < m_listSensorId2TG.Count; i++)
                 {
                     if (!(m_listSensorId2TG[i] == null))
                     {
-                        if (sensorsString_TM.Equals(string.Empty) == true)
-                        {
-                            sensorsString_TM = "[dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                        }
+                        if (sensorsString_TM.Equals(string.Empty) == false)
+                            sensorsString_TM += @" OR ";
                         else
-                        {
-                            sensorsString_TM += " OR [dbo].[states_real_his].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                        }
+                            ;
+
+                        sensorsString_TM += "[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                     }
                     else
                     {

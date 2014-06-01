@@ -42,6 +42,12 @@ namespace StatisticCommon
             container.Add(this);
         }
 
+        public HLabel(IContainer container, HLabelStyles prop)
+            : this(new Point (-1, -1), new Size (-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)
+        {
+            container.Add(this);
+        }
+
         public static Label createLabel(string name, HLabelStyles prop)
         {
             Label lblRes = new Label();
