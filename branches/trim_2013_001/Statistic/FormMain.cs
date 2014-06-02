@@ -234,27 +234,31 @@ namespace Statistic
         }
 
         private void StopTabPages () {
-            //for (i = 0; i < formChangeMode.tec_index.Count; i++)
-            foreach (TecView tv in tecViews)
-            {
-                tv.Stop();
-            }
+            if (!(tecViews == null)) {
+                //for (i = 0; i < formChangeMode.tec_index.Count; i++)
+                foreach (TecView tv in tecViews)
+                {
+                    tv.Stop();
+                }
 
-            if (!(tecViews == null)) tecViews.Clear(); else ;
+                tecViews.Clear();
 
-            tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
+                tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
             
-            tclTecViews.TabPages.Clear();
+                tclTecViews.TabPages.Clear();
 
-            tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
+                tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
 
-            //selectedTecViews.Clear();
+                //selectedTecViews.Clear();
+            }
+            else
+                ;
 
             значенияТекущаяМощностьГТПгToolStripMenuItem.Checked = false;
             мониторингПоследняяМинутаЧасToolStripMenuItem.Checked = false;
 
-            m_panelCurPower.Stop();
-            m_panelLastMinutes.Stop();
+            if (! (m_panelCurPower == null)) m_panelCurPower.Stop(); else ;
+            if (!(m_panelLastMinutes == null)) m_panelLastMinutes.Stop(); else ;
         }
 
         private void ClearTabPages () {
@@ -936,13 +940,12 @@ namespace Statistic
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelCurPower);
 
-                //m_panelCurPower.Activate(true);
                 m_panelCurPower.Start();
                 ActivateTabPage();
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
-                //m_panelCurPower.Activate(false);
+                m_panelCurPower.Activate(false);
                 m_panelCurPower.Stop();
             }
         }
@@ -954,14 +957,13 @@ namespace Statistic
                 tclTecViews.TabPages.Add(nameTab, nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelLastMinutes);
 
-                //m_panelLastMinutes.Activate(true);
                 m_panelLastMinutes.Start();
 
                 ActivateTabPage();
             }
             else {
                 tclTecViews.TabPages.RemoveByKey(nameTab);
-                //m_panelLastMinutes.Activate(false);
+                m_panelLastMinutes.Activate(false);
                 m_panelLastMinutes.Stop();
             }
         }

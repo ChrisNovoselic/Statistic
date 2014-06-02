@@ -55,9 +55,10 @@ namespace Statistic
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
         static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 8F, ContentAlignment.MiddleRight),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 10F, ContentAlignment.MiddleRight),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter)};
         static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
+        //static int COUNT_HOURS = 24;
 
         static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
 
@@ -258,10 +259,10 @@ namespace Statistic
                 m_dictLabelTime = new Dictionary<int,Label> ();
 
                 dtNow = dtNow.AddMinutes(59);
-                for (i = 0; i < 24; i++)
+                for (i = 1; i < 25; i++)
                 {
-                    m_dictLabelTime[i] = HLabel.createLabel(dtNow.ToString (@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
-                    this.Controls.Add(m_dictLabelTime[i], 0, i + COUNT_FIXED_ROWS);
+                    m_dictLabelTime[i - 1] = HLabel.createLabel(dtNow.ToString (@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
+                    this.Controls.Add(m_dictLabelTime[i - 1], 0, (i - 1) + COUNT_FIXED_ROWS);
 
                     dtNow = dtNow.AddHours(1);
                 }
@@ -318,6 +319,7 @@ namespace Statistic
             private List<TG> m_listSensorId2TG;
 
             private Dictionary<int, Label[]> m_dictLabelVal;
+            private Dictionary<int, ToolTip[]> m_dictToolTip;
 
             private object lockValue;
 
@@ -360,6 +362,7 @@ namespace Statistic
                 int i = -1;
                 m_list_TECComponents = new List<TECComponentBase> ();
                 m_dictLabelVal = new Dictionary<int, Label[]>();
+                m_dictToolTip = new Dictionary<int, ToolTip[]>();
 
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
@@ -378,10 +381,16 @@ namespace Statistic
 
                         //Память под ячейки со значениями
                         m_dictLabelVal.Add(g.m_id, new Label[24]);
-                        
+                        m_dictToolTip.Add(g.m_id, new ToolTip[24]);
+
                         for (i = 0; i < 24; i ++)
                         {
                             m_dictLabelVal[g.m_id][i] = HLabel.createLabel (0.ToString (@"F2"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT]);
+                            m_dictToolTip[g.m_id][i] = new ToolTip();
+                            m_dictToolTip[g.m_id][i].IsBalloon = true;
+                            m_dictToolTip[g.m_id][i].ShowAlways = true;
+                            m_dictToolTip[g.m_id][i].SetToolTip(m_dictLabelVal[g.m_id][i], @"ПБР: ---, d: --%");
+
                             this.Controls.Add(m_dictLabelVal[g.m_id][i], CountTECComponent, i + COUNT_FIXED_ROWS);
                         }
 
@@ -413,7 +422,7 @@ namespace Statistic
                 m_dictValuesHours = new Dictionary<int,TecView.valuesTECComponent> ();
                 foreach (TECComponent c in m_list_TECComponents)
                 {
-                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(25));
+                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
                 }
 
                 delegateUpdateGUI_TM = ShowLastMinutesTM;
@@ -444,7 +453,7 @@ namespace Statistic
                 ClearValues();
 
                 //Милисекунды до первого запуска функции таймера
-                double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 1, 0) - DateTime.Now).TotalMilliseconds;
+                double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 11, 0) - DateTime.Now).TotalMilliseconds;
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64) msecUpdate, ((PanelLastMinutes)Parent).m_msecPeriodUpdate - 1);
@@ -572,18 +581,50 @@ namespace Statistic
 
             private void ShowLastMinutesTM()
             {
+                Color clrBackColor;
+                double dblPercent = 0.0,
+                    dblUDGe = 0.0;
+                string strToolTip = string.Empty;
+                
                 foreach (TECComponent g in m_list_TECComponents)
                 {
-                    for (int i = 0; i < 24; i++)
+                    for (int hour = 1; hour < 25; hour++)
                     {
-                        m_dictLabelVal[g.m_id][i].Text = m_dictValuesHours[g.m_id].valuesLastMinute[i].ToString(@"F2");
+                        clrBackColor = s_clrBakColorLabelVal;
+                        dblPercent = 0.0;
+                        strToolTip = string.Empty;
 
-                        if (m_dictValuesHours[g.m_id].valuesUDGe [i] > 1)
-                        {
-                            m_dictLabelVal[g.m_id][i].BackColor = Color.Red;
-                        }
+                        //if ((i > 0) && ((i - 0) < m_dictValuesHours[g.m_id].valuesUDGe.Length))
+                            dblUDGe = m_dictValuesHours[g.m_id].valuesUDGe[hour];
+                        //else
+                        //    dblUDGe = 0.0;
+
+                        strToolTip += @"УДГе=" + dblUDGe.ToString (@"F2");
+
+                        if ((m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) && (dblUDGe > 1))
+                            dblPercent = (m_dictValuesHours[g.m_id].valuesLastMinute[hour] - dblUDGe) / dblUDGe * 100;
                         else
                             ;
+                        strToolTip += @";Мон2%:" + dblPercent.ToString (@"F1");
+
+                        m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
+
+                        if (m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) {
+                            m_dictLabelVal[g.m_id][hour - 1].Text = m_dictValuesHours[g.m_id].valuesLastMinute[hour].ToString(@"F2");
+
+                            if ((dblUDGe > 1) &&
+                                (m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) &&
+                                ((!(Math.Abs(dblPercent) < 2))))
+                            {
+                                clrBackColor = Color.Red;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            m_dictLabelVal[g.m_id][hour - 1].Text = 0.ToString (@"F0");
+
+                        m_dictLabelVal[g.m_id][hour - 1].BackColor = clrBackColor;
                     }
                 }
             }
@@ -660,7 +701,10 @@ namespace Statistic
                                 ;
 
                             hour = dtVal.Hour + offsetUTC;
-                            if (! (hour < 24)) hour -= 24; else ;
+                            if (! (hour < 24)) {
+                                hour -= 24;
+                            }
+                            else ;
 
                             tg.power_LastMinutesTM[hour] = value;
                             m_dictValuesHours [g.m_id].valuesLastMinute [hour] += value;
@@ -1115,9 +1159,9 @@ namespace Statistic
                                 for (j = 0; j < m_list_TECComponents.Count; j++)
                                 {
                                     if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count)
-                                        m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[24] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
+                                        m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
                                     else
-                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[24] = 0.0;
+                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = 0.0;
                                     //j++;
                                 }
                             }
@@ -1157,7 +1201,7 @@ namespace Statistic
                             dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
 
                             hour = dtPBR.Hour;
-                            if (hour == 0 && dtPBR.Day != date.Day)
+                            if ((hour == 0) && (!(dtPBR.Day == date.Day)))
                                 hour = 24;
                             else
                                 if (hour == 0)
@@ -1171,7 +1215,7 @@ namespace Statistic
                                 try
                                 {
                                     if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
-                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour - 1] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
+                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
                                     else
                                         ;
 
@@ -1185,23 +1229,23 @@ namespace Statistic
 
                                         if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)row_in[0][offsetUDG + j * 3];
                                         else
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
 
                                         if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)row_in[0][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesHours [m_list_TECComponents[j].m_id].valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                            m_dictValuesHours [m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)row_in[0][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
                                     }
                                 }
                                 catch
@@ -1219,42 +1263,39 @@ namespace Statistic
                         try
                         {
                             hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
-                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                            if ((hour == 0) && (!(((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)))
                                 hour = 24;
                             else
-                                if (hour == 0)
-                                    continue;
-                                else
-                                    ;
+                                ;
 
                             //foreach (TECComponent g in tec.list_TECComponents)
                             for (j = 0; j < m_list_TECComponents.Count; j++)
                             {
                                 try
                                 {
-                                     m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour - 1] = 0;
+                                     m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = 0;
 
                                     if (i < table_in.Rows.Count)
                                     {
                                         if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)table_in.Rows[i][offsetUDG + j * 3];
                                         else
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
 
                                         if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour - 1] = 0;
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
                                     }
                                 }
                                 catch
@@ -1269,13 +1310,13 @@ namespace Statistic
                     }
                 }
 
-                for (i = 0; i < 24; i++)
+                for (i = 1; i < 25; i++)
                 {
                     for (j = 0; j < m_list_TECComponents.Count; j++)
                     {
-                        if (i == 0)
+                        if (i == 1)
                         {
-                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe [i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[24]) / 2;
+                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe [i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[0]) / 2;
                         }
                         else
                         {

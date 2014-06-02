@@ -2281,7 +2281,8 @@ namespace Statistic
         {
             FillDefaultHours();
 
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
+            double sumFact = 0, sumUDGe = 0, sumDiviation = 0,
+                    dblPercent = 0.0, dblUDGe = 0.0;
             int hour = lastHour;
             int receivedHour = lastReceivedHour;
             int itemscount;
@@ -2302,8 +2303,22 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
+                dgwHours.Rows[i].Cells[6].Value = m_valuesHours.valuesLastMinutesTM[i].ToString("F2");
+                dblUDGe = m_valuesHours.valuesUDGe[i];
+                if ((m_valuesHours.valuesLastMinutesTM[i] > 1) && (dblUDGe > 1))
+                    dblPercent = (m_valuesHours.valuesLastMinutesTM[i] - dblUDGe) / dblUDGe * 100;
+                else
+                    ;
+
+                if ((dblUDGe > 1) &&
+                   (m_valuesHours.valuesLastMinutesTM[i] > 1) &&
+                   ((!(Math.Abs(dblPercent) < 2))))
+                    dgwHours.Rows[i].Cells[6].Style = dgvCellStyleError;
+                else
+                    dgwHours.Rows[i].Cells[6].Style = dgvCellStyleCommon;
+
                 if (m_valuesHours.season == seasonJumpE.SummerToWinter)
-                {
+                {                    
                     if (i <= m_valuesHours.hourAddon)
                     {
                         dgwHours.Rows[i].Cells[1].Value = m_valuesHours.valuesFact[i].ToString("F2");
@@ -2480,7 +2495,10 @@ namespace Statistic
                         {
                             if (tg.id_tm > 0)
                             {
-                                tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
+                                if (tg.power_TM > 1)
+                                    tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
+                                else
+                                    tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = 0.ToString("F0");
                                 
                             }
                             else
@@ -2495,11 +2513,14 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in tec.list_TECComponents[num_TECComponent].TG)
+                foreach (TG tg in tec.list_TECComponents[num_TECComponent].TG)
                 {
-                    if (t.id_tm > 0)
+                    if (tg.id_tm > 0)
                     {
-                        tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = t.power_TM.ToString("F2");
+                        if (tg.power_TM > 1)
+                            tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
+                        else
+                            tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = 0.ToString("F0");
                     }
                     else
                     {
@@ -2584,7 +2605,7 @@ namespace Statistic
             double value = 0, value_TM = 0.0;
             for (int i = 0; i < sensorId2TG.Length; i++) {
                 value += sensorId2TG[i].power[min];
-                value_TM += sensorId2TG[i].power_TM;
+                if (sensorId2TG[i].power_TM > 1) value_TM += sensorId2TG[i].power_TM; else ;
             }
 
             lblCommonPVals[(int)TG.INDEX_VALUE.FACT].Text = value.ToString("F2");
@@ -2708,6 +2729,7 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
                 m_valuesHours.valuesFact[i] =
+                m_valuesHours.valuesLastMinutesTM[i] =
                 m_valuesHours.valuesDiviation[i] =
                 m_valuesHours.valuesPBR[i] =
                 m_valuesHours.valuesPBRe[i] =
@@ -3362,6 +3384,85 @@ namespace Statistic
         private bool GetLastMinutesTMResponse(DataTable table_in)
         {
             bool bRes = true;
+            int i = -1,
+                hour = -1,
+                offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
+            double value = -1;
+            DateTime dtVal;
+            DataRow[] tgRows = null;
+
+            if (num_TECComponent < 0) {
+                foreach (TECComponent g in m_list_TECComponents)
+                {
+                    foreach (TG tg in g.TG)
+                    {
+                        for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                        {
+                            tg.power_LastMinutesTM[i] = 0;
+                        }
+
+                        tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+
+                        for (i = 0; i < tgRows.Length; i++)
+                        {
+                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                return false;
+                            else
+                                ;
+
+                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                return false;
+                            else
+                                ;
+
+                            hour = dtVal.Hour + offsetUTC;
+                            if (!(hour < 24)) hour -= 24; else ;
+
+                            tg.power_LastMinutesTM[hour] = value;
+                        
+                            //«апрос с учетом значени€ перехода через сутки
+                            if (hour > 0)                        
+                                m_valuesHours.valuesLastMinutesTM [hour - 1] += value;
+                            else
+                                ;
+                        }
+                    }
+                }
+            }
+            else {
+                foreach (TG tg in m_list_TECComponents)
+                {
+                    for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                    {
+                        tg.power_LastMinutesTM[i] = 0;
+                    }
+
+                    tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+
+                    for (i = 0; i < tgRows.Length; i++)
+                    {
+                        if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                            return false;
+                        else
+                            ;
+
+                        if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                            return false;
+                        else
+                            ;
+
+                        hour = dtVal.Hour + offsetUTC;
+                        if (!(hour < 24)) hour -= 24; else ;
+
+                        tg.power_LastMinutesTM[hour] = value;
+
+                        if (hour > 0)
+                            m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                        else
+                            ;
+                    }
+                }
+            }
 
             return bRes;
         }

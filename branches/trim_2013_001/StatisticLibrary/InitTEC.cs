@@ -114,7 +114,7 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                         list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_FACT"])), (int)CONN_SETT_TYPE.DATA_FACT);
+                    tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"])), (int)CONN_SETT_TYPE.DATA_FACT);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"])), (int)CONN_SETT_TYPE.DATA_TM);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"])), (int)CONN_SETT_TYPE.ADMIN);
                     tec[indx_tec].connSettings(getConnSettingsOfIdSource(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"])), (int)CONN_SETT_TYPE.PBR);
@@ -254,7 +254,7 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                     list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA_FACT"].ToString(), out err), (int)CONN_SETT_TYPE.DATA_FACT);
+                tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA"].ToString(), out err), (int)CONN_SETT_TYPE.DATA_FACT);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_DATA_TM"].ToString(), out err), (int)CONN_SETT_TYPE.DATA_TM);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_ADMIN"].ToString(), out err), (int)CONN_SETT_TYPE.ADMIN);
                 tec[i].connSettings(DbTSQLInterface.Select(connSett, "SELECT * FROM SOURCE WHERE ID = " + list_tec.Rows[i]["ID_SOURCE_PBR"].ToString(), out err), (int)CONN_SETT_TYPE.PBR);
