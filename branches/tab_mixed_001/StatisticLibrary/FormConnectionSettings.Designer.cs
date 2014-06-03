@@ -159,7 +159,6 @@ namespace StatisticCommon
             // 
             // nudnPort
             // 
-            this.nudnPort.Enabled = false;
             this.nudnPort.Location = new System.Drawing.Point(130, 71);
             this.nudnPort.Maximum = new decimal(new int[] {
             65535,
@@ -232,8 +231,8 @@ namespace StatisticCommon
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Shown +=new System.EventHandler(FormConnectionSettings_Shown);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConnectionSettings_FormClosing);
+            this.Shown += new System.EventHandler(this.FormConnectionSettings_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.nudnPort)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -357,7 +357,7 @@ namespace Statistic
         private void closeTecViewsTabPages ()
         {
             if (tclTecViews.TabPages.Count > 0)
-                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                if (! (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes))
                 {
                     return ; //e.Cancel = true;
                 }
@@ -367,10 +367,13 @@ namespace Statistic
                     tclTecViews.TabPagesClear();
                     selectedTecViews.Clear();
 
-                    for (int i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
-                    {
-                        tecViews [i].Stop ();
-                    }
+                    if (! (tecViews == null))
+                        for (int i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
+                        {
+                            if ((i < tecViews.Count) && !(tecViews[i] == null)) tecViews[i].Stop(); else ;
+                        }
+                    else
+                        ;
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
 

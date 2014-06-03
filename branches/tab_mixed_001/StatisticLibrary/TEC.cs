@@ -161,7 +161,7 @@ namespace StatisticCommon
             connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
             connSetts[type].userName = source.Rows[0]["UID"].ToString();
             connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
-            connSetts[type].ignore = Boolean.Parse(source.Rows[0]["IGNORE"].ToString()); //== "1";
+            connSetts[type].ignore = int.Parse(source.Rows[0]["IGNORE"].ToString()) == 1; //== "1";
 
             return iRes;
         }

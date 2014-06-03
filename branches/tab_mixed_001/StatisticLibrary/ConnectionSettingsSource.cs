@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Data;
+using System.Data.Common;
 
 using MySql.Data.MySqlClient;
 
@@ -74,7 +75,7 @@ namespace StatisticCommon
             return GetConnectionSettings (tableRes, 0, tablePsw, 0);
         }
 
-        public static DataTable GetConnectionSettings(MySqlConnection conn, int id_ext, int id_role, out int er)
+        public static DataTable GetConnectionSettings(DbConnection conn, int id_ext, int id_role, out int er)
         {
             er = 0;
 
@@ -92,7 +93,7 @@ namespace StatisticCommon
 
             int i = -1;
 
-            MySqlConnection conn = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_ConnectionSettings, out err);
+            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {
@@ -113,7 +114,7 @@ namespace StatisticCommon
                         listConnSett[i].dbName = tableSource.Rows[i]["DB_NAME"].ToString();
                         listConnSett[i].userName = tableSource.Rows[i]["UID"].ToString();
                         //Password
-                        listConnSett[i].ignore = Convert.ToBoolean (tableSource.Rows[i]["IGNORE"].ToString());
+                        listConnSett[i].ignore = Convert.ToInt32 (tableSource.Rows[i]["IGNORE"].ToString()) == 1;
 
                         tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(Convert.ToInt32(tableSource.Rows[i]["ID"]), 501), null, null, out err);
 
@@ -143,7 +144,7 @@ namespace StatisticCommon
             strQuery = psw = string.Empty;
 
 
-            MySqlConnection conn = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_ConnectionSettings, out err);
+            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {

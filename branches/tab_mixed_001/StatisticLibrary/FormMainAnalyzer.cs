@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.Data.Common;
 
 using System.Net;
 using System.Net.Sockets;
@@ -72,7 +73,7 @@ namespace StatisticCommon
 
             int err = -1;
 
-            MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_connSettConfigDB, out err);
+            DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
             Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
             FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);

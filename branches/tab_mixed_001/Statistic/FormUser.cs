@@ -42,7 +42,7 @@ namespace Statistic
             int err = 0,
                 i = -1;
 
-            InitTEC.m_connConfigDB = DbTSQLInterface.GetConnection(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+            InitTEC.m_connConfigDB = DbTSQLInterface.GetConnection(connSett, out err);
 
             Users.GetUsers(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
             m_users_edit = m_users_origin.Copy ();

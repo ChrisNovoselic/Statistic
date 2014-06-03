@@ -17,7 +17,8 @@ namespace StatisticCommon
         {
             MySQL,
             MSSQL,
-            MSExcel
+            MSExcel,
+            UNKNOWN
         }
 
         public enum QUERY_TYPE { UPDATE, INSERT, DELETE, COUNT_QUERY_TYPE };
@@ -291,33 +292,72 @@ namespace StatisticCommon
             Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, true);
         }
 
-        public static MySqlConnection GetConnection (DB_TSQL_INTERFACE_TYPE type, ConnectionSettings connSett, out int er)
+        private static DbTSQLInterface.DB_TSQL_INTERFACE_TYPE getTypeDB(int port)
         {
-            er = 0;
+            DbTSQLInterface.DB_TSQL_INTERFACE_TYPE typeDBRes = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
             
-            MySqlConnection connectionMySQL;
-            string s = connSett.GetConnectionStringMySQL();
-            connectionMySQL = new MySqlConnection(s);
-
-            try
+            switch (port)
             {
-                connectionMySQL.Open();
-
-                logging_open_db(connectionMySQL);
-            }
-            catch (Exception e)
-            {
-                logging_catch_db(connectionMySQL, e);
-                
-                connectionMySQL = null;               
-
-                er = -1;
+                case 3306:
+                    typeDBRes = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                    break;
+                case 1433:
+                    typeDBRes = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                    break;
+                default:
+                    break;
             }
 
-            return connectionMySQL;
+            return typeDBRes;
         }
 
-        public static void CloseConnection(MySqlConnection conn, out int er)
+        public static DbConnection GetConnection (ConnectionSettings connSett, out int er)
+        {
+            er = 0;
+
+            string s = string.Empty;
+            DbConnection connRes = null;
+
+            DbTSQLInterface.DB_TSQL_INTERFACE_TYPE typeDB = getTypeDB (connSett.port);
+
+            if (!(typeDB == DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN))
+            {
+                switch (typeDB)
+                {
+                    case DB_TSQL_INTERFACE_TYPE.MySQL:
+                        s = connSett.GetConnectionStringMySQL();
+                        connRes = new MySqlConnection(s);
+                        break;
+                    case DB_TSQL_INTERFACE_TYPE.MSSQL:
+                        s = connSett.GetConnectionStringMSSQL ();
+                        connRes = new SqlConnection(s);
+                        break;
+                    default:
+                        break;
+                }
+
+                try
+                {
+                    connRes.Open();
+
+                    logging_open_db(connRes);
+                }
+                catch (Exception e)
+                {
+                    logging_catch_db(connRes, e);
+
+                    connRes = null;
+
+                    er = -1;
+                }
+            }
+            else
+                ;
+
+            return connRes;
+        }
+
+        public static void CloseConnection(DbConnection conn, out int er)
         {
             er = 0;
 
@@ -416,7 +456,7 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Select(MySqlConnection connectionMySQL, string query, DbType[] types, object[] parametrs, out int er)
+        public static DataTable Select(DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
         {
             er = 0;
 
@@ -426,37 +466,51 @@ namespace StatisticCommon
 
             if (er == 0)
             {
-                MySqlCommand commandMySQL;
-                MySqlDataAdapter adapterMySQL;
+                DbCommand cmd = null;
+                DbDataAdapter adapter = null;
 
-                commandMySQL = new MySqlCommand();
-                commandMySQL.Connection = connectionMySQL;
-                commandMySQL.CommandType = CommandType.Text;
-
-                adapterMySQL = new MySqlDataAdapter();
-                adapterMySQL.SelectCommand = commandMySQL;
-
-                commandMySQL.CommandText = query;
-                ParametrsAdd(commandMySQL, types, parametrs);
-
-                dataTableRes.Reset();
-                dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
-
-                try
+                if (conn is MySqlConnection)
                 {
-                    if (connectionMySQL.State == ConnectionState.Open)
-                    {
-                        adapterMySQL.Fill(dataTableRes);
+                    cmd = new MySqlCommand();
+                    adapter = new MySqlDataAdapter();
+                }
+                else if (conn is SqlConnection) {
+                        cmd = new SqlCommand();
+                        adapter = new SqlDataAdapter();
                     }
                     else
-                        er = -1; //
-                }
-                catch (Exception e)
-                {
-                    logging_catch_db(connectionMySQL, e);
+                        ;
 
-                    er = -1;
+                if ((!(cmd == null)) && (!(adapter == null))) {
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.Text;
+
+                    adapter.SelectCommand = cmd;
+
+                    cmd.CommandText = query;
+                    ParametrsAdd(cmd, types, parametrs);
+
+                    dataTableRes.Reset();
+                    dataTableRes.Locale = System.Globalization.CultureInfo.InvariantCulture;
+
+                    try
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            adapter.Fill(dataTableRes);
+                        }
+                        else
+                            er = -1; //
+                    }
+                    catch (Exception e)
+                    {
+                        logging_catch_db(conn, e);
+
+                        er = -1;
+                    }
                 }
+                else
+                    er = -1;
             }
             else
             {
@@ -471,14 +525,14 @@ namespace StatisticCommon
             er = 0;
 
             DataTable dataTableRes = null;
-            MySqlConnection connectionMySQL;
-            connectionMySQL = GetConnection (DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out er);
+            DbConnection conn;
+            conn = GetConnection (connSett, out er);
 
             if (er == 0)
             {
-                dataTableRes = Select(connectionMySQL, query, null, null, out er);
+                dataTableRes = Select(conn, query, null, null, out er);
 
-                CloseConnection (connectionMySQL, out er);
+                CloseConnection (conn, out er);
             }
             else
                 dataTableRes = new DataTable();
@@ -486,12 +540,13 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        private static void ParametrsAdd(MySqlCommand commandMySQL, DbType[] types, object[] parametrs)
+        private static void ParametrsAdd(DbCommand cmd, DbType[] types, object[] parametrs)
         {
             if ((!(types == null)) && (!(parametrs == null)))
                 foreach (DbType type in types)
                 {
-                    commandMySQL.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count - 1]);
+                    //cmd.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count - 1]);
+                    cmd.Parameters.Add(parametrs[cmd.Parameters.Count - 1]);
                 }
             else
                 ;
@@ -524,38 +579,50 @@ namespace StatisticCommon
                 ;
         }
 
-        public static void ExecNonQuery(MySqlConnection connectionMySQL, string query, DbType[] types, object[] parametrs, out int er)
+        public static void ExecNonQuery(DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
         {
             er = 0;
 
-            MySqlCommand commandMySQL;
+            DbCommand cmd = null;
 
             ParametrsValidate(types, parametrs, out er);
 
             if (er == 0)
             {
-                commandMySQL = new MySqlCommand();
-                commandMySQL.Connection = connectionMySQL;
-                commandMySQL.CommandType = CommandType.Text;
-
-                commandMySQL.CommandText = query;
-                ParametrsAdd(commandMySQL, types, parametrs);
-
-                try
-                {
-                    if (connectionMySQL.State == ConnectionState.Open)
-                    {
-                        commandMySQL.ExecuteNonQuery();
+                if (conn is MySqlConnection) {
+                    cmd = new MySqlCommand();
+                }
+                else if (conn is SqlConnection) {
+                    cmd = new SqlCommand();
                     }
                     else
-                        er = -1; //
-                }
-                catch (Exception e)
-                {
-                    logging_catch_db(connectionMySQL, e);
+                        ;
+                
+                if (! (cmd == null)) {
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.Text;
 
-                    er = -1;
+                    cmd.CommandText = query;
+                    ParametrsAdd(cmd, types, parametrs);
+
+                    try
+                    {
+                        if (conn.State == ConnectionState.Open)
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        else
+                            er = -1; //
+                    }
+                    catch (Exception e)
+                    {
+                        logging_catch_db(conn, e);
+
+                        er = -1;
+                    }
                 }
+                else
+                    er = -1;
             }
             else
                 ;
@@ -565,15 +632,15 @@ namespace StatisticCommon
         {
             er = 0;
 
-            MySqlConnection connectionMySQL;
+            DbConnection conn;
 
-            connectionMySQL = GetConnection (DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out er);
+            conn = GetConnection(connSett, out er);
 
             if (er == 0)
             {
-                ExecNonQuery(connectionMySQL, query, null, null, out er);
+                ExecNonQuery(conn, query, null, null, out er);
 
-                connectionMySQL.Close();
+                conn.Close();
             }
             else
                 ;
