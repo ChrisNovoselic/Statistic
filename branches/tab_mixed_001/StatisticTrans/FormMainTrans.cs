@@ -226,10 +226,10 @@ namespace StatisticCommon
                             ((TextBox)m_arUIControlDB[i, j]).Text = connSett.server;
                             break;
                         case (Int16)INDX_UICONTROL_DB.PORT:
-                            if (m_arUIControlDB[i, j].Enabled)
+                            //if (m_arUIControlDB[i, j].Enabled == true)
                                 ((NumericUpDown)m_arUIControlDB[i, j]).Text = connSett.port.ToString();
-                            else
-                                ;
+                            //else
+                            //    ;
                             break;
                         case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
                             ((TextBox)m_arUIControlDB[i, j]).Text = connSett.dbName;

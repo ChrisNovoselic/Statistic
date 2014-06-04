@@ -17,6 +17,7 @@ namespace trans_mc
         {
             public bool mc_ignore_date,
                 ts_ignore_date;
+            public string m_strtypeField;
         }
 
         private System.Windows.Forms.Label labelSourceServerMC;
@@ -31,7 +32,13 @@ namespace trans_mc
         {
             InitializeComponentTransMC();
 
-            this.Text = "Конвертер ПБР (Modes-Centre ГТП)";
+            string sec, key;
+            FIleINI fileINI = new FIleINI("setup.ini");
+            sec = "Main (" + ProgramBase.AppName + ")";
+            key = "ОкноНазначение";
+            this.Text = fileINI.ReadString(sec, key, string.Empty);
+
+            this.Text = @"Конвертер ПБР (Modes-Centre ГТП)" + @" " + this.Text;
 
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminMC();
@@ -50,8 +57,6 @@ namespace trans_mc
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.ResumeLayout(false);
 
-            string sec, key;
-            FIleINI fileINI = new FIleINI ("setup.ini");
             sec = "Интерпретация данных (" + ProgramBase.AppName + ")";
             key = "ИгнорДатаВремя-ModesCentre";
             if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.mc_ignore_date) == false)
@@ -67,6 +72,16 @@ namespace trans_mc
             {
                 m_SetupINI.ts_ignore_date = false;
                 fileINI.WriteString(sec, key, m_SetupINI.ts_ignore_date.ToString ());
+            }
+            else
+                ;
+
+            key = "РДГФорматТаблица";
+            m_SetupINI.m_strtypeField = fileINI.ReadString(sec, key, string.Empty);
+            if (m_SetupINI.m_strtypeField.Equals (string.Empty) == true)
+            {
+                m_SetupINI.m_strtypeField = AdminTS.TYPE_FIELDS.DYNAMIC.ToString();
+                fileINI.WriteString(sec, key, m_SetupINI.m_strtypeField);
             }
             else
                 ;
@@ -190,8 +205,12 @@ namespace trans_mc
                         m_arAdmin[i].m_ignore_date = m_SetupINI.mc_ignore_date;
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett();
-                        ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC; //AdminTS.TYPE_FIELDS.DYNAMIC;
+                        if (m_SetupINI.m_strtypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString ()) == true)
+                            ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                        else if (m_SetupINI.m_strtypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
+                                ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                            else
+                                ;
                         m_arAdmin[i].m_ignore_date = m_SetupINI.ts_ignore_date;
                         break;
                     default:

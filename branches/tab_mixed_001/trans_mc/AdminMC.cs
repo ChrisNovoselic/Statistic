@@ -60,7 +60,8 @@ namespace trans_mc
             query += ";";
             query += date.ToOADate ().ToString ();
 
-
+            Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
+            
             ((DbMCInterface)m_listDbInterfaces[0]).Request(0, query); //
         }
 
@@ -90,6 +91,8 @@ namespace trans_mc
                                 continue;
                             else
                                 ;
+
+                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
 
                         //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                         //{
@@ -180,11 +183,14 @@ namespace trans_mc
         protected override bool StateRequest(int /*StatesMachine*/ state)
         {
             bool result = true;
+            string msg = string.Empty;
+
             switch (state)
             {
                 case (int)StatesMachine.InitIGO:
-                    ActionReport("Инициализация объектов Modes-Centre.");
-                    //InitIGO ();
+                    msg = @"Инициализация объектов Modes-Centre";
+                    ActionReport(msg);
+                    Logging.Logg().LogDebugToFile(@"AdminMC::StateResponse () - " + msg);
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
@@ -239,6 +245,7 @@ namespace trans_mc
                     result = true;
                     if (result == true)
                     {
+                        Logging.Logg().LogDebugToFile(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre");
                     }
                     else
                         ;

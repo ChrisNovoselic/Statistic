@@ -64,7 +64,7 @@ namespace trans_mc
 
             lock (lockConnectionSettings)
             {
-                if (needReconnect) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
+                if (needReconnect == true) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
                     return false;
                 else
                     ;
@@ -93,6 +93,8 @@ namespace trans_mc
             }
             else
                 ;
+
+            Logging.Logg().LogDebugToFile("Соединение с Modes-Centre(" + (string)m_connectionSettings + ") - УСПЕХ");
 
             return result;
         }
@@ -261,6 +263,8 @@ namespace trans_mc
                                 }
                                 else
                                     ;
+
+                                ppbr_rows [0]["PBR_NUMBER"] = pvi.Type.ToString();
 
                                 switch (m_listPFI[pvi.ObjFactor].Id)
                                 {

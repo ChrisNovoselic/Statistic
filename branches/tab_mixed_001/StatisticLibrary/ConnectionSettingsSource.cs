@@ -44,23 +44,18 @@ namespace StatisticCommon
                 //hash = psw.Rows[row_psw]["HASH"].ToString ().ToCharArray ();
                 //len_hash = psw.Rows[row_psw]["HASH"].ToString().Length;
 
-                strPsw = Crypt.Crypting ().Decrypt (psw.Rows[row_psw]["HASH"].ToString (), "AsDfGhJkL;");
+                strPsw = Crypt.Crypting ().Decrypt (psw.Rows[row_psw]["HASH"].ToString (), Crypt.KEY);
             }
             else
                 ;
 
-            if (src.Columns.IndexOf ("PASSWORD") < 0)
+            //Проверка с каким вариантом БД происходит работа
+            if (src.Columns.IndexOf ("PASSWORD") < 0) {
                 src.Columns.Add("PASSWORD", typeof(string));
+                src.Rows[row_src]["PASSWORD"] = strPsw;
+            }
             else
                 ;
-
-            //strPsw = Crypt.Crypting().un(hash, len_hash, out errMsg).ToString();
-            if (errMsg.Length > 0)
-                strPsw = string.Empty;
-            else
-                ;
-
-            src.Rows[row_src]["PASSWORD"] = strPsw;
 
             return src;
         }

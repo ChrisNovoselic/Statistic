@@ -60,7 +60,7 @@ namespace StatisticCommon
                     while (i < countParts)
                     {
                         connSetts.Add(new ConnectionSettings ());
-                        connSetts[connSetts.Count - 1].port = 3306;
+                        connSetts[connSetts.Count - 1].port = 1433;
 
                         pos2 = st.IndexOf(';', pos1);
                         if (pos2 < 0)

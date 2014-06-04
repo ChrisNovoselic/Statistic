@@ -300,7 +300,7 @@ namespace StatisticCommon
         {
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], "SELECT now()");
+                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], /*"SELECT now()"*/@"SELECT GETDATE()");
             else
                 ;
         }
@@ -961,7 +961,12 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
                                         " SET " +
-                                        @"PBR_NUMBER='ÏÁÐ" + getPBRNumber().ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                        @"PBR_NUMBER='ÏÁÐ";
+                            if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
+                            else
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getPBRNumber();
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
                                         @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmax='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
@@ -1195,14 +1200,13 @@ namespace StatisticCommon
                     if (isAlready == false) {
                         string dbNameType = string.Empty;
 
-                        switch (connSettType) {
-                            case (int)CONN_SETT_TYPE.ADMIN:
-                            case (int)CONN_SETT_TYPE.PBR:
-                                dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                        dbType = (short) DbTSQLInterface.getTypeDB (t.connSetts[connSettType].port);
+                        switch (dbType)
+                        {
+                            case (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
                                 dbNameType = "MySql";
                                 break;
-                            case (int)CONN_SETT_TYPE.DATA:
-                                dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                            case (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
                                 dbNameType = "MSSQL";
                                 break;
                             default:
@@ -1210,7 +1214,8 @@ namespace StatisticCommon
                                 break; 
                         }
 
-                        if (! (dbType < 0)) {
+                        if (!(dbType == (short) DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN))
+                        {
                             m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Èíòåðôåéñ " + dbNameType + "-ÁÄ"));
                             m_listListenerIdCurrent.Add (-1);
 

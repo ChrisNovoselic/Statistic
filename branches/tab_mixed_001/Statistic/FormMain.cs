@@ -173,7 +173,7 @@ namespace Statistic
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                     m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
-                    m_arAdmin[i].m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                    m_arAdmin[i].m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                 }
 
                 formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_ContextMenuStripListTecViews, сменитьРежимToolStripMenuItem_Click);

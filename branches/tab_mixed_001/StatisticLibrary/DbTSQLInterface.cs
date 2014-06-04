@@ -292,7 +292,7 @@ namespace StatisticCommon
             Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, true);
         }
 
-        private static DbTSQLInterface.DB_TSQL_INTERFACE_TYPE getTypeDB(int port)
+        public static DbTSQLInterface.DB_TSQL_INTERFACE_TYPE getTypeDB(int port)
         {
             DbTSQLInterface.DB_TSQL_INTERFACE_TYPE typeDBRes = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
             
