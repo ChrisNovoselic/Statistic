@@ -1158,79 +1158,91 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected override bool InitDbInterfaces () {
+        protected override bool InitDbInterfaces()
+        {
             bool bRes = true;
 
-            m_listDbInterfaces.Clear ();
+            m_listDbInterfaces.Clear();
 
             m_listListenerIdCurrent.Clear();
             m_indxDbInterfaceCurrent = -1;
 
             Int16 connSettType = -1;
-            Int16 dbType = -1; 
+            Int16 dbType = -1;
             foreach (TEC t in m_list_tec)
             {
-                for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++) {
-                    if ((m_ignore_connsett_data == true) && (connSettType == (int)CONN_SETT_TYPE.DATA))
+                for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++)
+                {
+                    if ((m_ignore_connsett_data == true) && ((connSettType == (int)CONN_SETT_TYPE.DATA_FACT) && (connSettType == (int)CONN_SETT_TYPE.DATA_TM)))
                         continue;
                     else
                         ;
 
                     dbType = -1;
 
-                    bool isAlready = false;
+                    if (object.ReferenceEquals(t.connSetts[connSettType], null) == false)
+                    {
+                        bool isAlready = false;
 
-                    foreach (DbTSQLInterface dbi in m_listDbInterfaces) {
-                        //if (! (t.connSetts [0] == cs))
-                        //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
-                        if (((ConnectionSettings)dbi.m_connectionSettings) == t.connSetts[connSettType])
-                        //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
+                        foreach (DbTSQLInterface dbi in m_listDbInterfaces)
                         {
-                            isAlready = true;
+                            //if (! (t.connSetts [0] == cs))
+                            //if (dbi.connectionSettings.Equals(t.connSetts[(int)CONN_SETT_TYPE.ADMIN]) == true)
+                            if (((ConnectionSettings)dbi.m_connectionSettings) == t.connSetts[connSettType])
+                            //if (! (dbi.connectionSettings != t.connSetts[(int)CONN_SETT_TYPE.ADMIN]))
+                            {
+                                isAlready = true;
 
-                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.IndexOf(dbi);
-                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[t.m_arIndxDbInterfaces[connSettType]].ListenerRegister();
+                                t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.IndexOf(dbi);
+                                t.m_arListenerIds[connSettType] = m_listDbInterfaces[t.m_arIndxDbInterfaces[connSettType]].ListenerRegister();
 
-                            break;
+                                break;
+                            }
+                            else
+                                ;
+                        }
+
+                        if (isAlready == false)
+                        {
+                            string dbNameType = string.Empty;
+
+                            switch (connSettType)
+                            {
+                                case (int)CONN_SETT_TYPE.ADMIN:
+                                case (int)CONN_SETT_TYPE.PBR:
+                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                                    dbNameType = "MySql";
+                                    break;
+                                case (int)CONN_SETT_TYPE.DATA_FACT:
+                                case (int)CONN_SETT_TYPE.DATA_TM:
+                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                                    dbNameType = "MSSQL";
+                                    break;
+                                default:
+                                    dbNameType = string.Empty;
+                                    break;
+                            }
+
+                            if (!(dbType < 0))
+                            {
+                                m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Èםעונפויס " + dbNameType + "-ÁÄ"));
+                                m_listListenerIdCurrent.Add(-1);
+
+                                t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
+                                t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
+
+                                m_listDbInterfaces[m_listDbInterfaces.Count - 1].Start();
+
+                                m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
+                            }
+                            else
+                                ;
                         }
                         else
-                            ;
-                    }
-
-                    if (isAlready == false) {
-                        string dbNameType = string.Empty;
-
-                        dbType = (short) DbTSQLInterface.getTypeDB (t.connSetts[connSettType].port);
-                        switch (dbType)
-                        {
-                            case (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
-                                dbNameType = "MySql";
-                                break;
-                            case (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
-                                dbNameType = "MSSQL";
-                                break;
-                            default:
-                                dbNameType = string.Empty;
-                                break; 
-                        }
-
-                        if (!(dbType == (short) DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN))
-                        {
-                            m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Èםעונפויס " + dbNameType + "-ÁÄ"));
-                            m_listListenerIdCurrent.Add (-1);
-
-                            t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;
-                            t.m_arListenerIds[connSettType] = m_listDbInterfaces[m_listDbInterfaces.Count - 1].ListenerRegister();
-
-                            m_listDbInterfaces [m_listDbInterfaces.Count - 1].Start ();
-
-                            m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
-                        }
-                        else
-                            ;
+                            ; //isAlready == true
                     }
                     else
-                        ;
+                        ; //t.connSetts[connSettType] == null
                 }
             }
 
@@ -1260,7 +1272,7 @@ namespace StatisticCommon
                 foreach (TEC t in m_list_tec)
                 {
                     for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {
-                        if ((m_ignore_connsett_data == true) && (connSettType == CONN_SETT_TYPE.DATA))
+                        if ((m_ignore_connsett_data == true) && (connSettType == CONN_SETT_TYPE.DATA_FACT))
                             continue;
                         else
                             ;

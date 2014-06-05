@@ -5,7 +5,7 @@ using System.IO;
 
 namespace StatisticCommon
 {
-    public class FIleINI
+    public class FileINI
     {
         [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -16,7 +16,7 @@ namespace StatisticCommon
 
         public string m_NameFileINI = string.Empty;
 
-        public FIleINI(string nameFile)
+        public FileINI(string nameFile)
         {
             m_NameFileINI = System.Environment.CurrentDirectory + "\\" + nameFile;
             if (!File.Exists(m_NameFileINI))

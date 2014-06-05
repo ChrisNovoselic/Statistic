@@ -813,5 +813,10 @@ namespace StatisticCommon
                 }
             }
         }
+
+        public static bool IsConnected(DbConnection obj)
+        {
+            return (!(obj == null)) && (!(obj.State == ConnectionState.Closed)) && (!(obj.State == ConnectionState.Broken));
+        }
     }
 }

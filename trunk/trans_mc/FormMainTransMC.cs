@@ -33,7 +33,7 @@ namespace trans_mc
             InitializeComponentTransMC();
 
             string sec, key;
-            FIleINI fileINI = new FIleINI("setup.ini");
+            FileINI fileINI = new FileINI("setup.ini");
             sec = "Main (" + ProgramBase.AppName + ")";
             key = "ОкноНазначение";
             this.Text = fileINI.ReadString(sec, key, string.Empty);

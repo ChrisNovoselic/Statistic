@@ -1,6 +1,14 @@
-﻿namespace Statistic
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace Statistic
 {
-    partial class HTabCtrlEx
+    partial class PanelQuickData
     {
         /// <summary>
         /// Требуется переменная конструктора.
@@ -29,16 +37,21 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-
-            SetStyle(System.Windows.Forms.ControlStyles.DoubleBuffer, true);
-            this.TabStop = false;
-            this.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-            this.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //this.tclTecViews.ItemSize = new System.Drawing.Size(230, 24);
-
-            this.TabStop = false;
         }
 
         #endregion
+    }
+    
+    public partial class PanelQuickData : TableLayoutPanel
+    {
+        public PanelQuickData()
+        {
+            InitializeComponent();
+        }
+
+        public PanelQuickData(IContainer container) : this ()
+        {
+            container.Add(this);
+        }
     }
 }

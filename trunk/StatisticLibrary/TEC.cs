@@ -24,6 +24,8 @@ namespace StatisticCommon
 
         public int m_timezone_offset_msc { get; set; }
         public string m_path_rdg_excel { get; set;}
+        public string m_strTemplateNameSgnDataTM,
+                    m_strTemplateNameSgnDataFact;
 
         public List<TECComponent> list_TECComponents;
 
@@ -38,7 +40,7 @@ namespace StatisticCommon
         
         private int used;
 
-        private DbInterface m_dbInterface; //Для данных (SQL сервер)
+        private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
         public FormParametersTG parametersTGForm;
 
@@ -57,7 +59,7 @@ namespace StatisticCommon
             m_arListenerIds = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             m_arIndxDbInterfaces = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            for (int i = (int)CONN_SETT_TYPE.DATA; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
                 m_arListenerIds [i] =
                 m_arIndxDbInterfaces [i] =
                 -1;
@@ -88,39 +90,81 @@ namespace StatisticCommon
             m_strNamesField.Add(pbr_number); //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        public void Request(string request)
+        public void Request(CONN_SETT_TYPE indx_src, string request)
         {
-            m_dbInterface.Request(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], request);
+            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
+                m_arDBInterfaces[(int)indx_src].Request(m_arListenerIds[(int)indx_src], request);
+            else
+                ;
         }
 
-        public bool GetResponse(out bool error, out DataTable table)
+        public bool GetResponse(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
-            return m_dbInterface.GetResponse(m_arListenerIds[(int)CONN_SETT_TYPE.DATA], out error, out table);
+            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
+                return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
+            else
+            {
+                error = true;
+                table = null;
+
+                return false;
+            }
         }
 
-        public void StartDbInterface()
+        public void StartDbInterfaces()
         {
             if (used == 0)
             {
-                m_dbInterface = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name_shr);
-                m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
-                m_dbInterface.Start();
-                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                m_arDBInterfaces = new DbTSQLInterface[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    if (!(connSetts[i] == null))
+                    {
+                        m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name_shr);
+                        m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
+                        m_arDBInterfaces[i].Start();
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
+                    }
+                    else
+                        ;
+                }
             }
+            else
+                ;
+
             used++;
+
             if (used > list_TECComponents.Count)
                 used = list_TECComponents.Count;
             else
                 ;
         }
 
-        public void StopDbInterface()
+        private void stopDbInterfaces()
+        {
+            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                if (!(m_arDBInterfaces[i] == null))
+                {
+                    m_arDBInterfaces[i].Stop();
+                    //for (int j = 0; j < m_arListenerIds[i].Count; j ++)
+                    if (!(m_arListenerIds[i] < 0))
+                        m_arDBInterfaces[i].ListenerUnregister(m_arListenerIds[i]/*[j]*/);
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+        }
+
+        public void StopDbInterfaces()
         {
             used--;
             if (used == 0)
             {
-                m_dbInterface.Stop();
-                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
+                stopDbInterfaces();
             }
             else
                 ;
@@ -131,12 +175,11 @@ namespace StatisticCommon
                 ;
         }
 
-        public void StopDbInterfaceForce()
+        public void StopDbInterfacesForce()
         {
             if (used > 0)
             {
-                m_dbInterface.Stop();
-                m_dbInterface.ListenerUnregister(m_arListenerIds[(int)CONN_SETT_TYPE.DATA]);
+                stopDbInterfaces();
             }
             else
                 ;
@@ -146,7 +189,13 @@ namespace StatisticCommon
         {
             if (used > 0)
             {
-                m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
+                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    if (! (m_arDBInterfaces[i] == null))
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts [i]);
+                    else
+                        ;
+                }                
             }
             else
                 ;
@@ -308,6 +357,175 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            return strRes;
+        }
+
+        public string sensorsFactRequest()
+        {
+            return @"SELECT DISTINCT SENSORS.NAME, SENSORS.ID " +
+                    @"FROM DEVICES " +
+                    @"INNER JOIN SENSORS ON " +
+                    @"DEVICES.ID = SENSORS.STATIONID " +
+                    @"INNER JOIN DATA ON " +
+                    @"DEVICES.CODE = DATA.OBJECT AND " +
+                    @"SENSORS.CODE = DATA.ITEM " +
+                    @"WHERE DATA.PARNUMBER = 12 AND " +
+                //@"SENSORS.NAME LIKE 'ТГ%P%+'";
+                    @"SENSORS.NAME LIKE '" + m_strTemplateNameSgnDataFact + @"'";
+        }
+
+        public string sensorsTMRequest()
+        {
+            return @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
+        }
+
+        public string minsRequest(DateTime usingDate, int hour, string sensors)
+        {
+            if (hour == 24)
+                hour = 23;
+            else
+                ;
+
+            usingDate = usingDate.Date.AddHours(hour);
+            string request = string.Empty;
+
+            switch (type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                             @"FROM DEVICES " +
+                             @"INNER JOIN SENSORS ON " +
+                             @"DEVICES.ID = SENSORS.STATIONID " +
+                             @"INNER JOIN DATA ON " +
+                             @"DEVICES.CODE = DATA.OBJECT AND " +
+                             @"SENSORS.CODE = DATA.ITEM AND " +
+                             @"DATA.DATA_DATE >= '" + usingDate.ToString("yyyy.MM.dd HH:00:00") +
+                             @"' AND " +
+                             @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
+                             @"' " +
+                             @"WHERE DATA.PARNUMBER = 2 AND (" + sensors +
+                             @") " +
+                             @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensors +
+                             @") " +
+                             @"ORDER BY IZM_TII.TIME";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
+
+            return request;
+        }
+
+        public string hoursRequest(DateTime usingDate, string sensors)
+        {
+            string request;
+
+            switch (type())
+            {
+                case TEC.TEC_TYPE.COMMON:
+                    //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
+                    request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
+                                @"FROM DEVICES " +
+                                @"INNER JOIN SENSORS ON " +
+                                @"DEVICES.ID = SENSORS.STATIONID " +
+                                @"INNER JOIN DATA ON " +
+                                @"DEVICES.CODE = DATA.OBJECT AND " +
+                                @"SENSORS.CODE = DATA.ITEM AND " +
+                                @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
+                                @"' AND " +
+                                @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                                @"' " +
+                                @"WHERE DATA.PARNUMBER = 12 AND (" + sensors +
+                                @") " +
+                                @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
+                    break;
+                case TEC.TEC_TYPE.BIYSK:
+                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                    request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.TIME, IZM_TII.WINTER_SUMMER, IZM_TII.VALUE_UNIT " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                             @"FROM IZM_TII " +
+                             @"INNER JOIN CHANNELS ON " +
+                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                             @"INNER JOIN DEVICES ON " +
+                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
+                             @"' AND " +
+                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                             @"IZM_TII.IDCHANNEL IN(" + sensors +
+                             @") " +
+                        //@"ORDER BY IZM_TII.TIME";
+                             @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
+                    break;
+                default:
+                    request = string.Empty;
+                    break;
+            }
+
+            return request;
+        }
+
+        public static string getNameTG(string templateNameBD, string nameBD)
+        {
+            //Подстрока для 1-го '%'
+            int pos = -1;
+            string strRes = nameBD.Substring(templateNameBD.IndexOf('%'));
+
+            //Поиск 1-й ЦИФРы
+            pos = 0;
+            while (pos < strRes.Length)
+            {
+                if ((!(strRes[pos] < '0')) && (!(strRes[pos] > '9')))
+                    break;
+                else
+                    ;
+
+                pos++;
+            }
+            //Проверка - ВСЕ символы строки до конца ЦИФРы
+            if (!(pos < strRes.Length))
+                return strRes;
+            else
+                ;
+
+            strRes = strRes.Substring(pos);
+
+            //Поиск 1-й НЕ ЦИФРы
+            pos = 0;
+            while (pos < strRes.Length)
+            {
+                if ((strRes[pos] < '0') || (strRes[pos] > '9'))
+                    break;
+                else
+                    ;
+
+                pos++;
+            }
+            //Проверка - ВСЕ символы строки до конца ЦИФРы
+            if (!(pos < strRes.Length))
+                return strRes;
+            else
+                ;
+
+            strRes = strRes.Substring(0, pos);
+
+            strRes = "ТГ" + strRes;
 
             return strRes;
         }
@@ -525,6 +743,50 @@ namespace StatisticCommon
             strRes = adminValueQuery(selectAdmin, dt, mode);
 
             return strRes;
+        }
+
+        public string currentTMRequest(string sensors)
+        {
+            string query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
+                            @"FROM [dbo].[NAME_TABLE] " +
+                            @"INNER JOIN " +
+                                @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
+                                @"FROM [dbo].[NAME_TABLE] " +
+                                @"GROUP BY [id]) AS t2 " +
+                            @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
+                            sensors +
+                            @"))";
+
+            query = query.Replace(@"NAME_TABLE", @"states_real_his");
+
+            return query;
+        }
+
+        public string lastMinutesTMRequest(DateTime dt, string sensors)
+        {
+            //Если данные в БД по мск
+            //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
+            //Если данные в БД по ГринвичУ
+            dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
+
+            string query = string.Empty;
+            //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+            //        @"FROM [dbo].[NAME_TABLE] " +
+            //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
+            //        @"AND (" + sensors + @") " +
+            //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
+
+            query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
+                    @"FROM [dbo].[NAME_TABLE] " +
+                    @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                    @"AND (" + sensors + @")";
+
+            //Для 1-го запроса
+            //query = query.Replace("NAME_TABLE", "states_real_his");
+            //Для 2-го запроса
+            query = query.Replace("NAME_TABLE", "states_real_his_0");
+
+            return query;
         }
 
         public string GetAdminValueQuery(int num_comp, DateTime dt, AdminTS.TYPE_FIELDS mode)

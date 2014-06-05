@@ -8,6 +8,8 @@ using System.Data.Common;
 using Modes;
 using ModesApiExternal;
 
+using StatisticCommon;
+
 namespace trans_mc_cmd
 {
     class Program
@@ -18,84 +20,251 @@ namespace trans_mc_cmd
         static IList<PlanFactorItem> LPFI;
 
         static MySQLtechsite techsite;
-        
+        static bool g_bList;
+        static bool g_bWriteToWinEventLog;
+        static DateTime g_dtList;
+
+        public static FileINI m_fileINI = new FileINI("setup.ini");
+        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + Logging.AppName + @".exe" + ")";
+        private static Crypt m_crypt;
+
         static void Main(string[] args)
         {
-            bool bNoWait = false;
-            if (ProcArgs(args, out bNoWait)) return;
+            bool bNoWait,
+                bCalculatedHalfHourValues;
 
-            techsite = new MySQLtechsite();
+            bNoWait =
+            bCalculatedHalfHourValues =
+            false;
 
-            Console.WriteLine(Environment.NewLine + "API Initializing - Please Wait..." + Environment.NewLine);
+            if (ProcArgs(args, out bNoWait, out g_bList, out bCalculatedHalfHourValues) == true)
+                return;
+            else
+                ;
 
-            ModesApiFactory.Initialize(new Properties.Settings().Modes_Centre_Service_Host_Name);
+            int iTechsiteInitialized = 0;
 
-            if (ModesApiFactory.IsInitilized)
+            if (g_bList == false)
             {
-                IApiExternal api_ = ModesApiFactory.GetModesApi();
-                LPFI = api_.GetPlanFactors();
-                DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
-                //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
-                //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
-                //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
-                Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt, SyncZone.First, TreeContent.PGObjects, true);
+                Console.WriteLine(Environment.NewLine + "DB PPBR Initializing - Please Wait...");
 
-                foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
+                try { techsite = new MySQLtechsite(bCalculatedHalfHourValues); }
+                catch (Exception e)
                 {
-                    Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
-                    ProcessParams(IGO);
-                    ProcessChilds(IGO, 1, api_);
+                    Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
+                    itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
+                    iTechsiteInitialized = 1;
                 }
 
-                Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);     //А время апдейта (поле wr_date_time) Новосибирское
-
-                techsite.FlushDataToDatabase();
+                if (iTechsiteInitialized == 0)
+                    iTechsiteInitialized = techsite.Initialized;
+                else
+                    ;
             }
-            else itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
-            Console.WriteLine("End. Press any key.");
-            if (!bNoWait) Console.ReadKey();
+            else
+                ;
+
+            if ((iTechsiteInitialized == 0) || (g_bList == true))
+            {
+                Console.WriteLine("Modes-Centre API Initializing - Please Wait..." + Environment.NewLine);
+
+                ModesApiFactory.Initialize(GetNameHostModesCentre());
+
+                if (ModesApiFactory.IsInitilized == true)
+                {
+                    var bContinue = true;
+                    if (bNoWait == false)
+                    {
+                        ConsoleKeyInfo choice;
+                        Console.Write("Continue (Y/N)...");
+                        choice = Console.ReadKey();
+                        //Console.WriteLine(choice.ToString ());
+                        Console.WriteLine(Environment.NewLine);
+
+                        if (!(choice.Key == ConsoleKey.Y))
+                            bContinue = false;
+                        else
+                            ;
+                    }
+                    else
+                    {
+                    }
+
+                    if (bContinue == true)
+                    {
+                        IApiExternal api_ = ModesApiFactory.GetModesApi();
+                        LPFI = api_.GetPlanFactors();
+                        DateTime dt = DateTime.Now.Date.LocalHqToSystemEx();    //"Дата начала суток по московскому времени в формате UTC" (из документации) - так по московскому или в UTC? Правильнее - дата-время начала суток в Москве по Гринвичу.
+                        //dt = DateTime.Now.Date.ToUniversalTime();               //Вот это реально в UTC, но API выдаёт ошибку - не на начало суток указывает
+                        //dt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.Date.ToUniversalTime(), TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));    //Вот это Московское, но API его не принимает - требует в UTC
+                        //dt = TimeZoneInfo.ConvertTime(DateTime.Now.Date, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+
+                        TimeSpan dtSpan = TimeSpan.Zero;
+                        if (g_bList == true)
+                            dtSpan = g_dtList.Date.LocalHqToSystemEx() - dt;
+                        else
+                            ;
+
+                        Modes.BusinessLogic.IModesTimeSlice ts = api_.GetModesTimeSlice(dt.AddHours(dtSpan.TotalHours), SyncZone.First, TreeContent.PGObjects, true);
+
+                        foreach (Modes.BusinessLogic.IGenObject IGO in ts.GenTree)
+                        {
+                            Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
+                            ProcessParams(IGO);
+                            ProcessChilds(IGO, 1, api_);
+                        }
+
+                        if (g_bList == false)
+                        {
+                            //А время апдейта (поле wr_date_time) Новосибирское
+                            Console.WriteLine(Environment.NewLine + "Время Московское, в т.ч. при записи в БД. В поле wr_date_time - Новосибирское." + Environment.NewLine);
+
+                            techsite.FlushDataToDatabase();
+                        }
+                        else
+                            Console.WriteLine(string.Empty);
+                    }
+                    else
+                        ; //Пользователь не захотел продолжать
+                }
+                else
+                    itssAUX.PrintErrorMessage("Ошибка инициализации API Modes-Centre при обращении к сервису.");
+            }
+            else
+            {//Не инициализировано соединение с БД Статистика
+                if (iTechsiteInitialized > 0)
+                {//Нет соединения с БД (конфигурации или назаначения)
+                }
+                else
+                    switch (iTechsiteInitialized)
+                    {
+                        case -1:
+                            itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::MySQLtechsite () - список идентификаторов ГТП пуст...");
+                            break;
+                        default:
+                            break;
+                    }
+            }
+
+            messageToExit(bNoWait);
+        }
+
+        public static bool WriteToWinEventLog
+        {
+            get
+            {
+                return g_bWriteToWinEventLog;
+            }
+        }
+
+        private static string GetNameHostModesCentre()
+        {
+            return m_fileINI.ReadString("Параметры соединения с Modes-Centre (" + "trans_mc_cmd.exe" + ")", "ИмяСервер", string.Empty);
+        }
+
+        public static ConnectionSettings ReadConnSettFromFileINI()
+        {
+            ConnectionSettings connSettRes = new ConnectionSettings();
+            
+            //strProgramNameSectionINI = "Параметры соединения с БД (" + "trans_mc_cmd.exe" + ")";
+            connSettRes.server = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "IPСервер", string.Empty);
+            connSettRes.dbName = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ИмяБД", string.Empty);
+            connSettRes.userName = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ИмяПользователь", string.Empty);
+            connSettRes.port = Int32.Parse(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty));
+            connSettRes.password = m_crypt.Decrypt(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty), Crypt.KEY);
+            connSettRes.ignore = false;
+
+            return connSettRes;
         }
 
         /// <summary>
         /// Обрабатывает переданные при вызове параметры. Возвращает флаг необходимости выхода из программы.
         /// </summary>
-        static bool ProcArgs(string[] args, out bool bNoWait)
+        static bool ProcArgs(string[] args, out bool bNoWait, out bool bList, out bool bCalculatedHalfHourValues)
         {
-            Properties.Settings sett = new Properties.Settings();
+            //Properties.Settings sett = new Properties.Settings();
             bool bDoExit = false;
 
-            bNoWait = false;
+            bNoWait =
+            bList =
+            bCalculatedHalfHourValues =
+            false;
+
+            string strProgramNameSectionINI = string.Empty;
+            strProgramNameSectionINI = "Main settings (" + Logging.AppName + @".exe" + ")";
+            if (Boolean.TryParse(m_fileINI.ReadString(strProgramNameSectionINI, "СообщениеОтладкаЖурналОС", string.Empty), out g_bWriteToWinEventLog) == false)
+                g_bWriteToWinEventLog = false;
+            else
+                ;
+
+            strProgramNameSectionINI = "Параметры записи в БД (" + Logging.AppName + @".exe" + ")";
+            if (Boolean.TryParse(m_fileINI.ReadString(strProgramNameSectionINI, "Расчет30минЗначения", string.Empty), out bCalculatedHalfHourValues) == false)
+                bCalculatedHalfHourValues = false;
+            else
+                ;
 
             if (args.Length > 0)
-                switch (args[0])
+            {
+                if (!(args[0].IndexOf("/list") < 0))
                 {
-                    case "/?":
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
-                        Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
-                        Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + sett.Modes_Centre_Service_Host_Name);
-                        Console.WriteLine(sett.TechsiteMySQLconnectionString);
-                        Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /nowait /setmysqlpassword" + Environment.NewLine);
-                        Console.WriteLine("End. Press any key.");
-                        Console.ReadKey();
-                        bDoExit = true;
-                        break;
-                    case "/nowait":
+                    bList = true;
+
+                    bool bDTParse = false;
+                    string[] list_args = args[0].Split('=');
+
+                    if (list_args.Length == 2)
+                    {
+                        bDTParse = DateTime.TryParse(list_args[1], out g_dtList);
+                    }
+                    else
+                        ;
+
+                    if (bDTParse == false)
+                        g_dtList = DateTime.Now.Date; //g_dtList = g_dtList.Date.LocalHqToSystemEx();
+                    else
+                        ;
+
+                    Console.WriteLine("List plants to " + g_dtList.Date.ToShortDateString() + " ...");
+                }
+                else
+                    if (!(args[0].IndexOf("/nowait") < 0))
+                    {
                         bNoWait = true;
-                        break;
-                    case "/setmysqlpassword":
-                        if (args.Length == 2)
+                    }
+                    else
+                        if (!(args[0].IndexOf("/setmysqlpassword") < 0))
                         {
-                            string sPass = args[1];
-                            sett.accessPart = Connection.CryptoProvider.Encrypt(sPass, "ASfd9");       //Зашифровать и сохранить в конфиге
-                            sett.Save();
+                            if (args.Length == 2)
+                            {
+                                m_fileINI.WriteString(m_strProgramNameSectionDB_INI, @"ПортСУБД", m_crypt.Encrypt (args[1], Crypt.KEY));
+                            }
+                            else
+                                Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");
+
+                            bDoExit = true;
                         }
                         else
-                            Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");
+                        {//case "/?":
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription);
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName);
+                            Console.WriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo(AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright);
 
-                        bDoExit = true;
-                        break;
-                }
+                            string strNameHostMC = GetNameHostModesCentre();
+                            if (strNameHostMC == string.Empty)
+                                strNameHostMC = "?not set?";
+                            else
+                                ;
+                            Console.WriteLine("Modes-Centre API Host (with NTLM authentication): " + GetNameHostModesCentre());
+
+                            Console.WriteLine(Environment.NewLine + "Known command line arguments: /? /list[=DD.MM.YYYY] /nowait /setmysqlpassword" + Environment.NewLine);
+
+                            messageToExit(true);
+
+                            bDoExit = true;
+                        }
+            }
+            else
+                ;
 
             return bDoExit;
         }
@@ -115,9 +284,10 @@ namespace trans_mc_cmd
                 if (!(IGOch.GenObjType.Id == 15))      //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
                 {
                     Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
-                    //ProcessParams(IGOch);
+                    //if (g_bList == false) ProcessParams(IGOch); else ;
                     if (IGOch.GenObjType.Id == 3)
-                        GetPlanValuesActual(api_, IGOch);     //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
+                        //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
+                        if (g_bList == false) GetPlanValuesActual(api_, IGOch); else ;
                     else
                         ;
 
@@ -152,7 +322,18 @@ namespace trans_mc_cmd
                 //"Russian Standard Time" - это Москва. "N. Central Asia Standard Time" - это Новосибирск.
                 //Про конвертацию времени: http://msdn.microsoft.com/ru-ru/library/bb397769.aspx
             }
+        }
 
+        static void messageToExit(bool bNoWait)
+        {
+            if (bNoWait == false)
+            {
+                Console.Write("End. Press any key...");
+                Console.ReadKey();
+                Console.Write(Environment.NewLine);
+            }
+            else
+                ;
         }
     }
 }

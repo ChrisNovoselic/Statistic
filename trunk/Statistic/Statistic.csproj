@@ -126,6 +126,15 @@
     <Compile Include="PanelAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelCurPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelLastMinutes.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelQuickData.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -206,16 +215,16 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
-      <Project>{9C402674-532B-4224-97F0-DB10C04F527F}</Project>
-      <Name>StatisticCommon</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\closeInActive.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\closeNonActive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
+      <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
+      <Name>StatisticCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

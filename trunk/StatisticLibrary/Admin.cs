@@ -573,5 +573,26 @@ namespace StatisticCommon
         {
             return m_arHaveDates[(int)type, indx] > 0 ? true : false;
         }
+
+        public static string s_Name_Current_TimeZone = @"Russian Standard Time";
+        public static DateTime ToCurrentTimeZone(DateTime dt)
+        {
+            DateTime dtRes;
+            dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
+            return dtRes;
+        }
+
+        public static TimeSpan GetOffsetOfCurrentTimeZone()
+        {
+            return DateTime.Now - HAdmin.ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
+        }
+
+        public static TimeSpan GetUTCOffsetOfCurrentTimeZone()
+        {
+            DateTime dtNow = DateTime.Now;
+            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
+        }
+
+        public static int DEBUG_INDEX_TEC = -1;
     }
 }

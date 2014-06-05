@@ -13,8 +13,8 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        ADMIN = 0, PBR = 1, DATA = 2,
-        COUNT_CONN_SETT_TYPE = 3
+        ADMIN = 0, PBR = 1, DATA_FACT = 2, DATA_TM = 3,
+        COUNT_CONN_SETT_TYPE = 4
     };
 
     public class ConnectionSettings
@@ -41,26 +41,34 @@ namespace StatisticCommon
             return base.GetHashCode();
         }
 
-        public static bool operator == (ConnectionSettings csLeft, ConnectionSettings csRight)
+        public static bool operator ==(ConnectionSettings csLeft, ConnectionSettings csRight)
         {
             bool bRes = false;
 
-            if ((csLeft.server == csRight.server) &&
-                (csLeft.dbName == csRight.dbName) &&
-                (csLeft.userName == csRight.userName) &&
-                (csLeft.password == csRight.password) &&
-                (csLeft.port == csRight.port))
-                bRes = true;
+            if ((object.ReferenceEquals(csRight, null) == false) &&
+                object.ReferenceEquals(csLeft, null) == false)
+                if ((csLeft.server == csRight.server) &&
+                    (csLeft.dbName == csRight.dbName) &&
+                    (csLeft.userName == csRight.userName) &&
+                    (csLeft.password == csRight.password) &&
+                    (csLeft.port == csRight.port))
+                    bRes = true;
+                else
+                    ;
             else
-                ;
+                if (object.ReferenceEquals(csLeft, null) == true)
+                    bRes = true;
+                else
+                    ;
 
             return bRes;
         }
 
-        public static bool operator != (ConnectionSettings csLeft, ConnectionSettings csRight) {
+        public static bool operator !=(ConnectionSettings csLeft, ConnectionSettings csRight)
+        {
             bool bRes = false;
 
-            if (! (csLeft == csRight))
+            if (!(csLeft == csRight))
                 bRes = true;
             else
                 ;

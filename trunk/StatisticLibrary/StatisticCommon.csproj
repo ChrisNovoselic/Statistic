@@ -106,6 +106,9 @@
     <Compile Include="FormWait.Designer.cs">
       <DependentUpon>FormWait.cs</DependentUpon>
     </Compile>
+    <Compile Include="HLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="InitTEC.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="ProgramBase.cs" />

@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 
 using System.Data;
-using System.Data.Odbc;
+//using System.Data.Odbc;
+using MySql.Data.MySqlClient;
+
+using StatisticCommon;
 
 namespace trans_mc_cmd
 {
@@ -13,8 +16,53 @@ namespace trans_mc_cmd
     /// </summary>
     class MySQLtechsite
     {
-        public OdbcConnection mysqlConn;
-        public /*readonly*/ static string sConnectionString;
+        public enum CONN_SETT_TYPE { CONFIG, PPBR, COUNT_CONN_SETT_TYPE };
+
+        AdminTS m_admin;
+        List<int> m_listIndexTECComponent;
+        List<int> m_listIdMCTECComponent;
+
+        public int Initialized
+        {
+            get
+            {
+                int iRes = 0;
+
+                //if (!(m_MySQLConnections == null))
+                //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.CONFIG; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                //{
+                //if (DbTSQLInterface.IsConnected (m_MySQLConnections[(int)i]) == true)
+                if (DbTSQLInterface.IsConnected(m_MySQLConnection) == false)
+                    iRes = 1;
+                else
+                    ;
+
+                //    if (!(iRes == 0))
+                //        break;
+                //    else
+                //        ;
+                //}
+                //else
+                //    ;
+
+                if (iRes == 0)
+                    if (!(m_listIdMCTECComponent.Count > 0))
+                        iRes = -1;
+                    else
+                        ;
+                else
+                    ;
+
+                return iRes;
+            }
+        }
+
+        public bool m_bCalculatedHalfHourValues;
+
+        //public MySqlConnection [] m_MySQLConnections;
+        public MySqlConnection m_MySQLConnection;
+        public string m_strTableNamePPBR;
+        //public static string m_strNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)";
         public enum Params : int { PBR = 0, Pmin = 1, Pmax = 2, COUNT_PARAMS };
 
         //public enum TEClist : int { BTEC = ?, TEC2 = 17, TEC3 = сумма104_201_200_14, TEC3_110 = суммма201_200, TEC3_110_2 = 104, TEC3_220 = 14, TEC4 = сумма194и195?, TEC5 = сумма147и146и148, TEC5_110 = 146, TEC5_220 = 147, TEC5_110_2 = 148 };
@@ -22,36 +70,230 @@ namespace trans_mc_cmd
         /// <summary>
         /// Коллекция почасовых величин генерации. После опроса ModesCentre должны получить 24 почасовых элемента в коллекции. Каждый элемент соответствует одной записи в базе данных techsite.
         /// </summary>
-        SortedList<DateTime, OneRecord> HourlyValuesCollection;
+        //SortedList<DateTime, OneRecord> HourlyValuesCollection;
+        SortedList<DateTime, HTECComponentsRecord> HourlyValuesCollection;
         //SortedList<DateTime, OneField> HourlyFieldValues;
+
+        private bool SetMySQLConnect(MySqlConnection conn)
+        {
+            bool bRes = true;
+
+            try { conn.Open(); }
+            catch (Exception e)
+            {
+                Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
+                itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
+
+                bRes = false;
+            }
+
+            return bRes;
+        }
 
         /// <summary>
         /// Конструктор открывает коннект к базе. Закрывает деструктор.
         /// </summary>
-        public MySQLtechsite()
+        public MySQLtechsite(bool bCalculatedHalfHourValues)
         {
-            Properties.Settings sett = new Properties.Settings();
-            sConnectionString = sett.TechsiteMySQLconnectionString;
-            sConnectionString = sConnectionString.Replace("pwd=;", "pwd=" + Connection.CryptoProvider.Decrypt(sett.accessPart, sett.accessKey) + ";");
-            mysqlConn = new OdbcConnection(sConnectionString);
-            try
+            bool bRes = false;
+
+            m_bCalculatedHalfHourValues = bCalculatedHalfHourValues;
+
+            ConnectionSettings connSett = Program.ReadConnSettFromFileINI();
+
+            Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
+
+            m_MySQLConnection = new MySqlConnection();
+            m_MySQLConnection = new MySqlConnection(connSett.GetConnectionStringMySQL());
+            bRes = SetMySQLConnect(m_MySQLConnection);
+
+            if (bRes == true)
             {
-                mysqlConn.Open();
+                m_admin = new AdminTS();
+                m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
+                m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                m_listIdMCTECComponent = new List<int>();
+
+                int i = -1, j = -1;
+                for (i = 0; i < m_listIndexTECComponent.Count; i++)
+                {
+                    for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count; j++)
+                    {
+                        m_listIdMCTECComponent.Add(m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j]);
+                    }
+                }
+
+                if ((DbTSQLInterface.IsConnected(m_MySQLConnection) == true) &&
+                    (m_listIdMCTECComponent.Count > 0))
+                {
+                    m_MySQLConnection.Close();
+                    m_MySQLConnection = null;
+
+                    m_MySQLConnection = new MySqlConnection(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR].GetConnectionStringMySQL());
+                    bRes = SetMySQLConnect(m_MySQLConnection);
+                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
+                }
+                else
+                {
+                }
             }
-            catch (Exception e)
+            else
+                ;
+
             {
-                itssAUX.PrintErrorMessage("Ошибка при подключении к базе MySQL. Драйвер ODBC {MySQL ODBC 3.51 Driver} установлен?" + Environment.NewLine + e.Message);
+                //itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::MySQLtechsite () - чтение файла с шифрованными параметрами соединения (" + m_strFileNameConnSett + ")...");
+                itssAUX.PrintErrorMessage("Проверте параметры соединения (" + Program.m_fileINI.m_NameFileINI + "). Затем запустите программу с аргументом /setmysqlpassword..." + Environment.NewLine);
             }
         }
 
         public string TestRead()
         {
-            OdbcCommand cmd = new OdbcCommand("SELECT page FROM settings", mysqlConn);
-            OdbcDataReader rdr = cmd.ExecuteReader();
+            int err = -1;
+            DataTable dataTest;
+            //dataTest = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT page FROM settings", null, null, out err);
+            dataTest = DbTSQLInterface.Select(m_MySQLConnection, "SELECT page FROM settings", null, null, out err);
 
-            rdr.Read();
+            if (err == 0)
+                return (dataTest.Rows[0][0].ToString());
+            else
+                return string.Empty;
+        }
 
-            return ((string)rdr[0]);
+        /*public int GetIdOwnerTECComponentOfIdMC (int id_mc)
+        {
+            int iRes = -1;
+            
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                iRes = m_admin.allTECComponents[indxTECComponent].tec.m_id;
+            }
+            else
+                ;
+
+            return iRes;
+        }*/
+
+        private int GetIndexTECComponentOfIdMC(int id_mc)
+        {
+            int iRes = -1;
+
+            int i = -1, j = -1;
+            for (i = 0; i < m_listIndexTECComponent.Count; i++)
+            {
+                for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count; j++)
+                {
+                    if (id_mc == m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j])
+                        break;
+                    else
+                        ;
+                }
+
+                if (j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count)
+                    break;
+                else
+                    ;
+            }
+
+            if (i < m_listIndexTECComponent.Count)
+            {
+                iRes = m_listIndexTECComponent[i];
+            }
+            else
+                ;
+
+            return iRes;
+        }
+
+        public TECComponent GetTECComponentOfIdMC(int id_mc)
+        {
+            TECComponent compRes = null;
+
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                compRes = m_admin.allTECComponents[indxTECComponent];
+            }
+            else
+                ;
+
+            return compRes;
+        }
+
+        public string GetPrefixTECComponentOfIdMC(int id_mc, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+
+            if (!(indxTECComponent < 0))
+            {
+                strRes = GetPrefixOfIndex(indxTECComponent, bOwnerOnly);
+            }
+            else
+                ;
+
+            return strRes;
+        }
+
+        /*public TECComponent GetTECComponent(int id)
+        {
+            TECComponent compRes = m_admin.allTECComponents [m_listIndexTECComponent.IndexOf (id)];
+
+            return compRes;
+        }*/
+
+        private string GetPrefixOfIndex(int indx, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            strRes = m_admin.allTECComponents[indx].tec.prefix_pbr;
+            if (bOwnerOnly == false)
+                if (m_admin.allTECComponents[indx].prefix_pbr.Length > 0)
+                    strRes += (@"_" + m_admin.allTECComponents[indx].prefix_pbr);
+                else
+                    ;
+            else
+                ;
+
+            return strRes;
+        }
+
+        public string GetPrefixOfId(int id, bool bOwnerOnly)
+        {
+            string strRes = string.Empty;
+
+            int i = -1
+                , indx = -1;
+            for (i = 0; i < m_admin.allTECComponents.Count; i++)
+            {
+                if (id < 100)
+                {
+                    if (m_admin.allTECComponents[i].tec.m_id == id)
+                        break;
+                    else
+                        ;
+                }
+                else
+                {
+                    if (m_admin.allTECComponents[i].m_id == id)
+                        break;
+                    else
+                        ;
+                }
+            }
+
+            if (i < m_admin.allTECComponents.Count)
+            {
+                strRes = GetPrefixOfIndex(i, bOwnerOnly);
+            }
+            else
+                ;
+
+            return strRes;
         }
 
         /// <summary>
@@ -60,183 +302,50 @@ namespace trans_mc_cmd
         /// </summary>
         public void WritePlanValue(int iStationId, DateTime DT, string sPBRnum, Params PAR, double dGenValue)
         {
-            OneRecord HVCrecord = null;
-
-            if (HourlyValuesCollection == null) HourlyValuesCollection = new SortedList<DateTime, OneRecord>(50);
-            //А может здесь из базы читать предыдущие значения в коллекцию? Нет. Данные из базы здесь не нужны.
-
-            /*OneField OFthis = HourlyFieldValues.First(item => item.Key == DT && item.Value.sFieldName == PAR.ToString()).Value;     //Не верно, но тема такая
-            if (OFthis == null) OFthis = new OneField();*/
-
-            if (HourlyValuesCollection.ContainsKey(DT))
-                HVCrecord = HourlyValuesCollection.First(item => item.Key == DT).Value;
-            else
-                ;
-
-            if (HVCrecord == null)
+            if (!(m_listIdMCTECComponent.IndexOf(iStationId) < 0))
             {
-                HVCrecord = new OneRecord();
-                HVCrecord.date_time = DT;
-                HVCrecord.parent = this;
-                HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                //OneRecord HVCrecord = null;
+                HTECComponentsRecord HVCrecord = null;
+
+                if (HourlyValuesCollection == null)
+                    //HourlyValuesCollection = new SortedList<DateTime, OneRecord>(50);
+                    HourlyValuesCollection = new SortedList<DateTime, HTECComponentsRecord>(50);
+                else
+                    ;
+                //А может здесь из базы читать предыдущие значения в коллекцию? Нет. Данные из базы здесь не нужны.
+
+                /*OneField OFthis = HourlyFieldValues.First(item => item.Key == DT && item.Value.sFieldName == PAR.ToString()).Value;     //Не верно, но тема такая
+                if (OFthis == null) OFthis = new OneField();*/
+
+                if (HourlyValuesCollection.ContainsKey(DT))
+                    HVCrecord = HourlyValuesCollection.First(item => item.Key == DT).Value;
+                else
+                    ;
+
+                if (HVCrecord == null)
+                {
+                    //HVCrecord = new OneRecord();
+                    HVCrecord = new HTECComponentsRecord(m_listIdMCTECComponent);
+                    HVCrecord.date_time = DT;
+                    HVCrecord.parent = this;
+                    HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
+                }
+                else
+                    ;
+
+                HVCrecord.wr_date_time = DateTime.Now;
+                HVCrecord.PBR_number = sPBRnum;
+
+                HVCrecord.SetValues(iStationId, PAR, dGenValue);
             }
             else
-                ;
-
-            HVCrecord.wr_date_time = DateTime.Now;
-            HVCrecord.PBR_number = sPBRnum;
-
-            int[] arStationIds = new int[] { 8, 13 };
-
-            switch (iStationId)
-            {
-                case 209:                                                                                           //Барабинская ТЭЦ, ТГ-1 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddBTECsumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.BTEC_TG1_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.BTEC_TG1_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.BTEC_TG1_Pmin = dGenValue;
-                    break;
-                case 210:                                                                                           //Барабинская ТЭЦ, ТГ-2 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddBTECsumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.BTEC_TG2_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.BTEC_TG2_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.BTEC_TG2_Pmin = dGenValue;
-                    break;
-                case 211:                                                                                           //Барабинская ТЭЦ, ТГ-4 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddBTECsumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.BTEC_TG4_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.BTEC_TG4_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.BTEC_TG4_Pmin = dGenValue;
-                    break;
-                case 28:                                                                                            //Барабинская ТЭЦ, ТГ-3,5 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddBTECsumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.BTEC_TG35_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.BTEC_TG35_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.BTEC_TG35_Pmin = dGenValue;
-                    break;
-                case 17:                                                                                            //Новосибирская ТЭЦ-2 [РГЕ ТЭЦ, КЭС, АЭС]
-                    if (PAR == Params.PBR) HVCrecord.TEC2_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC2_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC2_Pmin = dGenValue;
-                    break;
-                case 65:                                                                                            //Новосибирская ТЭЦ-3, ТГ-1 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC3sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC3_TG1_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC3_TG1_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC3_TG1_Pmin = dGenValue;
-                    break;
-                case 201:                                                                                           //Новосибирская ТЭЦ-3, ТГ-5 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC3sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC3_TG5_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC3_TG5_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC3_TG5_Pmin = dGenValue;
-                    break;
-                case 13:                                                                                            //Новосибирская ТЭЦ-3, ТГ 7-12 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC3sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC3_TG712_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC3_TG712_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC3_TG712_Pmin = dGenValue;
-                    break;
-                case 14:                                                                                            //Новосибирская ТЭЦ-3, ТГ-13,14 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC3sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC3_TG1314_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC3_TG1314_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC3_TG1314_Pmin = dGenValue;
-                    break;
-                case 195:                                                                                           //Новосибирская ТЭЦ-4, ТГ-3 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC4sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC4_TG3_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC4_TG3_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC4_TG3_Pmin = dGenValue;
-                    break;
-                case 8:                                                                                             //Новосибирская ТЭЦ-4, ТГ 4-8 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC4sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC4_TG48_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC4_TG48_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC4_TG48_Pmin = dGenValue;
-                    break;
-                case 23:                                                                                            //Новосибирская ТЭЦ-5, ТГ-3,4 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC5sumValues(HVCrecord, PAR, dGenValue);
-                    AddTEC5TG36Values(HVCrecord, PAR, dGenValue);
-                    break;
-                case 24:                                                                                            //Новосибирская ТЭЦ-5, ТГ-5,6 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC5sumValues(HVCrecord, PAR, dGenValue);
-                    AddTEC5TG36Values(HVCrecord, PAR, dGenValue);
-                    break;
-                case 25:                                                                                            //Новосибирская ТЭЦ-5, ТГ-1,2 [РГЕ ТЭЦ, КЭС, АЭС]
-                    AddTEC5sumValues(HVCrecord, PAR, dGenValue);
-                    if (PAR == Params.PBR) HVCrecord.TEC5_TG12_PBR = dGenValue;
-                    if (PAR == Params.Pmax) HVCrecord.TEC5_TG12_Pmax = dGenValue;
-                    if (PAR == Params.Pmin) HVCrecord.TEC5_TG12_Pmin = dGenValue;
-                    break;
-                #region Comment
-                /*      Это прежняя, устаревшая в августе 2013 кодировка:
-                 157 	-Барабинская ТЭЦ [Электростанция]  P:10
-                 209 	--Барабинская ТЭЦ, ТГ-1 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 210	--Барабинская ТЭЦ, ТГ-2 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 211	--Барабинская ТЭЦ, ТГ-4 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 208	--Барабинская ТЭЦ, ТГ-3,5 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 155	-Новосибирская ТЭЦ-2 [Электростанция]  P:10
-                 17 	--Новосибирская ТЭЦ-2 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 154	-Новосибирская ТЭЦ-3 [Электростанция]  P:10
-                 104	--Новосибирская ТЭЦ-3, ТГ-1 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 201	--Новосибирская ТЭЦ-3, ТГ-5 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 200	--Новосибирская ТЭЦ-3, ТГ 7-12 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 14 	--Новосибирская ТЭЦ-3, ТГ-13,14 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 153	-Новосибирская ТЭЦ-4 [Электростанция]  P:10
-                 195	--Новосибирская ТЭЦ-4, ТГ-3 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 194	--Новосибирская ТЭЦ-4, ТГ 4-8 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 156	-Новосибирская ТЭЦ-5 [Электростанция]  P:10
-                 147	--Новосибирская ТЭЦ-5, ТГ-1,2 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 146	--Новосибирская ТЭЦ-5, ТГ-3,4 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                 148	--Новосибирская ТЭЦ-5, ТГ-5,6 [РГЕ ТЭЦ, КЭС, АЭС]  P:22
-                */
-                #endregion
-            }
-
+                ; //Такого ГТП (с ном. 'iStationId' не найдено)
         }
 
-        /// <summary>
-        /// Т.к. поле TEC3_PBR - это сумма по [ТГ-1] + [ТГ-5] + [ТГ 7-12] + [ТГ-13,14].
-        /// Аналогично TEC3_Pmax и TEC3_Pmin.
-        /// </summary>
-        private void AddTEC3sumValues(OneRecord HVCrecord, Params PAR, double dGenValue)
+        private void AddCalculatedOwnerValues()
         {
-            if (PAR == Params.PBR) HVCrecord.TEC3_PBR = HVCrecord.TEC3_PBR.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmax) HVCrecord.TEC3_Pmax = HVCrecord.TEC3_Pmax.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmin) HVCrecord.TEC3_Pmin = HVCrecord.TEC3_Pmin.GetValueOrDefault(0) + dGenValue;
-        }
-
-        private void AddTEC4sumValues(OneRecord HVCrecord, Params PAR, double dGenValue)
-        {
-            if (PAR == Params.PBR) HVCrecord.TEC4_PBR = HVCrecord.TEC4_PBR.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmax) HVCrecord.TEC4_Pmax = HVCrecord.TEC4_Pmax.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmin) HVCrecord.TEC4_Pmin = HVCrecord.TEC4_Pmin.GetValueOrDefault(0) + dGenValue;
-        }
-
-        /// <summary>
-        /// Т.к. поле TEC5_PBR - это сумма по [ТГ-1,2] + [ТГ-3,4] + [ТГ-5,6].
-        /// Аналогично TEC5_Pmax и TEC5_Pmin.
-        /// </summary>
-        private void AddTEC5sumValues(OneRecord HVCrecord, Params PAR, double dGenValue)
-        {
-            if (PAR == Params.PBR) HVCrecord.TEC5_PBR = HVCrecord.TEC5_PBR.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmax) HVCrecord.TEC5_Pmax = HVCrecord.TEC5_Pmax.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmin) HVCrecord.TEC5_Pmin = HVCrecord.TEC5_Pmin.GetValueOrDefault(0) + dGenValue;
-        }
-
-        private void AddTEC5TG36Values(OneRecord HVCrecord, Params PAR, double dGenValue)
-        {
-            if (PAR == Params.PBR) HVCrecord.TEC5_TG36_PBR = HVCrecord.TEC5_TG36_PBR.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmax) HVCrecord.TEC5_TG36_Pmax = HVCrecord.TEC5_TG36_Pmax.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmin) HVCrecord.TEC5_TG36_Pmin = HVCrecord.TEC5_TG36_Pmin.GetValueOrDefault(0) + dGenValue;
-        }
-
-        private void AddBTECsumValues(OneRecord HVCrecord, Params PAR, double dGenValue)
-        {
-            if (PAR == Params.PBR) HVCrecord.BTEC_PBR = HVCrecord.BTEC_PBR.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmax) HVCrecord.BTEC_Pmax = HVCrecord.BTEC_Pmax.GetValueOrDefault(0) + dGenValue;
-            if (PAR == Params.Pmin) HVCrecord.BTEC_Pmin = HVCrecord.BTEC_Pmin.GetValueOrDefault(0) + dGenValue;
+            foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
+                rec.GenerateOwnerValues();
         }
 
         /// <summary>
@@ -244,32 +353,37 @@ namespace trans_mc_cmd
         /// Получасовки только по будущим показателям считаем. По прошлым запрашиваемые через API значения могут расходиться с сохранёнными ранее в базе!
         /// Кроме того, не всегда получасовки окажутся средним арифметическим: после вычисления получасовки до начала следующего часа данные следующего часа могут измениться. В 02:40, например. Данные на 02:30 уже не изменишь, а на 03:00 будут другие.
         /// </summary>
-        private void AddCalculatedHalfHourValues()
+        private void AddCalculatedHalfHourValues(DateTime dtMskNow)
         {
-            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
-            List<OneRecord> li = HourlyValuesCollection.Values.Where(item => item.date_time > dtMskNow.AddMinutes(30)).ToList();
+            //DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+            //List<OneRecord> li = HourlyValuesCollection.Values.Where(item => item.date_time > dtMskNow.AddMinutes(30)).ToList();
+            List<HTECComponentsRecord> li = HourlyValuesCollection.Values.Where(item => item.date_time > dtMskNow.AddMinutes(30)).ToList();
 
             //прочесть: http://msmvps.com/blogs/deborahk/archive/2010/10/30/finding-in-a-child-list.aspx
 
-            foreach (OneRecord rec in li.OrderBy(item => item.date_time))     //сортировка по дате                                              //foreach (OneRecord rec in HourlyValuesCollection.Values.Where(item => item.date_time > DateTime.Now.AddMinutes(30)).Select(item => item))
-                GenerateHalfHourValues(rec);
+            //foreach (OneRecord rec in HourlyValuesCollection.Values.Where(item => item.date_time > DateTime.Now.AddMinutes(30)).Select(item => item))
+            //foreach (OneRecord rec in li.OrderBy(item => item.date_time))     //сортировка по дате
+            foreach (HTECComponentsRecord rec in li.OrderBy(item => item.date_time))
+                GenerateHalfHourValues(rec, dtMskNow);
 
         }
 
         /// <summary>
         /// Создаёт "получасовку" по среднему арифметическому между часовыми показателями.
         /// </summary>
-        private void GenerateHalfHourValues(/*OneRecord HVCprev_rec, OneRecord HVClast_rec*/ OneRecord HVCrec)
+        private void GenerateHalfHourValues(HTECComponentsRecord HVCrec, DateTime dtMskNow)
         {
+            List<int> listIds = HVCrec.m_srtlist_ppbr.Keys.ToList();
+
             //OneRecord HVClast_rec = HourlyValuesCollection.Last().Value;
-            OneRecord HVCprev_rec;
-            OneRecord HVChalf_hour = new OneRecord();
-            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+            HTECComponentsRecord HVCprev_rec;
+            HTECComponentsRecord HVChalf_hour = new HTECComponentsRecord(listIds);
+            //DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
 
             if (HVCrec.date_time.AddHours(-1) <= dtMskNow)
             {
                 //Показания в прошлом читаем из базы, из API игнорируем (могут отличаться)
-                HVCprev_rec = new OneRecord();
+                HVCprev_rec = new HTECComponentsRecord(listIds);
                 HVCprev_rec.parent = this;
                 HVCprev_rec.ReadFromDatabase(HVCrec.date_time.AddHours(-1));
             }
@@ -285,61 +399,55 @@ namespace trans_mc_cmd
                 HVChalf_hour.PBR_number = HVCrec.PBR_number;
                 HVChalf_hour.wr_date_time = DateTime.Now;
 
-                //Интерполируем средними арифметическими значениями от соседних часов
-                HVChalf_hour.BTEC_PBR = (HVCrec.BTEC_PBR.GetValueOrDefault(0) + HVCprev_rec.BTEC_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_Pmax = (HVCrec.BTEC_Pmax.GetValueOrDefault(0) + HVCprev_rec.BTEC_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_Pmin = (HVCrec.BTEC_Pmin.GetValueOrDefault(0) + HVCprev_rec.BTEC_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG1_PBR = (HVCrec.BTEC_TG1_PBR.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG1_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG1_Pmax = (HVCrec.BTEC_TG1_Pmax.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG1_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG1_Pmin = (HVCrec.BTEC_TG1_Pmin.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG1_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG2_PBR = (HVCrec.BTEC_TG2_PBR.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG2_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG2_Pmax = (HVCrec.BTEC_TG2_Pmax.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG2_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG2_Pmin = (HVCrec.BTEC_TG2_Pmin.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG2_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG35_PBR = (HVCrec.BTEC_TG35_PBR.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG35_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG35_Pmax = (HVCrec.BTEC_TG35_Pmax.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG35_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG35_Pmin = (HVCrec.BTEC_TG35_Pmin.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG35_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG4_PBR = (HVCrec.BTEC_TG4_PBR.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG4_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG4_Pmax = (HVCrec.BTEC_TG4_Pmax.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG4_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.BTEC_TG4_Pmin = (HVCrec.BTEC_TG4_Pmin.GetValueOrDefault(0) + HVCprev_rec.BTEC_TG4_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC2_PBR = (HVCrec.TEC2_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC2_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC2_Pmax = (HVCrec.TEC2_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC2_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC2_Pmin = (HVCrec.TEC2_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC2_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_PBR = (HVCrec.TEC3_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC3_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_Pmax = (HVCrec.TEC3_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC3_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_Pmin = (HVCrec.TEC3_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC3_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1_PBR = (HVCrec.TEC3_TG1_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1_Pmax = (HVCrec.TEC3_TG1_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1_Pmin = (HVCrec.TEC3_TG1_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1314_PBR = (HVCrec.TEC3_TG1314_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1314_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1314_Pmax = (HVCrec.TEC3_TG1314_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1314_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG1314_Pmin = (HVCrec.TEC3_TG1314_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG1314_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG5_PBR = (HVCrec.TEC3_TG5_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG5_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG5_Pmax = (HVCrec.TEC3_TG5_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG5_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG5_Pmin = (HVCrec.TEC3_TG5_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG5_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG712_PBR = (HVCrec.TEC3_TG712_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG712_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG712_Pmax = (HVCrec.TEC3_TG712_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG712_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC3_TG712_Pmin = (HVCrec.TEC3_TG712_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC3_TG712_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_PBR = (HVCrec.TEC4_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC4_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_Pmax = (HVCrec.TEC4_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC4_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_Pmin = (HVCrec.TEC4_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC4_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG3_PBR = (HVCrec.TEC4_TG3_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG3_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG3_Pmax = (HVCrec.TEC4_TG3_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG3_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG3_Pmin = (HVCrec.TEC4_TG3_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG3_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG48_PBR = (HVCrec.TEC4_TG48_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG48_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG48_Pmax = (HVCrec.TEC4_TG48_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG48_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC4_TG48_Pmin = (HVCrec.TEC4_TG48_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC4_TG48_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_PBR = (HVCrec.TEC5_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC5_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_Pmax = (HVCrec.TEC5_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC5_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_Pmin = (HVCrec.TEC5_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC5_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG12_PBR = (HVCrec.TEC5_TG12_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG12_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG12_Pmax = (HVCrec.TEC5_TG12_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG12_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG12_Pmin = (HVCrec.TEC5_TG12_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG12_Pmin.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG36_PBR = (HVCrec.TEC5_TG36_PBR.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG36_PBR.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG36_Pmax = (HVCrec.TEC5_TG36_Pmax.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG36_Pmax.GetValueOrDefault(0)) / 2;
-                HVChalf_hour.TEC5_TG36_Pmin = (HVCrec.TEC5_TG36_Pmin.GetValueOrDefault(0) + HVCprev_rec.TEC5_TG36_Pmin.GetValueOrDefault(0)) / 2;
+                int i = -1;
+                Params j;
+                for (i = 0; i < listIds.Count; i++)
+                {
+                    for (j = Params.PBR; j < Params.COUNT_PARAMS; j++)
+                        //Интерполируем средними арифметическими значениями от соседних часов
+                        HVChalf_hour.m_srtlist_ppbr[listIds[i]][(int)j] = (HVCrec.m_srtlist_ppbr[listIds[i]][(int)j].GetValueOrDefault(0) + HVCprev_rec.m_srtlist_ppbr[listIds[i]][(int)j].GetValueOrDefault(0)) / 2;
+                }
 
                 HourlyValuesCollection.Add(HVChalf_hour.date_time, HVChalf_hour);
             }
+            else
+                ;
+        }
+
+        private int? GetIdNextRec(DateTime DT, out int er)
+        {
+            int? iRes = null;
+            er = -1;
+            string errMsg = string.Empty;
+
+            DataTable data;
+            //data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM " + m_strTableNamePPBR + " where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            //data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            if (!(er == 0))
+            {
+                errMsg = "Не получен идентификатор для новой записи в '" + m_strTableNamePPBR + "'";
+                itssAUX.PrintErrorMessage(errMsg);
+                throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
+            }
+            else
+            {
+                if (data.Rows.Count == 1)
+                    iRes = (int?)data.Rows[0][0];
+                else
+                {
+                    if (data.Rows.Count > 1)
+                    {
+                        errMsg = "Не получен идентификатор для новой записи в '" + m_strTableNamePPBR + "'";
+                        itssAUX.PrintErrorMessage(errMsg);
+                        throw new Exception(errMsg);  //Чтобы остановить дальнейшее выполнение
+                    }
+                    else
+                        ; //Нет строк вообще - нормально
+                }
+            }
+
+            return iRes;
         }
 
         /// <summary>
@@ -347,32 +455,23 @@ namespace trans_mc_cmd
         /// </summary>
         public int? Insert48HalfHoursIfNeedAndGetId(DateTime DT)
         {
-            int? iId;
+            int err = 0;
+            int? iId = GetIdNextRec(DT, out err);
 
-            OdbcCommand cmd = new OdbcCommand("SELECT id FROM PPBRvsPBRnew where date_time = ?", mysqlConn);
-            cmd.Parameters.Add("", OdbcType.DateTime).Value = DT;
-            try
-            {
-                iId = (int?)cmd.ExecuteScalar();
-            }
-            catch (Exception e)
-            {
-                itssAUX.PrintErrorMessage(e.Message);
-                iId = null;
-                throw;  //Чтобы остановить дальнейшее выполнение
-            }
-
-            if (!iId.HasValue)
-            {
-                OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", mysqlConn);      //NOW() на этом сервере не совпадает с Новосибирским временем     //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
-                cmdi.Parameters.Add("", OdbcType.DateTime).Value = DT;
-                cmdi.Parameters.Add("", OdbcType.DateTime).Value = DateTime.Now;
-                if (cmdi.ExecuteNonQuery() != 1)
+            if (!iId.HasValue && (err == 0))
+            {//Запись (ID) не была найдена - INSERT
+                //NOW() на этом сервере не совпадает с Новосибирским временем
+                //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
+                //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                DbTSQLInterface.ExecNonQuery(m_MySQLConnection, "INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                Console.WriteLine("INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)" + "; @0 = " + DT.ToString() + ", @1 = " + DateTime.Now.ToString() + "; Рез-т = " + err);
+                if (!(err == 0))
                     itssAUX.PrintErrorMessage("Ошибка записи в базу MySQL на INSERT!");
                 else
                     ;
 
-                iId = (int?)cmd.ExecuteScalar();
+                //Возвратим ID новой записи
+                iId = GetIdNextRec(DT, out err);
             }
             else
                 ;
@@ -385,32 +484,46 @@ namespace trans_mc_cmd
         /// </summary>
         public void FlushDataToDatabase()
         {
+            int err = -1;
             string sUpdate;
+
+            DateTime dtMskNow = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time"));
+
+            Console.WriteLine("Сохраняем данные в БД ППБР..." + Environment.NewLine);
 
             if (!(HourlyValuesCollection == null))
             {
-                OdbcCommand cmd = new OdbcCommand("", mysqlConn);
+                AddCalculatedOwnerValues();
 
-                AddCalculatedHalfHourValues();
+                if (m_bCalculatedHalfHourValues == true)
+                    AddCalculatedHalfHourValues(dtMskNow);
+                else
+                    ;
 
-                foreach (OneRecord rec in HourlyValuesCollection.Values)
+                foreach (HTECComponentsRecord rec in HourlyValuesCollection.Values)
                 {
-                    sUpdate = rec.GenUpdateStatement();
+                    sUpdate = rec.GenUpdateStatement(dtMskNow);
                     if (!(sUpdate == ""))
                     {
-                        cmd.CommandText = sUpdate;
                         Console.WriteLine(sUpdate + Environment.NewLine);
+
                         //Запуск апдейта одной часовой записи
-                        if (!(cmd.ExecuteNonQuery() == 1))
-                            itssAUX.PrintErrorMessage("Warning: Rows Updated <> 1");
+                        //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
+                        DbTSQLInterface.ExecNonQuery(m_MySQLConnection, sUpdate, null, null, out err);
+
+                        if (!(err == 0))
+                            itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::FlushDataToDatabase () - Updated...");
                         else
                             ;
                     }
                     else
-                        ;
+                        itssAUX.PrintErrorMessage("Для дата/время: " + rec.date_time.ToString() + " запрос пуст..." + Environment.NewLine);
                 }
 
                 HourlyValuesCollection.Clear();
+
+                m_MySQLConnection.Close();
+                m_MySQLConnection = null;
             }
             else
                 ; //HourlyValuesCollection пуста
@@ -423,8 +536,10 @@ namespace trans_mc_cmd
 
         ~MySQLtechsite()
         {
-            /*if(mysqlConn.State != ConnectionState.Closed) 
-                mysqlConn.Close();*/
+            //if(mysqlConn.State != ConnectionState.Closed) 
+            //    mysqlConn.Close();
+            //else
+            //    ;
         }
     }
 
@@ -442,13 +557,19 @@ namespace trans_mc_cmd
                 Console.WriteLine(sErrMess);
                 Console.ForegroundColor = cc;
             }
+            else
+                ;
 
-            if (bWriteToWinEventLog && Environment.OSVersion.Version.Major < 6)     //На Windows Vista и выше в журнал таким способом записать прав не хватит
+            if ((Program.WriteToWinEventLog == true) && (bWriteToWinEventLog == true) && (Environment.OSVersion.Version.Major < 6))     //На Windows Vista и выше в журнал таким способом записать прав не хватит
             {
                 //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
-                string sAppName = System.Environment.CommandLine.Substring(System.Environment.CommandLine.LastIndexOf("\\") + 1).Replace("\"", "").Trim();
+                string sAppName = string.Empty;
+                sAppName = Logging.AppName + ".exe";
+                //sAppName = "trans_mc_cmd.exe";
                 System.Diagnostics.EventLog.WriteEntry(sAppName, sErrMess, System.Diagnostics.EventLogEntryType.Error);
             }
+            else
+                ;
         }
     }
 }

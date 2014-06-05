@@ -54,7 +54,7 @@ namespace Statistic
             {
                 Image img;
                 tabTextArea = (RectangleF)this.GetTabRect(nIndex);
-                if (nIndex > 0) {
+                //if (nIndex > 0) {
                     if (! (nIndex == this.SelectedIndex))
                     {
                         img = Statistic.Properties.Resources.closeNonActive.ToBitmap();
@@ -68,9 +68,9 @@ namespace Statistic
                     {
                         e.Graphics.DrawImage(img, tabTextArea.X + tabTextArea.Width - 16, 5, 13, 13);
                     }
-                }
-                else
-                    ;
+                //}
+                //else
+                //    ;
 
                 string str = this.TabPages[nIndex].Text;
                 StringFormat stringFormat = new StringFormat();
