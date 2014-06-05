@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
+            m_ContextMenuStripListTecViews = new System.Windows.Forms.ContextMenuStrip ();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,10 +51,11 @@
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tclTecViews = new System.Windows.Forms.TabControl();
+            this.tclTecViews = new HTabCtrlEx (); //System.Windows.Forms.TabControl();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
+            this.m_ContextMenuStripListTecViews.SuspendLayout ();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -68,6 +70,12 @@
             this.menuStrip.Size = new System.Drawing.Size(982, 24);
             this.menuStrip.TabIndex = 2;
             this.menuStrip.Text = "Главное меню";
+            // 
+            // ContextMenuStrip
+            // 
+            this.m_ContextMenuStripListTecViews.Location = new System.Drawing.Point(0, 0);
+            this.m_ContextMenuStripListTecViews.Name = "ContextMenuStripListTecViews";
+            this.m_ContextMenuStripListTecViews.Text = "Контекстное меню";
             // 
             // файлToolStripMenuItem
             // 
@@ -257,8 +265,10 @@
             this.Controls.Add(this.lblLabel);
             this.Controls.Add(this.tclTecViews);
             this.Controls.Add(this.menuStrip);
+            //this.Controls.Add(this.m_ContextMenuStripListTecViews);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
+            this.ContextMenuStrip = this.m_ContextMenuStripListTecViews;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -267,6 +277,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.m_ContextMenuStripListTecViews.ResumeLayout(false);
+            this.m_ContextMenuStripListTecViews.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,11 +287,12 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip;
+        private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сменитьРежимToolStripMenuItem;
-        private System.Windows.Forms.TabControl tclTecViews;
+        private HTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem текущееСостояниеПользовательToolStripMenuItem;

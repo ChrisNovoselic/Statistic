@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Data;
+using System.Data.Common;
 
 using MySql.Data.MySqlClient;
 
@@ -43,23 +44,18 @@ namespace StatisticCommon
                 //hash = psw.Rows[row_psw]["HASH"].ToString ().ToCharArray ();
                 //len_hash = psw.Rows[row_psw]["HASH"].ToString().Length;
 
-                strPsw = Crypt.Crypting ().Decrypt (psw.Rows[row_psw]["HASH"].ToString (), "AsDfGhJkL;");
+                strPsw = Crypt.Crypting ().Decrypt (psw.Rows[row_psw]["HASH"].ToString (), Crypt.KEY);
             }
             else
                 ;
 
-            if (src.Columns.IndexOf ("PASSWORD") < 0)
+            //Проверка с каким вариантом БД происходит работа
+            if (src.Columns.IndexOf ("PASSWORD") < 0) {
                 src.Columns.Add("PASSWORD", typeof(string));
+                src.Rows[row_src]["PASSWORD"] = strPsw;
+            }
             else
                 ;
-
-            //strPsw = Crypt.Crypting().un(hash, len_hash, out errMsg).ToString();
-            if (errMsg.Length > 0)
-                strPsw = string.Empty;
-            else
-                ;
-
-            src.Rows[row_src]["PASSWORD"] = strPsw;
 
             return src;
         }
@@ -74,7 +70,7 @@ namespace StatisticCommon
             return GetConnectionSettings (tableRes, 0, tablePsw, 0);
         }
 
-        public static DataTable GetConnectionSettings(MySqlConnection conn, int id_ext, int id_role, out int er)
+        public static DataTable GetConnectionSettings(DbConnection conn, int id_ext, int id_role, out int er)
         {
             er = 0;
 
@@ -92,7 +88,7 @@ namespace StatisticCommon
 
             int i = -1;
 
-            MySqlConnection conn = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_ConnectionSettings, out err);
+            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {
@@ -113,7 +109,7 @@ namespace StatisticCommon
                         listConnSett[i].dbName = tableSource.Rows[i]["DB_NAME"].ToString();
                         listConnSett[i].userName = tableSource.Rows[i]["UID"].ToString();
                         //Password
-                        listConnSett[i].ignore = Convert.ToBoolean (tableSource.Rows[i]["IGNORE"].ToString());
+                        listConnSett[i].ignore = Convert.ToInt32 (tableSource.Rows[i]["IGNORE"].ToString()) == 1;
 
                         tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(Convert.ToInt32(tableSource.Rows[i]["ID"]), 501), null, null, out err);
 
@@ -143,7 +139,7 @@ namespace StatisticCommon
             strQuery = psw = string.Empty;
 
 
-            MySqlConnection conn = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_ConnectionSettings, out err);
+            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {

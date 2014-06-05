@@ -17,7 +17,7 @@ namespace StatisticCommon
         public enum TEC_TYPE { COMMON, BIYSK };
 
         public int m_id;
-        public string name,
+        public string name_shr,
                     prefix_admin, prefix_pbr;
         public string [] m_arNameTableAdminValues, m_arNameTableUsedPPBRvsPBR;
         public List <string> m_strNamesField;
@@ -27,7 +27,7 @@ namespace StatisticCommon
 
         public List<TECComponent> list_TECComponents;
 
-        public TEC_TYPE type() { if (name.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
+        public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
         public int[] m_arListenerIds; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
@@ -42,11 +42,11 @@ namespace StatisticCommon
 
         public FormParametersTG parametersTGForm;
 
-        public TEC (int id, string name, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
+        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
-            this.name = name;
+            this.name_shr = name_shr;
             this.m_arNameTableAdminValues = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS]; this.m_arNameTableUsedPPBRvsPBR = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS];
             this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_pbr;
             this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "AdminValuesOfID"; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "PPBRvsPBROfID";
@@ -102,7 +102,7 @@ namespace StatisticCommon
         {
             if (used == 0)
             {
-                m_dbInterface = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name);
+                m_dbInterface = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name_shr);
                 m_arListenerIds[(int)CONN_SETT_TYPE.DATA] = m_dbInterface.ListenerRegister();
                 m_dbInterface.Start();
                 m_dbInterface.SetConnectionSettings(connSetts [(int) CONN_SETT_TYPE.DATA]);
@@ -161,7 +161,7 @@ namespace StatisticCommon
             connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
             connSetts[type].userName = source.Rows[0]["UID"].ToString();
             connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
-            connSetts[type].ignore = Boolean.Parse(source.Rows[0]["IGNORE"].ToString()); //== "1";
+            connSetts[type].ignore = int.Parse(source.Rows[0]["IGNORE"].ToString()) == 1; //== "1";
 
             return iRes;
         }
@@ -262,7 +262,8 @@ namespace StatisticCommon
                         /*strUsedAdminValues*/ m_arNameTableUsedPPBRvsPBR[(int)mode] +
                         @" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
                         @" AND " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") + @"'" +
-                        @" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
+                        //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
+                        @" AND DATEPART(n," + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
                         //@" AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " IS NULL" +
                         @" ORDER BY DATE_PBR" +
                         @" ASC";
@@ -293,7 +294,8 @@ namespace StatisticCommon
                         @" AND ID_COMPONENT IN (" + selectPBR.Split (';')[1] + ")" +
 
                         //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
-                        @" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
+                        //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
+                        @" AND DATEPART(n," + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
                     /*
                     if (selectPBR.Split(';')[1].Split (',').Length > 1)
                         strRes += @" GROUP BY DATE_PBR";

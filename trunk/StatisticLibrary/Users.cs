@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 
 namespace StatisticCommon
 {    
@@ -62,7 +63,7 @@ namespace StatisticCommon
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
             Logging.Logg().LogDebugToFile("Users::Users () - получение объекта MySqlConnection...");
-            MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+            DbConnection connDB = DbTSQLInterface.GetConnection (connSett, out err);
             
             //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
             //GetUsers(string.Empty, "DESCRIPTION", out dataUsers, out err);
@@ -159,7 +160,7 @@ namespace StatisticCommon
             users = DbTSQLInterface.Select(connSett, getUsersRequest(where, orderby), out err);
         }
 
-        public static void GetUsers(MySql.Data.MySqlClient.MySqlConnection conn, string where, string orderby, out DataTable users, out int err)
+        public static void GetUsers(DbConnection conn, string where, string orderby, out DataTable users, out int err)
         {
             err = 0;
             users = new DataTable();
@@ -167,7 +168,7 @@ namespace StatisticCommon
             users = DbTSQLInterface.Select(conn, getUsersRequest(where, orderby), null, null, out err);
         }
 
-        public static void GetRoles(MySql.Data.MySqlClient.MySqlConnection conn, string where, string orderby, out DataTable roles, out int err)
+        public static void GetRoles(DbConnection conn, string where, string orderby, out DataTable roles, out int err)
         {
             err = 0;
             roles = new DataTable();

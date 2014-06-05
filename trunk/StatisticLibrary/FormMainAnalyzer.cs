@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.Data.Common;
 
 using System.Net;
 using System.Net.Sockets;
@@ -72,7 +73,7 @@ namespace StatisticCommon
 
             int err = -1;
 
-            MySql.Data.MySqlClient.MySqlConnection connDB = DbTSQLInterface.GetConnection(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, m_connSettConfigDB, out err);
+            DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
             Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
             FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
@@ -644,7 +645,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    dgvTabVisible.Rows [comp_indx].Cells [col].Value = t.name;
+                    dgvTabVisible.Rows [comp_indx].Cells [col].Value = t.name_shr;
                     m_dicTabVisibleIdItems.Add(t.m_id, new int[] { comp_indx, col - 1 });
 
                     if (t.list_TECComponents.Count > 0)
@@ -660,7 +661,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name + " - " + g.name_shr;
+                            dgvTabVisible.Rows[comp_indx].Cells[col].Value = t.name_shr + " - " + g.name_shr;
                             m_dicTabVisibleIdItems.Add(g.m_id, new int[] { comp_indx, col - 1 });
                         }
                     }

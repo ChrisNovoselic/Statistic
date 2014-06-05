@@ -1820,17 +1820,17 @@ namespace Statistic
                     if (num_TECComponent < 0)
                     {
                         if (tec.list_TECComponents.Count == 1)
-                            ws.Cells[0, 0].Value = tec.name;
+                            ws.Cells[0, 0].Value = tec.name_shr;
                         else
                         {
-                            ws.Cells[0, 0].Value = tec.name;
+                            ws.Cells[0, 0].Value = tec.name_shr;
                             foreach (TECComponent g in tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
 
                     if (valuesHours.addonValues && hour == valuesHours.hourAddon)
@@ -1962,17 +1962,17 @@ namespace Statistic
                     if (num_TECComponent < 0)
                     {
                         if (tec.list_TECComponents.Count == 1)
-                            ws.Cells[0, 0].Value = tec.name;
+                            ws.Cells[0, 0].Value = tec.name_shr;
                         else
                         {
-                            ws.Cells[0, 0].Value = tec.name;
+                            ws.Cells[0, 0].Value = tec.name_shr;
                             foreach (TECComponent g in tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
                     
                     ws.Cells[1, 0].Value = "Мощность на " + dtprDate.Value.ToShortDateString();

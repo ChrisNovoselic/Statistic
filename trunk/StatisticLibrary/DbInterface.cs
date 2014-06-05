@@ -15,7 +15,7 @@ namespace StatisticCommon
     {
         public static int MAX_RETRY = 3;
         public static int MAX_WAIT_COUNT = 25;
-        public static int WAIT_TIME_MS = 66;
+        public static int WAIT_TIME_MS = 666;
 
         protected class DbInterfaceListener
         {
@@ -154,9 +154,12 @@ namespace StatisticCommon
             {
                 sem.Release(1);
             }
-            catch
+            catch (Exception e)
             {
+                Logging.Logg ().LogExceptionToFile (e, @"DbInterface::Request (int, string)");
             }
+
+            //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - " + listenerId + @", " + request);
         }
 
         public bool GetResponse(int listenerId, out bool error, out DataTable table)
@@ -173,6 +176,8 @@ namespace StatisticCommon
 
             error = m_listListeners[listenerId].dataError;
             table = m_listListeners[listenerId].dataTable;
+
+            //Logging.Logg().LogDebugToFile(@"DbInterface::GetResponse (int, out bool , out DataTable) - " + listenerId + @", " + error.ToString());
 
             return m_listListeners[listenerId].dataPresent;
         }
@@ -211,7 +216,7 @@ namespace StatisticCommon
                 {
                     Disconnect();
                     connected = false;
-                    if (threadIsWorking && Connect())
+                    if ((threadIsWorking == true) && (Connect() == true))
                         connected = true;
                     else
                         needReconnect = true; // выставлять флаг можно без блокировки
@@ -224,11 +229,13 @@ namespace StatisticCommon
                 else
                     ;
 
+                //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - m_listListeners.Count = " + m_listListeners.Count);
+
                 for (int i = 0; i < m_listListeners.Count; i++)
                 {
                     lock (lockListeners)
                     {
-                        if (! m_listListeners [i].listenerActive)
+                        if (m_listListeners [i].listenerActive == false)
                             continue;
                         else
                             ;

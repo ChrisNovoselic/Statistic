@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
+using System.Data.Common;
 using MySql.Data.MySqlClient;
 
 namespace StatisticCommon
@@ -10,14 +11,14 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
         private Users m_user;
-        public static MySqlConnection m_connConfigDB;
+        public static DbConnection m_connConfigDB;
 
         public static DataTable getListTEC(bool bIgnoreTECInUse, out int err)
         {
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
 
-            if (bIgnoreTECInUse == false) req += " WHERE INUSE=TRUE"; else ;
+            if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
 
             return DbTSQLInterface.Select(m_connConfigDB, req, null, null, out err);
         }
@@ -71,10 +72,14 @@ namespace StatisticCommon
             
             int err = -1;
 
+            string prefix_admin = string.Empty,
+                    prefix_pbr = string.Empty;
+
             tec = new List<TEC>();
             m_user = new Users(connSett);
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
-            m_connConfigDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+
+            m_connConfigDB = DbTSQLInterface.GetConnection(connSett, out err);
 
             // подключитьс€ к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -92,13 +97,23 @@ namespace StatisticCommon
                     {
                         //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 
+                        prefix_admin = string.Empty; prefix_pbr = string.Empty;
+                        if ((list_tec.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_tec.Columns.IndexOf("PREFIX_PBR") < 0))
+                        {
+                        }
+                        else
+                        {
+                            prefix_admin = list_tec.Rows[i]["PREFIX_ADMIN"].ToString();
+                            prefix_pbr = list_tec.Rows[i]["PREFIX_PBR"].ToString();
+                        }
+                        
                         //—оздание объекта “Ё÷
                         tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
                                         list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                         list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                         list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
-                                        list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                        list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                        prefix_admin,
+                                        prefix_pbr,
                                         bUseData));
 
                         int indx_tec = tec.Count - 1;
@@ -133,8 +148,16 @@ namespace StatisticCommon
                                         for (int j = 0; j < list_TECComponents.Rows.Count; j++)
                                         {
                                             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - ...tec[indx_tec].list_TECComponents.Add(new TECComponent...");
-                                
-                                            tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString(), list_TECComponents.Rows[j]["PREFIX_PBR"].ToString()));
+
+                                            prefix_admin = string.Empty; prefix_pbr = string.Empty;
+                                            if ((list_TECComponents.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_TECComponents.Columns.IndexOf("PREFIX_PBR") < 0)) {
+                                            }
+                                            else {
+                                                prefix_admin = list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString();
+                                                prefix_pbr = list_TECComponents.Rows[j]["PREFIX_PBR"].ToString();
+                                            }
+
+                                            tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], prefix_admin, prefix_pbr));
 
                                             indx = tec[indx_tec].list_TECComponents.Count - 1;
                                             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - indx = " + indx);
@@ -224,6 +247,9 @@ namespace StatisticCommon
 
             tec = new List<TEC> ();
 
+            string prefix_admin = string.Empty,
+                    prefix_pbr = string.Empty;
+
             int err = 0;
             // подключитьс€ к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec= null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -245,7 +271,7 @@ namespace StatisticCommon
             //dbInterface.ListenerUnregister(listenerId);
 
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
-            m_connConfigDB = DbTSQLInterface.GetConnection (DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL, connSett, out err);
+            m_connConfigDB = DbTSQLInterface.GetConnection (connSett, out err);
 
             //»спользование статической функции
             list_tec = getListTEC(bIgnoreTECInUse, out err);
@@ -255,13 +281,23 @@ namespace StatisticCommon
 
                     //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - —оздание объекта “Ё÷: " + i);
 
+                    prefix_admin = string.Empty; prefix_pbr = string.Empty;
+                    if ((list_tec.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_tec.Columns.IndexOf("PREFIX_PBR") < 0))
+                    {
+                    }
+                    else
+                    {
+                        prefix_admin = list_tec.Rows[i]["PREFIX_ADMIN"].ToString();
+                        prefix_pbr = list_tec.Rows[i]["PREFIX_PBR"].ToString();
+                    }
+                    
                     //—оздание объекта “Ё÷
                     tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
                                     list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
                                     list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
                                     list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
-                                    list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
-                                    list_tec.Rows[i]["PREFIX_PBR"].ToString(),
+                                    prefix_admin,
+                                    prefix_pbr,
                                     bUseData));
 
                     //List <string> listNamesField;
@@ -285,7 +321,16 @@ namespace StatisticCommon
                     if (err == 0) list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]), out err); else ;
                     if (err == 0)
                         for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
-                            tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows [j]["PREFIX_ADMIN"].ToString (), list_TECComponents.Rows [j]["PREFIX_PBR"].ToString ()));
+                            prefix_admin = string.Empty; prefix_pbr = string.Empty;
+                            if ((list_TECComponents.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_TECComponents.Columns.IndexOf("PREFIX_PBR") < 0))
+                            {
+                            }
+                            else
+                            {
+                                prefix_admin = list_TECComponents.Rows[j]["PREFIX_ADMIN"].ToString();
+                                prefix_pbr = list_TECComponents.Rows[j]["PREFIX_PBR"].ToString();
+                            }
+                            tec[i].list_TECComponents.Add(new TECComponent(tec[i], prefix_admin, prefix_pbr));
                             tec[i].list_TECComponents[j].name_shr = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                             if (IsNameField(list_TECComponents, "NAME_FUTURE") == true) tec[i].list_TECComponents[j].name_future = list_TECComponents.Rows[j]["NAME_FUTURE"].ToString(); else ;
                             tec[i].list_TECComponents[j].m_id = Convert.ToInt32 (list_TECComponents.Rows[j]["ID"]);
