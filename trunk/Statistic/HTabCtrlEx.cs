@@ -104,7 +104,7 @@ namespace Statistic
                 Image img;
                 Graphics g = CreateGraphics();
                 g.SmoothingMode = SmoothingMode.AntiAlias;
-                for (int nIndex = 1; nIndex < this.TabCount; nIndex++)
+                for (int nIndex = 0; nIndex < this.TabCount; nIndex++)
                 {
                     RectangleF tabTextArea = (RectangleF)this.GetTabRect(nIndex);
                     tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
@@ -137,7 +137,7 @@ namespace Statistic
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if ((DesignMode == false) && (SelectedIndex > 0))
+            if ((DesignMode == false)/* && (SelectedIndex > 0)*/) //Здесь запрет закрыть вкладку с индексом "0"
             {
                 RectangleF tabTextArea = (RectangleF)this.GetTabRect(SelectedIndex);
                 tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
@@ -157,7 +157,7 @@ namespace Statistic
                     //Fire Event to Client
                     if (! (OnClose == null))
                     {
-                        OnClose(this, new CloseTabEventArgs(SelectedIndex, this.TabPages[SelectedIndex].Text/*.TrimEnd()*/));
+                        OnClose(this, new CloseTabEventArgs(SelectedIndex, this.TabPages[SelectedIndex].Text.Trim()));
                     }
                     else
                         ;
@@ -170,6 +170,13 @@ namespace Statistic
             while (TabPages.Count > 1)
                 TabPages.RemoveAt (TabPages.Count - 1);
         }
+
+        public void AddTabPage (string name) {
+            string text = GetNameTab (name);
+            this.TabPages.Add(text, text);
+        }
+
+        public static string GetNameTab (string text) { return new string(' ', 1) + text + new string(' ', 3); }
     }
 
     public class CloseTabEventArgs : EventArgs

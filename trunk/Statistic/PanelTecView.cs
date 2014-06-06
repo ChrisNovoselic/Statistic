@@ -17,7 +17,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class TecView : Panel
+    public class PanelTecView : Panel
     {
         private enum CONTROLS : uint
         {
@@ -41,6 +41,8 @@ namespace Statistic
             lblPBRNumber,
             COUNT_CONTROLS
         };
+        private const int m_indxStartCommonPVal = (int)CONTROLS.lblCommonP,
+                        m_indxStartCommonEVal = (int)CONTROLS.lblCurrentE;
         
         private System.Windows.Forms.Panel pnlGraphHours;
         private System.Windows.Forms.Panel pnlGraphMins;
@@ -286,7 +288,7 @@ namespace Statistic
             this.LastMinutes_TM = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlCommon = new System.Windows.Forms.Panel();
 
-            for (CONTROLS i = CONTROLS.lblCommonP; i < CONTROLS.lblPBRrecVal; i++)
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
                 Color foreColor, backClolor;
                 float szFont;
@@ -323,7 +325,7 @@ namespace Statistic
                         break;
                 }
 
-                m_arLabelCommon[(int)i - (int)CONTROLS.lblCommonP] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
+                m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
             }
 
             this.pnlTG = new System.Windows.Forms.Panel();
@@ -529,9 +531,9 @@ namespace Statistic
             // 
             this.pnlCommon.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            for (CONTROLS i = CONTROLS.lblCommonP; i < CONTROLS.lblPBRrecVal; i++)
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
-                this.pnlCommon.Controls.Add(m_arLabelCommon[(int)i - (int)CONTROLS.lblCommonP]);
+                this.pnlCommon.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
             }
             this.pnlCommon.Location = arPlacement[(int)CONTROLS.pnlCommon].pt;
             this.pnlCommon.Name = "pnlCommon";
@@ -911,7 +913,7 @@ namespace Statistic
 
         private void InitializeComponentEng6()
         {
-            for (CONTROLS i = CONTROLS.lblCurrentE; i < CONTROLS.lblDevEVal; i++)
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
             {
                 Color foreColor, backClolor;
                 float szFont;
@@ -943,8 +945,8 @@ namespace Statistic
                         break;
                 }
 
-                m_arLabelCommon[(int)i - (int)CONTROLS.lblCurrentE] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
-                this.pnlCommon.Controls.Add(m_arLabelCommon[(int)i - (int)CONTROLS.lblCurrentE]);
+                m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
+                this.pnlCommon.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
             }
 
             // 
@@ -973,7 +975,7 @@ namespace Statistic
             //createLabelVal(ref this.lblDevEVal, CONTROLS.lblDevEVal, "0", Color.Yellow);
         }
 
-        public TecView(TEC tec, int num_tec, int num_comp, AdminTS admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
+        public PanelTecView(TEC tec, int num_tec, int num_comp, AdminTS admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
         {
             InitializeComponent();
 
@@ -2147,7 +2149,7 @@ namespace Statistic
                 {
                     sem.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.Stop () - sem.Release(1)"); }
 
                 joined = taskThread.Join(1000);
                 if (!joined)
@@ -2294,7 +2296,8 @@ namespace Statistic
         {
             FillDefaultHours();
 
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
+            double sumFact = 0, sumUDGe = 0, sumDiviation = 0,
+                    dblPercent = 0.0, dblUDGe = 0.0;
             int hour = lastHour;
             int receivedHour = lastReceivedHour;
             int itemscount;
@@ -2315,6 +2318,20 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
+                dgwHours.Rows[i].Cells[6].Value = m_valuesHours.valuesLastMinutesTM[i].ToString("F2");
+                dblUDGe = m_valuesHours.valuesUDGe[i];
+                if ((m_valuesHours.valuesLastMinutesTM[i] > 1) && (dblUDGe > 1))
+                    dblPercent = (m_valuesHours.valuesLastMinutesTM[i] - dblUDGe) / dblUDGe * 100;
+                else
+                    ;
+
+                if ((dblUDGe > 1) &&
+                   (m_valuesHours.valuesLastMinutesTM[i] > 1) &&
+                   ((!(Math.Abs(dblPercent) < 2))))
+                    dgwHours.Rows[i].Cells[6].Style = dgvCellStyleError;
+                else
+                    dgwHours.Rows[i].Cells[6].Style = dgvCellStyleCommon;
+
                 if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                 {
                     if (i <= m_valuesHours.hourAddon)
@@ -2607,21 +2624,21 @@ namespace Statistic
                 if (sensorId2TG[i].power_TM > 1) value_TM += sensorId2TG[i].power_TM; else ;
             }
 
-            m_arLabelCommon [(int)CONTROLS.lblCommonPVal_Fact].Text = value.ToString("F2");
-            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_TM].Text = value_TM.ToString("F2");
+            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact - m_indxStartCommonPVal].Text = value.ToString("F2");
+            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal].Text = value_TM.ToString("F2");
             valueECur = value / 20;
-            m_arLabelCommon[(int)CONTROLS.lblCurrentEVal].Text = valueECur.ToString("F2");
+            m_arLabelCommon[(int)CONTROLS.lblCurrentEVal - m_indxStartCommonPVal].Text = valueECur.ToString("F2");
 
             valueEFuture = valueECur * (20 - min - 1);
-            m_arLabelCommon[(int)CONTROLS.lblHourEVal].Text = (valueEBefore + valueECur + valueEFuture).ToString("F2");
+            m_arLabelCommon[(int)CONTROLS.lblHourEVal - m_indxStartCommonPVal].Text = (valueEBefore + valueECur + valueEFuture).ToString("F2");
 
             if (adminValuesReceived && currHour)
             {
-                m_arLabelCommon[(int)CONTROLS.lblPBRrecVal].Text = recomendation.ToString("F2");
+                m_arLabelCommon[(int)CONTROLS.lblPBRrecVal - m_indxStartCommonPVal].Text = recomendation.ToString("F2");
             }
             else
             {
-                m_arLabelCommon[(int)CONTROLS.lblPBRrecVal].Text = "---";
+                m_arLabelCommon[(int)CONTROLS.lblPBRrecVal - m_indxStartCommonPVal].Text = "---";
             }
 
             double summ = 0;
@@ -2637,9 +2654,9 @@ namespace Statistic
                     for (int i = 1; i < lastMin; i++)
                         summ += m_valuesMins.valuesFact[i];
                     if (min != 0)
-                        m_arLabelCommon[(int)CONTROLS.lblAverPVal].Text = (summ / min).ToString("F2");
+                        m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].Text = (summ / min).ToString("F2");
                     else
-                        m_arLabelCommon[(int)CONTROLS.lblAverPVal].Text = 0.ToString("F2");
+                        m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].Text = 0.ToString("F2");
                 }
                 else
                 {
@@ -2652,16 +2669,16 @@ namespace Statistic
                     else
                         summ = m_valuesHours.valuesFact[hour];
 
-                    m_arLabelCommon[(int)CONTROLS.lblAverPVal].Text = summ.ToString("F2");
+                    m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].Text = summ.ToString("F2");
                 }
 
                 //if (! ([lastHour] == 0))
                 if ((lastHour < m_valuesHours.valuesUDGe.Length) && (!(m_valuesHours.valuesUDGe[lastHour] == 0)))
                 {
-                    m_arLabelCommon[(int)CONTROLS.lblDevEVal].Text = ((((valueEBefore + valueECur + valueEFuture) - m_valuesHours.valuesUDGe[lastHour]) / m_valuesHours.valuesUDGe[lastHour]) * 100).ToString("F2") + "%";
+                    m_arLabelCommon[(int)CONTROLS.lblDevEVal - m_indxStartCommonPVal].Text = ((((valueEBefore + valueECur + valueEFuture) - m_valuesHours.valuesUDGe[lastHour]) / m_valuesHours.valuesUDGe[lastHour]) * 100).ToString("F2") + "%";
                 }
                 else
-                    m_arLabelCommon[(int)CONTROLS.lblDevEVal].Text = "---";
+                    m_arLabelCommon[(int)CONTROLS.lblDevEVal - m_indxStartCommonPVal].Text = "---";
             }
 
             if (currHour && min == 0)
@@ -2684,27 +2701,27 @@ namespace Statistic
                         if (lastMinError)
                         {
                             ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
-                            m_arLabelCommon[(int)CONTROLS.lblAverPVal].ForeColor = System.Drawing.Color.OrangeRed;
-                            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact].ForeColor = System.Drawing.Color.OrangeRed;
+                            m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
+                            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         else
                         {
-                            m_arLabelCommon[(int)CONTROLS.lblAverPVal].ForeColor = System.Drawing.Color.LimeGreen;
-                            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact].ForeColor = System.Drawing.Color.LimeGreen;
+                            m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
+                            m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
 
-                            m_arLabelCommon[(int)CONTROLS.lblCurrentEVal].ForeColor = System.Drawing.Color.LimeGreen;
-                            m_arLabelCommon[(int)CONTROLS.lblHourEVal].ForeColor = System.Drawing.Color.Yellow;
+                            m_arLabelCommon[(int)CONTROLS.lblCurrentEVal - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
+                            m_arLabelCommon[(int)CONTROLS.lblHourEVal - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow;
                         }
                     }
                 }
             }
             else
             {
-                m_arLabelCommon[(int)CONTROLS.lblAverPVal].ForeColor =
-                m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact].ForeColor =
+                m_arLabelCommon[(int)CONTROLS.lblAverPVal - m_indxStartCommonPVal].ForeColor =
+                m_arLabelCommon[(int)CONTROLS.lblCommonPVal_Fact - m_indxStartCommonPVal].ForeColor =
 
-                m_arLabelCommon[(int)CONTROLS.lblCurrentEVal].ForeColor =
-                m_arLabelCommon[(int)CONTROLS.lblHourEVal].ForeColor = System.Drawing.Color.OrangeRed;
+                m_arLabelCommon[(int)CONTROLS.lblCurrentEVal - m_indxStartCommonPVal].ForeColor =
+                m_arLabelCommon[(int)CONTROLS.lblHourEVal - m_indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
             }
 
             lblPBRNumber.Text = lastLayout;
@@ -2730,6 +2747,7 @@ namespace Statistic
         {
             for (int i = 0; i < 24; i++)
                 m_valuesHours.valuesFact[i] =
+                m_valuesHours.valuesLastMinutesTM[i] =
                 m_valuesHours.valuesDiviation[i] =
                 m_valuesHours.valuesPBR[i] =
                 m_valuesHours.valuesPBRe[i] =
@@ -2803,7 +2821,7 @@ namespace Statistic
                 }
                 catch (Exception excpt)
                 {
-                    Logging.Logg().LogExceptionToFile(excpt, "TecView::GetCurrentTimeReponse () - (DateTime)table.Rows[0][0]");
+                    Logging.Logg().LogExceptionToFile(excpt, "PanelTecView::GetCurrentTimeReponse () - (DateTime)table.Rows[0][0]");
 
                     return false;
                 }
@@ -3985,7 +4003,7 @@ namespace Statistic
                         //    catch (Exception excpt)
                         //    {
                         //        /*
-                        //        Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ...");
+                        //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ...");
                         //        */
                         //    }
                         //else
@@ -4017,7 +4035,7 @@ namespace Statistic
                                     else
                                         ;
                                 }
-                                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ..."); }
+                                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ..."); }
                             }
                             else
                             {
@@ -4344,7 +4362,7 @@ namespace Statistic
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg ().LogExceptionToFile (e, "TecView::GetAdminValueResponse ()...");
+                                    Logging.Logg ().LogExceptionToFile (e, "PanelTecView::GetAdminValueResponse ()...");
                                 }
                             }
                             else
@@ -4939,7 +4957,7 @@ namespace Statistic
             states.Add(StatesMachine.Current_TM);
             states.Add(StatesMachine.LastMinutes_TM);
             states.Add(StatesMachine.PBRValues);
-            states.Add(StatesMachine.AdminValues);
+            states.Add(StatesMachine.AdminValues);            
         }
 
         public void Activate(bool active)
@@ -5295,7 +5313,7 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                    GetAdminValuesRequest(AdminTS.TYPE_FIELDS.STATIC);
+                    GetAdminValuesRequest(m_admin.m_typeFields);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();
@@ -5409,7 +5427,7 @@ namespace Statistic
                     result = GetMinsResponse(table);
                     if (result)
                     {
-                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                        //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
                     else
                         ;

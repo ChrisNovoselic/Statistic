@@ -409,7 +409,7 @@ namespace Statistic
                     {
                         m_semaState.Release(1);
                     }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)"); }
+                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelCurPower.Stop () - sem.Release(1)"); }
 
                     joined = m_taskThread.Join(1000);
                     if (!joined)

@@ -327,7 +327,7 @@ namespace Statistic
                         m_bIsStarted,
                         m_bUpdate;
 
-            private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
+            private Dictionary<int, PanelTecView.valuesTECComponent> m_dictValuesHours;
 
             DataTable m_tablePBRResponse;
 
@@ -419,10 +419,10 @@ namespace Statistic
                 m_states = new List<StatesMachine>();
                 //delegateUpdateGUI_TM = ShowTMPower;
 
-                m_dictValuesHours = new Dictionary<int,TecView.valuesTECComponent> ();
+                m_dictValuesHours = new Dictionary<int,PanelTecView.valuesTECComponent> ();
                 foreach (TECComponent c in m_list_TECComponents)
                 {
-                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
+                    m_dictValuesHours.Add(c.m_id, new PanelTecView.valuesTECComponent(24 + 1));
                 }
 
                 delegateUpdateGUI_TM = ShowLastMinutesTM;
@@ -486,7 +486,7 @@ namespace Statistic
                     {
                         m_semaState.Release(1);
                     }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.Stop () - sem.Release(1)"); }
+                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.Stop () - sem.Release(1)"); }
 
                     joined = m_taskThread.Join(1000);
                     if (!joined)
@@ -516,9 +516,9 @@ namespace Statistic
                     m_states.Add(StatesMachine.Init_TM);
                 }
 
-                m_states.Add(StatesMachine.LastMinutes_TM);
                 m_states.Add(StatesMachine.PBRValues);
                 m_states.Add(StatesMachine.AdminValues);
+                m_states.Add(StatesMachine.LastMinutes_TM);
             }
 
             public void Activate(bool active)
@@ -1089,7 +1089,7 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.STATIC));
+                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
                 }
             }
 
@@ -1138,7 +1138,7 @@ namespace Statistic
                 //    catch (Exception excpt)
                 //    {
                 //        /*
-                //        Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ...");
+                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ...");
                 //        */
                 //    }
                 //else
@@ -1168,7 +1168,7 @@ namespace Statistic
                             else
                                 ;
                         }
-                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - TecView.GetAdminValuesResponse () - ..."); }
+                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ..."); }
                     }
                     else
                     {

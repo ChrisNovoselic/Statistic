@@ -26,6 +26,7 @@ namespace StatisticCommon
         {
             this.m_owner = comp;
             power = new double[21];
+            power_LastMinutesTM = new double[25];
             receivedMin = new bool[21];
             receivedHourHalf1 = new bool[24];
             receivedHourHalf2 = new bool[24];

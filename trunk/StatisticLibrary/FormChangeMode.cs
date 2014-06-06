@@ -10,6 +10,8 @@ namespace StatisticCommon
 {
     public partial class FormChangeMode : Form
     {
+        public event DelegateFunc ev_сменить–ежим;
+
         public List<TEC> m_list_tec;
         public List<int> m_list_tec_index,
                         m_list_TECComponent_index
@@ -23,21 +25,19 @@ namespace StatisticCommon
         public bool closing;
 
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
-        DelegateFunc f_сменить–ежим;
 
         //private ConnectionSettings m_connSet;
 
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
         public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER };
 
-        public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*/, DelegateFunc changeMode)
+        public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
             this.Text = @"¬ыбор режима";
 
             m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
             m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
-            f_сменить–ежим = changeMode;
 
             this.m_list_tec = tec;
 
@@ -164,9 +164,9 @@ namespace StatisticCommon
 
                 m_list_tec_index.Clear();
                 m_list_TECComponent_index.Clear();
-                
+
                 m_list_across_index.Clear();
-                
+
                 //was_checked.Clear ();
 
                 foreach (TEC t in m_list_tec)
@@ -276,14 +276,12 @@ namespace StatisticCommon
                 Close();
             }
             else
-                ;
-
-            f_сменить–ежим();
+                ev_сменить–ежим();
         }
 
         private void clbMode_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (!(m_MainFormContextMenuStripListTecViews == null))
+            if ((!(m_MainFormContextMenuStripListTecViews == null)) && (e.Index < m_MainFormContextMenuStripListTecViews.Items.Count))
                 ((ToolStripMenuItem)m_MainFormContextMenuStripListTecViews.Items[e.Index]).CheckState = e.NewValue;
             else ;
         }
@@ -310,9 +308,18 @@ namespace StatisticCommon
 
         public void SetItemChecked(int indxCheckedIndicies, bool bChecked)
         {
-            clbMode.SetItemChecked(clbMode.CheckedIndices[indxCheckedIndicies], bChecked);
+            if ((clbMode.CheckedIndices.Count > 0) && (!(indxCheckedIndicies < 0)) && (indxCheckedIndicies < clbMode.CheckedIndices.Count)) {
+                clbMode.SetItemChecked(clbMode.CheckedIndices[indxCheckedIndicies], bChecked);
 
-            btnOk_Click(null, EventArgs.Empty);
+                btnOk_Click(null, EventArgs.Empty);
+            }
+            else
+                ;
+        }
+
+        public void SetItemChecked(string textItem, bool bChecked)
+        {
+            SetItemChecked (clbMode.CheckedItems.IndexOf (textItem), bChecked);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

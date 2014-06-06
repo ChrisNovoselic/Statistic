@@ -934,7 +934,7 @@ namespace StatisticCommon
             if ((serverTime.Date < date) || (m_ignore_date == true))
                 currentHour = 0;
             else
-                currentHour = serverTime.Hour;
+                currentHour = serverTime.Hour; // - (int)HAdmin.GetOffsetOfCurrentTimeZone ().TotalHours;
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1168,7 +1168,7 @@ namespace StatisticCommon
             m_indxDbInterfaceCurrent = -1;
 
             Int16 connSettType = -1;
-            Int16 dbType = -1;
+            DbTSQLInterface.DB_TSQL_INTERFACE_TYPE dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
             foreach (TEC t in m_list_tec)
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++)
@@ -1178,7 +1178,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    dbType = -1;
+                    dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
 
                     if (object.ReferenceEquals(t.connSetts[connSettType], null) == false)
                     {
@@ -1206,16 +1206,13 @@ namespace StatisticCommon
                         {
                             string dbNameType = string.Empty;
 
-                            switch (connSettType)
+                            dbType = DbTSQLInterface.getTypeDB (t.connSetts[connSettType].port);
+                            switch (dbType)
                             {
-                                case (int)CONN_SETT_TYPE.ADMIN:
-                                case (int)CONN_SETT_TYPE.PBR:
-                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                                case DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
                                     dbNameType = "MySql";
                                     break;
-                                case (int)CONN_SETT_TYPE.DATA_FACT:
-                                case (int)CONN_SETT_TYPE.DATA_TM:
-                                    dbType = (int)DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                                case DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
                                     dbNameType = "MSSQL";
                                     break;
                                 default:
@@ -1225,7 +1222,7 @@ namespace StatisticCommon
 
                             if (!(dbType < 0))
                             {
-                                m_listDbInterfaces.Add(new DbTSQLInterface((DbTSQLInterface.DB_TSQL_INTERFACE_TYPE)dbType, "Интерфейс " + dbNameType + "-БД"));
+                                m_listDbInterfaces.Add(new DbTSQLInterface(dbType, "Интерфейс: " + dbNameType + "-БД, " + "ТЭЦ: " + t.name_shr));
                                 m_listListenerIdCurrent.Add(-1);
 
                                 t.m_arIndxDbInterfaces[connSettType] = m_listDbInterfaces.Count - 1;

@@ -135,7 +135,7 @@
             this.выборОбъектыToolStripMenuItem.CheckOnClick = true;
             this.выборОбъектыToolStripMenuItem.Name = "выборОбъектыToolStripMenuItem";
             this.выборОбъектыToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.выборОбъектыToolStripMenuItem.Text = "Мониторинг - последняя минута часа";
+            this.выборОбъектыToolStripMenuItem.Text = "Выбор объектов отображения";
             this.выборОбъектыToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъектыToolStripMenuItem_CheckedChanged);
             // 
             // настройкиToolStripMenuItem

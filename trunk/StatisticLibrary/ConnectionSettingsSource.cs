@@ -34,7 +34,7 @@ namespace StatisticCommon
             return "SELECT psw.* FROM passwords psw WHERE psw.ID_EXT = " + id.ToString() + " AND ID_ROLE = " + id_role.ToString();
         }
 
-        private static DataTable GetConnectionSettings(DataTable src, int row_src, DataTable psw, int row_psw)
+        private static DataTable GetConnectionSettings(ref DataTable src, int row_src, ref DataTable psw, int row_psw)
         {
             string errMsg, strPsw;
 
@@ -52,10 +52,11 @@ namespace StatisticCommon
             //Проверка с каким вариантом БД происходит работа
             if (src.Columns.IndexOf ("PASSWORD") < 0) {
                 src.Columns.Add("PASSWORD", typeof(string));
-                src.Rows[row_src]["PASSWORD"] = strPsw;
             }
             else
                 ;
+
+            src.Rows[row_src]["PASSWORD"] = strPsw;
 
             return src;
         }
@@ -67,7 +68,7 @@ namespace StatisticCommon
             DataTable tableRes = DbTSQLInterface.Select(connSett, ConnectionSettingsRequest(id_ext), out er),
                     tablePsw = DbTSQLInterface.Select(connSett, PasswordRequest(id_ext, id_role), out er);
 
-            return GetConnectionSettings (tableRes, 0, tablePsw, 0);
+            return GetConnectionSettings (ref tableRes, 0, ref tablePsw, 0);
         }
 
         public static DataTable GetConnectionSettings(DbConnection conn, int id_ext, int id_role, out int er)
@@ -77,7 +78,7 @@ namespace StatisticCommon
             DataTable tableRes = DbTSQLInterface.Select(conn, ConnectionSettingsRequest(id_ext), null, null, out er),
                     tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(id_ext, id_role), null, null, out er);
 
-            return GetConnectionSettings(tableRes, 0, tablePsw, 0);
+            return GetConnectionSettings(ref tableRes, 0, ref tablePsw, 0);
         }
 
         public void Read(out List<ConnectionSettings> listConnSett, out int err, out string mes)
@@ -113,7 +114,7 @@ namespace StatisticCommon
 
                         tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(Convert.ToInt32(tableSource.Rows[i]["ID"]), 501), null, null, out err);
 
-                        tableSource = GetConnectionSettings(tableSource, i, tablePsw, 0);
+                        tableSource = GetConnectionSettings(ref tableSource, i, ref tablePsw, 0);
                         //Password
                         listConnSett[i].password = tableSource.Rows[i]["PASSWORD"].ToString();
                     }
