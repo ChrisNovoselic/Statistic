@@ -5336,7 +5336,7 @@ namespace Statistic
                     switch (tec.type())
                     {
                         case TEC.TEC_TYPE.COMMON:
-                            return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
+                            return tec.Response(CONN_SETT_TYPE.DATA_FACT, out error, out table);
                         case TEC.TEC_TYPE.BIYSK:
                             return true;
                     }
@@ -5346,7 +5346,7 @@ namespace Statistic
                     {
                         case TEC.TEC_TYPE.COMMON:
                         case TEC.TEC_TYPE.BIYSK:
-                            return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                            return tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                             break;
                     }
                     break;
@@ -5355,16 +5355,16 @@ namespace Statistic
                 case StatesMachine.CurrentMins_Fact:
                 case StatesMachine.RetroHours:
                 case StatesMachine.RetroMins:
-                    return tec.GetResponse(CONN_SETT_TYPE.DATA_FACT, out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.DATA_FACT, out error, out table);
                 case StatesMachine.Current_TM:
                 case StatesMachine.LastMinutes_TM:
-                    return tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                 case StatesMachine.PBRValues:
-                    return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    return m_admin.Response(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                 //return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
-                    //return m_admin.GetResponse(out error, out table, true);
-                    return m_admin.GetResponse(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    //return m_admin.Response(out error, out table, true);
+                    return m_admin.Response(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
             }
 
             error = true;

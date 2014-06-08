@@ -1124,7 +1124,7 @@ namespace StatisticCommon
             m_listDbInterfaces[indxDbInterface].Request(m_listListenerIdCurrent[indxDbInterface], request);
         }
 
-        public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public override bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
             if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (!(m_indxDbInterfaceCurrent < 0))) {
                 //m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
@@ -1134,12 +1134,12 @@ namespace StatisticCommon
             else
                 ;
 
-            return m_listDbInterfaces[indxDbInterface].GetResponse(listenerId, out error, out table);
+            return m_listDbInterfaces[indxDbInterface].Response(listenerId, out error, out table);
 
             //if (isTec)
-            //    return dbInterface.GetResponse(listenerIdTec, out error, out table);
+            //    return dbInterface.Response(listenerIdTec, out error, out table);
             //else
-            //    return dbInterface.GetResponse(listenerIdAdmin, out error, out table);
+            //    return dbInterface.Response(listenerIdAdmin, out error, out table);
         }
 
         public int GetIndexTECComponent (int idTEC, int idComp) {
@@ -1456,7 +1456,7 @@ namespace StatisticCommon
                     case (int)StatesMachine.ClearAdminValues:
                     case (int)StatesMachine.ClearPPBRValues:
                     //case (int)StatesMachine.GetPass:
-                        bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                        bRes = Response(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                         break;
                     //case (int)StatesMachine.LayoutGet:
                     //case (int)StatesMachine.LayoutSet:

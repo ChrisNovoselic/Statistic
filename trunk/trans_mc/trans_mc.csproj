@@ -97,11 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Infrastructure">
-      <HintPath>..\MCApiDLL\Infrastructure.dll</HintPath>
+      <HintPath>..\ModesApiDLL\Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="ModesApiExternal">
-      <HintPath>..\MCApiDLL\ModesApiExternal.dll</HintPath>
+      <HintPath>..\ModesApiDLL\ModesApiExternal.dll</HintPath>
     </Reference>
     <Reference Include="MySQL.Data">
       <HintPath>..\MySQL.Data.dll</HintPath>

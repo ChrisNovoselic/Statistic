@@ -411,7 +411,10 @@ namespace Statistic
                     this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / CountTECComponent));
                 }
 
-                this.SetColumnSpan(lblNameTEC, CountTECComponent);
+                if (CountTECComponent > 0)
+                    this.SetColumnSpan(lblNameTEC, CountTECComponent);
+                else
+                    ;
 
                 lockValue = new object();
                 m_listSensorId2TG = new List<TG>(); //[this.RowCount - COUNT_FIXED_ROWS];
@@ -876,15 +879,15 @@ namespace Statistic
                         {
                             case TEC.TEC_TYPE.COMMON:
                             case TEC.TEC_TYPE.BIYSK:
-                                return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                                return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                         }
                         break;
                     case StatesMachine.LastMinutes_TM:
-                        return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                        return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                     case StatesMachine.PBRValues:
-                        return ((PanelLastMinutes)Parent).m_admin.GetResponse(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     case StatesMachine.AdminValues:
-                        return ((PanelLastMinutes)Parent).m_admin.GetResponse(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
                 }
 
                 error = true;

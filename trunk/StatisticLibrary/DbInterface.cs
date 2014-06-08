@@ -162,7 +162,7 @@ namespace StatisticCommon
             //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - " + listenerId + @", " + request);
         }
 
-        public bool GetResponse(int listenerId, out bool error, out DataTable table)
+        public bool Response(int listenerId, out bool error, out DataTable table)
         {
             if ((!(listenerId < m_listListeners.Count)) || listenerId < 0)
             {

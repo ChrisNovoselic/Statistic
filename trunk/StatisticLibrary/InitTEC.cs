@@ -268,7 +268,7 @@ namespace StatisticCommon
             //dbInterface.SetConnectionSettings(connSett);
 
             //DbTSQLInterface.Select(listenerId, "SELECT * FROM TEC_LIST");
-            //dbInterface.GetResponse(listenerId, out err, out list_tec);
+            //dbInterface.Response(listenerId, out err, out list_tec);
 
             //dbInterface.Stop();
             //dbInterface.ListenerUnregister(listenerId);

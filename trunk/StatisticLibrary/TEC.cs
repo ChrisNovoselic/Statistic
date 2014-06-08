@@ -98,10 +98,10 @@ namespace StatisticCommon
                 ;
         }
 
-        public bool GetResponse(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
+        public bool Response(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
             if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
-                return m_arDBInterfaces[(int)indx_src].GetResponse(m_arListenerIds[(int)indx_src], out error, out table);
+                return m_arDBInterfaces[(int)indx_src].Response(m_arListenerIds[(int)indx_src], out error, out table);
             else
             {
                 error = true;

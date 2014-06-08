@@ -775,13 +775,13 @@ namespace Statistic
                         {
                             case TEC.TEC_TYPE.COMMON:
                             case TEC.TEC_TYPE.BIYSK:
-                                return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                                return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                             //case TEC.TEC_TYPE.BIYSK:
                                 //return true;
                         }
                         break;
                     case StatesMachine.Current_TM:
-                        return m_tec.GetResponse(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                        return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                 }
 
                 error = true;

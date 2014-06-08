@@ -355,7 +355,7 @@ namespace StatisticCommon
 
         protected abstract bool InitDbInterfaces ();
 
-        public abstract bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/);
+        public abstract bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/);
 
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
 

@@ -35,13 +35,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Infrastructure, Version=1.3.2.46, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\MCApiDLL\Infrastructure.dll</HintPath>
+    <Reference Include="Infrastructure">
+      <HintPath>..\ModesApiDLL\Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="ModesApiExternal, Version=1.3.2.6, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\MCApiDLL\ModesApiExternal.dll</HintPath>
+    <Reference Include="ModesApiExternal">
+      <HintPath>..\ModesApiDLL\ModesApiExternal.dll</HintPath>
     </Reference>
     <Reference Include="MySQL.Data">
       <HintPath>..\MySQL.Data.dll</HintPath>

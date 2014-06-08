@@ -56,7 +56,10 @@ namespace StatisticCommon
             else
                 ;
 
-            src.Rows[row_src]["PASSWORD"] = strPsw;
+            if (src.Rows.Count == 1)
+                src.Rows[row_src]["PASSWORD"] = strPsw;
+            else
+                ;
 
             return src;
         }
@@ -78,7 +81,12 @@ namespace StatisticCommon
             DataTable tableRes = DbTSQLInterface.Select(conn, ConnectionSettingsRequest(id_ext), null, null, out er),
                     tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(id_ext, id_role), null, null, out er);
 
-            return GetConnectionSettings(ref tableRes, 0, ref tablePsw, 0);
+            if ((tableRes.Rows.Count > 0) && (tablePsw.Rows.Count > 0))
+                tableRes = GetConnectionSettings(ref tableRes, 0, ref tablePsw, 0);
+            else
+                er = -1;
+
+            return tableRes;
         }
 
         public void Read(out List<ConnectionSettings> listConnSett, out int err, out string mes)

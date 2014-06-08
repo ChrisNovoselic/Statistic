@@ -137,6 +137,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="LogParse.cs" />
+    <Compile Include="DbSources.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

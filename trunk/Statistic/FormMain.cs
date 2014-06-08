@@ -792,34 +792,39 @@ namespace Statistic
                 {
                     selTecView = (PanelTecView)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                    if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                        (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                    if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM] == null))))
                     {
-                        if (selTecView.isActive == true)
+                        if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                         {
-                            m_lblDateError.Text = selTecView.last_time_action.ToString();
-                            m_lblDescError.Text = selTecView.last_action;
+                            if (selTecView.isActive == true)
+                            {
+                                m_lblDateError.Text = selTecView.last_time_action.ToString();
+                                m_lblDescError.Text = selTecView.last_action;
+                            }
+                            else
+                                ;
                         }
                         else
                             ;
-                    }
-                    else
-                        ;
 
-                    if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                        (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
-                    {
-                        have_eror = true;
-                        if (selTecView.isActive == true)
+                        if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                         {
-                            m_lblDateError.Text = selTecView.last_time_error.ToString();
-                            m_lblDescError.Text = selTecView.last_error;
+                            have_eror = true;
+                            if (selTecView.isActive == true)
+                            {
+                                m_lblDateError.Text = selTecView.last_time_error.ToString();
+                                m_lblDescError.Text = selTecView.last_error;
+                            }
+                            else
+                                ;
                         }
                         else
                             ;
                     }
                     else
-                        ;
+                        ; //Вкладка не найдена
                 }
                 else
                 {

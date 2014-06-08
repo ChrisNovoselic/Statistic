@@ -36,9 +36,9 @@ namespace trans_mc
             base.Resume ();
         }
 
-        public override bool GetResponse(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public override bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
         {
-            return m_listDbInterfaces[0].GetResponse(0, out error, out table);
+            return m_listDbInterfaces[0].Response(0, out error, out table);
         }
 
         protected override void GetPPBRDatesRequest(DateTime date) {
@@ -227,7 +227,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    bRes = GetResponse(0, 0, out error, out table/*, false*/);
+                    bRes = Response(0, 0, out error, out table/*, false*/);
                     break;
                 default:
                     break;
