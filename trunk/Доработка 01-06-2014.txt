@@ -74,3 +74,4 @@ UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='BiTEC#TG%_I_10
 разрешить рекомендации
 монитор 2% шрифт уменьшать
 монитор 2% 2014 -> 14
+Главное меню - Activate (false) для активной вкладки
