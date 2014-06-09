@@ -53,10 +53,10 @@ namespace Statistic
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
-        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
+        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 10F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 10F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter)};
+                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 10F, ContentAlignment.MiddleCenter)};
         static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
         //static int COUNT_HOURS = 24;
 
@@ -252,7 +252,7 @@ namespace Statistic
                 DateTime dtNow = DateTime.Now.Date;
 
                 //Добавить дату
-                Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
+                Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
                 this.Controls.Add(lblDate, 0, 0);
                 this.SetRowSpan(lblDate, COUNT_FIXED_ROWS);
 

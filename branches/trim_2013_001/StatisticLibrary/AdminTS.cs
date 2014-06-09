@@ -511,7 +511,8 @@ namespace StatisticCommon
             int err = 0,
                 num_pbr = 23;
 
-            if ((m_curDate.Date == DateTime.Now.Date) && (! (allTECComponents[indxTECComponents].name_future == string.Empty)))
+            //if ((m_curDate.Date == DateTime.Now.Date) && (! (allTECComponents[indxTECComponents].name_future == string.Empty)))
+            if (m_curDate.Date == DateTime.Now.Date)
             {
                 string  strCSVExt = @".csv"
                     , strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr)
@@ -558,7 +559,7 @@ namespace StatisticCommon
                     File.Delete (strPPBRCSVNameFileTemp);
                 }
                 else
-                    ;
+                    Logging.Logg().LogToFile(@"!Ошибка! Не найден файл-макет: " + strPPBRCSVNameFile, true, true, true);
 
                 delegateStopWait();
             }

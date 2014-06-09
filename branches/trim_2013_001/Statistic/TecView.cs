@@ -418,7 +418,7 @@ namespace Statistic
             this.Hour.HeaderText = "×àñ";
             this.Hour.Name = "Hour";
             this.Hour.ReadOnly = true;
-            this.Hour.Width = 50;
+            this.Hour.Width = 25;
             this.Hour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // FactHour
@@ -426,7 +426,7 @@ namespace Statistic
             this.FactHour.HeaderText = "Ôàêò";
             this.FactHour.Name = "FactHour";
             this.FactHour.ReadOnly = true;
-            this.FactHour.Width = 50;
+            this.FactHour.Width = 48;
             this.FactHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // PBRHour
@@ -434,7 +434,7 @@ namespace Statistic
             this.PBRHour.HeaderText = "ÏÁÐ";
             this.PBRHour.Name = "PBRHour";
             this.PBRHour.ReadOnly = true;
-            this.PBRHour.Width = 50;
+            this.PBRHour.Width = 48;
             this.PBRHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // PBReHour
@@ -442,7 +442,7 @@ namespace Statistic
             this.PBReHour.HeaderText = "ÏÁÐý";
             this.PBReHour.Name = "PBReHour";
             this.PBReHour.ReadOnly = true;
-            this.PBReHour.Width = 50;
+            this.PBReHour.Width = 48;
             this.PBReHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // UDGeHour
@@ -450,7 +450,7 @@ namespace Statistic
             this.UDGeHour.HeaderText = "ÓÄÃý";
             this.UDGeHour.Name = "UDGeHour";
             this.UDGeHour.ReadOnly = true;
-            this.UDGeHour.Width = 60;
+            this.UDGeHour.Width = 48;
             this.UDGeHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationHour
@@ -458,7 +458,7 @@ namespace Statistic
             this.DeviationHour.HeaderText = "+/-";
             this.DeviationHour.Name = "DeviationHour";
             this.DeviationHour.ReadOnly = true;
-            this.DeviationHour.Width = 50;
+            this.DeviationHour.Width = 45;
             this.DeviationHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // LastMinutes_TM
@@ -466,7 +466,7 @@ namespace Statistic
             this.LastMinutes_TM.HeaderText = "Ìèí.59";
             this.LastMinutes_TM.Name = "LastMinutes_TM";
             this.LastMinutes_TM.ReadOnly = true;
-            this.LastMinutes_TM.Width = 60;
+            this.LastMinutes_TM.Width = 48;
             this.LastMinutes_TM.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             //
             // btnSetNow
@@ -2495,10 +2495,7 @@ namespace Statistic
                         {
                             if (tg.id_tm > 0)
                             {
-                                if (tg.power_TM > 1)
-                                    tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
-                                else
-                                    tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = 0.ToString("F0");
+                                showValue(tgsValues[(int)TG.INDEX_VALUE.TM][i], tg.power_TM);
                                 
                             }
                             else
@@ -2517,10 +2514,7 @@ namespace Statistic
                 {
                     if (tg.id_tm > 0)
                     {
-                        if (tg.power_TM > 1)
-                            tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = tg.power_TM.ToString("F2");
-                        else
-                            tgsValues[(int)TG.INDEX_VALUE.TM][i].Text = 0.ToString("F0");
+                        showValue (tgsValues[(int)TG.INDEX_VALUE.TM][i], tg.power_TM);
                     }
                     else
                     {
@@ -2550,7 +2544,7 @@ namespace Statistic
                         {
                             if (tg.receivedMin[min] == true)
                             {
-                                tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = tg.power[min].ToString("F2");
+                                showValue (tgsValues[(int)TG.INDEX_VALUE.FACT][i], tg.power[min]);
                                 if (currHour)
                                     tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                                 else
@@ -2573,7 +2567,7 @@ namespace Statistic
                 {
                     if (t.receivedMin[min] == true)
                     {
-                        tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = t.power[min].ToString("F2");
+                        showValue (tgsValues[(int)TG.INDEX_VALUE.FACT][i], t.power[min]);
                         if (currHour)
                             tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                         else
@@ -2589,6 +2583,22 @@ namespace Statistic
             }
         }
 
+        private void showValue(ref System.Windows.Forms.Label lbl, double val)
+        {
+            if (val > 1)
+                lbl.Text = val.ToString("F2");
+            else
+                lbl.Text = 0.ToString("F0");
+        }
+
+        private void showValue(System.Windows.Forms.Label lbl, double val)
+        {
+            if (val > 1)
+                lbl.Text = val.ToString("F2");
+            else
+                lbl.Text = 0.ToString("F0");
+        }
+
         private void ShowCommonPower()
         {
             int min = lastMin;
@@ -2600,24 +2610,24 @@ namespace Statistic
                     valueEFuture = 0.0;
             for (int i = 0; i < sensorId2TG.Length; i++)
                 for (int j = 0; j < min; j++)
-                    valueEBefore += sensorId2TG[i].power[j] / 20;
+                    if (sensorId2TG[i].power[j] > 1) valueEBefore += sensorId2TG[i].power[j] / 20; else ;
 
             double value = 0, value_TM = 0.0;
             for (int i = 0; i < sensorId2TG.Length; i++) {
-                value += sensorId2TG[i].power[min];
+                if (sensorId2TG[i].power[min] > 1) value += sensorId2TG[i].power[min]; else ;
                 if (sensorId2TG[i].power_TM > 1) value_TM += sensorId2TG[i].power_TM; else ;
             }
 
-            lblCommonPVals[(int)TG.INDEX_VALUE.FACT].Text = value.ToString("F2");
-            lblCommonPVals[(int)TG.INDEX_VALUE.TM].Text = value_TM.ToString("F2");
+            showValue (ref lblCommonPVals[(int)TG.INDEX_VALUE.FACT], value);
+            showValue (ref lblCommonPVals[(int)TG.INDEX_VALUE.TM], value_TM);
             valueECur = value / 20;
-            lblCurrentEVal.Text = valueECur.ToString("F2");
+            showValue (ref lblCurrentEVal, valueECur);
 
             valueEFuture = valueECur * (20 - min - 1);
-            lblHourEVal.Text = (valueEBefore + valueECur + valueEFuture).ToString("F2");
+            showValue (ref lblHourEVal, valueEBefore + valueECur + valueEFuture);
 
             if (adminValuesReceived && currHour) {
-                lblPBRrecVal.Text = recomendation.ToString("F2");
+                showValue (ref lblPBRrecVal, recomendation);
             }
             else {
                 lblPBRrecVal.Text = "---";
@@ -2636,9 +2646,9 @@ namespace Statistic
                     for (int i = 1; i < lastMin; i++)
                         summ += m_valuesMins.valuesFact[i];
                     if (min != 0)
-                        lblAverPVal.Text = (summ / min).ToString("F2");
+                        showValue (ref lblAverPVal, summ / min);
                     else
-                        lblAverPVal.Text = 0.ToString("F2");
+                        lblAverPVal.Text = 0.ToString("F0");
                 }
                 else
                 {
@@ -2651,7 +2661,7 @@ namespace Statistic
                     else
                         summ = m_valuesHours.valuesFact[hour];
 
-                    lblAverPVal.Text = summ.ToString("F2");
+                    showValue (ref lblAverPVal, summ);
                 }
 
                 //if (! ([lastHour] == 0))

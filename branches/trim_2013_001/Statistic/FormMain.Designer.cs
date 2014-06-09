@@ -55,6 +55,8 @@
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
+            this.menuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
+            this.menuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
             this.stsStrip.SuspendLayout();
             this.SuspendLayout();
             // 

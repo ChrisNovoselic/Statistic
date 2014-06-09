@@ -285,7 +285,9 @@ namespace Statistic
         }
 
         private void activateTabPage (int indx, bool active) {
-            if (!(indx < 0))
+            if (!(indx < 0)) {
+                Logging.Logg().LogToFile(@"!Информация! Вкладка: " + indx + @" - " + active.ToString (), true, true, true);
+                
                 if (tclTecViews.TabPages[indx].Controls [0] is TecView)
                     ((TecView)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                 else
@@ -299,6 +301,7 @@ namespace Statistic
                                 ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                             else
                                 ;
+            }
             else
                 ;
         }
@@ -1064,6 +1067,16 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private void menuStrip_MenuActivate(object sender, EventArgs e)
+        {
+            activateTabPage (tclTecViews.SelectedIndex, false);
+        }
+
+        private void menuStrip_MenuDeactivate(object sender, EventArgs e)
+        {
+            activateTabPage(tclTecViews.SelectedIndex, true);
         }
 
         FormChangeMode.MANAGER modePanelAdmin {
