@@ -163,12 +163,13 @@ namespace Statistic
                 this.lblPBRNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
                 this.lblPBRNumber.TextAlign = ContentAlignment.MiddleCenter;
 
+                Color foreColor, backClolor;
+                float szFont;
+                ContentAlignment align;
+                Size sz;
+                string text = string.Empty;
                 for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
                 {
-                    Color foreColor, backClolor;
-                    float szFont;
-                    ContentAlignment align;
-
                     switch (i)
                     {
                         case CONTROLS.lblCommonP:
@@ -176,8 +177,9 @@ namespace Statistic
                         case CONTROLS.lblAverP:
                             foreColor = Color.Black;
                             backClolor = Color.Empty;
-                            szFont = 12F;
-                            align = ContentAlignment.MiddleRight;
+                            szFont = 8F;
+                            align = ContentAlignment.MiddleLeft;
+                            sz = new Size (-1, -1);
                             break;
                         case CONTROLS.lblCommonPVal_Fact:
                         case CONTROLS.lblPBRrecVal:
@@ -186,31 +188,49 @@ namespace Statistic
                             backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
+                            sz = arPlacement[(int)i].sz;
                             break;
                         case CONTROLS.lblCommonPVal_TM:
                             foreColor = Color.Green;
                             backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
+                            sz = arPlacement[(int)i].sz;
                             break;
                         default:
                             foreColor = Color.Yellow;
                             backClolor = Color.Red;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
+                            sz = new Size(-1, -1);
                             break;
                     }
 
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(/*i.ToString()*/@"---",
+                                                                                        new HLabelStyles(arPlacement[(int)i].pt, sz,
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
+                    switch (i)
+                    {
+                        case CONTROLS.lblCommonP:
+                            text = @"P1"; //@"P тек";
+                            break;
+                        case CONTROLS.lblPBRrec:
+                            text = @"P рек";
+                            break;
+                        case CONTROLS.lblAverP:
+                            text = @"P ср";
+                            break;
+                        default:
+                            text = string.Empty;
+                            break;
+                    }
+                    if (text.Equals (string.Empty) == false) m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = text; else ;
                     this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                 }
 
                 for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
                 {
-                    Color foreColor, backClolor;
-                    float szFont;
-                    ContentAlignment align;
-
                     switch (i)
                     {
                         case CONTROLS.lblCurrentE:
@@ -218,8 +238,9 @@ namespace Statistic
                         case CONTROLS.lblDevE:
                             foreColor = Color.Black;
                             backClolor = Color.Empty;
-                            szFont = 12F;
+                            szFont = 8F;
                             align = ContentAlignment.MiddleRight;
+                            sz = new Size(-1, -1);
                             break;
                         case CONTROLS.lblCurrentEVal:
                         case CONTROLS.lblHourEVal:
@@ -228,16 +249,21 @@ namespace Statistic
                             backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
+                            sz = arPlacement[(int)i].sz;
                             break;
                         default:
                             foreColor = Color.Red;
                             backClolor = Color.Yellow;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
+                            sz = new Size(-1, -1);
                             break;
                     }
 
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(i.ToString(), new HLabelStyles(arPlacement[(int)i].pt, arPlacement[(int)i].sz, foreColor, backClolor, szFont, align));
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(/*i.ToString()*/@"---",
+                                                                                        new HLabelStyles(arPlacement[(int)i].pt, sz,
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
                     this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                 }
 
@@ -276,12 +302,16 @@ namespace Statistic
                 {
                     foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
                     {
+                        tg_ids.Add(tg.m_id); //Добавить без проверки
+                        
                         positionYValue = 19;
                         addTGView(ref tg.name_shr, ref positionXName, ref positionYName, ref positionXValue, ref positionYValue);
 
                         m_parent.m_list_TECComponents.Add(tg);
                     }
                 }
+
+                m_parent.sensorId2TG = new TG[tg_ids.Count];
             }
 
             public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
@@ -397,7 +427,22 @@ namespace Statistic
                 else
                     ;
 
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal].Text = value_TM.ToString("F2");
+                showValue (ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal], value_TM);
+            }
+
+            private void showValue (ref System.Windows.Forms.Label lbl, double val) {
+                if (val > 1)
+                    lbl.Text = val.ToString("F2");
+                else
+                    lbl.Text = 0.ToString("F0");
+            }
+
+            private void showValue(System.Windows.Forms.Label lbl, double val)
+            {
+                if (val > 1)
+                    lbl.Text = val.ToString("F2");
+                else
+                    lbl.Text = 0.ToString("F0");
             }
 
             public void ShowFactValues()
@@ -417,18 +462,19 @@ namespace Statistic
 
                 double value = 0;
                 for (i = 0; i < m_parent.sensorId2TG.Length; i++)
-                    value += m_parent.sensorId2TG[i].power[min];
+                    if (m_parent.sensorId2TG[i].power[min] > 1) value += m_parent.sensorId2TG[i].power[min]; else ;
 
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text = value.ToString("F2");
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value);
+                
                 valueECur = value / 20;
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].Text = valueECur.ToString("F2");
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur);
 
                 valueEFuture = valueECur * (20 - min - 1);
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].Text = (valueEBefore + valueECur + valueEFuture).ToString("F2");
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture);
 
                 if ((m_parent.adminValuesReceived == true) && (m_parent.currHour == true))
                 {
-                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal].Text = m_parent.recomendation.ToString("F2");
+                    showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.recomendation);
                 }
                 else
                 {
@@ -447,10 +493,10 @@ namespace Statistic
                     {
                         for (i = 1; i < m_parent.lastMin; i++)
                             summ += m_parent.m_valuesMins.valuesFact[i];
-                        if (min != 0)
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = (summ / min).ToString("F2");
+                        if (! (min == 0))
+                            showValue (ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min);
                         else
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = 0.ToString("F2");
+                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = 0.ToString("F0");
                     }
                     else
                     {
@@ -463,7 +509,7 @@ namespace Statistic
                         else
                             summ = m_parent.m_valuesHours.valuesFact[hour];
 
-                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = summ.ToString("F2");
+                        showValue (ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ);
                     }
 
                     //if (! ([lastHour] == 0))
@@ -525,9 +571,10 @@ namespace Statistic
                 lblPBRNumber.Text = m_parent.lastLayout;
 
                 //ShowTGValue
+                i = 0;
                 if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                 {
-                    foreach (TECComponent g in m_parent.tec.list_TECComponents)
+                    foreach (TECComponent g in m_parent.m_list_TECComponents)
                     {
                         if (g.m_id < 500)
                             //Только ГТП
@@ -535,7 +582,7 @@ namespace Statistic
                             {
                                 if (tg.receivedMin[min] == true)
                                 {
-                                    tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = tg.power[min].ToString("F2");
+                                    showValue(tgsValues[(int)TG.INDEX_VALUE.FACT][i], tg.power[min]);
                                     if (m_parent.currHour == true)
                                         tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                                     else
@@ -554,11 +601,11 @@ namespace Statistic
                 }
                 else
                 {
-                    foreach (TG t in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
+                    foreach (TG t in m_parent.m_list_TECComponents)
                     {
                         if (t.receivedMin[min] == true)
                         {
-                            tgsValues[(int)TG.INDEX_VALUE.FACT][i].Text = t.power[min].ToString("F2");
+                            showValue(tgsValues[(int)TG.INDEX_VALUE.FACT][i], t.power[min]);
                             if (m_parent.currHour == true)
                                 tgsValues[(int)TG.INDEX_VALUE.FACT][i].ForeColor = System.Drawing.Color.LimeGreen;
                             else
@@ -778,7 +825,7 @@ namespace Statistic
         public volatile int num_TECComponent;
         List <TECComponentBase> m_list_TECComponents;
 
-        private volatile int countTG;
+        private int CountTG { get { return sensorId2TG.Length; } }
         private bool update;
 
         public volatile bool isActive;
@@ -920,6 +967,7 @@ namespace Statistic
             // 
             this.dgwHours.AllowUserToAddRows = false;
             this.dgwHours.AllowUserToDeleteRows = false;
+            //this.dgwHours.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             //this.dgwHours.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             //            | System.Windows.Forms.AnchorStyles.Left)));
             this.dgwHours.Dock = DockStyle.Fill;
@@ -945,7 +993,7 @@ namespace Statistic
             this.Hour.HeaderText = "Час";
             this.Hour.Name = "Hour";
             this.Hour.ReadOnly = true;
-            this.Hour.Width = 50;
+            this.Hour.Width = 25;
             this.Hour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // FactHour
@@ -953,7 +1001,7 @@ namespace Statistic
             this.FactHour.HeaderText = "Факт";
             this.FactHour.Name = "FactHour";
             this.FactHour.ReadOnly = true;
-            this.FactHour.Width = 50;
+            this.FactHour.Width = 48;
             this.FactHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // PBRHour
@@ -961,7 +1009,7 @@ namespace Statistic
             this.PBRHour.HeaderText = "ПБР";
             this.PBRHour.Name = "PBRHour";
             this.PBRHour.ReadOnly = true;
-            this.PBRHour.Width = 50;
+            this.PBRHour.Width = 48;
             this.PBRHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // PBReHour
@@ -969,7 +1017,7 @@ namespace Statistic
             this.PBReHour.HeaderText = "ПБРэ";
             this.PBReHour.Name = "PBReHour";
             this.PBReHour.ReadOnly = true;
-            this.PBReHour.Width = 50;
+            this.PBReHour.Width = 48;
             this.PBReHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // UDGeHour
@@ -977,7 +1025,7 @@ namespace Statistic
             this.UDGeHour.HeaderText = "УДГэ";
             this.UDGeHour.Name = "UDGeHour";
             this.UDGeHour.ReadOnly = true;
-            this.UDGeHour.Width = 60;
+            this.UDGeHour.Width = 48;
             this.UDGeHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationHour
@@ -985,7 +1033,7 @@ namespace Statistic
             this.DeviationHour.HeaderText = "+/-";
             this.DeviationHour.Name = "DeviationHour";
             this.DeviationHour.ReadOnly = true;
-            this.DeviationHour.Width = 50;
+            this.DeviationHour.Width = 42;
             this.DeviationHour.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // LastMinutes_TM
@@ -993,7 +1041,7 @@ namespace Statistic
             this.LastMinutes_TM.HeaderText = "Мин.59";
             this.LastMinutes_TM.Name = "LastMinutes_TM";
             this.LastMinutes_TM.ReadOnly = true;
-            this.LastMinutes_TM.Width = 60;
+            this.LastMinutes_TM.Width = 48;
             this.LastMinutes_TM.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
 
             this.pnlQuickData.Dock = DockStyle.Fill;
@@ -1114,7 +1162,7 @@ namespace Statistic
             this.stctrViewPanel1.Orientation = Orientation.Vertical;
             this.stctrViewPanel1.Panel1.Controls.Add (this.dgwMins);
             this.stctrViewPanel1.Panel2.Controls.Add (this.pnlGraphMins);
-            this.stctrViewPanel1.SplitterDistance = 301;
+            //this.stctrViewPanel1.SplitterDistance = 301;
             this.stctrViewPanel1.SplitterMoved +=new SplitterEventHandler(stctrViewPanel1_SplitterMoved);
             this.stctrView.Panel1.Controls.Add(this.stctrViewPanel1);
             // 
@@ -1124,11 +1172,11 @@ namespace Statistic
             this.stctrViewPanel2.Orientation = Orientation.Vertical;
             this.stctrViewPanel2.Panel1.Controls.Add(this.dgwHours);
             this.stctrViewPanel2.Panel2.Controls.Add(this.pnlGraphHours);
-            this.stctrViewPanel2.SplitterDistance = 291;
+            //this.stctrViewPanel2.SplitterDistance = 291;
             this.stctrViewPanel2.SplitterMoved += new SplitterEventHandler(stctrViewPanel2_SplitterMoved);
             this.stctrView.Panel2.Controls.Add(this.stctrViewPanel2);
             //this.stctrView.Size = arPlacement[(int)CONTROLS.stctrView].sz;
-            this.stctrView.SplitterDistance = 301;
+            //this.stctrView.SplitterDistance = 301;
             this.stctrView.TabIndex = 7;
             // 
             // contextMenuStripMins
@@ -1324,8 +1372,6 @@ namespace Statistic
             m_valuesHours = new valuesTEC(24);
 
             stsStrip = sts;
-
-            sensorId2TG = new TG[countTG];
 
             this.dgwMins.Rows.Add(21);
             this.dgwHours.Rows.Add(25);
@@ -3089,8 +3135,8 @@ namespace Statistic
         {
             int i, j, half, hour = 0, halfAddon;
             double hourVal = 0, halfVal = 0, value, hourValAddon = 0;
-            double[] oldValuesTG = new double[countTG];
-            int[] oldIdTG = new int[countTG];
+            double[] oldValuesTG = new double[CountTG];
+            int[] oldIdTG = new int[CountTG];
             int id;
             TG tgTmp;
             bool end = false;
@@ -3177,7 +3223,7 @@ namespace Statistic
                 jump_forward = false;
                 jump_backward = false;
 
-                for (j = 0; j < countTG; j++, i++)
+                for (j = 0; j < CountTG; j++, i++)
                 {
                     if (i >= table.Rows.Count)
                     {
@@ -3565,7 +3611,7 @@ namespace Statistic
                 /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
                                  ", table.Rows.Count " + table.Rows.Count.ToString());*/
                 jump = false;
-                for (j = 0; j < countTG; j++, i++)
+                for (j = 0; j < CountTG; j++, i++)
                 {
                     if (i >= table.Rows.Count)
                     {
@@ -5055,7 +5101,7 @@ namespace Statistic
                 // генерирую время без переходов
                 for (int i = 0; i < count; i++)
                 {
-                    for (int j = 0; j < countTG; j++)
+                    for (int j = 0; j < CountTG; j++)
                     {
                         table.Rows.Add(generateValues (date, j, i, (int) TG.ID_TIME.HOURS, 0));
                     }
@@ -5070,13 +5116,13 @@ namespace Statistic
                     // генерирую время с переходом на зимнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < countTG; j++)
+                        for (int j = 0; j < CountTG; j++)
                         {
                             table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                         }
                         if (i == 4 || i == 5)
                         {
-                            for (int j = 0; j < countTG; j++)
+                            for (int j = 0; j < CountTG; j++)
                             {
                                 //object[] values = new object[9];
                                 //values[0] = "ТГ-" + j;
@@ -5102,7 +5148,7 @@ namespace Statistic
                     {
                         if (i != 4 && i != 5)
                         {
-                            for (int j = 0; j < countTG; j++)
+                            for (int j = 0; j < CountTG; j++)
                             {
                                 //object[] values = new object[9];
                                 //values[0] = "ТГ-" + j;
@@ -5139,7 +5185,7 @@ namespace Statistic
                 // генерирую время без переходов
                 for (int i = 0; i < count; i++)
                 {
-                    for (int j = 0; j < countTG; j++)
+                    for (int j = 0; j < CountTG; j++)
                     {
                         //object[] values = new object[9];
                         //values[0] = "ТГ-" + j;
@@ -5164,7 +5210,7 @@ namespace Statistic
                     // генерирую время с переходом на зимнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < countTG; j++)
+                        for (int j = 0; j < CountTG; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -5178,7 +5224,7 @@ namespace Statistic
                             //values[8] = date.Year * 2 + 1;
                             table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
-                        for (int j = 0; j < countTG; j++)
+                        for (int j = 0; j < CountTG; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -5201,7 +5247,7 @@ namespace Statistic
                     //генерирую время с переходом на летнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < countTG; j++)
+                        for (int j = 0; j < CountTG; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -5368,7 +5414,7 @@ namespace Statistic
                             result = true;
                             break;
                     }
-                    if (result)
+                    if (result == true)
                     {
                     }
                     break;
@@ -5380,13 +5426,13 @@ namespace Statistic
                             result = GetSensorsTMResponse(table);
                             break;
                     }
-                    if (result)
+                    if (result == true)
                     {
                     }
                     break;
                 case StatesMachine.CurrentTime:
                     result = GetCurrentTimeReponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         selectedTime = selectedTime.AddSeconds(-parameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
@@ -5397,7 +5443,7 @@ namespace Statistic
                     ClearValues();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     result = GetHoursResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -5406,7 +5452,7 @@ namespace Statistic
                 case StatesMachine.CurrentMins_Fact:
                     //GenerateMinsTable(seasonJumpE.None, 5, table);
                     result = GetMinsResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
@@ -5415,7 +5461,7 @@ namespace Statistic
                     break;
                 case StatesMachine.Current_TM:
                     result = GetCurrentTMResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         this.BeginInvoke(delegateUpdateGUI_TM);
                     }
@@ -5424,7 +5470,7 @@ namespace Statistic
                     break;
                 case StatesMachine.LastMinutes_TM:
                     result = GetLastMinutesTMResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -5433,7 +5479,7 @@ namespace Statistic
                 case StatesMachine.RetroHours:
                     ClearValues();
                     result = GetHoursResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -5441,7 +5487,7 @@ namespace Statistic
                     break;
                 case StatesMachine.RetroMins:
                     result = GetMinsResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
@@ -5451,7 +5497,7 @@ namespace Statistic
                 case StatesMachine.PBRValues:
                     ClearPBRValues();
                     result = GetPBRValuesResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                     }
                     else
@@ -5460,7 +5506,7 @@ namespace Statistic
                 case StatesMachine.AdminValues:
                     ClearAdminValues();
                     result = GetAdminValuesResponse(table);
-                    if (result)
+                    if (result == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour);
@@ -5472,8 +5518,10 @@ namespace Statistic
                     break;
             }
 
-            if (result)
+            if (result == true)
                 errored_state = actioned_state = false;
+            else
+                ;
 
             return result;
         }

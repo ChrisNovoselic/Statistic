@@ -83,6 +83,26 @@ namespace Statistic.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
         /// </summary>
+        public static System.Drawing.Icon menuInActive {
+            get {
+                object obj = ResourceManager.GetObject("menuInActive", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        public static System.Drawing.Icon menuNonActive {
+            get {
+                object obj = ResourceManager.GetObject("menuNonActive", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
         public static System.Drawing.Icon statistic2 {
             get {
                 object obj = ResourceManager.GetObject("statistic2", resourceCulture);

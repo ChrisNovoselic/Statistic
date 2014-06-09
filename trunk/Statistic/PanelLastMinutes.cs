@@ -917,6 +917,7 @@ namespace Statistic
                         result = GetLastMinutesTMResponse(table);
                         if (result == true)
                         {
+                            this.BeginInvoke(delegateUpdateGUI_TM);
                         }
                         else
                             ;
@@ -933,7 +934,6 @@ namespace Statistic
                         result = GetAdminValuesResponse(table);
                         if (result == true)
                         {
-                            this.BeginInvoke(delegateUpdateGUI_TM);
                         }
                         else
                             ;

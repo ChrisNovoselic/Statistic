@@ -86,13 +86,16 @@ namespace StatisticCommon
         {
             Label lblRes = new Label();
             lblRes.Text = name;
-            if (((prop.m_pt.X < 0) || (prop.m_pt.Y < 0)) ||
-                ((prop.m_sz.Width < 0) || (prop.m_sz.Height < 0)))
+            if (((prop.m_pt.X < 0) && (prop.m_pt.Y < 0)) &&
+                ((prop.m_sz.Width < 0) && (prop.m_sz.Height < 0)))
                 lblRes.Dock = DockStyle.Fill;
             else
             {
                 lblRes.Location = prop.m_pt;
-                lblRes.Size = prop.m_sz;
+                if ((prop.m_sz.Width < 0) && (prop.m_sz.Height < 0))
+                    lblRes.AutoSize = true;
+                else
+                    lblRes.Size = prop.m_sz;
             }
             lblRes.BorderStyle = BorderStyle.Fixed3D;
             lblRes.Font = new System.Drawing.Font("Microsoft Sans Serif", prop.m_szFont, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));

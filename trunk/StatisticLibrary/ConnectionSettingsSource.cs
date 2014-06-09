@@ -56,7 +56,7 @@ namespace StatisticCommon
             else
                 ;
 
-            if (src.Rows.Count == 1)
+            if (row_src < src.Rows.Count)
                 src.Rows[row_src]["PASSWORD"] = strPsw;
             else
                 ;
