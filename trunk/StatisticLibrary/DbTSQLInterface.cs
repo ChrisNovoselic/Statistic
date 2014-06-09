@@ -158,10 +158,11 @@ namespace StatisticCommon
             return result;
         }
 
-        public override void SetConnectionSettings(object cs)
+        public override void SetConnectionSettings(object cs, bool bStarted)
         {
             lock (lockConnectionSettings)
             {
+                ((ConnectionSettings)m_connectionSettings).id = ((ConnectionSettings)cs).id;
                 ((ConnectionSettings)m_connectionSettings).server = ((ConnectionSettings)cs).server;
                 ((ConnectionSettings)m_connectionSettings).port = ((ConnectionSettings)cs).port;
                 ((ConnectionSettings)m_connectionSettings).dbName = ((ConnectionSettings)cs).dbName;
@@ -172,8 +173,11 @@ namespace StatisticCommon
                 needReconnect = true;
             }
 
-            //base.SetConnectionSettings (cs); //базовой function 'cs' не нужен
-            SetConnectionSettings();
+            if (bStarted == true)
+                //base.SetConnectionSettings (cs); //базовой function 'cs' не нужен
+                SetConnectionSettings();
+            else
+                ;
         }
 
         protected override bool Disconnect()
@@ -311,7 +315,7 @@ namespace StatisticCommon
             return typeDBRes;
         }
 
-        public static DbConnection GetConnection (ConnectionSettings connSett, out int er)
+        public static DbConnection getConnection (ConnectionSettings connSett, out int er)
         {
             er = 0;
 
@@ -357,7 +361,7 @@ namespace StatisticCommon
             return connRes;
         }
 
-        public static void CloseConnection(DbConnection conn, out int er)
+        public static void closeConnection(DbConnection conn, out int er)
         {
             er = 0;
 
@@ -526,13 +530,13 @@ namespace StatisticCommon
 
             DataTable dataTableRes = null;
             DbConnection conn;
-            conn = GetConnection (connSett, out er);
+            conn = getConnection (connSett, out er);
 
             if (er == 0)
             {
                 dataTableRes = Select(conn, query, null, null, out er);
 
-                CloseConnection (conn, out er);
+                closeConnection (conn, out er);
             }
             else
                 dataTableRes = new DataTable();
@@ -634,13 +638,13 @@ namespace StatisticCommon
 
             DbConnection conn;
 
-            conn = GetConnection(connSett, out er);
+            conn = getConnection(connSett, out er);
 
             if (er == 0)
             {
                 ExecNonQuery(conn, query, null, null, out er);
 
-                conn.Close();
+                closeConnection (conn, out er);
             }
             else
                 ;

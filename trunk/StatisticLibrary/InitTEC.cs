@@ -79,7 +79,7 @@ namespace StatisticCommon
             m_user = new Users(connSett);
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
 
-            m_connConfigDB = DbTSQLInterface.GetConnection(connSett, out err);
+            m_connConfigDB = DbSources.Sources ().GetConnection (0, out err);
 
             // подключитьс€ к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -239,7 +239,7 @@ namespace StatisticCommon
             else
                 ; //ќшибка получени€ списка “Ё÷
 
-            DbTSQLInterface.CloseConnection(m_connConfigDB, out err);
+            //DbTSQLInterface.CloseConnection(m_connConfigDB, out err);
 
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - вџход...");
         }
@@ -274,7 +274,7 @@ namespace StatisticCommon
             //dbInterface.ListenerUnregister(listenerId);
 
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
-            m_connConfigDB = DbTSQLInterface.GetConnection (connSett, out err);
+            m_connConfigDB = DbSources.Sources().GetConnection(0, out err);
 
             //»спользование статической функции
             list_tec = getListTEC(bIgnoreTECInUse, out err);
@@ -369,7 +369,7 @@ namespace StatisticCommon
             else
                 ; //ќшибка получени€ списка “Ё÷
 
-            DbTSQLInterface.CloseConnection (m_connConfigDB, out err);
+            //DbTSQLInterface.CloseConnection (m_connConfigDB, out err);
 
             //ConnectionSettings connSett = new ConnectionSettings();
             //connSett.server = "127.0.0.1";

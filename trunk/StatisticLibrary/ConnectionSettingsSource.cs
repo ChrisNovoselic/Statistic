@@ -97,7 +97,8 @@ namespace StatisticCommon
 
             int i = -1;
 
-            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
+            DbConnection conn = DbSources.Sources ().GetConnection (0, out err);
+            //DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {
@@ -133,7 +134,7 @@ namespace StatisticCommon
             else
                 ;
 
-            DbTSQLInterface.CloseConnection (conn, out err);
+            //DbTSQLInterface.CloseConnection (conn, out err);
         }
 
         public void Save(List<ConnectionSettings> listConnSett, out int err)
@@ -147,8 +148,8 @@ namespace StatisticCommon
             
             strQuery = psw = string.Empty;
 
-
-            DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
+            DbConnection conn = DbSources.Sources ().GetConnection(0, out err);
+            //DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {
@@ -234,7 +235,7 @@ namespace StatisticCommon
             else
                 ;
 
-            DbTSQLInterface.CloseConnection (conn, out err);
+            //DbTSQLInterface.CloseConnection (conn, out err);
         }
     }
 }

@@ -1230,7 +1230,7 @@ namespace StatisticCommon
 
                                 m_listDbInterfaces[m_listDbInterfaces.Count - 1].Start();
 
-                                m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType]);
+                                m_listDbInterfaces[m_listDbInterfaces.Count - 1].SetConnectionSettings(t.connSetts[connSettType], true);
                             }
                             else
                                 ;

@@ -63,7 +63,7 @@ namespace StatisticCommon
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
             Logging.Logg().LogDebugToFile("Users::Users () - получение объекта MySqlConnection...");
-            DbConnection connDB = DbTSQLInterface.GetConnection (connSett, out err);
+            DbConnection connDB = DbSources.Sources().GetConnection(0, out err);
             
             //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
             //GetUsers(string.Empty, "DESCRIPTION", out dataUsers, out err);
@@ -102,7 +102,7 @@ namespace StatisticCommon
                     throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
             }
 
-            DbTSQLInterface.CloseConnection(connDB, out err);
+            //DbTSQLInterface.CloseConnection(connDB, out err);
 
             Initialize ();
         }

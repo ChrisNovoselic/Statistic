@@ -213,6 +213,7 @@ namespace StatisticCommon
                     return;
                 }
 
+                m_connectionSettings[i].id = m_connectionSettingsEdit[i].id;
                 m_connectionSettings[i].server = m_connectionSettingsEdit[i].server;
                 m_connectionSettings[i].port = m_connectionSettingsEdit[i].port;
                 m_connectionSettings[i].dbName = m_connectionSettingsEdit[i].dbName;
@@ -232,6 +233,7 @@ namespace StatisticCommon
         {
             for (int i = 0; i < m_connectionSettingsEdit.Count; i++)
             {
+                m_connectionSettingsEdit[i].id = m_connectionSettings[i].id;
                 m_connectionSettingsEdit[i].server = m_connectionSettings[i].server;
                 m_connectionSettingsEdit[i].port = m_connectionSettings[i].port;
                 m_connectionSettingsEdit[i].dbName = m_connectionSettings[i].dbName;

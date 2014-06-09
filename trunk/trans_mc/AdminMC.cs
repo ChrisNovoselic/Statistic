@@ -138,7 +138,7 @@ namespace trans_mc
 
             m_listDbInterfaces[0].Start();
 
-            m_listDbInterfaces[0].SetConnectionSettings("ne1843");
+            m_listDbInterfaces[0].SetConnectionSettings("ne1843", true);
 
             //Для всех один - идентификатор
             m_indxDbInterfaceCurrent = 0;

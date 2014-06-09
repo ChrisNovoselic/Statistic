@@ -28,7 +28,7 @@ namespace trans_mc
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
         }
 
-        public override void SetConnectionSettings(object mcHostName)
+        public override void SetConnectionSettings(object mcHostName, bool bStarted)
         {
             lock (lockConnectionSettings) // изменение настроек подключения и выставление флага для переподключения - атомарная операция
             {

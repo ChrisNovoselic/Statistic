@@ -124,7 +124,7 @@ namespace StatisticCommon
                         m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Èםעונפויס MSSQL-ÁÄ: " + name_shr);
                         m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
                         m_arDBInterfaces[i].Start();
-                        m_arDBInterfaces[i].SetConnectionSettings(connSetts[i]);
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts[i], true);
                     }
                     else
                         ;
@@ -192,7 +192,7 @@ namespace StatisticCommon
                 for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
                     if (! (m_arDBInterfaces[i] == null))
-                        m_arDBInterfaces[i].SetConnectionSettings(connSetts [i]);
+                        m_arDBInterfaces[i].SetConnectionSettings(connSetts [i], true);
                     else
                         ;
                 }                
@@ -205,6 +205,7 @@ namespace StatisticCommon
             int iRes = 0;
 
             connSetts[type] = new ConnectionSettings();
+            connSetts[type].id = Int32.Parse(source.Rows[0]["ID"].ToString());
             connSetts[type].server = source.Rows[0]["IP"].ToString();
             connSetts[type].port = Int32.Parse(source.Rows[0]["PORT"].ToString());
             connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();

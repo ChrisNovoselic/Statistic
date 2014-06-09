@@ -73,7 +73,8 @@ namespace StatisticCommon
 
             int err = -1;
 
-            DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
+            DbConnection connDB = DbSources.Sources ().GetConnection (0, out err);
+            //DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
             Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
             FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
@@ -81,7 +82,7 @@ namespace StatisticCommon
             Users.GetUsers(connDB, string.Empty, list_sorted, out m_tableUsers, out err);
             FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
-            DbTSQLInterface.CloseConnection (connDB, out err);
+            //DbTSQLInterface.CloseConnection (connDB, out err);
 
             dgvTypeMessage.Rows.Add((int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE);
             for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)

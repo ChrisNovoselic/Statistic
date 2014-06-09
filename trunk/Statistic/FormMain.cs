@@ -104,6 +104,9 @@ namespace Statistic
             m_passwords = new Passwords();
             m_passwords.connSettConfigDB = m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
 
+            DbSources sources = DbSources.Sources ();
+            int id = sources.Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false);
+            
             Users user = null;
             try { user = new Users(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett()); }
             catch (Exception e)
@@ -230,6 +233,8 @@ namespace Statistic
             prevStateIsAdmin = -1;
 
             m_prevSelectedIndex = 1;
+
+            DbSources.Sources ().UnRegister (0);
 
             return bRes;
         }

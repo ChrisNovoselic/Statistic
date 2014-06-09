@@ -37,6 +37,7 @@ namespace StatisticCommon
         }
         protected List <DbInterfaceListener> m_listListeners;
         //private int maxListeners;
+        public int ListenerCount { get { return m_listListeners.Count; } }
 
         public object m_connectionSettings;
 
@@ -194,7 +195,7 @@ namespace StatisticCommon
             }
         }
 
-        public abstract void SetConnectionSettings(object cs);
+        public abstract void SetConnectionSettings(object cs, bool bStarted);
 
         private void DbInterface_ThreadFunction(object data)
         {

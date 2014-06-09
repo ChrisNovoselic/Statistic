@@ -42,7 +42,7 @@ namespace Statistic
             int err = 0,
                 i = -1;
 
-            InitTEC.m_connConfigDB = DbTSQLInterface.GetConnection(connSett, out err);
+            InitTEC.m_connConfigDB = DbSources.Sources().GetConnection(0, out err);
 
             Users.GetUsers(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
             m_users_edit = m_users_origin.Copy ();
@@ -101,7 +101,7 @@ namespace Statistic
 
             dgvUsers.RowEnter +=new DataGridViewCellEventHandler(dgvUsers_RowEnter);
 
-            DbTSQLInterface.CloseConnection(InitTEC.m_connConfigDB, out err);
+            //DbTSQLInterface.CloseConnection(InitTEC.m_connConfigDB, out err);
         }
 
         private void buttonOk_Click(object sender, EventArgs e)
