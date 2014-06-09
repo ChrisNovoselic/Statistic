@@ -73,6 +73,8 @@
             this.menuStrip.Size = new System.Drawing.Size(982, 24);
             this.menuStrip.TabIndex = 2;
             this.menuStrip.Text = "Главное меню";
+            this.menuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
+            this.menuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
             // 
             // ContextMenuStrip
             // 

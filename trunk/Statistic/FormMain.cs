@@ -1265,6 +1265,16 @@ namespace Statistic
                 ;
         }
 
+        private void menuStrip_MenuActivate(object sender, EventArgs e)
+        {
+            activateTabPage (tclTecViews.SelectedIndex, false);
+        }
+
+        private void menuStrip_MenuDeactivate(object sender, EventArgs e)
+        {
+            activateTabPage(tclTecViews.SelectedIndex, true);
+        }
+
         FormChangeMode.MANAGER modePanelAdmin {
             get {
                 if (formChangeMode.admin_was_checked) {
