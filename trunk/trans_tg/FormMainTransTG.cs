@@ -139,10 +139,11 @@ namespace trans_tg
 
             bool bIgnoreTECInUse = false;
 
+            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTransTG();
-                try { ((AdminTS)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett(), FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
+                try { ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");
@@ -163,6 +164,8 @@ namespace trans_tg
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
+            DbSources.Sources().UnRegister(idListener);
+
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {
                 setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
@@ -179,7 +182,7 @@ namespace trans_tg
 
                     //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
 
-                    m_arAdmin[i].StartThreadSourceData();
+                    m_arAdmin[i].Start();
                 }
 
                 /*

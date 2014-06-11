@@ -32,15 +32,14 @@ namespace StatisticCommon
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
-        public int[] m_arListenerIds; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
-        public int[] m_arIndxDbInterfaces; //Индексы 'DbInterface' в 'PanelAdmin.cs' для 'AdminValues', 'PBR' (1-ый элемент ВСЕГДА = -1, т.е. не используется, т.к. для 'Data' есть 'm_dbInterface')
+        public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
 
         private bool is_connection_error;
         private bool is_data_error;
         
         private int used;
 
-        private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
+        //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
         public FormParametersTG parametersTGForm;
 
@@ -56,13 +55,10 @@ namespace StatisticCommon
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            m_arListenerIds = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            m_arIndxDbInterfaces = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
-                m_arListenerIds [i] =
-                m_arIndxDbInterfaces [i] =
-                -1;
+            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
+                m_arIdListeners [i] = -1;
             }
 
             m_strNamesField = new List<string> ();
@@ -92,16 +88,16 @@ namespace StatisticCommon
 
         public void Request(CONN_SETT_TYPE indx_src, string request)
         {
-            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
-                m_arDBInterfaces[(int)indx_src].Request(m_arListenerIds[(int)indx_src], request);
+            if (!(m_arIdListeners[(int)indx_src] < 0))
+                DbSources.Sources ().Request (m_arIdListeners [(int)indx_src], request);
             else
                 ;
         }
 
         public bool Response(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
         {
-            if ((!(m_arDBInterfaces[(int)indx_src] == null)) && (!(m_arListenerIds[(int)indx_src] < 0)))
-                return m_arDBInterfaces[(int)indx_src].Response(m_arListenerIds[(int)indx_src], out error, out table);
+            if (!(m_arIdListeners[(int)indx_src] < 0))
+                return DbSources.Sources ().Response(m_arIdListeners[(int)indx_src], out error, out table);
             else
             {
                 error = true;
@@ -115,16 +111,13 @@ namespace StatisticCommon
         {
             if (used == 0)
             {
-                m_arDBInterfaces = new DbTSQLInterface[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+                //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
                     if (!(connSetts[i] == null))
                     {
-                        m_arDBInterfaces[i] = new DbTSQLInterface(DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, "Интерфейс MSSQL-БД: " + name_shr);
-                        m_arListenerIds[i] = m_arDBInterfaces[i].ListenerRegister();
-                        m_arDBInterfaces[i].Start();
-                        m_arDBInterfaces[i].SetConnectionSettings(connSetts[i], true);
+                        m_arIdListeners[i] = DbSources.Sources ().Register(connSetts[i], true);
                     }
                     else
                         ;
@@ -143,16 +136,12 @@ namespace StatisticCommon
 
         private void stopDbInterfaces()
         {
-            for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                if (!(m_arDBInterfaces[i] == null))
+                if (!(m_arIdListeners[i] < 0))
                 {
-                    m_arDBInterfaces[i].Stop();
-                    //for (int j = 0; j < m_arListenerIds[i].Count; j ++)
-                    if (!(m_arListenerIds[i] < 0))
-                        m_arDBInterfaces[i].ListenerUnregister(m_arListenerIds[i]/*[j]*/);
-                    else
-                        ;
+                    DbSources.Sources().UnRegister(m_arIdListeners[i]);
+                    m_arIdListeners[i] = -1;
                 }
                 else
                     ;
@@ -189,10 +178,10 @@ namespace StatisticCommon
         {
             if (used > 0)
             {
-                for (int i = (int)CONN_SETT_TYPE.DATA_FACT; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
-                    if (! (m_arDBInterfaces[i] == null))
-                        m_arDBInterfaces[i].SetConnectionSettings(connSetts [i], true);
+                    if (! (m_arIdListeners [i] < 0))
+                        DbSources.Sources ().SetConnectionSettings (m_arIdListeners [i], connSetts [i], true);
                     else
                         ;
                 }                
@@ -378,7 +367,27 @@ namespace StatisticCommon
 
         public string sensorsTMRequest()
         {
-            return @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
+            string query = string.Empty;
+            List <int> ids = new List<int> ();
+
+
+            //Для каждой ТЭЦ
+            //query = @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
+
+            //Общий для всех ТЭЦ
+            query = @"SELECT [TEMPLATE_NAME_SGN_DATA_TM] as NAME, [ID_IN_REALS_RV] as ID  FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
+
+            foreach (TECComponent tc in list_TECComponents) {
+                if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf (tc.m_id) < 0))
+                    query += tc.m_id + @", ";
+                else
+                    ;
+            }
+            query = query.Substring (0, query.Length - 2);
+
+            query += @")";
+            
+            return query;
         }
 
         public string minsRequest(DateTime usingDate, int hour, string sensors)
@@ -748,17 +757,25 @@ namespace StatisticCommon
 
         public string currentTMRequest(string sensors)
         {
-            string query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
-                            @"FROM [dbo].[NAME_TABLE] " +
-                            @"INNER JOIN " +
-                                @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-                                @"FROM [dbo].[NAME_TABLE] " +
-                                @"GROUP BY [id]) AS t2 " +
-                            @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
-                            sensors +
-                            @"))";
+            string query = string.Empty;
+            //Источник для каждой ТЭЦ свой
+            //query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
+            //                @"FROM [dbo].[NAME_TABLE] " +
+            //                @"INNER JOIN " +
+            //                    @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
+            //                    @"FROM [dbo].[NAME_TABLE] " +
+            //                    @"GROUP BY [id]) AS t2 " +
+            //                @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
+            //                sensors +
+            //                @"))";
+            //
+            //query = query.Replace(@"NAME_TABLE", @"states_real_his");
 
-            query = query.Replace(@"NAME_TABLE", @"states_real_his");
+            //Общий источник
+            query = @"[ID_IN_REALS_RV] as id, [last_changed_at], [Current_Value_SOTIASSO] as value" +
+                    @"FROM [techsite-2.X.X].[dbo].[v_ALL_VALUE_SOTIASSO] " +
+                    @"WHERE [ID_TEC]=" + m_id + @" " +
+                    @"AND [ID_IN_REALS_RV] IN (" + sensors + @")";
 
             return query;
         }
@@ -771,21 +788,26 @@ namespace StatisticCommon
             dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
 
             string query = string.Empty;
-            //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+            ////query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+            ////        @"FROM [dbo].[NAME_TABLE] " +
+            ////        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
+            ////        @"AND (" + sensors + @") " +
+            ////        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
+            //
+            //query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
             //        @"FROM [dbo].[NAME_TABLE] " +
-            //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
-            //        @"AND (" + sensors + @") " +
-            //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
+            //        @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+            //        @"AND (" + sensors + @")";
+            //
+            ////Для 1-го запроса
+            ////query = query.Replace("NAME_TABLE", "states_real_his");
+            ////Для 2-го запроса
+            //query = query.Replace("NAME_TABLE", "states_real_his_0");
 
-            query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
-                    @"FROM [dbo].[NAME_TABLE] " +
+            query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_real_his_0] (" + m_id + @")" +
                     @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                    @"AND (" + sensors + @")";
-
-            //Для 1-го запроса
-            //query = query.Replace("NAME_TABLE", "states_real_his");
-            //Для 2-го запроса
-            query = query.Replace("NAME_TABLE", "states_real_his_0");
+                    @"[ID] IN (" + sensors + @") " +
+                    @"ORDER BY [ID],[last_changed_at]";
 
             return query;
         }

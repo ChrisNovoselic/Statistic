@@ -241,7 +241,7 @@ namespace StatisticCommon
             else
                 ;
 
-            InitDbInterfaces ();
+            /*InitDbInterfaces ();*/
 
             lock (m_lockObj)
             {
@@ -300,7 +300,7 @@ namespace StatisticCommon
         {
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], /*"SELECT now()"*/@"SELECT GETDATE()");
+                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], /*"SELECT now()"*/@"SELECT GETDATE()");
             else
                 ;
         }
@@ -387,11 +387,11 @@ namespace StatisticCommon
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], t.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
         }
 
         private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode) {
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
         }
 
         public virtual void ImpRDGExcelValues(int indx, DateTime date)
@@ -659,7 +659,10 @@ namespace StatisticCommon
             item = new RDGStruct();
 
             for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j++)
-                item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
+                if (allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel > 1)
+                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
+                else
+                    return ;
 
             item.recomendation = 0;
 
@@ -686,7 +689,7 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -702,7 +705,7 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -871,7 +874,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
@@ -920,7 +923,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("AdminTS::ClearAdminValuesRequest ()");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
@@ -1065,7 +1068,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("AdminTS::SetPPBRRequest ()");
             
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
@@ -1114,32 +1117,18 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("ClearPPBRRequest");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], t.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
-        public void Request(int indxDbInterface, int listenerId, string request)
+        public void Request(int idListener, string request)
         {
-            m_indxDbInterfaceCurrent = indxDbInterface;
-            m_listListenerIdCurrent[indxDbInterface] = listenerId;
-            m_listDbInterfaces[indxDbInterface].Request(m_listListenerIdCurrent[indxDbInterface], request);
+            m_IdListenerCurrent = idListener;
+            DbSources.Sources ().Request (idListener, request);
         }
 
-        public override bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
         {
-            if ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0) && (!(m_indxDbInterfaceCurrent < 0))) {
-                //m_listListenerIdCurrent [m_indxDbInterfaceCurrent] = -1;
-                //m_indxDbInterfaceCurrent = -1;
-                ;
-            }
-            else
-                ;
-
-            return m_listDbInterfaces[indxDbInterface].Response(listenerId, out error, out table);
-
-            //if (isTec)
-            //    return dbInterface.Response(listenerIdTec, out error, out table);
-            //else
-            //    return dbInterface.Response(listenerIdAdmin, out error, out table);
+            return DbSources.Sources ().Response (idListener, out error, out table);
         }
 
         public int GetIndexTECComponent (int idTEC, int idComp) {
@@ -1158,7 +1147,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected override bool InitDbInterfaces()
+        /*protected override bool InitDbInterfaces()
         {
             bool bRes = true;
 
@@ -1244,47 +1233,32 @@ namespace StatisticCommon
             }
 
             return bRes;
-        }
+        }*/
 
-        public override void StartThreadSourceData()
+        public override void Start()
         {
             //if (threadIsWorking == true)
             //    return;
             //else
             //    ;
 
-            InitDbInterfaces ();
+            foreach (TEC t in m_list_tec) {
+                t.StartDbInterfaces ();
+            }
 
             semaDBAccess = new Semaphore(1, 1);
 
-            base.StartThreadSourceData();
+            base.Start();
         }
 
-        public override void StopThreadSourceData()
+        public override void Stop()
         {
-            base.StopThreadSourceData();
+            base.Stop();
 
-            if (m_listDbInterfaces.Count > 0)
+            foreach (TEC t in m_list_tec)
             {
-                foreach (TEC t in m_list_tec)
-                {
-                    for (CONN_SETT_TYPE connSettType = CONN_SETT_TYPE.ADMIN; connSettType < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType ++) {
-                        if ((m_ignore_connsett_data == true) && (connSettType == CONN_SETT_TYPE.DATA_FACT))
-                            continue;
-                        else
-                            ;
-
-                        m_listDbInterfaces[t.m_arIndxDbInterfaces[(int)connSettType]].ListenerUnregister(t.m_arListenerIds[(int)connSettType]);
-                    }
-                }
-
-                foreach (DbInterface dbi in m_listDbInterfaces)
-                {
-                    dbi.Stop ();
-                }
+                t.StopDbInterfaces();
             }
-            else
-                ;
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)
@@ -1416,7 +1390,8 @@ namespace StatisticCommon
 
             if (((state == (int)StatesMachine.ImpRDGExcelValues) || (state == (int)StatesMachine.ExpRDGExcelValues)) ||
                 (state == (int)StatesMachine.PPBRCSVValues) ||
-                ((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0)))
+                /*((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0))*/
+                (!(m_IdListenerCurrent < 0)))
             {
                 switch (state)
                 {
@@ -1456,7 +1431,7 @@ namespace StatisticCommon
                     case (int)StatesMachine.ClearAdminValues:
                     case (int)StatesMachine.ClearPPBRValues:
                     //case (int)StatesMachine.GetPass:
-                        bRes = Response(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
+                        bRes = DbSources.Sources ().Response(m_IdListenerCurrent, out error, out table/*, false*/);
                         break;
                     //case (int)StatesMachine.LayoutGet:
                     //case (int)StatesMachine.LayoutSet:
@@ -1984,20 +1959,20 @@ namespace StatisticCommon
             }
         }
 
-        public void ReConnSettingsRDGSource(ConnectionSettings connSett, int [] arIdSource)
+        public void ReConnSettingsRDGSource(int idListaener, int [] arIdSource)
         {
             int err = -1;
-            
+
             for (int i = 0; i < m_list_tec.Count; i ++) {
                 if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
-                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
                 }
                 else {
                     if (m_list_tec[i].type() == TEC.TEC_TYPE.BIYSK)
                     {
-                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(connSett, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTEC.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
                     }
                     else
                     {

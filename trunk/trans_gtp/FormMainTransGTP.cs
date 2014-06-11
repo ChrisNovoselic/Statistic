@@ -201,13 +201,15 @@ namespace trans_gtp
 
             CreateFormConnectionSettingsConfigDB("connsett_gtp.ini");
 
+            int idListener;
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTS_KomDisp();
+                idListener =  DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(i), false);
                 try {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett(i), m_modeTECComponent, true, false);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, true, false);
                 }
                 catch (Exception e)
                 {
@@ -244,7 +246,9 @@ namespace trans_gtp
 
                 //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
 
-                m_arAdmin[i].StartThreadSourceData();
+                m_arAdmin[i].Start();
+
+                DbSources.Sources().UnRegister(idListener);
             }
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))

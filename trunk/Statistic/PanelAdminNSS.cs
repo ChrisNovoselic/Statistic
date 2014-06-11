@@ -191,7 +191,7 @@ namespace Statistic
             else {
                 //m_admin.Suspend();
 
-                ((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables ();
+                //((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables ();
             }
 
             base.Activate (active);

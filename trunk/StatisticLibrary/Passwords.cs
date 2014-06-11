@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Security.Cryptography;
 using System.Data.OleDb;
 using System.IO;
@@ -27,10 +28,10 @@ namespace StatisticCommon
         private volatile HAdmin.Errors passResult;
         private volatile string passReceive;
         private volatile uint m_idRolePass;
-        private volatile uint m_idPass;
+        private volatile uint m_idExtPass;
         private Object m_lockObj;
 
-        public ConnectionSettings connSettConfigDB;
+        private int m_idListener;
 
         public Passwords()
         {
@@ -44,6 +45,8 @@ namespace StatisticCommon
             m_lockObj = new Object();
         }
 
+        public void SetIdListener (int idListener) { m_idListener = idListener; }
+
         void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
         {
             //MessageBox.Show(this, msg, "Œ¯Ë·Í‡", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -52,7 +55,8 @@ namespace StatisticCommon
 
         private void GetPassword(out int er)
         {
-            DataTable passTable = DbTSQLInterface.Select(connSettConfigDB, GetPassRequest(), out er);
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out er);
+            DataTable passTable = DbTSQLInterface.Select(ref conn, GetPassRequest(), null, null, out er);
             if (er == 0)
                 if (!(passTable.Rows[0][0] is DBNull))
                     passReceive = passTable.Rows[0][0].ToString();
@@ -62,12 +66,12 @@ namespace StatisticCommon
                 passResult = HAdmin.Errors.NoAccess;
         }
 
-        public bool SetPassword(string password, uint id, uint idRolePass)
+        public bool SetPassword(string password, uint idExtPass, uint idRolePass)
         {
             int err = -1;
             passResult = HAdmin.Errors.NoError;
 
-            m_idPass = id;
+            m_idExtPass = idExtPass;
             m_idRolePass = idRolePass;
 
             byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
@@ -89,10 +93,11 @@ namespace StatisticCommon
             else
                 ;
 
+            DbConnection conn = DbSources.Sources().GetConnection(m_idListener, out err);
             if (passReceive == null)
-                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), true), out err);
+                DbTSQLInterface.ExecNonQuery(ref conn, SetPassRequest(hashedString.ToString(), true), null, null,out err);
             else
-                DbTSQLInterface.ExecNonQuery(connSettConfigDB, SetPassRequest(hashedString.ToString(), false), out err);
+                DbTSQLInterface.ExecNonQuery(ref conn, SetPassRequest(hashedString.ToString(), false), null, null, out err);
 
             if (passResult != HAdmin.Errors.NoError)
             {
@@ -104,7 +109,7 @@ namespace StatisticCommon
             return true;
         }
 
-        public HAdmin.Errors ComparePassword(string password, uint id, uint id_role)
+        public HAdmin.Errors ComparePassword(string password, uint id_ext, uint id_role)
         {
             int err = -1;
             passResult = HAdmin.Errors.NoError;
@@ -115,7 +120,7 @@ namespace StatisticCommon
             //else
             //    ;
 
-            m_idPass = id;
+            m_idExtPass = id_ext;
             m_idRolePass = id_role;
 
             if (password.Length < 1)
@@ -127,8 +132,6 @@ namespace StatisticCommon
             }
             else
                 ;
-
-            m_idPass = id;
 
             string hashFromForm = "";
             byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
@@ -178,8 +181,8 @@ namespace StatisticCommon
             string strRes = string.Empty;
             strRes = "SELECT HASH FROM passwords WHERE ID_ROLE=" + m_idRolePass;
 
-            if (m_idPass > 0)
-                strRes += " AND ID =" + m_idPass;
+            if (! (m_idExtPass < 0))
+                strRes += " AND ID_EXT =" + m_idExtPass;
             else
                 ;
 
@@ -211,11 +214,11 @@ namespace StatisticCommon
             string query = string.Empty;
 
             if (insert)
-                query = "INSERT INTO passwords (ID_EXT, ID_ROLE, HASH) VALUES (" + m_idRolePass +  ", " + m_idRolePass + ", '" + password + "')";
+                query = "INSERT INTO passwords (ID_EXT, ID_ROLE, HASH) VALUES (" + m_idExtPass +  ", " + m_idRolePass + ", '" + password + "')";
             else
             {
                 query = "UPDATE passwords SET HASH='" + password + "'";
-                query += " WHERE ID_EXT=" + m_idPass + " AND ID_ROLE=" + m_idRolePass;
+                query += " WHERE ID_EXT=" + m_idExtPass + " AND ID_ROLE=" + m_idRolePass;
             }
 
             return query;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace Statistic
     {
         private enum INDEX_UICONTROL { TEXTBOX_DESCRIPTION, TEXTBOX_IP, TEXTBOX_DOMAIN, TEXTBOX_USERNAME, TEXTBOX_COMPUTERNAME, COUNT_INDEX_UICONTROL };
 
-        private ConnectionSettings m_connectionSetttings;
+        private int m_idListener;
         DataTable m_users_origin;
         DataTable m_users_edit;
         //DataRow [] m_userRows;
@@ -28,11 +29,11 @@ namespace Statistic
 
         int m_prevComboBoxAccessSelectedIndex;
 
-        public FormUser(ConnectionSettings connSett)
+        public FormUser(int id)
         {
             InitializeComponent();
 
-            m_connectionSetttings = connSett;
+            m_idListener = id;
 
             m_listUserID = new List<int> ();
 
@@ -42,9 +43,9 @@ namespace Statistic
             int err = 0,
                 i = -1;
 
-            InitTEC.m_connConfigDB = DbSources.Sources().GetConnection(0, out err);
+            DbConnection connConfigDB = DbSources.Sources().GetConnection(m_idListener, out err);
 
-            Users.GetUsers(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
+            Users.GetUsers(ref connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
             m_users_edit = m_users_origin.Copy ();
             //m_userRows = m_users_edit.Select();
 
@@ -62,7 +63,7 @@ namespace Statistic
             m_listRolesID = new List<int>();
             DataTable roles;
             //roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles WHERE ID < 500", out err);
-            Users.GetRoles(InitTEC.m_connConfigDB, @"", @"DESCRIPTION", out roles, out err);
+            Users.GetRoles(ref connConfigDB, @"", @"DESCRIPTION", out roles, out err);
             for (i = 0; i < roles.Rows.Count; i++)
             {
                 m_listRolesID.Add(Convert.ToInt32 (roles.Rows[i]["ID"]));
@@ -108,7 +109,8 @@ namespace Statistic
         {
             int err = 0;
 
-            DbTSQLInterface.RecUpdateInsertDelete(m_connectionSetttings, "users", m_users_origin, m_users_edit, out err);
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
+            DbTSQLInterface.RecUpdateInsertDelete(ref conn, "users", m_users_origin, m_users_edit, out err);
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -118,16 +120,18 @@ namespace Statistic
 
         private void buttonUserAdd_Click(object sender, EventArgs e)
         {
-            int i = -1;
+            int i = -1,
+                err = -1;
             object [] addRow = new object [m_users_edit.Columns.Count];
             object val;
 
+            DbConnection conn = DbSources.Sources().GetConnection(m_idListener, out err);
             for (i = 0; i < m_users_edit.Columns.Count; i ++)
             {
                 switch (m_users_edit.Columns [i].ColumnName)
                 {
                     case "ID":
-                        val = DbTSQLInterface.getIdNext(m_connectionSetttings, "users");
+                        val = DbTSQLInterface.getIdNext(ref conn, "users");
                         break;
                     case "DESCRIPTION":
                         val = textBoxUserDesc.Text;

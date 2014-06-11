@@ -261,7 +261,7 @@ namespace StatisticCommon
         protected virtual void CreateFormConnectionSettingsConfigDB(string connSettFileName)
         {
             m_fileConnSett = new FIleConnSett(connSettFileName);
-            m_formConnectionSettingsConfigDB = new FormConnectionSettings(m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
+            m_formConnectionSettingsConfigDB = new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
         }
 
         protected virtual void FillComboBoxTECComponent () {
@@ -333,7 +333,7 @@ namespace StatisticCommon
             {
                 if (!(m_arAdmin[i] == null)) 
                 {
-                    m_arAdmin[i].StopThreadSourceData();
+                    m_arAdmin[i].Stop();
                     m_arAdmin[i] = null;
                 }
                 else

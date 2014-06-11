@@ -18,9 +18,11 @@ namespace Statistic
             InitializeComponent();
         }
 
-        public override void SetIdPass(int id, Passwords.ID_ROLES id_role)
+        public void SetIdPass(int idListener, int id_ext, Passwords.ID_ROLES id_role)
         {
-            base.SetIdPass (id, id_role);
+            SetIdPass (id_ext, id_role);
+
+            m_pass.SetIdListener(idListener);
 
             labelOwnerPassword.Text = Passwords.getOwnerPass((int)m_idRolePassword);
         }
@@ -30,7 +32,7 @@ namespace Statistic
             if (e.KeyCode == Keys.Enter)
             {
                 delegateStartWait();
-                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idPassword, (uint)m_idRolePassword);
+                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idExtPassword, (uint)m_idRolePassword);
                 delegateStopWait();
                 tbxPassword.Clear ();
                 //StopWait();

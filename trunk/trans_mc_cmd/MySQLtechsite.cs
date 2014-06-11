@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Data;
+using System.Data.Common;
 //using System.Data.Odbc;
 using MySql.Data.MySqlClient;
 
@@ -32,7 +33,7 @@ namespace trans_mc_cmd
                 //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.CONFIG; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 //{
                 //if (DbTSQLInterface.IsConnected (m_MySQLConnections[(int)i]) == true)
-                if (DbTSQLInterface.IsConnected(m_MySQLConnection) == false)
+                if (DbTSQLInterface.IsConnected(ref m_connection) == false)
                     iRes = 1;
                 else
                     ;
@@ -60,8 +61,9 @@ namespace trans_mc_cmd
         public bool m_bCalculatedHalfHourValues;
 
         //public MySqlConnection [] m_MySQLConnections;
-        public MySqlConnection m_MySQLConnection;
+        public DbConnection m_connection;
         public string m_strTableNamePPBR;
+        private int m_idListener;
         //public static string m_strNameSectionINI = "Параметры соединения с БД (trans_mc_cmd.exe)";
         public enum Params : int { PBR = 0, Pmin = 1, Pmax = 2, COUNT_PARAMS };
 
@@ -74,43 +76,29 @@ namespace trans_mc_cmd
         SortedList<DateTime, HTECComponentsRecord> HourlyValuesCollection;
         //SortedList<DateTime, OneField> HourlyFieldValues;
 
-        private bool SetMySQLConnect(MySqlConnection conn)
-        {
-            bool bRes = true;
-
-            try { conn.Open(); }
-            catch (Exception e)
-            {
-                Logging.Logg().LogExceptionToFile(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
-                itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
-
-                bRes = false;
-            }
-
-            return bRes;
-        }
-
         /// <summary>
         /// Конструктор открывает коннект к базе. Закрывает деструктор.
         /// </summary>
         public MySQLtechsite(bool bCalculatedHalfHourValues)
         {
-            bool bRes = false;
+            int iRes = -1;
 
             m_bCalculatedHalfHourValues = bCalculatedHalfHourValues;
 
             ConnectionSettings connSett = Program.ReadConnSettFromFileINI();
+            connSett.id = FIleConnSett.UN_ENUMERABLE_ID;
 
             Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
 
-            m_MySQLConnection = new MySqlConnection();
-            m_MySQLConnection = new MySqlConnection(connSett.GetConnectionStringMySQL());
-            bRes = SetMySQLConnect(m_MySQLConnection);
+            //Соединение дл я БД конфигурации
+            m_idListener = DbSources.Sources ().Register (connSett, false);
+            m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
 
-            if (bRes == true)
+            if (iRes == 0)
             {
                 m_admin = new AdminTS();
-                m_admin.InitTEC(connSett, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
+                
+                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_listIdMCTECComponent = new List<int>();
@@ -124,14 +112,13 @@ namespace trans_mc_cmd
                     }
                 }
 
-                if ((DbTSQLInterface.IsConnected(m_MySQLConnection) == true) &&
-                    (m_listIdMCTECComponent.Count > 0))
+                //Пересоединение для таблиц ПБР
+                if ((DbTSQLInterface.IsConnected(ref m_connection) == true) && (m_listIdMCTECComponent.Count > 0))
                 {
-                    m_MySQLConnection.Close();
-                    m_MySQLConnection = null;
+                    DbSources.Sources ().UnRegister (m_idListener);
 
-                    m_MySQLConnection = new MySqlConnection(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR].GetConnectionStringMySQL());
-                    bRes = SetMySQLConnect(m_MySQLConnection);
+                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false);
+                    m_connection = DbSources.Sources().GetConnection (m_idListener, out iRes);
                     m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
                 }
                 else
@@ -152,7 +139,7 @@ namespace trans_mc_cmd
             int err = -1;
             DataTable dataTest;
             //dataTest = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT page FROM settings", null, null, out err);
-            dataTest = DbTSQLInterface.Select(m_MySQLConnection, "SELECT page FROM settings", null, null, out err);
+            dataTest = DbTSQLInterface.Select(ref m_connection, "SELECT page FROM settings", null, null, out err);
 
             if (err == 0)
                 return (dataTest.Rows[0][0].ToString());
@@ -422,8 +409,8 @@ namespace trans_mc_cmd
 
             DataTable data;
             //data = DbTSQLInterface.Select(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
-            data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM " + m_strTableNamePPBR + " where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
-            //data = DbTSQLInterface.Select(m_MySQLConnection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            data = DbTSQLInterface.Select(ref m_connection, "SELECT id FROM " + m_strTableNamePPBR + " where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
+            //data = DbTSQLInterface.Select(m_connection, "SELECT id FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out er);
             if (!(er == 0))
             {
                 errMsg = "Не получен идентификатор для новой записи в '" + m_strTableNamePPBR + "'";
@@ -463,7 +450,7 @@ namespace trans_mc_cmd
                 //NOW() на этом сервере не совпадает с Новосибирским временем
                 //OdbcCommand cmdi = new OdbcCommand("INSERT INTO PPBRvsPBR_Test (date_time, wr_date_time, Is_Comdisp) VALUES('" + DateToSQL(DT) + "', '" + DateToSQL(DateTime.Now) + "', 0)", mysqlConn);
                 //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], "INSERT INTO PPBRvsPBRnew (date_time, wr_date_time, Is_Comdisp) VALUES( ?, ?, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
-                DbTSQLInterface.ExecNonQuery(m_MySQLConnection, "INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
+                DbTSQLInterface.ExecNonQuery(ref m_connection, "INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)", new DbType[] { DbType.DateTime, DbType.DateTime }, new object[] { DT, DateTime.Now }, out err);
                 Console.WriteLine("INSERT INTO " + m_strTableNamePPBR + " (date_time, wr_date_time, Is_Comdisp) VALUES( @0, @1, 0)" + "; @0 = " + DT.ToString() + ", @1 = " + DateTime.Now.ToString() + "; Рез-т = " + err);
                 if (!(err == 0))
                     itssAUX.PrintErrorMessage("Ошибка записи в базу MySQL на INSERT!");
@@ -509,7 +496,7 @@ namespace trans_mc_cmd
 
                         //Запуск апдейта одной часовой записи
                         //DbTSQLInterface.ExecNonQuery(m_MySQLConnections[(int)CONN_SETT_TYPE.PPBR], sUpdate, null, null, out err);
-                        DbTSQLInterface.ExecNonQuery(m_MySQLConnection, sUpdate, null, null, out err);
+                        DbTSQLInterface.ExecNonQuery(ref m_connection, sUpdate, null, null, out err);
 
                         if (!(err == 0))
                             itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::FlushDataToDatabase () - Updated...");
@@ -522,8 +509,8 @@ namespace trans_mc_cmd
 
                 HourlyValuesCollection.Clear();
 
-                m_MySQLConnection.Close();
-                m_MySQLConnection = null;
+                m_connection.Close();
+                m_connection = null;
             }
             else
                 ; //HourlyValuesCollection пуста

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -18,7 +19,8 @@ namespace Statistic
                                                 TEXTBOX_TECCOMPONENT_ADD, BUTTON_TECCOMPONENT_ADD,
                                                 COMBOBOX_TG_ADD, BUTTON_TG_ADD };
 
-        private ConnectionSettings m_connectionSetttings;
+        int m_idListener;
+        //private ConnectionSettings m_connectionSetttings;
 
         private Object m_lockObj;
 
@@ -39,7 +41,7 @@ namespace Statistic
         {
             int err = 0;
             
-            m_connectionSetttings = connSett;
+            //m_connectionSetttings = connSett;
 
             InitializeComponent();
 
@@ -79,12 +81,14 @@ namespace Statistic
             m_list_data_original = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
             m_list_data = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
             
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
+            
             int i = -1;
             //for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN + 1); i++)
             for (i = (int)(FormChangeMode.MODE_TECCOMPONENT.TEC); i < (int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN); i++)
             {
                 if (m_list_data_original[i] == null)
-                    m_list_data_original[i] = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST", out err);
+                    m_list_data_original[i] = DbTSQLInterface.Select(ref conn, "SELECT * FROM " + FormChangeMode.getPrefixMode (i) + "_LIST", null, null, out err);
                 else ;
 
                 m_list_data[i] = m_list_data_original[i].Copy ();
@@ -464,8 +468,9 @@ namespace Statistic
             int err = 0,
                 i = -1;
 
+            DbConnection conn = DbSources.Sources().GetConnection(m_idListener, out err);
             for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
-                DbTSQLInterface.RecUpdateInsertDelete(m_connectionSetttings, FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i], out err);
+                DbTSQLInterface.RecUpdateInsertDelete(ref conn, FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i], out err);
             }
 
             buttonClick(DialogResult.Yes);
@@ -669,8 +674,11 @@ namespace Statistic
 
         private void buttonTECComponentAdd_Click(object sender, EventArgs e)
         {
+            int err= -1;
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
+
             m_list_data[comboBoxMode.SelectedIndex].Rows.Add();
-            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbTSQLInterface.getIdNext(m_connectionSetttings, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST"); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbTSQLInterface.getIdNext(ref conn, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST"); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID_TEC"] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["NAME_SHR"] = m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text;
 

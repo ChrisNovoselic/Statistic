@@ -11,7 +11,7 @@ namespace StatisticCommon
     {
         public List<TEC> tec;
         private Users m_user;
-        public static DbConnection m_connConfigDB;
+        private static DbConnection m_connConfigDB;
 
         public static DataTable getListTEC(bool bIgnoreTECInUse, out int err)
         {
@@ -20,27 +20,33 @@ namespace StatisticCommon
 
             if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
 
-            return DbTSQLInterface.Select(m_connConfigDB, req, null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, req, null, null, out err);
         }
 
         private DataTable getListTECComponent(string prefix, int id_tec, out int err)
         {
-            return DbTSQLInterface.Select(m_connConfigDB, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString(), null, null, out err);
         }
 
         private DataTable getListTG(string prefix, int id, out int err)
         {
-            return DbTSQLInterface.Select(m_connConfigDB, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), null, null, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(ConnectionSettings connSett, int id_ext, int id_role, out int err)
+        public static DataTable getConnSettingsOfIdSource(int idListener, int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(connSett, id_ext, id_role, out err);
+            DbConnection conn = DbSources.Sources().GetConnection(idListener, out err);
+            return getConnSettingsOfIdSource(ref conn, id_ext, id_role, out err);
+        }
+
+        public static DataTable getConnSettingsOfIdSource(ref DbConnection conn, int id_ext, int id_role, out int err)
+        {
+            return ConnectionSettingsSource.GetConnectionSettings(ref conn, id_ext, id_role, out err);
         }
 
         private DataTable getConnSettingsOfIdSource(int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(m_connConfigDB, id_ext, id_role, out err);
+            return ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, id_ext, id_role, out err);
         }
 
         private List <int> getMCId (DataTable data, int row)
@@ -66,7 +72,7 @@ namespace StatisticCommon
         private bool IsNameField(DataTable data, string nameField) { return data.Columns.IndexOf(nameField) > -1 ? true : false; }
 
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        public InitTEC(ConnectionSettings connSett, bool bIgnoreTECInUse, bool bUseData)
+        public InitTEC(int idListener, bool bIgnoreTECInUse, bool bUseData)
         {
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - вход...");
             
@@ -76,10 +82,10 @@ namespace StatisticCommon
                     prefix_pbr = string.Empty;
 
             tec = new List<TEC>();
-            m_user = new Users(connSett);
+            m_user = new Users(idListener);
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
 
-            m_connConfigDB = DbSources.Sources ().GetConnection (0, out err);
+            m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null, // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
@@ -244,7 +250,7 @@ namespace StatisticCommon
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - вЫход...");
         }
 
-        public InitTEC(ConnectionSettings connSett, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
+        public InitTEC(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
         {
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - вход...");
 
@@ -274,7 +280,7 @@ namespace StatisticCommon
             //dbInterface.ListenerUnregister(listenerId);
 
             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
-            m_connConfigDB = DbSources.Sources().GetConnection(0, out err);
+            m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
             list_tec = getListTEC(bIgnoreTECInUse, out err);
@@ -314,10 +320,10 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                         list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                    tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32 (list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_FACT);
-                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_TM); else ;
-                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
-                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(connSett, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
+                    tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_FACT);
+                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_TM); else ;
+                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
+                    if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
 
                     tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                     tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();

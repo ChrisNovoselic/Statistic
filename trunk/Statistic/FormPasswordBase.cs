@@ -12,7 +12,7 @@ namespace Statistic
 {
     public abstract partial class FormPasswordBase : FormMainBase
     {
-        protected int m_idPassword;
+        protected int m_idExtPassword;
         protected Passwords.ID_ROLES m_idRolePassword;
 
         protected Passwords m_pass;
@@ -32,9 +32,9 @@ namespace Statistic
             delegateStopWait = stop;
         }
 
-        public virtual void SetIdPass(int id, Passwords.ID_ROLES id_role)
+        protected void SetIdPass(int id_ext, Passwords.ID_ROLES id_role)
         {
-            m_idPassword = id;
+            m_idExtPassword = id_ext;
             m_idRolePassword = id_role;
         }
 

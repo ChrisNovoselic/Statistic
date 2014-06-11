@@ -11,14 +11,16 @@ using System.Windows.Forms;
 
 namespace StatisticCommon
 {
-    public delegate void DelegateReadConnSettFunc(out List <ConnectionSettings> listConnSett, out int err, out string mes);
-    public delegate void DelegateSaveConnSettFunc(List<ConnectionSettings> listConnSett, out int err);
+    public delegate void DelegateReadConnSettFunc(int idListener, out List<ConnectionSettings> listConnSett, out int err, out string mes);
+    public delegate void DelegateSaveConnSettFunc(int idListener, List<ConnectionSettings> listConnSett, out int err);
 
     public partial class FormConnectionSettings : Form
     {
         private List<ConnectionSettings> m_connectionSettingsEdit, m_connectionSettings;
         int m_iReady;
 
+        private int m_idListener;
+        
         private bool closing;
         private int oldSelectedIndex;
 
@@ -26,12 +28,14 @@ namespace StatisticCommon
         DelegateReadConnSettFunc ReadSettings;
 
         //public FormConnectionSettings(List<TEC> tec)
-        public FormConnectionSettings(DelegateReadConnSettFunc r, DelegateSaveConnSettFunc s)
+        public FormConnectionSettings(int idListener, DelegateReadConnSettFunc r, DelegateSaveConnSettFunc s)
         {
             int i = -1;
 
             InitializeComponent();
 
+            m_idListener = idListener;
+            
             ReadSettings = r;
             SaveSettings = s;
 
@@ -46,7 +50,7 @@ namespace StatisticCommon
             closing = false;
 
             string msgErr = string.Empty;
-            ReadSettings (out m_connectionSettingsEdit, out m_iReady, out msgErr);
+            ReadSettings (m_idListener, out m_connectionSettingsEdit, out m_iReady, out msgErr);
             if ((!(m_iReady == 0)) && (msgErr.Length > 0)) MessageBox.Show(this, msgErr, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); else ;
 
             if (!(m_iReady == 0))
@@ -222,7 +226,7 @@ namespace StatisticCommon
                 m_connectionSettings[i].ignore = m_connectionSettingsEdit[i].ignore;
             }
 
-            SaveSettings(m_connectionSettings, out m_iReady);
+            SaveSettings(m_idListener, m_connectionSettings, out m_iReady);
 
             closing = true;
             this.DialogResult = DialogResult.Yes;

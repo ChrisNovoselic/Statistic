@@ -8,6 +8,8 @@ namespace StatisticCommon
 {
     public class FIleConnSett
     {
+        public static int UN_ENUMERABLE_ID = -666666;
+        
         private bool mayToProtected;
         
         public string m_NameFile = string.Empty;
@@ -19,6 +21,12 @@ namespace StatisticCommon
             //m_connectionSettings = new List<ConnectionSettings> ();
         }
 
+        /// <summary>
+        /// Разбор зашифрованного файла с параметрами соединения
+        /// </summary>
+        /// <param name="connSetts">выходной список с объектами с параметрами соединения</param>
+        /// <param name="msgErr">Текст сообщения при наличии ошибки</param>
+        /// <returns>Признак выполнения: 0 - успех</returns>
         private int ParseSettingsFile(out List <ConnectionSettings> connSetts, out string msgErr)
         {
             connSetts = new List<ConnectionSettings> ();
@@ -60,7 +68,8 @@ namespace StatisticCommon
                     while (i < countParts)
                     {
                         connSetts.Add(new ConnectionSettings ());
-                        connSetts[connSetts.Count - 1].port = 1433;
+                        connSetts[connSetts.Count - 1].id = UN_ENUMERABLE_ID - i;
+                        //connSetts[connSetts.Count - 1].port = 1433;
 
                         pos2 = st.IndexOf(';', pos1);
                         if (pos2 < 0)
@@ -72,8 +81,7 @@ namespace StatisticCommon
                         else
                             ;
 
-                        connSetts[i].server =
-                        st.Substring(pos1, pos2 - pos1);
+                        connSetts[i].server = st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
                         pos2 = st.IndexOf(';', pos1);
@@ -94,8 +102,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                        connSetts[i].port =
-                        port;
+                        connSetts[i].port = port;
                         pos1 = pos2 + 1;
 
                         pos2 = st.IndexOf(';', pos1);
@@ -107,8 +114,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                        connSetts[i].dbName =
-                        st.Substring(pos1, pos2 - pos1);
+                        connSetts[i].dbName = st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
                         pos2 = st.IndexOf(';', pos1);
@@ -120,8 +126,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                        connSetts[i].userName =
-                        st.Substring(pos1, pos2 - pos1);
+                        connSetts[i].userName = st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
                         pos2 = st.IndexOf(';', pos1);
@@ -133,8 +138,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                        connSetts[i].password =
-                        st.Substring(pos1, pos2 - pos1);
+                        connSetts[i].password = st.Substring(pos1, pos2 - pos1);
                         pos1 = pos2 + 1;
 
                         pos2 = st.IndexOf(';', pos1);
@@ -155,8 +159,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                        connSetts[i].ignore =
-                        (ignore == "1");
+                        connSetts[i].ignore = (ignore == "1");
 
                         //m_connectionSettingsEdit[i].ignore = cs.ignore = (ignore == "0");
 
@@ -183,7 +186,14 @@ namespace StatisticCommon
                 return 1; //Ошибка
         }
 
-        public void ReadSettingsFile (out List <ConnectionSettings> listConnSett, out int res, out string mes)
+        /// <summary>
+        /// Чтение зашифрованного файла конфигурации с параметрами соединения
+        /// </summary>
+        /// <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+        /// <param name="listConnSett">выходной список объектов с параметрами соедений</param>
+        /// <param name="res">результат выполнения функции</param>
+        /// <param name="mes">сообщение после выполнения операции</param>
+        public void ReadSettingsFile (int notUsed, out List <ConnectionSettings> listConnSett, out int res, out string mes)
         {
             if (File.Exists(m_NameFile) == false)
             {//Не найден файл
@@ -195,7 +205,13 @@ namespace StatisticCommon
                 res = ParseSettingsFile(out listConnSett, out mes);
         }
 
-        public void SaveSettingsFile(List <ConnectionSettings> listConnSett, out int err)
+        /// <summary>
+        /// Шифрование и сохранение параметров соедиений
+        /// </summary>
+        /// <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+        /// <param name="listConnSett"></param>
+        /// <param name="err"></param>
+        public void SaveSettingsFile(int notUsed, List<ConnectionSettings> listConnSett, out int err)
         {
             err = 1;
 

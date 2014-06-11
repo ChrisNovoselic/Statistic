@@ -44,10 +44,8 @@ namespace StatisticCommon
             return val;
         }
 
-        public Users(ConnectionSettings connSett)
+        public Users(int idListener)
         {
-            connSettConfigDB = connSett;
-
             int err = 0,
                 i = -1, j = -1;
             DataTable dataUsers;
@@ -62,12 +60,11 @@ namespace StatisticCommon
                 else
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
-            Logging.Logg().LogDebugToFile("Users::Users () - получение объекта MySqlConnection...");
-            DbConnection connDB = DbSources.Sources().GetConnection(0, out err);
+            DbConnection connDB = DbSources.Sources().GetConnection(idListener, out err);
             
             //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
             //GetUsers(string.Empty, "DESCRIPTION", out dataUsers, out err);
-            GetUsers(connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
+            GetUsers(ref connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
 
             if ((err == 0) && (dataUsers.Rows.Count > 0))
             {
@@ -143,8 +140,8 @@ namespace StatisticCommon
 
             return strQuery;
         }
-        
-        public void GetUsers(string where, string orderby, out DataTable users, out int err)
+
+        /*public void GetUsers(string where, string orderby, out DataTable users, out int err)
         {
             err = 0;            
             users = new DataTable ();
@@ -158,22 +155,22 @@ namespace StatisticCommon
             users = new DataTable();
 
             users = DbTSQLInterface.Select(connSett, getUsersRequest(where, orderby), out err);
-        }
+        }*/
 
-        public static void GetUsers(DbConnection conn, string where, string orderby, out DataTable users, out int err)
+        public static void GetUsers(ref DbConnection conn, string where, string orderby, out DataTable users, out int err)
         {
             err = 0;
             users = new DataTable();
 
-            users = DbTSQLInterface.Select(conn, getUsersRequest(where, orderby), null, null, out err);
+            users = DbTSQLInterface.Select(ref conn, getUsersRequest(where, orderby), null, null, out err);
         }
 
-        public static void GetRoles(DbConnection conn, string where, string orderby, out DataTable roles, out int err)
+        public static void GetRoles(ref DbConnection conn, string where, string orderby, out DataTable roles, out int err)
         {
             err = 0;
             roles = new DataTable();
 
-            roles = DbTSQLInterface.Select(conn, @"SELECT * FROM ROLES WHERE ID < 500", null, null, out err);
+            roles = DbTSQLInterface.Select(ref conn, @"SELECT * FROM ROLES WHERE ID < 500", null, null, out err);
         }
     }
 }

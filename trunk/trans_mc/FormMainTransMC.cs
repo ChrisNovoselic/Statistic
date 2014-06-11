@@ -178,6 +178,7 @@ namespace trans_mc
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
             bool bIgnoreTECInUse = false;
+            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 switch (i)
@@ -191,7 +192,7 @@ namespace trans_mc
                     default:
                         break;
                 }
-                try { m_arAdmin[i].InitTEC(m_formConnectionSettingsConfigDB.getConnSett(), m_modeTECComponent, bIgnoreTECInUse, false); }
+                try { m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, bIgnoreTECInUse, false); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");
@@ -220,6 +221,8 @@ namespace trans_mc
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
+            DbSources.Sources().UnRegister(idListener);
+
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {
                 setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
@@ -241,7 +244,7 @@ namespace trans_mc
                     //??? Перенос ПОСЛЕ цикла
                     //if (i == (int)(Int16)CONN_SETT_TYPE.DEST)
                     //    (Int16)CONN_SETT_TYPE.DEST
-                    m_arAdmin[i].StartThreadSourceData();
+                    m_arAdmin[i].Start();
                     //else
                     //    ;
                 }
@@ -415,7 +418,7 @@ namespace trans_mc
         {
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {
-                if (!(m_arAdmin[i] == null)) (m_arAdmin[i]).StopThreadSourceData(); else ;
+                if (!(m_arAdmin[i] == null)) (m_arAdmin[i]).Stop(); else ;
             }
 
             Close();

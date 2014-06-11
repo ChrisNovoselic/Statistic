@@ -12,11 +12,11 @@ namespace StatisticCommon
 {
     public class ConnectionSettingsSource
     {
-        private ConnectionSettings m_ConnectionSettings;
+        private int m_idListener;
 
-        public ConnectionSettingsSource (ConnectionSettings connsett)
+        public ConnectionSettingsSource (int idListener)
         {
-            m_ConnectionSettings = connsett;
+            m_idListener = idListener;
         }
 
         private static string ConnectionSettingsRequest (int id)
@@ -64,7 +64,7 @@ namespace StatisticCommon
             return src;
         }
 
-        public static DataTable GetConnectionSettings (ConnectionSettings connSett, int id_ext, int id_role, out int er)
+        /*public static DataTable GetConnectionSettings (ConnectionSettings connSett, int id_ext, int id_role, out int er)
         {
             er = 0;
 
@@ -72,14 +72,14 @@ namespace StatisticCommon
                     tablePsw = DbTSQLInterface.Select(connSett, PasswordRequest(id_ext, id_role), out er);
 
             return GetConnectionSettings (ref tableRes, 0, ref tablePsw, 0);
-        }
+        }*/
 
-        public static DataTable GetConnectionSettings(DbConnection conn, int id_ext, int id_role, out int er)
+        public static DataTable GetConnectionSettings(ref DbConnection conn, int id_ext, int id_role, out int er)
         {
             er = 0;
 
-            DataTable tableRes = DbTSQLInterface.Select(conn, ConnectionSettingsRequest(id_ext), null, null, out er),
-                    tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(id_ext, id_role), null, null, out er);
+            DataTable tableRes = DbTSQLInterface.Select(ref conn, ConnectionSettingsRequest(id_ext), null, null, out er),
+                    tablePsw = DbTSQLInterface.Select(ref conn, PasswordRequest(id_ext, id_role), null, null, out er);
 
             if ((tableRes.Rows.Count > 0) && (tablePsw.Rows.Count > 0))
                 tableRes = GetConnectionSettings(ref tableRes, 0, ref tablePsw, 0);
@@ -89,7 +89,7 @@ namespace StatisticCommon
             return tableRes;
         }
 
-        public void Read(out List<ConnectionSettings> listConnSett, out int err, out string mes)
+        public void Read(int idListener, out List<ConnectionSettings> listConnSett, out int err, out string mes)
         {
             listConnSett = new List<ConnectionSettings> ();
             err = 0;
@@ -97,12 +97,12 @@ namespace StatisticCommon
 
             int i = -1;
 
-            DbConnection conn = DbSources.Sources ().GetConnection (0, out err);
+            DbConnection conn = DbSources.Sources().GetConnection(idListener, out err);
             //DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
             {
-                DataTable tableSource = DbTSQLInterface.Select(conn, "SELECT * FROM SOURCE", null, null, out err),
+                DataTable tableSource = DbTSQLInterface.Select(ref conn, "SELECT * FROM SOURCE", null, null, out err),
                             tablePsw;
 
                 if (err == 0)
@@ -121,7 +121,7 @@ namespace StatisticCommon
                         //Password
                         listConnSett[i].ignore = Convert.ToInt32 (tableSource.Rows[i]["IGNORE"].ToString()) == 1;
 
-                        tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(Convert.ToInt32(tableSource.Rows[i]["ID"]), 501), null, null, out err);
+                        tablePsw = DbTSQLInterface.Select(ref conn, PasswordRequest(Convert.ToInt32(tableSource.Rows[i]["ID"]), 501), null, null, out err);
 
                         tableSource = GetConnectionSettings(ref tableSource, i, ref tablePsw, 0);
                         //Password
@@ -137,7 +137,7 @@ namespace StatisticCommon
             //DbTSQLInterface.CloseConnection (conn, out err);
         }
 
-        public void Save(List<ConnectionSettings> listConnSett, out int err)
+        public void Save(int idListener, List<ConnectionSettings> listConnSett, out int err)
         {
             err = 1;
             int i = -1,c = -1;
@@ -148,7 +148,7 @@ namespace StatisticCommon
             
             strQuery = psw = string.Empty;
 
-            DbConnection conn = DbSources.Sources ().GetConnection(0, out err);
+            DbConnection conn = DbSources.Sources().GetConnection(idListener, out err);
             //DbConnection conn = DbTSQLInterface.GetConnection (m_ConnectionSettings, out err);
 
             if (err == 0)
@@ -160,8 +160,8 @@ namespace StatisticCommon
                 {
                     for (i = 0; i < listConnSett.Count; i++)
                     {
-                        tableSource = DbTSQLInterface.Select(conn, ConnectionSettingsRequest(listConnSett[i].id), null, null, out err);
-                        tablePsw = DbTSQLInterface.Select(conn, PasswordRequest(listConnSett [i].id, 501), null, null, out err);
+                        tableSource = DbTSQLInterface.Select(ref conn, ConnectionSettingsRequest(listConnSett[i].id), null, null, out err);
+                        tablePsw = DbTSQLInterface.Select(ref conn, PasswordRequest(listConnSett [i].id, 501), null, null, out err);
 
                         if (tableSource.Rows.Count == 0)
                         {//INSERT
@@ -227,7 +227,7 @@ namespace StatisticCommon
                                 ;
                     }
 
-                    DbTSQLInterface.ExecNonQuery (conn, strQuery, null, null, out err);
+                    DbTSQLInterface.ExecNonQuery (ref conn, strQuery, null, null, out err);
                 }
                 else
                     ;

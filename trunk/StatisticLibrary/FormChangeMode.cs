@@ -308,13 +308,20 @@ namespace StatisticCommon
 
         public void SetItemChecked(int indxCheckedIndicies, bool bChecked)
         {
+            int indx = -1;
+
             if ((clbMode.CheckedIndices.Count > 0) && (!(indxCheckedIndicies < 0)) && (indxCheckedIndicies < clbMode.CheckedIndices.Count)) {
                 clbMode.SetItemChecked(clbMode.CheckedIndices[indxCheckedIndicies], bChecked);
 
                 btnOk_Click(null, EventArgs.Empty);
             }
-            else
-                ;
+            else {
+                
+            }
+
+            clbMode.SetItemChecked(clbMode.CheckedIndices[clbMode.CheckedIndices.Count - 1], bChecked);
+
+            btnOk_Click(null, EventArgs.Empty);
         }
 
         public void SetItemChecked(string textItem, bool bChecked)

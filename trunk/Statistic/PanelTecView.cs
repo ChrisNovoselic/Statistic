@@ -2494,11 +2494,13 @@ namespace Statistic
         }
 
         private void GetPBRValuesRequest () {
-            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
+            tec.Request(CONN_SETT_TYPE.PBR, tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
         }
 
         private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
-            m_admin.Request(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, mode));
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, mode));
+            tec.Request(CONN_SETT_TYPE.ADMIN, tec.GetAdminValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, mode));
         }
 
         private void FillGridMins(int hour)
@@ -3011,11 +3013,11 @@ namespace Statistic
                 if (!(sensorId2TG[i] == null))
                 {
                     if (sensorsString_TM.Equals(string.Empty) == false)
-                        sensorsString_TM += @" OR ";
+                        sensorsString_TM += @", "; //@" OR ";
                     else
                         ;
 
-                    sensorsString_TM += "[dbo].[NAME_TABLE].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                    sensorsString_TM += sensorId2TG[i].id_tm.ToString(); //@"[dbo].[NAME_TABLE].[ID] = " + sensorId2TG[i].id_tm.ToString();
                 }
                 else
                 {
@@ -5387,11 +5389,13 @@ namespace Statistic
                 case StatesMachine.LastMinutes_TM:
                     return tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                 case StatesMachine.PBRValues:
-                    return m_admin.Response(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
-                //return true; //Имитация получения данных плана
+                    //return m_admin.Response(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.PBR, out error, out table);
+                    //return true; //Имитация получения данных плана
                 case StatesMachine.AdminValues:
                     //return m_admin.Response(out error, out table, true);
-                    return m_admin.Response(tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    //return m_admin.Response(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.ADMIN, out error, out table);
             }
 
             error = true;

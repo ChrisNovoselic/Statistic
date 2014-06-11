@@ -27,7 +27,7 @@ namespace StatisticCommon
         DataTable m_tableUsers
                     , m_tableRoles;
 
-        ConnectionSettings m_connSettConfigDB;
+        private DbConnection m_connConfigDB;
 
         CheckBox [] m_arCheckBoxMode;
 
@@ -40,7 +40,7 @@ namespace StatisticCommon
 
         Dictionary <int, int []> m_dicTabVisibleIdItems;
 
-        public FormMainAnalyzer(ConnectionSettings connSett, List <TEC> tec)
+        public FormMainAnalyzer(int idListener, List <TEC> tec)
         {
             InitializeComponent();
             /*
@@ -58,7 +58,6 @@ namespace StatisticCommon
 
             m_arCheckBoxMode = new CheckBox[] { checkBoxTEC, checkBoxGTP, checkBoxPC, checkBoxTG };
 
-            m_connSettConfigDB = connSett;
             m_listTEC = tec;
 
             m_dicTabVisibleIdItems = new Dictionary<int,int[]> ();
@@ -73,13 +72,13 @@ namespace StatisticCommon
 
             int err = -1;
 
-            DbConnection connDB = DbSources.Sources ().GetConnection (0, out err);
+            m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
             //DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
-            Users.GetRoles(connDB, string.Empty, string.Empty, out m_tableRoles, out err);
+            Users.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
             FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
 
-            Users.GetUsers(connDB, string.Empty, list_sorted, out m_tableUsers, out err);
+            Users.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
             FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
             //DbTSQLInterface.CloseConnection (connDB, out err);
@@ -512,7 +511,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                Users.GetUsers(m_connSettConfigDB, where, list_sorted, out m_tableUsers, out err);
+                Users.GetUsers(ref m_connConfigDB, where, list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
                 Thread_ProcCheckedStart();

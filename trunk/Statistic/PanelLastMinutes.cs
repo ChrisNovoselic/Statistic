@@ -885,9 +885,9 @@ namespace Statistic
                     case StatesMachine.LastMinutes_TM:
                         return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                     case StatesMachine.PBRValues:
-                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     case StatesMachine.AdminValues:
-                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
                 }
 
                 error = true;
@@ -1092,7 +1092,7 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.PBR], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
+                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
                 }
             }
 
@@ -1112,7 +1112,7 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIndxDbInterfaces[(int)CONN_SETT_TYPE.ADMIN], m_tec.m_arListenerIds[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
+                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
                 }
             }
 

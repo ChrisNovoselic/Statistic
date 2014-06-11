@@ -49,9 +49,12 @@ namespace StatisticCommon
         public volatile List<TECComponent> allTECComponents;
         public int indxTECComponents;
 
-        protected List<DbInterface> m_listDbInterfaces;
-        protected List<int> m_listListenerIdCurrent;
-        protected int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
+        //public int m_idListenerConfigDB;
+        //protected List<DbInterface> m_listDbInterfaces;
+        //protected List<int> m_listListenerIdCurrent;
+        //protected int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
+
+        protected int m_IdListenerCurrent;
 
         protected bool is_connection_error;
         protected bool is_data_error;
@@ -141,34 +144,42 @@ namespace StatisticCommon
             //    m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //    m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //}
-
-            m_listDbInterfaces = new List<DbInterface>();
-            m_listListenerIdCurrent = new List<int>();
         }
 
-        public void InitTEC(ConnectionSettings connSett, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
+        public void InitTEC(List <TEC> listTEC)
+        {
+            this.m_list_tec = listTEC;
+
+            initTEC ();
+        }
+
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
         {
             //Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
 
             m_ignore_connsett_data = ! bUseData;
 
-            if (object.ReferenceEquals(null, connSett) == false)
+            if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                    this.m_list_tec = new InitTEC(connSett, bIgnoreTECInUse, bUseData).tec;
+                    this.m_list_tec = new InitTEC(idListener, bIgnoreTECInUse, bUseData).tec;
                 else
                 {
-                    this.m_list_tec = new InitTEC(connSett, (short)mode, bIgnoreTECInUse, bUseData).tec;
+                    this.m_list_tec = new InitTEC(idListener, (short)mode, bIgnoreTECInUse, bUseData).tec;
                 }
             else
                 this.m_list_tec = new List <TEC> ();
 
+            initTEC ();
+        }
+
+        private void initTEC () {
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
 
             foreach (TEC t in this.m_list_tec)
             {
                 //Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
-                
+
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
                     {
@@ -353,9 +364,9 @@ namespace StatisticCommon
             m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
         }
 
-        protected abstract bool InitDbInterfaces ();
+        //protected abstract bool InitDbInterfaces ();
 
-        public abstract bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/);
+        public abstract bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/);
 
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
 
@@ -365,7 +376,7 @@ namespace StatisticCommon
 
         protected abstract void StateErrors(int /*StatesMachine*/ state, bool response);
 
-        public virtual void StartThreadSourceData()
+        public virtual void Start()
         {
             threadIsWorking = true;
             taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
@@ -380,7 +391,7 @@ namespace StatisticCommon
             taskThread.Start();
         }
 
-        public virtual void StopThreadSourceData()
+        public virtual void Stop()
         {
             bool joined;
             threadIsWorking = false;

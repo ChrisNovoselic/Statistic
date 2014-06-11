@@ -36,9 +36,9 @@ namespace trans_mc
             base.Resume ();
         }
 
-        public override bool Response(int indxDbInterface, int listenerId, out bool error, out DataTable table/*, bool isTec*/)
+        public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
         {
-            return m_listDbInterfaces[0].Response(0, out error, out table);
+            return DbSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
         }
 
         protected override void GetPPBRDatesRequest(DateTime date) {
@@ -61,8 +61,8 @@ namespace trans_mc
             query += date.ToOADate ().ToString ();
 
             Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
-            
-            ((DbMCInterface)m_listDbInterfaces[0]).Request(0, query); //
+
+            DbSources.Sources().Request(m_IdListenerCurrent, query); //
         }
 
         protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
@@ -125,24 +125,11 @@ namespace trans_mc
             return bRes;
         }
 
-        protected override bool InitDbInterfaces () {
+        protected bool InitDbInterfaces () {
             bool bRes = true;
             int i = -1;
 
-            m_listDbInterfaces.Clear();
-
-            m_listListenerIdCurrent.Clear();
-            m_indxDbInterfaceCurrent = -1;
-
-            m_listDbInterfaces.Add(new DbMCInterface("Интерфейс доступа к сервисам Modes-Centre"));
-
-            m_listDbInterfaces[0].Start();
-
-            m_listDbInterfaces[0].SetConnectionSettings("ne1843", true);
-
-            //Для всех один - идентификатор
-            m_indxDbInterfaceCurrent = 0;
-            m_listDbInterfaces[0].ListenerRegister();
+            m_IdListenerCurrent = DbSources.Sources().Register("ne1843", true);
 
             //for (i = 0; i < allTECComponents.Count; i ++)
             //{
@@ -160,24 +147,18 @@ namespace trans_mc
             return bRes;
         }
 
-        public override void StartThreadSourceData()
+        public override void Start()
         {
             InitDbInterfaces();
 
-            base.StartThreadSourceData();
+            base.Start();
         }
 
-        public override void StopThreadSourceData()
+        public override void Stop()
         {
-            base.StopThreadSourceData();
+            base.Stop();
 
-            if (m_listDbInterfaces.Count > 0)
-            {
-                m_listDbInterfaces[0].ListenerUnregister(0);
-                m_listDbInterfaces[0].Stop();
-            }
-            else
-                ;
+            DbSources.Sources().UnRegister(m_IdListenerCurrent);
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)
@@ -227,7 +208,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    bRes = Response(0, 0, out error, out table/*, false*/);
+                    bRes = Response(0, out error, out table/*, false*/);
                     break;
                 default:
                     break;
@@ -352,7 +333,7 @@ namespace trans_mc
                     ;
             }
 
-            ((DbMCInterface)m_listDbInterfaces[0]).Request(0, query); //List IGO FROM Modfes-Centre
+            DbSources.Sources ().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
 
             bRes = true;
             return bRes;

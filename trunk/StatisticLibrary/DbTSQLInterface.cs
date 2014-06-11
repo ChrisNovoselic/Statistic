@@ -119,7 +119,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                if (((ConnectionSettings)m_connectionSettings).ignore)
+                if (((ConnectionSettings)m_connectionSettings).ignore == true)
                     return false;
                 else
                     ;
@@ -361,7 +361,7 @@ namespace StatisticCommon
             return connRes;
         }
 
-        public static void closeConnection(DbConnection conn, out int er)
+        public static void closeConnection(ref DbConnection conn, out int er)
         {
             er = 0;
 
@@ -460,7 +460,7 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Select(DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
+        public static DataTable Select(ref DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
         {
             er = 0;
 
@@ -524,7 +524,7 @@ namespace StatisticCommon
             return dataTableRes;
         }
 
-        public static DataTable Select(ConnectionSettings connSett, string query, out int er)
+        /*public static DataTable Select(ConnectionSettings connSett, string query, out int er)
         {
             er = 0;
 
@@ -542,7 +542,7 @@ namespace StatisticCommon
                 dataTableRes = new DataTable();
 
             return dataTableRes;
-        }
+        }*/
 
         private static void ParametrsAdd(DbCommand cmd, DbType[] types, object[] parametrs)
         {
@@ -583,7 +583,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public static void ExecNonQuery(DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
+        public static void ExecNonQuery(ref DbConnection conn, string query, DbType[] types, object[] parametrs, out int er)
         {
             er = 0;
 
@@ -632,7 +632,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public static void ExecNonQuery(ConnectionSettings connSett, string query, out int er)
+        /*public static void ExecNonQuery(ConnectionSettings connSett, string query, out int er)
         {
             er = 0;
 
@@ -648,7 +648,7 @@ namespace StatisticCommon
             }
             else
                 ;
-        }
+        }*/
 
         public static void ExecNonQuery(string path, string query, out int er)
         {
@@ -697,33 +697,33 @@ namespace StatisticCommon
                 ;
         }
 
-        public static Int32 getIdNext(ConnectionSettings connSett, string nameTable)
+        public static Int32 getIdNext(ref DbConnection conn, string nameTable)
         {
             Int32 idRes = -1,
                 err = 0;
 
-            idRes = Convert.ToInt32(Select(connSett, "SELECT MAX(ID) FROM " + nameTable, out err).Rows[0][0]);
+            idRes = Convert.ToInt32(Select(ref conn, "SELECT MAX(ID) FROM " + nameTable, null, null, out err).Rows[0][0]);
 
             return ++idRes;
         }
 
         //Изменение (вставка), удаление
-        public static void RecUpdateInsertDelete(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        public static void RecUpdateInsertDelete(ref DbConnection conn, string nameTable, DataTable origin, DataTable data, out int err)
         {
             if (!(data.Rows.Count < origin.Rows.Count))
             {
                 //UPDATE, INSERT
-                RecUpdateInsert(connSett, nameTable, origin, data, out err);
+                RecUpdateInsert(ref conn, nameTable, origin, data, out err);
             }
             else
             {
                 //DELETE
-                RecDelete(connSett, nameTable, origin, data, out err);
+                RecDelete(ref conn, nameTable, origin, data, out err);
             }
         }
 
         //Изменение (вставка) в оригинальную таблицу записей измененных (добавленных) в измененную таблицу (обязательно наличие поля: ID)
-        public static void RecUpdateInsert(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        public static void RecUpdateInsert(ref DbConnection conn, string nameTable, DataTable origin, DataTable data, out int err)
         {
             err = 0;
 
@@ -751,7 +751,7 @@ namespace StatisticCommon
                     valuesForInsert = valuesForInsert.Substring(0, valuesForInsert.Length - 1);
                     strQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += ") VALUES (";
                     strQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += valuesForInsert + ")";
-                    DbTSQLInterface.ExecNonQuery(connSett, strQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT], out err);
+                    DbTSQLInterface.ExecNonQuery(ref conn, strQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT], null, null, out err);
                 }
                 else
                 {
@@ -776,7 +776,7 @@ namespace StatisticCommon
                             strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] = strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Substring(0, strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Length - 1);
                             strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] = "UPDATE " + nameTable + " SET " + strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + " WHERE ID=" + data.Rows[j]["ID"];
 
-                            DbTSQLInterface.ExecNonQuery(connSett, strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], out err);
+                            DbTSQLInterface.ExecNonQuery(ref conn, strQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], null, null, out err);
                         }
                         else
                             ;
@@ -788,7 +788,7 @@ namespace StatisticCommon
         }
 
         //Удаление из оригинальной таблицы записей не существующих в измененной таблице (обязательно наличие поля: ID)
-        public static void RecDelete(ConnectionSettings connSett, string nameTable, DataTable origin, DataTable data, out int err)
+        public static void RecDelete(ref DbConnection conn, string nameTable, DataTable origin, DataTable data, out int err)
         {
             err = 0;
 
@@ -804,7 +804,7 @@ namespace StatisticCommon
                     //DELETE
                     strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = string.Empty;
                     strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = "DELETE FROM " + nameTable + " WHERE ID=" + origin.Rows[j]["ID"];
-                    DbTSQLInterface.ExecNonQuery(connSett, strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], out err);
+                    DbTSQLInterface.ExecNonQuery(ref conn, strQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], null, null, out err);
                 }
                 else
                 {  //Ничего удалять не надо
@@ -818,7 +818,7 @@ namespace StatisticCommon
             }
         }
 
-        public static bool IsConnected(DbConnection obj)
+        public static bool IsConnected(ref DbConnection obj)
         {
             return (!(obj == null)) && (!(obj.State == ConnectionState.Closed)) && (!(obj.State == ConnectionState.Broken));
         }

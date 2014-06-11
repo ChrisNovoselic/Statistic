@@ -17,9 +17,9 @@ namespace Statistic
             InitializeComponent();
         }
 
-        public override void SetIdPass(int id, Passwords.ID_ROLES id_role)
+        public void SetIdPass(int idListener, int id_ext, Passwords.ID_ROLES id_role)
         {
-            base.SetIdPass(id, id_role);
+            base.SetIdPass(id_ext, id_role);
 
             this.Text = Passwords.getOwnerPass ((int)m_idRolePassword);
             this.Text = this.Text.Substring (0, this.Text.Length - 1);
@@ -30,7 +30,7 @@ namespace Statistic
             if (tbxNewPassword.Text == tbxNewPasswordAgain.Text)
             {
                 delegateStartWait ();
-                m_pass.SetPassword(tbxNewPassword.Text, (uint)m_idPassword, (uint)m_idRolePassword);
+                m_pass.SetPassword(tbxNewPassword.Text, (uint)m_idExtPassword, (uint)m_idRolePassword);
                 delegateStopWait();
                 
                 closing = true;

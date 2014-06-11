@@ -18,9 +18,11 @@ namespace StatisticAnalyzer
             ProgramBase.Start();
 
             FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini");
-            FormConnectionSettings formConnSett = new FormConnectionSettings(fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
+            FormConnectionSettings formConnSett = new FormConnectionSettings(-1, fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
 
-            Application.Run(new StatisticCommon.FormMainAnalyzer(formConnSett.getConnSett(), new InitTEC(formConnSett.getConnSett(), true, false).tec));
+            int idListener = DbSources.Sources ().Register (formConnSett.getConnSett(), false);
+            Application.Run(new StatisticCommon.FormMainAnalyzer(idListener, new InitTEC(idListener, true, false).tec));
+            DbSources.Sources().UnRegister(idListener);
 
             ProgramBase.Exit ();
         }
