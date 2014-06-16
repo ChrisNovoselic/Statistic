@@ -12,7 +12,7 @@ namespace StatisticCommon
     public class TEC
     {
         public enum INDEX_TYPE_SOURCE_TM { COMMON, INDIVIDUAL }; //Индивидуальные настройки для каждой ТЭЦ
-        public static INDEX_TYPE_SOURCE_TM m_typeSourceTM = INDEX_TYPE_SOURCE_TM.INDIVIDUAL;
+        public static INDEX_TYPE_SOURCE_TM m_typeSourceTM = INDEX_TYPE_SOURCE_TM.COMMON;
         
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
                                         PBR_DATETIME, PBR, PBR_NUMBER, 
@@ -376,7 +376,7 @@ namespace StatisticCommon
             switch (m_typeSourceTM) {
                 case INDEX_TYPE_SOURCE_TM.COMMON:
                     //Общий источник для всех ТЭЦ
-                    query = @"SELECT [TEMPLATE_NAME_SGN_DATA_TM] as NAME, [ID_IN_REALS_RV] as ID  FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
+                    query = @"SELECT [name] as NAME, [TEMPLATE_NAME_SGN_DATA_TM] as TEMPLATE_NAME, [ID_IN_REALS_RV] as ID FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
                     foreach (TECComponent tc in list_TECComponents)
                     {
                         if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf(tc.m_id) < 0))
@@ -768,7 +768,7 @@ namespace StatisticCommon
             switch (m_typeSourceTM) {
                 case INDEX_TYPE_SOURCE_TM.COMMON:
                     //Общий источник для всех ТЭЦ
-                    query = @"[ID_IN_REALS_RV] as id, [last_changed_at], [Current_Value_SOTIASSO] as value" +
+                    query = @"SELECT [ID_IN_REALS_RV] as id, [last_changed_at], [Current_Value_SOTIASSO] as value " +
                             @"FROM [techsite-2.X.X].[dbo].[v_ALL_VALUE_SOTIASSO] " +
                             @"WHERE [ID_TEC]=" + m_id + @" " +
                             @"AND [ID_IN_REALS_RV] IN (" + sensors + @")";
@@ -807,8 +807,8 @@ namespace StatisticCommon
                 case INDEX_TYPE_SOURCE_TM.COMMON:
                     //Общий источник для всех ТЭЦ
                     query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_real_his_0] (" + m_id + @")" +
-                            @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                            @"[ID] IN (" + sensors + @") " +
+                            @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                            @"AND [ID] IN (" + sensors + @") " +
                             @"ORDER BY [ID],[last_changed_at]";
                     break;
                 case INDEX_TYPE_SOURCE_TM.INDIVIDUAL:

@@ -2968,7 +2968,7 @@ namespace Statistic
             {
                 //Шаблон для '[0](["NAME"])'
                 //Формирование правильное имя турбиногенератора
-                s = TEC.getNameTG(tec.m_strTemplateNameSgnDataTM, table.Rows[i][0].ToString().ToUpper());
+                s = TEC.getNameTG(tec.m_strTemplateNameSgnDataTM, table.Rows[i]["NAME"].ToString().ToUpper());
 
                 if (num_TECComponent < 0)
                 {//ТЭЦ в полном составе
@@ -2980,7 +2980,7 @@ namespace Statistic
                         {
                             if (tec.list_TECComponents[j].TG[k].name_shr.Equals(s) == true)
                             {
-                                tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
+                                tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i]["ID"].ToString());
                                 //Прерывание внешнего цикла
                                 j = tec.list_TECComponents.Count;
                                 break;
@@ -2997,7 +2997,7 @@ namespace Statistic
                     {
                         if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr.Equals(s) == true)
                         {
-                            tec.list_TECComponents[num_TECComponent].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
+                            tec.list_TECComponents[num_TECComponent].TG[k].id_tm = int.Parse(table.Rows[i]["ID"].ToString());
                             break;
                         }
                         else
@@ -3488,7 +3488,7 @@ namespace Statistic
                             else
                                 ;
 
-                            hour = dtVal.Hour + offsetUTC;
+                            hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
                             if (!(hour < 24)) hour -= 24; else ;
 
                             tg.power_LastMinutesTM[hour] = value;
@@ -3525,7 +3525,7 @@ namespace Statistic
                         else
                             ;
 
-                        hour = dtVal.Hour + offsetUTC;
+                        hour = dtVal.Hour + offsetUTC + 1;
                         if (!(hour < 24)) hour -= 24; else ;
 
                         tg.power_LastMinutesTM[hour] = value;

@@ -661,7 +661,7 @@ namespace Statistic
                 {
                     //Шаблон для '[0](["NAME"])'
                     //Формирование правильное имя турбиногенератора
-                    s = TEC.getNameTG(m_tec.m_strTemplateNameSgnDataTM, table.Rows[i][0].ToString().ToUpper());
+                    s = TEC.getNameTG(m_tec.m_strTemplateNameSgnDataTM, table.Rows[i]["NAME"].ToString().ToUpper());
 
                     //if (num_TECComponent < 0)
                     {//ТЭЦ в полном составе
@@ -673,7 +673,7 @@ namespace Statistic
                             {
                                 if (m_tec.list_TECComponents[j].TG[k].name_shr.Equals(s) == true)
                                 {
-                                    m_tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
+                                    m_tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i]["ID"].ToString());
 
                                     m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]); ;
 
@@ -709,11 +709,34 @@ namespace Statistic
                     if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
-                            sensorsString_TM += @" OR ";
+                            switch (TEC.m_typeSourceTM) {
+                                case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                                    //Общий источник для всех ТЭЦ
+                                    sensorsString_TM += @", "; //@" OR ";
+                                    break;
+                                case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                                    //Источник для каждой ТЭЦ свой
+                                    sensorsString_TM += @" OR ";
+                                    break;
+                                default:
+                                    break;
+                            }
                         else
                             ;
 
-                        sensorsString_TM += "[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
+                        switch (TEC.m_typeSourceTM)
+                        {
+                            case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                                //Общий источник для всех ТЭЦ
+                                sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
+                                break;
+                            case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                                //Источник для каждой ТЭЦ свой
+                                sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     else
                     {
