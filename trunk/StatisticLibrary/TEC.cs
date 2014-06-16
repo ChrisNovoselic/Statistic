@@ -11,6 +11,9 @@ namespace StatisticCommon
 {
     public class TEC
     {
+        public enum INDEX_TYPE_SOURCE_TM { COMMON, INDIVIDUAL }; //Индивидуальные настройки для каждой ТЭЦ
+        public static INDEX_TYPE_SOURCE_TM m_typeSourceTM = INDEX_TYPE_SOURCE_TM.INDIVIDUAL;
+        
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
                                         PBR_DATETIME, PBR, PBR_NUMBER, 
                                         COUNT_INDEX_NAME_FIELD};
@@ -370,22 +373,25 @@ namespace StatisticCommon
             string query = string.Empty;
             List <int> ids = new List<int> ();
 
-
-            //Для каждой ТЭЦ
-            //query = @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
-
-            //Общий для всех ТЭЦ
-            query = @"SELECT [TEMPLATE_NAME_SGN_DATA_TM] as NAME, [ID_IN_REALS_RV] as ID  FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
-
-            foreach (TECComponent tc in list_TECComponents) {
-                if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf (tc.m_id) < 0))
-                    query += tc.m_id + @", ";
-                else
-                    ;
+            switch (m_typeSourceTM) {
+                case INDEX_TYPE_SOURCE_TM.COMMON:
+                    //Общий источник для всех ТЭЦ
+                    query = @"SELECT [TEMPLATE_NAME_SGN_DATA_TM] as NAME, [ID_IN_REALS_RV] as ID  FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
+                    foreach (TECComponent tc in list_TECComponents)
+                    {
+                        if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf(tc.m_id) < 0))
+                            query += tc.m_id + @", ";
+                        else
+                            ;
+                    }
+                    query = query.Substring(0, query.Length - 2);
+                    query += @")";
+                    break;
+                case INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                    //Источник для каждой ТЭЦ свой
+                    query = @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
+                    break;
             }
-            query = query.Substring (0, query.Length - 2);
-
-            query += @")";
             
             return query;
         }
@@ -758,24 +764,31 @@ namespace StatisticCommon
         public string currentTMRequest(string sensors)
         {
             string query = string.Empty;
-            //Источник для каждой ТЭЦ свой
-            //query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
-            //                @"FROM [dbo].[NAME_TABLE] " +
-            //                @"INNER JOIN " +
-            //                    @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-            //                    @"FROM [dbo].[NAME_TABLE] " +
-            //                    @"GROUP BY [id]) AS t2 " +
-            //                @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
-            //                sensors +
-            //                @"))";
-            //
-            //query = query.Replace(@"NAME_TABLE", @"states_real_his");
 
-            //Общий источник
-            query = @"[ID_IN_REALS_RV] as id, [last_changed_at], [Current_Value_SOTIASSO] as value" +
-                    @"FROM [techsite-2.X.X].[dbo].[v_ALL_VALUE_SOTIASSO] " +
-                    @"WHERE [ID_TEC]=" + m_id + @" " +
-                    @"AND [ID_IN_REALS_RV] IN (" + sensors + @")";
+            switch (m_typeSourceTM) {
+                case INDEX_TYPE_SOURCE_TM.COMMON:
+                    //Общий источник для всех ТЭЦ
+                    query = @"[ID_IN_REALS_RV] as id, [last_changed_at], [Current_Value_SOTIASSO] as value" +
+                            @"FROM [techsite-2.X.X].[dbo].[v_ALL_VALUE_SOTIASSO] " +
+                            @"WHERE [ID_TEC]=" + m_id + @" " +
+                            @"AND [ID_IN_REALS_RV] IN (" + sensors + @")";
+                    break;
+                case INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                    //Источник для каждой ТЭЦ свой
+                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
+                                    @"FROM [dbo].[NAME_TABLE] " +
+                                    @"INNER JOIN " +
+                                        @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
+                                        @"FROM [dbo].[NAME_TABLE] " +
+                                        @"GROUP BY [id]) AS t2 " +
+                                    @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
+                                    sensors +
+                                    @"))";
+                    query = query.Replace(@"NAME_TABLE", @"states_real_his");
+                    break;
+                default:
+                    break;
+            }
 
             return query;
         }
@@ -788,26 +801,34 @@ namespace StatisticCommon
             dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
 
             string query = string.Empty;
-            ////query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
-            ////        @"FROM [dbo].[NAME_TABLE] " +
-            ////        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
-            ////        @"AND (" + sensors + @") " +
-            ////        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
-            //
-            //query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
-            //        @"FROM [dbo].[NAME_TABLE] " +
-            //        @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-            //        @"AND (" + sensors + @")";
-            //
-            ////Для 1-го запроса
-            ////query = query.Replace("NAME_TABLE", "states_real_his");
-            ////Для 2-го запроса
-            //query = query.Replace("NAME_TABLE", "states_real_his_0");
 
-            query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_real_his_0] (" + m_id + @")" +
-                    @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                    @"[ID] IN (" + sensors + @") " +
-                    @"ORDER BY [ID],[last_changed_at]";
+            switch (m_typeSourceTM)
+            {
+                case INDEX_TYPE_SOURCE_TM.COMMON:
+                    //Общий источник для всех ТЭЦ
+                    query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_real_his_0] (" + m_id + @")" +
+                            @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                            @"[ID] IN (" + sensors + @") " +
+                            @"ORDER BY [ID],[last_changed_at]";
+                    break;
+                case INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                    //Источник для каждой ТЭЦ свой - вариант №1
+                    //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
+                    //        @"FROM [dbo].[NAME_TABLE] " +
+                    //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
+                    //        @"AND (" + sensors + @") " +
+                    //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
+                    //query = query.Replace("NAME_TABLE", "states_real_his");
+                    //Источник для каждой ТЭЦ свой - вариант №2
+                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
+                            @"FROM [dbo].[NAME_TABLE] " +
+                            @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                            @"AND (" + sensors + @")";
+                    query = query.Replace("NAME_TABLE", "states_real_his_0");
+                    break;
+                default:
+                    break;
+            }            
 
             return query;
         }

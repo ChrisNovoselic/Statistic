@@ -3013,11 +3013,34 @@ namespace Statistic
                 if (!(sensorId2TG[i] == null))
                 {
                     if (sensorsString_TM.Equals(string.Empty) == false)
-                        sensorsString_TM += @", "; //@" OR ";
+                        switch (TEC.m_typeSourceTM) {
+                            case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                                //Общий источник для всех ТЭЦ
+                                sensorsString_TM += @", "; //@" OR ";
+                                break;
+                            case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                                //Источник для каждой ТЭЦ свой
+                                sensorsString_TM += @" OR ";
+                                break;
+                            default:
+                                break;
+                        }
                     else
                         ;
 
-                    sensorsString_TM += sensorId2TG[i].id_tm.ToString(); //@"[dbo].[NAME_TABLE].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                    switch (TEC.m_typeSourceTM)
+                    {
+                        case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                            //Общий источник для всех ТЭЦ
+                            sensorsString_TM += sensorId2TG[i].id_tm.ToString();
+                            break;
+                        case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                            //Источник для каждой ТЭЦ свой
+                            sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + sensorId2TG[i].id_tm.ToString();
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 else
                 {
