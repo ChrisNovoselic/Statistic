@@ -28,7 +28,8 @@ namespace StatisticCommon
             dgvCellStyleGTP = new DataGridViewCellStyle();
             dgvCellStyleGTP.BackColor = Color.Yellow;
 
-            Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
+            //this.Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
+            this.Dock = DockStyle.Fill;
 
             //this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminNSS_CellValueChanged);
 

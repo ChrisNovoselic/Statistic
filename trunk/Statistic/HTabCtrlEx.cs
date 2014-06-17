@@ -66,7 +66,7 @@ namespace Statistic
 
                     using (img)
                     {
-                        e.Graphics.DrawImage(img, tabTextArea.X + tabTextArea.Width - 16, 5, 13, 13);
+                        e.Graphics.DrawImage(img, tabTextArea.X + tabTextArea.Width - 16, 3, 13, 13);
                     }
                 //}
                 //else
@@ -98,7 +98,6 @@ namespace Statistic
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-
             if (DesignMode == false)
             {
                 Image img;
@@ -107,7 +106,7 @@ namespace Statistic
                 for (int nIndex = 0; nIndex < this.TabCount; nIndex++)
                 {
                     RectangleF tabTextArea = (RectangleF)this.GetTabRect(nIndex);
-                    tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
+                    tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 3, tabTextArea.Height - 3, tabTextArea.Height - 5);
 
                     Point pt = new Point(e.X, e.Y);
                     if (tabTextArea.Contains(pt))
@@ -126,7 +125,7 @@ namespace Statistic
 
                     using (img)
                     {
-                        g.DrawImage(img, tabTextArea.X + tabTextArea.Width - 12, 5, 13, 13);
+                        g.DrawImage(img, tabTextArea.X + tabTextArea.Width - 9, 3, 13, 13);
                     }
                 }
                 g.Dispose();
@@ -140,7 +139,7 @@ namespace Statistic
             if ((DesignMode == false)/* && (SelectedIndex > 0)*/) //Здесь запрет закрыть вкладку с индексом "0"
             {
                 RectangleF tabTextArea = (RectangleF)this.GetTabRect(SelectedIndex);
-                tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 4, tabTextArea.Height - 3, tabTextArea.Height - 5);
+                tabTextArea = new RectangleF(tabTextArea.X + tabTextArea.Width - 22, 3, tabTextArea.Height - 3, tabTextArea.Height - 5);
                 Point pt = new Point(e.X, e.Y);
                 if (tabTextArea.Contains(pt) == true)
                 {
@@ -176,7 +175,7 @@ namespace Statistic
             this.TabPages.Add(text, text);
         }
 
-        public static string GetNameTab (string text) { return new string(' ', 1) + text + new string(' ', 3); }
+        public static string GetNameTab (string text) { return new string(' ', 1) + text + new string(' ', 5); }
     }
 
     public class CloseTabEventArgs : EventArgs

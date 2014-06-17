@@ -18,6 +18,9 @@ namespace StatisticCommon
 
         public void ImpPPBRCSVValues(int indx, DateTime date, string dir)
         {
+            //Разрешить запись ПБР-значений
+            m_bSavePPBRValues = true;
+            
             lock (m_lockObj)
             {
                 indxTECComponents = indx;
@@ -58,7 +61,8 @@ namespace StatisticCommon
             int err = 0,
                 num_pbr = 23;
 
-            if ((m_curDate.Date == DateTime.Now.Date) && (!(allTECComponents[indxTECComponents].name_future == string.Empty)))
+            //if ((m_curDate.Date == DateTime.Now.Date) && (!(allTECComponents[indxTECComponents].name_future == string.Empty)))
+            if (m_curDate.Date == DateTime.Now.Date)
             {
                 string strCSVExt = @".csv"
                     , strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr)

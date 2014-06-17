@@ -31,11 +31,6 @@ namespace trans_mc
             base.Initialize();
         }
 
-        public override void Resume()
-        {
-            base.Resume ();
-        }
-
         public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
         {
             return DbSources.Sources ().Response(m_IdListenerCurrent, out error, out table);

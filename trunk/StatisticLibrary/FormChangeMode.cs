@@ -311,16 +311,13 @@ namespace StatisticCommon
             int indx = -1;
 
             if ((clbMode.CheckedIndices.Count > 0) && (!(indxCheckedIndicies < 0)) && (indxCheckedIndicies < clbMode.CheckedIndices.Count)) {
-                clbMode.SetItemChecked(clbMode.CheckedIndices[indxCheckedIndicies], bChecked);
-
-                btnOk_Click(null, EventArgs.Empty);
+                indx = clbMode.CheckedIndices[indxCheckedIndicies];
             }
             else {
-                
+                indx = clbMode.CheckedIndices[clbMode.CheckedIndices.Count - 1];    
             }
 
-            clbMode.SetItemChecked(clbMode.CheckedIndices[clbMode.CheckedIndices.Count - 1], bChecked);
-
+            clbMode.SetItemChecked(indx, bChecked);
             btnOk_Click(null, EventArgs.Empty);
         }
 

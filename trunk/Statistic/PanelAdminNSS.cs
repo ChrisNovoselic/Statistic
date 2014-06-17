@@ -25,8 +25,8 @@ namespace Statistic
             this.btnImportExcel = new System.Windows.Forms.Button();
             this.btnExportExcel = new System.Windows.Forms.Button();
 
-            this.Controls.Add(this.btnImportExcel);
-            this.Controls.Add(this.btnExportExcel);
+            this.m_panelManagement.Controls.Add(this.btnImportExcel);
+            this.m_panelManagement.Controls.Add(this.btnExportExcel);
             // 
             // btnImportExcel
             // 
@@ -52,11 +52,11 @@ namespace Statistic
             this.dgwAdminTable = new DataGridViewAdminNSS();
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
-            this.Controls.Add(this.dgwAdminTable);
+            this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
             // 
             // dgwAdminTable
             //
-            this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
+            this.dgwAdminTable.Location = new System.Drawing.Point(9, 9);
             this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
             this.dgwAdminTable.TabIndex = 1;
             //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
@@ -65,7 +65,9 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS (AdminTS a) : base (a) {
+        public PanelAdminNSS(int idListener)
+            : base(idListener, FormChangeMode.MANAGER.NSS)
+        {
         }
 
         private int GetIndexGTPOwner(int indx_tg)
@@ -204,6 +206,13 @@ namespace Statistic
 
             //Вариант №2
             //comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
+        }
+
+        public override void Stop()
+        {
+            ClearTables ();
+
+            base.Stop ();
         }
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)

@@ -27,8 +27,8 @@ namespace Statistic
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
-            this.Controls.Add(this.dgwAdminTable);
-            this.Controls.Add(this.btnImportCSV);
+            this.m_panelManagement.Controls.Add(this.btnImportCSV);
+            this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);            
 
             // 
             // btnImportCSV
@@ -43,7 +43,7 @@ namespace Statistic
             // 
             // dgwAdminTable
             //
-            this.dgwAdminTable.Location = new System.Drawing.Point(176, 9);
+            this.dgwAdminTable.Location = new System.Drawing.Point(9, 9);
             this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
             this.dgwAdminTable.TabIndex = 1;
             //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
@@ -52,7 +52,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminKomDisp(AdminTS a) : base(a)
+        public PanelAdminKomDisp(int idListener)
+            : base(idListener, FormChangeMode.MANAGER.DISP)
         {
         }
 

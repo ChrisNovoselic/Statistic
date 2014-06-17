@@ -83,7 +83,7 @@ namespace StatisticCommon
         protected Semaphore semaState;
         protected WaitHandle [] m_waitHandleState;
         //protected AutoResetEvent evStateEnd;
-        public volatile bool threadIsWorking;
+        public volatile int threadIsWorking;
         protected volatile bool newState;
         protected volatile List<int /*StatesMachine*/> states;
 
@@ -121,6 +121,7 @@ namespace StatisticCommon
 
         protected virtual void Initialize () {
             started = false;
+            threadIsWorking = -1;
 
             is_data_error = is_connection_error = false;
 
@@ -201,23 +202,18 @@ namespace StatisticCommon
 
         public abstract bool WasChanged();
 
-        public virtual void Resume()
+        public virtual void Activate(bool active)
         {
-            if (started == false)
+            if (active == true) threadIsWorking++; else ;
+            
+            if (started == active)
             {
-                started = true;
+                return ;
             }
             else
             {
+                started = active;
             }
-        }
-
-        public void Suspend()
-        {
-            if (started == true)
-                started = false;
-            else
-                ;
         }
 
         public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -378,7 +374,7 @@ namespace StatisticCommon
 
         public virtual void Start()
         {
-            threadIsWorking = true;
+            threadIsWorking = 0;
             taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
             taskThread.Name = "Èםעונפויס ך ÐÄÃ";
             taskThread.IsBackground = true;
@@ -394,7 +390,7 @@ namespace StatisticCommon
         public virtual void Stop()
         {
             bool joined;
-            threadIsWorking = false;
+            threadIsWorking = -1;
             lock (m_lockObj)
             {
                 newState = true;
@@ -424,7 +420,7 @@ namespace StatisticCommon
             int index;
             int /*StatesMachine*/ currentState;
 
-            while (threadIsWorking)
+            while (! (threadIsWorking < 0))
             {
                 semaState.WaitOne();
 

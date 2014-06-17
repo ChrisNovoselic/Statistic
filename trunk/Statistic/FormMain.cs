@@ -28,7 +28,7 @@ namespace Statistic
         private PanelAdmin [] m_arPanelAdmin;
         PanelCurPower m_panelCurPower;
         PanelLastMinutes m_panelLastMinutes;
-        public AdminTS [] m_arAdmin;
+        //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
         private List<PanelTecView> tecViews;
@@ -123,64 +123,27 @@ namespace Statistic
                 }
                 else;
 
-                m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+                //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                 m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    switch (i) {
-                        case (int)FormChangeMode.MANAGER.DISP:
-                            m_arAdmin[i] = new AdminTS();
-                            break;
-                        case (int)FormChangeMode.MANAGER.NSS:
-                            m_arAdmin[i] = new AdminTS_NSS();
-                            bUseData = false;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    //Logging.Logg().LogDebugToFile("FormMain::Initialize () - Создание объекта m_arAdmin[i]; i = " + i);
-
-                    //m_admin.SetDelegateTECComponent(FillComboBoxTECComponent);
-                    if (i > 0)
-                        m_arAdmin[i].InitTEC(m_arAdmin[i - 1].m_list_tec);
-                    else
-                        try { m_arAdmin[i].InitTEC(idListenerConfigDB, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData); }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_arAdmin[i].InitTEC (); i = " + i);
-                        bRes = false;
-                        break;
-                    }
-                    if (!(m_arAdmin[i].m_list_tec.Count > 0)) {
-                        bRes = false;
-                        break;
-                    }
-                    else
-                        ;
-
                     switch (i)
                     {
                         case (int)FormChangeMode.MANAGER.DISP:
-                            m_arPanelAdmin[i] = new PanelAdminKomDisp(m_arAdmin[i]);
+                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB);
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
-                            m_arPanelAdmin[i] = new PanelAdminNSS(m_arAdmin[i]);
+                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB);
                             break;
                         default:
                             break;
                     }
 
-                    m_arAdmin[i].SetDelegateData(m_arPanelAdmin[i].setDataGridViewAdmin);
-                    m_arAdmin[i].SetDelegateDatetime(m_arPanelAdmin[i].CalendarSetDate);
-
-                    m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                    m_arAdmin[i].m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                    m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
                 }
 
-                formChangeMode = new FormChangeMode(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_ContextMenuStripListTecViews);
+                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_ContextMenuStripListTecViews);
 
                 //formChangeMode = new FormChangeMode();
                 m_passwords = new Passwords ();
@@ -196,27 +159,6 @@ namespace Statistic
             }
             else
             {
-                if (! (m_arAdmin == null))
-                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
-                        if (!(m_arAdmin[i] == null))
-                        {
-                            switch (i)
-                            {
-                                case (int)FormChangeMode.MANAGER.DISP:
-                                    break;
-                                case (int)FormChangeMode.MANAGER.NSS:
-                                    bUseData = false;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            m_arAdmin[i].InitTEC(-1, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData);
-                        }
-                        else
-                            ;
-                else
-                    ;
-
                 if (!(formChangeMode == null))
                     formChangeMode = new FormChangeMode(new List <TEC> (), m_ContextMenuStripListTecViews);
                 else
@@ -245,7 +187,7 @@ namespace Statistic
 
             //ToolStripItem []items = m_ContextMenuStripListTecViews.Items.Find (e.TabHeaderText, true);
             //formChangeMode.SetItemChecked(m_ContextMenuStripListTecViews.Items.IndexOf(items [0]), false);
-            
+
             if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelTecView) {
                 formChangeMode.SetItemChecked(e.TabHeaderText, false);
             }
@@ -256,9 +198,11 @@ namespace Statistic
                 }
                 else
                     if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelCurPower) {
+                        значенияТекущаяМощностьГТПгToolStripMenuItem.Checked = false;
                     }
                     else
                         if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelLastMinutes) {
+                            мониторингПоследняяМинутаЧасToolStripMenuItem.Checked = false;
                         }
                         else
                             ;
@@ -276,9 +220,9 @@ namespace Statistic
             if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
             //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
             {
-                if (!(m_arAdmin == null))
+                if (!(m_arPanelAdmin == null))
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
-                        if (!(m_arAdmin [i] == null))
+                        if (!(m_arPanelAdmin[i] == null))
                             if (m_arPanelAdmin[i].MayToClose() == false)
                                 if (!(e == null)) {
                                     e.Cancel = true;
@@ -299,24 +243,6 @@ namespace Statistic
             timer.Stop();
 
             StopTabPages ();
-
-            if (!(m_arAdmin == null))
-                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    if (!(m_arAdmin [i] == null))
-                        if ((e.Cancel == false) && ((!(m_arAdmin [i] == null)) && (!(m_arAdmin [i].m_list_tec == null))))
-                        {                
-                            foreach (TEC t in m_arAdmin[i].m_list_tec)
-                                t.StopDbInterfacesForce();
-
-                            m_arAdmin [i].Stop();
-                        }
-                        else
-                            ;
-                    else
-                        ;
-                }
-            else
-                ;
 
             m_TCPServer.Stop ();
         }
@@ -447,9 +373,9 @@ namespace Statistic
 
                 if (timer.Enabled) timer.Stop(); else ;
                 int i = -1;
-                if (!(m_arAdmin == null))
+                if (!(m_arPanelAdmin == null))
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                        if (!(m_arAdmin [i] == null)) m_arAdmin [i].Stop(); else ;
+                        if (!(m_arPanelAdmin[i] == null)) m_arPanelAdmin[i].Stop(); else ;
                     }
                 else
                     ;
@@ -619,7 +545,7 @@ namespace Statistic
                     comp_indx;
                 foreach (TEC t in formChangeMode.m_list_tec)
                 {
-                    tecView = new PanelTecView(t, tec_indx, -1, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], m_statusStripMain, formGraphicsSettings, formParameters);
+                    tecView = new PanelTecView(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);
                     if (t.list_TECComponents.Count > 0)
@@ -627,7 +553,7 @@ namespace Statistic
                         comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            tecView = new PanelTecView(t, tec_indx, comp_indx, m_arAdmin[(int)FormChangeMode.MANAGER.DISP], m_statusStripMain, formGraphicsSettings, formParameters);
+                            tecView = new PanelTecView(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             comp_indx++;
@@ -741,18 +667,24 @@ namespace Statistic
                 if (bAdminPanelUse == true)
                 {
                     StartWait();
+
+                    m_arPanelAdmin[(int)modePanelAdmin].Start();
                     AddTabPageAdmin();
+
                     StopWait();
 
-                    m_arPanelAdmin[(int)modePanelAdmin].Activate(true);
+                    for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
+                        if (! (i == (int)modePanelAdmin)) m_arPanelAdmin[i].Stop(); else ;
                 }
                 else
                     formChangeMode.admin_was_checked = false;
 
                 DbSources.Sources ().UnRegister (idListener);
             }
-            else
-                ;
+            else {
+                for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
+                    m_arPanelAdmin[i].Stop();
+            }
 
             prevStateIsAdmin = formChangeMode.getModeTECComponent ();
 
@@ -841,19 +773,19 @@ namespace Statistic
                     for (int i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
                         if (m_arPanelAdmin [i].isActive == true)
                         {
-                            if (m_arAdmin [i].actioned_state == true)
+                            if (m_arPanelAdmin[i].actioned_state == true)
                             {
-                                m_lblDateError.Text = m_arAdmin [i].last_time_action.ToString();
-                                m_lblDescError.Text = m_arAdmin [i].last_action;
+                                m_lblDateError.Text = m_arPanelAdmin[i].last_time_action.ToString();
+                                m_lblDescError.Text = m_arPanelAdmin[i].last_action;
                             }
                             else
                                 ;
 
-                            if (m_arAdmin [i].errored_state == true)
+                            if (m_arPanelAdmin[i].errored_state == true)
                             {
                                 have_eror = true;
-                                m_lblDateError.Text = m_arAdmin [i].last_time_error.ToString();
-                                m_lblDescError.Text = m_arAdmin [i].last_error;
+                                m_lblDateError.Text = m_arPanelAdmin[i].last_time_error.ToString();
+                                m_lblDescError.Text = m_arPanelAdmin[i].last_error;
                             }
                             else
                                 ;
@@ -929,7 +861,7 @@ namespace Statistic
 
             m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
 
-            m_arAdmin[(int)modeAdmin].Resume();
+            m_arPanelAdmin[(int)modeAdmin].Activate(true);
         }
 
         private void ReadAnalyzer (TcpClient res, string cmd)
@@ -977,15 +909,12 @@ namespace Statistic
             if (timer.Interval == 666)
             {
                 int i = -1;
-                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    m_arAdmin [i].Start();
-                }
 
                 // отображаем вкладки ТЭЦ
                 int index;
                 for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
                 {
-                    TEC t = m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
+                    TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
 
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
@@ -1020,11 +949,11 @@ namespace Statistic
                 else
                     ;
 
-                m_panelCurPower = new PanelCurPower(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters);
+                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters);
                 m_panelCurPower.SetDelegate(delegateEvent);
                 //m_panelCurPower.Start();
 
-                m_panelLastMinutes = new PanelLastMinutes(m_arAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, m_arAdmin[(int)FormChangeMode.MANAGER.DISP]);
+                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain);
                 m_panelLastMinutes.SetDelegate(delegateEvent);
                 //m_panelLastMinutes.Start();
 

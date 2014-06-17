@@ -456,7 +456,7 @@ namespace StatisticCommon
             {
                 have_eror = m_arAdmin[m_IndexDB].errored_state;
 
-                if (((have_eror == true) || (m_arAdmin[m_IndexDB].actioned_state == true)) && (m_arAdmin[m_IndexDB].threadIsWorking == true))
+                if (((have_eror == true) || (m_arAdmin[m_IndexDB].actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
                 {
                     if (m_arAdmin[m_IndexDB].actioned_state == true)
                     {

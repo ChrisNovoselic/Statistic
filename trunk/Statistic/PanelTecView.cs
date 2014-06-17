@@ -630,6 +630,8 @@ namespace Statistic
                 pt.X = x; pt.Y = y; sz.Width = w; sz.Height = h;
             }
         };
+
+        protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
                 
         private System.Windows.Forms.Panel pnlGraphHours;
         private System.Windows.Forms.Panel pnlGraphMins;
@@ -699,7 +701,7 @@ namespace Statistic
         //private System.Windows.Forms.Timer timerCurrent;
         private DelegateFunc delegateTickTime;
 
-        private AdminTS m_admin;
+        //private AdminTS m_admin;
         private FormGraphicsSettings graphSettings;
         private FormParameters parameters;        
 
@@ -1334,7 +1336,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public PanelTecView(TEC tec, int num_tec, int num_comp, AdminTS admin, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
+        public PanelTecView(TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
         {
             this.tec = tec;
             this.num_TEC = num_tec;
@@ -1348,7 +1350,7 @@ namespace Statistic
             dgvCellStyleError.BackColor = Color.Red;
             dgvCellStyleCommon = new DataGridViewCellStyle();
 
-            this.m_admin = admin;
+            //this.m_admin = admin;
             this.graphSettings = gs;
             this.parameters = par;
 
@@ -2495,7 +2497,7 @@ namespace Statistic
 
         private void GetPBRValuesRequest () {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
-            tec.Request(CONN_SETT_TYPE.PBR, tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
+            tec.Request(CONN_SETT_TYPE.PBR, tec.GetPBRValueQuery(num_TECComponent, pnlQuickData.dtprDate.Value.Date, s_typeFields));
         }
 
         private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
@@ -5365,7 +5367,7 @@ namespace Statistic
                     //switch (tec.type ())
                     //{
                     //    case TEC.TEC_TYPE.COMMON:
-                    GetAdminValuesRequest(m_admin.m_typeFields);
+                    GetAdminValuesRequest(s_typeFields);
                     //        break;
                     //    case TEC.TEC_TYPE.BIYSK:
                     //        GetAdminValues();

@@ -49,6 +49,8 @@ namespace Statistic
     
     public partial class PanelLastMinutes : TableLayoutPanel
     {
+        protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+        
         List <Label> m_listLabelDateTime;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
@@ -62,8 +64,8 @@ namespace Statistic
 
         static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
 
-        AdminTS m_admin;
-        
+        //AdminTS m_admin;
+
         enum StatesMachine : int
         {
             Init_TM,
@@ -88,12 +90,12 @@ namespace Statistic
 
         public StatusStrip m_stsStrip;
 
-        public PanelLastMinutes(List<TEC> listTec, StatusStrip stsStrip, AdminTS admin)
+        public PanelLastMinutes(List<TEC> listTec, StatusStrip stsStrip)
         {
             int i = -1;
 
             m_stsStrip = stsStrip;
-            m_admin = admin;
+            //m_admin = admin;
             
             InitializeComponent();
 
@@ -127,8 +129,8 @@ namespace Statistic
             }
         }
 
-        public PanelLastMinutes(IContainer container, List<TEC> listTec, StatusStrip stsStrip, AdminTS admin)
-            : this(listTec, stsStrip, admin)
+        public PanelLastMinutes(IContainer container, List<TEC> listTec, StatusStrip stsStrip)
+            : this(listTec, stsStrip)
         {
             container.Add(this);
         }
@@ -885,7 +887,7 @@ namespace Statistic
                     case StatesMachine.AdminValues:
                         ActionReport("Получение административных значений.");
                         //adminValuesReceived = false;
-                        GetAdminValuesRequest(((PanelLastMinutes)Parent).m_admin.m_typeFields);
+                        GetAdminValuesRequest(s_typeFields);
                         break;
                 }
             }
@@ -908,9 +910,9 @@ namespace Statistic
                     case StatesMachine.LastMinutes_TM:
                         return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                     case StatesMachine.PBRValues:
-                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                        return DbSources.Sources ().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     case StatesMachine.AdminValues:
-                        return ((PanelLastMinutes)Parent).m_admin.Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                        return DbSources.Sources().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
                 }
 
                 error = true;
@@ -1115,7 +1117,7 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
+                    DbSources.Sources ().Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
                 }
             }
 
@@ -1135,7 +1137,7 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).m_admin.Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
+                    DbSources.Sources ().Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
                 }
             }
 

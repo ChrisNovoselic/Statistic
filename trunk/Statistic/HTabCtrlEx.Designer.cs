@@ -33,7 +33,7 @@
             SetStyle(System.Windows.Forms.ControlStyles.DoubleBuffer, true);
             this.TabStop = false;
             this.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-            this.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             //this.tclTecViews.ItemSize = new System.Drawing.Size(230, 24);
 
             this.TabStop = false;
