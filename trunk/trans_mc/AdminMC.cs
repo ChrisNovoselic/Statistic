@@ -33,7 +33,7 @@ namespace trans_mc
 
         public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
         {
-            return DbSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
+            return DbMCSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
         }
 
         protected override void GetPPBRDatesRequest(DateTime date) {
@@ -57,7 +57,7 @@ namespace trans_mc
 
             Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
 
-            DbSources.Sources().Request(m_IdListenerCurrent, query); //
+            DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
         }
 
         protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
@@ -124,7 +124,7 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            m_IdListenerCurrent = DbSources.Sources().Register("ne1843", true);
+            m_IdListenerCurrent = DbMCSources.Sources().Register(@"ne1843", true);
 
             //for (i = 0; i < allTECComponents.Count; i ++)
             //{
@@ -153,7 +153,7 @@ namespace trans_mc
         {
             base.Stop();
 
-            DbSources.Sources().UnRegister(m_IdListenerCurrent);
+            DbMCSources.Sources().UnRegister(m_IdListenerCurrent);
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)
@@ -328,7 +328,7 @@ namespace trans_mc
                     ;
             }
 
-            DbSources.Sources ().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
+            DbMCSources.Sources ().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
 
             bRes = true;
             return bRes;

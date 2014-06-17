@@ -10,8 +10,8 @@ namespace StatisticCommon
 {
     public class DbSources
     {        
-        private static DbSources m_this;
-        Dictionary <int, DbInterface> m_dictDbTSQLInterfaces;
+        protected static DbSources m_this;
+        protected Dictionary<int, DbInterface> m_dictDbInterfaces;
 
         protected class DbSourceListener
         {
@@ -28,9 +28,9 @@ namespace StatisticCommon
         }
         protected Dictionary <int, DbSourceListener> m_dictListeners;
 
-        private DbSources()
+        protected DbSources()
         {
-            m_dictDbTSQLInterfaces = new Dictionary <int, DbInterface> ();
+            m_dictDbInterfaces = new Dictionary <int, DbInterface> ();
             m_dictListeners = new Dictionary<int,DbSourceListener> ();
         }
 
@@ -50,18 +50,23 @@ namespace StatisticCommon
         /// <param name="active">признак активности</param>
         /// <param name="bReq">признак принудительного создания отдельного экземпляра</param>
         /// <returns></returns>
-        public int Register(object connSett, bool active, bool bReq = false)
+        public virtual int Register(object connSett, bool active, bool bReq = false)
         {
-            int iRes = -1,
-                id = -1,
+            int id = -1,
                 err = -1;
 
-            if ((m_dictDbTSQLInterfaces.ContainsKey(((ConnectionSettings)connSett).id) == true) && (bReq == false))
-            {
-                id = m_dictDbTSQLInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
-            }
-            else 
-                ;
+            if (connSett is ConnectionSettings == true)
+                if ((m_dictDbInterfaces.ContainsKey(((ConnectionSettings)connSett).id) == true) && (bReq == false))
+                {
+                    id = m_dictDbInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
+                }
+                else 
+                    ;
+            else
+                if (connSett is string == true) {
+                }
+                else
+                    ;
 
             if (id < 0)
             {
@@ -69,26 +74,57 @@ namespace StatisticCommon
                 DbTSQLInterface.DB_TSQL_INTERFACE_TYPE dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
                 switch (((ConnectionSettings)connSett).port)
                 {
+                    case -666:
+                        dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre;
+                        break;
                     case 1433:
                         dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
-                        dbNameType = @"MS SQL";
                         break;
                     case 3306:
                         dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
-                        dbNameType = @"MySql";
+                        
                         break;
                     default:
                         break;
                 }
-                m_dictDbTSQLInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД"));
-                if (active == true) m_dictDbTSQLInterfaces[((ConnectionSettings)connSett).id].Start(); else ;
-                m_dictDbTSQLInterfaces[((ConnectionSettings)connSett).id].SetConnectionSettings(connSett, active);
 
-                id = m_dictDbTSQLInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
+                dbNameType = dbType.ToString();
+
+                switch (dbType) {
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre:
+                        //m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbMCInterface (dbType, @"Интерфейс: " + dbNameType));
+                        break;
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                        m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД"));
+                        break;
+                    default:
+                        break;
+                }
+                if (active == true) m_dictDbInterfaces[((ConnectionSettings)connSett).id].Start(); else ;
+                m_dictDbInterfaces[((ConnectionSettings)connSett).id].SetConnectionSettings(connSett, active);
+
+                id = m_dictDbInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
             }
             else
                 ;
 
+            return RegisterListener (((ConnectionSettings)connSett).id, id, active, out err);
+        }
+
+        public void SetConnectionSettings (int id, ConnectionSettings connSett, bool active) {
+            if ((m_dictListeners.ContainsKey (id) == true) && (m_dictDbInterfaces.ContainsKey (connSett.id) == true) &&
+                (m_dictListeners[id].idDbInterface == connSett.id))
+            {
+                m_dictDbInterfaces[m_dictListeners[id].idDbInterface].SetConnectionSettings(connSett, active);
+            }
+            else 
+                ;
+        }
+
+        protected int RegisterListener(int id, int idListener, bool active, out int err)
+        {
+            int iRes = -1;
             for (iRes = 0; iRes < m_dictListeners.Keys.Count; iRes ++)
             {
                 if (m_dictListeners.ContainsKey(iRes) == false)
@@ -101,21 +137,11 @@ namespace StatisticCommon
             }
 
             //if (! (iRes < m_dictListeners.Keys.Count))
-                registerListener(iRes, ((ConnectionSettings)connSett).id, id, active, out err);
+                registerListener(iRes, id, idListener, active, out err);
             //else
             //    ;
 
             return iRes;
-        }
-
-        public void SetConnectionSettings (int id, ConnectionSettings connSett, bool active) {
-            if ((m_dictListeners.ContainsKey (id) == true) && (m_dictDbTSQLInterfaces.ContainsKey (connSett.id) == true) &&
-                (m_dictListeners[id].idDbInterface == connSett.id))
-            {
-                m_dictDbTSQLInterfaces[m_dictListeners[id].idDbInterface].SetConnectionSettings(connSett, active);
-            }
-            else 
-                ;
         }
 
         private void registerListener(int idReg, int id, int idListener, bool active, out int err)
@@ -127,7 +153,7 @@ namespace StatisticCommon
                 err = 0;
             }
             else {
-                m_dictListeners.Add(idReg, new DbSourceListener(id, idListener, DbTSQLInterface.getConnection((ConnectionSettings)m_dictDbTSQLInterfaces[id].m_connectionSettings, out err)));
+                m_dictListeners.Add(idReg, new DbSourceListener(id, idListener, DbTSQLInterface.getConnection((ConnectionSettings)m_dictDbInterfaces[id].m_connectionSettings, out err)));
             }
                 
         }
@@ -141,13 +167,12 @@ namespace StatisticCommon
             int err = -1;
             
             if (m_dictListeners.ContainsKey (id) == true)
-            {
-                
-                m_dictDbTSQLInterfaces[m_dictListeners[id].idDbInterface].ListenerUnregister(m_dictListeners[id].iListenerId);
-                if (! (m_dictDbTSQLInterfaces[m_dictListeners[id].idDbInterface].ListenerCount > 0)) {
-                    m_dictDbTSQLInterfaces [m_dictListeners [id].idDbInterface].Stop ();
+            {                
+                m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerUnregister(m_dictListeners[id].iListenerId);
+                if (! (m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerCount > 0)) {
+                    m_dictDbInterfaces [m_dictListeners [id].idDbInterface].Stop ();
 
-                    m_dictDbTSQLInterfaces.Remove(m_dictListeners[id].idDbInterface);
+                    m_dictDbInterfaces.Remove(m_dictListeners[id].idDbInterface);
 
                     if (m_dictListeners[id].dbConn == null)
                     {
@@ -174,7 +199,7 @@ namespace StatisticCommon
         public void Request (int id, string query) {
             if (m_dictListeners.ContainsKey (id) == true)
             {
-                m_dictDbTSQLInterfaces[m_dictListeners[id].idDbInterface].Request(m_dictListeners[id].iListenerId, query);
+                m_dictDbInterfaces[m_dictListeners[id].idDbInterface].Request(m_dictListeners[id].iListenerId, query);
             }
             else
                 ;
@@ -195,7 +220,7 @@ namespace StatisticCommon
 
             if (m_dictListeners.ContainsKey (id) == true)
             {
-                bRes = m_dictDbTSQLInterfaces[m_dictListeners[id].idDbInterface].Response(m_dictListeners[id].iListenerId, out err, out tableRes);
+                bRes = m_dictDbInterfaces[m_dictListeners[id].idDbInterface].Response(m_dictListeners[id].iListenerId, out err, out tableRes);
             }
             else
                 ;

@@ -7,12 +7,10 @@ using System.Threading;
 using System.Data.Common;
 using System.Data.OleDb;
 
-using StatisticCommon;
-
 using Modes;
 using ModesApiExternal;
 
-namespace trans_mc
+namespace StatisticCommon
 {
     public class DbMCInterface : DbInterface
     {

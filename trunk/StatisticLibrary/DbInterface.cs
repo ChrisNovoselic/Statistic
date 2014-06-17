@@ -13,6 +13,15 @@ namespace StatisticCommon
 {
     public abstract class DbInterface
     {
+        public enum DB_TSQL_INTERFACE_TYPE
+        {
+            MySQL,
+            MSSQL,
+            MSExcel,
+            ModesCentre,
+            UNKNOWN
+        }
+
         public static int MAX_RETRY = 3;
         public static int MAX_WAIT_COUNT = 25;
         public static int WAIT_TIME_MS = 666;

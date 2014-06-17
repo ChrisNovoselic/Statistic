@@ -95,6 +95,7 @@ namespace StatisticCommon
 
         public void SetDefault()
         {
+            id = -1;
             name =
             server = dbName = userName = password = string.Empty;
             port = 1433;

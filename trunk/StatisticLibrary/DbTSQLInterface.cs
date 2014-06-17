@@ -13,14 +13,6 @@ namespace StatisticCommon
 {
     public class DbTSQLInterface : DbInterface
     {
-        public enum DB_TSQL_INTERFACE_TYPE
-        {
-            MySQL,
-            MSSQL,
-            MSExcel,
-            UNKNOWN
-        }
-
         public enum QUERY_TYPE { UPDATE, INSERT, DELETE, COUNT_QUERY_TYPE };
 
         public static string MessageDbOpen = "Соединение с базой установлено";

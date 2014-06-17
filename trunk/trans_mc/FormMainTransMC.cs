@@ -178,7 +178,7 @@ namespace trans_mc
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
             bool bIgnoreTECInUse = false;
-            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
+            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 switch (i)
@@ -221,7 +221,7 @@ namespace trans_mc
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
-            DbSources.Sources().UnRegister(idListener);
+            DbMCSources.Sources().UnRegister(idListener);
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {

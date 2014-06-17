@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>StatisticTrans</RootNamespace>
     <AssemblyName>StatisticTrans</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -32,6 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="ModesApiExternal">
+      <HintPath>..\..\MCApiDLL\ModesApiExternal.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -42,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DbMCInterface.cs" />
+    <Compile Include="DbMCSources.cs" />
     <Compile Include="FormMainTrans.cs">
       <SubType>Form</SubType>
     </Compile>
