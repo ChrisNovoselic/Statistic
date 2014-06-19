@@ -16,7 +16,7 @@ namespace trans_tg
 
         private List <bool> [] m_listTimezoneOffsetHaveDates;
 
-        public AdminTransTG()
+        public AdminTransTG(HReports rep) : base (rep)
         {
             InitializeAdminTransTG();
         }

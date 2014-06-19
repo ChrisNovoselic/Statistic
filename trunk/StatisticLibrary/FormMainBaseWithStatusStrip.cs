@@ -1,15 +1,29 @@
+using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing;
 
 namespace StatisticCommon
 {
+    public struct HReports
+    {
+        public volatile string last_error;
+        public DateTime last_time_error;
+        public volatile bool errored_state;
+
+        public volatile string last_action;
+        public DateTime last_time_action;
+        public volatile bool actioned_state;
+    };
+
     public abstract class FormMainBaseWithStatusStrip : FormMainBase
     {
         protected System.Windows.Forms.StatusStrip m_statusStripMain;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblMainState;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblDescError;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblDateError;
+
+        public HReports m_report;
 
         protected FormMainBaseWithStatusStrip()
         {

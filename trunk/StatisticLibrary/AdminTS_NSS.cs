@@ -55,7 +55,8 @@ namespace StatisticCommon
             }
         }
 
-        public AdminTS_NSS () {
+        public AdminTS_NSS(HReports rep) : base (rep)
+        {
             delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
             delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
             delegateImportForeignValuesResponse = ImpRDGExcelValuesResponse;

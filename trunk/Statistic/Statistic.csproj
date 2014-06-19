@@ -132,6 +132,9 @@
     <Compile Include="PanelLastMinutes.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelQuickData.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelTecView.cs">
       <SubType>Component</SubType>
     </Compile>

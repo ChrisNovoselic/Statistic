@@ -130,10 +130,10 @@ namespace Statistic
                     switch (i)
                     {
                         case (int)FormChangeMode.MANAGER.DISP:
-                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB);
+                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, m_report);
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
-                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB);
+                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, m_report);
                             break;
                         default:
                             break;
@@ -623,13 +623,14 @@ namespace Statistic
                 }
             }
 
-            for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index++)
-            {
-                if (list_tecView_index_checked.IndexOf(tecView_index) < 0)
-                    tecViews[tecView_index].Stop();
-                else
-                    ;
-            }
+            //Реализовано в 'ClearTabPages ()'
+            //for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index++)
+            //{
+            //    if (list_tecView_index_checked.IndexOf(tecView_index) < 0)
+            //        tecViews[tecView_index].Stop();
+            //    else
+            //        ;
+            //}
 
             параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
 
@@ -675,8 +676,9 @@ namespace Statistic
 
                     StopWait();
 
-                    for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                        if (! (i == (int)modePanelAdmin)) m_arPanelAdmin[i].Stop(); else ;
+                    //Реализовано в 'ClearTabPages ()'
+                    //for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
+                    //    if (! (i == (int)modePanelAdmin)) m_arPanelAdmin[i].Stop(); else ;
                 }
                 else
                     formChangeMode.admin_was_checked = false;
@@ -684,8 +686,9 @@ namespace Statistic
                 DbSources.Sources ().UnRegister (idListener);
             }
             else {
-                for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
-                    m_arPanelAdmin[i].Stop();
+                //Реализовано в 'ClearTabPages ()'
+                //for (i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
+                //    m_arPanelAdmin[i].Stop();
             }
 
             prevStateIsAdmin = formChangeMode.getModeTECComponent ();
@@ -738,13 +741,13 @@ namespace Statistic
 
                     if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM] == null))))
                     {
-                        if ((selTecView.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                        if ((m_report.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
                                                                             (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                         {
                             if (selTecView.isActive == true)
                             {
-                                m_lblDateError.Text = selTecView.last_time_action.ToString();
-                                m_lblDescError.Text = selTecView.last_action;
+                                m_lblDateError.Text = m_report.last_time_action.ToString();
+                                m_lblDescError.Text = m_report.last_action;
                             }
                             else
                                 ;
@@ -752,14 +755,14 @@ namespace Statistic
                         else
                             ;
 
-                        if ((selTecView.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
+                        if ((m_report.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
                                                                             (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
                         {
                             have_eror = true;
                             if (selTecView.isActive == true)
                             {
-                                m_lblDateError.Text = selTecView.last_time_error.ToString();
-                                m_lblDescError.Text = selTecView.last_error;
+                                m_lblDateError.Text = m_report.last_time_error.ToString();
+                                m_lblDescError.Text = m_report.last_error;
                             }
                             else
                                 ;
@@ -775,19 +778,19 @@ namespace Statistic
                     for (int i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
                         if (m_arPanelAdmin [i].isActive == true)
                         {
-                            if (m_arPanelAdmin[i].actioned_state == true)
+                            if (m_report.actioned_state == true)
                             {
-                                m_lblDateError.Text = m_arPanelAdmin[i].last_time_action.ToString();
-                                m_lblDescError.Text = m_arPanelAdmin[i].last_action;
+                                m_lblDateError.Text = m_report.last_time_action.ToString();
+                                m_lblDescError.Text = m_report.last_action;
                             }
                             else
                                 ;
 
-                            if (m_arPanelAdmin[i].errored_state == true)
+                            if (m_report.errored_state == true)
                             {
                                 have_eror = true;
-                                m_lblDateError.Text = m_arPanelAdmin[i].last_time_error.ToString();
-                                m_lblDescError.Text = m_arPanelAdmin[i].last_error;
+                                m_lblDateError.Text = m_report.last_time_error.ToString();
+                                m_lblDescError.Text = m_report.last_error;
                             }
                             else
                                 ;

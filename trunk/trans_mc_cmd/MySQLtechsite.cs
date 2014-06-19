@@ -96,8 +96,8 @@ namespace trans_mc_cmd
 
             if (iRes == 0)
             {
-                m_admin = new AdminTS();
-                
+                m_admin = new AdminTS(new HReports ());
+
                 m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 

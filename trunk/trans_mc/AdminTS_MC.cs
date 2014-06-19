@@ -11,8 +11,8 @@ namespace trans_mc
 {
     class AdminTS_MC : AdminTS
     {
-        public AdminTS_MC()
-            : base()
+        public AdminTS_MC(HReports rep)
+            : base(rep)
         {
         }
 

@@ -59,14 +59,6 @@ namespace StatisticCommon
         protected bool is_connection_error;
         protected bool is_data_error;
 
-        public volatile string last_error;
-        public DateTime last_time_error;
-        public volatile bool errored_state;
-
-        public volatile string last_action;
-        public DateTime last_time_action;
-        public volatile bool actioned_state;
-
         public DateTime m_prevDate;
         protected DateTime serverTime,
                             m_curDate;
@@ -112,9 +104,9 @@ namespace StatisticCommon
 
         protected bool started;
 
-        //public bool isActive;
+        protected HReports m_report;
 
-        public HAdmin()
+        public HAdmin(HReports report)
         {
             Initialize ();
         }
@@ -337,18 +329,18 @@ namespace StatisticCommon
 
         protected void ErrorReport(string error_string)
         {
-            last_error = error_string;
-            last_time_error = DateTime.Now;
-            errored_state = true;
+            m_report.last_error = error_string;
+            m_report.last_time_error = DateTime.Now;
+            m_report.errored_state = true;
             
             errorReport (error_string);
         }
 
         protected void ActionReport(string action_string)
         {
-            last_action = action_string;
-            last_time_action = DateTime.Now;
-            actioned_state = true;
+            m_report.last_action = action_string;
+            m_report.last_time_action = DateTime.Now;
+            m_report.actioned_state = true;
 
             //stsStrip.BeginInvoke(delegateEventUpdate);
             //delegateEventUpdate ();
@@ -395,7 +387,7 @@ namespace StatisticCommon
             {
                 newState = true;
                 states.Clear();
-                errored_state = false;
+                m_report.errored_state = false;
             }
 
             if ((!(taskThread == null)) && taskThread.IsAlive)

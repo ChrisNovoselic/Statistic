@@ -13,10 +13,6 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public abstract class PanelStatistic : TableLayoutPanel {
-        public abstract void Stop ();
-    }
-
     public class PanelAdmin : PanelStatistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
@@ -42,13 +38,13 @@ namespace Statistic
 
         public List <TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
-        public string last_error { get { return m_admin.last_error; } }
-        public DateTime last_time_error { get { return m_admin.last_time_error; } }
-        public bool errored_state { get { return m_admin.errored_state; } }
+        //public string last_error { get { return m_admin.last_error; } }
+        //public DateTime last_time_error { get { return m_admin.last_time_error; } }
+        //public bool errored_state { get { return m_admin.errored_state; } }
 
-        public string last_action { get { return m_admin.last_action; } }
-        public DateTime last_time_action { get { return m_admin.last_time_action; } }
-        public bool actioned_state { get { return m_admin.actioned_state; } }
+        //public string last_action { get { return m_admin.last_action; } }
+        //public DateTime last_time_action { get { return m_admin.last_time_action; } }
+        //public bool actioned_state { get { return m_admin.actioned_state; } }
 
         protected virtual void InitializeComponents()
         {
@@ -165,15 +161,15 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, FormChangeMode.MANAGER type)
+        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HReports rep)
         {
             bool bUseData = false;
             switch (type) {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp();
+                    m_admin = new AdminTS_KomDisp(rep);
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS();
+                    m_admin = new AdminTS_NSS(rep);
                     break;
                 default:
                     break;
@@ -202,15 +198,15 @@ namespace Statistic
             isActive = false;
         }
 
-        public PanelAdmin(List <TEC> tec, FormChangeMode.MANAGER type)
+        public PanelAdmin(List <TEC> tec, FormChangeMode.MANAGER type, HReports rep)
         {
             switch (type)
             {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp();
+                    m_admin = new AdminTS_KomDisp(rep);
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS();
+                    m_admin = new AdminTS_NSS(rep);
                     break;
                 default:
                     break;

@@ -52,8 +52,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminKomDisp(int idListener)
-            : base(idListener, FormChangeMode.MANAGER.DISP)
+        public PanelAdminKomDisp(int idListener, HReports rep)
+            : base(idListener, FormChangeMode.MANAGER.DISP, rep)
         {
         }
 

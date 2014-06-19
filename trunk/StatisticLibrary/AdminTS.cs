@@ -76,7 +76,7 @@ namespace StatisticCommon
         //public bool isActive;
         protected bool m_bSavePPBRValues;
 
-        public AdminTS() : base ()
+        public AdminTS(HReports rep) : base (rep)
         {
             m_bSavePPBRValues = false;
         }
@@ -1636,7 +1636,7 @@ namespace StatisticCommon
             }
 
             if (result == true)
-                errored_state = actioned_state = false;
+                m_report.errored_state = m_report.actioned_state = false;
             else
                 ;
 

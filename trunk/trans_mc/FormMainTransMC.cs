@@ -184,10 +184,10 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i] = new AdminMC();
+                        m_arAdmin[i] = new AdminMC(m_report);
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        m_arAdmin[i] = new AdminTS_MC();
+                        m_arAdmin[i] = new AdminTS_MC(m_report);
                         break;
                     default:
                         break;
