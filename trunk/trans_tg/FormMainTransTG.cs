@@ -139,7 +139,7 @@ namespace trans_tg
 
             bool bIgnoreTECInUse = false;
 
-            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
+            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTransTG();

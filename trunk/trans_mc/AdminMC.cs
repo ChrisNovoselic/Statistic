@@ -124,7 +124,7 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            m_IdListenerCurrent = DbMCSources.Sources().Register(@"ne1843", true);
+            m_IdListenerCurrent = DbMCSources.Sources().Register(@"ne1843", true, @"Modes-Centre");
 
             //for (i = 0; i < allTECComponents.Count; i ++)
             //{

@@ -116,11 +116,11 @@ namespace StatisticCommon
             {
                 //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-                for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
-                    if (!(connSetts[i] == null))
+                    if (!(connSetts[(int)i] == null))
                     {
-                        m_arIdListeners[i] = DbSources.Sources ().Register(connSetts[i], true);
+                        m_arIdListeners[(int)i] = DbSources.Sources ().Register(connSetts[(int)i], true, @"ÒÝÖ=" + name_shr + @"; DESC=" + i.ToString ());
                     }
                     else
                         ;

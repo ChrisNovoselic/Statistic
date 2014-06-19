@@ -47,7 +47,7 @@ namespace Statistic
         #endregion
     }
     
-    public partial class PanelCurPower : TableLayoutPanel
+    public partial class PanelCurPower : PanelStatistic
     {
         enum INDEX_LABEL : int { NAME,
                                 DATETIME,
@@ -147,7 +147,7 @@ namespace Statistic
             }
         }
 
-        public void Stop () {
+        public override void Stop () {
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {

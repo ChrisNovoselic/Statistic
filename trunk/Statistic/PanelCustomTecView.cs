@@ -42,7 +42,7 @@ namespace Statistic
         #endregion
     }
     
-    public partial class PanelCustomTecView : TableLayoutPanel
+    public partial class PanelCustomTecView : PanelStatistic
     {
         public PanelCustomTecView()
         {
@@ -53,6 +53,9 @@ namespace Statistic
             : this()
         {
             container.Add(this);
+        }
+
+        public override void Stop () {
         }
     }
 }

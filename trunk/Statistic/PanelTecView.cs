@@ -17,7 +17,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelTecView : TableLayoutPanel
+    public class PanelTecView : PanelStatistic
     {
         partial class PanelQuickData
         {
@@ -2399,9 +2399,9 @@ namespace Statistic
             NewDateRefresh();
         }
 
-        public void Stop()
+        public override void Stop()
         {
-            if (!started)
+            if (started == false)
                 return;
             else
                 ;

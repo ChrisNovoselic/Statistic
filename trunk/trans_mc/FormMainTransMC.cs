@@ -178,7 +178,7 @@ namespace trans_mc
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
             bool bIgnoreTECInUse = false;
-            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false);
+            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 switch (i)

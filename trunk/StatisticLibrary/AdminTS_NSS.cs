@@ -131,6 +131,8 @@ namespace StatisticCommon
                         break;
                 }
             //}
+
+            m_bSavePPBRValues = true;
         }
 
         public override void GetRDGValues(TYPE_FIELDS mode, int id)
@@ -158,6 +160,8 @@ namespace StatisticCommon
                         break;
                 }
             //}
+
+            m_bSavePPBRValues = true;
         }
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int id, DateTime date)
@@ -190,6 +194,8 @@ namespace StatisticCommon
                         break;
                 }
             //}
+
+            m_bSavePPBRValues = true;
         }
 
         public override void ImpRDGExcelValues(int id, DateTime date)

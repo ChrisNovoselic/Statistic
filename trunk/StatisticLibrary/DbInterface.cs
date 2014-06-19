@@ -162,7 +162,7 @@ namespace StatisticCommon
 
             try
             {
-                sem.Release(1);
+                if (! (WaitHandle.WaitAny(new WaitHandle[] { sem }, 0) == 0)) sem.Release(1); else ;
             }
             catch (Exception e)
             {
@@ -294,7 +294,7 @@ namespace StatisticCommon
             }
             try
             {
-                sem.Release(1);
+                if (!(WaitHandle.WaitAny(new WaitHandle[] { sem }, 0) == 0)) sem.Release(1); else ;
             }
             catch (Exception e)
             {

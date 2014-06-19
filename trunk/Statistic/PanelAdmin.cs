@@ -13,7 +13,11 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelAdmin : TableLayoutPanel
+    public abstract class PanelStatistic : TableLayoutPanel {
+        public abstract void Stop ();
+    }
+
+    public class PanelAdmin : PanelStatistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
@@ -249,7 +253,7 @@ namespace Statistic
             m_admin.Start ();
         }
 
-        public virtual void Stop()
+        public override void Stop()
         {
             if (! (m_admin.threadIsWorking < 0)) m_admin.Stop(); else ;
         }

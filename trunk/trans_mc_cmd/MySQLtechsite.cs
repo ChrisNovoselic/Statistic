@@ -91,7 +91,7 @@ namespace trans_mc_cmd
             Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
 
             //Соединение дл я БД конфигурации
-            m_idListener = DbSources.Sources ().Register (connSett, false);
+            m_idListener = DbSources.Sources().Register(connSett, false, @"CONFIG_DB");
             m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
 
             if (iRes == 0)
@@ -117,7 +117,7 @@ namespace trans_mc_cmd
                 {
                     DbSources.Sources ().UnRegister (m_idListener);
 
-                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false);
+                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false, @"PBR");
                     m_connection = DbSources.Sources().GetConnection (m_idListener, out iRes);
                     m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
                 }

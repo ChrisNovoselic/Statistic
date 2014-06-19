@@ -47,7 +47,7 @@ namespace Statistic
         #endregion
     }
     
-    public partial class PanelLastMinutes : TableLayoutPanel
+    public partial class PanelLastMinutes : PanelStatistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         
@@ -155,7 +155,7 @@ namespace Statistic
             }
         }
 
-        public void Stop()
+        public override void Stop()
         {
             int i = 0;
             foreach (Control ctrl in this.Controls)

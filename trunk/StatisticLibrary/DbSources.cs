@@ -50,7 +50,7 @@ namespace StatisticCommon
         /// <param name="active">признак активности</param>
         /// <param name="bReq">признак принудительного создания отдельного экземпляра</param>
         /// <returns></returns>
-        public virtual int Register(object connSett, bool active, bool bReq = false)
+        public virtual int Register(object connSett, bool active, string desc, bool bReq = false)
         {
             int id = -1,
                 err = -1;
@@ -96,7 +96,7 @@ namespace StatisticCommon
                         break;
                     case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
                     case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
-                        m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД"));
+                        m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД" + @"; " + desc));
                         break;
                     default:
                         break;

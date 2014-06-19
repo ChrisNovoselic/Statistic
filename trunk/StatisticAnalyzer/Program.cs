@@ -20,7 +20,7 @@ namespace StatisticAnalyzer
             FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini");
             FormConnectionSettings formConnSett = new FormConnectionSettings(-1, fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
 
-            int idListener = DbSources.Sources ().Register (formConnSett.getConnSett(), false);
+            int idListener = DbSources.Sources().Register(formConnSett.getConnSett(), false, @"CONFIG_DB");
             Application.Run(new StatisticCommon.FormMainAnalyzer(idListener, new InitTEC(idListener, true, false).tec));
             DbSources.Sources().UnRegister(idListener);
 
