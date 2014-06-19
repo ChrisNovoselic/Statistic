@@ -483,6 +483,7 @@ namespace Statistic
             }
 
             double summ = 0;
+            //Для возможности восстановления значения
             bool bPrevRecalcAver = m_parent.recalcAver;
 
             if ((m_parent.currHour == true) && (min == 0))

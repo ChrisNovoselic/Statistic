@@ -108,6 +108,8 @@ namespace StatisticCommon
 
         public HAdmin(HReports report)
         {
+            m_report = report;
+            
             Initialize ();
         }
 

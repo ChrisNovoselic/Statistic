@@ -93,14 +93,15 @@ namespace Statistic
         private FormGraphicsSettings graphSettings;
         private FormParameters parameters;        
 
-        private volatile bool currHour;
-        private volatile int lastHour;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool currHour;
+        public volatile int lastHour;
         private volatile int lastReceivedHour;
-        private volatile int lastMin;
-        private volatile bool lastMinError;
-        private volatile bool lastHourError;
-        private volatile bool lastHourHalfError;
-        private volatile string lastLayout;
+        public volatile int lastMin;
+        public volatile bool lastMinError;
+        public volatile bool lastHourError;
+        public volatile bool lastHourHalfError;
+        public volatile string lastLayout;
 
         private enum StatesMachine
         {
@@ -188,24 +189,28 @@ namespace Statistic
             }
         }
 
-        private valuesTEC m_valuesMins;
-        private valuesTEC m_valuesHours;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public valuesTEC m_valuesMins;
+        public valuesTEC m_valuesHours;
         private DateTime selectedTime;
         private DateTime serverTime;
 
         DataTable m_tablePBRResponse;
 
-        private double recomendation;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public double recomendation;
 
         private volatile string sensorsString_TM = "";
         private volatile string[] sensorsStrings_Fact = { "", "" }; //Только для особенной ТЭЦ (Бийск)
 
-        private TG[] sensorId2TG;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public TG[] sensorId2TG;
 
         public volatile TEC tec;
         public volatile int num_TEC;
         public volatile int num_TECComponent;
-        List <TECComponentBase> m_list_TECComponents;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public List <TECComponentBase> m_list_TECComponents;
 
         private int CountTG { get { return sensorId2TG.Length; } }
         private bool update;
@@ -215,10 +220,14 @@ namespace Statistic
         private StatusStrip stsStrip;
 
         private bool started;
+        private HReports m_report;
 
-        private volatile bool adminValuesReceived;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool adminValuesReceived;
 
-        private volatile bool recalcAver;
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool recalcAver;
+
         private void InitializeComponent()
         {
             this.zedGraphMins = new ZedGraphControl();
@@ -716,11 +725,12 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public PanelTecView(TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par)
+        public PanelTecView(TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
         {
             this.tec = tec;
             this.num_TEC = num_tec;
             this.num_TECComponent = num_comp;
+            m_report = rep;
             
             InitializeComponent();
 
@@ -744,8 +754,8 @@ namespace Statistic
             lastMin = 0;
             update = false;
             isActive = false;
-            ((FormMainBaseWithStatusStrip)Parent).m_report.errored_state =
-            ((FormMainBaseWithStatusStrip)Parent).m_report.actioned_state = false;
+            m_report.errored_state =
+            m_report.actioned_state = false;
             recalcAver = true;
 
             lockValue = new object();
@@ -1815,7 +1825,7 @@ namespace Statistic
 
             tec.StopDbInterfaces();
 
-            ((FormMainBaseWithStatusStrip)Parent).m_report.errored_state = false;
+            m_report.errored_state = false;
         }
 
         private void UpdateGUI_TM()
@@ -4420,25 +4430,26 @@ namespace Statistic
                 {
                     newState = true;
                     states.Clear();
-                    ((FormMainBaseWithStatusStrip)Parent).m_report.errored_state =
-                    ((FormMainBaseWithStatusStrip)Parent).m_report.actioned_state = false;
+                    m_report.errored_state =
+                    m_report.actioned_state = false;
                 }
             }
         }
 
-        private void ErrorReport(string error_string)
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public void ErrorReport(string error_string)
         {
-            ((FormMainBaseWithStatusStrip)Parent).m_report.last_error = error_string;
-            ((FormMainBaseWithStatusStrip)Parent).m_report.last_time_error = DateTime.Now;
-            ((FormMainBaseWithStatusStrip)Parent).m_report.errored_state = true;
+            m_report.last_error = error_string;
+            m_report.last_time_error = DateTime.Now;
+            m_report.errored_state = true;
             stsStrip.BeginInvoke(delegateEventUpdate);
         }
 
         private void ActionReport(string action_string)
         {
-            ((FormMainBaseWithStatusStrip)Parent).m_report.last_action = action_string;
-            ((FormMainBaseWithStatusStrip)Parent).m_report.last_time_action = DateTime.Now;
-            ((FormMainBaseWithStatusStrip)Parent).m_report.actioned_state = true;
+            m_report.last_action = action_string;
+            m_report.last_time_action = DateTime.Now;
+            m_report.actioned_state = true;
             stsStrip.BeginInvoke(delegateEventUpdate);
         }
 
@@ -4929,8 +4940,8 @@ namespace Statistic
             }
 
             if (result == true)
-                ((FormMainBaseWithStatusStrip)Parent).m_report.errored_state =
-                ((FormMainBaseWithStatusStrip)Parent).m_report.actioned_state = false;
+                m_report.errored_state =
+                m_report.actioned_state = false;
             else
                 ;
 

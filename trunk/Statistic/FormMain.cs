@@ -56,6 +56,8 @@ namespace Statistic
         {
             InitializeComponent();
 
+            m_report = new HReports ();
+
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
             this.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
@@ -547,7 +549,7 @@ namespace Statistic
                     comp_indx;
                 foreach (TEC t in formChangeMode.m_list_tec)
                 {
-                    tecView = new PanelTecView(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters);
+                    tecView = new PanelTecView(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);
                     if (t.list_TECComponents.Count > 0)
@@ -555,7 +557,7 @@ namespace Statistic
                         comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            tecView = new PanelTecView(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters);
+                            tecView = new PanelTecView(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             comp_indx++;

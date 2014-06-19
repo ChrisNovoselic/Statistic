@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace StatisticCommon
 {
-    public struct HReports
+    public class HReports
     {
         public volatile string last_error;
         public DateTime last_time_error;

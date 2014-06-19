@@ -370,7 +370,7 @@ namespace Statistic
                 m_bThreadIsWorking = true;
 
                 m_taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-                m_taskThread.Name = @"Интерфейс к данным (" + GetType ().Name + "): " + m_tec.name_shr + @"текущие значения...";
+                m_taskThread.Name = @"Интерфейс к данным (" + GetType ().Name + "): " + m_tec.name_shr + @" - текущие значения...";
                 m_taskThread.IsBackground = true;
 
                 m_semaState = new Semaphore(1, 1);
