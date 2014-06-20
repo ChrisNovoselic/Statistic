@@ -315,8 +315,8 @@ namespace Statistic
 
         #endregion
 
-        //PanelTecView m_parent;
-        PanelTecView m_parent { get { return (PanelTecView)Parent; } }        
+        //PanelTecViewBase m_parent;
+        PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }        
 
         public enum CONTROLS : uint
         {

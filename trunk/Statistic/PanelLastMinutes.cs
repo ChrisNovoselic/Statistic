@@ -329,7 +329,7 @@ namespace Statistic
                         m_bIsStarted,
                         m_bUpdate;
 
-            private Dictionary<int, PanelTecView.valuesTECComponent> m_dictValuesHours;
+            private Dictionary<int, PanelTecViewBase.valuesTECComponent> m_dictValuesHours;
 
             DataTable m_tablePBRResponse;
 
@@ -424,10 +424,10 @@ namespace Statistic
                 m_states = new List<StatesMachine>();
                 //delegateUpdateGUI_TM = ShowTMPower;
 
-                m_dictValuesHours = new Dictionary<int,PanelTecView.valuesTECComponent> ();
+                m_dictValuesHours = new Dictionary<int,PanelTecViewBase.valuesTECComponent> ();
                 foreach (TECComponent c in m_list_TECComponents)
                 {
-                    m_dictValuesHours.Add(c.m_id, new PanelTecView.valuesTECComponent(24 + 1));
+                    m_dictValuesHours.Add(c.m_id, new PanelTecViewBase.valuesTECComponent(24 + 1));
                 }
 
                 delegateUpdateGUI_TM = ShowLastMinutesTM;
@@ -491,7 +491,7 @@ namespace Statistic
                     {
                         m_semaState.Release(1);
                     }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.Stop () - sem.Release(1)"); }
+                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.Stop () - sem.Release(1)"); }
 
                     joined = m_taskThread.Join(1000);
                     if (!joined)
@@ -1166,7 +1166,7 @@ namespace Statistic
                 //    catch (Exception excpt)
                 //    {
                 //        /*
-                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ...");
+                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ...");
                 //        */
                 //    }
                 //else
@@ -1196,7 +1196,7 @@ namespace Statistic
                             else
                                 ;
                         }
-                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecView.GetAdminValuesResponse () - ..."); }
+                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ..."); }
                     }
                     else
                     {

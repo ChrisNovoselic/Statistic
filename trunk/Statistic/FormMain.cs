@@ -31,12 +31,12 @@ namespace Statistic
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
-        private List<PanelTecView> tecViews;
-        //private List<PanelTecView> selectedTecViews;
+        private List<PanelTecViewBase> tecViews;
+        //private List<PanelTecViewBase> selectedTecViews;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
-        private PanelTecView tecView;
+        private PanelTecViewBase tecView;
         private int m_prevSelectedIndex;
         private int prevStateIsAdmin;
         public FormGraphicsSettings formGraphicsSettings;
@@ -172,7 +172,7 @@ namespace Statistic
             else
                ;
 
-            tecViews = new List<PanelTecView>();
+            tecViews = new List<PanelTecViewBase>();
 
             prevStateIsAdmin = -1;
 
@@ -190,7 +190,7 @@ namespace Statistic
             //ToolStripItem []items = m_ContextMenuStripListTecViews.Items.Find (e.TabHeaderText, true);
             //formChangeMode.SetItemChecked(m_ContextMenuStripListTecViews.Items.IndexOf(items [0]), false);
 
-            if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelTecView) {
+            if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelTecViewBase) {
                 formChangeMode.SetItemChecked(e.TabHeaderText, false);
             }
             else
@@ -254,7 +254,7 @@ namespace Statistic
             if (!(tecViews == null))
             {
                 //for (i = 0; i < formChangeMode.tec_index.Count; i++)
-                foreach (PanelTecView tv in tecViews)
+                foreach (PanelTecViewBase tv in tecViews)
                 {
                     tv.Stop();
                 }
@@ -286,7 +286,7 @@ namespace Statistic
 
             foreach (TabPage tab in tclTecViews.TabPages)
             {
-                if ((tab.Controls[0] is PanelTecView) || (tab.Controls[0] is PanelAdmin)) {
+                if ((tab.Controls[0] is PanelTecViewBase) || (tab.Controls[0] is PanelAdmin)) {
                     indxRemove.Add(tclTecViews.TabPages.IndexOf(tab));
                     ((PanelStatistic)tab.Controls[0]).Stop ();
                 }
@@ -311,8 +311,8 @@ namespace Statistic
         private void activateTabPage(int indx, bool active)
         {
             if (!(indx < 0))
-                if (tclTecViews.TabPages[indx].Controls[0] is PanelTecView)
-                    ((PanelTecView)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
+                    ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                 else
                     if (tclTecViews.TabPages[indx].Controls[0] is PanelCurPower)
                         ((PanelCurPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
@@ -390,7 +390,7 @@ namespace Statistic
                     //iRes = 1;
                     Abort ();
 
-                //foreach (PanelTecView t in tecViews)
+                //foreach (PanelTecViewBase t in tecViews)
                 //{
                 //    t.Reinit();
                 //}
@@ -549,7 +549,7 @@ namespace Statistic
                     comp_indx;
                 foreach (TEC t in formChangeMode.m_list_tec)
                 {
-                    tecView = new PanelTecView(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
+                    tecView = new PanelTecViewBase(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);
                     if (t.list_TECComponents.Count > 0)
@@ -557,7 +557,7 @@ namespace Statistic
                         comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            tecView = new PanelTecView(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
+                            tecView = new PanelTecViewBase(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             comp_indx++;
@@ -731,15 +731,15 @@ namespace Statistic
         {
             bool have_eror = false;
             m_lblDescError.Text = m_lblDateError.Text = string.Empty;
-            PanelTecView selTecView = null;
+            PanelTecViewBase selTecView = null;
 
             //for (int i = 0; i < selectedTecViews.Count; i++)
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (m_prevSelectedIndex < tclTecViews.TabPages.Count))
             {
-                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecView)
+                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewBase)
                 {
-                    selTecView = (PanelTecView)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
+                    selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
                     if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM] == null))))
                     {
@@ -1059,9 +1059,9 @@ namespace Statistic
         private void UpdateActiveGui()
         {
             //if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
-            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
+            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecViewBase)
                 //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
-                ((PanelTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
+                ((PanelTecViewBase)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
             else
                 ;
         }
@@ -1106,7 +1106,7 @@ namespace Statistic
         {
             if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                foreach (PanelTecView tv in tecViews) {
+                foreach (PanelTecViewBase tv in tecViews) {
                     if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
                         tv.tec.parametersTGForm.ShowDialog(this);
                         break;
