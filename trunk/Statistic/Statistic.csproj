@@ -72,6 +72,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dgwTables.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FormGraphicsSettings.cs">
       <SubType>Form</SubType>
     </Compile>
