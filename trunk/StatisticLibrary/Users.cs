@@ -50,7 +50,7 @@ namespace StatisticCommon
                 i = -1, j = -1;
             DataTable dataUsers;
             List<int[]> list_ip_val_parts = new List<int[]> (2);
-            string domain_name;
+            string domain_name = Environment.UserDomainName + @"\" + Environment.UserName;
             System.Net.IPAddress [] listIP = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
             if (listIP.Length > 1)
                 list_ip_val_parts.Add(strIpToVal(listIP[1].ToString().Split('.')));
@@ -61,7 +61,7 @@ namespace StatisticCommon
                     throw new Exception ("Не удалось получить список IP-адресов клиента");
 
             DbConnection connDB = DbSources.Sources().GetConnection(idListener, out err);
-            
+
             //GetUsers(string.Empty, string.Empty, out dataUsers, out err);
             //GetUsers(string.Empty, "DESCRIPTION", out dataUsers, out err);
             GetUsers(ref connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
@@ -70,17 +70,21 @@ namespace StatisticCommon
             {
                 for (i = 0; i < dataUsers.Rows.Count; i ++)
                 {
-                    if (list_ip_val_parts.Count == 1)
-                        list_ip_val_parts.Add (strIpToVal(dataUsers.Rows[i]["IP"].ToString().Split('.')));
-                    else
-                        list_ip_val_parts[1] = strIpToVal(dataUsers.Rows[i]["IP"].ToString().Split('.'));
+                    //Проверка IP-адресу
+                    //if (list_ip_val_parts.Count == 1)
+                    //    list_ip_val_parts.Add (strIpToVal(dataUsers.Rows[i]["IP"].ToString().Split('.')));
+                    //else
+                    //    list_ip_val_parts[1] = strIpToVal(dataUsers.Rows[i]["IP"].ToString().Split('.'));
 
-                    if (compareIpVal(list_ip_val_parts[0], list_ip_val_parts[1]) == true)
-                    {
-                        break;
-                    }
-                    else
-                        ;
+                    //if (compareIpVal(list_ip_val_parts[0], list_ip_val_parts[1]) == true)
+                    //{
+                    //    break;
+                    //}
+                    //else
+                    //    ;
+
+                    //Проверка по имени
+                    if (dataUsers.Rows[i][@"DOMAIN_NAME"].ToString ().Equals (domain_name) == true) break; else ;
                 }
 
                 if (i < dataUsers.Rows.Count)

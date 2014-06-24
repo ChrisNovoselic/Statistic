@@ -13,14 +13,14 @@ namespace StatisticCommon
         private Users m_user;
         private static DbConnection m_connConfigDB;
 
-        public static DataTable getListTEC(bool bIgnoreTECInUse, out int err)
+        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
         {
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST";
 
             if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
 
-            return DbTSQLInterface.Select(ref m_connConfigDB, req, null, null, out err);
+            return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }
 
         private DataTable getListTECComponent(string prefix, int id_tec, out int err)
@@ -92,7 +92,7 @@ namespace StatisticCommon
                     list_TECComponents = null, list_tg = null;
 
             //Использование статической функции
-            list_tec = getListTEC(bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
 
             if (err == 0) {
                 for (int i = 0; i < list_tec.Rows.Count; i++)
@@ -283,7 +283,7 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
 
             if (err == 0)
                 for (int i = 0; i < list_tec.Rows.Count; i ++) {

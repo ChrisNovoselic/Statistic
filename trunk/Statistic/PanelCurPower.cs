@@ -77,21 +77,24 @@ namespace Statistic
 
         public int m_msecPeriodUpdate;
 
-        public volatile string last_error;
+        /*public volatile string last_error;
         public  DateTime last_time_error;
         public volatile bool errored_state;
 
         public volatile string last_action;
         public  DateTime last_time_action;
-        public volatile bool actioned_state;
+        public volatile bool actioned_state;*/
+        HReports m_report;
         
         public bool m_bIsActive;
 
         public StatusStrip m_stsStrip;
 
-        public PanelCurPower(List<TEC> listTec, StatusStrip stsStrip, FormParameters par)
+        public PanelCurPower(List<TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
         {
             InitializeComponent();
+
+            m_report = rep;
 
             m_stsStrip = stsStrip;
             m_msecPeriodUpdate = par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME];
@@ -124,8 +127,8 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelCurPower(IContainer container, List<TEC> listTec, StatusStrip stsStrip, FormParameters par)
-            : this(listTec, stsStrip, par)
+        public PanelCurPower(IContainer container, List<TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
+            : this(listTec, stsStrip, par, rep)
         {
             container.Add(this);
         }
@@ -422,7 +425,7 @@ namespace Statistic
 
                 lock (lockValue)
                 {
-                    ((PanelCurPower)Parent).errored_state = false;
+                    ((PanelCurPower)Parent).m_report.errored_state = false;
                 }
             }
 
@@ -472,8 +475,8 @@ namespace Statistic
                     {
                         m_bIsNewState = true;
                         m_states.Clear();
-                        ((PanelCurPower)Parent).errored_state =
-                        ((PanelCurPower)Parent).actioned_state = false;
+                        ((PanelCurPower)Parent).m_report.errored_state =
+                        ((PanelCurPower)Parent).m_report.actioned_state = false;
                     }
                 }
             }
@@ -482,9 +485,9 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelCurPower)Parent).last_error = error_string;
-                    ((PanelCurPower)Parent).last_time_error = DateTime.Now;
-                    ((PanelCurPower)Parent).errored_state = true;
+                    ((PanelCurPower)Parent).m_report.last_error = error_string;
+                    ((PanelCurPower)Parent).m_report.last_time_error = DateTime.Now;
+                    ((PanelCurPower)Parent).m_report.errored_state = true;
                     ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
                 }
             }
@@ -493,9 +496,9 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelCurPower)Parent).last_action = action_string;
-                    ((PanelCurPower)Parent).last_time_action = DateTime.Now;
-                    ((PanelCurPower)Parent).actioned_state = true;
+                    ((PanelCurPower)Parent).m_report.last_action = action_string;
+                    ((PanelCurPower)Parent).m_report.last_time_action = DateTime.Now;
+                    ((PanelCurPower)Parent).m_report.actioned_state = true;
                     ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
                 }
             }
@@ -847,8 +850,8 @@ namespace Statistic
                 if (result == true)
                     lock (lockValue)
                     {
-                        ((PanelCurPower)Parent).errored_state =
-                        ((PanelCurPower)Parent).actioned_state = false;
+                        ((PanelCurPower)Parent).m_report.errored_state =
+                        ((PanelCurPower)Parent).m_report.actioned_state = false;
                     }
                 else
                     ;

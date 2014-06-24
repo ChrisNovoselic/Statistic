@@ -77,7 +77,7 @@ namespace Statistic
             comboBoxAccess.SelectionChangeCommitted -= comboBoxAccess_SelectionChangeCommitted;
 
             m_listTECID = new List<int>();
-            DataTable tec = InitTEC.getListTEC (true, out err); //Игнорировать столбец 'InUse' - использовать
+            DataTable tec = InitTEC.getListTEC(ref connConfigDB, true, out err); //Игнорировать столбец 'InUse' - использовать
 
             m_listTECID.Add(0);
             comboBoxAccess.Items.Add("Все станции");
@@ -201,7 +201,7 @@ namespace Statistic
                     case INDEX_UICONTROL.TEXTBOX_DOMAIN:
                     case INDEX_UICONTROL.TEXTBOX_USERNAME:
                         name_field = "DOMAIN_NAME";
-                        m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)INDEX_UICONTROL.TEXTBOX_DOMAIN].Text + @"\\" +
+                        m_users_edit.Rows[indx_sel][name_field] = m_arUIControl[(int)INDEX_UICONTROL.TEXTBOX_DOMAIN].Text + @"\" +
                                                                     m_arUIControl[(int)INDEX_UICONTROL.TEXTBOX_USERNAME].Text;
                         break;
                     case INDEX_UICONTROL.TEXTBOX_COMPUTERNAME:
@@ -391,7 +391,14 @@ namespace Statistic
 
         private void comboBoxRole_SelectedIndexChanged(object sender, EventArgs e)
         {
-            m_users_edit.Rows[dgvUsers.SelectedRows [0].Index]["ID_ROLE"] = m_listRolesID [comboBoxRole.SelectedIndex];
+            if ((dgvUsers.SelectedRows[0].Index < m_users_edit.Rows.Count) &&
+                (comboBoxRole.SelectedIndex < m_listRolesID.Count))
+                m_users_edit.Rows[dgvUsers.SelectedRows [0].Index]["ID_ROLE"] = m_listRolesID [comboBoxRole.SelectedIndex];
+            else {
+                Logging.Logg().LogErrorToFile(@"FormUsers::comboBoxRole_SelectedIndexChanged ()- индекс за пределами диапазона...", true);
+                return;
+            }
+
             if (m_listRolesID[comboBoxRole.SelectedIndex] > 100)
             {
                 if (comboBoxAccess.Enabled == false) comboBoxAccess.Enabled = true; else ;

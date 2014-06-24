@@ -78,24 +78,25 @@ namespace Statistic
 
         public int m_msecPeriodUpdate;
 
-        public volatile string last_error;
+        /*public volatile string last_error;
         public DateTime last_time_error;
         public volatile bool errored_state;
 
         public volatile string last_action;
         public DateTime last_time_action;
-        public volatile bool actioned_state;
+        public volatile bool actioned_state;*/
+        HReports m_report;
 
         public bool m_bIsActive;
 
         public StatusStrip m_stsStrip;
 
-        public PanelLastMinutes(List<TEC> listTec, StatusStrip stsStrip)
+        public PanelLastMinutes(List<TEC> listTec, StatusStrip stsStrip, HReports rep)
         {
             int i = -1;
 
             m_stsStrip = stsStrip;
-            //m_admin = admin;
+            m_report = rep;
             
             InitializeComponent();
 
@@ -129,8 +130,8 @@ namespace Statistic
             }
         }
 
-        public PanelLastMinutes(IContainer container, List<TEC> listTec, StatusStrip stsStrip)
-            : this(listTec, stsStrip)
+        public PanelLastMinutes(IContainer container, List<TEC> listTec, StatusStrip stsStrip, HReports rep)
+            : this(listTec, stsStrip, rep)
         {
             container.Add(this);
         }
@@ -504,7 +505,7 @@ namespace Statistic
 
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).errored_state = false;
+                    ((PanelLastMinutes)Parent).m_report.errored_state = false;
                 }
             }
 
@@ -556,8 +557,8 @@ namespace Statistic
                     {
                         m_bIsNewState = true;
                         m_states.Clear();
-                        ((PanelLastMinutes)Parent).errored_state =
-                        ((PanelLastMinutes)Parent).actioned_state = false;
+                        ((PanelLastMinutes)Parent).m_report.errored_state =
+                        ((PanelLastMinutes)Parent).m_report.actioned_state = false;
                     }
                 }
             }
@@ -566,9 +567,9 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).last_error = error_string;
-                    ((PanelLastMinutes)Parent).last_time_error = DateTime.Now;
-                    ((PanelLastMinutes)Parent).errored_state = true;
+                    ((PanelLastMinutes)Parent).m_report.last_error = error_string;
+                    ((PanelLastMinutes)Parent).m_report.last_time_error = DateTime.Now;
+                    ((PanelLastMinutes)Parent).m_report.errored_state = true;
                     ((PanelLastMinutes)Parent).m_stsStrip.BeginInvoke(((PanelLastMinutes)Parent).delegateEventUpdate);
                 }
             }
@@ -577,9 +578,9 @@ namespace Statistic
             {
                 lock (lockValue)
                 {
-                    ((PanelLastMinutes)Parent).last_action = action_string;
-                    ((PanelLastMinutes)Parent).last_time_action = DateTime.Now;
-                    ((PanelLastMinutes)Parent).actioned_state = true;
+                    ((PanelLastMinutes)Parent).m_report.last_action = action_string;
+                    ((PanelLastMinutes)Parent).m_report.last_time_action = DateTime.Now;
+                    ((PanelLastMinutes)Parent).m_report.actioned_state = true;
                     ((PanelLastMinutes)Parent).m_stsStrip.BeginInvoke(((PanelLastMinutes)Parent).delegateEventUpdate);
                 }
             }
@@ -968,8 +969,8 @@ namespace Statistic
                 if (result == true)
                     lock (lockValue)
                     {
-                        ((PanelLastMinutes)Parent).errored_state =
-                        ((PanelLastMinutes)Parent).actioned_state = false;
+                        ((PanelLastMinutes)Parent).m_report.errored_state =
+                        ((PanelLastMinutes)Parent).m_report.actioned_state = false;
                     }
                 else
                     ;

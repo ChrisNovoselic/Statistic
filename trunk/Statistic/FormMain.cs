@@ -802,19 +802,19 @@ namespace Statistic
 
                     if (m_panelCurPower.m_bIsActive == true)
                     {
-                        if (m_panelCurPower.actioned_state == true)
+                        if (m_report.actioned_state == true)
                         {
-                            m_lblDateError.Text = m_panelCurPower.last_time_action.ToString();
-                            m_lblDescError.Text = m_panelCurPower.last_action;
+                            m_lblDateError.Text = m_report.last_time_action.ToString();
+                            m_lblDescError.Text = m_report.last_action;
                         }
                         else
                             ;
 
-                        if (m_panelCurPower.errored_state == true)
+                        if (m_report.errored_state == true)
                         {
                             have_eror = true;
-                            m_lblDateError.Text = m_panelCurPower.last_time_error.ToString();
-                            m_lblDescError.Text = m_panelCurPower.last_error;
+                            m_lblDateError.Text = m_report.last_time_error.ToString();
+                            m_lblDescError.Text = m_report.last_error;
                         }
                         else
                             ;
@@ -824,19 +824,19 @@ namespace Statistic
 
                     if (m_panelLastMinutes.m_bIsActive == true)
                     {
-                        if (m_panelLastMinutes.actioned_state == true)
+                        if (m_report.actioned_state == true)
                         {
-                            m_lblDateError.Text = m_panelLastMinutes.last_time_action.ToString();
-                            m_lblDescError.Text = m_panelLastMinutes.last_action;
+                            m_lblDateError.Text = m_report.last_time_action.ToString();
+                            m_lblDescError.Text = m_report.last_action;
                         }
                         else
                             ;
 
-                        if (m_panelLastMinutes.errored_state == true)
+                        if (m_report.errored_state == true)
                         {
                             have_eror = true;
-                            m_lblDateError.Text = m_panelLastMinutes.last_time_error.ToString();
-                            m_lblDescError.Text = m_panelLastMinutes.last_error;
+                            m_lblDateError.Text = m_report.last_time_error.ToString();
+                            m_lblDescError.Text = m_report.last_error;
                         }
                         else
                             ;
@@ -956,11 +956,11 @@ namespace Statistic
                 else
                     ;
 
-                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters);
+                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters, m_report);
                 m_panelCurPower.SetDelegate(delegateEvent);
                 //m_panelCurPower.Start();
 
-                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain);
+                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, m_report);
                 m_panelLastMinutes.SetDelegate(delegateEvent);
                 //m_panelLastMinutes.Start();
 

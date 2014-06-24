@@ -76,17 +76,11 @@ namespace StatisticCommon
             }
         }
 
-        public volatile string last_error;
-        public DateTime last_time_error;
-        public volatile bool errored_state;
-
-        public volatile string last_action;
-        public DateTime last_time_action;
-        public volatile bool actioned_state;
-
         public FormMainTrans()
         {
             InitializeComponent();
+
+            m_report = new HReports();
 
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
@@ -462,22 +456,22 @@ namespace StatisticCommon
 
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                have_eror = errored_state;
+                have_eror = m_report.errored_state;
 
-                if (((have_eror == true) || (actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
+                if (((have_eror == true) || (m_report.actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
                 {
-                    if (actioned_state == true)
+                    if (m_report.actioned_state == true)
                     {
-                        m_lblDescError.Text = last_action;
-                        m_lblDateError.Text = last_time_action.ToString();
+                        m_lblDescError.Text = m_report.last_action;
+                        m_lblDateError.Text = m_report.last_time_action.ToString();
                     }
                     else
                         ;
 
                     if (have_eror == true)
                     {
-                        m_lblDescError.Text = last_error;
-                        m_lblDateError.Text = last_time_error.ToString();
+                        m_lblDescError.Text = m_report.last_error;
+                        m_lblDateError.Text = m_report.last_time_error.ToString();
                     }
                     else
                         ;
