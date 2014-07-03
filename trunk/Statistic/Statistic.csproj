@@ -129,7 +129,13 @@
     <Compile Include="PanelAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelCurPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelCustomTecView.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelLastMinutes.cs">
@@ -151,19 +157,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="TCPServer.cs" />
-    <Compile Include="TCPServerAsync.cs" />
-    <Compile Include="PanelAdminNSS.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="FormPasswordBase.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormPasswordBase.designer.cs">
       <DependentUpon>FormPasswordBase.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelCustomTecView.cs">
-      <SubType>Component</SubType>
+    <Compile Include="TCPServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TCPServerAsync.cs">
+      <SubType>Code</SubType>
     </Compile>
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>

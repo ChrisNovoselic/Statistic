@@ -163,7 +163,7 @@ namespace Statistic
 
         public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HReports rep)
         {
-            bool bUseData = false;
+            bool bUseData = true;
             switch (type) {
                 case FormChangeMode.MANAGER.DISP:
                     m_admin = new AdminTS_KomDisp(rep);
@@ -245,7 +245,7 @@ namespace Statistic
             m_admin.SetDelegateReport(ferr, fact);
         }
 
-        public virtual void Start () {
+        public override void Start () {
             m_admin.Start ();
         }
 
@@ -466,7 +466,7 @@ namespace Statistic
 
         public virtual void ClearTables() {}
 
-        public virtual void Activate(bool active)
+        public override void Activate(bool active)
         {
             isActive = active;
 

@@ -77,7 +77,7 @@ namespace Statistic
             comboBoxAccess.SelectionChangeCommitted -= comboBoxAccess_SelectionChangeCommitted;
 
             m_listTECID = new List<int>();
-            DataTable tec = InitTEC.getListTEC(ref connConfigDB, true, out err); //Игнорировать столбец 'InUse' - использовать
+            DataTable tec = InitTEC_200.getListTEC(ref connConfigDB, true, out err); //Игнорировать столбец 'InUse' - использовать
 
             m_listTECID.Add(0);
             comboBoxAccess.Items.Add("Все станции");

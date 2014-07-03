@@ -46,8 +46,8 @@ namespace Statistic
 
         #endregion
     }
-    
-    public partial class PanelLastMinutes : PanelStatistic
+
+    public partial class PanelLastMinutes : PanelStatisticView
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         
@@ -136,12 +136,7 @@ namespace Statistic
             container.Add(this);
         }
 
-        public void SetDelegate(DelegateFunc dStatus)
-        {
-            this.delegateEventUpdate = dStatus;
-        }
-
-        public void Start()
+        public override void Start()
         {
             int i = 0;
             foreach (Control ctrl in this.Controls)
@@ -171,7 +166,7 @@ namespace Statistic
             }
         }
 
-        public void Activate(bool active)
+        public override void Activate(bool active)
         {
             if (m_bIsActive == active)
                 return;
@@ -588,44 +583,45 @@ namespace Statistic
             private void ShowLastMinutesTM()
             {
                 Color clrBackColor;
-                double dblPercent = 0.0,
-                    dblUDGe = 0.0;
-                string strToolTip = string.Empty;
+                int warn = -1
+                    , cntWarn = -1
+                    ;
+                Hd2PercentControl d2PercentControl = new Hd2PercentControl ();
+                string strToolTip = string.Empty,
+                        strWarn = string.Empty;
                 
                 foreach (TECComponent g in m_list_TECComponents)
                 {
+                    cntWarn = 0;
                     for (int hour = 1; hour < 25; hour++)
                     {
                         clrBackColor = s_clrBakColorLabelVal;
-                        dblPercent = 0.0;
                         strToolTip = string.Empty;
 
-                        //if ((i > 0) && ((i - 0) < m_dictValuesHours[g.m_id].valuesUDGe.Length))
-                            dblUDGe = m_dictValuesHours[g.m_id].valuesUDGe[hour];
-                        //else
-                        //    dblUDGe = 0.0;
-
-                        strToolTip += @"УДГе=" + dblUDGe.ToString (@"F2");
-
-                        if ((m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) && (dblUDGe > 1))
-                            dblPercent = (m_dictValuesHours[g.m_id].valuesLastMinute[hour] - dblUDGe) / dblUDGe * 100;
-                        else
-                            ;
-                        strToolTip += @";Мон2%:" + dblPercent.ToString (@"F1");
+                        bool bPmin = false;
+                        if (m_tec.m_id == 5) bPmin = true; else ;
+                        strToolTip = d2PercentControl.Calculate(m_dictValuesHours[g.m_id], hour, bPmin, out warn);
 
                         m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
 
-                        if (m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) {
-                            m_dictLabelVal[g.m_id][hour - 1].Text = m_dictValuesHours[g.m_id].valuesLastMinute[hour].ToString(@"F2");
-
-                            if ((dblUDGe > 1) &&
-                                (m_dictValuesHours[g.m_id].valuesLastMinute[hour] > 1) &&
-                                ((!(Math.Abs(dblPercent) < 2))))
+                        if (m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] > 1)
+                        {
+                            if ((! (warn == 0)) &&
+                                (m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] > 1))
                             {
                                 clrBackColor = Color.Red;
+                                cntWarn ++;
                             }
                             else
-                                ;
+                                cntWarn = 0;
+
+                            if (cntWarn > 0) {
+                                //strWarn = cntWarn + @":";
+                            }
+                            else
+                                strWarn = string.Empty;
+
+                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour].ToString(@"F2");
                         }
                         else
                             m_dictLabelVal[g.m_id][hour - 1].Text = 0.ToString (@"F0");
@@ -669,53 +665,56 @@ namespace Statistic
 
                 foreach (TECComponent g in m_tec.list_TECComponents)
                 {
-                    foreach (TG tg in g.TG)
-                    {
-                        for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                    if ((g.m_id > 100) && (g.m_id < 500))
+                        foreach (TG tg in g.TG)
                         {
-                            tg.power_LastMinutesTM[i] = 0;
-                        }
-
-                        tgRows = table_in.Select (@"[ID]=" + tg.id_tm);
-                        
-                        for (i = 0; i < tgRows.Length; i++)
-                        {
-                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                return false;
-                            else
-                                ;
-
-                            //if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
-                            //    return false;
-                            //else
-                            //    ;
-
-                            switch (m_tec.type())
+                            for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
                             {
-                                case TEC.TEC_TYPE.COMMON:
-                                    break;
-                                case TEC.TEC_TYPE.BIYSK:
-                                    //value *= 20;
-                                    break;
-                                default:
-                                    break;
+                                tg.power_LastMinutesTM[i] = 0;
                             }
 
-                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                return false;
-                            else
-                                ;
+                            tgRows = table_in.Select (@"[ID]=" + tg.id_tm);
+                        
+                            for (i = 0; i < tgRows.Length; i++)
+                            {
+                                if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                    return false;
+                                else
+                                    ;
 
-                            hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
-                            if (! (hour < 24)) {
-                                hour -= 24;
+                                //if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
+                                //    return false;
+                                //else
+                                //    ;
+
+                                switch (m_tec.type())
+                                {
+                                    case TEC.TEC_TYPE.COMMON:
+                                        break;
+                                    case TEC.TEC_TYPE.BIYSK:
+                                        //value *= 20;
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                    return false;
+                                else
+                                    ;
+
+                                hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
+                                if (! (hour < 24)) {
+                                    hour -= 24;
+                                }
+                                else ;
+
+                                tg.power_LastMinutesTM[hour] = value;
+                                m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
                             }
-                            else ;
-
-                            tg.power_LastMinutesTM[hour] = value;
-                            m_dictValuesHours [g.m_id].valuesLastMinute [hour] += value;
                         }
-                    }
+                    else
+                        ; //Не ГТП
                 }
 
                 return bRes;
@@ -745,59 +744,24 @@ namespace Statistic
                 return null;
             }
 
-            private void GetSensorsTMRequest()
-            {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.sensorsTMRequest());
-            }
+            //private void GetSensorsTMRequest()
+            //{
+            //    m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.sensorsTMRequest());
+            //}
 
-            private bool GetSensorsTMResponse(DataTable table)
+            private bool GetSensorsTEC()
             {
                 bool bRes = true;
 
-                string s;
-                for (int i = 0; i < table.Rows.Count; i++)
+                //ТЭЦ в полном составе
+                int j = -1;
+                for (j = 0; j < m_tec.list_TECComponents.Count; j++)
                 {
-                    //Шаблон для '[0](["NAME"])'
-                    //Формирование правильное имя турбиногенератора
-                    s = TEC.getNameTG(m_tec.m_strTemplateNameSgnDataTM, table.Rows[i]["NAME"].ToString().ToUpper());
-
-                    //if (num_TECComponent < 0)
-                    {//ТЭЦ в полном составе
-                        int j = -1;
-                        for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-                        {
-                            int k = -1;
-                            for (k = 0; k < m_tec.list_TECComponents[j].TG.Count; k++)
-                            {
-                                if (m_tec.list_TECComponents[j].TG[k].name_shr.Equals(s) == true)
-                                {
-                                    m_tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i]["ID"].ToString());
-
-                                    m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]); ;
-
-                                    //Прерывание внешнего цикла
-                                    j = m_tec.list_TECComponents.Count;
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                        }
-                    }
-                    /*else
-                    {// Для ТЭЦ НЕ в полном составе (ГТП, ЩУ, ТГ)
-                        int k = -1;
-                        for (k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
-                        {
-                            if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr.Equals(s) == true)
-                            {
-                                tec.list_TECComponents[num_TECComponent].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
-                                break;
-                            }
-                            else
-                                ;
-                        }
-                    }*/
+                    if ((m_tec.list_TECComponents[j].m_id > 100) && (m_tec.list_TECComponents[j].m_id < 500))
+                        for (int k = 0; k < m_tec.list_TECComponents[j].TG.Count; k++)
+                            m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]);
+                        else
+                            ;
                 }
 
                 sensorsString_TM = string.Empty;
@@ -807,12 +771,12 @@ namespace Statistic
                     if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (TEC.m_typeSourceTM) {
-                                case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT]) {
+                                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
                                     break;
-                                case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                     //Источник для каждой ТЭЦ свой
                                     sensorsString_TM += @" OR ";
                                     break;
@@ -822,13 +786,13 @@ namespace Statistic
                         else
                             ;
 
-                        switch (TEC.m_typeSourceTM)
+                        switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
                         {
-                            case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                            case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
                                 sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
                                 break;
-                            case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                            case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                 //Источник для каждой ТЭЦ свой
                                 sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                                 break;
@@ -838,7 +802,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ErrorReportSensors(ref table);
+                        //ErrorReportSensors(ref table);
 
                         return false;
                     }
@@ -847,33 +811,12 @@ namespace Statistic
                 return bRes;
             }
 
-            private void ErrorReportSensors(ref DataTable src)
-            {
-                string error = "Ошибка определения идентификаторов датчиков в строке ";
-                for (int j = 0; j < src.Rows.Count; j++)
-                    error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
-
-                error = error.Substring(0, error.LastIndexOf(","));
-                ErrorReport(error);
-            }
-
             private void StateRequest(StatesMachine state)
             {
                 switch (state)
                 {
                     case StatesMachine.Init_TM:
                         ActionReport("Получение идентификаторов датчиков.");
-                        switch (m_tec.type())
-                        {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
-                                GetSensorsTMRequest();
-                                break;
-                            //case TEC.TEC_TYPE.BIYSK:
-                            //break;
-                            default:
-                                break;
-                        }
                         break;
                     case StatesMachine.LastMinutes_TM:
                         ActionReport("Получение текущих значений.");
@@ -901,13 +844,7 @@ namespace Statistic
                 switch (state)
                 {
                     case StatesMachine.Init_TM:
-                        switch (m_tec.type())
-                        {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
-                                return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
-                        }
-                        break;
+                        return true;
                     case StatesMachine.LastMinutes_TM:
                         return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
                     case StatesMachine.PBRValues:
@@ -931,7 +868,7 @@ namespace Statistic
                         {
                             case TEC.TEC_TYPE.COMMON:
                             case TEC.TEC_TYPE.BIYSK:
-                                result = GetSensorsTMResponse(table);
+                                result = GetSensorsTEC();
                                 break;
                         }
                         if (result == true)
@@ -1187,10 +1124,16 @@ namespace Statistic
                                 //foreach (TECComponent g in tec.list_TECComponents)
                                 for (j = 0; j < m_list_TECComponents.Count; j++)
                                 {
-                                    if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count)
+                                    if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count) {
                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
-                                    else
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 1];
+                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                    }
+                                    else {
                                          m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = 0.0;
+                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = 0.0;
+                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = 0.0;
+                                    }
                                     //j++;
                                 }
                             }
@@ -1243,8 +1186,11 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
+                                    if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull))) {
                                          m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
+                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                    }
                                     else
                                         ;
 
@@ -1595,8 +1541,8 @@ namespace Statistic
             {
                 foreach (TECComponent g in m_list_TECComponents)
                 {
-                    for (int i = 0; i < m_dictValuesHours[g.m_id].valuesLastMinute.Length; i++)
-                        m_dictValuesHours[g.m_id].valuesLastMinute[i] = 0.0;
+                    for (int i = 0; i < m_dictValuesHours[g.m_id].valuesLastMinutesTM.Length; i++)
+                        m_dictValuesHours[g.m_id].valuesLastMinutesTM[i] = 0.0;
                 }
             }
         }

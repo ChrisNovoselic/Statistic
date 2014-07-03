@@ -46,8 +46,8 @@ namespace Statistic
 
         #endregion
     }
-    
-    public partial class PanelCurPower : PanelStatistic
+
+    public partial class PanelCurPower : PanelStatisticView
     {
         enum INDEX_LABEL : int { NAME,
                                 DATETIME,
@@ -97,7 +97,7 @@ namespace Statistic
             m_report = rep;
 
             m_stsStrip = stsStrip;
-            m_msecPeriodUpdate = par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME];
+            m_msecPeriodUpdate = Int32.Parse (par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
 
             this.Dock = DockStyle.Fill;
 
@@ -133,12 +133,7 @@ namespace Statistic
             container.Add(this);
         }
 
-        public void SetDelegate(DelegateFunc dStatus)
-        {
-            this.delegateEventUpdate = dStatus;
-        }
-
-        public void Start () {
+        public override void Start () {
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
@@ -162,7 +157,7 @@ namespace Statistic
             }
         }
 
-        public void Activate (bool active) {
+        public override void Activate (bool active) {
             if (m_bIsActive == active)
                 return;
             else
@@ -650,60 +645,13 @@ namespace Statistic
                 return null;
             }
 
-            private void GetSensorsTMRequest()
-            {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.sensorsTMRequest());
-            }
-
-            private bool GetSensorsTMResponse(DataTable table)
+            private bool GetSensorsTEC()
             {
                 bool bRes = true;
 
-                string s;
-                for (int i = 0; i < table.Rows.Count; i++)
-                {
-                    //Шаблон для '[0](["NAME"])'
-                    //Формирование правильное имя турбиногенератора
-                    s = TEC.getNameTG(m_tec.m_strTemplateNameSgnDataTM, table.Rows[i]["NAME"].ToString().ToUpper());
-
-                    //if (num_TECComponent < 0)
-                    {//ТЭЦ в полном составе
-                        int j = -1;
-                        for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-                        {
-                            int k = -1;
-                            for (k = 0; k < m_tec.list_TECComponents[j].TG.Count; k++)
-                            {
-                                if (m_tec.list_TECComponents[j].TG[k].name_shr.Equals(s) == true)
-                                {
-                                    m_tec.list_TECComponents[j].TG[k].id_tm = int.Parse(table.Rows[i]["ID"].ToString());
-
-                                    m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]); ;
-
-                                    //Прерывание внешнего цикла
-                                    j = m_tec.list_TECComponents.Count;
-                                    break;
-                                }
-                                else
-                                    ;
-                            }
-                        }
-                    }
-                    /*else
-                    {// Для ТЭЦ НЕ в полном составе (ГТП, ЩУ, ТГ)
-                        int k = -1;
-                        for (k = 0; k < tec.list_TECComponents[num_TECComponent].TG.Count; k++)
-                        {
-                            if (tec.list_TECComponents[num_TECComponent].TG[k].name_shr.Equals(s) == true)
-                            {
-                                tec.list_TECComponents[num_TECComponent].TG[k].id_tm = int.Parse(table.Rows[i][1].ToString());
-                                break;
-                            }
-                            else
-                                ;
-                        }
-                    }*/
-                }
+                int j = -1;
+                for (j = 0; j < m_tec.list_TECComponents.Count; j++)
+                    if (m_tec.list_TECComponents [j].m_id > 1000) m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG [0]); else ;                
 
                 sensorsString_TM = string.Empty;
 
@@ -712,12 +660,12 @@ namespace Statistic
                     if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (TEC.m_typeSourceTM) {
-                                case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT]) {
+                                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
                                     break;
-                                case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                     //Источник для каждой ТЭЦ свой
                                     sensorsString_TM += @" OR ";
                                     break;
@@ -727,13 +675,13 @@ namespace Statistic
                         else
                             ;
 
-                        switch (TEC.m_typeSourceTM)
+                        switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
                         {
-                            case TEC.INDEX_TYPE_SOURCE_TM.COMMON:
+                            case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
                                 sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
                                 break;
-                            case TEC.INDEX_TYPE_SOURCE_TM.INDIVIDUAL:
+                            case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                 //Источник для каждой ТЭЦ свой
                                 sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                                 break;
@@ -743,7 +691,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ErrorReportSensors(ref table);
+                        //ErrorReportSensors(ref table);
 
                         return false;
                     }
@@ -752,15 +700,15 @@ namespace Statistic
                 return bRes;
             }
 
-            private void ErrorReportSensors(ref DataTable src)
-            {
-                string error = "Ошибка определения идентификаторов датчиков в строке ";
-                for (int j = 0; j < src.Rows.Count; j++)
-                    error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
+            //private void ErrorReportSensors(ref DataTable src)
+            //{
+            //    string error = "Ошибка определения идентификаторов датчиков в строке ";
+            //    for (int j = 0; j < src.Rows.Count; j++)
+            //        error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
 
-                error = error.Substring(0, error.LastIndexOf(","));
-                ErrorReport(error);
-            }
+            //    error = error.Substring(0, error.LastIndexOf(","));
+            //    ErrorReport(error);
+            //}
 
             private void StateRequest(StatesMachine state)
             {
@@ -768,17 +716,6 @@ namespace Statistic
                 {
                     case StatesMachine.Init_TM:
                         ActionReport("Получение идентификаторов датчиков.");
-                        switch (m_tec.type())
-                        {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
-                                GetSensorsTMRequest();
-                                break;
-                            //case TEC.TEC_TYPE.BIYSK:
-                                //break;
-                            default:
-                                break;
-                        }
                         break;
                     case StatesMachine.Current_TM:
                         ActionReport("Получение текущих значений.");
@@ -797,14 +734,7 @@ namespace Statistic
                 switch (state)
                 {
                     case StatesMachine.Init_TM:
-                        switch (m_tec.type())
-                        {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
-                                return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
-                            //case TEC.TEC_TYPE.BIYSK:
-                                //return true;
-                        }
+                        return true;
                         break;
                     case StatesMachine.Current_TM:
                         return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
@@ -825,7 +755,7 @@ namespace Statistic
                         {
                             case TEC.TEC_TYPE.COMMON:
                             case TEC.TEC_TYPE.BIYSK:
-                                result = GetSensorsTMResponse(table);
+                                result = GetSensorsTEC();
                                 break;
                             //case TEC.TEC_TYPE.BIYSK:
                                 //result = true;

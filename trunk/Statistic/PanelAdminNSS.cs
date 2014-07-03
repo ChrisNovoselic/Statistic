@@ -88,8 +88,8 @@ namespace Statistic
 
         protected override void getDataGridViewAdmin()
         {
-            double value;
-            bool valid;
+            double value = 0.0;
+            bool valid = false;
 
             foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail) 
             {

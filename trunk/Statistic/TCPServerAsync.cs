@@ -68,10 +68,18 @@ namespace Statistic{
         /// <summary>
         /// Starts the TCP Server listening for new clients.
         /// </summary>
-        public void Start()
+        public int Start()
         {
-            this.tcpListener.Start();
+            int iRes = 0;
+            
+            try { this.tcpListener.Start(); }
+            catch (Exception e) {
+                Logging.Logg().LogExceptionToFile(e, @"tcpListener.Start()");
+                iRes = -1;
+            }
             this.tcpListener.BeginAcceptTcpClient(AcceptTcpClientCallback, null);
+
+            return iRes;
         }
 
         /// <summary>
