@@ -156,10 +156,10 @@ namespace StatisticCommon
 
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                    this.m_list_tec = new InitTEC(idListener, bIgnoreTECInUse, bUseData).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, bUseData).tec;
                 else
                 {
-                    this.m_list_tec = new InitTEC(idListener, (short)mode, bIgnoreTECInUse, bUseData).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, bUseData).tec;
                 }
             else
                 this.m_list_tec = new List <TEC> ();

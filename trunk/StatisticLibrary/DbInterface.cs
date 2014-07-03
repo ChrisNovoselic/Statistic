@@ -23,8 +23,8 @@ namespace StatisticCommon
         }
 
         public static int MAX_RETRY = 3;
-        public static int MAX_WAIT_COUNT = 25;
-        public static int WAIT_TIME_MS = 666;
+        public static int MAX_WAIT_COUNT = 39;
+        public static int WAIT_TIME_MS = 106;
 
         protected class DbInterfaceListener
         {
@@ -158,15 +158,15 @@ namespace StatisticCommon
                 m_listListeners[listenerId].requestDB = request;
                 m_listListeners[listenerId].dataPresent = false;
                 m_listListeners[listenerId].dataError = false;
-            }
 
-            try
-            {
-                if (! (WaitHandle.WaitAny(new WaitHandle[] { sem }, 0) == 0)) sem.Release(1); else ;
-            }
-            catch (Exception e)
-            {
-                Logging.Logg ().LogExceptionToFile (e, @"DbInterface::Request (int, string)");
+                try
+                {
+                    if (!(WaitHandle.WaitAny(new WaitHandle[] { sem }, 0) == 0/*WaitHandle.WaitTimeout*/)) sem.Release(1); else ;
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg ().LogExceptionToFile (e, @"DbInterface::Request (int, string)");
+                }
             }
 
             //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - " + listenerId + @", " + request);

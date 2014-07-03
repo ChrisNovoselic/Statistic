@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace StatisticCommon
 {
-    public partial class FormParametersBase : Form
+    public abstract partial class FormParametersBase : Form
     {
         public enum TYPE_VALUE : int { CURRENT, PREVIOUS, COUNT_TYPE_VALUE };
 
@@ -14,18 +14,12 @@ namespace StatisticCommon
         public System.Windows.Forms.Button btnReset;
         public System.Windows.Forms.Button btnCancel;
 
-        /*[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool WritePrivateProfileString(string lpAppName,
-           string lpKeyName, string lpString, string lpFileName);*/
-        protected FileINI m_FileINI;
-
         public bool mayClose;
         //private DelegateFunc delegateParamsApply;
 
         public Int16 m_State;
 
-        public FormParametersBase (string nameFileINI) {
+        public FormParametersBase () {
             this.btnOk = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -67,11 +61,13 @@ namespace StatisticCommon
 
             this.KeyUp +=new KeyEventHandler(FormParametersBase_KeyUp);
 
-            m_FileINI = new FileINI(nameFileINI);
-
             m_State = 0;
         }
 
+        public abstract void loadParam();
+
+        public abstract void saveParam();
+        
         public void Parameters_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!mayClose)

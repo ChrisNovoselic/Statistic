@@ -10,6 +10,9 @@ namespace StatisticCommon
 {
     public partial class FormChangeMode : Form
     {
+        public event DelegateFunc OnMenuItemsClear;
+        public event DelegateStringFunc OnMenuItemAdd;
+        
         public event DelegateFunc ev_сменитьРежим;
 
         public List<TEC> m_list_tec;
@@ -29,7 +32,7 @@ namespace StatisticCommon
         //private ConnectionSettings m_connSet;
 
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
-        public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER };
+        public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER, UNKNOWN };
 
         public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
@@ -150,7 +153,10 @@ namespace StatisticCommon
 
         private void FillListBoxTab()
         {
+            //Контекстное меню - главная форма
             if (! (m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Clear(); else ;
+            //Контекстное меню - главная форма
+            if (!(OnMenuItemsClear == null)) OnMenuItemsClear(); else ;
             
             if (!(m_list_tec == null))
             {
@@ -176,7 +182,9 @@ namespace StatisticCommon
                     if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                     {
                         clbMode.Items.Add(t.name_shr);
+                        //Контекстное меню - главная форма
                         if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr); else ;
+                        if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr);
 
                         m_list_IdItem.Add(t.m_id);
 
@@ -206,7 +214,9 @@ namespace StatisticCommon
                                 (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
                             {
                                 clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
+                                //Контекстное меню - главная форма
                                 if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr + " - " + g.name_shr); else ;
+                                if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr + " - " + g.name_shr);
 
                                 m_list_IdItem.Add(g.m_id);
 

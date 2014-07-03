@@ -10,22 +10,19 @@ using System.Runtime.InteropServices;
 
 namespace StatisticCommon
 {
-    public partial class FormParametersTG : FormParametersBase
+    public abstract partial class FormParametersTG : FormParametersBase
     {
-        private const int COUNT_TG = 8;
-        private const char SEP_ID_TG = ',';
-        private string[] NAME_TIME = { "min", "hour" };
-        private static string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск (" + ProgramBase.AppName + ")";
+        protected const int COUNT_TG = 8;
 
-        private System.Windows.Forms.TextBox[,] m_array_tbxTG;
-        private System.Windows.Forms.Label[,] m_array_lblTG;
+        protected System.Windows.Forms.TextBox[,] m_array_tbxTG;
+        protected System.Windows.Forms.Label[,] m_array_lblTG;
 
-        private int[,] m_tg_id_default = { { 9223, 9222, 9431, 9430, 9433, 9435, 9434, 9432 }, { 8436, 8470, 8878, 8674, 8980, 9150, 6974, 8266 } };
-        private int[,] m_tg_id;
+        protected int[,] m_tg_id_default = { { 9223, 9222, 9431, 9430, 9433, 9435, 9434, 9432 }, { 8436, 8470, 8878, 8674, 8980, 9150, 6974, 8266 } };
+        protected int[,] m_tg_id;
 
         //public FormParametersTG(DelegateFunc delParApp)
-        public FormParametersTG(string nameFileINI)
-            : base(nameFileINI)
+        public FormParametersTG()
+            : base()
         {
             InitializeComponent();
 
@@ -87,11 +84,79 @@ namespace StatisticCommon
 
             this.ClientSize = new System.Drawing.Size(this.ClientSize.Width, btnReset.Location.Y + btnReset.Size.Height + 9);
 
-            loadParam();
             mayClose = false;
         }
 
-        public void loadParam()
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < COUNT_TG; i++)
+            {
+                m_tg_id[(int)TG.ID_TIME.MINUTES, i] = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i];
+                m_tg_id[(int)TG.ID_TIME.HOURS, i] = m_tg_id_default[(int)TG.ID_TIME.HOURS, i];
+            }
+
+            for (int i = 0; i < COUNT_TG; i++)
+            {
+                m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i].ToString();
+                m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id_default[(int)TG.ID_TIME.HOURS, i].ToString();
+            }
+
+            m_State++;
+        }
+
+        override public void buttonCancel_Click(object sender, EventArgs e)
+        {
+            loadParam();
+
+            m_State = 0;
+
+            base.buttonCancel_Click(sender, e);
+        }
+
+        public int ParamsGetTgId(TG.ID_TIME id_time, int sensor)
+        {
+            return m_tg_id[(int)id_time, sensor];
+        }
+
+        private void btnOk_Click(object sender, EventArgs e)
+        {
+            int tg_id;
+            for (int i = 0; i < COUNT_TG; i++)
+            {
+                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.MINUTES, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id[(int)TG.ID_TIME.MINUTES, i].ToString();
+                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.HOURS, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id[(int)TG.ID_TIME.HOURS, i].ToString();
+            }
+
+            saveParam();
+
+            //delegateParamsApply();
+
+            mayClose = true;
+
+            if (m_State > 0)
+                m_State--;
+            else
+                ;
+
+            Close();
+        }
+    }
+
+    public partial class FormParametersTG_FileINI : FormParametersTG
+    {
+        private const char SEP_ID_TG = ',';
+        private string[] NAME_TIME = { "min", "hour" };
+        private static string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск (" + ProgramBase.AppName + ")";
+
+        FileINI m_FileINI;
+
+        public FormParametersTG_FileINI (string nameSetupFileINI) {
+            m_FileINI = new FileINI (nameSetupFileINI);
+
+            loadParam();
+        }
+
+        public override void loadParam()
         {
             string key_value;
             string[] key_values;
@@ -124,7 +189,7 @@ namespace StatisticCommon
             }
         }
 
-        public void WriteTGIds(int id_time, int num_tg)
+        private void WriteTGIds(int id_time, int num_tg)
         {
             string key_value;
 
@@ -134,7 +199,7 @@ namespace StatisticCommon
             m_FileINI.WriteString(NAME_SECTION_TG_ID, "TG" + (num_tg + 1).ToString() + " " + NAME_TIME[id_time], key_value);
         }
 
-        public void saveParam()
+        public override void saveParam()
         {
             for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
@@ -143,60 +208,6 @@ namespace StatisticCommon
                     WriteTGIds(i, j);
                 }
             }
-        }
-
-        private void btnOk_Click(object sender, EventArgs e)
-        {
-            int tg_id;
-            for (int i = 0; i < COUNT_TG; i++)
-            {
-                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.MINUTES, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id[(int)TG.ID_TIME.MINUTES, i].ToString();
-                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.HOURS, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id[(int)TG.ID_TIME.HOURS, i].ToString();
-            }
-
-            saveParam();
-
-            //delegateParamsApply();
-
-            mayClose = true;
-
-            if (m_State > 0)
-                m_State--;
-            else
-                ;
-
-            Close();
-        }
-
-        private void btnReset_Click(object sender, EventArgs e)
-        {
-            for (int i = 0; i < COUNT_TG; i++)
-            {
-                m_tg_id[(int)TG.ID_TIME.MINUTES, i] = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i];
-                m_tg_id[(int)TG.ID_TIME.HOURS, i] = m_tg_id_default[(int)TG.ID_TIME.HOURS, i];
-            }
-
-            for (int i = 0; i < COUNT_TG; i++)
-            {
-                m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i].ToString();
-                m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id_default[(int)TG.ID_TIME.HOURS, i].ToString();
-            }
-
-            m_State++;
-        }
-
-        override public void buttonCancel_Click(object sender, EventArgs e)
-        {
-            loadParam();
-
-            m_State = 0;
-
-            base.buttonCancel_Click(sender, e);
-        }
-
-        public int ParamsGetTgId(TG.ID_TIME id_time, int sensor)
-        {
-            return m_tg_id[(int)id_time, sensor];
         }
     }
 }

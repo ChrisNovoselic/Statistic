@@ -45,19 +45,51 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin.cs" />
-    <Compile Include="AdminTS_KomDisp.cs" />
-    <Compile Include="AdminTS_NSS.cs" />
-    <Compile Include="ConnectionSettings.cs" />
-    <Compile Include="ConnectionSettingsSource.cs" />
-    <Compile Include="DbInterface.cs" />
+    <Compile Include="Admin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AdminTS.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AdminTS_KomDisp.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AdminTS_NSS.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ConnectionSettings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ConnectionSettingsSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Crypt.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbSources.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbTSQLInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dgwAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="dgwAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="FileINI.cs" />
+    <Compile Include="dgwAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="FileConnSett.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileINI.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -109,10 +141,20 @@
     <Compile Include="HLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="InitTEC.cs" />
-    <Compile Include="Logging.cs" />
+    <Compile Include="InitTEC.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Logging.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogParse.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PanelStatistic.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Passwords.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProgramBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -121,26 +163,28 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="TCPClient.cs" />
-    <Compile Include="TCPClientAsync.cs" />
-    <Compile Include="TEC.cs" />
-    <Compile Include="TECComponent.cs" />
-    <Compile Include="TECComponentBase.cs" />
-    <Compile Include="TG.cs" />
-    <Compile Include="dgwAdminNSS.cs">
-      <SubType>Component</SubType>
+    <Compile Include="TCPClient.cs">
+      <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Passwords.cs" />
+    <Compile Include="TCPClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TEC.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TECComponent.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TECComponentBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TG.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Users.cs" />
-    <Compile Include="AdminTS.cs" />
-    <Compile Include="DbTSQLInterface.cs" />
-    <Compile Include="FileConnSett.cs" />
-    <Compile Include="Crypt.cs" />
     <Compile Include="FormMainBaseWithStatusStrip.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LogParse.cs" />
-    <Compile Include="DbSources.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">
