@@ -111,7 +111,8 @@ namespace Statistic
 
             int i = -1;
 
-            this.ColumnCount = 3;
+            this.ColumnCount = listTec.Count / 2;
+            if (this.ColumnCount == 0) this.ColumnCount ++ ; else ;
             this.RowCount = listTec.Count / this.ColumnCount;
 
             for (i = 0; i < listTec.Count; i++)

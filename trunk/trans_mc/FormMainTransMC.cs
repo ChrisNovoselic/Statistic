@@ -13,11 +13,19 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTrans
     {
-        struct SETUP_INI
+        private class SETUP_INI
         {
             public bool mc_ignore_date,
                 ts_ignore_date;
             public string m_strtypeField;
+            public int m_iConfigDB;
+
+            public SETUP_INI () {
+                mc_ignore_date = false;
+                ts_ignore_date = false;
+                m_strtypeField = @"DYNAMIC";
+                m_iConfigDB = 200;
+            }
         }
 
         private System.Windows.Forms.Label labelSourceServerMC;
@@ -31,6 +39,8 @@ namespace trans_mc
         public FormMainTransMC() : base ()
         {
             InitializeComponentTransMC();
+
+            m_SetupINI = new SETUP_INI ();
 
             string sec, key;
             FileINI fileINI = new FileINI("setup.ini");
@@ -76,12 +86,22 @@ namespace trans_mc
             else
                 ;
 
-            key = "РДГФорматТаблица";
+            key = "РДГФорматТаблицаНазначение";
             m_SetupINI.m_strtypeField = fileINI.ReadString(sec, key, string.Empty);
             if (m_SetupINI.m_strtypeField.Equals (string.Empty) == true)
             {
                 m_SetupINI.m_strtypeField = AdminTS.TYPE_FIELDS.DYNAMIC.ToString();
                 fileINI.WriteString(sec, key, m_SetupINI.m_strtypeField);
+            }
+            else
+                ;
+
+            key = "ТипБДКфгНазначение";
+            m_SetupINI.m_iConfigDB = fileINI.ReadInt(sec, key, -1);
+            if (m_SetupINI.m_iConfigDB == -1)
+            {
+                m_SetupINI.m_iConfigDB = 200;
+                fileINI.WriteInt(sec, key, m_SetupINI.m_iConfigDB);
             }
             else
                 ;
@@ -177,6 +197,16 @@ namespace trans_mc
 
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
+            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
+                if (t.ToString ().Contains (m_SetupINI.m_iConfigDB.ToString ()) == true) {
+                    typeConfigDB = t;
+                    break;
+                }
+                else
+                    ;
+            }
+
             bool bIgnoreTECInUse = false;
             int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
@@ -187,12 +217,12 @@ namespace trans_mc
                         m_arAdmin[i] = new AdminMC(m_report);
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        m_arAdmin[i] = new AdminTS_MC(m_report);
+                        m_arAdmin[i] = new AdminTS_MC(m_report, new bool [] {false, true});
                         break;
                     default:
                         break;
                 }
-                try { m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, bIgnoreTECInUse, false); }
+                try { m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, typeConfigDB, bIgnoreTECInUse); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransMC::FormMainTransMC ()");

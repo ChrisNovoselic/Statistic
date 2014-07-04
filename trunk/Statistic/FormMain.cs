@@ -43,6 +43,8 @@ namespace Statistic
         public FormGraphicsSettings formGraphicsSettings;
         public FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
+        Users m_user;
+        FormParametersTG m_formParametersTG;
 
         TcpServerAsync m_TCPServer;
 
@@ -106,8 +108,8 @@ namespace Statistic
 
             int idListenerConfigDB = DbSources.Sources ().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             
-            Users user = null;
-            try { user = new Users(idListenerConfigDB); }
+            m_user = null;
+            try { m_user = new Users(idListenerConfigDB); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
@@ -118,7 +120,7 @@ namespace Statistic
 
             if (bRes == true)
             {
-                if (! (user.Role == 2)) //Администратор
+                if (! (m_user.Role == 2)) //Администратор
                 {
                     параметрыToolStripMenuItem.Enabled =
                     администрированиеToolStripMenuItem.Enabled =
@@ -644,7 +646,16 @@ namespace Statistic
             //        ;
             //}
 
-            параметрыТГБийскToolStripMenuItem.Visible = (parametrsTGBiysk > 0 ? true : false);
+            bool bTGBiysk = parametrsTGBiysk > 0;
+            if ((m_user.allTEC == 0) || (m_user.allTEC == 6)) {
+                параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
+                параметрыToolStripMenuItem.Enabled = bTGBiysk;
+                параметрыПриложенияToolStripMenuItem.Enabled = !bTGBiysk;
+
+                m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
+            }
+            else
+                ;
 
             bool bAdminPanelUse = false;
             StopWait();
@@ -1163,14 +1174,15 @@ namespace Statistic
         {
             if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                foreach (PanelTecViewBase tv in tecViews) {
-                    if (tv.tec.type () == TEC.TEC_TYPE.BIYSK) {
-                        tv.tec.parametersTGForm.ShowDialog(this);
+                foreach (PanelTecViewBase tv in tecViews)
+                    if ((tv.tec.type() == TEC.TEC_TYPE.BIYSK) && (! (m_formParametersTG == null)))
+                    {
+                        //tv.tec.parametersTGForm.ShowDialog(this);
+                        m_formParametersTG.ShowDialog(this);
                         break;
                     }
                     else
-                        ;
-                }
+                        Logging.Logg().LogErrorToFile(@"FormMain::параметрыТГБийскToolStripMenuItem_Click () - m_formParametersTG == null");
             }
             else
                 ;

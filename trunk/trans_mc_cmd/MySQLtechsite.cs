@@ -85,7 +85,8 @@ namespace trans_mc_cmd
 
             m_bCalculatedHalfHourValues = bCalculatedHalfHourValues;
 
-            ConnectionSettings connSett = Program.ReadConnSettFromFileINI();
+            int iConfigDB = -1;
+            ConnectionSettings connSett = Program.ReadConnSettFromFileINI(out iConfigDB);
             connSett.id = FIleConnSett.UN_ENUMERABLE_ID;
 
             Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
@@ -94,11 +95,22 @@ namespace trans_mc_cmd
             m_idListener = DbSources.Sources().Register(connSett, false, @"CONFIG_DB");
             m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
 
+            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
+                if (t.ToString().Contains(iConfigDB.ToString()) == true)
+                {
+                    typeConfigDB = t;
+                    break;
+                }
+                else
+                    ;
+            }
+
             if (iRes == 0)
             {
-                m_admin = new AdminTS(new HReports ());
+                m_admin = new AdminTS(new HReports (), new bool [] {false, true});
 
-                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, true, false);
+                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, typeConfigDB, true);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_listIdMCTECComponent = new List<int>();

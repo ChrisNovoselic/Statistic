@@ -38,7 +38,7 @@ namespace StatisticCommon
         private void btnOk_Click(object sender, EventArgs e)
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++) {
-                m_arParametrSetup[(int)i] = m_dgvData.Rows [(int)i + 1].Cells [1].Value.ToString ();
+                m_arParametrSetup[(int)i] = m_dgvData.Rows [(int)i + 0].Cells [1].Value.ToString ();
             }
 
             saveParam();

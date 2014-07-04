@@ -65,7 +65,7 @@ namespace StatisticCommon
 
         protected volatile bool using_date;
         public bool m_ignore_date;
-        protected bool m_ignore_connsett_data;
+        //protected bool m_ignore_connsett_data;
 
         protected int[,] m_arHaveDates;
 
@@ -121,7 +121,7 @@ namespace StatisticCommon
 
             using_date = false;
             m_ignore_date = false;
-            m_ignore_connsett_data = false;
+            //m_ignore_connsett_data = false;
 
             m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
@@ -148,19 +148,35 @@ namespace StatisticCommon
             initTEC ();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, bool bUseData)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, bool bIgnoreTECInUse)
         {
             //Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
 
-            m_ignore_connsett_data = ! bUseData;
+            //m_ignore_connsett_data = ! bUseData;
 
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, bUseData).tec;
+                    switch (typeCfg) {
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
+                            this.m_list_tec = new InitTEC_190(idListener, bIgnoreTECInUse, false).tec;
+                            break;
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
+                            this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, false).tec;
+                            break;
+                        default:
+                            break;
+                    }
                 else
-                {
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, bUseData).tec;
-                }
+                    switch (typeCfg) {
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
+                            this.m_list_tec = new InitTEC_190(idListener, (short)mode, bIgnoreTECInUse, false).tec;
+                            break;
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
+                            this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, false).tec;
+                            break;
+                        default:
+                            break;
+                    }
             else
                 this.m_list_tec = new List <TEC> ();
 

@@ -55,7 +55,8 @@ namespace StatisticCommon
             }
         }
 
-        public AdminTS_NSS(HReports rep) : base (rep)
+        public AdminTS_NSS(HReports rep, bool[] arMarkPPBRValues)
+            : base(rep, arMarkPPBRValues)
         {
             delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
             delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
@@ -147,7 +148,7 @@ namespace StatisticCommon
                 }
             //}
 
-            m_bSavePPBRValues = true;
+            //m_bSavePPBRValues = true;
         }
 
         public override void GetRDGValues(TYPE_FIELDS mode, int id)
@@ -176,7 +177,7 @@ namespace StatisticCommon
                 }
             //}
 
-            m_bSavePPBRValues = true;
+            //m_bSavePPBRValues = true;
         }
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int id, DateTime date)
@@ -210,7 +211,7 @@ namespace StatisticCommon
                 }
             //}
 
-            m_bSavePPBRValues = true;
+            //m_bSavePPBRValues = true;
         }
 
         public override void ImpRDGExcelValues(int id, DateTime date)
@@ -404,6 +405,11 @@ namespace StatisticCommon
             return errRes;
         }
 
+        private string nameFileRDGExcel (DateTime dt) {
+            //return dt.GetDateTimeFormats()[4];
+            return dt.ToString (@"yyyy-MM-dd");
+        }
+
         protected void /*bool*/ ExpRDGExcelValuesRequest()
         {
             //bool bRes = true;
@@ -430,7 +436,7 @@ namespace StatisticCommon
                 Boolean bPrevExcelAppDisplayAlerts = excelApp.DisplayAlerts;
                 excelApp.DisplayAlerts = false;
 
-                string nameExcelBook = m_curDate.Date.GetDateTimeFormats()[4] + ".xls",
+                string nameExcelBook = nameFileRDGExcel (m_curDate.Date) + ".xls",
                         pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
 
                 i = 0;
@@ -438,7 +444,7 @@ namespace StatisticCommon
                 {
                     i--;
 
-                    nameExcelBook = (m_curDate.Date.AddDays(i)).GetDateTimeFormats()[4] + ".xls";
+                    nameExcelBook = nameFileRDGExcel(m_curDate.Date.AddDays(i)) + ".xls";
                     pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
                 }
 
@@ -452,7 +458,7 @@ namespace StatisticCommon
 
                 if (i < 0)
                 {//Файл искали - необходимо созлать нпа сегодняшний день
-                    nameExcelBook = m_curDate.Date.GetDateTimeFormats()[4] + ".xls";
+                    nameExcelBook = nameFileRDGExcel (m_curDate.Date) + ".xls";
                     pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
 
                     excelApp.Workbooks [1].SaveAs (pathExcelBook, Type.Missing, Type.Missing, "nss", false, false);
@@ -476,7 +482,7 @@ namespace StatisticCommon
                         if (rowOffsetNextDay == 0)
                         {
                             //Проверить существование книги
-                            nameExcelBook = m_curDate.Date.AddDays (1).GetDateTimeFormats()[4] + ".xls";
+                            nameExcelBook = nameFileRDGExcel (m_curDate.Date.AddDays(1)) + ".xls";
                             pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
 
                             if (File.Exists(pathExcelBook) == false)
@@ -602,16 +608,17 @@ namespace StatisticCommon
             delegateStartWait();
             if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
             {
-                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel (m_curDate.Date) + ".xls", strSelect, out err);
 
                 if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
                 {
                     while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
                         m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
 
-                    if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
+                    //if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
+                    if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls") == true)
                     {
-                        tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls", strSelect, out err);
+                        tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls", strSelect, out err);
                         if (tableRDGExcelValuesNextDay.Rows.Count > 0)
                         {
                             while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)

@@ -8,7 +8,8 @@ namespace StatisticCommon
     {
         string m_PPBRCSVDirectory; //Для возможности импорта ПБР из *.csv
 
-        public AdminTS_KomDisp(HReports rep) : base (rep)
+        public AdminTS_KomDisp(HReports rep, bool[] arMarkSavePPBRValues)
+            : base(rep, arMarkSavePPBRValues)
         {
             delegateImportForeignValuesRequuest = ImpPPBRCSVValuesRequest;
             //delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
@@ -19,7 +20,7 @@ namespace StatisticCommon
         public void ImpPPBRCSVValues(int indx, DateTime date, string dir)
         {
             //Разрешить запись ПБР-значений
-            m_bSavePPBRValues = true;
+            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = true; else ;
             
             lock (m_lockObj)
             {

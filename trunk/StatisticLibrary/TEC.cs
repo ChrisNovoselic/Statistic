@@ -13,6 +13,7 @@ namespace StatisticCommon
     {
         public enum INDEX_TYPE_SOURCE_DATA { COMMON, INDIVIDUAL, COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
         public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA [(int)INDEX_TYPE_SOURCE_DATA.COUNT_TYPE_SOURCEDATA];
+        public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
                                         PBR_DATETIME, PBR, PBR_NUMBER, 
@@ -44,7 +45,7 @@ namespace StatisticCommon
 
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
-        public FormParametersTG parametersTGForm;
+        //public FormParametersTG parametersTGForm;
 
         public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
@@ -66,10 +67,10 @@ namespace StatisticCommon
 
             m_strNamesField = new List<string> ();
 
-            if ((type () == TEC_TYPE.BIYSK) && (bUseData == true))
-                parametersTGForm = new FormParametersTG_FileINI (@"setup.ini");
-            else
-                ;
+            //if ((type () == TEC_TYPE.BIYSK) && (bUseData == true))
+            //    parametersTGForm = new FormParametersTG_FileINI (@"setup.ini");
+            //else
+            //    ;
 
             is_data_error = is_connection_error = false;
 
@@ -130,6 +131,8 @@ namespace StatisticCommon
                                 m_arTypeSourceData[(int)i - (int)CONN_SETT_TYPE.DATA_FACT] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
                         else
                             ;
+
+                        m_arInterfaceType[(int)i] = DbTSQLInterface.getTypeDB(connSetts[(int)i].port);
                     }
                     else
                         ;
@@ -203,7 +206,8 @@ namespace StatisticCommon
         }
 
         public int connSettings (DataTable source, int type) {
-            int iRes = 0;
+            int iRes = 0, iVal = -1;
+            bool bRes = false, bVal = false;
 
             connSetts[type] = new ConnectionSettings();
             connSetts[type].id = Int32.Parse(source.Rows[0]["ID"].ToString());
@@ -212,7 +216,21 @@ namespace StatisticCommon
             connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
             connSetts[type].userName = source.Rows[0]["UID"].ToString();
             connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
-            connSetts[type].ignore = int.Parse(source.Rows[0]["IGNORE"].ToString()) == 1; //== "1";
+
+            bRes = int.TryParse(source.Rows[0]["IGNORE"].ToString(), out iVal);
+            if (bRes == true)
+            {
+                connSetts[type].ignore = iVal == 1; //== "1";
+            }
+            else {
+                bRes = bool.TryParse(source.Rows[0]["IGNORE"].ToString(), out bVal);
+                if (bRes == true)
+                {
+                    connSetts[type].ignore = bVal;
+                }
+                else
+                    connSetts[type].ignore = false;
+            }
 
             return iRes;
         }
@@ -360,6 +378,12 @@ namespace StatisticCommon
                     break;
             }
 
+            if (m_arInterfaceType [(int)CONN_SETT_TYPE.PBR] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL) {
+                strRes = strRes.Replace(@"DATEPART(n,", @"MINUTE(");
+            }
+            else
+                ;
+
             return strRes;
         }
 
@@ -419,6 +443,19 @@ namespace StatisticCommon
         //    return query;
         //}
 
+        private string minsCommonRequest (DateTime dt, string sen) {
+            return @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
+                                2 + @"," +
+                //usingDate.ToString("yyyy.MM.dd") + @"," +
+                                @"'" + dt.ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
+                //usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                                @"'" + dt.AddHours(1).ToString("yyyyMMdd HH:00:00") + @"'" +
+                                @") WHERE [ID] IN (" +
+                                sen +
+                                @")" +
+                                @"ORDER BY DATA_DATE";
+        }
+        
         public string minsRequest(DateTime usingDate, int hour, string sensors)
         {
             if (hour == 24)
@@ -435,16 +472,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
-                                2 + @"," +
-                                //usingDate.ToString("yyyy.MM.dd") + @"," +
-                                @"'" + usingDate.ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
-                                //usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                                @"'" + usingDate.AddDays(1).ToString("yyyyMMdd HH:00:00") + @"'" + 
-                                @") WHERE [ID] IN (" +
-                                sensors +
-                                @")" +
-                                @"ORDER BY DATA_DATE";
+                            request = minsCommonRequest (usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
@@ -468,20 +496,30 @@ namespace StatisticCommon
                     }
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                    request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                             @"FROM IZM_TII " +
-                             @"INNER JOIN CHANNELS ON " +
-                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                             @"INNER JOIN DEVICES ON " +
-                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                             @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
-                             @"' AND " +
-                             @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
-                             @"' WHERE IZM_TII.PERIOD = 180 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensors +
-                             @") " +
-                             @"ORDER BY IZM_TII.TIME";
+                    switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    {
+                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                            request = minsCommonRequest(usingDate, sensors);
+                            break;
+                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                                     @"FROM IZM_TII " +
+                                     @"INNER JOIN CHANNELS ON " +
+                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                                     @"INNER JOIN DEVICES ON " +
+                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                                     @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
+                                     @"' AND " +
+                                     @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
+                                     @"' WHERE IZM_TII.PERIOD = 180 AND " +
+                                     @"IZM_TII.IDCHANNEL IN(" + sensors +
+                                     @") " +
+                                     @"ORDER BY IZM_TII.TIME";
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 default:
                     request = string.Empty;
@@ -491,6 +529,17 @@ namespace StatisticCommon
             return request;
         }
 
+        private string hoursCommonRequest (DateTime dt, string sen) {
+            return @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
+                                12 + @"," +
+                                @"'" + dt.ToString("yyyyMMdd") + @"'" + @"," +
+                                @"'" + dt.AddDays(1).ToString("yyyyMMdd") + @"'" +
+                                @") WHERE [ID] IN (" +
+                                sen +
+                                @")" +
+                                @"ORDER BY DATA_DATE";
+        }
+        
         public string hoursRequest(DateTime usingDate, string sensors)
         {
             string request = string.Empty;
@@ -501,14 +550,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
-                                12 + @"," +
-                                @"'" + usingDate.ToString("yyyyMMdd") + @"'" + @"," +
-                                @"'" + usingDate.AddDays(1).ToString("yyyyMMdd") + @"'" +
-                                @") WHERE [ID] IN (" +
-                                sensors +
-                                @")" +
-                                @"ORDER BY DATA_DATE";
+                            request = hoursCommonRequest(usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
@@ -532,21 +574,31 @@ namespace StatisticCommon
                     }
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                    request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                             @"FROM IZM_TII " +
-                             @"INNER JOIN CHANNELS ON " +
-                             @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                             @"INNER JOIN DEVICES ON " +
-                             @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                             @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
-                             @"' AND " +
-                             @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
-                             @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                             @"IZM_TII.IDCHANNEL IN(" + sensors +
-                             @") " +
-                        //@"ORDER BY IZM_TII.TIME";
-                             @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
+                    switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    {
+                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                            request = hoursCommonRequest(usingDate, sensors);
+                            break;
+                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
+                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
+                                     @"FROM IZM_TII " +
+                                     @"INNER JOIN CHANNELS ON " +
+                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
+                                     @"INNER JOIN DEVICES ON " +
+                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
+                                     @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
+                                     @"' AND " +
+                                     @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
+                                     @"' WHERE IZM_TII.PERIOD = 1800 AND " +
+                                     @"IZM_TII.IDCHANNEL IN(" + sensors +
+                                     @") " +
+                                //@"ORDER BY IZM_TII.TIME";
+                                     @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 default:
                     request = string.Empty;
@@ -888,7 +940,13 @@ namespace StatisticCommon
                     break;
                 default:
                     break;
-            }            
+            }
+            
+            if (m_arInterfaceType [(int)CONN_SETT_TYPE.DATA_TM] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL) {
+                query = query.Replace(@"DATEPART(n,", @"MINUTE(");
+            }
+            else
+                ;            
 
             return query;
         }

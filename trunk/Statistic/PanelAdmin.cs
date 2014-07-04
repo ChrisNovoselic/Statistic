@@ -163,19 +163,19 @@ namespace Statistic
 
         public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HReports rep)
         {
-            bool bUseData = true;
+            //bool bUseData = true;
             switch (type) {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp(rep);
+                    m_admin = new AdminTS_KomDisp(rep, new bool[] { true, false });
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS(rep);
+                    m_admin = new AdminTS_NSS(rep, new bool[] { false, true });
                     break;
                 default:
                     break;
             }
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, false, bUseData); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, false); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_admin.InitTEC ()...");
@@ -203,10 +203,10 @@ namespace Statistic
             switch (type)
             {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp(rep);
+                    m_admin = new AdminTS_KomDisp(rep, new bool[] { true, false });
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS(rep);
+                    m_admin = new AdminTS_NSS(rep, new bool[] { false, true });
                     break;
                 default:
                     break;

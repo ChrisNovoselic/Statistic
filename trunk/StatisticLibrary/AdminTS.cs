@@ -73,12 +73,13 @@ namespace StatisticCommon
             Data,
         }
 
-        //public bool isActive;
-        protected bool m_bSavePPBRValues;
+        public enum INDEX_MARK_PPBRVALUES { ENABLED, MARK };
+        protected bool [] m_arMarkSavePPBRValues = new bool [] { false, false};
 
-        public AdminTS(HReports rep) : base (rep)
+        public AdminTS(HReports rep, bool[] arMarkSavePPBRValues)
+            : base(rep)
         {
-            m_bSavePPBRValues = false;
+            arMarkSavePPBRValues.CopyTo(m_arMarkSavePPBRValues, 0);
         }
 
         protected override void Initialize () {
@@ -108,7 +109,7 @@ namespace StatisticCommon
                 //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
                 states.Add((int)StatesMachine.PPBRDates);
                 states.Add((int)StatesMachine.SaveAdminValues);
-                if (m_bSavePPBRValues == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
+                if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
                 //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
                 try
@@ -331,7 +332,7 @@ namespace StatisticCommon
         
         public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
             //Запретить запись ПБР-значений
-            m_bSavePPBRValues = false;
+            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
             
             lock (m_lockObj)
             {
@@ -364,7 +365,7 @@ namespace StatisticCommon
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
             //Запретить запись ПБР-значений
-            m_bSavePPBRValues = false;
+            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
             
             lock (m_lockObj)
             {
@@ -1253,9 +1254,12 @@ namespace StatisticCommon
             //else
             //    ;
 
-            foreach (TEC t in m_list_tec) {
-                t.StartDbInterfaces ();
-            }
+            if (!(m_list_tec == null))
+                foreach (TEC t in m_list_tec) {
+                    t.StartDbInterfaces ();
+                }
+            else
+                Logging.Logg().LogErrorToFile(@"AdminTS::Start () - m_list_tec == null");
 
             semaDBAccess = new Semaphore(1, 1);
 
@@ -1266,10 +1270,13 @@ namespace StatisticCommon
         {
             base.Stop();
 
-            foreach (TEC t in m_list_tec)
-            {
-                t.StopDbInterfaces();
-            }
+            if (! (m_list_tec == null))
+                foreach (TEC t in m_list_tec)
+                {
+                    t.StopDbInterfaces();
+                }
+            else
+                Logging.Logg().LogErrorToFile(@"AdminTS::Stop () - m_list_tec == null");
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)

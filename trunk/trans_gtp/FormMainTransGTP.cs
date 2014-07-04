@@ -201,15 +201,37 @@ namespace trans_gtp
 
             CreateFormConnectionSettingsConfigDB("connsett_gtp.ini");
 
+            int [] arConfigDB = new int [(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
+            FileINI fileINI = new FileINI (@"setup.ini");
+            string sec = "Main (" + ProgramBase.AppName + ")";
+
+            InitTECBase.TYPE_DATABASE_CFG [] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG [(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
+            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++) {
+                arConfigDB[i] = fileINI.ReadInt(sec, arKeyTypeConfigDB[i], -1);
+                for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
+                    if (t.ToString ().Contains (arConfigDB [i].ToString ()) == true) {
+                        arTypeConfigDB [i] = t;
+                        break;
+                    }
+                    else
+                        ;
+                }
+            }
+
+            string [] arStrTypeField = new string [(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            arStrTypeField [(int)CONN_SETT_TYPE.SOURCE] = fileINI.ReadString (sec, @"РДГФорматТаблицаИсточник", string.Empty);
+            arStrTypeField [(int)CONN_SETT_TYPE.DEST] = fileINI.ReadString (sec, @"РДГФорматТаблицаНазначение", string.Empty);
+
             int idListener;
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arAdmin[i] = new AdminTS_KomDisp(m_report);
+                m_arAdmin[i] = new AdminTS_KomDisp(m_report, new bool[] { false, true });
                 idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(i), false, @"CONFIG_DB");
                 try {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, true, false);
+                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, arTypeConfigDB [i], true);
                 }
                 catch (Exception e)
                 {
@@ -221,15 +243,13 @@ namespace trans_gtp
                 
                 //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett(i);
                 
-                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
-                {
-                    //((AdminTS_KomDisp)m_arAdmin[i]).ReConnSettingsRDGSource(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), new int [] {103, 101});
-                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
-                    //Для отладки получить ГТП из БД с новой структурой
-                    //((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                }
-                else
-                    ((AdminTS_KomDisp)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC; //AdminTS.TYPE_FIELDS.DYNAMIC;
+                for (AdminTS.TYPE_FIELDS tf = AdminTS.TYPE_FIELDS.STATIC; i < (int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS; tf ++)
+                    if (arStrTypeField [i].Equals(tf.ToString ()) == true) {
+                        ((AdminTS)m_arAdmin[i]).m_typeFields = tf;
+                        break;
+                    }
+                    else
+                        ;
 
                 m_arAdmin[i].m_ignore_date = true;
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор

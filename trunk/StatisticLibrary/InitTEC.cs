@@ -9,6 +9,8 @@ namespace StatisticCommon
 {
     public class InitTECBase
     {
+        public enum TYPE_DATABASE_CFG { CFG_190, CFG_200, UNKNOWN };
+        
         public List<TEC> tec;
         protected /*static*/ DbConnection m_connConfigDB;
         
@@ -204,8 +206,8 @@ namespace StatisticCommon
                         if (err == 0) {
                             tec[indx_tec].m_timezone_offset_msc = Convert.ToInt32(list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                             tec[indx_tec].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
-                            tec[i].m_strTemplateNameSgnDataTM = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_TM"].ToString();
-                            tec[i].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
+                            tec[indx_tec].m_strTemplateNameSgnDataTM = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_TM"].ToString();
+                            tec[indx_tec].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
 
                             //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - tec.Add () = Ok");
 

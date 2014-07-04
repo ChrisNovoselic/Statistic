@@ -137,13 +137,39 @@ namespace trans_tg
 
             CreateFormConnectionSettingsConfigDB("connsett_tg.ini");
 
+            int iConfigDB = -1;
+            string keyTypeConfigDB = @"ТипБДКфгНазначение";
+            FileINI fileINI = new FileINI(@"setup.ini");
+            string sec = "Main (" + ProgramBase.AppName + ")";
+            iConfigDB = fileINI.ReadInt (sec, keyTypeConfigDB, -1);
+
+            InitTECBase.TYPE_DATABASE_CFG iTypeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
+
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
+            {
+                if (t.ToString().Contains(iConfigDB.ToString()) == true)
+                {
+                    iTypeConfigDB = t;
+                    break;
+                }
+                else
+                    ;
+            }
+
             bool bIgnoreTECInUse = false;
 
             int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arAdmin[i] = new AdminTransTG(m_report);
-                try { ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, bIgnoreTECInUse, false); }
+                if (i == (Int16)CONN_SETT_TYPE.SOURCE)
+                    m_arAdmin[i] = new AdminTransTG(m_report, new bool [] {false, false});
+                else
+                    if (i == (Int16)CONN_SETT_TYPE.DEST)
+                        m_arAdmin[i] = new AdminTransTG(m_report, new bool[] { false, true });
+                    else
+                        ;
+
+                try { ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, bIgnoreTECInUse); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");

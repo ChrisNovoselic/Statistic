@@ -84,7 +84,7 @@ namespace StatisticCommon
                     //    ;
 
                     //Проверка по имени
-                    if (dataUsers.Rows[i][@"DOMAIN_NAME"].ToString ().Equals (domain_name) == true) break; else ;
+                    if (dataUsers.Rows[i][@"DOMAIN_NAME"].ToString ().Equals (domain_name, StringComparison.CurrentCultureIgnoreCase) == true) break; else ;
                 }
 
                 if (i < dataUsers.Rows.Count)

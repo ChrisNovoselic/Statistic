@@ -1029,18 +1029,30 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
-                if (!DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt))
-                    return false;
-                //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
-                if (!int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season))
-                    return false;
+                try {
+                    //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                    if (!DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt))
+                        return false;
+
+                    //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                    if (!int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season))
+                        return false;
+                }
+                catch (Exception e) {
+                    Logging.Logg ().LogExceptionToFile (e, @"PanelTecViewBase::GetHoursResponse () - ...");
+
+                    dt = DateTime.Now.Date;
+                }
+
                 GetSeason(dt, season, out season);
                 prev_season = season;
                 hour = dt.Hour;
                 dtNeeded = dt;
+
                 if (dt.Minute == 0)
                     half++;
+                else
+                    ;
             }
             else
             {
@@ -1094,11 +1106,19 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
-                        return false;
+                    try {
+                        if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
+                            return false;
 
-                    if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                        return false;
+                        if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+
+                        dt = DateTime.Now.Date;
+                    }
 
                     if (dt.CompareTo(dtNeeded) != 0)
                     {
@@ -1353,15 +1373,27 @@ namespace Statistic
 
                     for (i = 0; i < tgRows.Length; i++)
                     {
-                        if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                            return false;
+                        if (tgRows[i] == null)
+                            continue;
                         else
                             ;
 
-                        if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                            return false;
-                        else
-                            ;
+                        try {
+                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                return false;
+                            else
+                                ;
+
+                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                return false;
+                            else
+                                ;
+                        }
+                        catch (Exception e) {
+                            Logging.Logg ().LogExceptionToFile (e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                            dtVal = DateTime.Now.Date;
+                        }
 
                         hour = dtVal.Hour + offsetUTC + 1;
                         if (!(hour < 24)) hour -= 24; else ;
@@ -1482,10 +1514,18 @@ namespace Statistic
                         break;
                     }
 
-                    if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
-                        return false;
-                    if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                        return false;
+                    try {
+                        if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
+                            return false;
+                        if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                        dt = DateTime.Now.Date;
+                    }
 
                     if (season != need_season)
                     {

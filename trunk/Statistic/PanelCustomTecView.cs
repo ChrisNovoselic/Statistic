@@ -15,7 +15,7 @@ namespace Statistic
     {
         public class HLabelEmpty : Label {
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
-            
+
             public HLabelEmpty () {
                 this.Dock = DockStyle.Fill;
                 this.Text = s_msg;
@@ -62,14 +62,14 @@ namespace Statistic
 
             for (int i = 0; i < arPanelTecViewTable.Length; i ++) {
                 m_arLabelEmpty[i] = new HLabelEmpty ();
-                
+
                 m_arLabelEmpty [i].ContextMenu = new ContextMenu ();
                 foreach (ToolStripItem tsi in m_formChangeMode.m_MainFormContextMenuStripListTecViews.Items)
                 {
                     m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem (tsi.Text));
-                    m_arLabelEmpty[i].ContextMenu.MenuItems [m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].Click += MenuItem_OnClick;
+                    //m_arLabelEmpty[i].ContextMenu.MenuItems [m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].Click += MenuItem_OnClick;
                 }
-                
+
                 m_arLabelEmpty[i].ContextMenu.MenuItems.Add(@"-");
                 m_arLabelEmpty [i].ContextMenu.MenuItems.Add (@"Очистить");
                 m_arLabelEmpty[i].ContextMenu.MenuItems[m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].Click += MenuItem_OnClick;
@@ -164,6 +164,7 @@ namespace Statistic
         private MenuItem createMenuItem (string nameItem) {
             MenuItem menuItemRes = new MenuItem (nameItem);
             menuItemRes.RadioCheck = true;
+            menuItemRes.Click += new EventHandler(MenuItem_OnClick);
 
             return menuItemRes;
         }

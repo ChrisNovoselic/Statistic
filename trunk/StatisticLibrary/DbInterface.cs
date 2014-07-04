@@ -44,9 +44,9 @@ namespace StatisticCommon
                 dataTable = new DataTable ();
             }
         }
-        protected List <DbInterfaceListener> m_listListeners;
+        protected Dictionary <int, DbInterfaceListener> m_dictListeners;
         //private int maxListeners;
-        public int ListenerCount { get { return m_listListeners.Count; } }
+        public int ListenerCount { get { return m_dictListeners.Count; } }
 
         public object m_connectionSettings;
 
@@ -68,7 +68,7 @@ namespace StatisticCommon
             lockConnectionSettings = new object();
             
             //listeners = new DbInterfaceListener[maxListeners];
-            m_listListeners = new List <DbInterfaceListener> ();
+            m_dictListeners = new Dictionary <int, DbInterfaceListener> ();
 
             connected = false;
             needReconnect = false;
@@ -87,11 +87,19 @@ namespace StatisticCommon
 
         public int ListenerRegister()
         {
+            int i = -1;
+            
             lock (lockListeners)
             {
-                m_listListeners.Add (new DbInterfaceListener ());
-                m_listListeners [m_listListeners.Count - 1].listenerActive = true;
-                return m_listListeners.Count - 1;
+                for (i = 0; i < m_dictListeners.Count; i ++) {
+                    if (m_dictListeners.ContainsKey (i) == false)
+                        break;
+                    else
+                        ;
+                }
+                m_dictListeners.Add (i, new DbInterfaceListener ());
+                m_dictListeners [i].listenerActive = true;
+                return i;
             }
 
             //return -1;
@@ -99,12 +107,12 @@ namespace StatisticCommon
 
         public void ListenerUnregister(int listenerId)
         {
-            if ((! (listenerId < m_listListeners.Count)) || listenerId < 0)
+            if (m_dictListeners.ContainsKey(listenerId) == false)
                 return;
 
             lock (lockListeners)
             {
-                m_listListeners.RemoveAt(listenerId);
+                m_dictListeners.Remove(listenerId);
             }
         }
 
@@ -121,9 +129,9 @@ namespace StatisticCommon
             threadIsWorking = false;
             lock (lockListeners)
             {
-                for (int i = 0; i < m_listListeners.Count; i++)
+                foreach (KeyValuePair <int, DbInterfaceListener> pair in m_dictListeners)
                 {
-                    m_listListeners [i].requestDB = null;
+                    pair.Value.requestDB = null;
                 }
             }
             if (dbThread.IsAlive)
@@ -148,16 +156,16 @@ namespace StatisticCommon
 
         public void Request(int listenerId, string request)
         {
-            if ((!(listenerId < m_listListeners.Count)) || (listenerId < 0) || (request.Length == 0))
+            if ((m_dictListeners.ContainsKey (listenerId) == false) || (request.Length == 0))
                 return;
             else
                 ;
 
             lock (lockListeners)
             {
-                m_listListeners[listenerId].requestDB = request;
-                m_listListeners[listenerId].dataPresent = false;
-                m_listListeners[listenerId].dataError = false;
+                m_dictListeners[listenerId].requestDB = request;
+                m_dictListeners[listenerId].dataPresent = false;
+                m_dictListeners[listenerId].dataError = false;
 
                 try
                 {
@@ -174,7 +182,7 @@ namespace StatisticCommon
 
         public bool Response(int listenerId, out bool error, out DataTable table)
         {
-            if ((!(listenerId < m_listListeners.Count)) || listenerId < 0)
+            if ((m_dictListeners.ContainsKey(listenerId) == false) || listenerId < 0)
             {
                 error = true;
                 table = null;
@@ -184,12 +192,12 @@ namespace StatisticCommon
             else
                 ;
 
-            error = m_listListeners[listenerId].dataError;
-            table = m_listListeners[listenerId].dataTable;
+            error = m_dictListeners[listenerId].dataError;
+            table = m_dictListeners[listenerId].dataTable;
 
             //Logging.Logg().LogDebugToFile(@"DbInterface::GetResponse (int, out bool , out DataTable) - " + listenerId + @", " + error.ToString());
 
-            return m_listListeners[listenerId].dataPresent;
+            return m_dictListeners[listenerId].dataPresent;
         }
 
         protected void SetConnectionSettings()
@@ -241,16 +249,16 @@ namespace StatisticCommon
 
                 //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - m_listListeners.Count = " + m_listListeners.Count);
 
-                for (int i = 0; i < m_listListeners.Count; i++)
+                foreach (KeyValuePair <int, DbInterfaceListener> pair in m_dictListeners)
                 {
                     lock (lockListeners)
                     {
-                        if (m_listListeners [i].listenerActive == false)
+                        if (pair.Value.listenerActive == false)
                             continue;
                         else
                             ;
 
-                        request = m_listListeners [i].requestDB;
+                        request = pair.Value.requestDB;
 
                         if ((request == null) || (!(request.ToString ().Length > 0)))
                             continue;
@@ -260,7 +268,7 @@ namespace StatisticCommon
 
                     try
                     {
-                        result = GetData(m_listListeners [i].dataTable, request);
+                        result = GetData(pair.Value.dataTable, request);
                     }
                     catch (DbException e)
                     {
@@ -271,23 +279,23 @@ namespace StatisticCommon
 
                     lock (lockListeners)
                     {
-                        if ((!(i < m_listListeners.Count)) || (m_listListeners[i].listenerActive == false))
+                        if (pair.Value.listenerActive == false)
                             continue;
                         else
                             ;
 
-                        if (request == m_listListeners[i].requestDB)
+                        if (request == pair.Value.requestDB)
                         {
                             if (result == true)
                             {
-                                m_listListeners[i].dataPresent = true;
+                                pair.Value.dataPresent = true;
                             }
                             else
                             {
-                                m_listListeners[i].dataError = true;
+                                pair.Value.dataError = true;
                             }
 
-                            m_listListeners[i].requestDB = null;
+                            pair.Value.requestDB = null;
                         }
                     }
                 }
