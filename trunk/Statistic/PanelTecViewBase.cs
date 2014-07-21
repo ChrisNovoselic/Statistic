@@ -1031,11 +1031,11 @@ namespace Statistic
             {
                 try {
                     //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
-                    if (!DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt))
+                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
                         return false;
 
                     //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
-                    if (!int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season))
+                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
                         return false;
                 }
                 catch (Exception e) {
@@ -1107,10 +1107,10 @@ namespace Statistic
                     }
 
                     try {
-                        if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
+                        if (DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt) == false)
                             return false;
 
-                        if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
+                        if (int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season) == false)
                             return false;
                     }
                     catch (Exception e)
@@ -1139,19 +1139,28 @@ namespace Statistic
                     }
 
                     //if (!int.TryParse(table.Rows[i][7].ToString(), out id))
-                    if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
+                    if (table.Columns.Contains(@"ID") == true)
+                        if (int.TryParse(table.Rows[i][@"ID"].ToString(), out id) == false)
+                            return false;
+                        else
+                            ;
+                    else
                         return false;
 
                     tgTmp = FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
-
                     if (tgTmp == null)
-                        return false;
-
-                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
-                    if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value))
                         return false;
                     else
                         ;
+
+                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (table.Columns.Contains(@"VALUE0") == true)
+                        if (double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value) == false)
+                            return false;
+                        else
+                            ;
+                    else
+                        return false;
 
                     switch (tec.type ()) {
                         case TEC.TEC_TYPE.COMMON:
@@ -1443,10 +1452,22 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
-                if (!DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt))
+                if (table.Columns.Contains(@"DATA_DATE") == true)
+                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
+                        return false;
+                    else
+                        ;
+                else
                     return false;
-                if (!int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season))
+
+                if (table.Columns.Contains(@"SEASON") == true)
+                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
+                        return false;
+                    else
+                        ;
+                else
                     return false;
+
                 need_season = max_season = season;
                 min = (int)(dt.Minute / 3);
                 dtNeeded = dt;
