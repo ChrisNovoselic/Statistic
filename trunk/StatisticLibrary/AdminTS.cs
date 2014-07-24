@@ -304,9 +304,27 @@ namespace StatisticCommon
 
         private void GetCurrentTimeRequest()
         {
-            if (IsCanUseTECComponents ())
-                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, "SELECT now()");
-                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], /*"SELECT now()"*/@"SELECT GETDATE()");
+            string query = string.Empty;
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
+            
+            if (IsCanUseTECComponents ()) {
+                typeDB = DbTSQLInterface.getTypeDB (allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                switch (typeDB) {
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                        query = @"SELECT now()";
+                        break;
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                        query =  @"SELECT GETDATE()";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (query.Equals (string.Empty) == false)
+                    Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query);
+                else
+                    ;
+            }
             else
                 ;
         }
@@ -320,10 +338,14 @@ namespace StatisticCommon
             else
             {
                 DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+                int timezone_offset = allTECComponents [indxTECComponents].tec.m_timezone_offset_msc;
                 if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
+                    timezone_offset ++;
                 else
-                    serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                    ;
+
+                serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+
                 ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
             }
 
@@ -499,7 +521,8 @@ namespace StatisticCommon
             //int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
             //if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
-            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR");
+            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR"),
+                offsetPBRNumber = -1;
             if (offsetPBR > 0) offsetPBR = 0; else ;
 
             //Удаление столбцов 'ID_COMPONENT'
@@ -571,6 +594,8 @@ namespace StatisticCommon
                     ;
             }
 
+            offsetPBRNumber = m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER");
+            
             //0 - DATE_ADMIN, 1 - REC, 2 - IS_PER, 3 - DIVIAT, 4 - DATE_PBR, 5 - PBR, 6 - PBR_NUMBER
             for (i = 0; i < table.Rows.Count; i++)
             {
@@ -660,6 +685,11 @@ namespace StatisticCommon
                     }
                     catch { }
                 }
+
+                if (! (offsetPBRNumber < 0))
+                    m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString ();
+                else
+                    m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour - 1);
             }
 
             return true;
@@ -964,29 +994,32 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";*/
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " SET " +
-                                        name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND " +
-                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
-                                        @"; ";
+                            if (t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR].Equals (string.Empty) == false)
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " SET " +
+                                            name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
+                                            @"' WHERE " +
+                                            t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"'" +
+                                            @" AND " +
+                                            @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
+                                            @"; ";
+                            else
+                                ;
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
                                         " SET " +
-                                        @"PBR_NUMBER='ПБР";
+                                        @"PBR_NUMBER='";
                             if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                             else
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getPBRNumber();
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
                                         @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @", Pmax='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                         @" WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id +
                                         @" AND " +
@@ -999,14 +1032,14 @@ namespace StatisticCommon
                 }
                 else
                 {
-                    int pbrNumber = getPBRNumber(DateTime.Now.Hour);
+                    string strPBRNumber = GetPBRNumber(DateTime.Now.Hour);
                     // запись отсутствует, запоминаем значения
                     switch (m_typeFields)
                     {
                         case AdminTS.TYPE_FIELDS.STATIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "ПБР" + pbrNumber +
+                                        @"', '" + strPBRNumber +
                                         @"', '" + "0" +
                                         @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
@@ -1014,7 +1047,7 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
-                                        @"', '" + "ПБР" + pbrNumber +
+                                        @"', '" + strPBRNumber +
                                         @"', " + comp.m_id +
                                         @", '" + "0" + "'" +
                                         @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
@@ -1107,13 +1140,13 @@ namespace StatisticCommon
                             string name = t.NameFieldOfPBRRequest(comp);
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
                                         @"' WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
                                         @" WHERE " +
-                                        @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id + "; ";
                             break;
@@ -2067,6 +2100,7 @@ namespace StatisticCommon
                 m_prevRDGValues[i].pbr = Math.Round(m_curRDGValues[i].pbr, 2);
                 m_prevRDGValues[i].pmin = Math.Round(m_curRDGValues[i].pmin, 2);
                 m_prevRDGValues[i].pmax = Math.Round(m_curRDGValues[i].pmax, 2);
+                m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
                 m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
                 m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
                 m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
@@ -2080,6 +2114,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].pbr = ((HAdmin)source).m_curRDGValues[i].pbr;
                 m_curRDGValues[i].pmin = ((HAdmin)source).m_curRDGValues[i].pmin;
                 m_curRDGValues[i].pmax = ((HAdmin)source).m_curRDGValues[i].pmax;
+                m_curRDGValues[i].pbr_number = ((HAdmin)source).m_curRDGValues[i].pbr_number;
                 m_curRDGValues[i].recomendation = ((HAdmin)source).m_curRDGValues[i].recomendation;
                 m_curRDGValues[i].deviationPercent = ((HAdmin)source).m_curRDGValues[i].deviationPercent;
                 m_curRDGValues[i].deviation = ((HAdmin)source).m_curRDGValues[i].deviation;
@@ -2094,6 +2129,8 @@ namespace StatisticCommon
                 m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 
                 m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
                 m_curRDGValues[i].deviationPercent = false;
+
+                m_curRDGValues[i].pbr_number = string.Empty;
             }
 
             //CopyCurToPrevRDGValues();

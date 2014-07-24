@@ -7,7 +7,15 @@ using System.Threading;
 
 namespace StatisticCommon
 {
-    public class Logging
+    //public class Logging
+    //{
+        
+
+    //    //private Logging () {
+    //    //}
+    //}
+    
+    public class Logging //LoggingFS //: Logging
     {
         private string m_fileNameStart;
         private string m_fileName;
@@ -30,6 +38,11 @@ namespace StatisticCommon
         public static string DatetimeStampSeparator = "------------------------------------------------";
         public static string MessageSeparator = "================================================";
 
+        protected static Logging m_this = null;
+
+        /// <summary>
+        /// Имя приложения без расширения
+        /// </summary>
         public static string AppName
         {
             get
@@ -54,9 +67,8 @@ namespace StatisticCommon
             }
         }
 
-        private static Logging m_this = null;
-        //private static string m_appName = null;
-        public static Logging Logg () {
+        public static Logging Logg()
+        {
             if (m_this == null)
             {
                 m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
@@ -67,6 +79,13 @@ namespace StatisticCommon
             return m_this;
         }
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="name">имя лог-файла</param>
+        /// <param name="extLog">признак - внешнее логгирование</param>
+        /// <param name="updateLogText">функция записи во внешний лог-файл</param>
+        /// <param name="clearLogText">функция очистки внешнего лог-файла</param>
         private Logging(string name, bool extLog, DelegateStringFunc updateLogText, DelegateFunc clearLogText)
         {
             externalLog = extLog;
@@ -83,6 +102,10 @@ namespace StatisticCommon
             delegateClearLogText = clearLogText;
         }
 
+        /// <summary>
+        /// Приостановка логгирования
+        /// </summary>
+        /// <returns>строка с именем лог-файла</returns>
         public string Suspend()
         {
             LogLock();
@@ -94,6 +117,9 @@ namespace StatisticCommon
             return m_fi.FullName;
         }
 
+        /// <summary>
+        /// Восстановление гоггирования
+        /// </summary>
         public void Resume()
         {
             m_sw = new LogStreamWriter(m_fi.FullName, true, Encoding.GetEncoding("windows-1251"));
@@ -103,16 +129,29 @@ namespace StatisticCommon
             LogUnlock();
         }
 
+        /// <summary>
+        /// Блокирование лог-файла для изменения содержания
+        /// </summary>
         public void LogLock()
         {
             sema.WaitOne();
         }
 
+        /// <summary>
+        /// Разблокирование лог-файла после изменения содержания
+        /// </summary>
         public void LogUnlock()
         {
             sema.Release();
         }
 
+        /// <summary>
+        /// Запись сообщения в лог-файл
+        /// </summary>
+        /// <param name="message">сообщение</param>
+        /// <param name="separator">признак наличия разделителя</param>
+        /// <param name="timeStamp">признак наличия метки времени</param>
+        /// <param name="locking">признак блокирования при записи сообщения</param>
         public void LogToFile(string message, bool separator, bool timeStamp, bool locking/* = false*/)
         {
             if (logging == true)
@@ -196,6 +235,11 @@ namespace StatisticCommon
             set { logging = value; }
         }
         */
+        
+        /// <summary>
+        /// Наименование лог-файла
+        /// </summary>
+        /// <returns>строка с наименованием лог-файла</returns>
         private string LogFileName()
         {
             string strRes = string.Empty;

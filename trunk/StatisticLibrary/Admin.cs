@@ -141,6 +141,29 @@ namespace StatisticCommon
             //}
         }
 
+        public void RemoveTEC(int id_tec)
+        {
+            foreach (TEC t in this.m_list_tec) {
+                if (t.m_id == id_tec) {
+                    this.m_list_tec.Remove (t);
+                    break;
+                }
+                else
+                    ;
+            }
+
+            for (int i = 0; i < allTECComponents.Count; i ++) {
+                if (allTECComponents [i].tec.m_id == id_tec)
+                {
+                    allTECComponents.RemoveAt (i);
+
+                    i --;
+                }
+                else
+                    ;
+            }
+        }
+
         public void InitTEC(List <TEC> listTEC)
         {
             this.m_list_tec = listTEC;
@@ -281,7 +304,11 @@ namespace StatisticCommon
             ClearDates(CONN_SETT_TYPE.PBR);
         }
 
-        protected int getPBRNumber(int hour = -1)
+        protected string GetPBRNumber (int hour = -1) {
+            return @"œ¡–" + getPBRNumber (hour);
+        }
+
+        private int getPBRNumber(int hour = -1)
         {
             int iNum = -1;
 

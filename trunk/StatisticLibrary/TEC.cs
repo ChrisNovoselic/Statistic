@@ -1080,24 +1080,25 @@ namespace StatisticCommon
 
         public string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
         {
-            string strRes = string.Empty;
+            string strRes = string.Empty,
+                strNameFieldDateTime = m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME];
 
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
+                    strRes = @"SELECT " + strNameFieldDateTime + @", ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
                             @" WHERE " +
-                            @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' ORDER BY DATE_TIME ASC";
+                            strNameFieldDateTime + @" > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND " + strNameFieldDateTime + @"<= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' ORDER BY " + strNameFieldDateTime + @" ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
+                    strRes = @"SELECT " + @"DATE_TIME" + @", ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
                             @" WHERE" +
-                            @" ID_COMPONENT = " + comp.m_id + "" + 
-                            @" AND DATE_TIME > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
-                            @"' ORDER BY DATE_TIME ASC";
+                            @" ID_COMPONENT = " + comp.m_id + "" +
+                            @" AND " + @"DATE_TIME" + @" > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND " + @"DATE_TIME" + @" <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' ORDER BY " + @"DATE_TIME" + @" ASC";
                     break;
                 default:
                     break;

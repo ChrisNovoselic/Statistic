@@ -400,6 +400,8 @@ namespace trans_mc
                         case (int)DataGridViewAdminMC.DESC_INDEX.PBR: // План
                             valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PBR].Value, out value);
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = value;
+
+                            m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST].m_curRDGValues[i].pbr_number = m_arAdmin[(int)(Int16)CONN_SETT_TYPE.SOURCE].m_curRDGValues[i].pbr_number;
                             break;
                         case (int)DataGridViewAdminMC.DESC_INDEX.PMIN: // Pmin
                             valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminMC.DESC_INDEX.PMIN].Value, out value);
@@ -441,7 +443,6 @@ namespace trans_mc
             ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         protected override void buttonClose_Click(object sender, EventArgs e)

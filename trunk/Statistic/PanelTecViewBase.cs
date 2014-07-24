@@ -454,10 +454,13 @@ namespace Statistic
             FillDefaultHours();
 
             DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+            int timezone_offset = tec.m_timezone_offset_msc;
             if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
+                timezone_offset ++;
             else
-                selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                ;
+
+            selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
 
             serverTime = selectedTime;
 
@@ -545,7 +548,25 @@ namespace Statistic
 
         private void GetCurrentTimeRequest()
         {
-            tec.Request(CONN_SETT_TYPE.DATA_FACT, @"SELECT getdate()");
+            string query = string.Empty;
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbTSQLInterface.getTypeDB(tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].port);
+
+            switch (typeDB)
+            {
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                    query = @"SELECT now()";
+                    break;
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                    query = @"SELECT GETDATE()";
+                    break;
+                default:
+                    break;
+            }
+            
+            if (query.Equals(string.Empty) == false)
+                tec.Request(CONN_SETT_TYPE.DATA_FACT, query);
+            else
+                ;
         }
 
         //private void GetSensorsFactRequest()

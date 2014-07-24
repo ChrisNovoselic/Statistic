@@ -302,7 +302,7 @@ namespace trans_tg
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
-                                            @"DATE_TIME = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                                 break;
@@ -320,7 +320,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
-                                            @"', '" + "œ¡–" + getPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
+                                            @"', '" + GetPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +

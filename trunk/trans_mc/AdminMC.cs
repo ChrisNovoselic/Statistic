@@ -379,6 +379,8 @@ namespace trans_mc
                 m_curRDGValues[i].pbr = ((AdminMC)source).m_curRDGValues[i].pbr;
                 m_curRDGValues[i].pmin = ((AdminMC)source).m_curRDGValues[i].pmin;
                 m_curRDGValues[i].pmax = ((AdminMC)source).m_curRDGValues[i].pmax;
+
+                m_curRDGValues[i].pbr_number = ((AdminMC)source).m_curRDGValues[i].pbr_number;
             }
         }
 
@@ -389,6 +391,8 @@ namespace trans_mc
                 m_prevRDGValues[i].pbr = m_curRDGValues[i].pbr;
                 m_prevRDGValues[i].pmin = m_curRDGValues[i].pmin;
                 m_prevRDGValues[i].pmax = m_curRDGValues[i].pmax;
+
+                m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
             }
         }
 
@@ -397,6 +401,7 @@ namespace trans_mc
             for (int i = 0; i < 24; i++)
             {
                 m_curRDGValues[i].pbr = m_curRDGValues[i].pmin = m_curRDGValues[i].pbr = 0.0;
+                m_curRDGValues[i].pbr_number = string.Empty;
             }
 
             //CopyCurToPrevRDGValues();

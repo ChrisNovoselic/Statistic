@@ -219,11 +219,18 @@ namespace trans_gtp
                 }
             }
 
+            List<int> listID_TECNotUse = new List<int>();
             string [] arStrTypeField = new string [(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             arStrTypeField [(int)CONN_SETT_TYPE.SOURCE] = fileINI.ReadString (sec, @"РДГФорматТаблицаИсточник", string.Empty);
             arStrTypeField [(int)CONN_SETT_TYPE.DEST] = fileINI.ReadString (sec, @"РДГФорматТаблицаНазначение", string.Empty);
 
-            int idListener;
+            string [] arStrID_TECNotUse = fileINI.ReadString(sec, @"ID_TECNotUse", string.Empty).Split (',');
+            foreach (string str in arStrID_TECNotUse)
+            {
+                listID_TECNotUse.Add (Int32.Parse (str));
+            }
+
+            int idListener = -1;
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
@@ -232,6 +239,9 @@ namespace trans_gtp
                 try {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
                     ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, arTypeConfigDB [i], true);
+                    foreach (int id in listID_TECNotUse) {
+                        ((AdminTS_KomDisp)m_arAdmin[i]).RemoveTEC (id);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -296,8 +306,11 @@ namespace trans_gtp
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
                             valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = value;
+                            //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr;
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pmin = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pmin;
-                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr;
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pmax = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pmax;
+
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr_number;
                             break;
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
                             {

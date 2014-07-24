@@ -449,6 +449,8 @@ namespace StatisticCommon
         protected override void ActionReport(string msg)
         {
             m_statusStripMain.BeginInvoke(delegateEvent);
+
+            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), true);
         }
 
         protected override bool UpdateStatusString()
