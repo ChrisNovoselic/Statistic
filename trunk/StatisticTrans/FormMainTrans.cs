@@ -26,6 +26,8 @@ namespace StatisticTrans
 
         protected System.Windows.Forms.Control[,] m_arUIControlDB;
 
+        protected FileINI m_fileINI;
+
         protected System.Windows.Forms.Timer timerService;
 
         protected HAdmin[] m_arAdmin;
@@ -78,11 +80,16 @@ namespace StatisticTrans
             }
         }
 
-        public FormMainTrans()
+        public FormMainTrans(string []par, string [] val)
         {
             InitializeComponent();
 
             m_report = new HReports();
+
+            m_fileINI = new FileINI (@"setup.ini", par, val);
+
+            this.Text =
+            this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
 
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
@@ -796,10 +803,10 @@ namespace StatisticTrans
         private System.Windows.Forms.TextBox tbxSourceServerIP;
 
         public FormMainTransDB()
+            : base(new string[] { @"ОкноНазначение", @"ИгнорДатаВремя-techsite", @"ТипБДКфгИсточник", @"ТипБДКфгНазначение", @"РДГФорматТаблицаИсточник", @"РДГФорматТаблицаНазначение", @"ID_TECNotUse" },
+                    new string[] { @"Конвертер (...)", @"False", @"190", @"200", @"STATIC", @"DYNAMIC", string.Empty })
         {
-            InitializeComponentTransGTP();
-
-            this.Text = "Конвертер данных плана и административных данных (ГТП)";
+            InitializeComponentTransDB();
 
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
@@ -819,7 +826,6 @@ namespace StatisticTrans
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
-            this.notifyIconMain.Text = "Статистика: конвертер (ГТП)";
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
@@ -834,7 +840,7 @@ namespace StatisticTrans
             Start();
         }
 
-        private void InitializeComponentTransGTP()
+        private void InitializeComponentTransDB()
         {
             this.labelSourcePort = new System.Windows.Forms.Label();
             this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
@@ -972,13 +978,13 @@ namespace StatisticTrans
 
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
-            FileINI fileINI = new FileINI(@"setup.ini");
-            string sec = "Main (" + ProgramBase.AppName + ")";
+            //FileINI fileINI = new FileINI(@"setup.ini");
+            //string sec = "Main (" + ProgramBase.AppName + ")";
 
             InitTECBase.TYPE_DATABASE_CFG[] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                arConfigDB[i] = fileINI.ReadInt(sec, arKeyTypeConfigDB[i], -1);
+                arConfigDB[i] = Int32.Parse (m_fileINI.GetValueOfKey (arKeyTypeConfigDB[i]));
                 for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
@@ -993,10 +999,10 @@ namespace StatisticTrans
 
             List<int> listID_TECNotUse = new List<int>();
             string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = fileINI.ReadString(sec, @"РДГФорматТаблицаИсточник", string.Empty);
-            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = fileINI.ReadString(sec, @"РДГФорматТаблицаНазначение", string.Empty);
+            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_fileINI.GetValueOfKey (@"РДГФорматТаблицаИсточник");
+            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
 
-            string[] arStrID_TECNotUse = fileINI.ReadString(sec, @"ID_TECNotUse", string.Empty).Split(',');
+            string[] arStrID_TECNotUse = m_fileINI.GetValueOfKey (@"ID_TECNotUse").Split(',');
             foreach (string str in arStrID_TECNotUse)
             {
                 if (str.Equals (string.Empty) == false)
@@ -1006,7 +1012,7 @@ namespace StatisticTrans
             }
 
             bool bIgnoreDateTime = false;
-            if (Boolean.TryParse(fileINI.ReadString(sec, @"ИгнорДатаВремя-techsite", string.Empty), out bIgnoreDateTime) == false)
+            if (Boolean.TryParse(m_fileINI.GetValueOfKey (@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
                 bIgnoreDateTime = false;
             else
                 ;

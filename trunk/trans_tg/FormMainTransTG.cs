@@ -21,10 +21,10 @@ namespace trans_tg
         List <bool> m_listIsDataTECComponents;
 
         public FormMainTransTG()
+            : base(new string[] { @"ОкноНазначение", @"ТипБДКфгНазначение" },
+                new string[] { @"Конвертер значений ТГ", @"200" })
         {
             InitializeComponentTransTG();
-
-            this.Text = "Конвертер данных плана и административных данных (ТГ)";
 
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminNSS();
@@ -50,7 +50,6 @@ namespace trans_tg
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic3"))); //$this.Icon
-            this.notifyIconMain.Text = "Статистика: конвертер (ТГ)";
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic3"))); //$this.Icon
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.TEC;
@@ -140,9 +139,9 @@ namespace trans_tg
 
             int iConfigDB = -1;
             string keyTypeConfigDB = @"ТипБДКфгНазначение";
-            FileINI fileINI = new FileINI(@"setup.ini");
-            string sec = "Main (" + ProgramBase.AppName + ")";
-            iConfigDB = fileINI.ReadInt (sec, keyTypeConfigDB, -1);
+            //FileINI fileINI = new FileINI(@"setup.ini");
+            //string sec = "Main (" + ProgramBase.AppName + ")";
+            iConfigDB = Int32.Parse (m_fileINI.GetValueOfKey (keyTypeConfigDB));
 
             InitTECBase.TYPE_DATABASE_CFG iTypeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
 

@@ -11,6 +11,7 @@ namespace trans_mc
 {
     class AdminMC : HAdmin
     {
+        string m_strMCServiceHost;
         List<string> m_listMCId;
 
         protected enum StatesMachine
@@ -20,8 +21,10 @@ namespace trans_mc
             PPBRDates,
         }
 
-        public AdminMC (HReports rep) : base (rep)
+        public AdminMC (string strMCServiceHost, HReports rep) : base (rep)
         {
+            m_strMCServiceHost = strMCServiceHost;
+            
             //m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
             m_listMCId = new List<string> ();
         }
@@ -124,7 +127,7 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            m_IdListenerCurrent = DbMCSources.Sources().Register(@"ne1843", true, @"Modes-Centre");
+            m_IdListenerCurrent = DbMCSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             //for (i = 0; i < allTECComponents.Count; i ++)
             //{

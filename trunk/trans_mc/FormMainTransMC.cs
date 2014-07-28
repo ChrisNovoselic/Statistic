@@ -14,34 +14,36 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTrans
     {
-        private class SETUP_INI
-        {
-            public bool mc_ignore_date,
-                ts_ignore_date;
-            public string m_strtypeField;
-            public int m_iConfigDB;
+        //private class SETUP_INI
+        //{
+        //    public bool mc_ignore_date,
+        //        ts_ignore_date;
+        //    public string m_strtypeField;
+        //    public int m_iConfigDB;
 
-            public SETUP_INI () {
-                mc_ignore_date = false;
-                ts_ignore_date = false;
-                m_strtypeField = @"DYNAMIC";
-                m_iConfigDB = 200;
-            }
-        }
+        //    public SETUP_INI () {
+        //        mc_ignore_date = false;
+        //        ts_ignore_date = false;
+        //        m_strtypeField = @"DYNAMIC";
+        //        m_iConfigDB = 200;
+        //    }
+        //}
 
         private System.Windows.Forms.Label labelSourceServerMC;
         private System.Windows.Forms.TextBox tbxSourceServerMC;
         private System.Windows.Forms.Button buttonServerMC;
 
-        private SETUP_INI m_SetupINI;
+        //private SETUP_INI m_SetupINI;
 
         List<bool> m_listIsDataTECComponents;
 
-        public FormMainTransMC() : base ()
+        public FormMainTransMC()
+            : base(new string[] { @"ОкноНазначение" },
+                                    new string[] { @"Конвертер ПБР (Modes-Centre ГТП)" })
         {
             InitializeComponentTransMC();
 
-            m_SetupINI = new SETUP_INI ();
+            //m_SetupINI = new SETUP_INI ();
 
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminMC();
@@ -67,7 +69,6 @@ namespace trans_mc
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
             this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic5"))); //$this.Icon
-            this.notifyIconMain.Text = "Статистика: конвертер (Modes-Centre ГТП)";
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic5")));
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
@@ -151,55 +152,16 @@ namespace trans_mc
 
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
 
-            string sec, key;
-            FileINI fileINI = new FileINI("setup.ini");
-            sec = "Main (" + ProgramBase.AppName + ")";
-            key = "ОкноНазначение";
-            this.Text = fileINI.ReadString(sec, key, string.Empty);
-
-            this.Text = @"Конвертер ПБР (Modes-Centre ГТП)" + @" " + this.Text;
-            sec = "Интерпретация данных (" + ProgramBase.AppName + ")";
-            key = "ИгнорДатаВремя-ModesCentre";
-            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.mc_ignore_date) == false)
-            {
-                m_SetupINI.mc_ignore_date = false;
-                fileINI.WriteString(sec, key, m_SetupINI.mc_ignore_date.ToString());
-            }
-            else
-                ;
-
-            key = "ИгнорДатаВремя-techsite";
-            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.ts_ignore_date) == false)
-            {
-                m_SetupINI.ts_ignore_date = false;
-                fileINI.WriteString(sec, key, m_SetupINI.ts_ignore_date.ToString());
-            }
-            else
-                ;
-
-            key = "РДГФорматТаблицаНазначение";
-            m_SetupINI.m_strtypeField = fileINI.ReadString(sec, key, string.Empty);
-            if (m_SetupINI.m_strtypeField.Equals(string.Empty) == true)
-            {
-                m_SetupINI.m_strtypeField = AdminTS.TYPE_FIELDS.DYNAMIC.ToString();
-                fileINI.WriteString(sec, key, m_SetupINI.m_strtypeField);
-            }
-            else
-                ;
-
-            key = "ТипБДКфгНазначение";
-            m_SetupINI.m_iConfigDB = fileINI.ReadInt(sec, key, -1);
-            if (m_SetupINI.m_iConfigDB == -1)
-            {
-                m_SetupINI.m_iConfigDB = 200;
-                fileINI.WriteInt(sec, key, m_SetupINI.m_iConfigDB);
-            }
-            else
-                ;
+            m_fileINI.Add(@"MCServiceHost", string.Empty);
+            m_fileINI.Add (@"ИгнорДатаВремя-ModesCentre", false.ToString ());
+            m_fileINI.Add(@"ИгнорДатаВремя-techsite", false.ToString());
+            m_fileINI.Add (@"РДГФорматТаблицаНазначение", AdminTS.TYPE_FIELDS.DYNAMIC.ToString());
+            m_fileINI.Add (@"ТипБДКфгНазначение", @"200"); 
 
             InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
             for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
-                if (t.ToString ().Contains (m_SetupINI.m_iConfigDB.ToString ()) == true) {
+                if (t.ToString().Contains(m_fileINI.GetValueOfKey(@"ТипБДКфгНазначение")) == true)
+                {
                     typeConfigDB = t;
                     break;
                 }
@@ -208,13 +170,14 @@ namespace trans_mc
             }
 
             bool bIgnoreTECInUse = false;
+            string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i] = new AdminMC(m_report);
+                        m_arAdmin[i] = new AdminMC(m_fileINI.GetValueOfKey(@"MCServiceHost"), m_report);
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         m_arAdmin[i] = new AdminTS_MC(m_report, new bool [] {false, true});
@@ -233,16 +196,16 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i].m_ignore_date = m_SetupINI.mc_ignore_date;
+                        m_arAdmin[i].m_ignore_date = bool.Parse (m_fileINI.GetValueOfKey(@"ИгнорДатаВремя-ModesCentre"));
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        if (m_SetupINI.m_strtypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString ()) == true)
+                        if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
                             ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                        else if (m_SetupINI.m_strtypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
+                        else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
                                 ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                             else
                                 ;
-                        m_arAdmin[i].m_ignore_date = m_SetupINI.ts_ignore_date;
+                        m_arAdmin[i].m_ignore_date = bool.Parse(m_fileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"));
                         break;
                     default:
                         break;
