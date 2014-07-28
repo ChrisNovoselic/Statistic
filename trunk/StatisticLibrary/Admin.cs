@@ -622,7 +622,11 @@ namespace StatisticCommon
         public static DateTime ToCurrentTimeZone(DateTime dt)
         {
             DateTime dtRes;
-            dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
+            if (! (dt.Kind == DateTimeKind.Local))
+                dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
+            else
+                dtRes = dt;
+
             return dtRes;
         }
 

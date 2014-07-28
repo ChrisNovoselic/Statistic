@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using StatisticCommon;
 using StatisticTrans;
 
-namespace trans_gtp
+namespace trans_mt
 {
-    public partial class FormMainTransGTP : FormMainTransDB
+    public partial class FormMainTransMT : FormMainTransDB
     {
         protected override void Start()
         {
-            CreateFormConnectionSettingsConfigDB("connsett_gtp.ini");
+            CreateFormConnectionSettingsConfigDB("connsett_mt.ini");
 
-            base.Start ();
+            base.Start();
         }
     }
 }

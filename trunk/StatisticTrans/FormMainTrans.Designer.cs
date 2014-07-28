@@ -1,4 +1,4 @@
-﻿namespace StatisticCommon
+﻿namespace StatisticTrans
 {
     partial class FormMainTrans
     {

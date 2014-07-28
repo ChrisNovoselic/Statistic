@@ -524,7 +524,11 @@ namespace Statistic
                 }
 
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TOTAL], dblTotalPower_TM);
-                m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt);
+                try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
+                catch (Exception e)
+                {
+                    Logging.Logg ().LogExceptionToFile (e, @"PanelTecCurPower::ShowTMPower () - ...");
+                }
                 m_arLabel[(int)INDEX_LABEL.DATETIME].Text = m_dtLastChangedAt.ToString(@"HH:mm:ss");
             }
 
@@ -571,6 +575,8 @@ namespace Statistic
                 int i = -1,
                     id = -1;
                 double value = -1;
+                DateTime dtLastChangedAt =
+                    m_dtLastChangedAt = DateTime.Now;
                 TG tgTmp;
 
                 foreach (TECComponent g in m_tec.list_TECComponents)
@@ -600,8 +606,13 @@ namespace Statistic
                     else
                         ;
 
-                    if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
+                    if ((! (value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
                         return false;
+                    else
+                        ;
+
+                    if (m_dtLastChangedAt > dtLastChangedAt)
+                        m_dtLastChangedAt = dtLastChangedAt;
                     else
                         ;
 

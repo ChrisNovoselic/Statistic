@@ -994,15 +994,22 @@ namespace StatisticCommon
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'; ";*/
-                            if (t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR].Equals (string.Empty) == false)
+                            if (t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR].Equals (string.Empty) == false)  {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " SET " +
-                                            name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
+                                @"PBR_NUMBER='";
+                                if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
+                                else
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"'" +
+                                            @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                             @"' WHERE " +
                                             t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND " +
                                             @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
                                             @"; ";
+                            }
                             else
                                 ;
                             break;

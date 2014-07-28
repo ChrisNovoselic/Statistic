@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using StatisticCommon;
+using StatisticTrans;
 
 namespace trans_tg
 {

@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using StatisticCommon;
+using StatisticTrans;
 
 namespace trans_mc
 {
@@ -42,14 +43,6 @@ namespace trans_mc
 
             m_SetupINI = new SETUP_INI ();
 
-            string sec, key;
-            FileINI fileINI = new FileINI("setup.ini");
-            sec = "Main (" + ProgramBase.AppName + ")";
-            key = "ОкноНазначение";
-            this.Text = fileINI.ReadString(sec, key, string.Empty);
-
-            this.Text = @"Конвертер ПБР (Modes-Centre ГТП)" + @" " + this.Text;
-
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminMC();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
@@ -66,45 +59,6 @@ namespace trans_mc
             this.panelMain.Controls.Add(this.m_dgwAdminTable);
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.ResumeLayout(false);
-
-            sec = "Интерпретация данных (" + ProgramBase.AppName + ")";
-            key = "ИгнорДатаВремя-ModesCentre";
-            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.mc_ignore_date) == false)
-            {
-                m_SetupINI.mc_ignore_date = false;
-                fileINI.WriteString(sec, key, m_SetupINI.mc_ignore_date.ToString());
-            }
-            else
-                ;
-
-            key = "ИгнорДатаВремя-techsite";
-            if (bool.TryParse (fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.ts_ignore_date) == false)
-            {
-                m_SetupINI.ts_ignore_date = false;
-                fileINI.WriteString(sec, key, m_SetupINI.ts_ignore_date.ToString ());
-            }
-            else
-                ;
-
-            key = "РДГФорматТаблицаНазначение";
-            m_SetupINI.m_strtypeField = fileINI.ReadString(sec, key, string.Empty);
-            if (m_SetupINI.m_strtypeField.Equals (string.Empty) == true)
-            {
-                m_SetupINI.m_strtypeField = AdminTS.TYPE_FIELDS.DYNAMIC.ToString();
-                fileINI.WriteString(sec, key, m_SetupINI.m_strtypeField);
-            }
-            else
-                ;
-
-            key = "ТипБДКфгНазначение";
-            m_SetupINI.m_iConfigDB = fileINI.ReadInt(sec, key, -1);
-            if (m_SetupINI.m_iConfigDB == -1)
-            {
-                m_SetupINI.m_iConfigDB = 200;
-                fileINI.WriteInt(sec, key, m_SetupINI.m_iConfigDB);
-            }
-            else
-                ;
 
             m_listIsDataTECComponents = new List<bool>();
 
@@ -196,6 +150,52 @@ namespace trans_mc
             int i = -1;
 
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
+
+            string sec, key;
+            FileINI fileINI = new FileINI("setup.ini");
+            sec = "Main (" + ProgramBase.AppName + ")";
+            key = "ОкноНазначение";
+            this.Text = fileINI.ReadString(sec, key, string.Empty);
+
+            this.Text = @"Конвертер ПБР (Modes-Centre ГТП)" + @" " + this.Text;
+            sec = "Интерпретация данных (" + ProgramBase.AppName + ")";
+            key = "ИгнорДатаВремя-ModesCentre";
+            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.mc_ignore_date) == false)
+            {
+                m_SetupINI.mc_ignore_date = false;
+                fileINI.WriteString(sec, key, m_SetupINI.mc_ignore_date.ToString());
+            }
+            else
+                ;
+
+            key = "ИгнорДатаВремя-techsite";
+            if (bool.TryParse(fileINI.ReadString(sec, key, string.Empty), out m_SetupINI.ts_ignore_date) == false)
+            {
+                m_SetupINI.ts_ignore_date = false;
+                fileINI.WriteString(sec, key, m_SetupINI.ts_ignore_date.ToString());
+            }
+            else
+                ;
+
+            key = "РДГФорматТаблицаНазначение";
+            m_SetupINI.m_strtypeField = fileINI.ReadString(sec, key, string.Empty);
+            if (m_SetupINI.m_strtypeField.Equals(string.Empty) == true)
+            {
+                m_SetupINI.m_strtypeField = AdminTS.TYPE_FIELDS.DYNAMIC.ToString();
+                fileINI.WriteString(sec, key, m_SetupINI.m_strtypeField);
+            }
+            else
+                ;
+
+            key = "ТипБДКфгНазначение";
+            m_SetupINI.m_iConfigDB = fileINI.ReadInt(sec, key, -1);
+            if (m_SetupINI.m_iConfigDB == -1)
+            {
+                m_SetupINI.m_iConfigDB = 200;
+                fileINI.WriteInt(sec, key, m_SetupINI.m_iConfigDB);
+            }
+            else
+                ;
 
             InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
             for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
