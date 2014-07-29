@@ -79,15 +79,5 @@ namespace StatisticTrans.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
-        /// </summary>
-        internal static System.Drawing.Icon Statistic5 {
-            get {
-                object obj = ResourceManager.GetObject("Statistic5", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
     }
 }

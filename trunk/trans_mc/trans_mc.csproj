@@ -60,6 +60,10 @@
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StatisticTransModes\StatisticTransModes.csproj">
+      <Project>{2D1A4E7E-86EB-42AD-AA29-EFEB551C487A}</Project>
+      <Name>StatisticTransModes</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticTrans\StatisticTrans.csproj">
       <Project>{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}</Project>
       <Name>StatisticTrans</Name>
@@ -67,12 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdminMC.cs" />
-    <Compile Include="dgwAdminMC.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="FormMainTransMC.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="FormMainTransMC.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

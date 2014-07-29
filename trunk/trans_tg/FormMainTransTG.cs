@@ -21,8 +21,8 @@ namespace trans_tg
         List <bool> m_listIsDataTECComponents;
 
         public FormMainTransTG()
-            : base(new string[] { @"ОкноНазначение", @"ТипБДКфгНазначение" },
-                new string[] { @"Конвертер значений ТГ", @"200" })
+            : base(new string[] { @"ТипБДКфгНазначение" },
+                new string[] { @"200" })
         {
             InitializeComponentTransTG();
 
@@ -169,7 +169,10 @@ namespace trans_tg
                     else
                         ;
 
-                try { ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, bIgnoreTECInUse); }
+                try {
+                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, bIgnoreTECInUse);
+                    RemoveTEC(m_arAdmin[i]);
+                }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");
@@ -236,8 +239,7 @@ namespace trans_tg
 
                 //panelMain.Visible = false;
 
-                timerMain.Interval = 666; //Признак первой итерации
-                timerMain.Start();
+                base.Start ();
             }
             else
                 ;
