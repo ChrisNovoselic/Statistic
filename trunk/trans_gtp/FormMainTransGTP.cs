@@ -195,7 +195,7 @@ namespace trans_gtp
             ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
         }
 
-        protected void start () {
+        protected override void start () {
             base.Start ();
         }
         

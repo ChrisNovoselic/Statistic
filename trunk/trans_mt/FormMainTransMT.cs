@@ -15,97 +15,115 @@ namespace trans_mt
 {
     public partial class FormMainTransMT : FormMainTransModes
     {
+        public FormMainTransMT () : base () {
+            this.notifyIconMain.Icon =
+            this.Icon = trans_mt.Properties.Resources.statistic6;
+        }
+
         protected override void Start()
         {
             int i = -1;
 
             CreateFormConnectionSettingsConfigDB("connsett_mt.ini");
 
-            int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
-            //FileINI fileINI = new FileINI(@"setup.ini");
-            //string sec = "Main (" + ProgramBase.AppName + ")";
+            m_fileINI.Add(@"ТипБДКфгИсточник", @"200");
+            m_fileINI.Add(@"ИгнорДатаВремя-ModesTerminale", false.ToString ());            
 
-            InitTECBase.TYPE_DATABASE_CFG[] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
-            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
             {
-                arConfigDB[i] = Int32.Parse(m_fileINI.GetValueOfKey(arKeyTypeConfigDB[i]));
-                for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
+                if (t.ToString().Contains(m_fileINI.GetValueOfKey(@"ТипБДКфгНазначение")) == true)
                 {
-                    if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
-                    {
-                        arTypeConfigDB[i] = t;
-                        break;
-                    }
-                    else
-                        ;
+                    typeConfigDB = t;
+                    break;
                 }
+                else
+                    ;
             }
 
-            string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаИсточник");
-            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
-
-            bool bIgnoreDateTime = false;
-            if (Boolean.TryParse(m_fileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
-                bIgnoreDateTime = false;
-            else
-                ;
-
-            int idListener = -1;
-            //Инициализация объектов получения данных
+            bool bIgnoreTECInUse = false;
+            string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
+            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arAdmin[i] = new AdminTS_KomDisp(m_report, new bool[] { false, true });
-                idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(i), false, @"CONFIG_DB");
+                switch (i)
+                {
+                    case (Int16)CONN_SETT_TYPE.SOURCE:
+                        //m_arAdmin[i] = new AdminMT(m_report);
+                        break;
+                    case (Int16)CONN_SETT_TYPE.DEST:
+                        m_arAdmin[i] = new AdminTS_Modes(m_report, new bool[] { false, true });
+                        break;
+                    default:
+                        break;
+                }
                 try
                 {
-                    //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, typeConfigDB, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
-                    //ErrorReport("Ошибка соединения. Перехож в ожидание.");
+                    Logging.Logg().LogExceptionToFile(e, "FormMainTransMT::FormMainTransMT ()");
+                    //ErrorReport("Ошибка соединения. Переход в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;
                 }
-
-                //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett(i);
-
-                for (AdminTS.TYPE_FIELDS tf = AdminTS.TYPE_FIELDS.STATIC; i < (int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS; tf++)
-                    if (arStrTypeField[i].Equals(tf.ToString()) == true)
-                    {
-                        ((AdminTS)m_arAdmin[i]).m_typeFields = tf;
+                switch (i)
+                {
+                    case (Int16)CONN_SETT_TYPE.SOURCE:
+                        m_arAdmin[i].m_ignore_date = bool.Parse(m_fileINI.GetValueOfKey(@"ИгнорДатаВремя-ModesTerminale"));
                         break;
-                    }
-                    else
-                        ;
+                    case (Int16)CONN_SETT_TYPE.DEST:
+                        if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
+                            ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                        else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
+                            ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                        else
+                            ;
+                        m_arAdmin[i].m_ignore_date = bool.Parse(m_fileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"));
+                        break;
+                    default:
+                        break;
+                }
 
-                m_arAdmin[i].m_ignore_date = bIgnoreDateTime;
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
-
-                setUIControlConnectionSettings(i);
-
-                m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
-
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
-                m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
-
-                m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
-
-                //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
-
-                m_arAdmin[i].Start();
-
-                DbSources.Sources().UnRegister(idListener);
             }
+
+            DbMCSources.Sources().UnRegister(idListener);
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {
-                start ();
+                setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
+
+                for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                {
+                    //setUIControlConnectionSettings(i); //??? Перенос ДО цикла
+
+                    m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+
+                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
+
+                    m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);
+
+                    //m_arAdmin [i].mode (FormChangeMode.MODE_TECCOMPONENT.GTP);
+
+                    //??? Перенос ПОСЛЕ цикла
+                    //if (i == (int)(Int16)CONN_SETT_TYPE.DEST)
+                    //    (Int16)CONN_SETT_TYPE.DEST
+                    m_arAdmin[i].Start();
+                    //else
+                    //    ;
+                }
+
+                //Перенес обратно...
+                //((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).StartDbInterface();
+
+                //panelMain.Visible = false;
+
+                base.Start();
             }
             else
                 ;

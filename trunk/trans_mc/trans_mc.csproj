@@ -70,8 +70,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminMC.cs" />
-    <Compile Include="FormMainTransMC.cs" />
+    <Compile Include="AdminMC.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FormMainTransMC.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -84,7 +88,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
-    <Compile Include="AdminTS_MC.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -110,6 +113,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

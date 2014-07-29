@@ -210,6 +210,8 @@ namespace StatisticTrans
 
         protected List<int> m_listID_TECNotUse;
         
+        protected abstract void start();
+        
         protected virtual void Start() {
             timerMain.Interval = 666; //Признак первой итерации
             timerMain.Start();

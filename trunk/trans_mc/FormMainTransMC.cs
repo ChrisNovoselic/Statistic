@@ -15,11 +15,19 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTransModes
     {
+        public FormMainTransMC () : base () {
+            this.notifyIconMain.Icon =
+            this.Icon = trans_mc.Properties.Resources.statistic5;
+        }
+        
         protected override void Start()
         {
             int i = -1;
 
             CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
+
+            m_fileINI.Add(@"MCServiceHost", string.Empty);
+            m_fileINI.Add(@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
             InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
             for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
@@ -44,7 +52,7 @@ namespace trans_mc
                         m_arAdmin[i] = new AdminMC(m_fileINI.GetValueOfKey(@"MCServiceHost"), m_report);
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        m_arAdmin[i] = new AdminTS_MC(m_report, new bool[] { false, true });
+                        m_arAdmin[i] = new AdminTS_Modes(m_report, new bool[] { false, true });
                         break;
                     default:
                         break;

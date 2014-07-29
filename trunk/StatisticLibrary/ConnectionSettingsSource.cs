@@ -83,8 +83,13 @@ namespace StatisticCommon
 
             if ((tableRes.Rows.Count > 0) && (tablePsw.Rows.Count > 0))
                 tableRes = GetConnectionSettings(ref tableRes, 0, ref tablePsw, 0);
-            else
-                er = -1;
+            else {
+                if (! (tablePsw.Rows.Count > 0)) {
+                    tableRes.Columns.Add (@"PASSWORD", typeof (string));
+                }
+                else
+                    er = -1;
+            }
 
             return tableRes;
         }

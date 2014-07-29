@@ -131,6 +131,11 @@ namespace trans_tg
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
+        protected override void start()
+        {
+            base.Start();
+        }
+
         protected override void Start()
         {
             int i = -1;
@@ -239,7 +244,7 @@ namespace trans_tg
 
                 //panelMain.Visible = false;
 
-                base.Start ();
+                start ();
             }
             else
                 ;

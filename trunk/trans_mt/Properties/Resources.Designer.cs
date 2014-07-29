@@ -59,5 +59,15 @@ namespace trans_mt.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+        /// </summary>
+        internal static System.Drawing.Icon statistic6 {
+            get {
+                object obj = ResourceManager.GetObject("statistic6", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

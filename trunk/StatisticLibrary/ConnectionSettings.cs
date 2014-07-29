@@ -13,8 +13,8 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        ADMIN = 0, PBR = 1, DATA_FACT = 2, DATA_TM = 3,
-        COUNT_CONN_SETT_TYPE = 4
+        ADMIN = 0, PBR = 1, DATA_FACT = 2, DATA_TM = 3, MTERM = 4,
+        COUNT_CONN_SETT_TYPE = 5
     };
 
     public class ConnectionSettings
