@@ -118,9 +118,9 @@ namespace trans_mc_cmd
                 int i = -1, j = -1;
                 for (i = 0; i < m_listIndexTECComponent.Count; i++)
                 {
-                    for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count; j++)
+                    for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count; j++)
                     {
-                        m_listIdMCTECComponent.Add(m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j]);
+                        m_listIdMCTECComponent.Add(m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId[j]);
                     }
                 }
 
@@ -182,15 +182,15 @@ namespace trans_mc_cmd
             int i = -1, j = -1;
             for (i = 0; i < m_listIndexTECComponent.Count; i++)
             {
-                for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count; j++)
+                for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count; j++)
                 {
-                    if (id_mc == m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId[j])
+                    if (id_mc == m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId[j])
                         break;
                     else
                         ;
                 }
 
-                if (j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCId.Count)
+                if (j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count)
                     break;
                 else
                     ;

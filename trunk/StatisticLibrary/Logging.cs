@@ -9,14 +9,15 @@ namespace StatisticCommon
 {
     //public class Logging
     //{
-        
 
     //    //private Logging () {
     //    //}
     //}
-    
+
     public class Logging //LoggingFS //: Logging
     {
+        private enum LOG_MODE { ERROR = -1, UNKNOWN, FILE, DB };
+        
         private string m_fileNameStart;
         private string m_fileName;
         private bool externalLog;
@@ -25,7 +26,7 @@ namespace StatisticCommon
         private Semaphore sema;
         private LogStreamWriter m_sw;
         private FileInfo m_fi;
-        private bool logging = true;
+        private LOG_MODE logging = LOG_MODE.FILE;
         private bool logRotate = true;
         private const int logRotateSizeDefault = 1024 * 1024 * 5;
         private const int logRotateSizeMax = 1024 * 1024 * 1024;
@@ -35,10 +36,12 @@ namespace StatisticCommon
         private const int logRotateFilesMax = 100;
         private int logRotateFiles;
 
-        public static string DatetimeStampSeparator = "------------------------------------------------";
-        public static string MessageSeparator = "================================================";
+        public static string DatetimeStampSeparator = new string ('-', 49); //"------------------------------------------------";
+        public static string MessageSeparator = new string('=', 49); //"================================================";
 
         protected static Logging m_this = null;
+
+        public static int m_iIdListener = -1;
 
         /// <summary>
         /// Имя приложения без расширения
@@ -154,78 +157,89 @@ namespace StatisticCommon
         /// <param name="locking">признак блокирования при записи сообщения</param>
         public void LogToFile(string message, bool separator, bool timeStamp, bool locking/* = false*/)
         {
-            if (logging == true)
+            if (logging > LOG_MODE.UNKNOWN)
             {
-                if (locking == true)
+                switch (logging)
                 {
-                    LogLock();
-                    LogCheckRotate();
-                }
-                else
-                    ;
-
-                string msg = string.Empty;
-                if (separator == true)
-                    msg += MessageSeparator + Environment.NewLine;
-                else
-                    ;
-
-                if (timeStamp == true)
-                {
-                    msg += DateTime.Now.ToString() + Environment.NewLine;
-                    msg += DatetimeStampSeparator + Environment.NewLine;
-                }
-                else
-                    ;
-
-                msg += message + Environment.NewLine;
-
-                if (File.Exists(m_fileName) == true)
-                {
-                    try
-                    {
-                        if ((m_sw == null) || (m_fi == null))
+                    case LOG_MODE.DB:
+                        break;
+                    case LOG_MODE.FILE:
+                        if (locking == true)
                         {
-                            //Вариант №1
-                            //FileInfo f = new FileInfo(m_fileName);
-                            //FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
-                            //m_sw = new LogStreamWriter(fs, Encoding.GetEncoding("windows-1251"));
-                            //Вариант №2                        
-                            m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
-
-                            m_fi = new FileInfo(m_fileName);
+                            LogLock();
+                            LogCheckRotate();
                         }
                         else
                             ;
 
-                        m_sw.Write(msg);
-                        m_sw.Flush();
-                    }
-                    catch (Exception e)
-                    {
-                        /*m_sw.Close ();*/
-                        m_sw = null;
-                        m_fi = null;
-                    }
-                }
-                else
-                    ;
+                        string msg = string.Empty;
+                        if (separator == true)
+                            msg += MessageSeparator + Environment.NewLine;
+                        else
+                            ;
 
-                if (externalLog == true)
-                {
-                    if (timeStamp == true)
-                        delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
-                    else
-                        delegateUpdateLogText(message + Environment.NewLine);
-                }
-                else
-                    ;
+                        if (timeStamp == true)
+                        {
+                            msg += DateTime.Now.ToString() + Environment.NewLine;
+                            msg += DatetimeStampSeparator + Environment.NewLine;
+                        }
+                        else
+                            ;
 
-                if (locking == true)
-                    LogUnlock();
-                else
-                    ;
+                        msg += message + Environment.NewLine;
+
+                        if (File.Exists(m_fileName) == true)
+                        {
+                            try
+                            {
+                                if ((m_sw == null) || (m_fi == null))
+                                {
+                                    //Вариант №1
+                                    //FileInfo f = new FileInfo(m_fileName);
+                                    //FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
+                                    //m_sw = new LogStreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+                                    //Вариант №2                        
+                                    m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
+
+                                    m_fi = new FileInfo(m_fileName);
+                                }
+                                else
+                                    ;
+
+                                m_sw.Write(msg);
+                                m_sw.Flush();
+                            }
+                            catch (Exception e)
+                            {
+                                /*m_sw.Close ();*/
+                                m_sw = null;
+                                m_fi = null;
+                            }
+                        }
+                        else
+                            ;
+
+                        if (externalLog == true)
+                        {
+                            if (timeStamp == true)
+                                delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
+                            else
+                                delegateUpdateLogText(message + Environment.NewLine);
+                        }
+                        else
+                            ;
+
+                        if (locking == true)
+                            LogUnlock();
+                        else
+                            ;
+                        break;
+                    default:
+                        break;
+                }
             }
+            else
+                ;
         }
 
         /*

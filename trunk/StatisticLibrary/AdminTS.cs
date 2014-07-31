@@ -1153,7 +1153,7 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
                                         @" WHERE " +
-                                        t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
+                                        @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id + "; ";
                             break;

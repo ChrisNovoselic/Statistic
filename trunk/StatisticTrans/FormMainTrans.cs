@@ -22,9 +22,9 @@ namespace StatisticTrans
 
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
         protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
-        protected enum INDX_UICONTROL_DB { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROL_DB };
+        protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
-        protected System.Windows.Forms.Control[,] m_arUIControlDB;
+        protected System.Windows.Forms.Control[,] m_arUIControls;
 
         protected FileINI m_fileINI;
 
@@ -208,6 +208,372 @@ namespace StatisticTrans
                     enabledUIControl(true);
         }
 
+        private void InitializeComponentTrans () {
+            int i = -1;
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i])).BeginInit();
+
+            for (i = 0; i < 2 * (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; i++)
+            {
+                this.groupBoxDest.Controls.Add(m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i]);
+            }
+
+            i = (Int16)INDX_UICONTROLS.PORT + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelDestPort
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(11, 57);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "labelDestPort";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(32, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 31;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Text = "Порт";
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            // 
+            // nudnDestPort
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(128, 55);
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i]).Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "nudnDestPort";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(69, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 26;
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i]).TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i]).Value = new decimal(new int[] {
+            3306,
+            0,
+            0,
+            0});
+
+            i = (Int16)INDX_UICONTROLS.PASS + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelDestPass
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(10, 136);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "labelDestPass";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(45, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 34;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Text = "Пароль";
+
+            i = (Int16)INDX_UICONTROLS.USER_ID + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelDestUserID
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(10, 110);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "labelDestUserID";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(103, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 33;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Text = "Имя пользователя";
+
+            i = (Int16)INDX_UICONTROLS.NAME_DATABASE + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelDestNameDatabase
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(10, 84);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "labelDestNameDatabase";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(98, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 32;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Text = "Имя базы данных";
+
+            i = (Int16)INDX_UICONTROLS.SERVER_IP + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelDestServerIP
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(10, 30);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "labelDestServerIP";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(95, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 30;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Text = "IP адрес сервера";
+
+            i = (Int16)INDX_UICONTROLS.PASS;
+            // 
+            // mtbxDestPass
+            //
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(128, 133);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "mtbxDestPass";
+            ((MaskedTextBox)m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i]).PasswordChar = '#';
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 29;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.USER_ID;
+            // 
+            // tbxDestUserId
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(128, 107);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "tbxDestUserId";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 28;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.NAME_DATABASE;
+            // 
+            // tbxDestNameDatabase
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(128, 81);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "tbxDestNameDatabase";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 27;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.SERVER_IP;
+            // 
+            // tbxDestServerIP
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Location = new System.Drawing.Point(128, 27);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Name = "tbxDestServerIP";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TabIndex = 25;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i])).EndInit();
+        }
+        
+        protected void InitializeComponentTransDB()
+        {
+            int i = -1;
+
+            //m_arUIControls = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, 2 * (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROLS]
+            m_arUIControls = new System.Windows.Forms.Control[,]
+            { { new System.Windows.Forms.TextBox(), new System.Windows.Forms.NumericUpDown(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.MaskedTextBox(),
+                new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label() },
+            { new System.Windows.Forms.TextBox(), new System.Windows.Forms.NumericUpDown(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.MaskedTextBox(),
+                new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label() } };
+
+            InitializeComponentTrans ();
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i])).BeginInit();
+
+            for (i = 0; i < 2 * (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; i++)
+            {
+                this.groupBoxSource.Controls.Add(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]);
+            }
+
+            i = (Int16)INDX_UICONTROLS.PORT + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourcePort
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(12, 55);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourcePort";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(32, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 21;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "Порт";
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            // 
+            // nudnSourcePort
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(129, 53);
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "nudnSourcePort";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(69, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 16;
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            ((NumericUpDown)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).Value = new decimal(new int[] {
+            3306,
+            0,
+            0,
+            0});
+
+            i = (Int16)INDX_UICONTROLS.PASS + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourcePass
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 134);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourcePass";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(45, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 24;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "Пароль";
+
+            i = (Int16)INDX_UICONTROLS.USER_ID + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourceUserId
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 108);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourceUserId";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(103, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 23;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "Имя пользователя";
+
+            i = (Int16)INDX_UICONTROLS.NAME_DATABASE + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourceNameDatabase
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 82);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourceNameDatabase";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(98, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 22;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "Имя базы данных";
+
+            i = (Int16)INDX_UICONTROLS.SERVER_IP + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourceServerIP
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 28);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourceServerIP";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(95, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 20;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "IP адрес сервера";
+
+            i = (Int16)INDX_UICONTROLS.PASS;
+            // 
+            // mtbxSourcePass
+            //
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(129, 131);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "mtbxSourcePass";
+            ((MaskedTextBox)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).PasswordChar = '#';
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 19;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TextChanged += new System.EventHandler(component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.USER_ID;
+            // 
+            // tbxSourceUserId
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(129, 105);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "tbxSourceUserId";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 18;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TextChanged += new System.EventHandler(component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.NAME_DATABASE;
+            // 
+            // tbxSourceNameDatabase
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(129, 79);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "tbxSourceNameDatabase";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 17;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            i = (Int16)INDX_UICONTROLS.SERVER_IP;
+            // 
+            // tbxSourceServerIP
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(129, 25);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "tbxSourceServerIP";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(160, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 15;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TextChanged += new System.EventHandler(this.component_Changed);
+
+            this.groupBoxSource.ResumeLayout(false);
+            this.groupBoxSource.PerformLayout();
+            i = (Int16)INDX_UICONTROLS.PORT;
+            ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i])).EndInit();
+        }
+
+        protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
+        
+        protected void InitializeComponentTransSrc(string text)
+        {
+            int i = -1;
+            
+            m_arUIControls = new System.Windows.Forms.Control[,]
+            { { new System.Windows.Forms.TextBox(), new Button (), null, null, null,
+                new System.Windows.Forms.Label(), null, null, null, null },
+            { new System.Windows.Forms.TextBox(), new System.Windows.Forms.NumericUpDown(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.MaskedTextBox(),
+                new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label() } };
+
+            InitializeComponentTrans ();
+
+            for (i = 0; i < 2 * (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; i++)
+            {
+                if (!(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i] == null))
+                    this.groupBoxSource.Controls.Add(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]);
+                else
+                    ;
+            }
+
+            i = (Int16)INDX_UICONTROLS.SERVER_IP + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
+            // 
+            // labelSourcePathExcel
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].AutoSize = true;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 28);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "labelSourceSett";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(95, 13);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 20;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = text;
+
+            i =  (Int16)INDX_UICONTROLS.SERVER_IP;
+            // 
+            // tbxSourcePathExcel
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(11, 55);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "tbxSourceSett";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(243, 20);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 15;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TextChanged += new System.EventHandler(this.component_Changed);
+            ((TextBox)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).ReadOnly = true;
+
+            i = (Int16)INDX_UICONTROLS.PORT;
+            // 
+            // buttonPathExcel
+            // 
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Location = new System.Drawing.Point(257, 53);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Name = "buttonSaveSourceSett";
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Size = new System.Drawing.Size(29, 23);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 2;
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = "...";
+            ((Button)m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]).UseVisualStyleBackColor = true;
+            //m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Click += new System.EventHandler(...);
+            m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Enabled = false;
+
+            //Идентичный код с панелью Modes-Centre
+            buttonSourceExport.Location = new System.Drawing.Point(8, 86);
+
+            buttonSourceSave.Location = new System.Drawing.Point(151, 86);
+            buttonSourceSave.Click -= buttonSourceSave_Click;
+            buttonSourceSave.Click += new EventHandler(this.buttonSaveSourceSett_Click);
+            buttonSourceSave.Enabled = false;
+
+            this.groupBoxSource.ResumeLayout(false);
+            this.groupBoxSource.PerformLayout();
+
+            this.groupBoxSource.Size = new System.Drawing.Size(300, 120);
+
+            this.groupBoxDest.Location = new System.Drawing.Point(3, 196);
+
+            panelMain.Size = new System.Drawing.Size(822, 404);
+
+            //base.buttonClose.Anchor = AnchorStyles.Left;
+            buttonClose.Location = new System.Drawing.Point(733, 434);
+
+            this.Size = new System.Drawing.Size(849, 514);
+
+            this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
+        }
+        
         protected List<int> m_listID_TECNotUse;
         
         protected abstract void start();
@@ -253,30 +619,30 @@ namespace StatisticTrans
         protected void setUIControlConnectionSettings(int i)
         {
             if (!(comboBoxTECComponent.SelectedIndex < 0) &&
-                (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < ((AdminTS)m_arAdmin[i]).allTECComponents.Count))
+                (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < m_arAdmin[i].allTECComponents.Count))
             {
-                ConnectionSettings connSett = ((AdminTS)m_arAdmin[i]).allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
-                for (int j = 0; j < (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB; j++)
+                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
+                for (int j = 0; j < (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; j++)
                 {
                     switch (j)
                     {
-                        case (Int16)FormMainTrans.INDX_UICONTROL_DB.SERVER_IP:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.server;
+                        case (Int16)FormMainTrans.INDX_UICONTROLS.SERVER_IP:
+                            ((TextBox)m_arUIControls[i, j]).Text = connSett.server;
                             break;
-                        case (Int16)INDX_UICONTROL_DB.PORT:
+                        case (Int16)INDX_UICONTROLS.PORT:
                             //if (m_arUIControlDB[i, j].Enabled == true)
-                                ((NumericUpDown)m_arUIControlDB[i, j]).Text = connSett.port.ToString();
+                                ((NumericUpDown)m_arUIControls[i, j]).Text = connSett.port.ToString();
                             //else
                             //    ;
                             break;
-                        case (Int16)INDX_UICONTROL_DB.NAME_DATABASE:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.dbName;
+                        case (Int16)INDX_UICONTROLS.NAME_DATABASE:
+                            ((TextBox)m_arUIControls[i, j]).Text = connSett.dbName;
                             break;
-                        case (Int16)INDX_UICONTROL_DB.USER_ID:
-                            ((TextBox)m_arUIControlDB[i, j]).Text = connSett.userName;
+                        case (Int16)INDX_UICONTROLS.USER_ID:
+                            ((TextBox)m_arUIControls[i, j]).Text = connSett.userName;
                             break;
-                        case (Int16)INDX_UICONTROL_DB.PASS:
-                            ((MaskedTextBox)m_arUIControlDB[i, j]).Text = connSett.password;
+                        case (Int16)INDX_UICONTROLS.PASS:
+                            ((MaskedTextBox)m_arUIControls[i, j]).Text = connSett.password;
                             break;
                         default:
                             break;
@@ -287,19 +653,30 @@ namespace StatisticTrans
                 ;
         }
 
-        protected virtual void setUIControlSourceState()
-        {
-        }
+        protected abstract void setUIControlSourceState();
 
         protected void enabledButtonSourceExport(bool enabled)
         {
             buttonSourceExport.Enabled = enabled;
         }
 
-        protected virtual void CreateFormConnectionSettingsConfigDB(string connSettFileName)
+        protected void CreateFormConnectionSettingsCfgDB(string connSettFileName)
         {
             m_fileConnSett = new FIleConnSett(connSettFileName);
             m_formConnectionSettingsConfigDB = new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
+        }
+
+        protected void CreateFormConnectionSettingsCfgDBofAdmins(string connSettFileName)
+        {
+            CreateFormConnectionSettingsCfgDB(connSettFileName);
+
+            if ((!(m_formConnectionSettingsConfigDB.Ready == 0)) || (m_formConnectionSettingsConfigDB.Count < 2))
+            {
+                while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
+                    m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
+            }
+            else
+                ;
         }
 
         protected virtual void FillComboBoxTECComponent () {

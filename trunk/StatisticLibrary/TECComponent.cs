@@ -7,7 +7,8 @@ namespace StatisticCommon
     public class TECComponent : TECComponentBase
     {
         public string prefix_admin, prefix_pbr;
-        public List<int> m_listMCId;
+        public List<int> m_listMCentreId;
+        public List<int> m_listMTermId;
         public List<TG> TG;
         public TEC tec;
 
@@ -15,7 +16,8 @@ namespace StatisticCommon
         {
             this.tec = tec;
             TG = new List<TG>();
-            m_listMCId = null;
+            m_listMCentreId =
+            m_listMTermId = null;
 
             this.prefix_admin = prefix_admin;
             this.prefix_pbr = prefix_pbr;

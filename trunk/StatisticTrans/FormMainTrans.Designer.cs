@@ -40,16 +40,6 @@
             this.groupBoxDest = new System.Windows.Forms.GroupBox();
             this.buttonDestClear = new System.Windows.Forms.Button();
             this.buttonDestSave = new System.Windows.Forms.Button();
-            this.labelDestPort = new System.Windows.Forms.Label();
-            this.nudnDestPort = new System.Windows.Forms.NumericUpDown();
-            this.labelDestPass = new System.Windows.Forms.Label();
-            this.labelDestUserID = new System.Windows.Forms.Label();
-            this.labelDestNameDatabase = new System.Windows.Forms.Label();
-            this.labelDestServerIP = new System.Windows.Forms.Label();
-            this.mtbxDestPass = new System.Windows.Forms.MaskedTextBox();
-            this.tbxDestUserId = new System.Windows.Forms.TextBox();
-            this.tbxDestNameDatabase = new System.Windows.Forms.TextBox();
-            this.tbxDestServerIP = new System.Windows.Forms.TextBox();
             this.groupBoxSource = new System.Windows.Forms.GroupBox();
             this.buttonSourceExport = new System.Windows.Forms.Button();
             this.buttonSourceSave = new System.Windows.Forms.Button();
@@ -69,7 +59,7 @@
             //((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.panelMain.SuspendLayout();
             this.groupBoxDest.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
+            //((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).BeginInit();
             this.groupBoxSource.SuspendLayout();
             
             this.menuStripMain.SuspendLayout();
@@ -137,18 +127,10 @@
             // groupBoxDest
             // 
             this.groupBoxDest.BackColor = System.Drawing.SystemColors.Control;
+            //...Controls...
             this.groupBoxDest.Controls.Add(this.buttonDestClear);
             this.groupBoxDest.Controls.Add(this.buttonDestSave);
-            this.groupBoxDest.Controls.Add(this.labelDestPort);
-            this.groupBoxDest.Controls.Add(this.nudnDestPort);
-            this.groupBoxDest.Controls.Add(this.labelDestPass);
-            this.groupBoxDest.Controls.Add(this.labelDestUserID);
-            this.groupBoxDest.Controls.Add(this.labelDestNameDatabase);
-            this.groupBoxDest.Controls.Add(this.labelDestServerIP);
-            this.groupBoxDest.Controls.Add(this.mtbxDestPass);
-            this.groupBoxDest.Controls.Add(this.tbxDestUserId);
-            this.groupBoxDest.Controls.Add(this.tbxDestNameDatabase);
-            this.groupBoxDest.Controls.Add(this.tbxDestServerIP);
+            //...Controls...
             this.groupBoxDest.Location = new System.Drawing.Point(3, 276);
             this.groupBoxDest.Name = "groupBoxDest";
             this.groupBoxDest.Size = new System.Drawing.Size(300, 200);
@@ -177,107 +159,6 @@
             this.buttonDestSave.Text = "Сохранить";
             this.buttonDestSave.UseVisualStyleBackColor = true;
             this.buttonDestSave.Click += new System.EventHandler(this.buttonDestSave_Click);
-            // 
-            // labelDestPort
-            // 
-            this.labelDestPort.AutoSize = true;
-            this.labelDestPort.Location = new System.Drawing.Point(11, 57);
-            this.labelDestPort.Name = "labelDestPort";
-            this.labelDestPort.Size = new System.Drawing.Size(32, 13);
-            this.labelDestPort.TabIndex = 31;
-            this.labelDestPort.Text = "Порт";
-            // 
-            // nudnDestPort
-            // 
-            this.nudnDestPort.Enabled = false;
-            this.nudnDestPort.Location = new System.Drawing.Point(128, 55);
-            this.nudnDestPort.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.nudnDestPort.Name = "nudnDestPort";
-            this.nudnDestPort.Size = new System.Drawing.Size(69, 20);
-            this.nudnDestPort.TabIndex = 26;
-            this.nudnDestPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.nudnDestPort.Value = new decimal(new int[] {
-            3306,
-            0,
-            0,
-            0});
-            // 
-            // labelDestPass
-            // 
-            this.labelDestPass.AutoSize = true;
-            this.labelDestPass.Location = new System.Drawing.Point(10, 136);
-            this.labelDestPass.Name = "labelDestPass";
-            this.labelDestPass.Size = new System.Drawing.Size(45, 13);
-            this.labelDestPass.TabIndex = 34;
-            this.labelDestPass.Text = "Пароль";
-            // 
-            // labelDestUserID
-            // 
-            this.labelDestUserID.AutoSize = true;
-            this.labelDestUserID.Location = new System.Drawing.Point(10, 110);
-            this.labelDestUserID.Name = "labelDestUserID";
-            this.labelDestUserID.Size = new System.Drawing.Size(103, 13);
-            this.labelDestUserID.TabIndex = 33;
-            this.labelDestUserID.Text = "Имя пользователя";
-            // 
-            // labelDestNameDatabase
-            // 
-            this.labelDestNameDatabase.AutoSize = true;
-            this.labelDestNameDatabase.Location = new System.Drawing.Point(10, 84);
-            this.labelDestNameDatabase.Name = "labelDestNameDatabase";
-            this.labelDestNameDatabase.Size = new System.Drawing.Size(98, 13);
-            this.labelDestNameDatabase.TabIndex = 32;
-            this.labelDestNameDatabase.Text = "Имя базы данных";
-            // 
-            // labelDestServerIP
-            // 
-            this.labelDestServerIP.AutoSize = true;
-            this.labelDestServerIP.Location = new System.Drawing.Point(10, 30);
-            this.labelDestServerIP.Name = "labelDestServerIP";
-            this.labelDestServerIP.Size = new System.Drawing.Size(95, 13);
-            this.labelDestServerIP.TabIndex = 30;
-            this.labelDestServerIP.Text = "IP адрес сервера";
-            // 
-            // mtbxDestPass
-            //
-            this.mtbxDestPass.Enabled = false; 
-            this.mtbxDestPass.Location = new System.Drawing.Point(128, 133);
-            this.mtbxDestPass.Name = "mtbxDestPass";
-            this.mtbxDestPass.PasswordChar = '#';
-            this.mtbxDestPass.Size = new System.Drawing.Size(160, 20);
-            this.mtbxDestPass.TabIndex = 29;
-            this.mtbxDestPass.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxDestUserId
-            // 
-            this.tbxDestUserId.Enabled = false;
-            this.tbxDestUserId.Location = new System.Drawing.Point(128, 107);
-            this.tbxDestUserId.Name = "tbxDestUserId";
-            this.tbxDestUserId.Size = new System.Drawing.Size(160, 20);
-            this.tbxDestUserId.TabIndex = 28;
-            this.tbxDestUserId.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxDestNameDatabase
-            // 
-            this.tbxDestNameDatabase.Enabled = false;
-            this.tbxDestNameDatabase.Location = new System.Drawing.Point(128, 81);
-            this.tbxDestNameDatabase.Name = "tbxDestNameDatabase";
-            this.tbxDestNameDatabase.Size = new System.Drawing.Size(160, 20);
-            this.tbxDestNameDatabase.TabIndex = 27;
-            this.tbxDestNameDatabase.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxDestServerIP
-            // 
-            this.tbxDestServerIP.Enabled = false;
-            this.tbxDestServerIP.Location = new System.Drawing.Point(128, 27);
-            this.tbxDestServerIP.Name = "tbxDestServerIP";
-            this.tbxDestServerIP.Size = new System.Drawing.Size(160, 20);
-            this.tbxDestServerIP.TabIndex = 25;
-            this.tbxDestServerIP.TextChanged += new System.EventHandler(this.component_Changed);
             
             //Source...
             // 
@@ -431,7 +312,7 @@
             this.panelMain.PerformLayout();
             this.groupBoxDest.ResumeLayout(false);
             this.groupBoxDest.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
+            //((System.ComponentModel.ISupportInitialize)(this.nudnDestPort)).EndInit();
             //Source...
             this.menuStripMain.ResumeLayout(false);
             this.menuStripMain.PerformLayout();
@@ -449,16 +330,16 @@
         protected System.Windows.Forms.DateTimePicker dateTimePickerMain;
         protected System.Windows.Forms.GroupBox groupBoxSource;
         protected System.Windows.Forms.GroupBox groupBoxDest;
-        protected System.Windows.Forms.Label labelDestPort;
-        protected System.Windows.Forms.NumericUpDown nudnDestPort;
-        protected System.Windows.Forms.Label labelDestPass;
-        protected System.Windows.Forms.Label labelDestUserID;
-        protected System.Windows.Forms.Label labelDestNameDatabase;
-        protected System.Windows.Forms.Label labelDestServerIP;
-        protected System.Windows.Forms.MaskedTextBox mtbxDestPass;
-        protected System.Windows.Forms.TextBox tbxDestUserId;
-        protected System.Windows.Forms.TextBox tbxDestNameDatabase;
-        protected System.Windows.Forms.TextBox tbxDestServerIP;
+        //protected System.Windows.Forms.Label labelDestPort;
+        //protected System.Windows.Forms.NumericUpDown nudnDestPort;
+        //protected System.Windows.Forms.Label labelDestPass;
+        //protected System.Windows.Forms.Label labelDestUserID;
+        //protected System.Windows.Forms.Label labelDestNameDatabase;
+        //protected System.Windows.Forms.Label labelDestServerIP;
+        //protected System.Windows.Forms.MaskedTextBox mtbxDestPass;
+        //protected System.Windows.Forms.TextBox tbxDestUserId;
+        //protected System.Windows.Forms.TextBox tbxDestNameDatabase;
+        //protected System.Windows.Forms.TextBox tbxDestServerIP;
         //Source...
         protected System.Windows.Forms.ComboBox comboBoxTECComponent;
         private System.Windows.Forms.Button buttonDestClear;

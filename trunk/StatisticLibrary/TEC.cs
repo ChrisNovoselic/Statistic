@@ -123,7 +123,7 @@ namespace StatisticCommon
                     {
                         m_arIdListeners[(int)i] = DbSources.Sources ().Register(connSetts[(int)i], true, @"ТЭЦ=" + name_shr + @"; DESC=" + i.ToString ());
 
-                        if (! ((int)i < (int)CONN_SETT_TYPE.DATA_FACT))
+                        if ((!((int)i < (int)CONN_SETT_TYPE.DATA_FACT)) && (!((int)i > (int)CONN_SETT_TYPE.DATA_TM)))
                             if (FormMainBase.s_iMainSourceData == connSetts[(int)i].id) {
                                 m_arTypeSourceData [(int)i - (int)CONN_SETT_TYPE.DATA_FACT] = INDEX_TYPE_SOURCE_DATA.COMMON;
                             }
@@ -345,10 +345,11 @@ namespace StatisticCommon
                         //@", " + "PBR" + " AS PBR";
                         @", " + selectPBR.Split(';')[0];
 
-                    if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
-                    else
-                        ;
+                    //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                        //strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
+                        strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + @"PBR_NUMBER";
+                    //else
+                    //    ;
 
                     //Такого столбца для ГТП нет
                     strRes += @", " + "ID_COMPONENT";

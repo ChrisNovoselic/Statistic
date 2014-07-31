@@ -14,17 +14,6 @@ namespace trans_gtp
 {
     public partial class FormMainTransGTP : FormMainTrans
     {
-        private System.Windows.Forms.Label labelSourcePort;
-        private System.Windows.Forms.NumericUpDown nudnSourcePort;
-        private System.Windows.Forms.Label labelSourcePass;
-        private System.Windows.Forms.Label labelSourceUserId;
-        private System.Windows.Forms.Label labelSourceNameDatabase;
-        private System.Windows.Forms.Label labelSourceServerIP;
-        private System.Windows.Forms.MaskedTextBox mtbxSourcePass;
-        private System.Windows.Forms.TextBox tbxSourceUserId;
-        private System.Windows.Forms.TextBox tbxSourceNameDatabase;
-        private System.Windows.Forms.TextBox tbxSourceServerIP;
-
         public FormMainTransGTP()
             : base(new string[] { @"ИгнорДатаВремя-techsite", @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение" },
                     new string[] { @"False", @"200", @"DYNAMIC" })
@@ -53,146 +42,10 @@ namespace trans_gtp
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
-            { { tbxSourceServerIP, nudnSourcePort, tbxSourceNameDatabase, tbxSourceUserId, mtbxSourcePass },
-            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
-
             //Созжание массива для объектов получения данных
             m_arAdmin = new AdminTS[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             Start();
-        }
-
-        private void InitializeComponentTransDB()
-        {
-            this.labelSourcePort = new System.Windows.Forms.Label();
-            this.nudnSourcePort = new System.Windows.Forms.NumericUpDown();
-            this.labelSourcePass = new System.Windows.Forms.Label();
-            this.labelSourceUserId = new System.Windows.Forms.Label();
-            this.labelSourceNameDatabase = new System.Windows.Forms.Label();
-            this.labelSourceServerIP = new System.Windows.Forms.Label();
-            this.mtbxSourcePass = new System.Windows.Forms.MaskedTextBox();
-            this.tbxSourceUserId = new System.Windows.Forms.TextBox();
-            this.tbxSourceNameDatabase = new System.Windows.Forms.TextBox();
-            this.tbxSourceServerIP = new System.Windows.Forms.TextBox();
-
-            ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).BeginInit();
-
-            base.groupBoxSource.Controls.Add(this.labelSourcePort);
-            this.groupBoxSource.Controls.Add(this.nudnSourcePort);
-            this.groupBoxSource.Controls.Add(this.labelSourcePass);
-            this.groupBoxSource.Controls.Add(this.labelSourceUserId);
-            this.groupBoxSource.Controls.Add(this.labelSourceNameDatabase);
-            this.groupBoxSource.Controls.Add(this.labelSourceServerIP);
-            this.groupBoxSource.Controls.Add(this.mtbxSourcePass);
-            this.groupBoxSource.Controls.Add(this.tbxSourceUserId);
-            this.groupBoxSource.Controls.Add(this.tbxSourceNameDatabase);
-            this.groupBoxSource.Controls.Add(this.tbxSourceServerIP);
-            // 
-            // labelSourcePort
-            // 
-            this.labelSourcePort.AutoSize = true;
-            this.labelSourcePort.Location = new System.Drawing.Point(12, 55);
-            this.labelSourcePort.Name = "labelSourcePort";
-            this.labelSourcePort.Size = new System.Drawing.Size(32, 13);
-            this.labelSourcePort.TabIndex = 21;
-            this.labelSourcePort.Text = "Порт";
-            // 
-            // nudnSourcePort
-            // 
-            this.nudnSourcePort.Enabled = false;
-            this.nudnSourcePort.Location = new System.Drawing.Point(129, 53);
-            this.nudnSourcePort.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.nudnSourcePort.Name = "nudnSourcePort";
-            this.nudnSourcePort.Size = new System.Drawing.Size(69, 20);
-            this.nudnSourcePort.TabIndex = 16;
-            this.nudnSourcePort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.nudnSourcePort.Value = new decimal(new int[] {
-            3306,
-            0,
-            0,
-            0});
-            // 
-            // labelSourcePass
-            // 
-            this.labelSourcePass.AutoSize = true;
-            this.labelSourcePass.Location = new System.Drawing.Point(11, 134);
-            this.labelSourcePass.Name = "labelSourcePass";
-            this.labelSourcePass.Size = new System.Drawing.Size(45, 13);
-            this.labelSourcePass.TabIndex = 24;
-            this.labelSourcePass.Text = "Пароль";
-            // 
-            // labelSourceUserId
-            // 
-            this.labelSourceUserId.AutoSize = true;
-            this.labelSourceUserId.Location = new System.Drawing.Point(11, 108);
-            this.labelSourceUserId.Name = "labelSourceUserId";
-            this.labelSourceUserId.Size = new System.Drawing.Size(103, 13);
-            this.labelSourceUserId.TabIndex = 23;
-            this.labelSourceUserId.Text = "Имя пользователя";
-            // 
-            // labelSourceNameDatabase
-            // 
-            this.labelSourceNameDatabase.AutoSize = true;
-            this.labelSourceNameDatabase.Location = new System.Drawing.Point(11, 82);
-            this.labelSourceNameDatabase.Name = "labelSourceNameDatabase";
-            this.labelSourceNameDatabase.Size = new System.Drawing.Size(98, 13);
-            this.labelSourceNameDatabase.TabIndex = 22;
-            this.labelSourceNameDatabase.Text = "Имя базы данных";
-            // 
-            // labelSourceServerIP
-            // 
-            this.labelSourceServerIP.AutoSize = true;
-            this.labelSourceServerIP.Location = new System.Drawing.Point(11, 28);
-            this.labelSourceServerIP.Name = "labelSourceServerIP";
-            this.labelSourceServerIP.Size = new System.Drawing.Size(95, 13);
-            this.labelSourceServerIP.TabIndex = 20;
-            this.labelSourceServerIP.Text = "IP адрес сервера";
-            // 
-            // mtbxSourcePass
-            //
-            this.mtbxSourcePass.Enabled = false;
-            this.mtbxSourcePass.Location = new System.Drawing.Point(129, 131);
-            this.mtbxSourcePass.Name = "mtbxSourcePass";
-            this.mtbxSourcePass.PasswordChar = '#';
-            this.mtbxSourcePass.Size = new System.Drawing.Size(160, 20);
-            this.mtbxSourcePass.TabIndex = 19;
-            this.mtbxSourcePass.TextChanged += new System.EventHandler(component_Changed);
-            // 
-            // tbxSourceUserId
-            // 
-            this.tbxSourceUserId.Enabled = false;
-            this.tbxSourceUserId.Location = new System.Drawing.Point(129, 105);
-            this.tbxSourceUserId.Name = "tbxSourceUserId";
-            this.tbxSourceUserId.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceUserId.TabIndex = 18;
-            this.tbxSourceUserId.TextChanged += new System.EventHandler(base.component_Changed);
-            // 
-            // tbxSourceNameDatabase
-            // 
-            this.tbxSourceNameDatabase.Enabled = false;
-            this.tbxSourceNameDatabase.Location = new System.Drawing.Point(129, 79);
-            this.tbxSourceNameDatabase.Name = "tbxSourceNameDatabase";
-            this.tbxSourceNameDatabase.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceNameDatabase.TabIndex = 17;
-            this.tbxSourceNameDatabase.TextChanged += new System.EventHandler(this.component_Changed);
-            // 
-            // tbxSourceServerIP
-            // 
-            this.tbxSourceServerIP.Enabled = false;
-            this.tbxSourceServerIP.Location = new System.Drawing.Point(129, 25);
-            this.tbxSourceServerIP.Name = "tbxSourceServerIP";
-            this.tbxSourceServerIP.Size = new System.Drawing.Size(160, 20);
-            this.tbxSourceServerIP.TabIndex = 15;
-            this.tbxSourceServerIP.TextChanged += new System.EventHandler(this.component_Changed);
-
-            this.groupBoxSource.ResumeLayout(false);
-            this.groupBoxSource.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudnSourcePort)).EndInit();
         }
 
         protected override void start () {
@@ -203,13 +56,13 @@ namespace trans_gtp
         {
             int i = -1;
 
+            CreateFormConnectionSettingsCfgDB("connsett_gtp.ini");
+
             m_fileINI.Add (@"ТипБДКфгИсточник", @"190");
             m_fileINI.Add (@"РДГФорматТаблицаИсточник", @"STATIC");
 
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
-            //FileINI fileINI = new FileINI(@"setup.ini");
-            //string sec = "Main (" + ProgramBase.AppName + ")";
 
             InitTECBase.TYPE_DATABASE_CFG[] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
@@ -394,17 +247,11 @@ namespace trans_gtp
                 ;
         }
 
-        protected override void CreateFormConnectionSettingsConfigDB(string connSettFileName)
-        {
-            base.CreateFormConnectionSettingsConfigDB(connSettFileName);
+        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e) {
+        }
 
-            if ((!(m_formConnectionSettingsConfigDB.Ready == 0)) || (m_formConnectionSettingsConfigDB.Count < 2))
-            {
-                while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
-                    m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
-            }
-            else
-                ;
+        protected override void setUIControlSourceState()
+        {
         }
     }
 }

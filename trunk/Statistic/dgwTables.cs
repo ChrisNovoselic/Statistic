@@ -44,6 +44,9 @@ namespace StatisticCommon
             }
 
             this.ClientSizeChanged += new EventHandler(DataGridViewTables_ClientSizeChanged);
+
+            //this.FirstDisplayedScrollingRowIndex = 0;
+            //this.DisplayedRowCount (true);
         }
 
         private void DataGridViewTables_ClientSizeChanged(object obj, EventArgs ev)

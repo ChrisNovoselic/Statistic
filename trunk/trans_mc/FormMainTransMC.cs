@@ -18,13 +18,17 @@ namespace trans_mc
         public FormMainTransMC () : base () {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
+
+            InitializeComponentTransSrc (@"Сервер Модес-Центр");
+
+            m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
         }
         
         protected override void Start()
         {
             int i = -1;
 
-            CreateFormConnectionSettingsConfigDB("connsett_mc.ini");
+            CreateFormConnectionSettingsCfgDBofAdmins("connsett_mc.ini");
 
             m_fileINI.Add(@"MCServiceHost", string.Empty);
             m_fileINI.Add(@"ИгнорДатаВремя-ModesCentre", false.ToString());
@@ -124,6 +128,38 @@ namespace trans_mc
                 //panelMain.Visible = false;
 
                 base.Start();
+            }
+            else
+                ;
+        }
+
+        protected override void setUIControlSourceState()
+        {
+            if (((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].m_listMCentreId.Count > 0)
+            {
+                //Properties.Settings sett = new Properties.Settings();
+                //tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;
+
+                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = m_fileINI.GetValueOfKey(@"MCServiceHost");
+            }
+            else
+                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = string.Empty;
+
+            enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
+        }
+
+        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
+        {
+        }
+
+        protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)
+        {
+            if (IsCanSelectedIndexChanged() == true)
+            {
+                base.comboBoxTECComponent_SelectedIndexChanged(sender, ev);
+
+                setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
+                setUIControlSourceState();
             }
             else
                 ;

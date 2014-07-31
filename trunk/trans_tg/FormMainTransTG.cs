@@ -14,17 +14,11 @@ namespace trans_tg
 {
     public partial class FormMainTransTG : FormMainTrans
     {
-        private System.Windows.Forms.Label labelSourcePathExcel;
-        private System.Windows.Forms.TextBox tbxSourcePathExcel;
-        private System.Windows.Forms.Button buttonPathExcel;
-
-        List <bool> m_listIsDataTECComponents;
-
         public FormMainTransTG()
             : base(new string[] { @"ТипБДКфгНазначение" },
                 new string[] { @"200" })
         {
-            InitializeComponentTransTG();
+            InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 
             //???
             this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminNSS();
@@ -43,7 +37,7 @@ namespace trans_tg
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
             this.ResumeLayout(false);
 
-            m_listIsDataTECComponents = new List<bool> ();
+            //m_listIsDataTECComponents = new List<bool> ();
 
             m_dgwAdminTable.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left));
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
@@ -54,10 +48,6 @@ namespace trans_tg
 
             m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.TEC;
 
-            m_arUIControlDB = new System.Windows.Forms.Control[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE, (Int16)INDX_UICONTROL_DB.COUNT_INDX_UICONTROL_DB]
-            { { null, null, null, null, null},
-            { tbxDestServerIP, nudnDestPort, tbxDestNameDatabase, tbxDestUserId, mtbxDestPass} };
-
             m_arAdmin = new AdminTS[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             Start();
@@ -65,70 +55,6 @@ namespace trans_tg
 
         private void watcher_Changed(object sender, System.IO.FileSystemEventArgs e)
         {
-        }
-
-        private void InitializeComponentTransTG()
-        {
-            this.labelSourcePathExcel = new System.Windows.Forms.Label();
-            this.tbxSourcePathExcel = new System.Windows.Forms.TextBox();
-            this.buttonPathExcel = new System.Windows.Forms.Button();
-
-            this.groupBoxSource.Controls.Add(this.labelSourcePathExcel);
-            this.groupBoxSource.Controls.Add(this.tbxSourcePathExcel);
-            this.groupBoxSource.Controls.Add(this.buttonPathExcel);
-            // 
-            // labelSourcePathExcel
-            // 
-            this.labelSourcePathExcel.AutoSize = true;
-            this.labelSourcePathExcel.Location = new System.Drawing.Point(11, 28);
-            this.labelSourcePathExcel.Name = "labelSourcePathExcel";
-            this.labelSourcePathExcel.Size = new System.Drawing.Size(95, 13);
-            this.labelSourcePathExcel.TabIndex = 20;
-            this.labelSourcePathExcel.Text = "Путь РДГ (Excel)";
-            // 
-            // tbxSourcePathExcel
-            // 
-            this.tbxSourcePathExcel.Location = new System.Drawing.Point(11, 55);
-            this.tbxSourcePathExcel.Name = "tbxSourcePathExcel";
-            this.tbxSourcePathExcel.Size = new System.Drawing.Size(243, 20);
-            this.tbxSourcePathExcel.TabIndex = 15;
-            this.tbxSourcePathExcel.TextChanged += new System.EventHandler(this.component_Changed);
-            this.tbxSourcePathExcel.ReadOnly = true;
-            // 
-            // buttonPathExcel
-            // 
-            this.buttonPathExcel.Location = new System.Drawing.Point(257, 53);
-            this.buttonPathExcel.Name = "buttonPathExcel";
-            this.buttonPathExcel.Size = new System.Drawing.Size(29, 23);
-            this.buttonPathExcel.TabIndex = 2;
-            this.buttonPathExcel.Text = "...";
-            this.buttonPathExcel.UseVisualStyleBackColor = true;
-            //this.buttonPathExcel.Click += new System.EventHandler(...);
-            this.buttonPathExcel.Enabled = false;
-
-            //Идентичный код с панелью Modes-Centre
-            base.buttonSourceExport.Location = new System.Drawing.Point(8, 86);
-
-            base.buttonSourceSave.Location = new System.Drawing.Point(151, 86);
-            base.buttonSourceSave.Click -= base.buttonSourceSave_Click;
-            base.buttonSourceSave.Click += new EventHandler (this.buttonSavePathExcel_Click);
-            base.buttonSourceSave.Enabled = false;
-
-            this.groupBoxSource.ResumeLayout(false);
-            this.groupBoxSource.PerformLayout();
-
-            this.groupBoxSource.Size = new System.Drawing.Size(300, 120);
-
-            this.groupBoxDest.Location = new System.Drawing.Point(3, 196);
-
-            base.panelMain.Size = new System.Drawing.Size(822, 404);
-
-            //base.buttonClose.Anchor = AnchorStyles.Left;
-            base.buttonClose.Location = new System.Drawing.Point(733, 434);
-
-            this.Size = new System.Drawing.Size(849, 514);
-
-            this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
 
         protected override void start()
@@ -140,7 +66,7 @@ namespace trans_tg
         {
             int i = -1;
 
-            CreateFormConnectionSettingsConfigDB("connsett_tg.ini");
+            CreateFormConnectionSettingsCfgDBofAdmins("connsett_tg.ini");
 
             int iConfigDB = -1;
             string keyTypeConfigDB = @"ТипБДКфгНазначение";
@@ -320,14 +246,10 @@ namespace trans_tg
             else ;
         }
 
-        protected /*override*/ void buttonSavePathExcel_Click(object sender, EventArgs e)
-        {
-        }
-
         protected override void setUIControlSourceState()
         {
-            tbxSourcePathExcel.Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.m_path_rdg_excel;
-            enabledButtonSourceExport (tbxSourcePathExcel.Text.Length > 0 ? true : false);
+            m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.m_path_rdg_excel;
+            enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
         }
 
         private int GetIndexGTPOwner(int indx_tg)
@@ -499,6 +421,10 @@ namespace trans_tg
                 //this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
                 updateDataGridViewAdmin(date);
             }
+        }
+
+        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
+        {
         }
     }
 }

@@ -35,11 +35,11 @@ namespace trans_mc
             int i = -1;
 
             query += ";";
-            for (i = 0; i < comp.m_listMCId.Count; i ++)
+            for (i = 0; i < comp.m_listMCentreId.Count; i++)
             {
-                query += comp.m_listMCId [i];
+                query += comp.m_listMCentreId[i];
 
-                if ((i + 1) < comp.m_listMCId.Count) query += ","; else ;
+                if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
             }
 
             query += ";";

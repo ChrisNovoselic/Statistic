@@ -14,7 +14,6 @@ namespace trans_mt
     {
         protected enum StatesMachine
         {
-            InitIGO,
             PPBRValues,
             PPBRDates,
         }
@@ -25,21 +24,18 @@ namespace trans_mt
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
-            string query = "PPBR";
+            string query = string.Empty;
             int i = -1;
 
-            query += ";";
-            for (i = 0; i < comp.m_listMCId.Count; i ++)
-            {
-                query += comp.m_listMCId [i];
+            query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime], [Value_MBT] as VALUE FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
+                @" WHERE [ID_Type_Data] = 3" +
+                @" AND [objName] = '" + comp.m_listMTermId [0] + @"'" +
+                @" AND [Datetime] > " + @"'" + date.Date.Add(- GetUTCOffsetOfCurrentTimeZone()).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
+                + @" AND [PBR_NUMBER] > 0"
+                //+ @" ORDER BY [Datetime]"
+                ;
 
-                if ((i + 1) < comp.m_listMCId.Count) query += ","; else ;
-            }
-
-            query += ";";
-            query += date.ToOADate ().ToString ();
-
-            Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
+            Logging.Logg().LogDebugToFile("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
         }
@@ -49,49 +45,84 @@ namespace trans_mt
             bool bRes = true;
             int i = -1, j = -1,
                 hour = -1,
-                offsetPBR = 2;
+                PBRNumber = -1;
+            TimeSpan ts = GetUTCOffsetOfCurrentTimeZone();
+            DataRow []hourRows;
 
-            for (i = 0; i < table.Rows.Count; i ++)
+            for (hour = 1; hour < 25; hour++)
             {
                 try
                     {
-                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
-                            hour = 24;
+                        //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
+                        //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
+                        //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
+                        hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - ts.Hours).ToString(@"yyyy-MM-dd HH:00:00.000") + @"#");
+
+                        PBRNumber = -1;
+
+                        if (hourRows.Length > 0) {
+                            for (i = 0; i < hourRows.Length; i ++) {
+                                if (!(PBRNumber > Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString())))
+                                {
+                                    PBRNumber = Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString());
+
+                                    for (j = 0; j < hourRows [i].Table.Columns.Count; j ++) {
+                                        Console.Write(@"[" + hourRows[i].Table.Columns[j].ColumnName + @"] = " + hourRows[i][hourRows[i].Table.Columns[j].ColumnName] + @"; ");
+                                    }
+                                    Console.WriteLine(@"");
+                                
+                                    switch (Int32.Parse(hourRows[i][@"idFactor"].ToString()))
+                                    {
+                                        case 0:
+                                            if (!(hourRows[i][@"VALUE"] is DBNull))
+                                                m_curRDGValues[hour - 1].pbr = (double)hourRows[i][@"VALUE"];
+                                            else
+                                                m_curRDGValues[hour - 1].pbr = 0;
+                                            break;
+                                        case 1:
+                                            if (!(hourRows[i][@"VALUE"] is DBNull))
+                                                m_curRDGValues[hour - 1].pmin = (double)hourRows[i][@"VALUE"];
+                                            else
+                                                m_curRDGValues[hour - 1].pmin = 0;
+                                            break;
+                                        case 2:
+                                            if (!(hourRows[i][@"VALUE"] is DBNull))
+                                                m_curRDGValues[hour - 1].pmax = (double)hourRows[i][@"VALUE"];
+                                            else
+                                                m_curRDGValues[hour - 1].pmax = 0;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                                else
+                                    ;
+                            }
+                        }
+                        else {
+                            if (hour > 1) {
+                                m_curRDGValues[hour - 1].pbr = m_curRDGValues[hour - 2].pbr;
+                                m_curRDGValues[hour - 1].pmin = m_curRDGValues[hour - 2].pmin;
+                                m_curRDGValues[hour - 1].pmax = m_curRDGValues[hour - 2].pmax;
+
+                                m_curRDGValues[hour - 1].pbr_number = m_curRDGValues[hour - 2].pbr_number;
+                            }
+                            else {
+                            }
+                        }
+
+                        if (PBRNumber > 0)
+                            m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
                         else
-                            if (hour == 0)
-                                continue;
-                            else
-                                ;
-
-                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
-
-                        //for (j = 0; j < 3 /*4 для SN???*/; j ++)
-                        //{
-                            j = 0;
-                            if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                                m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][offsetPBR + j];
-                            else
-                                m_curRDGValues[hour - 1].pbr = 0;
-                        //}
-
-                        j = 1;
-                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                            m_curRDGValues[hour - 1].pmin = (double)table.Rows[i][offsetPBR + j];
-                        else
-                            m_curRDGValues[hour - 1].pmin = 0;
-
-                        j = 2;
-                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                            m_curRDGValues[hour - 1].pmax = (double)table.Rows[i][offsetPBR + j];
-                        else
-                            m_curRDGValues[hour - 1].pmax = 0;
+                            ; //m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour);
 
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
                     }
-                    catch { }
+                    catch (Exception e) {
+                        Logging.Logg().LogExceptionToFile(e, @"AdminMT::GetPPBRValuesResponse () - ...");
+                    }
             }
 
             return bRes;
@@ -101,7 +132,13 @@ namespace trans_mt
             bool bRes = true;
             int i = -1;
 
-            m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec [0].connSetts [(int)CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
+            if (m_list_tec.Count > 0) {
+                m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec [0].connSetts [(int)CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
+
+                bRes = false;
+            }
+            else
+                ;
 
             //for (i = 0; i < allTECComponents.Count; i ++)
             //{
@@ -126,14 +163,12 @@ namespace trans_mt
 
             switch (state)
             {
-                case (int)StatesMachine.InitIGO:
-                    msg = @"Инициализация объектов Modes-Centre";
-                    ActionReport(msg);
-                    Logging.Logg().LogDebugToFile(@"AdminMC::StateResponse () - " + msg);
-                    break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
+                    if (indxTECComponents < allTECComponents.Count)
+                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
+                    else
+                        result = false;
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
@@ -162,7 +197,6 @@ namespace trans_mt
 
             switch (state)
             {
-                case (int)StatesMachine.InitIGO:
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
@@ -180,15 +214,6 @@ namespace trans_mt
             bool result = false;
             switch (state)
             {
-                case (int)StatesMachine.InitIGO:
-                    result = true;
-                    if (result == true)
-                    {
-                        Logging.Logg().LogDebugToFile(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre");
-                    }
-                    else
-                        ;
-                    break;
                 case (int)StatesMachine.PPBRValues:
                     delegateStopWait();
 
@@ -229,9 +254,6 @@ namespace trans_mt
 
             switch (state)
             {
-                case (int)StatesMachine.InitIGO:
-                    ErrorReport("Ошибка инициализации объектов Modes-Centre. Переход в ожидание.");
-                    break;
                 case (int)StatesMachine.PPBRValues:
                     if (response)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");

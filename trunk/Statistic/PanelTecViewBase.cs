@@ -609,6 +609,16 @@ namespace Statistic
             tec.Request(CONN_SETT_TYPE.ADMIN, tec.GetAdminValueQuery(num_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
         }
 
+        private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
+        {
+            if (lastIndx > dgv.DisplayedRowCount(true))
+            {
+                dgv.FirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true);
+            }
+            else
+                ;
+        }
+
         private void FillGridMins(int hour)
         {
             double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
@@ -662,6 +672,8 @@ namespace Statistic
                 m_dgwMins.Rows[20].Cells[4].Value = m_valuesMins.valuesUDGe[0].ToString("F2");
                 m_dgwMins.Rows[20].Cells[5].Value = (sumDiviation / min).ToString("F2");
             }
+
+            setFirstDisplayedScrollingRowIndex (m_dgwMins, lastMin);
         }
 
         private void FillGridHours()
@@ -882,6 +894,8 @@ namespace Statistic
             m_dgwHours.Rows[itemscount].Cells[1].Value = sumFact.ToString("F2");
             m_dgwHours.Rows[itemscount].Cells[4].Value = sumUDGe.ToString("F2");
             m_dgwHours.Rows[itemscount].Cells[5].Value = sumDiviation.ToString("F2");
+
+            setFirstDisplayedScrollingRowIndex(m_dgwHours, lastHour);
         }
 
         protected void ClearValues()
@@ -1727,14 +1741,18 @@ namespace Statistic
                 {
                     if ((!(table_in.Columns[i].ColumnName.Equals ("ID_COMPONENT") == true))
                         && (!(table_in.Columns[i].ColumnName.Equals (nameFieldDate) == true))
-                        && (!(table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
+                        //&& (!(table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                        && (!(table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true))
+                    )
                     //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
                     {
                         cols_data.Add(table_in.Columns[i]);
                     }
                     else
                         if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                            || (table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                            //|| (table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)
+                            || (table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true)
+                        )
                         {
                             table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
                         }
@@ -1759,10 +1777,11 @@ namespace Statistic
                     }
                 }
 
-                if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                    table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
-                else
-                    ;
+                //if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                    //table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                    table_in_restruct.Columns[@"PBR_NUMBER"].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                //else
+                //    ;
 
                 List<DataRow[]> listDataRows = new List<DataRow[]>();
 
@@ -1795,10 +1814,11 @@ namespace Statistic
 
                             //Заполнение DATE_ADMIN (постоянные столбцы)
                             table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                            if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                                table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
-                            else
-                                ;
+                            //if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                                //table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                                table_in_restruct.Rows[indx_row][@"PBR_NUMBER"] = listDataRows[i][j][@"PBR_NUMBER"];
+                            //else
+                            //    ;
                         }
                         else
                             indx_row = k;
@@ -2102,8 +2122,9 @@ namespace Statistic
                                                 valuesREC[j, hour - 1] = 0;
                                             }
                                         }
-                                        catch
+                                        catch (Exception e)
                                         {
+                                            Logging.Logg ().LogExceptionToFile (e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                                         }
                                         //j++;
                                     }
@@ -2120,8 +2141,9 @@ namespace Statistic
                                     else
                                         ;
                                 }
-                                catch
+                                catch (Exception e)
                                 {
+                                    Logging.Logg ().LogExceptionToFile (e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                                 }
                             }
                             else
