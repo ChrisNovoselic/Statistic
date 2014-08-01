@@ -611,12 +611,16 @@ namespace Statistic
 
         private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
         {
+            int iFirstDisplayedScrollingRowIndex = -1;
+            
             if (lastIndx > dgv.DisplayedRowCount(true))
             {
-                dgv.FirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true);
+                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true);
             }
             else
-                ;
+                iFirstDisplayedScrollingRowIndex = 0;
+
+            dgv.FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
         }
 
         private void FillGridMins(int hour)
@@ -1699,7 +1703,7 @@ namespace Statistic
             return bRes;
         }
 
-        private DataTable restruct_table_pbrValues(DataTable table_in)
+        public static DataTable restruct_table_pbrValues(DataTable table_in, List <TECComponent> listTECComp, int num_comp)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -1724,17 +1728,19 @@ namespace Statistic
                 List<TECComponent> list_TECComponents = null;
                 int count_comp = -1;
 
-                if (num_TECComponent < 0) {
+                if (num_comp < 0)
+                {
                     list_TECComponents = new List<TECComponent>();
-                    for (i = 0; i < tec.list_TECComponents.Count; i ++) {
-                        if ((tec.list_TECComponents[i].m_id > 100) && (tec.list_TECComponents[i].m_id < 500))
-                            list_TECComponents.Add(tec.list_TECComponents[i]);
+                    for (i = 0; i < listTECComp.Count; i++)
+                    {
+                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                            list_TECComponents.Add(listTECComp[i]);
                         else
                             ;
                     }
                 }
                 else
-                    list_TG = tec.list_TECComponents[num_TECComponent].TG;                
+                    list_TG = listTECComp[num_comp].TG;                
                 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -1760,7 +1766,7 @@ namespace Statistic
                             ;
                 }
 
-                if (num_TECComponent < 0)
+                if (num_comp < 0)
                     count_comp = list_TECComponents.Count;
                 else
                     count_comp = list_TG.Count;
@@ -1770,7 +1776,7 @@ namespace Statistic
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        if (num_TECComponent < 0)
+                        if (num_comp < 0)
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
                         else
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;                        
@@ -1787,7 +1793,7 @@ namespace Statistic
 
                 for (i = 0; i < count_comp; i++)
                 {
-                    if (num_TECComponent < 0)
+                    if (num_comp < 0)
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
                     else
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
@@ -1825,7 +1831,7 @@ namespace Statistic
 
                         for (k = 0; k < cols_data.Count; k++)
                         {
-                            if (num_TECComponent < 0)
+                            if (num_comp < 0)
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                             else
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
@@ -1839,7 +1845,7 @@ namespace Statistic
             return table_in_restruct;
         }
 
-        private DataTable restruct_table_adminValues (DataTable table_in) {
+        public static DataTable restruct_table_adminValues (DataTable table_in, List <TECComponent> listTECComp, int num_comp) {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
             DataRow[] dataRows;
@@ -1862,19 +1868,19 @@ namespace Statistic
                 List<TECComponent> list_TECComponents = null;
                 int count_comp = -1;
 
-                if (num_TECComponent < 0)
+                if (num_comp < 0)
                 {
                     list_TECComponents = new List<TECComponent>();
-                    for (i = 0; i < tec.list_TECComponents.Count; i++)
+                    for (i = 0; i < listTECComp.Count; i++)
                     {
-                        if ((tec.list_TECComponents[i].m_id > 100) && (tec.list_TECComponents[i].m_id < 500))
-                            list_TECComponents.Add(tec.list_TECComponents[i]);
+                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                            list_TECComponents.Add(listTECComp[i]);
                         else
                             ;
                     }
                 }
                 else
-                    list_TG = tec.list_TECComponents[num_TECComponent].TG;
+                    list_TG = listTECComp[num_comp].TG;
                 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -1893,7 +1899,7 @@ namespace Statistic
                             ;
                 }
 
-                if (num_TECComponent < 0)
+                if (num_comp < 0)
                     count_comp = list_TECComponents.Count;
                 else
                     count_comp = list_TG.Count;
@@ -1903,7 +1909,7 @@ namespace Statistic
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        if (num_TECComponent < 0)
+                        if (num_comp < 0)
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
                         else
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
@@ -1914,7 +1920,7 @@ namespace Statistic
 
                 for (i = 0; i < count_comp; i++)
                 {
-                    if (num_TECComponent < 0)
+                    if (num_comp < 0)
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
                     else
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
@@ -1942,7 +1948,7 @@ namespace Statistic
                             indx_row = k;
 
                         for (k = 0; k < cols_data.Count; k ++) {
-                            if (num_TECComponent < 0)
+                            if (num_comp < 0)
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                             else
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
@@ -1987,10 +1993,10 @@ namespace Statistic
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                         offsetLayout = -1;
 
-                        m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+                        m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse, tec.list_TECComponents, num_TECComponent);
                         offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
-                        table_in = restruct_table_adminValues(table_in);
+                        table_in = restruct_table_adminValues(table_in, tec.list_TECComponents, num_TECComponent);
 
                         //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
                         //    try { table_in.Columns.Remove("ID_COMPONENT"); }

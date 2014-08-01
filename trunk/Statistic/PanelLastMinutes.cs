@@ -1094,10 +1094,12 @@ namespace Statistic
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
 
-                m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+                //m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+                m_tablePBRResponse = PanelTecViewBase.restruct_table_pbrValues(m_tablePBRResponse, m_tec.list_TECComponents, -1);
                 offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
-                table_in = restruct_table_adminValues(table_in);
+                //table_in = restruct_table_adminValues(table_in);
+                table_in = PanelTecViewBase.restruct_table_adminValues(table_in, m_tec.list_TECComponents, -1);
 
                 //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
                 //    try { table_in.Columns.Remove("ID_COMPONENT"); }
@@ -1310,7 +1312,8 @@ namespace Statistic
                 
                 return true;
             }
-
+            /*
+            Статический метод в 'PanelTecViewBase'
             private DataTable restruct_table_pbrValues(DataTable table_in)
             {
                 DataTable table_in_restruct = new DataTable();
@@ -1332,7 +1335,7 @@ namespace Statistic
 
                 if (i < table_in.Columns.Count)
                 {
-                    List<TG> list_TG = null;
+                    //List<TG> list_TG = null;
                     List<TECComponent> list_TECComponents = null;
                     int count_comp = -1;
 
@@ -1350,14 +1353,16 @@ namespace Statistic
                     {
                         if ((!(table_in.Columns[i].ColumnName.Equals("ID_COMPONENT") == true))
                             && (!(table_in.Columns[i].ColumnName.Equals(nameFieldDate) == true))
-                            && (!(table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
+                            //&& (!(table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
+                            && (!(table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true)))
                         //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
                         {
                             cols_data.Add(table_in.Columns[i]);
                         }
                         else
                             if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                                || (table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                                //|| (table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                                || (table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true))
                             {
                                 table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
                             }
@@ -1376,10 +1381,11 @@ namespace Statistic
                         }
                     }
 
-                    if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        table_in_restruct.Columns[m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
-                    else
-                        ;
+                    //if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                        //table_in_restruct.Columns[m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                        table_in_restruct.Columns[@"PBR_NUMBER"].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                    //else
+                    //    ;
 
                     List<DataRow[]> listDataRows = new List<DataRow[]>();
 
@@ -1409,10 +1415,11 @@ namespace Statistic
 
                                 //Заполнение DATE_ADMIN (постоянные столбцы)
                                 table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                                if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                                    table_in_restruct.Rows[indx_row][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
-                                else
-                                    ;
+                                //if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                                    //table_in_restruct.Rows[indx_row][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                                    table_in_restruct.Rows[indx_row][@"PBR_NUMBER"] = listDataRows[i][j][@"PBR_NUMBER"];
+                                //else
+                                //    ;
                             }
                             else
                                 indx_row = k;
@@ -1430,6 +1437,7 @@ namespace Statistic
                 return table_in_restruct;
             }
 
+            Статический метод в 'PanelTecViewBase'
             private DataTable restruct_table_adminValues(DataTable table_in)
             {
                 DataTable table_in_restruct = new DataTable();
@@ -1536,7 +1544,7 @@ namespace Statistic
 
                 return table_in_restruct;
             }
-
+            */
             private void ClearValues()
             {
                 foreach (TECComponent g in m_list_TECComponents)

@@ -280,7 +280,12 @@ namespace Statistic
             else
                 ;
 
+            
             значенияТекущаяМощностьГТПгToolStripMenuItem.Checked = false;
+            ////В работе постоянно
+            //m_panelCurPower.Activate(false);
+            //m_panelCurPower.Stop();
+
             мониторингПоследняяМинутаЧасToolStripMenuItem.Checked = false;
             выборОбъектыToolStripMenuItem.Checked = false;
 
@@ -324,14 +329,15 @@ namespace Statistic
         private void activateTabPage(int indx, bool active)
         {
             string strMsgDebug = string.Empty;
-            
+
             if (!(indx < 0)) {
                 //strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", type=" + tclTecViews.TabPages[indx].Controls[0].GetType().ToString();
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", name=" + tclTecViews.TabPages[indx].Text;
-                
+
                 if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
                     ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                 else
+                    ////В работе постоянно
                     if (tclTecViews.TabPages[indx].Controls[0] is PanelCurPower)
                         ((PanelCurPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                     else
@@ -1022,6 +1028,8 @@ namespace Statistic
                 m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters, m_report);
                 m_panelCurPower.SetDelegate(null, null, delegateEvent);
                 //m_panelCurPower.Start();
+                ////В работе постоянно
+                //m_panelCurPower.Activate (true);
 
                 m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, m_report);
                 m_panelLastMinutes.SetDelegate(null, null, delegateEvent);

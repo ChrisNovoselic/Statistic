@@ -32,7 +32,7 @@ namespace trans_mt
                 @" AND [objName] = '" + comp.m_listMTermId [0] + @"'" +
                 @" AND [Datetime] > " + @"'" + date.Date.Add(- GetUTCOffsetOfCurrentTimeZone()).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
                 + @" AND [PBR_NUMBER] > 0"
-                //+ @" ORDER BY [Datetime]"
+                + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
 
             Logging.Logg().LogDebugToFile("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
