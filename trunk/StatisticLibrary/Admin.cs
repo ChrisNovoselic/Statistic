@@ -14,7 +14,7 @@ using System.Globalization;
 namespace StatisticCommon
 {
     public delegate void DelegateDateFunction(DateTime date);
-    
+
     public abstract class HAdmin : object
     {
         public struct /*class*/ RDGStruct
