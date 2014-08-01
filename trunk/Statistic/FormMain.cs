@@ -291,6 +291,8 @@ namespace Statistic
 
         private void ClearTabPages()
         {
+            Logging.Logg().LogDebugToFile(@"FormMain::ClearTabPages () - вХод...");
+            
             List<int> indxRemove = new List<int>();
 
             foreach (TabPage tab in tclTecViews.TabPages)
@@ -315,11 +317,18 @@ namespace Statistic
             tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
 
             //selectedTecViews.Clear();
+
+            Logging.Logg().LogDebugToFile(@"FormMain::ClearTabPages () - вЫход...");
         }
 
         private void activateTabPage(int indx, bool active)
         {
-            if (!(indx < 0))
+            string strMsgDebug = string.Empty;
+            
+            if (!(indx < 0)) {
+                //strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", type=" + tclTecViews.TabPages[indx].Controls[0].GetType().ToString();
+                strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", name=" + tclTecViews.TabPages[indx].Text;
+                
                 if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
                     ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                 else
@@ -336,8 +345,11 @@ namespace Statistic
                                     ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                                 else
                                     ;
+            }
             else
-                ;
+                strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
+
+            Logging.Logg().LogDebugToFile(strMsgDebug + @" - вЫход...");
         }
 
         private void ActivateTabPage()
@@ -362,20 +374,24 @@ namespace Statistic
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.Cancel == false)
-                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 {
+                    //Нет, не закрываем
+                    activateTabPage(tclTecViews.SelectedIndex, true);
+
+                    //Продолжаем и устанавливаем признак: завершить обработку события 'e'
                     e.Cancel = true;
                 }
                 else
                 {
+                    //Да, закрываем; признаку оставляем прежнее значение: продолжить обработку события 'e'
                     Stop (e);
                 }
             else {
+                //Закрываем и устанавливаем признак: продолжить обработку события 'e'
                 e.Cancel = false;
 
                 Stop(e);
-
-                //Application.Exit (
             }
         }
 
@@ -1296,9 +1312,46 @@ namespace Statistic
             activateTabPage (tclTecViews.SelectedIndex, false);
         }
 
+        private ToolStripMenuItem getSelectedMenuItem (ToolStripMenuItem owner) {
+            foreach (ToolStripMenuItem item in owner.DropDownItems)
+            {
+                if (item.DropDownItems.Count > 0 && item.Enabled == true)
+                {
+                    return getSelectedMenuItem (item);
+                }
+                else
+                {
+                    if (item.Selected == true) {
+                        return item;
+                    }
+                    else
+                        ;
+                }
+            }
+
+            return null;
+        }
+
         private void menuStrip_MenuDeactivate(object sender, EventArgs e)
         {
-            activateTabPage(tclTecViews.SelectedIndex, true);
+           bool bExit = false;
+           ToolStripMenuItem selItem = null;
+
+           
+           foreach (ToolStripMenuItem item in ((MenuStrip)sender).Items)
+           {
+               if (item.DropDownItems.Count > 0 && item.Enabled == true)
+               {
+                    selItem = getSelectedMenuItem(item);
+                }
+                else
+                    ;
+            }
+
+           if ((!(selItem == null)) && (selItem.Text.Equals(@"Выход") == true))
+                activateTabPage(tclTecViews.SelectedIndex, true);
+            else
+                ;
         }
 
         FormChangeMode.MANAGER modePanelAdmin {

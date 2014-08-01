@@ -3243,6 +3243,8 @@ namespace Statistic
 
         private void StateRequest(StatesMachine state)
         {
+            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::StateRequest () - name=" + Parent.Text + @", state=" + state.ToString() + @" - в’од...");
+
             switch (state)
             {
                 case StatesMachine.Init:
@@ -3311,6 +3313,8 @@ namespace Statistic
                     //}
                     break;
             }
+
+            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::StateRequest () - name=" + Parent.Text + @", state=" + state.ToString() + @" - вџход...");
         }
 
         private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
@@ -3348,6 +3352,8 @@ namespace Statistic
 
         private bool StateResponse(StatesMachine state, DataTable table)
         {
+            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::StateResponse () - name=" + Parent.Text + @", state=" + state.ToString() + @" - в’од...");
+            
             bool result = false;
             switch (state)
             {
@@ -3448,13 +3454,16 @@ namespace Statistic
             else
                 ;
 
+            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::StateResponse () - name=" + Parent.Text + @", state=" + state.ToString() + @", result=" + result.ToString () + @" - вџход...");
+            
             return result;
         }
 
         private void StateErrors(StatesMachine state, bool response)
         {
             string reason = string.Empty,
-                    waiting = string.Empty;
+                    waiting = string.Empty,
+                    msg = string.Empty;
 
             switch (state)
             {
@@ -3504,9 +3513,13 @@ namespace Statistic
                 reason = @"получени€ " + reason;
 
             if (waiting.Equals(string.Empty) == true)
-                ErrorReport("ќшибка " + reason + ". " + waiting + ".");
+                msg = "ќшибка " + reason + ". " + waiting + ".";
             else
-                ErrorReport("ќшибка " + reason + ".");
+                msg = "ќшибка " + reason + ".";
+
+            ErrorReport(msg);
+
+            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::StateErrors () - name=" + Parent.Text + @", state=" + state.ToString() + @", error=" + msg + @" - вџход...");
         }
 
         private void TecView_ThreadFunction(object data)

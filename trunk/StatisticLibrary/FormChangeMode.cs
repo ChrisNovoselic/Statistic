@@ -256,7 +256,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void btnOk_Click(object sender, EventArgs e)
+        private void btnOk_Click(object sender, EventArgs ev)
         {
             int i;
             //if (clbMode.CheckedIndices.Count == 0)
@@ -277,16 +277,21 @@ namespace StatisticCommon
                     was_checked.Add(clbMode.CheckedIndices[i]);
             }
 
-            FillListAcrossIndexCheckedIndicies ();
+            try {
+                FillListAcrossIndexCheckedIndicies ();
 
-            //Проверить фиктивность вызова метода
-            if (! (e == EventArgs.Empty)) {
-                this.DialogResult = DialogResult.OK;
-                closing = true;
-                Close();
+                //Проверить фиктивность вызова метода
+                if (! (ev == EventArgs.Empty)) {
+                    this.DialogResult = DialogResult.OK;
+                    closing = true;
+                    Close();
+                }
+                else
+                    ev_сменитьРежим();
             }
-            else
-                ev_сменитьРежим();
+            catch (Exception e) {
+                Logging.Logg().LogExceptionToFile(e, @"FormChangeMode::btnOk_Click () - ...");
+            }
         }
 
         private void clbMode_ItemCheck(object sender, ItemCheckEventArgs e)
