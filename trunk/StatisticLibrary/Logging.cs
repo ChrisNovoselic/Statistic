@@ -28,10 +28,10 @@ namespace StatisticCommon
         private FileInfo m_fi;
         private LOG_MODE logging = LOG_MODE.FILE;
         private bool logRotate = true;
-        private const int logRotateSizeDefault = 1024 * 1024 * 5;
-        private const int logRotateSizeMax = 1024 * 1024 * 1024;
+        private static int logRotateSizeDefault = (int) Math.Floor((double)(1024 * 1024 * 5)); //1024 * 1024 * 5;
+        private static int logRotateSizeMax = (int) Math.Floor((double)(1024 * 1024 * 10)); //1024 * 1024 * 1024;
         private int logRotateSize;
-        private int logIndex;
+        //private int logIndex;
         private const int logRotateFilesDefault = 1;
         private const int logRotateFilesMax = 100;
         private int logRotateFiles;
@@ -100,7 +100,7 @@ namespace StatisticCommon
             m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
             m_fi = new FileInfo(m_fileName);
             
-            logIndex = 0;
+            //logIndex = 0;
             delegateUpdateLogText = updateLogText;
             delegateClearLogText = clearLogText;
         }
@@ -254,13 +254,13 @@ namespace StatisticCommon
         /// Наименование лог-файла
         /// </summary>
         /// <returns>строка с наименованием лог-файла</returns>
-        private string LogFileName()
+        private string LogFileName(int indxArchive)
         {
             string strRes = string.Empty;
-            if (logIndex == 0)
+            if (indxArchive == 0)
                 strRes = Path.GetDirectoryName(m_fileName) + "\\" + Path.GetFileNameWithoutExtension(m_fileName) + Path.GetExtension(m_fileName);
             else
-                strRes = Path.GetDirectoryName(m_fileName) + "\\" + Path.GetFileNameWithoutExtension(m_fileName) + logIndex.ToString() + Path.GetExtension(m_fileName);
+                strRes = Path.GetDirectoryName(m_fileName) + "\\" + Path.GetFileNameWithoutExtension(m_fileName) + indxArchive.ToString() + Path.GetExtension(m_fileName);
 
             return strRes;
         }
@@ -276,9 +276,10 @@ namespace StatisticCommon
             {
                 m_sw.Close();
 
-                logIndex = (logIndex + 1) % logRotateFiles;
+                //logIndex = (logIndex + 1) % logRotateFiles;
+                //m_fileName = LogFileName();
 
-                m_fileName = LogFileName();
+                LogToArchive ();
 
                 m_sw = new LogStreamWriter(m_fileName, false, Encoding.GetEncoding("windows-1251"));
                 m_fi = new FileInfo(m_fileName);
@@ -289,6 +290,25 @@ namespace StatisticCommon
                 m_sw = null;
                 m_fi = null;
             }
+        }
+
+        private void LogToArchive (int indxArchive = 0) {
+            string logFileName = LogFileName (indxArchive),
+                logToFileName = LogFileName(++ indxArchive);
+
+            if (File.Exists(logToFileName) == true)
+            {
+                LogToArchive(indxArchive);
+            }
+            else {
+            }
+
+            if (File.Exists(logToFileName) == false)
+                File.Create (logToFileName).Close ();
+            else
+                ;
+
+            File.Copy(logFileName, logToFileName, true);
         }
 
         private void LogRotateNow()

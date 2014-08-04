@@ -710,7 +710,13 @@ namespace Statistic
                                 else ;
 
                                 tg.power_LastMinutesTM[hour] = value;
-                                m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
+                                
+                                //m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
+                                //Запрос с учетом значения перехода через сутки
+                                if (hour > 0 && value > 1)
+                                    m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
+                                else
+                                    ;
                             }
                         }
                     else

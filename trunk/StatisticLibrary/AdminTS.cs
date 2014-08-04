@@ -79,7 +79,10 @@ namespace StatisticCommon
         public AdminTS(HReports rep, bool[] arMarkSavePPBRValues)
             : base(rep)
         {
-            arMarkSavePPBRValues.CopyTo(m_arMarkSavePPBRValues, 0);
+            if (! (arMarkSavePPBRValues == null))
+                arMarkSavePPBRValues.CopyTo(m_arMarkSavePPBRValues, 0);
+            else
+                ;
         }
 
         protected override void Initialize () {

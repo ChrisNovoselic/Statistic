@@ -601,10 +601,13 @@ namespace Statistic
                     else
                         ;
 
-                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                        return false;
+                    if (! (table.Rows[i]["value"] is DBNull))
+                        if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                            return false;
+                        else
+                            ;
                     else
-                        ;
+                        value = 0.0;
 
                     if ((! (value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
                         return false;

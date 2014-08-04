@@ -1337,10 +1337,13 @@ namespace Statistic
                 else
                     ;
 
-                if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                    return false;
+                if (!(table.Rows[i]["value"] is DBNull))
+                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                        return false;
+                    else
+                        ;
                 else
-                    ;
+                    value = 0.0;
 
                 switch (tec.type())
                 {
@@ -1366,7 +1369,7 @@ namespace Statistic
                 hour = -1,
                 offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
             double value = -1;
-            DateTime dtVal;
+            DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
 
             if (num_TECComponent < 0)
@@ -1384,12 +1387,15 @@ namespace Statistic
 
                         for (i = 0; i < tgRows.Length; i++)
                         {
-                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                return false;
+                            if (! (tgRows[i]["value"] is DBNull))
+                                if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                    return false;
+                                else
+                                    ;
                             else
-                                ;
+                                value = 0.0;
 
-                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                            if ((! (value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
                                 return false;
                             else
                                 ;
@@ -1648,7 +1654,7 @@ namespace Statistic
             if (lastMin <= ((selectedTime.Minute - 1) / 3))
             {
                 lastMinError = true;
-                lastMin = ((selectedTime.Minute - 1) / 3) + 1;
+                //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
             }
 
             return true;
@@ -2250,6 +2256,7 @@ namespace Statistic
                             m_valuesHours.valuesUDGe[i] = 0.20;
                             m_valuesHours.valuesDiviation[i] = 0.05;*/
                         }
+
                         if (m_valuesHours.season == seasonJumpE.SummerToWinter)
                         {
                             m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
