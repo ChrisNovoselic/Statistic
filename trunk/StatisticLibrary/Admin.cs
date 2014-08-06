@@ -264,7 +264,11 @@ namespace StatisticCommon
             this.actionReport = fact;
         }
 
-        public void SetDelegateSaveComplete(DelegateFunc f) { saveComplete = f; }
+        public void SetDelegateSaveComplete(DelegateFunc f) {            
+            saveComplete = f;
+
+            Logging.Logg().LogDebugToFile(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход");
+        }
         
         public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
 

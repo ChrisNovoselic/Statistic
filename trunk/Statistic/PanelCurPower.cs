@@ -566,7 +566,7 @@ namespace Statistic
 
             private void GetCurrentTMRequest()
             {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.currentTMRequest(sensorsString_TM));
+                m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(sensorsString_TM));
             }
 
             private bool GetCurrentTMResponse(DataTable table)
@@ -675,7 +675,7 @@ namespace Statistic
                     if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT]) {
+                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
                                 case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
@@ -690,7 +690,7 @@ namespace Statistic
                         else
                             ;
 
-                        switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+                        switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                         {
                             case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
@@ -752,7 +752,7 @@ namespace Statistic
                         return true;
                         break;
                     case StatesMachine.Current_TM:
-                        return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                        return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
                 }
 
                 error = true;

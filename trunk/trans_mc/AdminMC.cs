@@ -34,6 +34,8 @@ namespace trans_mc
             string query = "PPBR";
             int i = -1;
 
+            Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вХод...: query=" + query);
+
             query += ";";
             for (i = 0; i < comp.m_listMCentreId.Count; i++)
             {
@@ -45,9 +47,9 @@ namespace trans_mc
             query += ";";
             query += date.ToOADate ().ToString ();
 
-            Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
-
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
+
+            Logging.Logg().LogDebugToFile("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
         }
 
         protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
@@ -163,6 +165,8 @@ namespace trans_mc
                     break;
             }
 
+            Logging.Logg().LogDebugToFile(@"AdminMC::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+
             return result;
         }
 
@@ -230,6 +234,8 @@ namespace trans_mc
                 m_report.errored_state = m_report.actioned_state = false;
             else
                 ;
+
+            Logging.Logg().LogDebugToFile(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
         }

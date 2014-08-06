@@ -93,48 +93,64 @@ namespace StatisticCommon
 
         public virtual Errors SaveChanges()
         {
+            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - вХод...");
+            
             delegateStartWait();
-            semaDBAccess.WaitOne();
-            lock (m_lockObj)
+
+            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            
+            //if (semaDBAccess.WaitOne(6666) == true) {
+            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {
-                saveResult = Errors.NoAccess;
-                saving = true;
-                using_date = false;
-                m_curDate = m_prevDate;
+                lock (m_lockObj)
+                {
+                    saveResult = Errors.NoAccess;
+                    saving = true;
+                    using_date = false;
+                    m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
+                    newState = true;
+                    states.Clear();
 
-                Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - states.Clear()");
+                    Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - states.Clear()");
 
-                states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.AdminDates);
-                //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                states.Add((int)StatesMachine.PPBRDates);
-                states.Add((int)StatesMachine.SaveAdminValues);
-                if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
-                //states.Add((int)StatesMachine.UpdateValuesPPBR);
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.AdminDates);
+                    //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
+                    states.Add((int)StatesMachine.PPBRDates);
+                    states.Add((int)StatesMachine.SaveAdminValues);
+                    if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
+                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::SaveChanges () - semaState.Release(1)");
+                    }
+                }
+
+                semaDBAccess.WaitOne();
                 try
                 {
-                    semaState.Release(1);
+                    semaDBAccess.Release(1);
                 }
-                catch (Exception e)
+                catch
                 {
-                    Logging.Logg().LogExceptionToFile(e, "AdminTS::SaveChanges () - semaState.Release(1)");
                 }
+
+                saving = false;
+            }
+            else {
+                Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=false");
+
+                saveResult = Errors.NoAccess;
+                saving = true;
             }
 
-            semaDBAccess.WaitOne();
-            try
-            {
-                semaDBAccess.Release(1);
-            }
-            catch
-            {
-            }
             delegateStopWait();
-            saving = false;
 
             return saveResult;
         }
@@ -144,44 +160,56 @@ namespace StatisticCommon
             Errors errClearResult;
 
             delegateStartWait();
-            semaDBAccess.WaitOne();
-            lock (m_lockObj)
+
+            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+
+            //if (semaDBAccess.WaitOne(6666) == true) {
+            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {
-                errClearResult = Errors.NoError;
-                using_date = false;
-                m_curDate = m_prevDate;
+                lock (m_lockObj)
+                {
+                    errClearResult = Errors.NoError;
+                    using_date = false;
+                    m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
+                    newState = true;
+                    states.Clear();
 
-                Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - states.Clear()");
+                    Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - states.Clear()");
 
-                states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.AdminDates);
-                //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                states.Add((int)StatesMachine.PPBRDates);
-                states.Add((int)StatesMachine.ClearAdminValues);
-                states.Add((int)StatesMachine.ClearPPBRValues);
-                //states.Add((int)StatesMachine.UpdateValuesPPBR);
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.AdminDates);
+                    //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
+                    states.Add((int)StatesMachine.PPBRDates);
+                    states.Add((int)StatesMachine.ClearAdminValues);
+                    states.Add((int)StatesMachine.ClearPPBRValues);
+                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::ClearRDG () - semaState.Release(1)");
+                    }
+                }
+
+                semaDBAccess.WaitOne();
                 try
                 {
-                    semaState.Release(1);
+                    semaDBAccess.Release(1);
                 }
-                catch (Exception e)
+                catch
                 {
-                    Logging.Logg().LogExceptionToFile(e, "AdminTS::ClearRDG () - semaState.Release(1)");
                 }
+            }
+            else {
+                Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=false");
+
+                errClearResult = Errors.NoAccess;
             }
 
-            semaDBAccess.WaitOne();
-            try
-            {
-                semaDBAccess.Release(1);
-            }
-            catch
-            {
-            }
             delegateStopWait();
 
             return errClearResult;
@@ -463,41 +491,57 @@ namespace StatisticCommon
         public virtual HAdmin.Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
-            semaDBAccess.WaitOne();
-            lock (m_lockObj)
+            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+
+            //if (semaDBAccess.WaitOne(6666) == true) {
+            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {
-                indxTECComponents = indx;
+                lock (m_lockObj)
+                {
+                    indxTECComponents = indx;
 
-                saveResult = Errors.NoAccess;
-                saving = true;
-                using_date = false;
-                m_curDate = m_prevDate;
+                    saveResult = Errors.NoAccess;
+                    saving = true;
+                    using_date = false;
+                    m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
+                    newState = true;
+                    states.Clear();
 
-                states.Add((int)StatesMachine.ExpRDGExcelValues);
+                    states.Add((int)StatesMachine.ExpRDGExcelValues);
 
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::SaveRDGExcelValues () - semaState.Release(1)");
+                    }
+                }
+
+                semaDBAccess.WaitOne();
                 try
                 {
-                    semaState.Release(1);
+                    semaDBAccess.Release(1);
                 }
-                catch (Exception e)
+                catch
                 {
-                    Logging.Logg().LogExceptionToFile(e, "AdminTS::SaveRDGExcelValues () - semaState.Release(1)");
+                }
+
+                saving = false;
+            }
+            else {
+                lock (m_lockObj)
+                {
+                    Logging.Logg().LogDebugToFile("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=false");
+                    
+                    saveResult = Errors.NoAccess;
+                    saving = true;
                 }
             }
 
-            semaDBAccess.WaitOne();
-            try
-            {
-                semaDBAccess.Release(1);
-            }
-            catch
-            {
-            }
             delegateStopWait();
-            saving = false;
 
             return saveResult;
         }
@@ -803,6 +847,13 @@ namespace StatisticCommon
                 currentHour = 0;
             else
                 currentHour = serverTime.Hour;
+
+            //Возможность изменять рекомендации за тек./час
+            if (currentHour > 0)
+                currentHour --;
+            else
+                ;
+                
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1217,7 +1268,7 @@ namespace StatisticCommon
             {
                 for (connSettType = (int)CONN_SETT_TYPE.ADMIN; connSettType < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; connSettType++)
                 {
-                    if ((m_ignore_connsett_data == true) && ((connSettType == (int)CONN_SETT_TYPE.DATA_FACT) && (connSettType == (int)CONN_SETT_TYPE.DATA_TM)))
+                    if ((m_ignore_connsett_data == true) && ((connSettType == (int)CONN_SETT_TYPE.DATA_ASKUE) && (connSettType == (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                         continue;
                     else
                         ;
@@ -1439,6 +1490,8 @@ namespace StatisticCommon
                     break;
             }
 
+            Logging.Logg().LogDebugToFile(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+
             return result;
         }
 
@@ -1622,13 +1675,20 @@ namespace StatisticCommon
                     //Если состояние крайнее, то освободить доступ к БД
                     if (states.IndexOf(state) == (states.Count - 1))
                         try { semaDBAccess.Release(1); }
-                        catch { }
+                        catch (Exception e) {
+                            Logging.Logg().LogExceptionToFile(e, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...");
+                        }
                     else
                         ;
                     result = true;
                     if (result == true)
                     {
-                        if (!(saveComplete == null)) saveComplete(); else ;
+                        Logging.Logg().LogDebugToFile(@"AdminTS::StateResponse () - saveComplete is set=" + (saveComplete == null ? false.ToString () : true.ToString ()) + @" - вЫход...");
+
+                        if (!(saveComplete == null))
+                            saveComplete();
+                        else
+                            ;
                     }
                     else
                         ;
@@ -1690,13 +1750,15 @@ namespace StatisticCommon
             else
                 ;
 
+            Logging.Logg().LogDebugToFile(@"AdminTS::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+
             return result;
         }
 
         protected override void StateErrors(int /*StatesMachine*/ state, bool response)
         {
             bool bClear = false;
-            
+
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
@@ -2081,6 +2143,11 @@ namespace StatisticCommon
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.GTP, indx);
         }
 
+        /// <summary>
+        /// Идентификатор компонента ТЭЦ
+        /// </summary>
+        /// <param name="indx">индекс в массиве 'все компоненты'</param>
+        /// <returns>идентификатор</returns>
         public int GetIdTECComponent(int indx = -1)
         {
             if (indx < 0) indx = indxTECComponents; else ;
@@ -2092,6 +2159,11 @@ namespace StatisticCommon
             return iRes;
         }
         
+        /// <summary>
+        /// Наименование (краткое) компонента ТЭЦ
+        /// </summary>
+        /// <param name="indx">индекс в массиве 'все компоненты'</param>
+        /// <returns>наименование</returns>
         public string GetNameTECComponent(int indx = -1)
         {
             if (indx < 0) indx = indxTECComponents; else ;
@@ -2103,6 +2175,9 @@ namespace StatisticCommon
             return strRes;
         }
 
+        /// <summary>
+        /// Сохранение текущих значений (ПБР + рекомендации = РДГ) для последующего изменения
+        /// </summary>
         public override void CopyCurToPrevRDGValues()
         {
             for (int i = 0; i < 24; i++)
@@ -2117,6 +2192,10 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Копирование значений (ПБР + рекомендации = РДГ) из источника
+        /// </summary>
+        /// <param name="source">источник</param>
         public override void getCurRDGValues(HAdmin source)
         {
             for (int i = 0; i < 24; i++)

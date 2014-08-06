@@ -720,13 +720,18 @@ namespace StatisticTrans
 
         protected virtual void saveDataGridViewAdminComplete()
         {
+            Logging.Logg().LogDebugToFile(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
+            
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                IAsyncResult asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                //this.EndInvoke (asynchRes);
                 //trans_auto_next ();
             }
             else
                 ;
+
+            Logging.Logg().LogDebugToFile(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...");
         }
 
         protected void setDatetimePickerMain(DateTime date)
@@ -847,6 +852,8 @@ namespace StatisticTrans
         }
 
         protected override void ErrorReport (string msg) {
+            Logging.Logg().LogErrorToFile(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
+            
             m_statusStripMain.BeginInvoke(delegateEvent);
 
             m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
@@ -918,10 +925,12 @@ namespace StatisticTrans
                 trans_auto_next();
             }
             else
-                if (m_bTransAuto) buttonClose.PerformClick(); else enabledUIControl(true);
+                if (m_bTransAuto == true) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
         protected void trans_auto_next () {
+            Logging.Logg().LogDebugToFile(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex);
+            
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
                 comboBoxTECComponent.SelectedIndex ++;
@@ -929,11 +938,10 @@ namespace StatisticTrans
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
-                if (m_bTransAuto)
+                if (m_bTransAuto == true)
                     buttonClose.PerformClick();
                 else
                 {
-
                     if (IsTomorrow () == false) {
                         dateTimePickerMain.Value = DateTime.Now;
 

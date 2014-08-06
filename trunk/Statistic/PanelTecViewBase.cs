@@ -538,18 +538,23 @@ namespace Statistic
         {
             lock (m_lockValue)
             {
-                FillGridHours();
+                try {
+                    FillGridHours();
 
-                FillGridMins(hour);
+                    FillGridMins(hour);
 
-                m_pnlQuickData.ShowFactValues();
+                    m_pnlQuickData.ShowFactValues();
+                }
+                catch (Exception e) {
+                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::UpdateGUI_Fact () - ...");
+                }
             }
         }
 
         private void GetCurrentTimeRequest()
         {
             string query = string.Empty;
-            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbTSQLInterface.getTypeDB(tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].port);
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbTSQLInterface.getTypeDB(tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].port);
 
             switch (typeDB)
             {
@@ -564,7 +569,7 @@ namespace Statistic
             }
             
             if (query.Equals(string.Empty) == false)
-                tec.Request(CONN_SETT_TYPE.DATA_FACT, query);
+                tec.Request(CONN_SETT_TYPE.DATA_ASKUE, query);
             else
                 ;
         }
@@ -581,22 +586,22 @@ namespace Statistic
 
         private void GetHoursRequest(DateTime date)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_FACT, tec.hoursRequest(date, sensorsStrings_Fact[(int)TG.ID_TIME.HOURS]));
+            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.hoursRequest(date, sensorsStrings_Fact[(int)TG.ID_TIME.HOURS]));
         }
 
         private void GetMinsRequest(int hour)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_FACT, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
+            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
         }
 
         private void GetCurrentTMRequest()
         {
-            tec.Request(CONN_SETT_TYPE.DATA_TM, tec.currentTMRequest(sensorsString_TM));
+            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.currentTMRequest(sensorsString_TM));
         }
 
         private void GetLastMinutesTMRequest()
         {
-            tec.Request(CONN_SETT_TYPE.DATA_TM, tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
+            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
         }
 
         private void GetPBRValuesRequest () {
@@ -678,6 +683,8 @@ namespace Statistic
             }
 
             setFirstDisplayedScrollingRowIndex (m_dgwMins, lastMin);
+
+            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridMins () - ...");
         }
 
         private void FillGridHours()
@@ -900,6 +907,8 @@ namespace Statistic
             m_dgwHours.Rows[itemscount].Cells[5].Value = sumDiviation.ToString("F2");
 
             setFirstDisplayedScrollingRowIndex(m_dgwHours, lastHour);
+
+            Logging.Logg ().LogDebugToFile (@"PanelTecViewBase::FillGridHours () - ...");
         }
 
         protected void ClearValues()
@@ -3344,10 +3353,10 @@ namespace Statistic
                 case StatesMachine.CurrentMins_Fact:
                 case StatesMachine.RetroHours:
                 case StatesMachine.RetroMins:
-                    return tec.Response(CONN_SETT_TYPE.DATA_FACT, out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.DATA_ASKUE, out error, out table);
                 case StatesMachine.Current_TM:
                 case StatesMachine.LastMinutes_TM:
-                    return tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                    return tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
                 case StatesMachine.PBRValues:
                     //return m_admin.Response(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     return tec.Response(CONN_SETT_TYPE.PBR, out error, out table);

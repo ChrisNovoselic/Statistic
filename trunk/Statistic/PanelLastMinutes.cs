@@ -650,7 +650,7 @@ namespace Statistic
 
             private void GetLastMinutesTMRequest()
             {
-                m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
+                m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
             }
 
             private bool GetLastMinutesTMResponse(DataTable table_in)
@@ -752,7 +752,7 @@ namespace Statistic
 
             //private void GetSensorsTMRequest()
             //{
-            //    m_tec.Request(CONN_SETT_TYPE.DATA_TM, m_tec.sensorsTMRequest());
+            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.sensorsTMRequest());
             //}
 
             private bool GetSensorsTEC()
@@ -777,7 +777,7 @@ namespace Statistic
                     if (!(m_listSensorId2TG[i] == null))
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT]) {
+                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
                                 case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
@@ -792,7 +792,7 @@ namespace Statistic
                         else
                             ;
 
-                        switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+                        switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                         {
                             case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
@@ -852,7 +852,7 @@ namespace Statistic
                     case StatesMachine.Init_TM:
                         return true;
                     case StatesMachine.LastMinutes_TM:
-                        return m_tec.Response(CONN_SETT_TYPE.DATA_TM, out error, out table);
+                        return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
                     case StatesMachine.PBRValues:
                         return DbSources.Sources ().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     case StatesMachine.AdminValues:

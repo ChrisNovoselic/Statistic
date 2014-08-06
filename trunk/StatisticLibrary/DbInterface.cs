@@ -26,6 +26,13 @@ namespace StatisticCommon
         public static int MAX_WAIT_COUNT = 39;
         public static int WAIT_TIME_MS = 106;
 
+        public static int MAX_WATING {
+            get {
+                //return MAX_RETRY * MAX_WAIT_COUNT * WAIT_TIME_MS;
+                return 6666;
+            }
+        }
+
         protected class DbInterfaceListener
         {
             public volatile bool listenerActive; 

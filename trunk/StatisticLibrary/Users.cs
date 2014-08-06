@@ -11,8 +11,8 @@ namespace StatisticCommon
     public class Users : object
     {
         //private ConnectionSettings connSettConfigDB;
-        private int role;
-        private int id_tec;
+        private static int role;
+        private static int id_tec;
 
         //private bool compareIpVal (int [] ip_trust, int [] ip)
         //{
@@ -112,13 +112,13 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile ("Users::Initialize () - Ok");
         }
 
-        public int Role {
+        public static int Role {
             get {
                 return role;
             }
         }
 
-        public int allTEC
+        public static int allTEC
         {
             get
             {

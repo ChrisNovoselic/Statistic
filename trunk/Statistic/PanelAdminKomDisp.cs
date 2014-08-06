@@ -16,6 +16,13 @@ namespace Statistic
     public class PanelAdminKomDisp : PanelAdmin
     {
         private System.Windows.Forms.Button btnImportCSV;
+
+        private System.Windows.Forms.CheckBox m_cbxAlarm;
+        private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
+        private Label lblKoeffAlarmCurPower;
+        private NumericUpDown m_nudnKoeffAlarmCurPower;
+        private System.Windows.Forms.Button m_btnAlarmCurPower;
+        private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
         
         protected override void InitializeComponents()
         {
@@ -24,11 +31,25 @@ namespace Statistic
             this.btnImportCSV = new System.Windows.Forms.Button();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
 
+            this.m_cbxAlarm = new CheckBox();
+            this.m_gbxDividerAlarm = new System.Windows.Forms.GroupBox();
+            this.lblKoeffAlarmCurPower = new Label();
+            this.m_nudnKoeffAlarmCurPower = new NumericUpDown();
+            this.m_btnAlarmCurPower = new System.Windows.Forms.Button();
+            this.m_btnAlarmTGTurnOnOff = new System.Windows.Forms.Button();
+
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
             this.m_panelManagement.Controls.Add(this.btnImportCSV);
-            this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);            
+            this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
+
+            this.m_panelManagement.Controls.Add(m_cbxAlarm);
+            this.m_panelManagement.Controls.Add(m_gbxDividerAlarm);
+            this.m_panelManagement.Controls.Add(lblKoeffAlarmCurPower);
+            this.m_panelManagement.Controls.Add(m_nudnKoeffAlarmCurPower);
+            this.m_panelManagement.Controls.Add(m_btnAlarmCurPower);
+            this.m_panelManagement.Controls.Add(m_btnAlarmTGTurnOnOff);
 
             // 
             // btnImportCSV
@@ -49,6 +70,82 @@ namespace Statistic
             //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
             //this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
+
+            // 
+            // gbxDividerChoice
+            // 
+            this.m_gbxDividerAlarm.Location = new System.Drawing.Point(10, 307);
+            this.m_gbxDividerAlarm.Name = "gbxDividerAlarm";
+            this.m_gbxDividerAlarm.Size = new System.Drawing.Size(154, 8);
+            this.m_gbxDividerAlarm.TabIndex = 4;
+            this.m_gbxDividerAlarm.TabStop = false;
+
+            // 
+            // m_cbxAlarm
+            // 
+            this.m_cbxAlarm.Enabled = false;
+            this.m_cbxAlarm.Checked = false;
+            this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
+            this.m_cbxAlarm.Name = "cbxAlarm";
+            //this.m_cbxAlarm.Size = new System.Drawing.Size(154, 8);
+            this.m_cbxAlarm.AutoSize = true;
+            //this.m_cbxAlarm.TabIndex = 4;
+            this.m_cbxAlarm.TabStop = false;
+            this.m_cbxAlarm.Text = @"Синализация вкл.";
+            this.m_cbxAlarm.CheckedChanged += new EventHandler(m_cbxAlarm_CheckedChanged);
+
+            int offsetPosY = 28;
+            //
+            // lblKoeffAlarmCurPower
+            //
+            this.lblKoeffAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
+            this.lblKoeffAlarmCurPower.Location = new System.Drawing.Point(10, 326 + offsetPosY);
+            this.lblKoeffAlarmCurPower.Name = "lblKoeffAlarmCurPower";
+            this.lblKoeffAlarmCurPower.AutoSize = true;
+            //this.lblKoeffAlarmCurPower.Size = new System.Drawing.Size(70, 20);
+            //this.lblKoeffAlarmCurPower.TabIndex = 4;
+            this.lblKoeffAlarmCurPower.TabStop = false;
+            this.lblKoeffAlarmCurPower.Text = @"Коэфф. сигн. Pтек";
+
+            // 
+            // m_nudnKoeffAlarmCurPower
+            // 
+            m_nudnKoeffAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
+            m_nudnKoeffAlarmCurPower.Location = new System.Drawing.Point(116, 323 + offsetPosY);
+            m_nudnKoeffAlarmCurPower.Name = "nudnKoeffAlarmCurPower";
+            m_nudnKoeffAlarmCurPower.Size = new System.Drawing.Size(48, 20);
+            m_nudnKoeffAlarmCurPower.TabIndex = 26;
+            m_nudnKoeffAlarmCurPower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            m_nudnKoeffAlarmCurPower.Minimum = 0.05M;
+            m_nudnKoeffAlarmCurPower.Maximum = 0.90M;
+            m_nudnKoeffAlarmCurPower.Value = 0.25M;
+            m_nudnKoeffAlarmCurPower.DecimalPlaces = 2;
+            m_nudnKoeffAlarmCurPower.Increment = 0.05M;
+
+            // 
+            // m_btnAlarmCurPower
+            // 
+            this.m_btnAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
+            this.m_btnAlarmCurPower.Location = new System.Drawing.Point(10, 352 + offsetPosY);
+            this.m_btnAlarmCurPower.Name = "btnAlarmCurPower";
+            this.m_btnAlarmCurPower.Size = new System.Drawing.Size(154, 23);
+            this.m_btnAlarmCurPower.TabIndex = 2;
+            this.m_btnAlarmCurPower.Text = "Сигн. Pтек";
+            this.m_btnAlarmCurPower.UseVisualStyleBackColor = true;
+            this.m_btnAlarmCurPower.Click += new System.EventHandler(this.btnAlarmCurPower_Click);
+
+            // 
+            // m_btnAlarmTGTurnOnOff
+            // 
+            this.m_btnAlarmTGTurnOnOff.Enabled = this.m_cbxAlarm.Checked;
+            this.m_btnAlarmTGTurnOnOff.Location = new System.Drawing.Point(10, 381 + offsetPosY);
+            this.m_btnAlarmTGTurnOnOff.Name = "btnAlarmTGTurnOnOff";
+            this.m_btnAlarmTGTurnOnOff.Size = new System.Drawing.Size(154, 23);
+            this.m_btnAlarmTGTurnOnOff.TabIndex = 2;
+            this.m_btnAlarmTGTurnOnOff.Text = "Сигн. ТГвкл/откл";
+            this.m_btnAlarmTGTurnOnOff.UseVisualStyleBackColor = true;
+            this.m_btnAlarmTGTurnOnOff.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
+
             this.ResumeLayout();
         }
 
@@ -163,6 +260,22 @@ namespace Statistic
                 ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
             else
                 ;
+        }
+
+        private void btnAlarmCurPower_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void btnAlarmTGTurnOnOff_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void m_cbxAlarm_CheckedChanged(object sender, EventArgs e)
+        {
+            this.lblKoeffAlarmCurPower.Enabled =
+            this.m_nudnKoeffAlarmCurPower.Enabled =
+            this.m_btnAlarmCurPower.Enabled = 
+            this.m_btnAlarmTGTurnOnOff.Enabled = ((CheckBox)sender).Checked;
         }
     }
 }

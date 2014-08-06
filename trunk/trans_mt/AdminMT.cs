@@ -35,9 +35,9 @@ namespace trans_mt
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
 
-            Logging.Logg().LogDebugToFile("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS): query=" + query);
+            DbMCSources.Sources().Request(m_IdListenerCurrent, query);
 
-            DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
+            Logging.Logg().LogDebugToFile("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
         }
 
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -185,6 +185,8 @@ namespace trans_mt
                     break;
             }
 
+            Logging.Logg().LogDebugToFile(@"AdminMT::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+
             return result;
         }
 
@@ -242,6 +244,8 @@ namespace trans_mt
                 m_report.errored_state = m_report.actioned_state = false;
             else
                 ;
+
+            Logging.Logg().LogDebugToFile(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
         }

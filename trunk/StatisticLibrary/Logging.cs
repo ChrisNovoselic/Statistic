@@ -28,6 +28,7 @@ namespace StatisticCommon
         private FileInfo m_fi;
         private LOG_MODE logging = LOG_MODE.FILE;
         private bool logRotate = true;
+        private const int MAX_ARCHIVE = 6;
         private static int logRotateSizeDefault = (int) Math.Floor((double)(1024 * 1024 * 5)); //1024 * 1024 * 5;
         private static int logRotateSizeMax = (int) Math.Floor((double)(1024 * 1024 * 10)); //1024 * 1024 * 1024;
         private int logRotateSize;
@@ -97,8 +98,15 @@ namespace StatisticCommon
             m_fileNameStart = m_fileName = name;
             sema = new Semaphore(1, 1);
 
-            m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
-            m_fi = new FileInfo(m_fileName);
+            try {
+                m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
+                m_fi = new FileInfo(m_fileName);
+            }
+            catch (Exception e) {
+                //Нельзя сообщить программе...
+                //throw new Exception(@"private Logging::Logging () - ...", e);
+                ProgramBase.Abort ();
+            }
             
             //logIndex = 0;
             delegateUpdateLogText = updateLogText;
@@ -298,7 +306,10 @@ namespace StatisticCommon
 
             if (File.Exists(logToFileName) == true)
             {
-                LogToArchive(indxArchive);
+                if (! (indxArchive > MAX_ARCHIVE))
+                    LogToArchive(indxArchive);
+                else
+                    File.Delete(logToFileName);
             }
             else {
             }

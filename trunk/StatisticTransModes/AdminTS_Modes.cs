@@ -23,48 +23,64 @@ namespace StatisticTransModes
 
         public override Errors SaveChanges()
         {
+            Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - вХод...");
+            
             delegateStartWait();
-            semaDBAccess.WaitOne();
-            lock (m_lockObj)
+
+            int msecWaitSemaDbAccess = DbInterface.MAX_RETRY * DbInterface.MAX_WAIT_COUNT * DbInterface.WAIT_TIME_MS;
+            Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess);
+
+            if (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true)
             {
-                saveResult = Errors.NoAccess;
-                saving = true;
-                using_date = false;
-                m_curDate = m_prevDate;
+                lock (m_lockObj)
+                {
+                    saveResult = Errors.NoAccess;
+                    saving = true;
+                    using_date = false;
+                    m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
+                    newState = true;
+                    states.Clear();
 
-                Logging.Logg().LogDebugToFile("AdminTS_MC::SaveChanges () - states.Clear()");
+                    Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - states.Clear()");
 
-                states.Add((int)StatesMachine.CurrentTime);
-                //states.Add((int)StatesMachine.AdminDates);
-                //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                states.Add((int)StatesMachine.PPBRDates);
-                //states.Add((int)StatesMachine.SaveAdminValues);
-                states.Add((int)StatesMachine.SavePPBRValues);
-                //states.Add((int)StatesMachine.UpdateValuesPPBR);
+                    states.Add((int)StatesMachine.CurrentTime);
+                    //states.Add((int)StatesMachine.AdminDates);
+                    //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
+                    states.Add((int)StatesMachine.PPBRDates);
+                    //states.Add((int)StatesMachine.SaveAdminValues);
+                    states.Add((int)StatesMachine.SavePPBRValues);
+                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
 
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch
+                    {
+                        Logging.Logg().LogDebugToFile("catch - SaveChanges () - semaState.Release(1)");
+                    }
+                }
+
+                semaDBAccess.WaitOne();
                 try
                 {
-                    semaState.Release(1);
+                    semaDBAccess.Release(1);
                 }
                 catch
                 {
-                    Logging.Logg().LogDebugToFile("catch - SaveChanges () - semaState.Release(1)");
                 }
+
+                saving = false;
+            }
+            else {
+                Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=false");
+
+                saveResult = Errors.NoAccess;
+                saving = true;
             }
 
-            semaDBAccess.WaitOne();
-            try
-            {
-                semaDBAccess.Release(1);
-            }
-            catch
-            {
-            }
             delegateStopWait();
-            saving = false;
 
             return saveResult;
         }

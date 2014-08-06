@@ -36,8 +36,11 @@ namespace StatisticCommon
                 {
                     foreach (Errors err in m_listResSaveChanges)
                     {
-                        if (!(err == Errors.NoError))
+                        if (!(err == Errors.NoError)) {
                             bRes = false;
+
+                            break;
+                        }
                         else
                             ;
                     }
@@ -593,6 +596,8 @@ namespace StatisticCommon
 
         private void /*bool*/ ImpRDGExcelValuesRequest()
         {
+            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - в’од...");
+
             //bool bRes = true;
             int err = 0,
                 i = -1, j = -1,
@@ -605,47 +610,58 @@ namespace StatisticCommon
             DataTable tableRDGExcelValuesNextDay;
             if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
 
+            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - path_rdg_excel=" + path_rdg_excel + @", nameFileRDGExcel=" + nameFileRDGExcel(m_curDate.Date));
+
             delegateStartWait();
             if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
             {
-                m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel (m_curDate.Date) + ".xls", strSelect, out err);
+                try { m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel (m_curDate.Date) + ".xls", strSelect, out err); }
+                catch (Exception e) {
+                    Logging.Logg().LogExceptionToFile(e, @"AdminTS_NSS::ImpRDGExcelValuesRequest () - DbTSQLInterface.Select (" + strSelect + @") - ...");
+                }
 
-                if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
-                {
-                    while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
-                        m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
+                if (! (m_tableRDGExcelValuesResponse ==  null)) {
+                    Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse.Rows.Count=" + m_tableRDGExcelValuesResponse.Rows.Count);
 
-                    //if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
-                    if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls") == true)
+                    if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
                     {
-                        tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls", strSelect, out err);
-                        if (tableRDGExcelValuesNextDay.Rows.Count > 0)
+                        while (m_tableRDGExcelValuesResponse.Rows[m_tableRDGExcelValuesResponse.Rows.Count - 1][1] is DBNull)
+                            m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
+
+                        //if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
+                        if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls") == true)
                         {
-                            while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
-                                tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
-
-                            for (i = 0; i < iTimeZoneOffset; i++)
+                            tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls", strSelect, out err);
+                            if (tableRDGExcelValuesNextDay.Rows.Count > 0)
                             {
-                                dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
+                                while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)
+                                    tableRDGExcelValuesNextDay.Rows.RemoveAt(tableRDGExcelValuesNextDay.Rows.Count - 1);
 
-                                for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j++)
+                                for (i = 0; i < iTimeZoneOffset; i++)
                                 {
-                                    dataRowAddIn.SetValue(tableRDGExcelValuesNextDay.Rows[i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок дл€ OleDb не существует
-                                }
+                                    dataRowAddIn = new object[m_tableRDGExcelValuesResponse.Columns.Count];
 
-                                m_tableRDGExcelValuesResponse.Rows.Add(dataRowAddIn); //“.к.
+                                    for (j = 0; j < m_tableRDGExcelValuesResponse.Columns.Count; j++)
+                                    {
+                                        dataRowAddIn.SetValue(tableRDGExcelValuesNextDay.Rows[i + rowOffsetData - 1][j], j); //"-1" т.к. заголовок дл€ OleDb не существует
+                                    }
+
+                                    m_tableRDGExcelValuesResponse.Rows.Add(dataRowAddIn); //“.к.
+                                }
                             }
+                            else
+                                ;
+
+                            tableRDGExcelValuesNextDay.Clear();
                         }
                         else
                             ;
-
-                        tableRDGExcelValuesNextDay.Clear();
                     }
                     else
                         ;
                 }
                 else
-                    ;
+                    Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse=null");
             }
             else
                 ;
@@ -655,6 +671,8 @@ namespace StatisticCommon
             //Logging.Logg().LogUnlock();
 
             delegateStopWait();
+
+            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - вџход...");
 
             //return bRes;
         }

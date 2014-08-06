@@ -390,7 +390,9 @@ namespace trans_tg
         }
 
         protected override void saveDataGridViewAdminComplete()
-        {            
+        {
+            Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString ());
+            
             if (((AdminTS_NSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true)
             //if (((AdminTS_NSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete.WaitOne (6) == true)
                 base.saveDataGridViewAdminComplete ();

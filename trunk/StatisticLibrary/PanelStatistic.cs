@@ -71,7 +71,7 @@ namespace StatisticCommon
                 {
                     //Идентификаторы факт. (АСКУЭ)
                     for (TG.ID_TIME it = TG.ID_TIME.MINUTES; it < TG.ID_TIME.COUNT_ID_TIME; it ++) {
-                        switch (tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                        switch (tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                         {
                             case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
@@ -114,7 +114,7 @@ namespace StatisticCommon
                     }
 
                     //Идентификаторв ТМ (СОТИАССО)
-                    switch (tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+                    switch (tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                             //Общий источник для всех ТЭЦ

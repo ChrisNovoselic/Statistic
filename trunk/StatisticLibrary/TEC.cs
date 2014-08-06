@@ -123,12 +123,12 @@ namespace StatisticCommon
                     {
                         m_arIdListeners[(int)i] = DbSources.Sources ().Register(connSetts[(int)i], true, @"ТЭЦ=" + name_shr + @"; DESC=" + i.ToString ());
 
-                        if ((!((int)i < (int)CONN_SETT_TYPE.DATA_FACT)) && (!((int)i > (int)CONN_SETT_TYPE.DATA_TM)))
+                        if ((!((int)i < (int)CONN_SETT_TYPE.DATA_ASKUE)) && (!((int)i > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                             if (FormMainBase.s_iMainSourceData == connSetts[(int)i].id) {
-                                m_arTypeSourceData [(int)i - (int)CONN_SETT_TYPE.DATA_FACT] = INDEX_TYPE_SOURCE_DATA.COMMON;
+                                m_arTypeSourceData [(int)i - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.COMMON;
                             }
                             else
-                                m_arTypeSourceData[(int)i - (int)CONN_SETT_TYPE.DATA_FACT] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
+                                m_arTypeSourceData[(int)i - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
                         else
                             ;
 
@@ -392,7 +392,7 @@ namespace StatisticCommon
         //{
         //    string request = string.Empty;
 
-        //    switch (s_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT]) {
+        //    switch (s_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
         //        case INDEX_TYPE_SOURCE_DATA.COMMON:
         //            request = @"SELECT [SENSORS_NAME] as NAME, [ID] FROM [dbo].[ID_PARAM_Piramida2000] WHERE [ID_TEC]=" + m_id;
         //            break;
@@ -420,7 +420,7 @@ namespace StatisticCommon
         //    string query = string.Empty;
         //    List <int> ids = new List<int> ();
 
-        //    switch (s_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+        //    switch (s_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
         //    {
         //        case INDEX_TYPE_SOURCE_DATA.COMMON:
         //            //Общий источник для всех ТЭЦ
@@ -470,7 +470,7 @@ namespace StatisticCommon
             switch (type())
             {
                 case TEC.TEC_TYPE.COMMON:
-                    switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsCommonRequest (usingDate, sensors);
@@ -497,7 +497,7 @@ namespace StatisticCommon
                     }
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsCommonRequest(usingDate, sensors);
@@ -548,7 +548,7 @@ namespace StatisticCommon
             switch (type())
             {
                 case TEC.TEC_TYPE.COMMON:
-                    switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursCommonRequest(usingDate, sensors);
@@ -575,7 +575,7 @@ namespace StatisticCommon
                     }
                     break;
                 case TEC.TEC_TYPE.BIYSK:
-                    switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_FACT - (int)CONN_SETT_TYPE.DATA_FACT])
+                    switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursCommonRequest(usingDate, sensors);
@@ -877,7 +877,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
@@ -915,7 +915,7 @@ namespace StatisticCommon
 
             string query = string.Empty;
 
-            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_TM - (int)CONN_SETT_TYPE.DATA_FACT])
+            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
@@ -943,7 +943,7 @@ namespace StatisticCommon
                     break;
             }
             
-            if (m_arInterfaceType [(int)CONN_SETT_TYPE.DATA_TM] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL) {
+            if (m_arInterfaceType [(int)CONN_SETT_TYPE.DATA_SOTIASSO] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL) {
                 query = query.Replace(@"DATEPART(n,", @"MINUTE(");
             }
             else

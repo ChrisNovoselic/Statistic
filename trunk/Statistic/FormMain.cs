@@ -120,7 +120,7 @@ namespace Statistic
 
             if (bRes == true)
             {
-                if (! (m_user.Role == 2)) //Администратор
+                if (! (Users.Role == 2)) //Администратор
                 {
                     параметрыToolStripMenuItem.Enabled =
                     администрированиеToolStripMenuItem.Enabled =
@@ -669,7 +669,7 @@ namespace Statistic
             //}
 
             bool bTGBiysk = parametrsTGBiysk > 0;
-            if ((m_user.allTEC == 0) || (m_user.allTEC == 6)) {
+            if ((Users.allTEC == 0) || (Users.allTEC == 6)) {
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
                 параметрыToolStripMenuItem.Enabled = bTGBiysk;
                 параметрыПриложенияToolStripMenuItem.Enabled = !bTGBiysk;
@@ -788,10 +788,10 @@ namespace Statistic
                 {
                     selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                    if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM] == null))))
+                    if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
                     {
-                        if ((m_report.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                        if ((m_report.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             if (selTecView.isActive == true)
                             {
@@ -804,8 +804,8 @@ namespace Statistic
                         else
                             ;
 
-                        if ((m_report.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_FACT].ignore == false) &&
-                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_TM].ignore == false)))
+                        if ((m_report.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_eror = true;
                             if (selTecView.isActive == true)

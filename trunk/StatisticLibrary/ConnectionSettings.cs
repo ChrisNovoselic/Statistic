@@ -13,7 +13,7 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        ADMIN = 0, PBR = 1, DATA_FACT = 2, DATA_TM = 3, MTERM = 4,
+        ADMIN = 0, PBR = 1, DATA_ASKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3 /*ТелеМеханика - СОТИАССО*/, MTERM = 4 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 5
     };
 

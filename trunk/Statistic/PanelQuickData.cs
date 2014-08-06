@@ -776,6 +776,8 @@ namespace Statistic
                     i++;
                 }
             }
+
+            Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
         }
     }
 }

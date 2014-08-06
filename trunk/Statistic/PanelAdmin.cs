@@ -27,7 +27,7 @@ namespace Statistic
         protected System.Windows.Forms.Button btnRefresh;
 
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
-        private System.Windows.Forms.GroupBox gbxDivider;
+        private System.Windows.Forms.GroupBox gbxDividerChoice;
 
         protected AdminTS m_admin;
 
@@ -57,7 +57,7 @@ namespace Statistic
             //this.dgwAdminTable = new DataGridViewAdmin();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
-            this.gbxDivider = new System.Windows.Forms.GroupBox();
+            this.gbxDividerChoice = new System.Windows.Forms.GroupBox();
 
             this.RowCount = 1;
             this.ColumnCount = 2;
@@ -86,7 +86,7 @@ namespace Statistic
 
             this.m_panelManagement.Controls.Add(this.mcldrDate);
             this.m_panelManagement.Controls.Add(this.comboBoxTecComponent);
-            this.m_panelManagement.Controls.Add(this.gbxDivider);
+            this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
             
             this.m_panelManagement.Controls.Add(this.btnSet);
             this.m_panelManagement.Controls.Add(this.btnRefresh);
@@ -130,13 +130,13 @@ namespace Statistic
             this.btnRefresh.UseVisualStyleBackColor = true;
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
-            // gbxDivider
+            // gbxDividerChoice
             // 
-            this.gbxDivider.Location = new System.Drawing.Point(10, 264);
-            this.gbxDivider.Name = "gbxDivider";
-            this.gbxDivider.Size = new System.Drawing.Size(154, 8);
-            this.gbxDivider.TabIndex = 4;
-            this.gbxDivider.TabStop = false;
+            this.gbxDividerChoice.Location = new System.Drawing.Point(10, 264);
+            this.gbxDividerChoice.Name = "gbxDividerChoice";
+            this.gbxDividerChoice.Size = new System.Drawing.Size(154, 8);
+            this.gbxDividerChoice.TabIndex = 4;
+            this.gbxDividerChoice.TabStop = false;
             // 
             // btnLoadLayout
             // 
@@ -178,12 +178,12 @@ namespace Statistic
             try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, false); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_admin.InitTEC ()...");
+                Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
             }
 
             if (!(m_admin.m_list_tec.Count > 0))
             {
-                Logging.Logg().LogErrorToFile(@"PanelAdminNSS::PanelAdminNSS () - список ТЭЦ пуст...");
+                Logging.Logg().LogErrorToFile(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
             }
             else
                 ;
@@ -215,12 +215,12 @@ namespace Statistic
             try { m_admin.InitTEC(tec); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize () - m_admin.InitTEC ()...");
+                Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
             }
 
             if (!(m_admin.m_list_tec.Count > 0))
             {
-                Logging.Logg().LogErrorToFile(@"PanelAdminNSS::PanelAdminNSS () - список ТЭЦ пуст...");
+                Logging.Logg().LogErrorToFile(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
             }
             else
                 ;
@@ -330,7 +330,7 @@ namespace Statistic
 
             getDataGridViewAdmin();
 
-            if (m_admin.WasChanged())
+            if (m_admin.WasChanged() == true)
             {
                 result = MessageBox.Show(this, "Данные были изменены но не сохранялись.\nЕсли Вы хотите сохранить изменения, нажмите \"да\".\nЕсли Вы не хотите сохранять изменения, нажмите \"нет\".\nДля отмены действия нажмите \"отмена\".", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
             }
