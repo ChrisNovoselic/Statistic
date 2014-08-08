@@ -10,9 +10,10 @@ namespace StatisticCommon
 {    
     public class Users : object
     {
-        //private ConnectionSettings connSettConfigDB;
-        private static int role;
-        private static int id_tec;
+        private static int m_id;
+        private static string m_domain_name;
+        private static int m_role;
+        private static int m_id_tec;
 
         //private bool compareIpVal (int [] ip_trust, int [] ip)
         //{
@@ -89,8 +90,10 @@ namespace StatisticCommon
 
                 if (i < dataUsers.Rows.Count)
                 {
-                    role = Convert.ToInt32 (dataUsers.Rows [i]["ID_ROLE"]);
-                    id_tec = Convert.ToInt32(dataUsers.Rows[i]["ID_TEC"]);
+                    m_domain_name = dataUsers.Rows[i]["DOMAIN_NAME"].ToString ();
+                    m_id = Convert.ToInt32(dataUsers.Rows[i]["ID"]);
+                    m_role = Convert.ToInt32 (dataUsers.Rows [i]["ID_ROLE"]);
+                    m_id_tec = Convert.ToInt32(dataUsers.Rows[i]["ID_TEC"]);
                 }
                 else
                     throw new Exception("Пользователь не найден в списке БД конфигурации");
@@ -109,12 +112,13 @@ namespace StatisticCommon
         }
 
         private void Initialize () {
-            Logging.Logg().LogDebugToFile ("Users::Initialize () - Ok");
+            //Logging.Logg().LogDebugToFile ("Users::Initialize () - Ok");
+            Logging.Logg().LogToFile(@"Пользователь: " + DomainName + @", (id=" + Id + @"), роль: " + Role + @", id_tec=" + allTEC, true, true, true);
         }
 
         public static int Role {
             get {
-                return role;
+                return m_role;
             }
         }
 
@@ -122,7 +126,23 @@ namespace StatisticCommon
         {
             get
             {
-                return id_tec;
+                return m_id_tec;
+            }
+        }
+
+        public static int Id
+        {
+            get
+            {
+                return m_id;
+            }
+        }
+
+        public static string DomainName
+        {
+            get
+            {
+                return m_domain_name;
             }
         }
 

@@ -380,18 +380,22 @@ namespace StatisticCommon
 
         protected void ErrorReport(string error_string)
         {
-            m_report.last_error = error_string;
-            m_report.last_time_error = DateTime.Now;
-            m_report.errored_state = true;
-            
+            if (! (m_report == null)) {
+                m_report.last_error = error_string;
+                m_report.last_time_error = DateTime.Now;
+                m_report.errored_state = true;
+            } else ;
+
             errorReport (error_string);
         }
 
         protected void ActionReport(string action_string)
         {
-            m_report.last_action = action_string;
-            m_report.last_time_action = DateTime.Now;
-            m_report.actioned_state = true;
+            if (! (m_report == null)) {
+                m_report.last_action = action_string;
+                m_report.last_time_action = DateTime.Now;
+                m_report.actioned_state = true;
+            } else ;
 
             //stsStrip.BeginInvoke(delegateEventUpdate);
             //delegateEventUpdate ();
@@ -438,7 +442,9 @@ namespace StatisticCommon
             {
                 newState = true;
                 states.Clear();
-                m_report.errored_state = false;
+                if (! (m_report == null)) 
+                    m_report.errored_state = false;
+                else ;
             }
 
             if ((!(taskThread == null)) && taskThread.IsAlive)

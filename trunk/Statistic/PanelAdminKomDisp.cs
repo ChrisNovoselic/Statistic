@@ -23,6 +23,8 @@ namespace Statistic
         private NumericUpDown m_nudnKoeffAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
+
+        public AdminAlarm m_adminAlarm;
         
         protected override void InitializeComponents()
         {
@@ -83,7 +85,7 @@ namespace Statistic
             // 
             // m_cbxAlarm
             // 
-            this.m_cbxAlarm.Enabled = false;
+            this.m_cbxAlarm.Enabled = true;
             this.m_cbxAlarm.Checked = false;
             this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
             this.m_cbxAlarm.Name = "cbxAlarm";
@@ -125,24 +127,24 @@ namespace Statistic
             // 
             // m_btnAlarmCurPower
             // 
-            this.m_btnAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
+            this.m_btnAlarmCurPower.Enabled = false;
             this.m_btnAlarmCurPower.Location = new System.Drawing.Point(10, 352 + offsetPosY);
             this.m_btnAlarmCurPower.Name = "btnAlarmCurPower";
             this.m_btnAlarmCurPower.Size = new System.Drawing.Size(154, 23);
             this.m_btnAlarmCurPower.TabIndex = 2;
-            this.m_btnAlarmCurPower.Text = "Сигн. Pтек";
+            this.m_btnAlarmCurPower.Text = "Подтв. сигн. Pтек";
             this.m_btnAlarmCurPower.UseVisualStyleBackColor = true;
             this.m_btnAlarmCurPower.Click += new System.EventHandler(this.btnAlarmCurPower_Click);
 
             // 
             // m_btnAlarmTGTurnOnOff
             // 
-            this.m_btnAlarmTGTurnOnOff.Enabled = this.m_cbxAlarm.Checked;
+            this.m_btnAlarmTGTurnOnOff.Enabled = false;
             this.m_btnAlarmTGTurnOnOff.Location = new System.Drawing.Point(10, 381 + offsetPosY);
             this.m_btnAlarmTGTurnOnOff.Name = "btnAlarmTGTurnOnOff";
             this.m_btnAlarmTGTurnOnOff.Size = new System.Drawing.Size(154, 23);
             this.m_btnAlarmTGTurnOnOff.TabIndex = 2;
-            this.m_btnAlarmTGTurnOnOff.Text = "Сигн. ТГвкл/откл";
+            this.m_btnAlarmTGTurnOnOff.Text = "Подтв. сигн. ТГвкл/откл";
             this.m_btnAlarmTGTurnOnOff.UseVisualStyleBackColor = true;
             this.m_btnAlarmTGTurnOnOff.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
 
@@ -152,6 +154,8 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HReports rep)
             : base(idListener, FormChangeMode.MANAGER.DISP, rep)
         {
+            m_adminAlarm = new AdminAlarm(null, null);
+            m_adminAlarm.InitTEC(m_admin.m_list_tec);
         }
 
         protected override void getDataGridViewAdmin()
@@ -273,9 +277,11 @@ namespace Statistic
         private void m_cbxAlarm_CheckedChanged(object sender, EventArgs e)
         {
             this.lblKoeffAlarmCurPower.Enabled =
-            this.m_nudnKoeffAlarmCurPower.Enabled =
+            this.m_nudnKoeffAlarmCurPower.Enabled = ((CheckBox)sender).Checked;
             this.m_btnAlarmCurPower.Enabled = 
-            this.m_btnAlarmTGTurnOnOff.Enabled = ((CheckBox)sender).Checked;
+            this.m_btnAlarmTGTurnOnOff.Enabled = false;
+
+            m_adminAlarm.Activate(((CheckBox)sender).Checked);
         }
     }
 }

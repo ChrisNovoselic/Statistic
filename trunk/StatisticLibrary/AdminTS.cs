@@ -87,18 +87,16 @@ namespace StatisticCommon
 
         protected override void Initialize () {
             base.Initialize ();
-
-            //layoutForLoading = new LayoutData(1);
         }
 
         public virtual Errors SaveChanges()
         {
             Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - в’од...");
-            
+
             delegateStartWait();
 
             Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - »нтервал ожидани€ дл€ semaDBAccess=" + DbInterface.MAX_WATING);
-            
+
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {

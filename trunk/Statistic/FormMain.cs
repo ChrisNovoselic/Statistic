@@ -240,21 +240,36 @@ namespace Statistic
                                 }
                                 else
                                     ;
-                            else
-                                ;
+                            else {
+                                m_arPanelAdmin[i].Stop ();
+
+                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm (); else ;
+                                
+                            }
                         else
                             ;
                 else
                     ;
             }
             else
-                ;
+                stopAdminAlarm ();
 
             timer.Stop();
 
             StopTabPages ();
 
             m_TCPServer.Stop ();
+        }
+
+        private void stopAdminAlarm () {
+            if ((!(m_arPanelAdmin == null)) && (!(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] == null)) && (m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] is PanelAdminKomDisp))
+            //if (i == (int)FormChangeMode.MANAGER.DISP)
+            {
+                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Activate(false);
+                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Stop();
+            }
+            else
+                ;
         }
 
         private void StopTabPages()
@@ -570,14 +585,6 @@ namespace Statistic
 
             if (tecViews.Count == 0)
             {
-                /*
-                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StopDbInterface ();
-                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
-
-                //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].InitTEC (formChangeMode.tec);
-                //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].mode(formChangeMode.getModeTECComponent ());
-                m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].StartDbInterface ();
-                */
                 // создаём все tecview
                 int tec_indx = 0,
                     comp_indx;
@@ -1025,6 +1032,8 @@ namespace Statistic
                 else
                     ;
 
+                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Start();
+                
                 m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters, m_report);
                 m_panelCurPower.SetDelegate(null, null, delegateEvent);
                 //m_panelCurPower.Start();
