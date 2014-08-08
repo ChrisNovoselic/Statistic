@@ -72,6 +72,8 @@ namespace StatisticTransModes
                 }
 
                 saving = false;
+
+                saveComplete ();
             }
             else {
                 Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=false");

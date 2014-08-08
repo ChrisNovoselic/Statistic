@@ -142,6 +142,8 @@ namespace StatisticCommon
                 }
 
                 saving = false;
+
+                if (! (saveComplete == null)) saveComplete(); else ;
             }
             else {
                 Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=false");
@@ -1121,7 +1123,7 @@ namespace StatisticCommon
                     }
                 }
             }
-            
+
             return resQuery;
         }
 
@@ -1172,7 +1174,7 @@ namespace StatisticCommon
                                    //@"';";
 
             Logging.Logg().LogDebugToFile("AdminTS::SetPPBRRequest ()");
-            
+
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
@@ -1685,10 +1687,8 @@ namespace StatisticCommon
                     {
                         Logging.Logg().LogDebugToFile(@"AdminTS::StateResponse () - saveComplete is set=" + (saveComplete == null ? false.ToString () : true.ToString ()) + @" - вЫход...");
 
-                        if (!(saveComplete == null))
-                            saveComplete();
-                        else
-                            ;
+                        //Вызов завершения операции сохранения изменений - НЕЛьЗЯ операция не завершена
+                        //if (!(saveComplete == null)) saveComplete(); else ;
                     }
                     else
                         ;
@@ -1759,27 +1759,36 @@ namespace StatisticCommon
         {
             bool bClear = false;
 
+            string error = string.Empty,
+                reason = string.Empty,
+                waiting = string.Empty;
+
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
-                    if (response)
+                    if (response == true)
                     {
-                        ErrorReport("Ошибка разбора текущего времени сервера. Переход в ожидание.");
-                        if (saving)
+                        reason = @"разбора";
+
+                        if (saving == true)
                             saveResult = Errors.ParseError;
                         else
                             ;
                     }
                     else
                     {
-                        ErrorReport("Ошибка получения текущего времени сервера. Переход в ожидание.");
-                        if (saving)
+                        reason = @"получения";
+
+                        if (saving == true)
                             saveResult = Errors.NoAccess;
                         else
                             ;
                     }
 
-                    if (saving)
+                    reason += @" текущего времени сервера";
+                    waiting = @"Переход в ожидание";
+
+                    if (saving == true)
                     {
                         try
                         {
@@ -1794,30 +1803,38 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    if (response)
-                        ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
+                    if (response == true)
+                        reason = @"разбора";
                     else {
-                        ErrorReport("Ошибка получения данных плана. Переход в ожидание.");
-
+                        reason = @"получения";
                         bClear = true;
                     }
+
+                    reason += @" данных плана";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 case (int)StatesMachine.AdminValues:
                     if (response)
-                        ErrorReport("Ошибка разбора административных данных. Переход в ожидание.");
+                        reason = @"разбора";
                     else {
-                        ErrorReport("Ошибка получения административных данных. Переход в ожидание.");
-
+                        reason = @"получения";
                         bClear = true;
                     }
+
+                    reason += @" административных данных";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 case (int)StatesMachine.ImpRDGExcelValues:
-                    ErrorReport("Ошибка импорта РДГ из книги Excel. Переход в ожидание.");
+                    reason = @"импорта РДГ из книги Excel";
+                    waiting = @"Переход в ожидание";
 
                     // ???
                     break;
                 case (int)StatesMachine.ExpRDGExcelValues:
-                    ErrorReport("Ошибка экспорта РДГ в книгу Excel. Переход в ожидание.");
+                    reason = @"экспорта РДГ из книги Excel";
+                    waiting = @"Переход в ожидание";
                     // ???
                     saveResult = Errors.NoAccess;
                     try
@@ -1829,19 +1846,20 @@ namespace StatisticCommon
                     }
                     break;
                 case (int)StatesMachine.PPBRCSVValues:
-                    ErrorReport("Ошибка импорта из формата CSV. Переход в ожидание.");
+                    reason = @"импорта из формата CSV";
+                    waiting = @"Переход в ожидание";
 
                     // ???
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    if (response)
+                    if (response == true)
                     {
-                        ErrorReport("Ошибка разбора сохранённых часовых значений (PPBR). Переход в ожидание.");
+                        reason = @"разбора";
                         saveResult = Errors.ParseError;
                     }
                     else
                     {
-                        ErrorReport("Ошибка получения сохранённых часовых значений (PPBR). Переход в ожидание.");
+                        reason = @"получения";
                         saveResult = Errors.NoAccess;
                     }
                     try
@@ -1852,16 +1870,20 @@ namespace StatisticCommon
                     {
                         Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
+
+                    reason += @" сохранённых часовых значений (PPBR)";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 case (int)StatesMachine.AdminDates:
                     if (response)
                     {
-                        ErrorReport("Ошибка разбора сохранённых часовых значений (AdminValues). Переход в ожидание.");
+                        reason = @"разбора";
                         saveResult = Errors.ParseError;
                     }
                     else
                     {
-                        ErrorReport("Ошибка получения сохранённых часовых значений (AdminValues). Переход в ожидание.");
+                        reason = @"получения";
                         saveResult = Errors.NoAccess;
                     }
                     try
@@ -1872,9 +1894,12 @@ namespace StatisticCommon
                     {
                         Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
+
+                    reason += @" сохранённых часовых значений (AdminValues)";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 case (int)StatesMachine.SaveAdminValues:
-                    ErrorReport("Ошибка сохранения административных данных. Переход в ожидание.");
                     saveResult = Errors.NoAccess;
                     try
                     {
@@ -1884,9 +1909,11 @@ namespace StatisticCommon
                     {
                         Logging.Logg().LogExceptionToFile(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
+
+                    reason = @"сохранения административных данных";
+                    waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.SavePPBRValues:
-                    ErrorReport("Ошибка сохранения данных ПЛАНа. Переход в ожидание.");
                     saveResult = Errors.NoAccess;
                     try
                     {
@@ -1895,6 +1922,10 @@ namespace StatisticCommon
                     catch
                     {
                     }
+
+                    reason = @"сохранения данных ПЛАНа";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 //case (int)StatesMachine.LayoutGet:
                 //    if (response)
@@ -1927,10 +1958,12 @@ namespace StatisticCommon
                 //    }
                 //    break;
                 case (int)StatesMachine.ClearAdminValues:
-                    ErrorReport("Ошибка удаления административных данных. Переход в ожидание.");
+                    reason = @"удаления административных данных";
+                    waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.ClearPPBRValues:
-                    ErrorReport("Ошибка удаления данных ПЛАНа. Переход в ожидание.");
+                    reason = @"удаления данных ПЛАНа";
+                    waiting = @"Переход в ожидание";
                     break;
                 default:
                     break;
@@ -1942,6 +1975,17 @@ namespace StatisticCommon
             }
             else
                 ;
+
+            error = "Ошибка " + reason + ".";
+
+            if (waiting.Equals(string.Empty) == true)
+                error += " " + waiting + ".";
+            else
+                ;
+
+            ErrorReport(error);
+
+            Logging.Logg().LogErrorToFile(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...");
         }
 
         public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)

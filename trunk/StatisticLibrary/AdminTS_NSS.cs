@@ -19,12 +19,25 @@ namespace StatisticCommon
 
         private object m_lockSuccessGetData,
                         m_lockResSaveChanges;
-        public bool SuccessGetData {
+        public bool CompletedGetRDGValues {
             get {
                 lock (m_lockSuccessGetData)
                 {
-                    return m_listCurRDGValues.Count == m_listTECComponentIndexDetail.Count ? true : false;
+                    return (! (m_listCurRDGValues.Count < m_listTECComponentIndexDetail.Count)) ? true : false;
                 }
+            }
+        }
+
+        public bool CompletedSaveChanges {
+            get {
+                bool bRes = false;
+                
+                lock (m_lockResSaveChanges)
+                {
+                    bRes = ! ((m_listResSaveChanges.Count) < m_listTECComponentIndexDetail.Count);
+                }
+
+                return bRes;
             }
         }
 
@@ -34,24 +47,19 @@ namespace StatisticCommon
 
                 lock (m_lockResSaveChanges)
                 {
-                    foreach (Errors err in m_listResSaveChanges)
-                    {
-                        if (!(err == Errors.NoError)) {
-                            bRes = false;
+                    if ((m_listResSaveChanges.Count + 1) == m_listTECComponentIndexDetail.Count)
+                        foreach (Errors err in m_listResSaveChanges)
+                        {
+                            if (!(err == Errors.NoError)) {
+                                bRes = false;
 
-                            break;
+                                break;
+                            }
+                            else
+                                ;
                         }
-                        else
-                            ;
-                    }
-
-                    if (bRes == true)
-                        if ((m_listResSaveChanges.Count + 1) == m_listTECComponentIndexDetail.Count)
-                            ;
-                        else
-                            bRes = false;
                     else
-                        ;
+                        bRes = false;
                 }
 
                 return bRes;
@@ -383,27 +391,22 @@ namespace StatisticCommon
                 lock (m_lockResSaveChanges)
                 {
                     m_listResSaveChanges.Add(bErr);
-                }
-            }
 
-            indxTECComponents = prevIndxTECComponent;
-
-            lock (m_lockResSaveChanges)
-            {
-                foreach (Errors err in m_listResSaveChanges)
-                {
-                    if (!(err == Errors.NoError))
-                        errRes = err;
+                    if (! (bErr == Errors.NoError) && (errRes == Errors.NoError))
+                        errRes = bErr;
                     else
                         ;
                 }
             }
 
+            indxTECComponents = prevIndxTECComponent;
+
             //if (indxEv == 0)
-            if (errRes == Errors.NoError)
+            //if (errRes == Errors.NoError)
                 m_evSaveChangesComplete.Set();
-            else
-                ;
+            //else ;
+
+            saveComplete();
 
             return errRes;
         }

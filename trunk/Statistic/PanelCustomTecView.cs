@@ -254,8 +254,28 @@ namespace Statistic
         }
 
         private void clearAddress (int indx) {
-            //this.Controls.Remove (m_arLabelEmpty [indx]);
-            this.Controls.RemoveAt(indx);
+            PanelTecViewTable pnlTecView = null;
+            foreach (Control panel in this.Controls)
+            {
+                if ((panel is PanelTecViewTable) && (this.Controls.IndexOf (panel) == indx)) {
+                    pnlTecView = (PanelTecViewTable)panel;
+
+                    break;
+                }
+                else
+                    ;
+            }
+
+            if (! (pnlTecView == null)) {
+                pnlTecView.Activate(false);
+                pnlTecView.Stop();
+
+                this.Controls.Remove(pnlTecView);
+                
+                pnlTecView = null;
+            }
+            else
+                ;
 
             Point ptAddress = getAddress (indx);
             m_arLabelEmpty[indx].Text = HLabelEmpty.s_msg;

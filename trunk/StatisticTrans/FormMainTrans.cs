@@ -763,7 +763,7 @@ namespace StatisticTrans
 
             timerMain.Stop();
         }
-        
+
         protected virtual void buttonClose_Click(object sender, EventArgs e)
         {
             Stop();

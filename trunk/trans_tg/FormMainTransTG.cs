@@ -6,6 +6,7 @@ using System.Drawing;
 //using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Threading;
 
 using StatisticCommon;
 using StatisticTrans;
@@ -391,13 +392,26 @@ namespace trans_tg
 
         protected override void saveDataGridViewAdminComplete()
         {
-            Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString ());
-            
-            if (((AdminTS_NSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true)
-            //if (((AdminTS_NSS)m_arAdmin [(int)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete.WaitOne (6) == true)
-                base.saveDataGridViewAdminComplete ();
+            bool bCompletedSaveChanges = false;
+
+            //Вариант №1
+            //bCompletedSaveChanges = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).CompletedSaveChanges;
+
+            //Вариант №2
+            bCompletedSaveChanges = WaitHandle.WaitAny(new WaitHandle[] { ((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete }, 0) == 0;
+
+            Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString());
+
+            if (bCompletedSaveChanges == true)
+            {
+                //Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString());
+                //if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true) {
+                    base.saveDataGridViewAdminComplete();
+                //} else ;
+            }
             else
                 ;
+                
         }
 
         protected override void setDataGridViewAdmin(DateTime date)
@@ -407,7 +421,7 @@ namespace trans_tg
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).SuccessGetData == true)
+                if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).CompletedGetRDGValues == true)
                 {
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
 

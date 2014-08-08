@@ -351,7 +351,6 @@ namespace StatisticCommon
             }
             else
                 ;
-
         }
 
         public bool LogRotate
@@ -386,30 +385,22 @@ namespace StatisticCommon
 
         public void LogErrorToFile(string message, bool bLock = true)
         {
-            if (bLock == true) LogLock(); else ;
-            LogToFile("!Ошибка!: " + message, true, true, false);
-            if (bLock == true) LogUnlock(); else ;
+            LogToFile("!Ошибка!: " + message, true, true, bLock);
         }
 
         public void LogDebugToFile(string message, bool bLock = true)
         {
-            if (bLock == true) LogLock(); else ;
-            LogToFile("!Отладка!: " + message, true, true, false);
-            if (bLock == true) LogUnlock(); else ;
+            LogToFile("!Отладка!: " + message, true, true, bLock);
         }
 
-        public void LogExceptionToFile(Exception e, string message)
+        public void LogExceptionToFile(Exception e, string message, bool bLock = true)
         {
-            LogLock();
-
             string msg = string.Empty;
             msg += "!Исключение! обработка: " + message + Environment.NewLine;
             msg += "Исключение: " + e.Message;
             msg += e.ToString();
 
-            LogToFile(msg, true, true, false);
-
-            LogUnlock();
+            LogToFile(msg, true, true, bLock);
         }
 
         internal class LogStreamWriter : StreamWriter

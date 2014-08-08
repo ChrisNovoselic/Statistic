@@ -60,6 +60,10 @@ namespace trans_mt
 
                         PBRNumber = -1;
 
+                        m_curRDGValues[hour - 1].pbr = -1.0F;
+                        m_curRDGValues[hour - 1].pmin = -1.0F;
+                        m_curRDGValues[hour - 1].pmax = -1.0F;
+
                         if (hourRows.Length > 0) {
                             for (i = 0; i < hourRows.Length; i ++) {
                                 if (!(PBRNumber > Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString())))
@@ -111,8 +115,23 @@ namespace trans_mt
                             }
                         }
 
-                        if (PBRNumber > 0)
+                        if (PBRNumber > 0) {
                             m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
+
+                            if (hour > 1) {
+                                if (m_curRDGValues[hour - 1].pmin < 0)
+                                    m_curRDGValues[hour - 1].pmin = m_curRDGValues[hour - 2].pmin;
+                                else
+                                    ;
+
+                                if (m_curRDGValues[hour - 1].pmax < 0)
+                                    m_curRDGValues[hour - 1].pmax = m_curRDGValues[hour - 2].pmax;
+                                else
+                                    ;
+                            }
+                            else
+                                ;
+                        }
                         else
                             ; //m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour);
 

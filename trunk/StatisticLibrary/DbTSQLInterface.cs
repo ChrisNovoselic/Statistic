@@ -278,14 +278,14 @@ namespace StatisticCommon
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogToFile(MessageDbClose + " (" + s + ")", true, true, false);
+            Logging.Logg().LogDebugToFile(MessageDbClose + " (" + s + ")");
         }
 
         private static void logging_open_db (DbConnection conn)
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogToFile(MessageDbOpen + " (" + s + ")", true, true, true);
+            Logging.Logg().LogDebugToFile(MessageDbOpen + " (" + s + ")", true);
         }
 
         public static DbTSQLInterface.DB_TSQL_INTERFACE_TYPE getTypeDB(int port)
