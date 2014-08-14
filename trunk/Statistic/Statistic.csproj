@@ -72,7 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin_CurPower.cs" />
+    <Compile Include="AdminAlarm.cs" />
     <Compile Include="dgwTables.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -149,6 +149,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTecViewBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTMSNPower.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />

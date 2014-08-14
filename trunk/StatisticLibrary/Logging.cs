@@ -306,7 +306,7 @@ namespace StatisticCommon
 
             if (File.Exists(logToFileName) == true)
             {
-                if (! (indxArchive > MAX_ARCHIVE))
+                if (! (indxArchive > (MAX_ARCHIVE - 1)))
                     LogToArchive(indxArchive);
                 else
                     File.Delete(logToFileName);

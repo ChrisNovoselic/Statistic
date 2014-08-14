@@ -436,7 +436,7 @@ namespace Statistic
             currValuesPeriod = Int32.Parse(parameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) / 1000 - 1;
             started = true;
 
-            tec.StartDbInterfaces();
+            tec.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
             threadIsWorking = true;
 
             taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
@@ -599,9 +599,9 @@ namespace Statistic
             tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.currentTMRequest(sensorsString_TM));
         }
 
-        private void GetLastMinutesTMRequest()
+        private void GetLastMinutesTMRequest(DateTime dtReq)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
+            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.lastMinutesTMRequest(dtReq.Date, sensorsString_TM));
         }
 
         private void GetPBRValuesRequest () {
@@ -1371,7 +1371,7 @@ namespace Statistic
             return bRes;
         }
 
-        private bool GetLastMinutesTMResponse(DataTable table_in)
+        private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
             bool bRes = true;
             int i = -1,
@@ -1459,14 +1459,19 @@ namespace Statistic
                         }
 
                         hour = dtVal.Hour + offsetUTC + 1;
-                        if (!(hour < 24)) hour -= 24; else ;
+                        //if (!(hour < 24))
+                        if (hour > 24)
+                            hour -= 24;
+                        else ;
 
-                        tg.power_LastMinutesTM[hour] = value;
+                        //if (dtReq.Date.Equals (dtVal.Date) == true) {
+                            tg.power_LastMinutesTM[hour] = value;
 
-                        if (hour > 0 && value > 1)
-                            m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
-                        else
-                            ;
+                            if (hour > 0 && value > 1)
+                                m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                            else
+                                ;
+                        //} else ;
                     }
                 }
             }
@@ -3303,7 +3308,7 @@ namespace Statistic
                     break;
                 case StatesMachine.LastMinutes_TM:
                     ActionReport("Получение текущих значений 59 мин.");
-                    GetLastMinutesTMRequest();
+                    GetLastMinutesTMRequest(selectedTime);
                     break;
                 case StatesMachine.RetroHours:
                     ActionReport("Получение получасовых значений.");
@@ -3421,7 +3426,7 @@ namespace Statistic
                         ;
                     break;
                 case StatesMachine.LastMinutes_TM:
-                    result = GetLastMinutesTMResponse(table);
+                    result = GetLastMinutesTMResponse(table, selectedTime);
                     if (result == true)
                     {
                     }

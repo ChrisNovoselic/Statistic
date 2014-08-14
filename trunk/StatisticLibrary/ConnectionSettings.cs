@@ -105,11 +105,17 @@ namespace StatisticCommon
 
         public ConnectionSettingsError Validate()
         {
-            IPAddress ip;
-            if (!IPAddress.TryParse(server, out ip))
-            {
-                //MessageBox.Show("Неправильный ip-адрес.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return ConnectionSettingsError.WrongIp;
+            try {
+                IPAddress ip;
+                ip = IPAddress.Parse(server);
+                if (IPAddress.TryParse(server, out ip) == false)
+                {
+                    //MessageBox.Show("Неправильный ip-адрес.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return ConnectionSettingsError.WrongIp;
+                }
+            }
+            catch (Exception e) {
+                Logging.Logg().LogExceptionToFile(e, @"ConnectionSettings::Validate() - ...");
             }
 
             if (port > 65535)

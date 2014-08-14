@@ -653,6 +653,6 @@ namespace StatisticCommon
             return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
         }
 
-        public static int DEBUG_INDEX_TEC = -1;
+        public static int DEBUG_ID_TEC = -1;
     }
 }

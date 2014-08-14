@@ -31,6 +31,7 @@ namespace StatisticTransModes
             Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess);
 
             if (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true)
+            //if ((semaState.WaitOne(msecWaitSemaDbAccess) == true) && (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true))
             {
                 lock (m_lockObj)
                 {
@@ -62,7 +63,7 @@ namespace StatisticTransModes
                     }
                 }
 
-                semaDBAccess.WaitOne();
+                Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
                 try
                 {
                     semaDBAccess.Release(1);

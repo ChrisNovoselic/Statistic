@@ -28,8 +28,8 @@ namespace StatisticCommon
 
         public static int MAX_WATING {
             get {
-                //return MAX_RETRY * MAX_WAIT_COUNT * WAIT_TIME_MS;
-                return 6666;
+                return MAX_RETRY * MAX_WAIT_COUNT * WAIT_TIME_MS;
+                //return 6666;
             }
         }
 

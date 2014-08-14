@@ -175,7 +175,7 @@ namespace StatisticCommon
                 {
                     //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
-                    if ((Users.allTEC == 0) || (Users.Role < 100) || (Users.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
+                    if ((Users.allTEC == 0) || (Users.Role < (int)Users.ID_ROLES.USER) || (Users.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                     {
                         //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 

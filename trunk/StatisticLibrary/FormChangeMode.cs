@@ -22,7 +22,7 @@ namespace StatisticCommon
                         , m_listAcrossIndexCheckedIndices
                         , m_list_IdItem
                         ;
-        private CheckBox[] m_arCheckBoxTECComponent;
+        private List <CheckBox> m_listCheckBoxTECComponent;
         public List<int> was_checked;
         public bool /*[]*/ admin_was_checked;
         public bool closing;
@@ -34,6 +34,8 @@ namespace StatisticCommon
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
         public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER, UNKNOWN };
 
+        private HMark m_modeTECComponent;
+
         public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
@@ -44,10 +46,12 @@ namespace StatisticCommon
 
             this.m_list_tec = tec;
 
-            m_arCheckBoxTECComponent = new CheckBox[(int)MODE_TECCOMPONENT.UNKNOWN] { checkBoxTEC,
-                                                                                        checkBoxGTP,
-                                                                                        checkBoxPC,
-                                                                                        checkBoxTG };
+            m_modeTECComponent = new HMark ();
+
+            m_listCheckBoxTECComponent = new List <CheckBox> ()  { checkBoxTEC,
+                                                                    checkBoxGTP,
+                                                                    checkBoxPC,
+                                                                    checkBoxTG };
 
             admin_was_checked = false; //new bool [2] {false, false};
 
@@ -58,8 +62,8 @@ namespace StatisticCommon
             m_list_IdItem = new List<int>();
             was_checked = new List<int>();
 
-            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.TEC].Checked = true;
-            m_arCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
+            m_listCheckBoxTECComponent[(int)MODE_TECCOMPONENT.TEC].Checked = true;
+            m_listCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
 
             closing = false;
         }
@@ -69,28 +73,36 @@ namespace StatisticCommon
         /// для формирования списка компонентов
         /// </summary>
         public int getModeTECComponent() {
-            int iMode = 0;
+            //int iMode = 0;
 
-            for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
-            {
-                if (m_arCheckBoxTECComponent[i].Checked == true) iMode |= (int)Math.Pow (2, i); else ;
-            }
+            //m_modeTECComponent.UnMarked ();
 
-            return iMode;
+            //for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
+            //{
+            //    if (m_listCheckBoxTECComponent[i].Checked == true)
+            //        m_modeTECComponent.Marked (i);
+            //    else ;
+            //}
+
+            //return iMode;
+
+            return m_modeTECComponent.Value;
         }
 
         public bool IsModeTECComponent (MODE_TECCOMPONENT mode) {
-            bool bRes = false;
-            int offset = 0;
+            //bool bRes = false;
+            //int offset = 0;
 
-            if ((getModeTECComponent() & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
-            {
-                bRes = true;
-            }
-            else
-                ;
+            //if ((getModeTECComponent() & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
+            //{
+            //    bRes = true;
+            //}
+            //else
+            //    ;
 
-            return bRes;
+            //return bRes;
+
+            return m_modeTECComponent.IsMarked ((int) mode);
         }
 
         /// <summary>
@@ -102,17 +114,7 @@ namespace StatisticCommon
         /// <returns></returns>
         public static bool IsModeTECComponent(int checkMode, MODE_TECCOMPONENT mode)
         {
-            bool bRes = false;
-            int offset = 0;
-
-            if ((checkMode & ((int)Math.Pow(2, (int)(mode) + offset))) == (int)Math.Pow(2, (int)(mode) + offset))
-            {
-                bRes = true;
-            }
-            else
-                ;
-
-            return bRes;
+            return HMark.IsMarked (checkMode, (int) mode);
         }
 
         public static string getPrefixMode(int indx)
@@ -243,12 +245,16 @@ namespace StatisticCommon
                     tec_indx++;
                 }
 
-                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0))
-                    if (IsModeTECComponent (MODE_TECCOMPONENT.GTP)) {
+                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && Users.RoleIsDisp == true)
+                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP)))
+                    {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                     }
                     else
-                        clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
+                        if ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.NSS))
+                            clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
+                        else
+                            ;
                 else
                     ;
             }
@@ -271,7 +277,7 @@ namespace StatisticCommon
             for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
                 //(IsModeTECComponent (MODE_TECCOMPONENT.GTP) == true)) || (IsModeTECComponent (MODE_TECCOMPONENT.TG) == true)
                 //if (((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true)) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
-                if ((getModeTECComponent () > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
+                if ((getModeTECComponent () > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1) && (Users.RoleIsDisp == true))
                     admin_was_checked = true;
                 else
                     was_checked.Add(clbMode.CheckedIndices[i]);
@@ -380,7 +386,7 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0))
+            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0) && (Users.RoleIsDisp == true))
                 clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
             else
                 ;
@@ -388,6 +394,9 @@ namespace StatisticCommon
 
         private void checkBox_CheckedChanged(object sender, EventArgs e)
         {
+            //m_modeTECComponent.Marked (m_listCheckBoxTECComponent.IndexOf ((CheckBox)sender));
+            m_modeTECComponent.Set(m_listCheckBoxTECComponent.IndexOf((CheckBox)sender), ((CheckBox)sender).Checked);
+
             FillListBoxTab();
         }
 

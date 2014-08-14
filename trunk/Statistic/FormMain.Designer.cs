@@ -37,7 +37,8 @@
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выборОбъектыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -102,7 +103,8 @@
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.панельГрафическихToolStripMenuItem,
             this.выборОбъектыToolStripMenuItem,
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem,
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem,
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem,
             this.мониторингПоследняяМинутаЧасToolStripMenuItem});
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
@@ -116,13 +118,21 @@
             this.панельГрафическихToolStripMenuItem.Text = "Панель графических параметров";
             this.панельГрафическихToolStripMenuItem.CheckedChanged += new System.EventHandler(this.панельГрафическихToolStripMenuItem_CheckedChanged);
             // 
-            // значенияТекущаяМощностьГТПгToolStripMenuItem
+            // значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem
             // 
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem.CheckOnClick = true;
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Name = "значенияТекущаяМощностьГТПгToolStripMenuItem";
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem.Text = "Значения текщей мощности ГТПг";
-            this.значенияТекущаяМощностьГТПгToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьГТПгToolStripMenuItem_CheckedChanged);
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.CheckOnClick = true;
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Name = "значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem";
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Text = "Значения текущей мощности ГТПг, ТЭЦсн";
+            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem
+            // 
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.CheckOnClick = true;
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Name = "значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem";
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Text = "Значения текукщей мощности ТЭЦг, ТЭЦсн";
+            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem_CheckedChanged);
             // 
             // мониторингПоследняяМинутаЧасToolStripMenuItem
             // 
@@ -337,7 +347,8 @@
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem панельГрафическихToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выборОбъектыToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;

@@ -111,13 +111,14 @@ namespace StatisticCommon
             }
         }
 
-        public void StartDbInterfaces()
+        public void StartDbInterfaces(CONN_SETT_TYPE limConnSettType)
         {
             if (used == 0)
             {
                 //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-                for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
                 {
                     if (!(connSetts[(int)i] == null))
                     {
@@ -873,6 +874,22 @@ namespace StatisticCommon
             return strRes;
         }
 
+        public string currentTMSNRequest()
+        {
+            string query = string.Empty;
+
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
+            {
+                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                    query = @"SELECT * FROM [dbo].[v_LAST_VALUE_TSN] WHERE ID_TEC=" + m_id;
+                    break;
+                default:
+                    break;
+            }
+
+            return query;
+        }
+
         public string currentTMRequest(string sensors)
         {
             string query = string.Empty;
@@ -908,23 +925,31 @@ namespace StatisticCommon
 
         public string lastMinutesTMRequest(DateTime dt, string sensors)
         {
-            //Если данные в БД по мск
-            //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
-            //Если данные в БД по ГринвичУ
-            dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
-
             string query = string.Empty;
 
             switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
-                    query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
-                            @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                            @"AND [ID] IN (" + sensors + @") " +
-                            @"ORDER BY [ID],[last_changed_at]";
+                    //Если данные в БД по мск
+                    //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
+                    //Если данные в БД по ГринвичУ
+                    //dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
+                    //query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
+                    //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
+                    //        @"AND [ID] IN (" + sensors + @") " +
+                    //        @"ORDER BY [ID],[last_changed_at]";
+
+                    query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
+                            @" WHERE [ID] IN (" + sensors + @")" +
+                            @" ORDER BY [ID],[last_changed_at]";
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                    //Если данные в БД по мск
+                    //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
+                    //Если данные в БД по ГринвичУ
+                    dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
+
                     //Источник для каждой ТЭЦ свой - вариант №1
                     //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
                     //        @"FROM [dbo].[NAME_TABLE] " +
@@ -1112,7 +1137,7 @@ namespace StatisticCommon
         {
             string strRes = @"" + this.prefix_admin;
 
-            if (comp.prefix_admin.Length > 0)
+            if ((!(comp.prefix_admin == null)) && (comp.prefix_admin.Length > 0))
             {
                 strRes += "_" + comp.prefix_admin;
             }
@@ -1126,7 +1151,7 @@ namespace StatisticCommon
         {
             string strRes = @"" + this.prefix_pbr;
 
-            if (comp.prefix_pbr.Length > 0)
+            if ((! (comp.prefix_pbr == null)) && (comp.prefix_pbr.Length > 0))
             {
                 strRes += "_" + comp.prefix_pbr;
             }

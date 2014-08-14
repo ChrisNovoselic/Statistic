@@ -143,7 +143,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecLastMinutes)ctrl).Start(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Start(); else ;
                     i++;
                 }
                 else
@@ -158,7 +158,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecLastMinutes)ctrl).Stop(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Stop(); else ;
                     i++;
                 }
                 else
@@ -180,7 +180,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_INDEX_TEC == -1) || (i == HAdmin.DEBUG_INDEX_TEC)) ((PanelTecLastMinutes)ctrl).Activate(active); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Activate(active); else ;
                     i++;
                 }
                 else
@@ -311,6 +311,9 @@ namespace Statistic
         public partial class PanelTecLastMinutes : TableLayoutPanel
         {
             private TEC m_tec;
+
+            public int m_id_tec { get { return m_tec.m_id; } }
+
             List<TECComponentBase> m_list_TECComponents;
             public int CountTECComponent { get { return m_list_TECComponents.Count; } }
 
@@ -438,7 +441,7 @@ namespace Statistic
 
                 m_bIsStarted = true;
 
-                m_tec.StartDbInterfaces();
+                m_tec.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
 
                 m_bThreadIsWorking = true;
 
@@ -509,13 +512,9 @@ namespace Statistic
                 m_bIsNewState = true;
                 m_states.Clear();
 
-                if ((sensorsString_TM.Equals(string.Empty) == false))
-                {
-                }
-                else
-                {
+                if ((sensorsString_TM.Equals(string.Empty) == true))
                     m_states.Add(StatesMachine.Init_TM);
-                }
+                else ;
 
                 m_states.Add(StatesMachine.PBRValues);
                 m_states.Add(StatesMachine.AdminValues);

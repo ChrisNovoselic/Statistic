@@ -24,8 +24,9 @@ namespace Statistic
         private System.Windows.Forms.Button m_btnAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
 
+        public static bool ALARM_USE = false;
         public AdminAlarm m_adminAlarm;
-        
+
         protected override void InitializeComponents()
         {
             base.InitializeComponents ();
@@ -85,7 +86,7 @@ namespace Statistic
             // 
             // m_cbxAlarm
             // 
-            this.m_cbxAlarm.Enabled = true;
+            this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
             this.m_cbxAlarm.Checked = false;
             this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
             this.m_cbxAlarm.Name = "cbxAlarm";
@@ -154,8 +155,10 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HReports rep)
             : base(idListener, FormChangeMode.MANAGER.DISP, rep)
         {
-            m_adminAlarm = new AdminAlarm(null, null);
-            m_adminAlarm.InitTEC(m_admin.m_list_tec);
+            if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
+                m_adminAlarm = new AdminAlarm(rep);
+                m_adminAlarm.InitTEC(m_admin.m_list_tec);
+            } else ;
         }
 
         protected override void getDataGridViewAdmin()
@@ -281,7 +284,7 @@ namespace Statistic
             this.m_btnAlarmCurPower.Enabled = 
             this.m_btnAlarmTGTurnOnOff.Enabled = false;
 
-            m_adminAlarm.Activate(((CheckBox)sender).Checked);
+            if (PanelAdminKomDisp.ALARM_USE == true) m_adminAlarm.Activate(((CheckBox)sender).Checked); else ;
         }
     }
 }

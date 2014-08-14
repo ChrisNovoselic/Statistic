@@ -10,6 +10,9 @@ namespace StatisticCommon
 {    
     public class Users : object
     {
+        public enum ID_ROLES { KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, SOURCE_DATA = 501,
+                            COUNT_ID_ROLES = 7};
+
         private static int m_id;
         private static string m_domain_name;
         private static int m_role;
@@ -27,7 +30,7 @@ namespace StatisticCommon
         //            bRes = false;
         //            break;
         //        }
-                    
+
         //    }
 
         //    return bRes;
@@ -40,7 +43,7 @@ namespace StatisticCommon
         //    for (j = 0; j < str.Length; j++)
         //    {
         //        Logging.Logg().LogDebugToFile(@"val[" + j.ToString () + "] = " + val [j]);
-                
+
         //        val[j] = Convert.ToInt32(str[j]);
         //    }
 
@@ -120,6 +123,10 @@ namespace StatisticCommon
             get {
                 return m_role;
             }
+        }
+
+        public static bool RoleIsDisp {
+            get { return ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP) || (Users.Role == (int)Users.ID_ROLES.NSS)); }
         }
 
         public static int allTEC

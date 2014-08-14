@@ -99,6 +99,8 @@ namespace StatisticCommon
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
+            //if (WaitHandle.WaitAll (new WaitHandle [] {semaState, semaDBAccess}, DbInterface.MAX_WATING) == true)
+            //if ((semaState.WaitOne(DbInterface.MAX_WATING) == true) && (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true))
             {
                 lock (m_lockObj)
                 {
@@ -130,7 +132,8 @@ namespace StatisticCommon
                     }
                 }
 
-                semaDBAccess.WaitOne();
+                Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
+
                 try
                 {
                     semaDBAccess.Release(1);
@@ -161,7 +164,7 @@ namespace StatisticCommon
 
             delegateStartWait();
 
-            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -195,7 +198,9 @@ namespace StatisticCommon
                     }
                 }
 
-                semaDBAccess.WaitOne();
+                //Ожидание окончания записи
+                Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString ());
+
                 try
                 {
                     semaDBAccess.Release(1);
@@ -491,7 +496,7 @@ namespace StatisticCommon
         public virtual HAdmin.Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
-            Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            Logging.Logg().LogDebugToFile("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -516,11 +521,11 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().LogExceptionToFile(e, "AdminTS::SaveRDGExcelValues () - semaState.Release(1)");
+                        Logging.Logg().LogExceptionToFile(e, "AdminTS::ExpRDGExcelValues () - semaState.Release(1)");
                     }
                 }
 
-                semaDBAccess.WaitOne();
+                Logging.Logg().LogDebugToFile("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
                 try
                 {
                     semaDBAccess.Release(1);
@@ -1056,8 +1061,10 @@ namespace StatisticCommon
                                 else
                                     resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"'" +
-                                            @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
-                                            @"' WHERE " +
+                                            @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
+                                            @", " + name + @"_" + @"Pmin" + "='" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
+                                            @", " + name + @"_" + @"Pmax" + "='" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
+                                            @" WHERE " +
                                             t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND " +
@@ -1350,7 +1357,7 @@ namespace StatisticCommon
 
             if (!(m_list_tec == null))
                 foreach (TEC t in m_list_tec) {
-                    t.StartDbInterfaces ();
+                    t.StartDbInterfaces(CONN_SETT_TYPE.PBR + 1);
                 }
             else
                 Logging.Logg().LogErrorToFile(@"AdminTS::Start () - m_list_tec == null");
@@ -1997,7 +2004,7 @@ namespace StatisticCommon
             Errors resultSaving = SaveChanges();
             if (resultSaving == Errors.NoError)
             {
-                if (bCallback)
+                if (bCallback == true)
                     lock (m_lockObj)
                     {
                         ClearValues();

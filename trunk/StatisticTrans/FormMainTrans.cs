@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using StatisticCommon;
 
@@ -703,6 +704,7 @@ namespace StatisticTrans
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
+                //Копирование данных из массива одного объекта (SOURCE) в массив другого объекта (DEST)
                 m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
                 //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
 
@@ -1142,7 +1144,7 @@ namespace StatisticTrans
 
         private void InitializeTimerService () {
             if (timerService == null) {
-                timerService = new Timer(this.components);
+                timerService = new System.Windows.Forms.Timer(this.components);
                 timerService.Interval = TIMER_START_INTERVAL; //Пеавый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
             }
@@ -1150,8 +1152,27 @@ namespace StatisticTrans
                 ;
         }
 
+        private struct PARAMToSaveRDGValues
+        {
+            public int listIndex;
+            public DateTime date;
+            public bool bCallback;
+
+            public PARAMToSaveRDGValues (int li, DateTime dt, bool cb) {
+                listIndex = li;
+                date = dt;
+                bCallback = cb;
+            }
+        };
+        
+        private void saveRDGValues (object bCallback) {
+            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
+        }
+        
         protected virtual void SaveRDGValues (bool bCallback) {
-            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            new Thread(new ParameterizedThreadStart(saveRDGValues)).Start(paramToSaveRDGValues);
         }
 
         private void notifyIconMain_Click(object sender, EventArgs e)
