@@ -409,7 +409,15 @@ namespace StatisticCommon
 
         //protected abstract bool InitDbInterfaces ();
 
-        public abstract bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/);
+        public void Request(int idListener, string request)
+        {
+            DbSources.Sources().Request(m_IdListenerCurrent = idListener, request);
+        }
+
+        public virtual bool Response(int idListener, out bool error, out DataTable table/*, bool bIsTec*/)
+        {
+            return DbSources.Sources().Response(idListener, out error, out table);
+        }
 
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
 
@@ -609,12 +617,71 @@ namespace StatisticCommon
 
         public abstract void getCurRDGValues (HAdmin source);
 
+        protected virtual bool GetCurrentTimeResponse(DataTable table)
+        {
+            if (table.Rows.Count == 1)
+            {
+                serverTime = (DateTime)table.Rows[0][0];
+            }
+            else
+            {
+                DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+                int timezone_offset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
+                    timezone_offset++;
+                else
+                    ;
+
+                serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+
+                ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+            }
+
+            return true;
+        }
+
         public virtual void ResetRDGExcelValues()
         {
             if (m_waitHandleState.Length > 1)
                 ((ManualResetEvent)m_waitHandleState[1]).Reset();
             else
                 ;
+        }
+
+        protected void GetCurrentTimeRequest()
+        {
+            string query = string.Empty;
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
+
+            if (IsCanUseTECComponents())
+            {
+                typeDB = DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                switch (typeDB)
+                {
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                        query = @"SELECT now()";
+                        break;
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                        query = @"SELECT GETDATE()";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (query.Equals(string.Empty) == false)
+                    Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query);
+                else
+                    ;
+            }
+            else
+                ;
+        }
+
+        protected bool IsCanUseTECComponents()
+        {
+            bool bRes = false;
+            if ((!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count)) bRes = true; else ;
+            return bRes;
         }
 
         public virtual void AbortRDGExcelValues()
@@ -653,6 +720,6 @@ namespace StatisticCommon
             return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
         }
 
-        public static int DEBUG_ID_TEC = -1;
+        public static int DEBUG_ID_TEC = 5;
     }
 }

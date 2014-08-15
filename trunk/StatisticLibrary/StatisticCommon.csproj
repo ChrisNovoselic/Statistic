@@ -175,9 +175,6 @@
     <Compile Include="TECComponent.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TECComponentBase.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="TG.cs">
       <SubType>Code</SubType>
     </Compile>

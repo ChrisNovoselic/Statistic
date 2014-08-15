@@ -24,7 +24,7 @@ namespace Statistic
         private System.Windows.Forms.Button m_btnAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
 
-        public static bool ALARM_USE = false;
+        public static bool ALARM_USE = true;
         public AdminAlarm m_adminAlarm;
 
         protected override void InitializeComponents()

@@ -708,7 +708,8 @@ namespace StatisticTrans
                 m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
                 //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
 
-                this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                //this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                SaveRDGValues (false);
 
                 //this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }

@@ -129,7 +129,7 @@ namespace trans_tg
             else
                 ;
 
-            if (IsCanUseTECComponents())
+            if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else

@@ -16,6 +16,7 @@ namespace StatisticCommon
 
         private ManualResetEvent m_evTimerCurrent;
         private System.Threading.Timer m_timerAlarm;
+        private Int32 m_msecTimerUpdate = 30 * 1000; //5 * 60 * 1000;
 
         private bool m_bIsActive;
 
@@ -55,8 +56,8 @@ namespace StatisticCommon
                 aat.Activate(active);
             }
 
-            if (active == true)
-                m_timerAlarm.Change (5 * 60 * 60, 5 * 60 * 60);
+            if (m_bIsActive == true)
+                m_timerAlarm.Change(m_msecTimerUpdate, m_msecTimerUpdate);
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
         }
@@ -86,7 +87,7 @@ namespace StatisticCommon
         private void ChangeState () {
             foreach (AdminAlarmTEC aat in m_listAdminAlarmTEC)
             {
-                aat.Ask ();
+                aat.ChangeState();
             }
         }
 
@@ -108,7 +109,7 @@ namespace StatisticCommon
     {
         private enum StatesMachine
         {
-            Init_TM,
+            InitSensors,
             CurrentTime,
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
@@ -145,14 +146,29 @@ namespace StatisticCommon
         {
         }
 
-        public void Ask () {
-            GetRDGValues((int)s_typeFields, indxTECComponents, DateTime.Now.Date);
+        public void ChangeState () {
+            DateTime dtChangeState = DateTime.Now;
+            
+            foreach (TECComponent tc in allTECComponents) {
+                if ((tc.m_id > 100) && (tc.m_id < 500)) {
+                    if (semaState.WaitOne(DbInterface.MAX_WATING) == true)
+                    {
+                        GetRDGValues((int)s_typeFields, indxTECComponents = allTECComponents.IndexOf (tc), dtChangeState);
 
-            try {
-                semaState.Release (1);
-            }
-            catch (Exception e) {
-                Logging.Logg().LogExceptionToFile(e, @"AdminAlarmTEC::Ask () - semaState.Release (1) - ...");
+                        try
+                        {
+                            semaState.Release(1);
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().LogExceptionToFile(e, @"AdminAlarmTEC::Ask () - semaState.Release (1) - ...");
+                        }
+                    }
+                    else
+                        ; //Превышено время ожидания - операция не выполнена
+                }
+                else
+                    ; //Это не ГТП
             }
         }
 
@@ -161,7 +177,7 @@ namespace StatisticCommon
             base.Activate(active);
 
             if ((active == true) && (threadIsWorking == 1))
-                Ask ();
+                ChangeState();
             else
                 ;
         }
@@ -213,6 +229,18 @@ namespace StatisticCommon
 
         protected override void GetPPBRDatesRequest(DateTime date)
         {
+            if (m_curDate.Date > date.Date)
+            {
+                date = m_curDate.Date;
+            }
+            else
+                ;
+
+            if (IsCanUseTECComponents() == true)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
+                Request (m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date, s_typeFields, allTECComponents[indxTECComponents]));
+            else
+                ;
         }
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
@@ -235,24 +263,23 @@ namespace StatisticCommon
 
         public override void GetRDGValues(int mode, int indx, DateTime date)
         {
+            m_prevDate = m_curDate;
+            m_curDate = date.Date;
+
             newState = true;
             states.Clear();
 
-            if ((sensorsString_TM.Equals(string.Empty) == true))
-                states.Add((int)StatesMachine.Init_TM);
+            if ((sensorsString_TM.Equals(string.Empty) == true)) {
+                states.Add((int)StatesMachine.InitSensors);
+                states.Add((int)StatesMachine.CurrentTime);
+            }
             else ;
 
             states.Add((int)StatesMachine.Current_TM);
-        }
-
-        public override bool Response(int idListener, out bool error, out System.Data.DataTable table)
-        {
-            bool bRes = true;
-
-            error = false;
-            table = null;
-
-            return bRes;
+            states.Add((int)StatesMachine.PPBRDates);
+            states.Add((int)StatesMachine.PPBRValues);
+            states.Add((int)StatesMachine.AdminDates);
+            states.Add((int)StatesMachine.AdminValues);
         }
 
         private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
@@ -337,7 +364,8 @@ namespace StatisticCommon
 
         private void GetCurrentTMRequest()
         {
-            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(sensorsString_TM));
+            //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(sensorsString_TM));
         }
 
         private bool GetCurrentTMResponse(DataTable table)
@@ -409,36 +437,79 @@ namespace StatisticCommon
 
         protected override bool StateCheckResponse(int state, out bool error, out System.Data.DataTable table)
         {
+            bool bRes = true;
+            
             error = false;
             table = null;
 
             switch (state)
             {
-                case (int)StatesMachine.Init_TM:
-                    return true;
+                case (int)StatesMachine.InitSensors:
+                    //Ответ без запроса к БД в 'StateResponse'
+                    //Запрос не требуется, т.к. сведеения получены при вызове 'InitTEC'
+                    break;
+                case (int)StatesMachine.CurrentTime:
                 case (int)StatesMachine.Current_TM:
                 case (int)StatesMachine.LastMinutes_TM:
-                    return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
+                case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
-                    return DbSources.Sources().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
+                case (int)StatesMachine.AdminDates:
                 case (int)StatesMachine.AdminValues:
-                    return DbSources.Sources().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
+                    bRes = Response(m_IdListenerCurrent, out error, out table);
+                    break;
                 default:
+                    bRes = false;
                     break;
             }
 
-            error = true;
+            if (bRes == false)
+                error = true;
+            else
+                ;
 
-            return false;
+            return bRes;
         }
 
         protected override void StateErrors(int state, bool response)
         {
+            string reason = string.Empty,
+                    waiting = string.Empty,
+                    msg = string.Empty;
+            
             switch (state)
             {
-                case (int)StatesMachine.Init_TM:
+                case (int)StatesMachine.InitSensors:
+                    reason = @"получения идентификаторов датчиков";
+                    waiting = @"Переход в ожидание";
+                    break;
+                case (int)StatesMachine.CurrentTime:
+                    if (response == true)
+                    {
+                        reason = @"разбора";
+                    }
+                    else
+                    {
+                        reason = @"получения";
+                    }
+
+                    reason += @" текущего времени сервера";
+                    waiting = @"Переход в ожидание";
+
                     break;
                 case (int)StatesMachine.Current_TM:
+                    break;
+                case (int)StatesMachine.PPBRDates:
+                    if (response == true)
+                    {
+                        reason = @"разбора";
+                    }
+                    else
+                    {
+                        reason = @"получения";
+                    }
+
+                    reason += @" сохранённых часовых значений (PPBR)";
+                    waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     break;
@@ -447,8 +518,11 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminValues:
                     break;
                 default:
+                    msg = @"Неизвестная команда...";
                     break;
             }
+
+            Logging.Logg().LogErrorToFile(@"AdminAlarm::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
         }
 
         protected override bool StateRequest(int state)
@@ -457,18 +531,29 @@ namespace StatisticCommon
 
             switch (state)
             {
-                case (int)StatesMachine.Init_TM:
+                case (int)StatesMachine.InitSensors:
+                    //Запрос не требуется...
+                    break;
+                case (int)StatesMachine.CurrentTime:
+                    GetCurrentTimeRequest();
                     break;
                 case (int)StatesMachine.Current_TM:
                     GetCurrentTMRequest ();
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     break;
+                case (int)StatesMachine.PPBRDates:
+                    //ActionReport("Получение списка сохранённых часовых значений.");
+                    GetPPBRDatesRequest(m_curDate);
+                    break;
                 case (int)StatesMachine.PPBRValues:
+                    break;
+                case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
                     break;
                 default:
+                    bRes = false;
                     break;
             }
 
@@ -481,7 +566,7 @@ namespace StatisticCommon
 
             switch (state)
             {
-                case (int)StatesMachine.Init_TM:
+                case (int)StatesMachine.InitSensors:
                     switch (m_tec.type())
                         {
                             case TEC.TEC_TYPE.COMMON:
@@ -497,6 +582,22 @@ namespace StatisticCommon
                         else
                             ;
                     break;
+                case (int)StatesMachine.CurrentTime:
+                    result = GetCurrentTimeResponse(table);
+                    if (result == true)
+                    {
+                        if (using_date == true) {
+                            m_prevDate = serverTime.Date;
+                            m_curDate = m_prevDate;
+
+                            if (!(setDatetime == null)) setDatetime(m_curDate); else;
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        ;
+                    break;
                 case (int)StatesMachine.Current_TM:
                     result = GetCurrentTMResponse(table);
                     if (result == true)
@@ -507,11 +608,23 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     break;
+                case (int)StatesMachine.PPBRDates:
+                    ClearPPBRDates();
+                    result = GetPPBRDatesResponse(table, m_curDate);
+                    if (result == true)
+                    {
+                    }
+                    else
+                        ;
+                    break;
                 case (int)StatesMachine.PPBRValues:
+                    break;
+                case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
                     break;
                 default:
+                    result = false;
                     break;
             }
 

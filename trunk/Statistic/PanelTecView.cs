@@ -810,7 +810,7 @@ namespace Statistic
                     m_newState = true;
                     m_states.Clear();
                     m_states.Add(StatesMachine.RetroMins);
-                    m_states.Add(StatesMachine.PBRValues);
+                    m_states.Add(StatesMachine.PPBRValues);
                     m_states.Add(StatesMachine.AdminValues);
 
                     try

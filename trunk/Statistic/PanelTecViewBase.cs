@@ -153,7 +153,7 @@ namespace Statistic
             LastMinutes_TM,
             RetroHours,
             RetroMins,
-            PBRValues,
+            PPBRValues,
             AdminValues,
         }
 
@@ -2998,7 +2998,7 @@ namespace Statistic
             m_states.Add(StatesMachine.CurrentMins_Fact);
             m_states.Add(StatesMachine.Current_TM);
             m_states.Add(StatesMachine.LastMinutes_TM);
-            m_states.Add(StatesMachine.PBRValues);
+            m_states.Add(StatesMachine.PPBRValues);
             m_states.Add(StatesMachine.AdminValues);            
         }
 
@@ -3320,7 +3320,7 @@ namespace Statistic
                     adminValuesReceived = false;
                     GetMinsRequest(lastHour);
                     break;
-                case StatesMachine.PBRValues:
+                case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     GetPBRValuesRequest();
                     break;
@@ -3362,7 +3362,7 @@ namespace Statistic
                 case StatesMachine.Current_TM:
                 case StatesMachine.LastMinutes_TM:
                     return tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
-                case StatesMachine.PBRValues:
+                case StatesMachine.PPBRValues:
                     //return m_admin.Response(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
                     return tec.Response(CONN_SETT_TYPE.PBR, out error, out table);
                     //return true; //Имитация получения данных плана
@@ -3451,7 +3451,7 @@ namespace Statistic
                     else
                         ;
                     break;
-                case StatesMachine.PBRValues:
+                case StatesMachine.PPBRValues:
                     ClearPBRValues();
                     result = GetPBRValuesResponse(table);
                     if (result == true)
@@ -3526,7 +3526,7 @@ namespace Statistic
                     reason = @"трёхминутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case StatesMachine.PBRValues:
+                case StatesMachine.PPBRValues:
                     reason = @"данных плана";
                     break;
                 case StatesMachine.AdminValues:
