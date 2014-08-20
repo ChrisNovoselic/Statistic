@@ -696,9 +696,9 @@ namespace StatisticCommon
             int j = -1;
             item = new RDGStruct();
 
-            for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j++)
-                if (allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel > 1)
-                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
+            for (j = 0; j < allTECComponents[indxTECComponents].m_listTG.Count; j++)
+                if (allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel > 1)
+                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1];
                 else
                     return ;
 
@@ -2096,7 +2096,7 @@ namespace StatisticCommon
                 {
                     if ((comp.tec.m_id == allTECComponents[indx].tec.m_id) && (modeTECComponent(allTECComponents.IndexOf(comp)) == ownerMode))
                     {
-                        foreach (TG tg in comp.TG)
+                        foreach (TG tg in comp.m_listTG)
                         {
                             if (tg.m_id == allTECComponents[indx].m_id)
                             {

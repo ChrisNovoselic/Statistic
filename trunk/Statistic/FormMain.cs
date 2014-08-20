@@ -108,7 +108,7 @@ namespace Statistic
             timer.Interval = 666; //Признак первого старта
 
             int idListenerConfigDB = DbSources.Sources ().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            
+
             m_user = null;
             try { m_user = new Users(idListenerConfigDB); }
             catch (Exception e)
@@ -121,6 +121,9 @@ namespace Statistic
 
             if (bRes == true)
             {
+                formParameters = new FormParameters_FIleINI("setup.ini");
+                s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
                 if (! (Users.Role == 2)) //Администратор
                 {
                     параметрыToolStripMenuItem.Enabled =
@@ -151,13 +154,10 @@ namespace Statistic
 
                 formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_ContextMenuStripListTecViews);
 
-                //formChangeMode = new FormChangeMode();
                 m_passwords = new Passwords ();
                 formPassword = new FormPassword(m_passwords);
                 formSetPassword = new FormSetPassword(m_passwords);
                 formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
-                formParameters = new FormParameters_FIleINI("setup.ini");
-                s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                 if (bRes == true)
                     timer.Start();
@@ -167,7 +167,7 @@ namespace Statistic
             else
             {
                 if (!(formChangeMode == null))
-                    formChangeMode = new FormChangeMode(new List <TEC> (), m_ContextMenuStripListTecViews);
+                    formChangeMode = new FormChangeMode(new List<StatisticCommon.TEC>(), m_ContextMenuStripListTecViews);
                 else
                     ;
             }
@@ -604,7 +604,7 @@ namespace Statistic
                 // создаём все tecview
                 int tec_indx = 0,
                     comp_indx;
-                foreach (TEC t in formChangeMode.m_list_tec)
+                foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                 {
                     tecView = new PanelTecViewGraph(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
@@ -647,7 +647,7 @@ namespace Statistic
 
                     for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index++)
                     {
-                        if ((tecViews[tecView_index].num_TEC == tec_index) && (tecViews[tecView_index].num_TECComponent == TECComponent_index))
+                        if ((tecViews[tecView_index].indx_TEC == tec_index) && (tecViews[tecView_index].indx_TECComponent == TECComponent_index))
                             break;
                         else
                             ;
@@ -657,7 +657,7 @@ namespace Statistic
                     {
                         list_tecView_index_checked.Add(tecView_index);
 
-                        if ((tecViews[tecView_index].tec.type() == TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                        if ((tecViews[tecView_index].tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;
                         else
                             ;
@@ -1065,7 +1065,7 @@ namespace Statistic
                 int index;
                 for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
                 {
-                    TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
+                    StatisticCommon.TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
 
                     if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                     {
@@ -1301,7 +1301,7 @@ namespace Statistic
             if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in tecViews)
-                    if ((tv.tec.type() == TEC.TEC_TYPE.BIYSK) && (! (m_formParametersTG == null)))
+                    if ((tv.tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK) && (!(m_formParametersTG == null)))
                     {
                         //tv.tec.parametersTGForm.ShowDialog(this);
                         m_formParametersTG.ShowDialog(this);

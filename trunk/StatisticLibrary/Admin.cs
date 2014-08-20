@@ -45,7 +45,7 @@ namespace StatisticCommon
 
         protected DelegateDateFunction setDatetime;
 
-        public volatile List<TEC> m_list_tec;
+        public volatile List<StatisticCommon.TEC> m_list_tec;
         public volatile List<TECComponent> allTECComponents;
         public int indxTECComponents;
 
@@ -166,7 +166,7 @@ namespace StatisticCommon
             }
         }
 
-        public void InitTEC(List <TEC> listTEC)
+        public void InitTEC(List <StatisticCommon.TEC> listTEC)
         {
             this.m_list_tec = listTEC;
 
@@ -212,7 +212,7 @@ namespace StatisticCommon
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
 
-            foreach (TEC t in this.m_list_tec)
+            foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
                 //Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 

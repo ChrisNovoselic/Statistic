@@ -301,11 +301,11 @@ namespace Statistic
             this.stctrView = new System.Windows.Forms.SplitContainer();
         }
 
-        public PanelTecViewBase(TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
+        public PanelTecViewBase(StatisticCommon.TEC tec, int indx_tec, int indx_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
         {
             this.tec = tec;
-            this.num_TEC = num_tec;
-            this.num_TECComponent = num_comp;
+            this.indx_TEC = indx_tec;
+            this.indx_TECComponent = indx_comp;
             m_report = rep;
             
             //InitializeComponent();
@@ -320,7 +320,7 @@ namespace Statistic
             this.graphSettings = gs;
             this.parameters = par;
 
-            if (tec.type () == TEC.TEC_TYPE.BIYSK)
+            if (tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;
             else
                 ;
@@ -586,32 +586,33 @@ namespace Statistic
 
         private void GetHoursRequest(DateTime date)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.hoursRequest(date, sensorsStrings_Fact[(int)TG.ID_TIME.HOURS]));
+            //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.hoursRequest(date, sensorsStrings_Fact[(int)TG.ID_TIME.HOURS]));
+            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.hoursRequest(date, tec.GetSensorsString (indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
         }
 
         private void GetMinsRequest(int hour)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
+            tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, tec.GetSensorsString(indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
         private void GetCurrentTMRequest()
         {
-            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.currentTMRequest(sensorsString_TM));
+            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.currentTMRequest(tec.GetSensorsString(indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
-            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.lastMinutesTMRequest(dtReq.Date, sensorsString_TM));
+            tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, tec.lastMinutesTMRequest(dtReq.Date, tec.GetSensorsString(indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private void GetPBRValuesRequest () {
-            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(num_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
-            tec.Request(CONN_SETT_TYPE.PBR, tec.GetPBRValueQuery(num_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
+            tec.Request(CONN_SETT_TYPE.PBR, tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
         }
 
         private void GetAdminValuesRequest (AdminTS.TYPE_FIELDS mode) {
-            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(num_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
-            tec.Request(CONN_SETT_TYPE.ADMIN, tec.GetAdminValueQuery(num_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
+            tec.Request(CONN_SETT_TYPE.ADMIN, tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
         }
 
         private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
@@ -980,30 +981,6 @@ namespace Statistic
                 m_valuesMins.valuesUDGe[i] = 0;
         }
 
-        private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
-        {
-            for (int i = 0; i < sensorId2TG.Length; i++)
-                switch (indxVal)
-                {
-                    case TG.INDEX_VALUE.FACT:
-                        if (sensorId2TG[i].ids_fact[(int)id_type] == id)
-                            return sensorId2TG[i];
-                        else
-                            ;
-                        break;
-                    case TG.INDEX_VALUE.TM:
-                        if (sensorId2TG[i].id_tm == id)
-                            return sensorId2TG[i];
-                        else
-                            ;
-                        break;
-                    default:
-                        break;
-                }
-
-            return null;
-        }
-
         private bool GetCurrentTimeReponse(DataTable table)
         {
             if (table.Rows.Count == 1)
@@ -1046,8 +1023,8 @@ namespace Statistic
         {
             int i, j, half, hour = 0, halfAddon;
             double hourVal = 0, halfVal = 0, value, hourValAddon = 0;
-            double[] oldValuesTG = new double[CountTG];
-            int[] oldIdTG = new int[CountTG];
+            double[] oldValuesTG = new double[listTG.Count];
+            int[] oldIdTG = new int[listTG.Count];
             int id;
             TG tgTmp;
             bool end = false;
@@ -1066,7 +1043,7 @@ namespace Statistic
 
             foreach (TECComponent g in tec.list_TECComponents)
             {
-                foreach (TG t in g.TG)
+                foreach (TG t in g.m_listTG)
                 {
                     for (i = 0; i < t.power.Length; i++)
                     {
@@ -1146,7 +1123,7 @@ namespace Statistic
                 jump_forward = false;
                 jump_backward = false;
 
-                for (j = 0; j < CountTG; j++, i++)
+                for (j = 0; j < listTG.Count; j++, i++)
                 {
                     if (i >= table.Rows.Count)
                     {
@@ -1195,7 +1172,7 @@ namespace Statistic
                     else
                         return false;
 
-                    tgTmp = FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
+                    tgTmp = tec.FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
                     if (tgTmp == null)
                         return false;
                     else
@@ -1211,9 +1188,9 @@ namespace Statistic
                         return false;
 
                     switch (tec.type ()) {
-                        case TEC.TEC_TYPE.COMMON:
+                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             break;
-                        case TEC.TEC_TYPE.BIYSK:
+                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                             value *= 2;
                             break;
                         default:
@@ -1282,12 +1259,12 @@ namespace Statistic
                     {
                         if (lastHour != 0)
                         {
-                            for (i = 0; i < sensorId2TG.Length; i++)
+                            for (i = 0; i < listTG.Count; i++)
                             {
                                 if ((half & 1) == 1)
                                 {
                                     //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h1 " + sensorId2TG[i].receivedHourHalf1[lastHour - 1].ToString());
-                                    if (!sensorId2TG[i].receivedHourHalf1[lastHour - 1])
+                                    if (listTG[i].receivedHourHalf1[lastHour - 1] == false)
                                     {
                                         lastHourHalfError = true;
                                         break;
@@ -1296,7 +1273,7 @@ namespace Statistic
                                 else
                                 {
                                     //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h2 " + sensorId2TG[i].receivedHourHalf2[lastHour - 1].ToString());
-                                    if (!sensorId2TG[i].receivedHourHalf2[lastHour - 1])
+                                    if (listTG[i].receivedHourHalf2[lastHour - 1] == false)
                                     {
                                         lastHourHalfError = true;
                                         break;
@@ -1323,7 +1300,7 @@ namespace Statistic
 
             foreach (TECComponent g in tec.list_TECComponents)
             {
-                foreach (TG t in g.TG)
+                foreach (TG t in g.m_listTG)
                 {
                     for (i = 0; i < t.power.Length; i++)
                     {
@@ -1339,7 +1316,7 @@ namespace Statistic
                 else
                     ;
 
-                tgTmp = FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+                tgTmp = tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
                 if (tgTmp == null)
                     return false;
@@ -1356,9 +1333,9 @@ namespace Statistic
 
                 switch (tec.type())
                 {
-                    case TEC.TEC_TYPE.COMMON:
+                    case StatisticCommon.TEC.TEC_TYPE.COMMON:
                         break;
-                    case TEC.TEC_TYPE.BIYSK:
+                    case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                         //value *= 20;
                         break;
                     default:
@@ -1381,11 +1358,11 @@ namespace Statistic
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
 
-            if (num_TECComponent < 0)
+            if (indx_TECComponent < 0)
             {
                 foreach (TECComponent g in m_list_TECComponents)
                 {
-                    foreach (TG tg in g.TG)
+                    foreach (TG tg in g.m_listTG)
                     {
                         for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
                         {
@@ -1497,7 +1474,7 @@ namespace Statistic
 
             foreach (TECComponent g in tec.list_TECComponents)
             {
-                foreach (TG t in g.TG)
+                foreach (TG t in g.m_listTG)
                 {
                     for (i = 0; i < t.power.Length; i++)
                     {
@@ -1586,7 +1563,7 @@ namespace Statistic
                 /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
                                  ", table.Rows.Count " + table.Rows.Count.ToString());*/
                 jump = false;
-                for (j = 0; j < CountTG; j++, i++)
+                for (j = 0; j < listTG.Count; j++, i++)
                 {
                     if (i >= table.Rows.Count)
                     {
@@ -1622,7 +1599,7 @@ namespace Statistic
                     if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
                         return false;
 
-                    tgTmp = FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
+                    tgTmp = tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
@@ -1634,9 +1611,9 @@ namespace Statistic
 
                     switch (tec.type())
                     {
-                        case TEC.TEC_TYPE.COMMON:
+                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             break;
-                        case TEC.TEC_TYPE.BIYSK:
+                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                             value *= 20;
                             break;
                         default:
@@ -1760,7 +1737,7 @@ namespace Statistic
                     }
                 }
                 else
-                    list_TG = listTECComp[num_comp].TG;                
+                    list_TG = listTECComp[num_comp].m_listTG;                
                 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -1900,7 +1877,7 @@ namespace Statistic
                     }
                 }
                 else
-                    list_TG = listTECComp[num_comp].TG;
+                    list_TG = listTECComp[num_comp].m_listTG;
                 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -2000,7 +1977,7 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-                    if ((num_TECComponent < 0) || ((!(num_TECComponent < 0)) && (tec.list_TECComponents[num_TECComponent].m_id > 500)))
+                    if ((indx_TECComponent < 0) || ((!(indx_TECComponent < 0)) && (tec.list_TECComponents[indx_TECComponent].m_id > 500)))
                     {
                         double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
                         double[,] valuesPmin = new double[m_list_TECComponents.Count, 25];
@@ -2013,10 +1990,10 @@ namespace Statistic
                         offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                         offsetLayout = -1;
 
-                        m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse, tec.list_TECComponents, num_TECComponent);
+                        m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse, tec.list_TECComponents, indx_TECComponent);
                         offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
-                        table_in = restruct_table_adminValues(table_in, tec.list_TECComponents, num_TECComponent);
+                        table_in = restruct_table_adminValues(table_in, tec.list_TECComponents, indx_TECComponent);
 
                         //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
                         //    try { table_in.Columns.Remove("ID_COMPONENT"); }
@@ -2257,7 +2234,7 @@ namespace Statistic
                                 }
 
                                 m_valuesHours.valuesREC [i] += valuesREC[j, i];
-                                
+
                                 m_valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
 
                                 if (valuesISPER[j, i] == 1)
@@ -2468,7 +2445,6 @@ namespace Statistic
 
                         for (i = 0; i < 24; i++)
                         {
-
                             m_valuesHours.valuesPBR[i] = valuesPBR[i];
                             m_valuesHours.valuesPmin [i] = valuesPmin[i];
                             m_valuesHours.valuesPmax[i] = valuesPmax[i];
@@ -2976,8 +2952,7 @@ namespace Statistic
             m_newState = true;
             m_states.Clear();
 
-            if ((sensorsString_TM.Equals(string.Empty) == false) ||
-                ((sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false) && (sensorsStrings_Fact[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false)))
+            if (tec.m_bSensorsStrings == true)
             {
                 if (currHour == true)
                 {
@@ -3059,7 +3034,7 @@ namespace Statistic
             //resValues[6] = dt;
             //resValues[7] = sensorId2TG[indx_tg].ids_fact[indx_id_time];
 
-            resValues[0] = sensorId2TG[indx_tg].ids_fact[indx_id_time];
+            resValues[0] = listTG[indx_tg].ids_fact[indx_id_time];
             resValues[1] = dt;
             //2 - season
             resValues[3] = 30 + indx_halfhours * 2;
@@ -3088,7 +3063,7 @@ namespace Statistic
 
             return resValues;
         }
-        
+
         void GenerateHoursTable(seasonJumpE season, int hours, DataTable table)
         {
             int count = hours * 2;
@@ -3101,7 +3076,7 @@ namespace Statistic
                 // генерирую время без переходов
                 for (int i = 0; i < count; i++)
                 {
-                    for (int j = 0; j < CountTG; j++)
+                    for (int j = 0; j < listTG.Count; j++)
                     {
                         table.Rows.Add(generateValues (date, j, i, (int) TG.ID_TIME.HOURS, 0));
                     }
@@ -3116,13 +3091,13 @@ namespace Statistic
                     // генерирую время с переходом на зимнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < CountTG; j++)
+                        for (int j = 0; j < listTG.Count; j++)
                         {
                             table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.HOURS, -1));
                         }
                         if (i == 4 || i == 5)
                         {
-                            for (int j = 0; j < CountTG; j++)
+                            for (int j = 0; j < listTG.Count; j++)
                             {
                                 //object[] values = new object[9];
                                 //values[0] = "ТГ-" + j;
@@ -3148,7 +3123,7 @@ namespace Statistic
                     {
                         if (i != 4 && i != 5)
                         {
-                            for (int j = 0; j < CountTG; j++)
+                            for (int j = 0; j < listTG.Count; j++)
                             {
                                 //object[] values = new object[9];
                                 //values[0] = "ТГ-" + j;
@@ -3185,7 +3160,7 @@ namespace Statistic
                 // генерирую время без переходов
                 for (int i = 0; i < count; i++)
                 {
-                    for (int j = 0; j < CountTG; j++)
+                    for (int j = 0; j < listTG.Count; j++)
                     {
                         //object[] values = new object[9];
                         //values[0] = "ТГ-" + j;
@@ -3210,7 +3185,7 @@ namespace Statistic
                     // генерирую время с переходом на зимнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < CountTG; j++)
+                        for (int j = 0; j < listTG.Count; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -3224,7 +3199,7 @@ namespace Statistic
                             //values[8] = date.Year * 2 + 1;
                             table.Rows.Add(generateValues(date, j, i, (int)TG.ID_TIME.MINUTES, -1));
                         }
-                        for (int j = 0; j < CountTG; j++)
+                        for (int j = 0; j < listTG.Count; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -3247,7 +3222,7 @@ namespace Statistic
                     //генерирую время с переходом на летнее время
                     for (int i = 0; i < count; i++)
                     {
-                        for (int j = 0; j < CountTG; j++)
+                        for (int j = 0; j < listTG.Count; j++)
                         {
                             //object[] values = new object[9];
                             //values[0] = "ТГ-" + j;
@@ -3385,7 +3360,7 @@ namespace Statistic
             switch (state)
             {
                 case StatesMachine.Init:
-                    result = GetSensors();
+                    result = tec.m_bSensorsStrings;
                     break;
                 case StatesMachine.CurrentTime:
                     result = GetCurrentTimeReponse(table);

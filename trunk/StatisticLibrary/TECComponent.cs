@@ -12,6 +12,10 @@ namespace StatisticCommon
         public int m_indx_col_rdg_excel;
         public decimal m_dcKoeffAlarmPcur;
 
+        //Копия из 'class PanelStatisticView : PanelStatistic' - из 'PanelStatisticView' класса требуется исключть???
+        public volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
+        public volatile string m_SensorsString_SOTIASSO = string.Empty;        
+
         public TECComponentBase()
         {
         }
@@ -19,7 +23,7 @@ namespace StatisticCommon
 
     public class TG : TECComponentBase
     {
-        public enum ID_TIME : int { MINUTES, HOURS, COUNT_ID_TIME };
+        public enum ID_TIME : int { UNKNOWN = -1, MINUTES, HOURS, COUNT_ID_TIME };
         public enum INDEX_VALUE : int { FACT, TM, COUNT_INDEX_VALUE };
 
         public double[] power;
@@ -53,13 +57,13 @@ namespace StatisticCommon
         public string prefix_admin, prefix_pbr;
         public List<int> m_listMCentreId;
         public List<int> m_listMTermId;
-        public List<TG> TG;
+        public List<TG> m_listTG;
         public TEC tec;
 
         public TECComponent(TEC tec, string prefix_admin, string prefix_pbr)
         {
             this.tec = tec;
-            TG = new List<TG>();
+            m_listTG = new List<TG>();
             m_listMCentreId =
             m_listMTermId = null;
 
