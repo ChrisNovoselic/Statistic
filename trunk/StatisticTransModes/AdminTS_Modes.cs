@@ -24,11 +24,8 @@ namespace StatisticTransModes
         public override Errors SaveChanges()
         {
             Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - вХод...");
-
-            try { delegateStartWait(); }
-            catch (Exception e) {
-                Logging.Logg().LogExceptionToFile(e, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...");
-            }
+            
+            delegateStartWait();
 
             int msecWaitSemaDbAccess = DbInterface.MAX_RETRY * DbInterface.MAX_WAIT_COUNT * DbInterface.WAIT_TIME_MS;
             Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess);
@@ -62,11 +59,11 @@ namespace StatisticTransModes
                     }
                     catch
                     {
-                        Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - semaState.Release(1)");
+                        Logging.Logg().LogDebugToFile("catch - SaveChanges () - semaState.Release(1)");
                     }
                 }
 
-                Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
+                Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
                 try
                 {
                     semaDBAccess.Release(1);
@@ -86,11 +83,7 @@ namespace StatisticTransModes
                 saving = true;
             }
 
-            try { delegateStopWait(); }
-            catch (Exception e)
-            {
-                Logging.Logg().LogExceptionToFile(e, @"AdminTS_Modes::SaveChanges () - delegateStopWait() - ...");
-            }
+            delegateStopWait();
 
             return saveResult;
         }

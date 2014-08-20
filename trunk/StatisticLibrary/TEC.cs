@@ -11,7 +11,6 @@ namespace StatisticCommon
 {
     public class TEC
     {
-        public enum TYPE_PANEL {GRAPH, TABLE, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, COUNT_TYPE_PANEL};
         public enum INDEX_TYPE_SOURCE_DATA { COMMON, INDIVIDUAL, COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
         public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA [(int)INDEX_TYPE_SOURCE_DATA.COUNT_TYPE_SOURCEDATA];
         public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -32,15 +31,7 @@ namespace StatisticCommon
         public string m_strTemplateNameSgnDataTM,
                     m_strTemplateNameSgnDataFact;
 
-        public double m_dblTotalPower_TM_SN;
-        public DateTime m_dtLastChangedAt_TM_Gen;
-        public DateTime m_dtLastChangedAt_TM_SN;
-
         public List<TECComponent> list_TECComponents;
-
-        public List<TG> m_listTG;
-        protected volatile string m_SensorsString_SOTIASSO = string.Empty;
-        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
@@ -55,53 +46,6 @@ namespace StatisticCommon
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
         //public FormParametersTG parametersTGForm;
-
-        public bool m_bSensorsStrings {
-            get {
-                bool bRes = false;
-                if ((m_SensorsString_SOTIASSO.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
-                    if ((m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false))
-                        bRes = true;
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                return bRes;
-            }
-        }
-
-        public string GetSensorsString (int num, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
-            string strRes = string.Empty;
-            
-            if (num < 0) {
-                switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
-                        strRes = m_SensorsString_SOTIASSO;
-                        break;
-                    case (int)CONN_SETT_TYPE.DATA_ASKUE:
-                        strRes = m_SensorsStrings_ASKUE[(int)indxTime];
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else {
-                switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
-                        strRes = list_TECComponents [num].m_SensorsString_SOTIASSO;
-                        break;
-                    case (int)CONN_SETT_TYPE.DATA_ASKUE:
-                        strRes = list_TECComponents [num].m_SensorsStrings_ASKUE[(int)indxTime];
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            return strRes;
-        }
 
         public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
@@ -167,199 +111,47 @@ namespace StatisticCommon
             }
         }
 
-        private void register(CONN_SETT_TYPE type)
-        {
-            m_arIdListeners[(int)type] = DbSources.Sources().Register(connSetts[(int)type], true, @"ТЭЦ=" + name_shr + @"; DESC=" + type.ToString());
-
-            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_ASKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
-                if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
-                {
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.COMMON;
-                }
-                else
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
-            else
-                ;
-
-            m_arInterfaceType[(int)type] = DbTSQLInterface.getTypeDB(connSetts[(int)type].port);
-        }
-
         public void StartDbInterfaces(CONN_SETT_TYPE limConnSettType)
         {
-            if (! (connSetts == null)) {
-                CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
-                
-                if (used == 0)
-                {                    
-                    //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            if (used == 0)
+            {
+                //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-                    //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-                    for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
-                    {
-                        if (!(connSetts[(int)i] == null))
-                        {
-                            register (i);
-                        }
-                        else
-                            ;
-                    }
-                }
-                else {
-                    for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
-                    {
-                        if (!(connSetts[(int)i] == null) && (m_arIdListeners[(int)i] < 0))
-                        {
-                            register (i);
-                        }
-                        else
-                            ;
-                    }
-                }
-
-                if (m_tecView == null) {
-                    m_tecView = new TecView (null, null);
-                    m_tecView.InitTEC (new List <TEC> { this });
-                    m_tecView.Start ();
-                }
-                else
-                    ;
-
-                used++;
-
-                if (used > list_TECComponents.Count)
-                    used = list_TECComponents.Count;
-                else
-                    ;
-
-                if ((limConnSettType > (CONN_SETT_TYPE.PBR + 1)) && (m_bSensorsStrings == false))
-                    initSensorsTEC ();
-                else
-                    ;
-            }
-            else
-                //Вообще нельзя что-либо инициализировать
-                Logging.Logg().LogErrorToFile(@"TEC::StartDbInterfaces () - connSetts == null ...");
-        }
-
-        //m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]
-        public static string AddSensor(string prevSensors, int sensor, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
-        {
-            string strRes = prevSensors;
-
-            if (prevSensors.Equals(string.Empty) == false)
-                switch (typeSourceData)
+                //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
                 {
-                    case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                        //Общий источник для всех ТЭЦ
-                        strRes += @", "; //@" OR ";
-                        break;
-                    case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                        //Источник для каждой ТЭЦ свой
-                        strRes += @" OR ";
-                        break;
-                    default:
-                        break;
+                    if (!(connSetts[(int)i] == null))
+                    {
+                        m_arIdListeners[(int)i] = DbSources.Sources ().Register(connSetts[(int)i], true, @"ТЭЦ=" + name_shr + @"; DESC=" + i.ToString ());
+
+                        if ((!((int)i < (int)CONN_SETT_TYPE.DATA_ASKUE)) && (!((int)i > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
+                            if (FormMainBase.s_iMainSourceData == connSetts[(int)i].id) {
+                                m_arTypeSourceData [(int)i - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.COMMON;
+                            }
+                            else
+                                m_arTypeSourceData[(int)i - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
+                        else
+                            ;
+
+                        m_arInterfaceType[(int)i] = DbTSQLInterface.getTypeDB(connSetts[(int)i].port);
+                    }
+                    else
+                        ;
                 }
+            }
             else
                 ;
 
-            switch (typeSourceData)
-            {
-                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                    //Общий источник для всех ТЭЦ
-                    strRes += sensor.ToString();
-                    break;
-                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Источник для каждой ТЭЦ свой
-                    strRes += @"[dbo].[NAME_TABLE].[ID] = " + sensor.ToString();
-                    break;
-                default:
-                    break;
-            }
+            used++;
 
-            return strRes;
-        }
-
-        public TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
-        {
-            int i = -1;
-            
-            for (i = 0; i < list_TECComponents.Count; i++) {
-                if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
-                    switch (indxVal)
-                    {
-                        case TG.INDEX_VALUE.FACT:
-                            if (list_TECComponents[i].m_listTG [0].ids_fact[(int)id_type] == id)
-                                return list_TECComponents[i].m_listTG[0];
-                            else
-                                ;
-                            break;
-                        case TG.INDEX_VALUE.TM:
-                            if (list_TECComponents[i].m_listTG[0].id_tm == id)
-                                return list_TECComponents[i].m_listTG[0];
-                            else
-                                ;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                    ;
-            }
-
-            return null;
-        }
-
-        private void initSensorsTEC () {
-            int i = -1
-                , j = -1;
-
-            if (m_listTG == null)
-                m_listTG = new List<TG> ();
+            if (used > list_TECComponents.Count)
+                used = list_TECComponents.Count;
             else
-                m_listTG.Clear ();
-
-            if (m_SensorsStrings_ASKUE == null)
-                m_SensorsStrings_ASKUE = new string [(int)TG.ID_TIME.COUNT_ID_TIME];
-            else
-                m_SensorsStrings_ASKUE [(int)TG.ID_TIME.HOURS] = m_SensorsStrings_ASKUE [(int)TG.ID_TIME.MINUTES] = string.Empty;
-
-            m_SensorsString_SOTIASSO = string.Empty;
-
-            for (i = 0; i < list_TECComponents.Count; i++) {
-                if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
-                    m_listTG.Add(list_TECComponents[i].m_listTG[0]);
-
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                }
-                else
-                {
-                    for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    }
-                }
-            }
+                ;
         }
 
         private void stopDbInterfaces()
         {
-            if (m_tecView == null) {
-                m_tecView.Stop ();
-
-                m_tecView = null;
-            }
-            else
-                ;
-
             for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (!(m_arIdListeners[i] < 0))
@@ -468,7 +260,7 @@ namespace StatisticCommon
                 if ((list_TECComponents[num_comp].m_id > 100) && (list_TECComponents[num_comp].m_id < 500))
                     strRes += (list_TECComponents[num_comp].m_id).ToString();
                 else {
-                    foreach (TG tg in list_TECComponents[num_comp].m_listTG)
+                    foreach (TG tg in list_TECComponents[num_comp].TG)
                     {
                         strRes += ", ";
 
@@ -1367,44 +1159,6 @@ namespace StatisticCommon
                 ;
 
             return strRes;
-        }
-
-        public void Activate (bool active, TYPE_PANEL typePanel) {
-            switch (typePanel)
-            {
-                case TYPE_PANEL.GRAPH:
-                    break;
-                case TYPE_PANEL.TABLE:
-                    break;
-                case TYPE_PANEL.CUR_POWER:
-                    break;
-                case TYPE_PANEL.LAST_MINUTES:
-                    break;
-                case TYPE_PANEL.ADMIN_ALARM:
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public void ChangeState(TYPE_PANEL typePanel)
-        {
-            switch (typePanel)
-            {
-                case TYPE_PANEL.GRAPH:
-                    break;
-                case TYPE_PANEL.TABLE:
-                    break;
-                case TYPE_PANEL.CUR_POWER:
-                    m_tecView.GetCurPower ();
-                    break;
-                case TYPE_PANEL.LAST_MINUTES:
-                    break;
-                case TYPE_PANEL.ADMIN_ALARM:
-                    break;
-                default:
-                    break;
-            }
         }
     }
 }

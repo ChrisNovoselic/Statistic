@@ -528,7 +528,7 @@ namespace StatisticCommon
                         } else
                             if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
                                 //strUpdate += allTECComponents[indxTECComponents].TG [0].m_indx_col_rdg_excel;
-                                comp = allTECComponents[indxTECComponents].m_listTG[0];
+                                comp = allTECComponents[indxTECComponents].TG[0];
                             } else ;
 
                         //strUpdate += @"'='" + (curRDGValues[i].pbr - curRDGValues[i].recomendation) + @"', ";

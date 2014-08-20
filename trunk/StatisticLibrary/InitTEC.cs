@@ -116,7 +116,7 @@ namespace StatisticCommon
                 }
 
                 if (k < dest.Count) {
-                    dest[indx].m_listTG.Add(dest[k].m_listTG[0]);
+                    dest[indx].TG.Add(dest[k].TG[0]);
                 }
                 else
                     ;
@@ -235,8 +235,8 @@ namespace StatisticCommon
                                     if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                                     tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
 
-                                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
-                                    initTG (tec[indx_tec].list_TECComponents[indx].m_listTG[0], list_tg.Rows[k], all_PARAM_TG);
+                                    tec[indx_tec].list_TECComponents[indx].TG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
+                                    initTG (tec[indx_tec].list_TECComponents[indx].TG[0], list_tg.Rows[k], all_PARAM_TG);
                                 }
                             else
                                 ; //Ошибка получения списка ТГ
@@ -763,12 +763,12 @@ namespace StatisticCommon
 
                         for (int k = 0; k < list_tg.Rows.Count; k++)
                         {
-                            tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(tec[indx_tec].list_TECComponents[indx]));
-                            tec[indx_tec].list_TECComponents[indx].m_listTG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
-                            if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].m_listTG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
-                            tec[indx_tec].list_TECComponents[indx].m_listTG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                            tec[indx_tec].list_TECComponents[indx].TG.Add(new TG(tec[indx_tec].list_TECComponents[indx]));
+                            tec[indx_tec].list_TECComponents[indx].TG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
+                            if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].TG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
+                            tec[indx_tec].list_TECComponents[indx].TG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
                             if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                                tec[indx_tec].list_TECComponents[indx].m_listTG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                                tec[indx_tec].list_TECComponents[indx].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
                             else
                                 ;
                         }
@@ -791,12 +791,12 @@ namespace StatisticCommon
                     if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                     tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
 
-                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
-                    tec[indx_tec].list_TECComponents[indx].m_listTG[0].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
-                    if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].m_listTG[0].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
-                    tec[indx_tec].list_TECComponents[indx].m_listTG[0].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                    tec[indx_tec].list_TECComponents[indx].TG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
+                    tec[indx_tec].list_TECComponents[indx].TG[0].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
+                    if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].TG[0].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
+                    tec[indx_tec].list_TECComponents[indx].TG[0].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
                     if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                        tec[indx_tec].list_TECComponents[indx].m_listTG[0].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                        tec[indx_tec].list_TECComponents[indx].TG[0].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
                     else
                         ;
                 }
@@ -863,12 +863,12 @@ namespace StatisticCommon
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
-                        tec[i].list_TECComponents[j].m_listTG.Add(new TG(tec[i].list_TECComponents[j]));
-                        tec[i].list_TECComponents[j].m_listTG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
-                        if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[i].list_TECComponents[j].m_listTG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
-                        tec[i].list_TECComponents[j].m_listTG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
+                        tec[i].list_TECComponents[j].TG.Add(new TG(tec[i].list_TECComponents[j]));
+                        tec[i].list_TECComponents[j].TG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
+                        if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[i].list_TECComponents[j].TG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
+                        tec[i].list_TECComponents[j].TG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
                         if (!(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                            tec[i].list_TECComponents[j].m_listTG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
+                            tec[i].list_TECComponents[j].TG[k].m_indx_col_rdg_excel = Convert.ToInt32(list_tg.Rows[k]["INDX_COL_RDG_EXCEL"]);
                         else
                             ;
                     }

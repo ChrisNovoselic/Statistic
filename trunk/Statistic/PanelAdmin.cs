@@ -36,7 +36,7 @@ namespace Statistic
 
         public bool isActive;
 
-        public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
+        public List <TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
         //public string last_error { get { return m_admin.last_error; } }
         //public DateTime last_time_error { get { return m_admin.last_time_error; } }
@@ -198,7 +198,7 @@ namespace Statistic
             isActive = false;
         }
 
-        public PanelAdmin(List<StatisticCommon.TEC> tec, FormChangeMode.MANAGER type, HReports rep)
+        public PanelAdmin(List <TEC> tec, FormChangeMode.MANAGER type, HReports rep)
         {
             switch (type)
             {

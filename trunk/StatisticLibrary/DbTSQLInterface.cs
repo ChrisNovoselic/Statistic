@@ -228,6 +228,7 @@ namespace StatisticCommon
             catch (DbException e)
             {
                 needReconnect = true;
+
                 logging_catch_db (m_dbConnection, e);
             }
             catch (Exception e)

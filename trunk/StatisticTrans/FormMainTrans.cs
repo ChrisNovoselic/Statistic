@@ -709,7 +709,6 @@ namespace StatisticTrans
                 //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
 
                 this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
-                //SaveRDGValues (false);
 
                 //this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }
@@ -1165,11 +1164,11 @@ namespace StatisticTrans
                 bCallback = cb;
             }
         };
-
+        
         private void saveRDGValues (object bCallback) {
             ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
         }
-
+        
         protected virtual void SaveRDGValues (bool bCallback) {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);

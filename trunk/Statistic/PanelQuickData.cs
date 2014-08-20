@@ -374,7 +374,7 @@ namespace Statistic
             //countTG = 0;
             List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
 
-            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in m_parent.tec.list_TECComponents)
                 {
@@ -383,7 +383,7 @@ namespace Statistic
                     else
                         ;
 
-                    foreach (TG tg in g.m_listTG)
+                    foreach (TG tg in g.TG)
                     {
                         //Проверка обработки текущего ТГ
                         if (tg_ids.IndexOf(tg.m_id) == -1)
@@ -400,7 +400,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
+                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
                 {
                     tg_ids.Add(tg.m_id); //Добавить без проверки
 
@@ -411,6 +411,8 @@ namespace Statistic
                     m_parent.m_list_TECComponents.Add(tg);
                 }
             }
+
+            m_parent.sensorId2TG = new TG[tg_ids.Count];
 
             int COUNT_TG_IN_COLUMN = 4
                 , COL_TG_START = 6
@@ -511,13 +513,13 @@ namespace Statistic
         {
             double value_TM = 0.0;
             int i = 0;
-            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in m_parent.tec.list_TECComponents)
                 {
                     if (g.m_id < 500)
                         //Только ГТП
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TG tg in g.TG)
                         {
                             if (tg.id_tm > 0)
                             {
@@ -542,7 +544,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
+                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
                 {
                     if (tg.id_tm > 0)
                     {
@@ -610,13 +612,13 @@ namespace Statistic
             double valueEBefore = 0.0,
                     valueECur = 0.0,
                     valueEFuture = 0.0;
-            for (i = 0; i < m_parent.listTG.Count; i++)
+            for (i = 0; i < m_parent.sensorId2TG.Length; i++)
                 for (j = 0; j < min; j++)
-                    valueEBefore += m_parent.listTG[i].power[j] / 20;
+                    valueEBefore += m_parent.sensorId2TG[i].power[j] / 20;
 
             double value = 0;
-            for (i = 0; i < m_parent.listTG.Count; i++)
-                if (m_parent.listTG[i].power[min] > 1) value += m_parent.listTG[i].power[min]; else ;
+            for (i = 0; i < m_parent.sensorId2TG.Length; i++)
+                if (m_parent.sensorId2TG[i].power[min] > 1) value += m_parent.sensorId2TG[i].power[min]; else ;
 
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value);
 
@@ -727,13 +729,13 @@ namespace Statistic
 
             //ShowTGValue
             i = 0;
-            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in m_parent.m_list_TECComponents)
                 {
                     if (g.m_id < 500)
                         //Только ГТП
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TG tg in g.TG)
                         {
                             if (tg.receivedMin[min] == true)
                             {

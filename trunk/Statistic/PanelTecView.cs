@@ -20,10 +20,8 @@ namespace Statistic
     public class PanelTecViewTable : PanelTecViewBase
     {
         PanelCustomTecView.HLabelEmpty m_label;
-
-        public PanelTecViewTable(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep, PanelCustomTecView.HLabelEmpty label)
-            : base(tec, num_tec, num_comp, sts, gs, par, rep)
-        {
+        
+        public PanelTecViewTable (TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep, PanelCustomTecView.HLabelEmpty label) : base (tec, num_tec, num_comp, sts, gs, par, rep) {
             m_label = label;
 
             InitializeComponent ();
@@ -45,8 +43,8 @@ namespace Statistic
             this.RowStyles.Add(new RowStyle(SizeType.Percent, 24));
 
             m_label.Text = tec.name_shr;
-            if (!(indx_TECComponent < 0))
-                m_label.Text += @" - " + tec.list_TECComponents [indx_TECComponent].name_shr;
+            if (!(num_TECComponent < 0))
+                m_label.Text += @" - " + tec.list_TECComponents [num_TECComponent].name_shr;
             else
                 ;
 
@@ -88,8 +86,8 @@ namespace Statistic
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2Hours;
         private System.Windows.Forms.ToolStripMenuItem ñîõðàíèòüToolStripMenuItemHours;
         private System.Windows.Forms.ToolStripMenuItem ýêñåëüToolStripMenuItemHours;
-
-        public PanelTecViewGraph(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
+        
+        public PanelTecViewGraph(TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
             : base(tec, num_tec, num_comp, sts, gs, par, rep)
         {
             InitializeComponent ();
@@ -490,7 +488,7 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("Òð¸õìèíóòíûå äàííûå");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (indx_TECComponent < 0)
+                    if (num_TECComponent < 0)
                     {
                         if (tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = tec.name_shr;
@@ -503,7 +501,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
 
                     if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
@@ -632,7 +630,7 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add("×àñîâûå äàííûå");
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (indx_TECComponent < 0)
+                    if (num_TECComponent < 0)
                     {
                         if (tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = tec.name_shr;
@@ -645,7 +643,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[num_TECComponent].name_shr;
                     }
 
                     ws.Cells[1, 0].Value = "Ìîùíîñòü íà " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
@@ -812,7 +810,7 @@ namespace Statistic
                     m_newState = true;
                     m_states.Clear();
                     m_states.Add(StatesMachine.RetroMins);
-                    m_states.Add(StatesMachine.PPBRValues);
+                    m_states.Add(StatesMachine.PBRValues);
                     m_states.Add(StatesMachine.AdminValues);
 
                     try

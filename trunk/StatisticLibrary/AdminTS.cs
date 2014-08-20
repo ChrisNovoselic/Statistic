@@ -331,6 +331,62 @@ namespace StatisticCommon
                 }
             }
         }
+
+        protected bool IsCanUseTECComponents () {
+            bool bRes = false;
+            if ((! (indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count)) bRes = true; else ;
+            return bRes;
+        }
+
+        private void GetCurrentTimeRequest()
+        {
+            string query = string.Empty;
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
+            
+            if (IsCanUseTECComponents ()) {
+                typeDB = DbTSQLInterface.getTypeDB (allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                switch (typeDB) {
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                        query = @"SELECT now()";
+                        break;
+                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                        query =  @"SELECT GETDATE()";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (query.Equals (string.Empty) == false)
+                    Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query);
+                else
+                    ;
+            }
+            else
+                ;
+        }
+
+        protected bool GetCurrentTimeResponse(DataTable table)
+        {
+            if (table.Rows.Count == 1)
+            {
+                serverTime = (DateTime)table.Rows[0][0];
+            }
+            else
+            {
+                DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+                int timezone_offset = allTECComponents [indxTECComponents].tec.m_timezone_offset_msc;
+                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
+                    timezone_offset ++;
+                else
+                    ;
+
+                serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+
+                ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+            }
+
+            return true;
+        }
         
         public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
             //Запретить запись ПБР-значений
@@ -696,9 +752,9 @@ namespace StatisticCommon
             int j = -1;
             item = new RDGStruct();
 
-            for (j = 0; j < allTECComponents[indxTECComponents].m_listTG.Count; j++)
-                if (allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel > 1)
-                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1];
+            for (j = 0; j < allTECComponents[indxTECComponents].TG.Count; j++)
+                if (allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel > 1)
+                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].TG[j].m_indx_col_rdg_excel - 1];
                 else
                     return ;
 
@@ -741,7 +797,7 @@ namespace StatisticCommon
             else
                 ;
 
-            if (IsCanUseTECComponents () == true)
+            if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
@@ -1177,6 +1233,17 @@ namespace StatisticCommon
             Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
+        public void Request(int idListener, string request)
+        {
+            m_IdListenerCurrent = idListener;
+            DbSources.Sources ().Request (idListener, request);
+        }
+
+        public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
+        {
+            return DbSources.Sources ().Response (idListener, out error, out table);
+        }
+
         public int GetIndexTECComponent (int idTEC, int idComp) {
             int iRes = -1;
 
@@ -1485,7 +1552,7 @@ namespace StatisticCommon
                     case (int)StatesMachine.ClearAdminValues:
                     case (int)StatesMachine.ClearPPBRValues:
                     //case (int)StatesMachine.GetPass:
-                        bRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                        bRes = DbSources.Sources ().Response(m_IdListenerCurrent, out error, out table/*, false*/);
                         break;
                     //case (int)StatesMachine.LayoutGet:
                     //case (int)StatesMachine.LayoutSet:
@@ -2096,7 +2163,7 @@ namespace StatisticCommon
                 {
                     if ((comp.tec.m_id == allTECComponents[indx].tec.m_id) && (modeTECComponent(allTECComponents.IndexOf(comp)) == ownerMode))
                     {
-                        foreach (TG tg in comp.m_listTG)
+                        foreach (TG tg in comp.TG)
                         {
                             if (tg.m_id == allTECComponents[indx].m_id)
                             {
