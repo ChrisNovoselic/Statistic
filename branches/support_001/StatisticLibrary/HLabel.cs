@@ -45,6 +45,9 @@ namespace StatisticCommon
 
     public partial class HLabel : System.Windows.Forms.Label
     {
+        public enum TYPE_HLABEL { UNKNOWN = -1, TG, TOTAL, COUNT_TYPE_HLABEL };
+        public TYPE_HLABEL m_type;
+        
         public HLabel(Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align)
         {
             InitializeComponent();
@@ -64,7 +67,11 @@ namespace StatisticCommon
 
             this.TextAlign = align;
 
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", szFont, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+
             //this.Text = text;
+
+            m_type = TYPE_HLABEL.UNKNOWN;
         }
 
         public HLabel(HLabelStyles prop) : this (new Point (-1, -1), new Size (-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)

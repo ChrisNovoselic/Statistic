@@ -84,7 +84,7 @@ namespace Statistic
             else
                 ;
 
-            if (dblRel > 0)
+            if ((dblRel > 0) && (! (iReverse == 0)))
                 err = 1;
             else
                 err = 0;
