@@ -263,7 +263,7 @@ namespace Statistic
             folders.RootFolder = Environment.SpecialFolder.Desktop;
             folders.SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //@"D:\Temp";
 
-            if (folders.ShowDialog(((FormMain)Parent.Parent.Parent).formParameters) == DialogResult.OK)
+            if (folders.ShowDialog(FormMain.formParameters) == DialogResult.OK)
                 ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart, folders.SelectedPath + @"\");
             else
                 ;

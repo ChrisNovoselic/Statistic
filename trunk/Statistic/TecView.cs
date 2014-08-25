@@ -11,23 +11,48 @@ namespace Statistic
 {
     public class TecView : HAdmin
     {
-        public enum StatesMachine
+        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, COUNT_TYPE_PANEL };
+        TYPE_PANEL m_typePanel;
+
+        /* Из PanelTecViewBase....
+        protected enum StatesMachine
+        {
+            Init,
+            CurrentTime,
+            CurrentHours_Fact,
+            CurrentMins_Fact,
+            Current_TM,
+            LastMinutes_TM,
+            RetroHours,
+            RetroMins,
+            PBRValues,
+            AdminValues,
+        }*/
+        
+        protected enum StatesMachine
         {
             InitSensors,
-            CurrentTime,
-            AdminDates, //Получение списка сохранённых часовых значений
-            PPBRDates,
+            CurrentTimeAdmin,
+            CurrentTimeView,
+            CurrentHours_Fact,
+            CurrentMins_Fact,
             Current_TM_Gen,
             Current_TM_SN,
             LastMinutes_TM,
+            RetroHours,
+            RetroMins,
+            AdminDates, //Получение списка сохранённых часовых значений
             AdminValues, //Получение административных данных
+            PPBRDates,
             PPBRValues,
         }
 
         //private volatile string sensorsString_TM;
         //private List<TG> m_listSensorId2TG;
 
-        DateTime m_dtLastChangedAt;
+        public double m_dblTotalPower_TM_SN;
+        public DateTime m_dtLastChangedAt_TM_Gen;
+        public DateTime m_dtLastChangedAt_TM_SN;
 
         private AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
@@ -35,17 +60,145 @@ namespace Statistic
                     //, m_tableRDGExcelValuesResponse
                     ;
 
-        private StatisticCommon.TEC m_tec {
+        public enum seasonJumpE
+        {
+            None,
+            WinterToSummer,
+            SummerToWinter,
+        }
+
+        public abstract class values
+        {
+            public volatile double[] valuesLastMinutesTM;
+
+            public volatile double[] valuesPBR;
+            public volatile bool[] valuesForeignCommand;
+            public volatile double[] valuesPmin;
+            public volatile double[] valuesPmax;
+            public volatile double[] valuesPBRe;
+            public volatile double[] valuesUDGe;
+
+            public volatile double[] valuesDiviation; //Значение в ед.изм.
+
+            public volatile double[] valuesREC;
+
+            public values(int sz)
+            {
+                valuesLastMinutesTM = new double[sz];
+
+                valuesPBR = new double[sz];
+                valuesForeignCommand = new bool[sz];
+                valuesPmin = new double[sz];
+                valuesPmax = new double[sz];
+                valuesPBRe = new double[sz];
+                valuesUDGe = new double[sz];
+                valuesDiviation = new double[sz];
+
+                valuesREC = new double[sz];
+            }
+        }
+
+        public class valuesTECComponent : values
+        {
+            //public volatile double[] valuesREC;
+            public volatile double[] valuesISPER; //Признак ед.изм. 'valuesDIV'
+            public volatile double[] valuesDIV; //Значение из БД
+
+            public valuesTECComponent(int sz)
+                : base(sz)
+            {
+                //valuesREC = new double[sz];
+                valuesISPER = new double[sz];
+                valuesDIV = new double[sz];
+            }
+        }
+
+        public class valuesTEC : values
+        {
+            public volatile double[] valuesFact;
+
+            public double valuesFactAddon;
+            public double valuesPBRAddon;
+            public double valuesPBReAddon;
+            public double valuesUDGeAddon;
+            public double valuesDiviationAddon;
+            public int hourAddon;
+            public seasonJumpE season;
+            public bool addonValues;
+
+            public valuesTEC(int sz)
+                : base(sz)
+            {
+                valuesFact = new double[sz];
+
+                valuesFactAddon = 0.0;
+                valuesPBRAddon = 0.0;
+                valuesPBReAddon = 0.0;
+                valuesUDGeAddon = 0.0;
+                valuesDiviationAddon = 0.0;
+                hourAddon = 0;
+                season = seasonJumpE.None;
+                addonValues = false;
+            }
+        }
+
+        public object m_lockValue;
+        
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool currHour;
+        public volatile int lastHour;
+        public volatile int lastReceivedHour;
+        public volatile int lastMin;
+        public volatile bool lastMinError;
+        public volatile bool lastHourError;
+        public volatile bool lastHourHalfError;
+        public volatile string lastLayout;
+
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public valuesTEC m_valuesMins;
+        public valuesTEC m_valuesHours;
+        public DateTime selectedTime;
+        //public DateTime serverTime;
+
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public double recomendation;
+
+        public volatile bool isActive;
+
+        //private bool started;
+
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool adminValuesReceived;
+
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool recalcAver;
+
+        public StatisticCommon.TEC m_tec {
             get { return m_list_tec [0]; }
         }
 
         protected override void Initialize () {
             base.Initialize ();
+
+            currHour = true;
+            lastHour = 0;
+            lastMin = 0;
+            
+            isActive = false;
+            m_report.errored_state =
+            m_report.actioned_state = false;
+            recalcAver = true;
+
+            m_lockValue = new object();
+
+            m_valuesMins = new valuesTEC(21);
+            m_valuesHours = new valuesTEC(24);
         }
 
-        public TecView(HReports rep, bool[] arMarkSavePPBRValues)
+        public TecView(HReports rep, bool[] arMarkSavePPBRValues, TYPE_PANEL type)
             : base(rep)
         {
+            m_typePanel = type;
         }
 
         public void ChangeState_AdminAlarm () {
@@ -81,12 +234,30 @@ namespace Statistic
 
         public override void Start()
         {
+            ClearValues();
+
+            if (!(m_list_tec == null))
+                foreach (TEC t in m_list_tec)
+                {
+                    t.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
+                }
+            else
+                Logging.Logg().LogErrorToFile(@"TecView::Start () - m_list_tec == null");
+            
             base.Start();
         }
 
         public override void Stop()
         {
             base.Stop();
+
+            if (!(m_list_tec == null))
+                foreach (TEC t in m_list_tec)
+                {
+                    t.StopDbInterfaces();
+                }
+            else
+                Logging.Logg().LogErrorToFile(@"TecView::Stop () - m_list_tec == null");
         }
 
         public override bool WasChanged()
@@ -98,6 +269,8 @@ namespace Statistic
 
         public override void  ClearValues()
         {
+            ClearValuesMins();
+            ClearValuesHours();
         }
 
         public override void CopyCurToPrevRDGValues()
@@ -153,7 +326,7 @@ namespace Statistic
             if ((m_tec.list_TECComponents[indx].m_SensorsString_SOTIASSO.Equals(string.Empty) == true))
             {
                 states.Add((int)StatesMachine.InitSensors);
-                states.Add((int)StatesMachine.CurrentTime);
+                states.Add((int)StatesMachine.CurrentTimeView);
             }
             else ;
 
@@ -167,7 +340,7 @@ namespace Statistic
         private bool GetSensorsTEC()
         {
             if (m_tec.m_bSensorsStrings == false) {
-                m_tec.initSensorsTEC ();
+                m_tec.InitSensorsTEC ();
             }
             else
                 ;
@@ -188,7 +361,7 @@ namespace Statistic
                 id = -1;
             double value = -1;
             DateTime dtLastChangedAt =
-                m_dtLastChangedAt = DateTime.Now;
+                m_dtLastChangedAt_TM_Gen = DateTime.Now;
             TG tgTmp;
 
             foreach (TECComponent g in m_tec.list_TECComponents)
@@ -226,8 +399,8 @@ namespace Statistic
                 else
                     ;
 
-                if (m_dtLastChangedAt > dtLastChangedAt)
-                    m_dtLastChangedAt = dtLastChangedAt;
+                if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt)
+                    m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
                 else
                     ;
 
@@ -245,7 +418,7 @@ namespace Statistic
                 tgTmp.power_TM = value;
             }
 
-            try { m_tec.m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_tec.m_dtLastChangedAt_TM_Gen); }
+            try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
@@ -264,7 +437,7 @@ namespace Statistic
             bool bRes = true;
             int id = -1;
 
-            m_tec.m_dtLastChangedAt_TM_SN = DateTime.Now;
+            m_dtLastChangedAt_TM_SN = DateTime.Now;
 
             if (table.Rows.Count == 1)
             {
@@ -274,14 +447,14 @@ namespace Statistic
                     ;
 
                 if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
-                    if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_tec.m_dblTotalPower_TM_SN) == false)
+                    if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
                         return false;
                     else
                         ;
                 else
-                    m_tec.m_dblTotalPower_TM_SN = 0.0;
+                    m_dblTotalPower_TM_SN = 0.0;
 
-                if ((!(m_tec.m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_tec.m_dtLastChangedAt_TM_SN) == false))
+                if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
                     return false;
                 else
                     ;
@@ -307,10 +480,15 @@ namespace Statistic
                     //Ответ без запроса к БД в 'StateResponse'
                     //Запрос не требуется, т.к. сведеения получены при вызове 'InitTEC'
                     break;
-                case (int)StatesMachine.CurrentTime:
+                case (int)StatesMachine.CurrentTimeAdmin:
+                case (int)StatesMachine.CurrentTimeView:
+                case (int)StatesMachine.CurrentHours_Fact:
+                case (int)StatesMachine.CurrentMins_Fact:
                 case (int)StatesMachine.Current_TM_Gen:
                 case (int)StatesMachine.Current_TM_SN:
                 case (int)StatesMachine.LastMinutes_TM:
+                case (int)StatesMachine.RetroHours:
+                case (int)StatesMachine.RetroMins:
                 case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.AdminDates:
@@ -322,10 +500,7 @@ namespace Statistic
                     break;
             }
 
-            if (bRes == false)
-                error = true;
-            else
-                ;
+            error = !bRes;
 
             return bRes;
         }
@@ -342,7 +517,8 @@ namespace Statistic
                     reason = @"получения идентификаторов датчиков";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.CurrentTime:
+                case (int)StatesMachine.CurrentTimeAdmin:
+                case (int)StatesMachine.CurrentTimeView:
                     if (response == true)
                     {
                         reason = @"разбора";
@@ -356,9 +532,33 @@ namespace Statistic
                     waiting = @"Переход в ожидание";
 
                     break;
+                case (int)StatesMachine.CurrentHours_Fact:
+                    reason = @"получасовых значений";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
+                case (int)StatesMachine.CurrentMins_Fact:
+                    reason = @"3-х минутных значений";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
                 case (int)StatesMachine.Current_TM_Gen:
+                    reason = @"текущих значений (генерация)";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
                 case (int)StatesMachine.Current_TM_SN:
+                    reason = @"текущих значений (собств. нужды)";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
+                case (int)StatesMachine.LastMinutes_TM:
+                    reason = @"текущих значений 59 мин.";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    break;
+                case (int)StatesMachine.RetroHours:
+                    reason = @"получасовых значений";
+                    waiting = @"Переход в ожидание";
+                    break;
+                case (int)StatesMachine.RetroMins:
+                    reason = @"3-х минутных значений";
+                    waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if (response == true)
@@ -373,54 +573,104 @@ namespace Statistic
                     reason += @" сохранённых часовых значений (PPBR)";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.LastMinutes_TM:
-                    break;
                 case (int)StatesMachine.PPBRValues:
+                    reason = @"данных плана";
+                    break;
+                case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
+                    reason = @"административных значений";
                     break;
                 default:
                     msg = @"Неизвестная команда...";
                     break;
             }
 
-            Logging.Logg().LogErrorToFile(@"AdminAlarm::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
+            if (response)
+                reason = @"разбора " + reason;
+            else
+                reason = @"получения " + reason;
+
+            if (waiting.Equals(string.Empty) == true)
+                msg = "Ошибка " + reason + ". " + waiting + ".";
+            else
+                msg = "Ошибка " + reason + ".";
+
+            ErrorReport(msg);
+
+            Logging.Logg().LogErrorToFile(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
         }
 
         protected override bool StateRequest(int state)
         {
             bool bRes = true;
 
+            string msg = string.Empty;
+
             switch (state)
             {
                 case (int)StatesMachine.InitSensors:
+                    msg = @"идентификаторов датчиков";
                     //Запрос не требуется...
                     break;
-                case (int)StatesMachine.CurrentTime:
+                case (int)StatesMachine.CurrentTimeAdmin:
+                case (int)StatesMachine.CurrentTimeView:
+                    msg = @"текущего времени сервера";
                     GetCurrentTimeRequest();
                     break;
+                case (int)StatesMachine.CurrentHours_Fact:
+                    msg = @"получасовых значений";
+                    adminValuesReceived = false;
+                    GetHoursRequest(selectedTime.Date);
+                    break;
+                case (int)StatesMachine.CurrentMins_Fact:
+                    msg = @"трёхминутных значений";
+                    adminValuesReceived = false;
+                    GetMinsRequest(lastHour);
+                    break;
                 case (int)StatesMachine.Current_TM_Gen:
+                    msg = @"текущих значений (генерация)";
                     GetCurrentTMGenRequest ();
                     break;
                 case (int)StatesMachine.Current_TM_SN:
+                    msg = @"текущих значений (собств. нужды)";
                     GetCurrentTMSNRequest();
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
+                    msg = @"текущих значений 59 мин";
+                    GetLastMinutesTMRequest(selectedTime);
+                    break;
+                case (int)StatesMachine.RetroHours:
+                    msg = @"получасовых значений";
+                    adminValuesReceived = false;
+                    GetHoursRequest(selectedTime.Date);
+                    break;
+                case (int)StatesMachine.RetroMins:
+                    msg = @"трёхминутных значений";
+                    adminValuesReceived = false;
+                    GetMinsRequest(lastHour);
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    //ActionReport("Получение списка сохранённых часовых значений.");
+                    msg = @"списка сохранённых часовых значений";
                     GetPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.PPBRValues:
+                    msg = @"данных плана";
+                    GetPBRValuesRequest();
                     break;
                 case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
+                    msg = @"административных данных";
+                    adminValuesReceived = false;
+                    GetAdminValuesRequest(s_typeFields);
                     break;
                 default:
                     bRes = false;
                     break;
             }
+
+            ActionReport (msg);
 
             return bRes;
         }
@@ -447,8 +697,8 @@ namespace Statistic
                         else
                             ;
                     break;
-                case (int)StatesMachine.CurrentTime:
-                    result = GetCurrentTimeResponse(table);
+                case (int)StatesMachine.CurrentTimeAdmin:
+                    result = GetCurrentTimeAdminResponse(table);
                     if (result == true)
                     {
                         if (using_date == true) {
@@ -459,6 +709,36 @@ namespace Statistic
                         }
                         else
                             ;
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.CurrentTimeView:
+                    result = GetCurrentTimeViewResponse(table);
+                    if (result == true)
+                    {
+                        //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
+                        selectedTime = selectedTime.AddSeconds(-1 * Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
+                        this.BeginInvoke(delegateSetNowDate, true);
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.CurrentHours_Fact:
+                    ClearValues();
+                    //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
+                    result = GetHoursResponse(table);
+                    if (result == true)
+                    {
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.CurrentMins_Fact:
+                    result = GetMinsResponse(table);
+                    if (result == true)
+                    {
+                        //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
                     else
                         ;
@@ -480,6 +760,30 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
+                    result = GetLastMinutesTMResponse(table, selectedTime);
+                    if (result == true)
+                    {
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.RetroHours:
+                    ClearValues();
+                    result = GetHoursResponse(table);
+                    if (result == true)
+                    {
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.RetroMins:
+                    result = GetMinsResponse(table);
+                    if (result == true)
+                    {
+                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                    }
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
@@ -491,15 +795,41 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
+                    ClearPBRValues();
+                    result = GetPBRValuesResponse(table);
+                    if (result == true)
+                    {
+                    }
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
+                    ClearAdminValues();
+                    result = GetAdminValuesResponse(table);
+                    if (result == true)
+                    {
+                        //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
+                        ComputeRecomendation(lastHour);
+                        adminValuesReceived = true;
+                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                    }
+                    else
+                        ;
                     break;
                 default:
                     result = false;
                     break;
             }
+
+            if (result == true)
+                m_report.errored_state =
+                m_report.actioned_state = false;
+            else
+                ;
+
+            Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
         }
@@ -523,13 +853,1832 @@ namespace Statistic
                 newState = true;
                 states.Clear();
 
-                if (m_tec.m_SensorsString_SOTIASSO.Equals(string.Empty) == false)
+                if (m_tec.GetSensorsString (-1, CONN_SETT_TYPE.DATA_SOTIASSO).Equals(string.Empty) == false)
                     states.Add((int)StatesMachine.InitSensors);
                 else ;
 
                 states.Add((int)TecView.StatesMachine.Current_TM_Gen);
                 states.Add((int)TecView.StatesMachine.Current_TM_SN);
             }
+        }
+
+        private void ChangeState_View () {
+            newState = true;
+            states.Clear();
+
+            if (m_tec.m_bSensorsStrings == true)
+            {
+                if (currHour == true)
+                {
+                    states.Add((int)StatesMachine.CurrentTimeView);
+                }
+                else
+                {
+                    selectedTime = m_pnlQuickData.dtprDate.Value.Date;
+                }
+            }
+            else
+            {
+                states.Add((int)StatesMachine.InitSensors);
+                states.Add((int)StatesMachine.CurrentTimeView);
+            }
+
+            states.Add((int)StatesMachine.CurrentHours_Fact);
+            states.Add((int)StatesMachine.CurrentMins_Fact);
+            states.Add((int)StatesMachine.Current_TM_Gen);
+            states.Add((int)StatesMachine.LastMinutes_TM);
+            states.Add((int)StatesMachine.PPBRValues);
+            states.Add((int)StatesMachine.AdminValues);
+        }
+
+        public void ChangeState()
+        {
+            lock (m_lockValue)
+            {
+                switch (m_typePanel)
+                {
+                    case TecView.TYPE_PANEL.VIEW:
+                        ChangeState_View ();
+                        break;
+                    case TecView.TYPE_PANEL.CUR_POWER:
+                        GetCurPower ();
+                        break;
+                    case TecView.TYPE_PANEL.LAST_MINUTES:
+                        break;
+                    case TecView.TYPE_PANEL.ADMIN_ALARM:
+                        break;
+                    default:
+                        break;
+                }
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private bool GetCurrentTimeAdminResponse(DataTable table)
+        {
+            return GetCurrentTimeResponse(table);
+        }
+
+        private bool GetCurrentTimeViewResponse(DataTable table)
+        {
+            if (table.Rows.Count == 1)
+            {
+                try
+                {
+                    selectedTime = (DateTime)table.Rows[0][0];
+                    serverTime = selectedTime;
+                }
+                catch (Exception excpt)
+                {
+                    Logging.Logg().LogExceptionToFile(excpt, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
+
+                    return false;
+                }
+            }
+            else
+            {
+                //selectedTime = System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
+                //ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public void zedGraphHours_MouseUpEvent (int indx) {
+            lock (m_lockValue)
+            {
+                currHour = false;
+                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
+                {
+                    if (indx <= m_valuesHours.hourAddon)
+                    {
+                        lastHour = indx;
+                        m_valuesHours.addonValues = false;
+                    }
+                    else
+                    {
+                        if (indx == m_valuesHours.hourAddon + 1)
+                        {
+                            lastHour = indx - 1;
+                            m_valuesHours.addonValues = true;
+                        }
+                        else
+                        {
+                            lastHour = indx - 1;
+                            m_valuesHours.addonValues = false;
+                        }
+                    }
+                }
+                else
+                    if (m_valuesHours.season == seasonJumpE.WinterToSummer)
+                    {
+                        if (indx < m_valuesHours.hourAddon)
+                            lastHour = indx;
+                        else
+                            lastHour = indx + 1;
+                    }
+                    else
+                        lastHour = indx;
+                ClearValuesMins();
+
+                newState = true;
+                states.Clear();
+                states.Add((int)StatesMachine.RetroMins);
+                states.Add((int)StatesMachine.PPBRValues);
+                states.Add((int)StatesMachine.AdminValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
+
+            }
+        }
+
+        protected void ClearValuesMins()
+        {
+            for (int i = 0; i < 21; i++)
+                m_valuesMins.valuesFact[i] =
+                m_valuesMins.valuesDiviation[i] =
+                m_valuesMins.valuesPBR[i] =
+                m_valuesMins.valuesPBRe[i] =
+                m_valuesMins.valuesUDGe[i] = 0;
+        }
+
+        protected void ClearValuesHours()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_valuesHours.valuesFact[i] =
+                m_valuesHours.valuesLastMinutesTM[i] =
+                m_valuesHours.valuesDiviation[i] =
+                m_valuesHours.valuesPBR[i] =
+                m_valuesHours.valuesPmin[i] =
+                m_valuesHours.valuesPmax[i] =
+                m_valuesHours.valuesPBRe[i] =
+                m_valuesHours.valuesUDGe[i] = 0;
+
+                m_valuesHours.valuesForeignCommand[i] = true;
+            }
+
+            m_valuesHours.valuesFactAddon =
+            m_valuesHours.valuesDiviationAddon =
+            m_valuesHours.valuesPBRAddon =
+            m_valuesHours.valuesPBReAddon =
+            m_valuesHours.valuesUDGeAddon = 0;
+            m_valuesHours.season = seasonJumpE.None;
+            m_valuesHours.hourAddon = 0;
+            m_valuesHours.addonValues = false;
+        }
+
+        private void ClearPBRValues()
+        {
+        }
+
+        private void ClearAdminValues()
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                m_valuesHours.valuesDiviation[i] =
+                m_valuesHours.valuesPBR[i] =
+                m_valuesHours.valuesPmin[i] =
+                m_valuesHours.valuesPmax[i] =
+                m_valuesHours.valuesPBRe[i] =
+                m_valuesHours.valuesUDGe[i] = 0;
+
+                m_valuesHours.valuesForeignCommand[i] = true;
+            }
+
+            m_valuesHours.valuesDiviationAddon =
+            m_valuesHours.valuesPBRAddon =
+            m_valuesHours.valuesPBReAddon =
+            m_valuesHours.valuesUDGeAddon = 0;
+
+            for (int i = 0; i < 21; i++)
+                m_valuesMins.valuesDiviation[i] =
+                m_valuesMins.valuesPBR[i] =
+                m_valuesMins.valuesPBRe[i] =
+                m_valuesMins.valuesUDGe[i] = 0;
+        }
+
+
+        private bool GetAdminValuesResponse(DataTable table_in)
+        {
+            DateTime date = m_pnlQuickData.dtprDate.Value.Date
+                    , dtPBR;
+            int hour;
+
+            double currPBRe;
+            int offsetPrev = -1
+                //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePPBRValuesResponse.Rows.Count
+                , i = -1, j = -1,
+                offsetUDG, offsetPlan, offsetLayout;
+
+            lastLayout = "---";
+
+            //switch (tec.type ()) {
+            //    case TEC.TEC_TYPE.COMMON:
+            //        offsetPrev = -1;
+
+            if ((indx_TECComponent < 0) || ((!(indx_TECComponent < 0)) && (m_tec.list_TECComponents[indx_TECComponent].m_id > 500)))
+            {
+                double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
+                double[,] valuesPmin = new double[m_list_TECComponents.Count, 25];
+                double[,] valuesPmax = new double[m_list_TECComponents.Count, 25];
+                double[,] valuesREC = new double[m_list_TECComponents.Count, 25];
+                int[,] valuesISPER = new int[m_list_TECComponents.Count, 25];
+                double[,] valuesDIV = new double[m_list_TECComponents.Count, 25];
+
+                offsetUDG = 1;
+                offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
+                offsetLayout = -1;
+
+                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indx_TECComponent);
+                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
+
+                table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, indx_TECComponent);
+
+                //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
+                //    try { table_in.Columns.Remove("ID_COMPONENT"); }
+                //    catch (Exception excpt)
+                //    {
+                //        /*
+                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...");
+                //        */
+                //    }
+                //else
+                //    ;
+
+                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count && offsetPrev < 0; i++)
+                {
+                    if (!(m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+                    {
+                        try
+                        {
+                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+
+                            hour = dtPBR.Hour;
+                            if ((hour == 0) && (dtPBR.Day == date.Day))
+                            {
+                                offsetPrev = i;
+                                //foreach (TECComponent g in tec.list_TECComponents)
+                                for (j = 0; j < m_list_TECComponents.Count; j++)
+                                {
+                                    if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
+                                    {
+                                        valuesPBR[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
+                                        valuesPmin[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
+                                        valuesPmax[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                    }
+                                    else
+                                    {
+                                        valuesPBR[j, 24] = 0.0;
+                                        valuesPmin[j, 24] = 0.0;
+                                        valuesPmax[j, 24] = 0.0;
+                                    }
+                                    //j++;
+                                }
+                            }
+                            else
+                                ;
+                        }
+                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                            }
+                            else
+                                ;
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                // разбор остальных значений
+                for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
+                {
+                    if (i == offsetPrev)
+                        continue;
+                    else
+                        ;
+
+                    if (!(m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+                    {
+                        try
+                        {
+                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+
+                            hour = dtPBR.Hour;
+                            if (hour == 0 && ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+                                else
+                                    ;
+
+                            //foreach (TECComponent g in tec.list_TECComponents)
+                            for (j = 0; j < m_list_TECComponents.Count; j++)
+                            {
+                                try
+                                {
+                                    if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
+                                    {
+                                        valuesPBR[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
+                                        valuesPmin[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                        valuesPmax[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                    }
+                                    else
+                                    {
+                                        valuesPBR[j, hour - 1] = 0.0;
+                                    }
+
+                                    DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                    //if (i < table_in.Rows.Count)
+                                    if (row_in.Length > 0)
+                                    {
+                                        if (row_in.Length > 1)
+                                            ; //Ошибка....
+                                        else
+                                            ;
+
+                                        if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
+                                            //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                            valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                        else
+                                            valuesREC[j, hour - 1] = 0;
+
+                                        if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
+                                            valuesISPER[j, hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                        else
+                                            ;
+
+                                        if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
+                                            valuesDIV[j, hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                        else
+                                            ;
+                                    }
+                                    else
+                                    {
+                                        valuesREC[j, hour - 1] = 0;
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                                }
+                                //j++;
+                            }
+
+                            string tmp = "";
+                            //if ((m_tablePPBRValuesResponse.Columns.Contains ("PBR_NUMBER")) && !(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull))
+                            if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
+                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                            else
+                                ;
+
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;
+                            else
+                                ;
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+                                else
+                                    ;
+
+                            //foreach (TECComponent g in tec.list_TECComponents)
+                            for (j = 0; j < m_list_TECComponents.Count; j++)
+                            {
+                                try
+                                {
+                                    valuesPBR[j, hour - 1] = 0;
+
+                                    if (i < table_in.Rows.Count)
+                                    {
+                                        if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+                                            //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                            valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                        else
+                                            valuesREC[j, hour - 1] = 0;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+                                            valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                        else
+                                            ;
+
+                                        if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+                                            valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                        else
+                                            ;
+                                    }
+                                    else
+                                    {
+                                        valuesREC[j, hour - 1] = 0;
+                                    }
+                                }
+                                catch
+                                {
+                                }
+                                //j++;
+                            }
+
+                            string tmp = "";
+                            if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
+                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                            else
+                                ;
+
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;
+                            else
+                                ;
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                for (i = 0; i < 24; i++)
+                {
+                    for (j = 0; j < m_list_TECComponents.Count; j++)
+                    {
+                        m_valuesHours.valuesPBR[i] += valuesPBR[j, i];
+                        m_valuesHours.valuesPmin[i] += valuesPmin[j, i];
+                        m_valuesHours.valuesPmax[i] += valuesPmax[j, i];
+                        if (i == 0)
+                        {
+                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
+                            m_valuesHours.valuesPBRe[i] += currPBRe;
+                        }
+                        else
+                        {
+                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
+                            m_valuesHours.valuesPBRe[i] += currPBRe;
+                        }
+
+                        m_valuesHours.valuesREC[i] += valuesREC[j, i];
+
+                        m_valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+
+                        if (valuesISPER[j, i] == 1)
+                            m_valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                        else
+                            m_valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                    }
+                    /*m_valuesHours.valuesPBR[i] = 0.20;
+                    m_valuesHours.valuesPBRe[i] = 0.20;
+                    m_valuesHours.valuesUDGe[i] = 0.20;
+                    m_valuesHours.valuesDiviation[i] = 0.05;*/
+                }
+
+                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
+                {
+                    m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
+                }
+            }
+            else
+            {
+                double[] valuesPBR = new double[25];
+                double[] valuesPmin = new double[25];
+                double[] valuesPmax = new double[25];
+                double[] valuesREC = new double[25];
+                int[] valuesISPER = new int[25];
+                double[] valuesDIV = new double[25];
+
+                offsetUDG = 1;
+                offsetPlan = 1;
+                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? offsetPlan + 3 : m_tablePPBRValuesResponse.Columns.Count;
+
+                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+                for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count && offsetPrev < 0; i++)
+                {
+                    if (!(m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+                    {
+                        try
+                        {
+                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+
+                            hour = dtPBR.Hour;
+                            if (hour == 0 && ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                                valuesPBR[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
+                                valuesPmin[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
+                                valuesPmax[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                            {
+                                offsetPrev = i;
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                // разбор остальных значений
+                for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
+                {
+                    if (i == offsetPrev)
+                        continue;
+                    else
+                        ;
+
+                    if (!(m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+                    {
+                        try
+                        {
+                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+
+                            hour = dtPBR.Hour;
+                            if ((hour == 0) && (!(dtPBR.Day == date.Day)))
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+                                else
+                                    ;
+
+                            if ((offsetPlan < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan] is System.DBNull)))
+                            {
+                                valuesPBR[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
+                                valuesPmin[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
+                                valuesPmax[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
+                            }
+                            else
+                                ;
+
+                            DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                            //if (i < table_in.Rows.Count)
+                            if (row_in.Length > 0)
+                            {
+                                if (row_in.Length > 1)
+                                    ; //Ошибка....
+                                else
+                                    ;
+
+                                if (!(row_in[0][offsetUDG] is System.DBNull))
+                                    //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
+                                    valuesREC[hour - 1] = (double)row_in[0][offsetUDG + 0];
+                                else
+                                    valuesREC[hour - 1] = 0;
+
+                                if (!(row_in[0][offsetUDG + 1] is System.DBNull))
+                                    valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1];
+                                else
+                                    ;
+
+                                if (!(row_in[0][offsetUDG + 2] is System.DBNull))
+                                    valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2];
+                                else
+                                    ;
+                            }
+                            else
+                            {
+                                valuesREC[hour - 1] = 0;
+                                //valuesISPER[hour - 1] = 0;
+                                //valuesDIV[hour - 1] = 0;
+                            }
+
+                            string tmp = "";
+                            if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
+                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                            else
+                                ;
+
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;
+                            else
+                                ;
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().LogExceptionToFile(e, "PanelTecViewBase::GetAdminValueResponse ()...");
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                                hour = 24;
+                            else
+                                if (hour == 0)
+                                    continue;
+                                else
+                                    ;
+
+                            valuesPBR[hour - 1] = 0;
+
+                            if (i < table_in.Rows.Count)
+                            {
+                                if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
+                                    //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
+                                    valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+                                else
+                                    valuesREC[hour - 1] = 0;
+
+                                if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
+                                    valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                else
+                                    ;
+
+                                if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
+                                    valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                else
+                                    ;
+                            }
+                            else
+                            {
+                                valuesREC[hour - 1] = 0;
+                                //valuesISPER[hour - 1] = 0;
+                                //valuesDIV[hour - 1] = 0;
+                            }
+
+                            string tmp = "";
+                            if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
+                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                            else
+                                ;
+
+                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                                lastLayout = tmp;
+                            else
+                                ;
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                for (i = 0; i < 24; i++)
+                {
+
+                    m_valuesHours.valuesPBR[i] = valuesPBR[i];
+                    m_valuesHours.valuesPmin[i] = valuesPmin[i];
+                    m_valuesHours.valuesPmax[i] = valuesPmax[i];
+                    if (i == 0)
+                    {
+                        currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
+                        m_valuesHours.valuesPBRe[i] = currPBRe;
+                    }
+                    else
+                    {
+                        currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
+                        m_valuesHours.valuesPBRe[i] = currPBRe;
+                    }
+
+                    m_valuesHours.valuesUDGe[i] = currPBRe + valuesREC[i];
+
+                    if (valuesISPER[i] == 1)
+                        m_valuesHours.valuesDiviation[i] = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                    else
+                        m_valuesHours.valuesDiviation[i] = valuesDIV[i];
+                }
+
+                if (m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                {
+                    m_valuesHours.valuesPBRAddon = m_valuesHours.valuesPBR[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesPBReAddon = m_valuesHours.valuesPBRe[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesUDGeAddon = m_valuesHours.valuesUDGe[m_valuesHours.hourAddon];
+                    m_valuesHours.valuesDiviationAddon = m_valuesHours.valuesDiviation[m_valuesHours.hourAddon];
+                }
+                else
+                    ;
+            }
+
+            hour = lastHour;
+            if (hour == 24)
+                hour = 23;
+
+            for (i = 0; i < 21; i++)
+            {
+                m_valuesMins.valuesPBR[i] = m_valuesHours.valuesPBR[hour];
+                m_valuesMins.valuesPBRe[i] = m_valuesHours.valuesPBRe[hour];
+                m_valuesMins.valuesUDGe[i] = m_valuesHours.valuesUDGe[hour];
+                m_valuesMins.valuesDiviation[i] = m_valuesHours.valuesDiviation[hour];
+            }
+
+            return true;
+        }
+
+        private void ComputeRecomendation(int hour)
+        {
+            if (hour == 24)
+                hour = 23;
+
+            if (m_valuesHours.valuesUDGe[hour] == 0)
+            {
+                recomendation = 0;
+                return;
+            }
+
+            if (!currHour)
+            {
+                recomendation = m_valuesHours.valuesUDGe[hour];
+                return;
+            }
+
+            if (lastMin < 2)
+            {
+                recomendation = m_valuesHours.valuesUDGe[hour];
+                return;
+            }
+
+            double factSum = 0;
+            for (int i = 1; i < lastMin; i++)
+                factSum += m_valuesMins.valuesFact[i];
+
+            if (lastMin == 21)
+                recomendation = 0;
+            else
+                recomendation = (m_valuesHours.valuesUDGe[hour] * 20 - factSum) / (20 - (lastMin - 1));
+
+            if (recomendation < 0)
+                recomendation = 0;
+        }
+
+
+        public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
+        {
+            DataTable table_in_restruct = new DataTable();
+            List<DataColumn> cols_data = new List<DataColumn>();
+            DataRow[] dataRows;
+            int i = -1, j = -1, k = -1;
+            string nameFieldDate = "DATE_PBR"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME]
+
+            for (i = 0; i < table_in.Columns.Count; i++)
+            {
+                if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
+                {
+                    //Преобразование таблицы
+                    break;
+                }
+                else
+                    ;
+            }
+
+            if (i < table_in.Columns.Count)
+            {
+                List<TG> list_TG = null;
+                List<TECComponent> list_TECComponents = null;
+                int count_comp = -1;
+
+                if (num_comp < 0)
+                {
+                    list_TECComponents = new List<TECComponent>();
+                    for (i = 0; i < listTECComp.Count; i++)
+                    {
+                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                            list_TECComponents.Add(listTECComp[i]);
+                        else
+                            ;
+                    }
+                }
+                else
+                    list_TG = listTECComp[num_comp].m_listTG;
+
+                //Преобразование таблицы
+                for (i = 0; i < table_in.Columns.Count; i++)
+                {
+                    if ((!(table_in.Columns[i].ColumnName.Equals("ID_COMPONENT") == true))
+                        && (!(table_in.Columns[i].ColumnName.Equals(nameFieldDate) == true))
+                        //&& (!(table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                        && (!(table_in.Columns[i].ColumnName.Equals(@"PBR_NUMBER") == true))
+                    )
+                    //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
+                    {
+                        cols_data.Add(table_in.Columns[i]);
+                    }
+                    else
+                        if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
+                            //|| (table_in.Columns[i].ColumnName.Equals (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)
+                            || (table_in.Columns[i].ColumnName.Equals(@"PBR_NUMBER") == true)
+                        )
+                        {
+                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
+                        }
+                        else
+                            ;
+                }
+
+                if (num_comp < 0)
+                    count_comp = list_TECComponents.Count;
+                else
+                    count_comp = list_TG.Count;
+
+                for (i = 0; i < count_comp; i++)
+                {
+                    for (j = 0; j < cols_data.Count; j++)
+                    {
+                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
+                        if (num_comp < 0)
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
+                        else
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
+                    }
+                }
+
+                //if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                //table_in_restruct.Columns[tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                table_in_restruct.Columns[@"PBR_NUMBER"].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                //else
+                //    ;
+
+                List<DataRow[]> listDataRows = new List<DataRow[]>();
+
+                for (i = 0; i < count_comp; i++)
+                {
+                    if (num_comp < 0)
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
+                    else
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
+
+                    listDataRows.Add(new DataRow[dataRows.Length]);
+                    dataRows.CopyTo(listDataRows[i], 0);
+
+                    int indx_row = -1;
+                    for (j = 0; j < listDataRows[i].Length; j++)
+                    {
+                        for (k = 0; k < table_in_restruct.Rows.Count; k++)
+                        {
+                            if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
+                                break;
+                            else
+                                ;
+                        }
+
+                        if (!(k < table_in_restruct.Rows.Count))
+                        {
+                            table_in_restruct.Rows.Add();
+
+                            indx_row = table_in_restruct.Rows.Count - 1;
+
+                            //Заполнение DATE_ADMIN (постоянные столбцы)
+                            table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
+                            //if (tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                            //table_in_restruct.Rows[indx_row][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                            table_in_restruct.Rows[indx_row][@"PBR_NUMBER"] = listDataRows[i][j][@"PBR_NUMBER"];
+                            //else
+                            //    ;
+                        }
+                        else
+                            indx_row = k;
+
+                        for (k = 0; k < cols_data.Count; k++)
+                        {
+                            if (num_comp < 0)
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            else
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                        }
+                    }
+                }
+            }
+            else
+                table_in_restruct = table_in;
+
+            return table_in_restruct;
+        }
+
+        public static DataTable restruct_table_adminValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
+        {
+            DataTable table_in_restruct = new DataTable();
+            List<DataColumn> cols_data = new List<DataColumn>();
+            DataRow[] dataRows;
+            int i = -1, j = -1, k = -1;
+            string nameFieldDate = "DATE_ADMIN"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
+
+            for (i = 0; i < table_in.Columns.Count; i++)
+            {
+                if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
+                {
+                    //Преобразование таблицы
+                    break;
+                }
+                else
+                    ;
+            }
+
+            if (i < table_in.Columns.Count)
+            {
+                List<TG> list_TG = null;
+                List<TECComponent> list_TECComponents = null;
+                int count_comp = -1;
+
+                if (num_comp < 0)
+                {
+                    list_TECComponents = new List<TECComponent>();
+                    for (i = 0; i < listTECComp.Count; i++)
+                    {
+                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                            list_TECComponents.Add(listTECComp[i]);
+                        else
+                            ;
+                    }
+                }
+                else
+                    list_TG = listTECComp[num_comp].m_listTG;
+
+                //Преобразование таблицы
+                for (i = 0; i < table_in.Columns.Count; i++)
+                {
+                    if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT")) && (!(table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)))
+                    //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
+                    {
+                        cols_data.Add(table_in.Columns[i]);
+                    }
+                    else
+                        if (table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
+                        {
+                            table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
+                        }
+                        else
+                            ;
+                }
+
+                if (num_comp < 0)
+                    count_comp = list_TECComponents.Count;
+                else
+                    count_comp = list_TG.Count;
+
+                for (i = 0; i < count_comp; i++)
+                {
+                    for (j = 0; j < cols_data.Count; j++)
+                    {
+                        table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
+                        if (num_comp < 0)
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
+                        else
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
+                    }
+                }
+
+                List<DataRow[]> listDataRows = new List<DataRow[]>();
+
+                for (i = 0; i < count_comp; i++)
+                {
+                    if (num_comp < 0)
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
+                    else
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
+                    listDataRows.Add(new DataRow[dataRows.Length]);
+                    dataRows.CopyTo(listDataRows[i], 0);
+
+                    int indx_row = -1;
+                    for (j = 0; j < listDataRows[i].Length; j++)
+                    {
+                        for (k = 0; k < table_in_restruct.Rows.Count; k++)
+                        {
+                            if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
+                                break;
+                            else
+                                ;
+                        }
+
+                        if (!(k < table_in_restruct.Rows.Count))
+                        {
+                            table_in_restruct.Rows.Add();
+
+                            indx_row = table_in_restruct.Rows.Count - 1;
+
+                            //Заполнение DATE_ADMIN (постоянные столбцы)
+                            table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
+                        }
+                        else
+                            indx_row = k;
+
+                        for (k = 0; k < cols_data.Count; k++)
+                        {
+                            if (num_comp < 0)
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            else
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                        }
+                    }
+                }
+            }
+            else
+                table_in_restruct = table_in;
+
+            return table_in_restruct;
+        }
+
+
+        private bool GetHoursResponse(DataTable table)
+        {
+            int i, j, half, hour = 0, halfAddon;
+            double hourVal = 0, halfVal = 0, value, hourValAddon = 0;
+            double[] oldValuesTG = new double[CountTG];
+            int[] oldIdTG = new int[CountTG];
+            int id;
+            TG tgTmp;
+            bool end = false;
+            DateTime dt, dtNeeded;
+            int season = 0, prev_season = 0;
+            bool jump_forward = false, jump_backward = false;
+
+            lastHour = lastReceivedHour = 0;
+            half = 0;
+            halfAddon = 0;
+
+            /*Form2 f2 = new Form2();
+            f2.FillHourTable(table);*/
+
+            lastHourHalfError = lastHourError = false;
+
+            foreach (TECComponent g in m_tec.list_TECComponents)
+            {
+                foreach (TG t in g.m_listTG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.receivedHourHalf1[i] = t.receivedHourHalf2[i] = false;
+                    }
+                }
+            }
+
+            if (table.Rows.Count > 0)
+            {
+                try
+                {
+                    //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
+                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
+                        return false;
+
+                    //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
+                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
+                        return false;
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+
+                    dt = DateTime.Now.Date;
+                }
+
+                GetSeason(dt, season, out season);
+                prev_season = season;
+                hour = dt.Hour;
+                dtNeeded = dt;
+
+                if (dt.Minute == 0)
+                    half++;
+                else
+                    ;
+            }
+            else
+            {
+                if (currHour)
+                {
+                    if (selectedTime.Hour != 0)
+                    {
+                        lastHour = lastReceivedHour = selectedTime.Hour;
+                        lastHourError = true;
+                    }
+                }
+                /*f2.FillHourValues(lastHour, selectedTime, m_tecView.m_valuesHours.valuesFact);
+                f2.ShowDialog();*/
+                return true;
+            }
+
+            for (i = 0; hour < 24 && !end; )
+            {
+                if (half == 2 || halfAddon == 2) // прошёл один час
+                {
+                    if (!jump_backward)
+                    {
+                        if (jump_forward)
+                            m_valuesHours.hourAddon = hour; // уточнить
+                        m_valuesHours.valuesFact[hour] = hourVal / 2000;
+                        hour++;
+                        half = 0;
+                        hourVal = 0;
+                    }
+                    else
+                    {
+                        m_valuesHours.valuesFactAddon = hourValAddon / 2000;
+                        m_valuesHours.hourAddon = hour - 1;
+                        hourValAddon = 0;
+                        prev_season = season;
+                        halfAddon++;
+                    }
+                    lastHour = lastReceivedHour = hour;
+                }
+
+                halfVal = 0;
+
+                jump_forward = false;
+                jump_backward = false;
+
+                for (j = 0; j < CountTG; j++, i++)
+                {
+                    if (i >= table.Rows.Count)
+                    {
+                        end = true;
+                        break;
+                    }
+
+                    try
+                    {
+                        if (DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt) == false)
+                            return false;
+
+                        if (int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season) == false)
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+
+                        dt = DateTime.Now.Date;
+                    }
+
+                    if (dt.CompareTo(dtNeeded) != 0)
+                    {
+                        GetSeason(dt, season, out season);
+                        if (dt.CompareTo(dtNeeded.AddMinutes(-30)) == 0 && prev_season == 1 && season == 2)
+                        {
+                            dtNeeded = dtNeeded.AddMinutes(-30);
+                            jump_backward = true;
+                        }
+                        else
+                            if (dt.CompareTo(dtNeeded.AddMinutes(30)) == 0 && prev_season == 0 && season == 1)
+                            {
+                                jump_forward = true;
+                                break;
+                            }
+                            else
+                                break;
+                    }
+
+                    //if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    if (table.Columns.Contains(@"ID") == true)
+                        if (int.TryParse(table.Rows[i][@"ID"].ToString(), out id) == false)
+                            return false;
+                        else
+                            ;
+                    else
+                        return false;
+
+                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
+                    if (tgTmp == null)
+                        return false;
+                    else
+                        ;
+
+                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    if (table.Columns.Contains(@"VALUE0") == true)
+                        if (double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value) == false)
+                            return false;
+                        else
+                            ;
+                    else
+                        return false;
+
+                    switch (m_tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            value *= 2;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    halfVal += value;
+                    if (!jump_backward)
+                    {
+                        if (half == 0)
+                            tgTmp.receivedHourHalf1[hour] = true;
+                        else
+                            tgTmp.receivedHourHalf2[hour] = true;
+                    }
+                    else
+                    {
+                        if (halfAddon == 0)
+                            tgTmp.receivedHourHalf1Addon = true;
+                        else
+                            tgTmp.receivedHourHalf2Addon = true;
+                    }
+                }
+
+                dtNeeded = dtNeeded.AddMinutes(30);
+
+                if (!jump_backward)
+                {
+                    if (jump_forward)
+                        m_valuesHours.season = seasonJumpE.WinterToSummer;
+
+                    if (!end)
+                        half++;
+
+                    hourVal += halfVal;
+                }
+                else
+                {
+                    m_valuesHours.season = seasonJumpE.SummerToWinter;
+                    m_valuesHours.addonValues = true;
+
+                    if (!end)
+                        halfAddon++;
+
+                    hourValAddon += halfVal;
+                }
+            }
+
+            /*f2.FillHourValues(lastHour, selectedTime, m_valuesHours.valuesFact);
+            f2.ShowDialog();*/
+
+            if (currHour)
+            {
+                if (lastHour < selectedTime.Hour)
+                {
+                    lastHourError = true;
+                    lastHour = selectedTime.Hour;
+                }
+                else
+                {
+                    if (selectedTime.Hour == 0 && lastHour != 24 && dtNeeded.Date != selectedTime.Date)
+                    {
+                        lastHourError = true;
+                        lastHour = 24;
+                    }
+                    else
+                    {
+                        if (lastHour != 0)
+                        {
+                            for (i = 0; i < listTG.Count; i++)
+                            {
+                                if ((half & 1) == 1)
+                                {
+                                    //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h1 " + sensorId2TG[i].receivedHourHalf1[lastHour - 1].ToString());
+                                    if (!listTG[i].receivedHourHalf1[lastHour - 1])
+                                    {
+                                        lastHourHalfError = true;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h2 " + sensorId2TG[i].receivedHourHalf2[lastHour - 1].ToString());
+                                    if (!listTG[i].receivedHourHalf2[lastHour - 1])
+                                    {
+                                        lastHourHalfError = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            lastReceivedHour = lastHour;
+
+            return true;
+        }
+
+        private bool GetCurrentTMResponse(DataTable table)
+        {
+            bool bRes = true;
+            int i = -1,
+                id = -1;
+            double value = -1;
+            TG tgTmp;
+
+            foreach (TECComponent g in m_tec.list_TECComponents)
+            {
+                foreach (TG t in g.m_listTG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.power_TM = 0;
+                    }
+                }
+            }
+
+            for (i = 0; i < table.Rows.Count; i++)
+            {
+                if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
+                    return false;
+                else
+                    ;
+
+                tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+
+                if (tgTmp == null)
+                    return false;
+                else
+                    ;
+
+                if (!(table.Rows[i]["value"] is DBNull))
+                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                        return false;
+                    else
+                        ;
+                else
+                    value = 0.0;
+
+                switch (m_tec.type())
+                {
+                    case TEC.TEC_TYPE.COMMON:
+                        break;
+                    case TEC.TEC_TYPE.BIYSK:
+                        //value *= 20;
+                        break;
+                    default:
+                        break;
+                }
+
+                tgTmp.power_TM = value;
+            }
+
+            return bRes;
+        }
+
+        private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
+        {
+            bool bRes = true;
+            int i = -1,
+                hour = -1,
+                offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
+            double value = -1;
+            DateTime dtVal = DateTime.Now;
+            DataRow[] tgRows = null;
+
+            if (indx_TECComponent < 0)
+            {
+                foreach (TECComponent g in m_list_TECComponents)
+                {
+                    foreach (TG tg in g.m_listTG)
+                    {
+                        for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                        {
+                            tg.power_LastMinutesTM[i] = 0;
+                        }
+
+                        tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+
+                        for (i = 0; i < tgRows.Length; i++)
+                        {
+                            if (!(tgRows[i]["value"] is DBNull))
+                                if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                    return false;
+                                else
+                                    ;
+                            else
+                                value = 0.0;
+
+                            if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
+                                return false;
+                            else
+                                ;
+
+                            hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
+                            if (!(hour < 24)) hour -= 24; else ;
+
+                            tg.power_LastMinutesTM[hour] = value;
+
+                            //Запрос с учетом значения перехода через сутки
+                            if (hour > 0 && value > 1)
+                                m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                            else
+                                ;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (TG tg in m_list_TECComponents)
+                {
+                    for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                    {
+                        tg.power_LastMinutesTM[i] = 0;
+                    }
+
+                    tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+
+                    for (i = 0; i < tgRows.Length; i++)
+                    {
+                        if (tgRows[i] == null)
+                            continue;
+                        else
+                            ;
+
+                        try
+                        {
+                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                return false;
+                            else
+                                ;
+
+                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                return false;
+                            else
+                                ;
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                            dtVal = DateTime.Now.Date;
+                        }
+
+                        hour = dtVal.Hour + offsetUTC + 1;
+                        //if (!(hour < 24))
+                        if (hour > 24)
+                            hour -= 24;
+                        else ;
+
+                        //if (dtReq.Date.Equals (dtVal.Date) == true) {
+                        tg.power_LastMinutesTM[hour] = value;
+
+                        if (hour > 0 && value > 1)
+                            m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                        else
+                            ;
+                        //} else ;
+                    }
+                }
+            }
+
+            return bRes;
+        }
+
+        private bool GetMinsResponse(DataTable table)
+        {
+            int i, j = 0, min = 0;
+            double minVal = 0, value;
+            TG tgTmp;
+            int id;
+            bool end = false;
+            DateTime dt, dtNeeded;
+            int season = 0, need_season = 0, max_season = 0;
+            bool jump = false;
+
+            lastMinError = false;
+
+            /*Form2 f2 = new Form2();
+            f2.FillMinTable(table);*/
+
+            foreach (TECComponent g in m_tec.list_TECComponents)
+            {
+                foreach (TG t in g.m_listTG)
+                {
+                    for (i = 0; i < t.power.Length; i++)
+                    {
+                        t.power[i] = 0;
+                        t.receivedMin[i] = false;
+                    }
+                }
+            }
+
+            lastMin = 0;
+
+            if (table.Rows.Count > 0)
+            {
+                if (table.Columns.Contains(@"DATA_DATE") == true)
+                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
+                        return false;
+                    else
+                        ;
+                else
+                    return false;
+
+                if (table.Columns.Contains(@"SEASON") == true)
+                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
+                        return false;
+                    else
+                        ;
+                else
+                    return false;
+
+                need_season = max_season = season;
+                min = (int)(dt.Minute / 3);
+                dtNeeded = dt;
+            }
+            else
+            {
+                if (currHour)
+                {
+                    if ((selectedTime.Minute / 3) != 0)
+                    {
+                        lastMinError = true;
+                        lastMin = ((selectedTime.Minute) / 3) + 1;
+                    }
+                }
+                /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
+                f2.ShowDialog();*/
+                return true;
+            }
+
+            for (i = 0; i < table.Rows.Count; i++)
+            {
+                if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
+                    return false;
+                if (season > max_season)
+                    max_season = season;
+            }
+
+            if (currHour)
+            {
+                if (need_season != max_season)
+                {
+                    m_valuesHours.addonValues = true;
+                    m_valuesHours.hourAddon = lastHour - 1;
+                    need_season = max_season;
+                }
+            }
+            else
+            {
+                if (m_valuesHours.addonValues)
+                {
+                    need_season = max_season;
+                }
+            }
+
+            for (i = 0; !end && min < 21; min++)
+            {
+                if (jump)
+                {
+                    min--;
+                }
+                else
+                {
+                    m_valuesMins.valuesFact[min] = 0;
+                    minVal = 0;
+                }
+
+                /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
+                                 ", table.Rows.Count " + table.Rows.Count.ToString());*/
+                jump = false;
+                for (j = 0; j < CountTG; j++, i++)
+                {
+                    if (i >= table.Rows.Count)
+                    {
+                        end = true;
+                        break;
+                    }
+
+                    try
+                    {
+                        if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
+                            return false;
+                        if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                        dt = DateTime.Now.Date;
+                    }
+
+                    if (season != need_season)
+                    {
+                        jump = true;
+                        i++;
+                        break;
+                    }
+
+                    if (dt.CompareTo(dtNeeded) != 0)
+                    {
+                        break;
+                    }
+
+                    if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
+                        return false;
+
+                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
+
+                    if (tgTmp == null)
+                        return false;
+
+                    if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value))
+                        return false;
+                    else
+                        ;
+
+                    switch (m_tec.type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            break;
+                        case TEC.TEC_TYPE.BIYSK:
+                            value *= 20;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    minVal += value;
+                    tgTmp.power[min] = value / 1000;
+                    tgTmp.receivedMin[min] = true;
+                }
+
+                if (!jump)
+                {
+                    dtNeeded = dtNeeded.AddMinutes(3);
+
+                    //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
+
+                    if (!end)
+                    {
+                        m_valuesMins.valuesFact[min] = minVal / 1000;
+                        lastMin = min + 1;
+                    }
+                }
+            }
+
+            /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
+            f2.ShowDialog();*/
+
+            if (lastMin <= ((selectedTime.Minute - 1) / 3))
+            {
+                lastMinError = true;
+                //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
+            }
+
+            return true;
+        }
+
+        private int LayotByName(string l)
+        {
+            int iRes = -1;
+
+            if (l.Length > 3)
+                switch (l)
+                {
+                    case "ППБР": iRes = 0; break;
+                    default:
+                        {
+                            if (l.Substring(0, 3) != "ПБР" || int.TryParse(l.Substring(3), out iRes) == false || iRes <= 0 || iRes > 24)
+                                ;
+                            else
+                                ;
+                        }
+                        break;
+                }
+            else
+                ;
+
+            return iRes;
+        }
+
+        private void GetSeason(DateTime date, int db_season, out int season)
+        {
+            season = db_season - date.Year - date.Year;
+            if (season < 0)
+                season = 0;
+            else
+                if (season > 2)
+                    season = 2;
+                else
+                    ;
+        }
+
+        private bool LayoutIsBiggerByName(string l1, string l2)
+        {
+            bool bRes = false;
+
+            int num1 = LayotByName(l1),
+                num2 = LayotByName(l2);
+
+            if (num2 > num1)
+                bRes = true;
+            else
+                ;
+
+            return bRes;
+        }
+
+        private bool GetPBRValuesResponse(DataTable table)
+        {
+            bool bRes = true;
+
+            if (!(table == null))
+                m_tablePPBRValuesResponse = table.Copy();
+            else
+                ;
+
+            return bRes;
+        }
+
+        /*private void GetCurrentTimeRequest()
+        {
+            string query = string.Empty;
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbTSQLInterface.getTypeDB(m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].port);
+
+            switch (typeDB)
+            {
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                    query = @"SELECT now()";
+                    break;
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                    query = @"SELECT GETDATE()";
+                    break;
+                default:
+                    break;
+            }
+
+            if (query.Equals(string.Empty) == false)
+                m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, query);
+            else
+                ;
+        }*/
+
+        //private void GetSensorsFactRequest()
+        //{
+        //    tec.Request(CONN_SETT_TYPE.CONFIG_DB, tec.sensorsFactRequest());
+        //}
+
+        //private void GetSensorsTMRequest()
+        //{
+        //    tec.Request(CONN_SETT_TYPE.CONFIG_DB, tec.sensorsTMRequest());
+        //}
+
+        private void GetHoursRequest(DateTime date)
+        {
+            m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+        }
+
+        private void GetMinsRequest(int hour)
+        {
+            //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
+            m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+        }
+
+        private void GetCurrentTMRequest()
+        {
+            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
+        }
+
+        private void GetLastMinutesTMRequest(DateTime dtReq)
+        {
+            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
+        }
+
+        private void GetPBRValuesRequest()
+        {
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
+            m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
+        }
+
+        private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
+        {
+            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
+            m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
         }
     }
 }

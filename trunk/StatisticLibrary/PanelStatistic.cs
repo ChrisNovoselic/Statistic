@@ -19,24 +19,6 @@ namespace StatisticCommon
         //protected volatile string sensorsString_TM = string.Empty;
         //protected volatile string[] sensorsStrings_Fact = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        //public TG[] sensorId2TG;
-
-        public volatile TEC tec;
-        public volatile int indx_TEC;
-        public volatile int indx_TECComponent;
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        public List<TECComponentBase> m_list_TECComponents;
-
-        public List <TG> listTG {
-            get {
-                if (indx_TECComponent < 0)
-                    return tec.m_listTG;
-                else
-                    return tec.list_TECComponents [indx_TECComponent].m_listTG;
-            }
-        }
-
         protected StatusStrip stsStrip;
         protected HReports m_report;
 

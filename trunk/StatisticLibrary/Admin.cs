@@ -59,9 +59,9 @@ namespace StatisticCommon
         protected bool is_connection_error;
         protected bool is_data_error;
 
-        public DateTime m_prevDate;
-        protected DateTime serverTime,
-                            m_curDate;
+        public DateTime m_prevDate
+            , serverTime;
+        protected DateTime m_curDate;
 
         protected volatile bool using_date;
         public bool m_ignore_date;

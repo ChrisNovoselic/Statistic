@@ -11,7 +11,6 @@ namespace StatisticCommon
 {
     public class TEC
     {
-        public enum TYPE_PANEL {GRAPH, TABLE, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, COUNT_TYPE_PANEL};
         public enum INDEX_TYPE_SOURCE_DATA { COMMON, INDIVIDUAL, COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
         public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA [(int)INDEX_TYPE_SOURCE_DATA.COUNT_TYPE_SOURCEDATA];
         public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -31,10 +30,6 @@ namespace StatisticCommon
         public string m_path_rdg_excel { get; set;}
         public string m_strTemplateNameSgnDataTM,
                     m_strTemplateNameSgnDataFact;
-
-        public double m_dblTotalPower_TM_SN;
-        public DateTime m_dtLastChangedAt_TM_Gen;
-        public DateTime m_dtLastChangedAt_TM_SN;
 
         public List<TECComponent> list_TECComponents;
 
@@ -72,10 +67,10 @@ namespace StatisticCommon
             }
         }
 
-        public string GetSensorsString (int num, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
+        public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
             string strRes = string.Empty;
             
-            if (num < 0) {
+            if (indx < 0) {
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                         strRes = m_SensorsString_SOTIASSO;
@@ -90,10 +85,10 @@ namespace StatisticCommon
             else {
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
-                        strRes = list_TECComponents [num].m_SensorsString_SOTIASSO;
+                        strRes = list_TECComponents [indx].m_SensorsString_SOTIASSO;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_ASKUE:
-                        strRes = list_TECComponents [num].m_SensorsStrings_ASKUE[(int)indxTime];
+                        strRes = list_TECComponents[indx].m_SensorsStrings_ASKUE[(int)indxTime];
                         break;
                     default:
                         break;
@@ -216,14 +211,6 @@ namespace StatisticCommon
                     }
                 }
 
-                if (m_tecView == null) {
-                    m_tecView = new TecView (null, null);
-                    m_tecView.InitTEC (new List <TEC> { this });
-                    m_tecView.Start ();
-                }
-                else
-                    ;
-
                 used++;
 
                 if (used > list_TECComponents.Count)
@@ -232,7 +219,7 @@ namespace StatisticCommon
                     ;
 
                 if ((limConnSettType > (CONN_SETT_TYPE.PBR + 1)) && (m_bSensorsStrings == false))
-                    initSensorsTEC ();
+                    InitSensorsTEC ();
                 else
                     ;
             }
@@ -311,7 +298,7 @@ namespace StatisticCommon
             return null;
         }
 
-        private void initSensorsTEC () {
+        public void InitSensorsTEC () {
             int i = -1
                 , j = -1;
 
@@ -352,14 +339,6 @@ namespace StatisticCommon
 
         private void stopDbInterfaces()
         {
-            if (m_tecView == null) {
-                m_tecView.Stop ();
-
-                m_tecView = null;
-            }
-            else
-                ;
-
             for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (!(m_arIdListeners[i] < 0))
@@ -663,7 +642,7 @@ namespace StatisticCommon
                                 @") WHERE [ID] IN (" +
                                 sen +
                                 @")" +
-                                @"ORDER BY DATA_DATE";
+                                @" ORDER BY DATA_DATE";
         }
         
         public string minsRequest(DateTime usingDate, int hour, string sensors)
@@ -747,7 +726,7 @@ namespace StatisticCommon
                                 @") WHERE [ID] IN (" +
                                 sen +
                                 @")" +
-                                @"ORDER BY DATA_DATE";
+                                @" ORDER BY DATA_DATE";
         }
         
         public string hoursRequest(DateTime usingDate, string sensors)
@@ -1367,44 +1346,6 @@ namespace StatisticCommon
                 ;
 
             return strRes;
-        }
-
-        public void Activate (bool active, TYPE_PANEL typePanel) {
-            switch (typePanel)
-            {
-                case TYPE_PANEL.GRAPH:
-                    break;
-                case TYPE_PANEL.TABLE:
-                    break;
-                case TYPE_PANEL.CUR_POWER:
-                    break;
-                case TYPE_PANEL.LAST_MINUTES:
-                    break;
-                case TYPE_PANEL.ADMIN_ALARM:
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public void ChangeState(TYPE_PANEL typePanel)
-        {
-            switch (typePanel)
-            {
-                case TYPE_PANEL.GRAPH:
-                    break;
-                case TYPE_PANEL.TABLE:
-                    break;
-                case TYPE_PANEL.CUR_POWER:
-                    m_tecView.GetCurPower ();
-                    break;
-                case TYPE_PANEL.LAST_MINUTES:
-                    break;
-                case TYPE_PANEL.ADMIN_ALARM:
-                    break;
-                default:
-                    break;
-            }
         }
     }
 }

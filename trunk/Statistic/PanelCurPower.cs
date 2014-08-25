@@ -131,7 +131,7 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tec.m_id)) ((PanelTecCurPower)ctrl).Start(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecCurPower)ctrl).Start(); else ;
                     i++;
                 }
                 else
@@ -143,7 +143,7 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tec.m_id)) ((PanelTecCurPower)ctrl).Stop(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecCurPower)ctrl).Stop(); else ;
                     i ++;
                 }
                 else
@@ -168,7 +168,7 @@ namespace Statistic
             foreach (Control ctrl in this.Controls) {
                 if (ctrl.GetType ().Equals (typeChildren) == true)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tec.m_id))
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id))
                     {
                         ((PanelTecCurPower)ctrl).Activate(active);
                     }
@@ -220,7 +220,7 @@ namespace Statistic
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
 
-            public StatisticCommon.TEC m_tec;
+            public TecView m_tecView;
 
             private bool m_bIsActive,
                         m_bIsStarted,
@@ -236,7 +236,8 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tec = tec;
+                m_tecView = new TecView (null, null, TecView.TYPE_PANEL.CUR_POWER);
+                m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec });
                 Initialize();
             }
 
@@ -267,7 +268,7 @@ namespace Statistic
                 string cntnt = string.Empty;
                 
                 i = (int)INDEX_LABEL.NAME;
-                cntnt = m_tec.name_shr;
+                cntnt = m_tecView.m_tec.name_shr;
                 m_arLabel[i] = HLabel.createLabel(cntnt, PanelCurPower.s_arLabelStyles[i]);
                 ////Предусмотрим обработчик при изменении значения
                 //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
@@ -306,7 +307,7 @@ namespace Statistic
                 this.RowCount = COUNT_FIXED_ROWS;
 
                 //m_list_TECComponents = new List <TECComponentBase> ();
-                foreach (TECComponent g in m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
@@ -390,7 +391,7 @@ namespace Statistic
 
             private void ChangeState()
             {
-                m_tec.ChangeState (StatisticCommon.TEC.TYPE_PANEL.CUR_POWER);
+                m_tecView.ChangeState ();
             }
 
             public void Activate(bool active)
@@ -404,7 +405,7 @@ namespace Statistic
 
                 if (m_bIsActive == true)
                 {
-                    m_tec.ChangeState (TEC.TYPE_PANEL.CUR_POWER);
+                    m_tecView.ChangeState();
                 }
                 else
                 {
@@ -443,12 +444,12 @@ namespace Statistic
             private void ShowTMGenPower () {
                 double dblTotalPower_TM = 0.0
                         , dblTECComponentPower_TM = 0.0;
-                foreach (TECComponent g in m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
                         dblTECComponentPower_TM = 0.0;
-                        
+
                         foreach (TG tg in g.m_listTG)
                         {
                             if (tg.id_tm > 0) {
@@ -464,18 +465,19 @@ namespace Statistic
                         ;
                 }
 
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tec.m_dblTotalPower_TM_SN);
+                //???
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], dblTotalPower_TM);
-                
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tec.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+
+                m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
             }
 
             private void ShowTMSNPower()
             {
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tec.m_dblTotalPower_TM_SN);
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
                 //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
                 //catch (Exception e) { Logging.Logg ().LogExceptionToFile (e, @"PanelTMSNPower::ShowTMSNPower () - ..."); }
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tec.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
             }
 
             private double setTextToLabelVal (Label lblVal, double val) {
@@ -818,7 +820,7 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                m_tec.ChangeState (TEC.TYPE_PANEL.CUR_POWER);
+                m_tecView.ChangeState ();
             }
         }
     }

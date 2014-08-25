@@ -328,7 +328,7 @@ namespace Statistic
                         m_bIsStarted,
                         m_bUpdate;
 
-            private Dictionary<int, PanelTecViewBase.valuesTECComponent> m_dictValuesHours;
+            private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
 
             DataTable m_tablePBRResponse;
 
@@ -423,10 +423,10 @@ namespace Statistic
                 m_states = new List<StatesMachine>();
                 //delegateUpdateGUI_TM = ShowTMPower;
 
-                m_dictValuesHours = new Dictionary<int,PanelTecViewBase.valuesTECComponent> ();
+                m_dictValuesHours = new Dictionary<int, TecView.valuesTECComponent> ();
                 foreach (TECComponent c in m_list_TECComponents)
                 {
-                    m_dictValuesHours.Add(c.m_id, new PanelTecViewBase.valuesTECComponent(24 + 1));
+                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
                 }
 
                 delegateUpdateGUI_TM = ShowLastMinutesTM;
@@ -1076,11 +1076,11 @@ namespace Statistic
                 offsetLayout = -1;
 
                 //m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
-                m_tablePBRResponse = PanelTecViewBase.restruct_table_pbrValues(m_tablePBRResponse, m_tec.list_TECComponents, -1);
+                m_tablePBRResponse = TecView.restruct_table_pbrValues(m_tablePBRResponse, m_tec.list_TECComponents, -1);
                 offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
                 //table_in = restruct_table_adminValues(table_in);
-                table_in = PanelTecViewBase.restruct_table_adminValues(table_in, m_tec.list_TECComponents, -1);
+                table_in = TecView.restruct_table_adminValues(table_in, m_tec.list_TECComponents, -1);
 
                 //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
                 //    try { table_in.Columns.Remove("ID_COMPONENT"); }

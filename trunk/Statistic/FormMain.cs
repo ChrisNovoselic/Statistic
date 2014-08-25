@@ -41,8 +41,8 @@ namespace Statistic
         private PanelTecViewBase tecView;
         private int m_prevSelectedIndex;
         private FormChangeMode.MANAGER prevStateIsAdmin;
-        public FormGraphicsSettings formGraphicsSettings;
-        public FormParameters formParameters;
+        public static FormGraphicsSettings formGraphicsSettings;
+        public static FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
         Users m_user;
         FormParametersTG m_formParametersTG;
@@ -657,7 +657,7 @@ namespace Statistic
                     {
                         list_tecView_index_checked.Add(tecView_index);
 
-                        if ((tecViews[tecView_index].tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                        if ((tecViews[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;
                         else
                             ;
@@ -824,12 +824,12 @@ namespace Statistic
                 {
                     selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                    if (!(selTecView == null) && ((!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE] == null)) && (!(selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
+                    if (!(selTecView == null) && ((!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE] == null)) && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
                     {
-                        if ((m_report.actioned_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
-                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                        if ((m_report.actioned_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                                                                            (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
-                            if (selTecView.isActive == true)
+                            if (selTecView.m_tecView.isActive == true)
                             {
                                 m_lblDateError.Text = m_report.last_time_action.ToString();
                                 m_lblDescError.Text = m_report.last_action;
@@ -840,11 +840,11 @@ namespace Statistic
                         else
                             ;
 
-                        if ((m_report.errored_state == true) && ((selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
-                                                                            (selTecView.tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                        if ((m_report.errored_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                                                                            (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_eror = true;
-                            if (selTecView.isActive == true)
+                            if (selTecView.m_tecView.isActive == true)
                             {
                                 m_lblDateError.Text = m_report.last_time_error.ToString();
                                 m_lblDescError.Text = m_report.last_error;
@@ -1301,7 +1301,7 @@ namespace Statistic
             if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in tecViews)
-                    if ((tv.tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK) && (!(m_formParametersTG == null)))
+                    if ((tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK) && (!(m_formParametersTG == null)))
                     {
                         //tv.tec.parametersTGForm.ShowDialog(this);
                         m_formParametersTG.ShowDialog(this);

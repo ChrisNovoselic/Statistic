@@ -11,7 +11,7 @@ namespace Statistic
 {
     public class AdminAlarm
     {
-        List<StatisticCommon.TEC> m_listTEC;
+        List<TecView> m_listTecView;
 
         private object lockValue;
 
@@ -26,7 +26,12 @@ namespace Statistic
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
         {
-            m_listTEC = listTEC;
+            m_listTecView = new List<TecView> ();
+
+            foreach (StatisticCommon.TEC t in listTEC) {
+                m_listTecView.Add(new TecView(null, null, TecView.TYPE_PANEL.ADMIN_ALARM));
+                m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
+            }
         }
 
         public AdminAlarm(HReports rep)
@@ -49,9 +54,9 @@ namespace Statistic
 
         public void Start()
         {
-            foreach (StatisticCommon.TEC t in m_listTEC)
+            foreach (TecView tv in m_listTecView)
             {
-                t.StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
+                tv.Start (); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
             }
 
             //m_evTimerCurrent = new ManualResetEvent(true);
@@ -60,9 +65,9 @@ namespace Statistic
 
         public void Stop()
         {
-            foreach (StatisticCommon.TEC t in m_listTEC)
+            foreach (TecView tv in m_listTecView)
             {
-                t.StopDbInterfaces ();
+                tv.Stop ();
             }
 
             m_timerAlarm.Dispose ();
@@ -70,9 +75,9 @@ namespace Statistic
         }
 
         private void ChangeState () {
-            foreach (StatisticCommon.TEC t in m_listTEC)
+            foreach (TecView tv in m_listTecView)
             {
-                t.ChangeState (TEC.TYPE_PANEL.ADMIN_ALARM);
+                tv.ChangeState ();
             }
         }
 

@@ -22,7 +22,7 @@ namespace Statistic
         PanelCustomTecView.HLabelEmpty m_label;
 
         public PanelTecViewTable(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep, PanelCustomTecView.HLabelEmpty label)
-            : base(tec, num_tec, num_comp, sts, gs, par, rep)
+            : base(tec, num_tec, num_comp, sts, rep)
         {
             m_label = label;
 
@@ -44,9 +44,9 @@ namespace Statistic
             this.RowStyles.Add(new RowStyle(SizeType.Percent, 71));
             this.RowStyles.Add(new RowStyle(SizeType.Percent, 24));
 
-            m_label.Text = tec.name_shr;
+            m_label.Text = m_tecView.m_tec.name_shr;
             if (!(indx_TECComponent < 0))
-                m_label.Text += @" - " + tec.list_TECComponents [indx_TECComponent].name_shr;
+                m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
             else
                 ;
 
@@ -90,7 +90,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem эксельToolStripMenuItemHours;
 
         public PanelTecViewGraph(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
-            : base(tec, num_tec, num_comp, sts, gs, par, rep)
+            : base(tec, num_tec, num_comp, sts, rep)
         {
             InitializeComponent ();
         }
@@ -411,7 +411,8 @@ namespace Statistic
 
         private bool zedGraphMins_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
         {
-            graphSettings.SetScale();
+            FormMain.formGraphicsSettings.SetScale();
+
             return true;
         }
 
@@ -422,7 +423,8 @@ namespace Statistic
 
         private bool zedGraphHours_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
         {
-            graphSettings.SetScale();
+            FormMain.formGraphicsSettings.SetScale();
+
             return true;
         }
 
@@ -444,7 +446,7 @@ namespace Statistic
 
         private void копироватьToolStripMenuItemMins_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphMins.Copy(false);
             }
@@ -459,7 +461,7 @@ namespace Statistic
 
         private void распечататьToolStripMenuItemMins_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphMins.PrintDocument.Print();
             }
@@ -467,7 +469,7 @@ namespace Statistic
 
         private void сохранитьToolStripMenuItemMins_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphMins.SaveAs();
             }
@@ -475,10 +477,10 @@ namespace Statistic
 
         private void эксельToolStripMenuItemMins_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 SaveFileDialog sf = new SaveFileDialog();
-                int hour = lastHour;
+                int hour = m_tecView.lastHour;
                 if (hour == 24)
                     hour = 23;
 
@@ -492,21 +494,21 @@ namespace Statistic
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (indx_TECComponent < 0)
                     {
-                        if (tec.list_TECComponents.Count == 1)
-                            ws.Cells[0, 0].Value = tec.name_shr;
+                        if (m_tecView.m_tec.list_TECComponents.Count == 1)
+                            ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
                         else
                         {
-                            ws.Cells[0, 0].Value = tec.name_shr;
-                            foreach (TECComponent g in tec.list_TECComponents)
+                            ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
+                            foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
                     }
 
-                    if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
+                    if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
                         ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
                     else
                         ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
@@ -590,7 +592,7 @@ namespace Statistic
 
         private void копироватьToolStripMenuItemHours_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphHours.Copy(false);
             }
@@ -605,7 +607,7 @@ namespace Statistic
 
         private void распечататьToolStripMenuItemHours_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphHours.PrintDocument.Print();
             }
@@ -613,7 +615,7 @@ namespace Statistic
 
         private void сохранитьToolStripMenuItemHours_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 zedGraphHours.SaveAs();
             }
@@ -621,7 +623,7 @@ namespace Statistic
 
         private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
         {
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 SaveFileDialog sf = new SaveFileDialog();
                 sf.CheckPathExists = true;
@@ -634,18 +636,18 @@ namespace Statistic
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (indx_TECComponent < 0)
                     {
-                        if (tec.list_TECComponents.Count == 1)
-                            ws.Cells[0, 0].Value = tec.name_shr;
+                        if (m_tecView.m_tec.list_TECComponents.Count == 1)
+                            ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
                         else
                         {
-                            ws.Cells[0, 0].Value = tec.name_shr;
-                            foreach (TECComponent g in tec.list_TECComponents)
+                            ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
+                            foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                                 ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = tec.name_shr + ", " + tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
                     }
 
                     ws.Cells[1, 0].Value = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
@@ -736,19 +738,19 @@ namespace Statistic
             if (!(obj is BarItem) && !(obj is LineItem))
                 return true;
 
-            if (lastMin <= index + 1)
+            if (m_tecView.lastMin <= index + 1)
                 return true;
 
             if (found)
             {
-                lock (m_lockValue)
+                lock (m_tecView.m_lockValue)
                 {
-                    int oldLastMin = lastMin;
-                    recalcAver = false;
-                    lastMin = index + 2;
+                    int oldLastMin = m_tecView.lastMin;
+                    m_tecView.recalcAver = false;
+                    m_tecView.lastMin = index + 2;
                     m_pnlQuickData.ShowFactValues();
-                    recalcAver = true;
-                    lastMin = oldLastMin;
+                    m_tecView.recalcAver = true;
+                    m_tecView.lastMin = oldLastMin;
                 }
             }
 
@@ -770,58 +772,12 @@ namespace Statistic
             if (!(obj is BarItem) && !(obj is LineItem))
                 return true;
 
-            if (found)
+            if (found == true)
             {
                 delegateStartWait();
-                lock (m_lockValue)
-                {
-                    currHour = false;
-                    if (m_valuesHours.season == seasonJumpE.SummerToWinter)
-                    {
-                        if (index <= m_valuesHours.hourAddon)
-                        {
-                            lastHour = index;
-                            m_valuesHours.addonValues = false;
-                        }
-                        else
-                        {
-                            if (index == m_valuesHours.hourAddon + 1)
-                            {
-                                lastHour = index - 1;
-                                m_valuesHours.addonValues = true;
-                            }
-                            else
-                            {
-                                lastHour = index - 1;
-                                m_valuesHours.addonValues = false;
-                            }
-                        }
-                    }
-                    else
-                        if (m_valuesHours.season == seasonJumpE.WinterToSummer)
-                        {
-                            if (index < m_valuesHours.hourAddon)
-                                lastHour = index;
-                            else
-                                lastHour = index + 1;
-                        }
-                        else
-                            lastHour = index;
-                    ClearValuesMins();
 
-                    m_newState = true;
-                    m_states.Clear();
-                    m_states.Add(StatesMachine.RetroMins);
-                    m_states.Add(StatesMachine.PPBRValues);
-                    m_states.Add(StatesMachine.AdminValues);
+                m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                    try
-                    {
-                        m_sem.Release(1);
-                    }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
-
-                }
                 delegateStopWait();
             }
 
@@ -849,8 +805,8 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
-                valuesFact[i] = m_valuesMins.valuesFact[i + 1];
-                valuesUDGe[i] = m_valuesMins.valuesUDGe[i + 1];
+                valuesFact[i] = m_tecView.m_valuesMins.valuesFact[i + 1];
+                valuesUDGe[i] = m_tecView.m_valuesMins.valuesUDGe[i + 1];
             }
 
             //double[] valuesPDiviation = new double[itemscount];
@@ -867,12 +823,12 @@ namespace Statistic
                 //valuesPDiviation[i] = m_valuesMins.valuesUDGe[i] + m_valuesMins.valuesDiviation[i];
                 //valuesODiviation[i] = m_valuesMins.valuesUDGe[i] - m_valuesMins.valuesDiviation[i];
 
-                if (currHour)
+                if (m_tecView.currHour == true)
                 {
-                    if (i < lastMin - 1 || !adminValuesReceived)
+                    if ((i < (m_tecView.lastMin - 1)) || (! (m_tecView.adminValuesReceived == true)))
                         valuesRecommend[i] = 0;
                     else
-                        valuesRecommend[i] = recomendation;
+                        valuesRecommend[i] = m_tecView.recomendation;
                 }
 
                 //if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
@@ -887,7 +843,7 @@ namespace Statistic
                 //    noValues = false;
                 //}
 
-                if (currHour)
+                if (m_tecView.currHour == true)
                 {
                     if (minimum > valuesRecommend[i] && valuesRecommend[i] != 0)
                     {
@@ -914,20 +870,26 @@ namespace Statistic
                 //if (maximum < valuesODiviation[i])
                 //    maximum = valuesODiviation[i];
 
-                if (currHour)
+                if (m_tecView.currHour == true)
                 {
                     if (maximum < valuesRecommend[i])
                         maximum = valuesRecommend[i];
+                    else
+                        ;
                 }
 
                 if (maximum < valuesUDGe[i])
                     maximum = valuesUDGe[i];
+                else
+                    ;
 
                 if (maximum < valuesFact[i])
                     maximum = valuesFact[i];
+                else
+                    ;
             }
 
-            if (!graphSettings.scale)
+            if (! (FormMain.formGraphicsSettings.scale == true))
                 minimum = 0;
 
             if (noValues)
@@ -952,41 +914,41 @@ namespace Statistic
             }
 
 
-            pane.Chart.Fill = new Fill(graphSettings.bgColor);
+            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
 
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, graphSettings.udgColor);
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
             //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
-            if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, graphSettings.pColor);
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
 
-                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, graphSettings.recColor);
+                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
             }
             else
             {
-                if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
-                    if (lastMin > 1)
+                    if (m_tecView.lastMin > 1)
                     {
-                        double[] valuesFactLast = new double[lastMin - 1];
-                        for (int i = 0; i < lastMin - 1; i++)
+                        double[] valuesFactLast = new double[m_tecView.lastMin - 1];
+                        for (int i = 0; i < m_tecView.lastMin - 1; i++)
                             valuesFactLast[i] = valuesFact[i];
 
-                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, graphSettings.pColor);
+                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, FormMain.formGraphicsSettings.pColor);
 
                         PointPairList valuesRecList = new PointPairList();
-                        if (adminValuesReceived && currHour)
-                            for (int i = lastMin - 1; i < itemscount; i++)
+                        if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                            for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
                                 valuesRecList.Add((double)(i + 1), valuesRecommend[i]);
 
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, graphSettings.recColor);
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, FormMain.formGraphicsSettings.recColor);
                     }
                     else
                     {
-                        LineItem curve1 = pane.AddCurve("Мощность", null, null, graphSettings.pColor);
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, graphSettings.recColor);
+                        LineItem curve1 = pane.AddCurve("Мощность", null, null, FormMain.formGraphicsSettings.pColor);
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
                     }
                 }
             }
@@ -998,7 +960,7 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
 
-            if (m_valuesHours.addonValues && hour == m_valuesHours.hourAddon)
+            if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + "* час";
             else
@@ -1022,7 +984,7 @@ namespace Statistic
             pane.XAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = graphSettings.gridColor;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
             // Включаем отображение сетки напротив крупных рисок по оси Y
             pane.YAxis.MajorGrid.IsVisible = true;
@@ -1031,7 +993,7 @@ namespace Statistic
             pane.YAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = graphSettings.gridColor;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
             // Включаем отображение сетки напротив мелких рисок по оси Y
             pane.YAxis.MinorGrid.IsVisible = true;
@@ -1040,7 +1002,7 @@ namespace Statistic
             pane.YAxis.MinorGrid.DashOff = 2;
             // толщина линий
             pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = graphSettings.gridColor;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
 
             // Устанавливаем интересующий нас интервал по оси Y
@@ -1060,10 +1022,10 @@ namespace Statistic
 
             int itemscount;
 
-            if (m_valuesHours.season == seasonJumpE.SummerToWinter)
+            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
                 itemscount = 25;
             else
-                if (m_valuesHours.season == seasonJumpE.WinterToSummer)
+                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
                     itemscount = 23;
                 else
                     itemscount = 24;
@@ -1080,63 +1042,63 @@ namespace Statistic
             bool noValues = true;
             for (int i = 0; i < itemscount; i++)
             {
-                if (m_valuesHours.season == seasonJumpE.SummerToWinter)
+                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
                 {
-                    if (i <= m_valuesHours.hourAddon)
+                    if (i <= m_tecView.m_valuesHours.hourAddon)
                     {
                         names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
-                        valuesFact[i] = m_valuesHours.valuesFact[i];
+                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
                     }
                     else
-                        if (i == m_valuesHours.hourAddon + 1)
+                        if (i == m_tecView.m_valuesHours.hourAddon + 1)
                         {
                             names[i] = i.ToString() + "*";
-                            valuesPDiviation[i] = m_valuesHours.valuesUDGeAddon + m_valuesHours.valuesDiviationAddon;
-                            valuesODiviation[i] = m_valuesHours.valuesUDGeAddon - m_valuesHours.valuesDiviationAddon;
-                            valuesUDGe[i] = m_valuesHours.valuesUDGeAddon;
-                            valuesFact[i] = m_valuesHours.valuesFactAddon;
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon + m_tecView.m_valuesHours.valuesDiviationAddon;
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon - m_tecView.m_valuesHours.valuesDiviationAddon;
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGeAddon;
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFactAddon;
                         }
                         else
                         {
                             this.m_dgwHours.Rows[i].Cells[0].Value = i.ToString();
                             names[i] = i.ToString();
-                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i - 1] + m_valuesHours.valuesDiviation[i - 1];
-                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i - 1] - m_valuesHours.valuesDiviation[i - 1];
-                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i - 1];
-                            valuesFact[i] = m_valuesHours.valuesFact[i - 1];
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] + m_tecView.m_valuesHours.valuesDiviation[i - 1];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] - m_tecView.m_valuesHours.valuesDiviation[i - 1];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i - 1];
                         }
 
                 }
                 else
-                    if (m_valuesHours.season == seasonJumpE.WinterToSummer)
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
                     {
-                        if (i < m_valuesHours.hourAddon)
+                        if (i < m_tecView.m_valuesHours.hourAddon)
                         {
                             names[i] = (i + 1).ToString();
-                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
-                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
-                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
-                            valuesFact[i] = m_valuesHours.valuesFact[i];
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
                         }
                         else
                         {
                             names[i] = (i + 2).ToString();
-                            valuesPDiviation[i] = m_valuesHours.valuesUDGe[i + 1] + m_valuesHours.valuesDiviation[i + 1];
-                            valuesODiviation[i] = m_valuesHours.valuesUDGe[i + 1] - m_valuesHours.valuesDiviation[i + 1];
-                            valuesUDGe[i] = m_valuesHours.valuesUDGe[i + 1];
-                            valuesFact[i] = m_valuesHours.valuesFact[i + 1];
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] + m_tecView.m_valuesHours.valuesDiviation[i + 1];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] - m_tecView.m_valuesHours.valuesDiviation[i + 1];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i + 1];
                         }
                     }
                     else
                     {
                         names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = m_valuesHours.valuesUDGe[i] + m_valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = m_valuesHours.valuesUDGe[i] - m_valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = m_valuesHours.valuesUDGe[i];
-                        valuesFact[i] = m_valuesHours.valuesFact[i];
+                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
                     }
 
                 if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
@@ -1176,7 +1138,7 @@ namespace Statistic
                     maximum = valuesFact[i];
             }
 
-            if (!graphSettings.scale)
+            if (! (FormMain.formGraphicsSettings.scale == true))
                 minimum = 0;
 
             if (noValues)
@@ -1200,36 +1162,36 @@ namespace Statistic
                 }
             }
 
-            pane.Chart.Fill = new Fill(graphSettings.bgColor);
+            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
 
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, graphSettings.udgColor);
-            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
-            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
+            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
+            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
 
 
-            if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, graphSettings.pColor);
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
             }
             else
             {
-                if (graphSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     int valuescount;
 
-                    if (m_valuesHours.season == seasonJumpE.SummerToWinter)
-                        valuescount = lastHour + 1;
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                        valuescount = m_tecView.lastHour + 1;
                     else
-                        if (m_valuesHours.season == seasonJumpE.WinterToSummer)
-                            valuescount = lastHour - 1;
+                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                            valuescount = m_tecView.lastHour - 1;
                         else
-                            valuescount = lastHour;
+                            valuescount = m_tecView.lastHour;
 
                     double[] valuesFactNew = new double[valuescount];
                     for (int i = 0; i < valuescount; i++)
                         valuesFactNew[i] = valuesFact[i];
 
-                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, graphSettings.pColor);
+                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, FormMain.formGraphicsSettings.pColor);
                 }
             }
 
@@ -1250,7 +1212,7 @@ namespace Statistic
             pane.XAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = graphSettings.gridColor;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
             // Включаем отображение сетки напротив крупных рисок по оси Y
             pane.YAxis.MajorGrid.IsVisible = true;
@@ -1259,7 +1221,7 @@ namespace Statistic
             pane.YAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = graphSettings.gridColor;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
             // Включаем отображение сетки напротив мелких рисок по оси Y
             pane.YAxis.MinorGrid.IsVisible = true;
@@ -1268,7 +1230,7 @@ namespace Statistic
             pane.YAxis.MinorGrid.DashOff = 2;
             // толщина линий
             pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = graphSettings.gridColor;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
 
             // Устанавливаем интересующий нас интервал по оси Y
             pane.YAxis.Scale.Min = minimum_scale;
@@ -1291,7 +1253,7 @@ namespace Statistic
         {
             base.UpdateGUI_Fact(hour, min);
 
-            lock (m_lockValue)
+            lock (m_tecView.m_lockValue)
             {
                 DrawGraphHours();
 
@@ -1302,7 +1264,7 @@ namespace Statistic
         public void UpdateGraphicsCurrent()
         {
             DrawGraphHours();
-            DrawGraphMins(lastHour);
+            DrawGraphMins(m_tecView.lastHour);
         }
 
         private void stctrViewPanel1_SplitterMoved(object sender, SplitterEventArgs e)

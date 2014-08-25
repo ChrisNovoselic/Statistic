@@ -555,16 +555,16 @@ namespace Statistic
             //countTG = 0;
             List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
 
-            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (TECComponent g in m_parent.tec.list_TECComponents)
+                foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                         m_parent.m_list_TECComponents.Add(g);
                     else
                         ;
 
-                    foreach (TG tg in g.TG)
+                    foreach (TG tg in g.m_listTG)
                     {
                         //Проверка обработки текущего ТГ
                         if (tg_ids.IndexOf(tg.m_id) == -1)
@@ -581,7 +581,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
+                foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                 {
                     tg_ids.Add(tg.m_id); //Добавить без проверки
 
@@ -593,7 +593,7 @@ namespace Statistic
                 }
             }
 
-            m_parent.sensorId2TG = new TG[tg_ids.Count];
+            m_parent.listTG = new TG[tg_ids.Count];
 
             int COUNT_TG_IN_COLUMN = 4
                 , COL_TG_START = 6
@@ -700,13 +700,13 @@ namespace Statistic
         {
             double value_TM = 0.0;
             int i = 0;
-            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (TECComponent g in m_parent.tec.list_TECComponents)
+                foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
                 {
                     if (g.m_id < 500)
                         //Только ГТП
-                        foreach (TG tg in g.TG)
+                        foreach (TG tg in g.m_listTG)
                         {
                             if (tg.id_tm > 0)
                             {
@@ -731,7 +731,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_parent.tec.list_TECComponents[m_parent.num_TECComponent].TG)
+                foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                 {
                     if (tg.id_tm > 0)
                     {
@@ -792,20 +792,20 @@ namespace Statistic
         {
             int indxStartCommonPVal = PanelQuickData.m_indxStartCommonPVal;
             int i = -1, j = -1,
-                min = m_parent.lastMin;
+                min = m_parent.m_tecView.lastMin;
 
             if (!(min == 0)) min--; else ;
 
             double valueEBefore = 0.0,
                     valueECur = 0.0,
                     valueEFuture = 0.0;
-            for (i = 0; i < m_parent.sensorId2TG.Length; i++)
+            for (i = 0; i < m_parent.listTG.Count; i++)
                 for (j = 0; j < min; j++)
-                    valueEBefore += m_parent.sensorId2TG[i].power[j] / 20;
+                    valueEBefore += m_parent.listTG[i].power[j] / 20;
 
             double value = 0;
-            for (i = 0; i < m_parent.sensorId2TG.Length; i++)
-                if (m_parent.sensorId2TG[i].power[min] > 1) value += m_parent.sensorId2TG[i].power[min]; else ;
+            for (i = 0; i < m_parent.listTG.Count; i++)
+                if (m_parent.listTG[i].power[min] > 1) value += m_parent.listTG[i].power[min]; else ;
 
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value);
 
@@ -815,9 +815,9 @@ namespace Statistic
             valueEFuture = valueECur * (20 - min - 1);
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture);
 
-            if ((m_parent.adminValuesReceived == true) && (m_parent.currHour == true))
+            if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
             {
-                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.recomendation);
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.m_tecView.recomendation);
             }
             else
             {
@@ -826,17 +826,19 @@ namespace Statistic
 
             double summ = 0;
             //Для возможности восстановления значения
-            bool bPrevRecalcAver = m_parent.recalcAver;
+            bool bPrevRecalcAver = m_parent.m_tecView.recalcAver;
 
-            if ((m_parent.currHour == true) && (min == 0))
-                m_parent.recalcAver = false;
+            if ((m_parent.m_tecView.currHour == true) && (min == 0))
+                m_parent.m_tecView.recalcAver = false;
+            else
+                ;
 
-            if (m_parent.recalcAver == true)
+            if (m_parent.m_tecView.recalcAver == true)
             {
-                if (m_parent.currHour == true)
+                if (m_parent.m_tecView.currHour == true)
                 {
-                    for (i = 1; i < m_parent.lastMin; i++)
-                        summ += m_parent.m_valuesMins.valuesFact[i];
+                    for (i = 1; i < m_parent.m_tecView.lastMin; i++)
+                        summ += m_parent.m_tecView.m_valuesMins.valuesFact[i];
                     if (!(min == 0))
                         showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min);
                     else
@@ -844,49 +846,49 @@ namespace Statistic
                 }
                 else
                 {
-                    int hour = m_parent.lastHour;
+                    int hour = m_parent.m_tecView.lastHour;
                     if (hour == 24)
                         hour = 23;
 
-                    if ((m_parent.m_valuesHours.addonValues == true) && (hour == m_parent.m_valuesHours.hourAddon))
-                        summ = m_parent.m_valuesHours.valuesFactAddon;
+                    if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
+                        summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
                     else
-                        summ = m_parent.m_valuesHours.valuesFact[hour];
+                        summ = m_parent.m_tecView.m_valuesHours.valuesFact[hour];
 
                     showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ);
                 }
 
                 //if (! ([lastHour] == 0))
-                if ((m_parent.lastHour < m_parent.m_valuesHours.valuesUDGe.Length) &&
-                    (!(m_parent.m_valuesHours.valuesUDGe[m_parent.lastHour] == 0)))
+                if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
+                    (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
                 {
                     m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = ((((valueEBefore + valueECur + valueEFuture) -
-                                                m_parent.m_valuesHours.valuesUDGe[m_parent.lastHour]) / m_parent.m_valuesHours.valuesUDGe[m_parent.lastHour]) * 100).ToString("F2") + "%";
+                                                m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100).ToString("F2") + "%";
                 }
                 else
                     m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = "---";
             }
 
-            if ((m_parent.currHour == true) && (min == 0))
-                m_parent.recalcAver = bPrevRecalcAver;
+            if ((m_parent.m_tecView.currHour == true) && (min == 0))
+                m_parent.m_tecView.recalcAver = bPrevRecalcAver;
             else
                 ;
 
-            if (m_parent.currHour == true)
+            if (m_parent.m_tecView.currHour == true)
             {
-                if (m_parent.lastHourError == true)
+                if (m_parent.m_tecView.lastHourError == true)
                 {
                     m_parent.ErrorReport("По текущему часу значений не найдено!");
                 }
                 else
                 {
-                    if (m_parent.lastHourHalfError == true)
+                    if (m_parent.m_tecView.lastHourHalfError == true)
                     {
                         m_parent.ErrorReport("За текущий час не получены некоторые получасовые значения!");
                     }
                     else
                     {
-                        if (m_parent.lastMinError == true)
+                        if (m_parent.m_tecView.lastMinError == true)
                         {
                             m_parent.ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
                             m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
@@ -912,22 +914,22 @@ namespace Statistic
                 m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
             }
 
-            lblPBRNumber.Text = m_parent.lastLayout;
+            lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
 
             //ShowTGValue
             i = 0;
-            if (m_parent.num_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
                 foreach (TECComponent g in m_parent.m_list_TECComponents)
                 {
                     if (g.m_id < 500)
                         //Только ГТП
-                        foreach (TG tg in g.TG)
+                        foreach (TG tg in g.m_listTG)
                         {
                             if (tg.receivedMin[min] == true)
                             {
                                 showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
-                                if (m_parent.currHour == true)
+                                if (m_parent.m_tecView.currHour == true)
                                     m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                                 else
                                     m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
@@ -950,7 +952,7 @@ namespace Statistic
                     if (t.receivedMin[min] == true)
                     {
                         showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], t.power[min]);
-                        if (m_parent.currHour == true)
+                        if (m_parent.m_tecView.currHour == true)
                             m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                         else
                             m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;

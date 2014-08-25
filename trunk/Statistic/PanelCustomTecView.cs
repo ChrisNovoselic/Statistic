@@ -100,11 +100,11 @@ namespace Statistic
     {
         private HLabelEmpty [] m_arLabelEmpty;
         //private Control[] m_arControls;
-        
+
         public bool m_bIsActive;
 
         public StatusStrip m_stsStrip;
-        
+
         private HReports m_report;
 
         private FormChangeMode m_formChangeMode;
