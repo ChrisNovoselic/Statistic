@@ -45,6 +45,9 @@ namespace StatisticCommon
 
     public partial class HLabel : System.Windows.Forms.Label
     {
+        public enum TYPE_HLABEL { UNKNOWN = -1, TG, TOTAL, COUNT_TYPE_HLABEL };
+        public TYPE_HLABEL m_type;
+
         public HLabel(Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align)
         {
             InitializeComponent();
@@ -54,7 +57,8 @@ namespace StatisticCommon
             if (((pt.X < 0) || (pt.Y < 0)) ||
                 ((sz.Width < 0) || (sz.Height < 0)))
                 this.Dock = DockStyle.Fill;
-            else {
+            else
+            {
                 this.Location = pt;
                 this.Size = sz;
             }
@@ -64,20 +68,26 @@ namespace StatisticCommon
 
             this.TextAlign = align;
 
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", szFont, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+
             //this.Text = text;
+
+            m_type = TYPE_HLABEL.UNKNOWN;
         }
 
-        public HLabel(HLabelStyles prop) : this (new Point (-1, -1), new Size (-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)
+        public HLabel(HLabelStyles prop)
+            : this(new Point(-1, -1), new Size(-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)
         {
         }
 
-        public HLabel(IContainer container, Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align) : this (pt, sz, foreColor, backColor, szFont, align)
+        public HLabel(IContainer container, Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align)
+            : this(pt, sz, foreColor, backColor, szFont, align)
         {
             container.Add(this);
         }
 
         public HLabel(IContainer container, HLabelStyles prop)
-            : this(new Point (-1, -1), new Size (-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)
+            : this(new Point(-1, -1), new Size(-1, -1), prop.m_foreColor, prop.m_backColor, prop.m_szFont, prop.m_align)
         {
             container.Add(this);
         }
@@ -116,7 +126,8 @@ namespace StatisticCommon
         public Point m_pt;
         public Size m_sz;
 
-        public HLabelStyles(Color foreColor, Color backColor, Single szFont, ContentAlignment align) : this (new Point (-1, -1), new Size (-1, -1), foreColor, backColor, szFont, align)
+        public HLabelStyles(Color foreColor, Color backColor, Single szFont, ContentAlignment align)
+            : this(new Point(-1, -1), new Size(-1, -1), foreColor, backColor, szFont, align)
         {
         }
 

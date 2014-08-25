@@ -91,7 +91,7 @@ namespace Statistic
 
         public StatusStrip m_stsStrip;
 
-        public PanelLastMinutes(List<TEC> listTec, StatusStrip stsStrip, HReports rep)
+        public PanelLastMinutes(List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, HReports rep)
         {
             int i = -1;
 
@@ -130,7 +130,7 @@ namespace Statistic
             }
         }
 
-        public PanelLastMinutes(IContainer container, List<TEC> listTec, StatusStrip stsStrip, HReports rep)
+        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, HReports rep)
             : this(listTec, stsStrip, rep)
         {
             container.Add(this);
@@ -310,7 +310,7 @@ namespace Statistic
 
         public partial class PanelTecLastMinutes : TableLayoutPanel
         {
-            private TEC m_tec;
+            private StatisticCommon.TEC m_tec;
 
             public int m_id_tec { get { return m_tec.m_id; } }
 
@@ -344,7 +344,7 @@ namespace Statistic
 
             private DelegateFunc delegateUpdateGUI_TM;
 
-            public PanelTecLastMinutes(TEC tec)
+            public PanelTecLastMinutes(StatisticCommon.TEC tec)
             {
                 InitializeComponent();
 
@@ -352,7 +352,7 @@ namespace Statistic
                 Initialize();
             }
 
-            public PanelTecLastMinutes(IContainer container, TEC tec)
+            public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec)
                 : this(tec)
             {
                 container.Add(this);
@@ -665,7 +665,7 @@ namespace Statistic
                 foreach (TECComponent g in m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
-                        foreach (TG tg in g.TG)
+                        foreach (TG tg in g.m_listTG)
                         {
                             for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
                             {
@@ -688,9 +688,9 @@ namespace Statistic
 
                                 switch (m_tec.type())
                                 {
-                                    case TEC.TEC_TYPE.COMMON:
+                                    case StatisticCommon.TEC.TEC_TYPE.COMMON:
                                         break;
-                                    case TEC.TEC_TYPE.BIYSK:
+                                    case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                                         //value *= 20;
                                         break;
                                     default:
@@ -725,30 +725,6 @@ namespace Statistic
                 return bRes;
             }
 
-            private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
-            {
-                for (int i = 0; i < m_listSensorId2TG.Count; i++)
-                    switch (indxVal)
-                    {
-                        case TG.INDEX_VALUE.FACT:
-                            if (m_listSensorId2TG[i].ids_fact[(int)id_type] == id)
-                                return m_listSensorId2TG[i];
-                            else
-                                ;
-                            break;
-                        case TG.INDEX_VALUE.TM:
-                            if (m_listSensorId2TG[i].id_tm == id)
-                                return m_listSensorId2TG[i];
-                            else
-                                ;
-                            break;
-                        default:
-                            break;
-                    }
-
-                return null;
-            }
-
             //private void GetSensorsTMRequest()
             //{
             //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.sensorsTMRequest());
@@ -763,8 +739,8 @@ namespace Statistic
                 for (j = 0; j < m_tec.list_TECComponents.Count; j++)
                 {
                     if ((m_tec.list_TECComponents[j].m_id > 100) && (m_tec.list_TECComponents[j].m_id < 500))
-                        for (int k = 0; k < m_tec.list_TECComponents[j].TG.Count; k++)
-                            m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[k]);
+                        for (int k = 0; k < m_tec.list_TECComponents[j].m_listTG.Count; k++)
+                            m_listSensorId2TG.Add(m_tec.list_TECComponents[j].m_listTG[k]);
                         else
                             ;
                 }
@@ -777,11 +753,11 @@ namespace Statistic
                     {
                         if (sensorsString_TM.Equals(string.Empty) == false)
                             switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
-                                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
                                     break;
-                                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                     //Источник для каждой ТЭЦ свой
                                     sensorsString_TM += @" OR ";
                                     break;
@@ -793,11 +769,11 @@ namespace Statistic
 
                         switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                         {
-                            case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
                                 sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
                                 break;
-                            case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                 //Источник для каждой ТЭЦ свой
                                 sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                                 break;
@@ -871,8 +847,8 @@ namespace Statistic
                     case StatesMachine.Init_TM:
                         switch (m_tec.type())
                         {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
+                            case StatisticCommon.TEC.TEC_TYPE.COMMON:
+                            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                                 result = GetSensorsTEC();
                                 break;
                         }
@@ -1325,7 +1301,7 @@ namespace Statistic
                 List<DataColumn> cols_data = new List<DataColumn>();
                 DataRow[] dataRows;
                 int i = -1, j = -1, k = -1;
-                string nameFieldDate = "DATE_PBR"; // m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME]
+                string nameFieldDate = "DATE_PBR"; // m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_DATETIME]
 
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {
@@ -1358,7 +1334,7 @@ namespace Statistic
                     {
                         if ((!(table_in.Columns[i].ColumnName.Equals("ID_COMPONENT") == true))
                             && (!(table_in.Columns[i].ColumnName.Equals(nameFieldDate) == true))
-                            //&& (!(table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
+                            //&& (!(table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
                             && (!(table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true)))
                         //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
                         {
@@ -1366,7 +1342,7 @@ namespace Statistic
                         }
                         else
                             if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                                //|| (table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
+                                //|| (table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
                                 || (table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true))
                             {
                                 table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
@@ -1386,8 +1362,8 @@ namespace Statistic
                         }
                     }
 
-                    //if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        //table_in_restruct.Columns[m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
+                    //if (m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                        //table_in_restruct.Columns[m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
                         table_in_restruct.Columns[@"PBR_NUMBER"].SetOrdinal(table_in_restruct.Columns.Count - 1);
                     //else
                     //    ;
@@ -1420,8 +1396,8 @@ namespace Statistic
 
                                 //Заполнение DATE_ADMIN (постоянные столбцы)
                                 table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                                //if (m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                                    //table_in_restruct.Rows[indx_row][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
+                                //if (m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
+                                    //table_in_restruct.Rows[indx_row][m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
                                     table_in_restruct.Rows[indx_row][@"PBR_NUMBER"] = listDataRows[i][j][@"PBR_NUMBER"];
                                 //else
                                 //    ;
@@ -1449,7 +1425,7 @@ namespace Statistic
                 List<DataColumn> cols_data = new List<DataColumn>();
                 DataRow[] dataRows;
                 int i = -1, j = -1, k = -1;
-                string nameFieldDate = "DATE_ADMIN"; // m_tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
+                string nameFieldDate = "DATE_ADMIN"; // m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
 
                 for (i = 0; i < table_in.Columns.Count; i++)
                 {

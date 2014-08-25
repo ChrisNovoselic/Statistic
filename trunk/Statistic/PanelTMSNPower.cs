@@ -77,7 +77,7 @@ namespace Statistic
 
         public StatusStrip m_stsStrip;
 
-        public PanelTMSNPower(List<TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
+        public PanelTMSNPower(List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
         {
             InitializeComponent();
 
@@ -115,7 +115,7 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelTMSNPower(IContainer container, List<TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
+        public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
             : this(listTec, stsStrip, par, rep)
         {
             container.Add(this);
@@ -222,7 +222,7 @@ namespace Statistic
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
 
-            public TEC m_tec;
+            public StatisticCommon.TEC m_tec;
 
             private List<TG> m_listSensorId2TG;
 
@@ -247,7 +247,7 @@ namespace Statistic
 
             private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecTMSNPower(TEC tec)
+            public PanelTecTMSNPower(StatisticCommon.TEC tec)
             {
                 InitializeComponent();
 
@@ -255,7 +255,7 @@ namespace Statistic
                 Initialize();
             }
 
-            public PanelTecTMSNPower(IContainer container, TEC tec)
+            public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec)
                 : this(tec)
             {
                 container.Add(this);
@@ -488,7 +488,7 @@ namespace Statistic
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.TG)
+                        foreach (TG tg in g.m_listTG)
                         {
                             if (tg.id_tm > 0)
                             {
@@ -575,7 +575,7 @@ namespace Statistic
 
                 foreach (TECComponent g in m_tec.list_TECComponents)
                 {
-                    foreach (TG t in g.TG)
+                    foreach (TG t in g.m_listTG)
                     {
                         t.power_TM = 0;
                     }
@@ -588,7 +588,7 @@ namespace Statistic
                     else
                         ;
 
-                    tgTmp = FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
                     if (tgTmp == null)
                         return false;
@@ -615,9 +615,9 @@ namespace Statistic
 
                     switch (m_tec.type())
                     {
-                        case TEC.TEC_TYPE.COMMON:
+                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             break;
-                        case TEC.TEC_TYPE.BIYSK:
+                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                             //value *= 20;
                             break;
                         default:
@@ -670,37 +670,13 @@ namespace Statistic
                 return bRes;
             }
 
-            private TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
-            {
-                for (int i = 0; i < m_listSensorId2TG.Count; i++)
-                    switch (indxVal)
-                    {
-                        case TG.INDEX_VALUE.FACT:
-                            if (m_listSensorId2TG[i].ids_fact[(int)id_type] == id)
-                                return m_listSensorId2TG[i];
-                            else
-                                ;
-                            break;
-                        case TG.INDEX_VALUE.TM:
-                            if (m_listSensorId2TG[i].id_tm == id)
-                                return m_listSensorId2TG[i];
-                            else
-                                ;
-                            break;
-                        default:
-                            break;
-                    }
-
-                return null;
-            }
-
             private bool GetSensorsTEC()
             {
                 bool bRes = true;
 
                 int j = -1;
                 for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-                    if (m_tec.list_TECComponents[j].m_id > 1000) m_listSensorId2TG.Add(m_tec.list_TECComponents[j].TG[0]); else ;
+                    if (m_tec.list_TECComponents[j].m_id > 1000) m_listSensorId2TG.Add(m_tec.list_TECComponents[j].m_listTG[0]); else ;
 
                 sensorsString_TM = string.Empty;
 
@@ -711,11 +687,11 @@ namespace Statistic
                         if (sensorsString_TM.Equals(string.Empty) == false)
                             switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                             {
-                                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                     //Общий источник для всех ТЭЦ
                                     sensorsString_TM += @", "; //@" OR ";
                                     break;
-                                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                     //Источник для каждой ТЭЦ свой
                                     sensorsString_TM += @" OR ";
                                     break;
@@ -727,11 +703,11 @@ namespace Statistic
 
                         switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
                         {
-                            case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                                 //Общий источник для всех ТЭЦ
                                 sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
                                 break;
-                            case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                                 //Источник для каждой ТЭЦ свой
                                 sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
                                 break;
@@ -810,8 +786,8 @@ namespace Statistic
                     case StatesMachine.Init_TM:
                         switch (m_tec.type())
                         {
-                            case TEC.TEC_TYPE.COMMON:
-                            case TEC.TEC_TYPE.BIYSK:
+                            case StatisticCommon.TEC.TEC_TYPE.COMMON:
+                            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
                                 result = GetSensorsTEC();
                                 break;
                             //case TEC.TEC_TYPE.BIYSK:

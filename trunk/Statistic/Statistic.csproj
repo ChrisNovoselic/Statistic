@@ -173,6 +173,7 @@
     <Compile Include="TCPServerAsync.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TecView.cs" />
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
     </EmbeddedResource>

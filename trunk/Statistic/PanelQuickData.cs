@@ -10,6 +10,161 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    public partial class HPanelTableLayout : TableLayoutPanel
+    {
+        public HPanelTableLayout()
+        {
+            InitializeComponent();
+        }
+
+        public HPanelTableLayout(IContainer container)
+        {
+            container.Add(this);
+
+            InitializeComponent();
+        }
+
+        public Font[] GetFontHLabel()
+        {
+            string[] textOfMaxLengths = new string[] { string.Empty, string.Empty };
+            SizeF[] szLabelOfMinSizes = new SizeF[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL]; //(float.MaxValue, float.MaxValue);
+
+            Font[] fonts = null;
+            float fSz = -1F,
+                fSzMin = -1F, fSzMax = -1F, fSzStep = float.MinValue;
+            SizeF sz;
+
+            Graphics g = this.CreateGraphics();
+
+            int indx = -1, i = -1;
+
+            for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
+            {
+                textOfMaxLengths[i] = string.Empty;
+                szLabelOfMinSizes[i].Height = szLabelOfMinSizes[i].Width = float.MaxValue;
+            }
+
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is StatisticCommon.HLabel)
+                {
+                    indx = (int)((HLabel)ctrl).m_type;
+                    if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
+                    {
+                        if (textOfMaxLengths[indx].Length < ctrl.Text.Length) textOfMaxLengths[indx] = ctrl.Text; else ;
+                        if ((szLabelOfMinSizes[indx].Height > ctrl.Height) || (szLabelOfMinSizes[indx].Width > ctrl.Width)) { szLabelOfMinSizes[indx].Height = ctrl.Height; szLabelOfMinSizes[indx].Width = ctrl.Width; } else ;
+                    }
+                    else
+                    {
+                        Logging.Logg().LogErrorToFile(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text);
+
+                        break;
+                    }
+                }
+                else
+                {
+                }
+            }
+
+            if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
+            {
+                fonts = new Font[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL];
+
+                for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
+                {
+                    fSzMin = szLabelOfMinSizes[i].Height * 0.2F; fSzMax = szLabelOfMinSizes[i].Height * 0.8F; fSzStep = 0.5F;
+
+                    if ((szLabelOfMinSizes[i].Height < float.MaxValue) && (szLabelOfMinSizes[i].Width < float.MaxValue))
+                    {
+                        szLabelOfMinSizes[i].Height *= 0.86f;
+                        szLabelOfMinSizes[i].Width *= 0.86f;
+
+
+                        //ctrl.Height * 0.29F
+                        //for (fSz = fSzMin; fSz < fSzMax; fSz += fSzStep)
+                        for (fSz = fSzMax; fSz > fSzMin; fSz -= fSzStep)
+                        {
+                            fonts[i] = new System.Drawing.Font("Microsoft Sans Serif", fSz, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                            sz = g.MeasureString(textOfMaxLengths[i], fonts[i]);
+
+                            if ((!(sz.Height > szLabelOfMinSizes[i].Height)) && (!(sz.Width > szLabelOfMinSizes[i].Width)))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                            }
+                        }
+                    }
+                    else
+                        ;
+                }
+            }
+            else
+                ; //Logging.Logg ().LogErrorToFile (@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN");
+
+            return fonts;
+        }
+
+        public void OnSizeChanged(object obj, EventArgs ev)
+        {
+            Font[] fonts = GetFontHLabel();
+
+            if (!(fonts == null))
+                foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
+                {
+                    if (ctrl is StatisticCommon.HLabel)
+                    {
+                        if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
+                            ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
+                        else
+                            Logging.Logg().LogErrorToFile(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null");
+                    }
+                    else
+                    {
+                    }
+                }
+            else
+                Logging.Logg().LogErrorToFile(@"HPanelTableLayout::OnSizeChanged () - fonts=null");
+        }
+    }
+
+    partial class HPanelTableLayout
+    {
+        /// <summary>
+        /// Требуется переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Код, автоматически созданный конструктором компонентов
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
+
+            this.SizeChanged += new EventHandler(OnSizeChanged);
+        }
+
+        #endregion
+    }
+
     partial class PanelQuickData
     {
         /// <summary>
@@ -32,10 +187,12 @@ namespace Statistic
 
         #region Код, автоматически созданный конструктором компонентов
 
-        private TableLayoutPanelCellPosition getPositionCell (CONTROLS indx) {
+        private TableLayoutPanelCellPosition getPositionCell(CONTROLS indx)
+        {
             int row = -1,
                 col = -1;
-            switch (indx) {
+            switch (indx)
+            {
                 case CONTROLS.lblCommonP:
                     row = 0; col = 1;
                     break;
@@ -72,14 +229,14 @@ namespace Statistic
                 case CONTROLS.lblDevE:
                     row = 8; col = 4;
                     break;
-                case CONTROLS.lblDevEVal:                
+                case CONTROLS.lblDevEVal:
                     row = 8; col = 5;
                     break;
                 default:
                     break;
             }
 
-            return new TableLayoutPanelCellPosition (col, row);
+            return new TableLayoutPanelCellPosition(col, row);
         }
 
         /// <summary>
@@ -92,8 +249,8 @@ namespace Statistic
 
             this.RowCount = 12;
 
-            for (int i = 0; i < this.RowCount + 1; i ++)
-                this.RowStyles.Add (new RowStyle (SizeType.Percent, (float)Math.Round ((float)100 / this.RowCount, 1)));
+            for (int i = 0; i < this.RowCount + 1; i++)
+                this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
 
             this.btnSetNow = new System.Windows.Forms.Button();
             this.dtprDate = new System.Windows.Forms.DateTimePicker();
@@ -113,8 +270,8 @@ namespace Statistic
             this.btnSetNow.TabIndex = 2;
             this.btnSetNow.Text = "Текущий час";
             this.btnSetNow.UseVisualStyleBackColor = true;
-            this.Controls.Add (this.btnSetNow, 0, 0);
-            this.SetRowSpan (this.btnSetNow, 3);
+            this.Controls.Add(this.btnSetNow, 0, 0);
+            this.SetRowSpan(this.btnSetNow, 3);
             // 
             // dtprDate
             // 
@@ -160,7 +317,7 @@ namespace Statistic
             this.SetRowSpan(this.lblPBRNumber, 3);
 
             //Ширина столбца группы "Элементы управления"
-            this.ColumnStyles.Add (new ColumnStyle (SizeType.Absolute, 100F));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
 
             Color foreColor, backClolor;
             float szFont;
@@ -215,10 +372,6 @@ namespace Statistic
                         break;
                 }
 
-                m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(/*i.ToString()*/@"---",
-                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point (-1, -1), new Size (-1, -1),
-                                                                                    foreColor, backClolor,
-                                                                                    szFont, align));
                 switch (i)
                 {
                     case CONTROLS.lblCommonP:
@@ -234,11 +387,27 @@ namespace Statistic
                         text = string.Empty;
                         break;
                 }
-                if (text.Equals(string.Empty) == false) m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = text; else ;
+
+                if (text.Equals(string.Empty) == false)
+                {
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                    foreColor, backClolor,
+                                                                                    szFont, align));
+                }
+                else
+                {
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
+                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                    foreColor, backClolor,
+                                                                                    szFont, align));
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                    ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                }
 
                 //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                 this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell (i));
+                this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
                 this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
             }
 
@@ -292,15 +461,27 @@ namespace Statistic
                         text = @"Откл";
                         break;
                     default:
-                        //text = string.Empty;
-                        text = @"---";
+                        text = string.Empty;
+                        //text = @"---";
                         break;
                 }
 
-                m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                if (text.Equals(string.Empty) == false)
+                {
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
+                }
+                else
+                {
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
                                                                                     new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                     foreColor, backClolor,
                                                                                     szFont, align));
+                    m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                    ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                }
 
                 //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                 this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
@@ -316,7 +497,7 @@ namespace Statistic
         #endregion
 
         //PanelTecViewBase m_parent;
-        PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }        
+        PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }
 
         public enum CONTROLS : uint
         {
@@ -358,7 +539,7 @@ namespace Statistic
         public System.Windows.Forms.Label[] m_arLabelCommon;
 
         //private List<System.Windows.Forms.Label> tgsName;
-        private List<System.Windows.Forms.Label[]> m_tgsValues = new List<System.Windows.Forms.Label []> ();
+        private List<System.Windows.Forms.Label[]> m_tgsValues = new List<System.Windows.Forms.Label[]>();
 
         public System.Windows.Forms.Button btnSetNow;
         public DateTimePicker dtprDate;
@@ -424,7 +605,7 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
             }
 
-            Panel panelEmpty = new Panel ();
+            Panel panelEmpty = new Panel();
             this.Controls.Add(panelEmpty, COL_TG_START + ((m_tgsValues.Count / COUNT_TG_IN_COLUMN) + 1) * (int)(TG.INDEX_VALUE.COUNT_INDEX_VALUE + 1), 0);
             this.SetRowSpan(panelEmpty, COUNT_ROWS);
             this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -441,14 +622,18 @@ namespace Statistic
                                                                     new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                     Color.Black, Color.Empty,
                                                                     8F, ContentAlignment.MiddleRight))
-                , lblValue = null;
+                //, lblValue = null
+                ;
+            HLabel hlblValue;
 
             //lblValue = new System.Windows.Forms.Label();
             //createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.FACT.ToString(), val, System.Drawing.Color.LimeGreen, positionXValue, positionYValue);
             //lblValue.TextAlign = ContentAlignment.MiddleCenter;
             //lblValue = HLabel.createLabel(name_shr + "_Fact", new HLabelStyles(new Point(positionXValue, positionYValue), new Size(63, 27), Color.LimeGreen, Color.Black, 15F, ContentAlignment.MiddleCenter));
-            lblValue = HLabel.createLabel(name_shr + "_Fact", new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
-            m_tgsValues [m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.FACT] = lblValue;
+            hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
+            hlblValue.Text = name_shr + @"_Fact";
+            hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+            m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
 
             //positionYValue += 29;
 
@@ -456,8 +641,10 @@ namespace Statistic
             //createTGLabelValue(ref lblValue, name_shr + TG.INDEX_VALUE.TM.ToString(), val, Color.Green, positionXValue, positionYValue);
             //lblValue.TextAlign = ContentAlignment.MiddleCenter;
             //lblValue = HLabel.createLabel(name_shr + "_TM", new HLabelStyles(new Point(positionXValue, positionYValue), new Size(63, 27), Color.Green, Color.Black, 15F, ContentAlignment.MiddleCenter));
-            lblValue = HLabel.createLabel(name_shr + "_TM", new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
-            m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.TM] = lblValue;
+            hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
+            hlblValue.Text = name_shr + @"_TM";
+            hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+            m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
             //positionXName += 69; positionXValue += 69;
 
@@ -480,7 +667,7 @@ namespace Statistic
         }
     }
 
-    public partial class PanelQuickData : TableLayoutPanel
+    public partial class PanelQuickData : HPanelTableLayout
     {
         /// <summary>
         /// Класс для хранения информации о местоположении элемента управления
@@ -493,7 +680,7 @@ namespace Statistic
                 pt.X = x; pt.Y = y; sz.Width = w; sz.Height = h;
             }
         };
-        
+
         public PanelQuickData()
         {
             InitializeComponent();
