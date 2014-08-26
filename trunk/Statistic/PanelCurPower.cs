@@ -81,16 +81,11 @@ namespace Statistic
         
         public bool m_bIsActive;
 
-        public StatusStrip m_stsStrip;
-
-        public PanelCurPower(List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
+        public PanelCurPower(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             InitializeComponent();
 
-            m_report = rep;
-
-            m_stsStrip = stsStrip;
-            m_msecPeriodUpdate = Int32.Parse (par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            m_msecPeriodUpdate = Int32.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
 
             this.Dock = DockStyle.Fill;
 
@@ -110,7 +105,7 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecCurPower(listTec[i]);
+                ptcp = new PanelTecCurPower(listTec[i], fErrRep, fActRep);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
 
@@ -121,8 +116,8 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
-            : this(listTec, stsStrip, par, rep)
+        public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : this(listTec, fErrRep, fActRep)
         {
             container.Add(this);
         }
@@ -232,17 +227,19 @@ namespace Statistic
 
             private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecCurPower(StatisticCommon.TEC tec)
+            public PanelTecCurPower(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
 
-                m_tecView = new TecView (null, null, TecView.TYPE_PANEL.CUR_POWER);
+                m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER);
                 m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec });
+                m_tecView.SetDelegateReport(fErrRep, fActRep);
+
                 Initialize();
             }
 
-            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec)
-                : this(tec)
+            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
+                : this(tec, fErrRep, fActRep)
             {
                 container.Add(this);
             }
@@ -385,7 +382,7 @@ namespace Statistic
 
                 lock (m_lockRep)
                 {
-                    ((PanelCurPower)Parent).m_report.errored_state = false;
+                    FormMainBaseWithStatusStrip.m_report.ClearStates ();
                 }
             }
 
@@ -409,30 +406,7 @@ namespace Statistic
                 }
                 else
                 {
-                    ((PanelCurPower)Parent).m_report.errored_state =
-                    ((PanelCurPower)Parent).m_report.actioned_state = false;
-                }
-            }
-
-            private void ErrorReport(string error_string)
-            {
-                lock (m_lockRep)
-                {
-                    ((PanelCurPower)Parent).m_report.last_error = error_string;
-                    ((PanelCurPower)Parent).m_report.last_time_error = DateTime.Now;
-                    ((PanelCurPower)Parent).m_report.errored_state = true;
-                    ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
-                }
-            }
-
-            private void ActionReport(string action_string)
-            {
-                lock (m_lockRep)
-                {
-                    ((PanelCurPower)Parent).m_report.last_action = action_string;
-                    ((PanelCurPower)Parent).m_report.last_time_action = DateTime.Now;
-                    ((PanelCurPower)Parent).m_report.actioned_state = true;
-                    ((PanelCurPower)Parent).m_stsStrip.BeginInvoke(((PanelCurPower)Parent).delegateEventUpdate);
+                    FormMainBaseWithStatusStrip.m_report.ClearStates ();
                 }
             }
 

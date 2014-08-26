@@ -120,7 +120,7 @@ namespace Statistic
         private DataGridViewCellStyle dgvCellStyleError;
         private DataGridViewCellStyle dgvCellStyleCommon;
 
-        protected DelegateBoolFunc delegateSetNowDate;
+        protected DelegateFunc delegateSetNowDate;
 
         private DelegateIntIntFunc delegateUpdateGUI_Fact;
         private DelegateFunc delegateUpdateGUI_TM;
@@ -142,34 +142,28 @@ namespace Statistic
         //protected FormGraphicsSettings graphSettings;
         //protected FormParameters parameters;
 
+        public volatile bool isActive;
+
         public TecView m_tecView;
 
         int currValuesPeriod;
 
+        public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
+        public int indx_TECComponent { get { return m_tecView.m_indx_TECComponent; } }
+
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        //public TG[] sensorId2TG;
-        public List<TG> listTG
-        {
-            get
-            {
-                if (indx_TECComponent < 0)
-                    return m_tecView.m_tec.m_listTG;
-                else
-                    return m_tecView.m_tec.list_TECComponents[indx_TECComponent].m_listTG;
-            }
-        }
+        //public TG[] sensorId2TG;        
 
         //public volatile TEC tec;
-        public volatile int indx_TEC;
-        public volatile int indx_TECComponent;
+
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        public List<TECComponentBase> m_list_TECComponents;
+        //public List<TECComponentBase> m_list_TECComponents;
 
         private bool update;
 
         protected virtual void InitializeComponent()
         {
-            this.m_pnlQuickData = new PanelQuickData();
+            //this.m_pnlQuickData = new PanelQuickData(); Выполнено в конструкторе
 
             this.m_dgwHours = new DataGridViewHours();
             this.m_dgwMins = new DataGridViewMins();
@@ -210,17 +204,24 @@ namespace Statistic
             this.stctrView = new System.Windows.Forms.SplitContainer();
         }
 
-        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, StatusStrip sts, HReports rep)
+        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
-            //this.tec = tec;
-            this.indx_TEC = indx_tec;
-            this.indx_TECComponent = indx_comp;
-            m_report = rep;
-
             //InitializeComponent();
 
-            m_tecView = new TecView (null, null, TecView.TYPE_PANEL.VIEW);
+            m_tecView = new TecView(null, TecView.TYPE_PANEL.VIEW);
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec });
+            m_tecView.m_indx_TEC = indx_tec;
+            m_tecView.m_indx_TECComponent = indx_comp;
+
+            m_tecView.InitializeTECComponents ();
+
+            m_tecView.SetDelegateReport(fErrRep, fActRep);
+
+            this.m_pnlQuickData = new PanelQuickData(); //Предвосхищая вызов 'InitializeComponent'
+            foreach (TG tg in m_tecView.listTG)
+            {
+                m_pnlQuickData.addTGView(ref tg.name_shr);
+            }
 
             dgvCellStyleError = new DataGridViewCellStyle();
             dgvCellStyleError.BackColor = Color.Red;
@@ -229,16 +230,21 @@ namespace Statistic
             if (tec.type() == TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;
             else
-                ;            
+                ;
 
-            stsStrip = sts;
+            isActive = false;
 
             update = false;
 
-            delegateSetNowDate = new DelegateBoolFunc(SetNowDate);
+            //listTG = new TG[tg_ids.Count];
 
-            delegateUpdateGUI_Fact = new DelegateIntIntFunc(UpdateGUI_Fact);
-            delegateUpdateGUI_TM = new DelegateFunc(UpdateGUI_TM);
+            delegateSetNowDate = new DelegateFunc(setNowDate);
+            m_tecView.setDatetimeView = delegateSetNowDate;
+
+            delegateUpdateGUI_Fact = new DelegateIntIntFunc(updateGUI_Fact);
+            delegateUpdateGUI_TM = new DelegateFunc(updateGUI_TM);
+            m_tecView.updateGUI_Fact = delegateUpdateGUI_Fact;
+            m_tecView.updateGUI_TM = delegateUpdateGUI_TM;
 
             delegateTickTime = new DelegateFunc(TickTime);
         }
@@ -317,7 +323,7 @@ namespace Statistic
         }
 
         public override void Start()
-        {
+        {            
             m_tecView.Start ();
 
             FillDefaultMins();
@@ -347,10 +353,15 @@ namespace Statistic
         {
             m_tecView.Stop ();
 
-            evTimerCurrent.Reset();
-            timerCurrent.Dispose();
+            if (! (evTimerCurrent == null)) evTimerCurrent.Reset(); else ;
+            if (!(timerCurrent == null)) timerCurrent.Dispose(); else ;
 
-            m_report.errored_state = false;
+            FormMainBaseWithStatusStrip.m_report.ClearStates ();
+        }
+
+        private void updateGUI_TM()
+        {
+            this.BeginInvoke(new DelegateFunc(UpdateGUI_TM));
         }
 
         private void UpdateGUI_TM()
@@ -359,6 +370,11 @@ namespace Statistic
             {
                 m_pnlQuickData.ShowTMValues();
             }
+        }
+
+        private void updateGUI_Fact(int hour, int min)
+        {
+            this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
         }
 
         protected virtual void UpdateGUI_Fact(int hour, int min)
@@ -484,7 +500,7 @@ namespace Statistic
             for (int i = 0; i < itemscount; i++)
             {
                 bool bPmin = false;
-                if (tec.m_id == 5) bPmin = true; else ;
+                if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
                 d2PercentControl.Calculate(m_tecView.m_valuesHours, i, bPmin, out warn);
 
                 if ((!(warn == 0)) &&
@@ -680,21 +696,12 @@ namespace Statistic
             Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridHours () - ...");
         }
 
-        private int CountTG {
-            get {
-                if (indx_TEC < 0)
-                    return m_tecView.m_tec.m_listTG.Count;
-                else
-                    return m_tecView.allTECComponents [indx_TECComponent].m_listTG.Count;
-            }
-        }
-
         private void NewDateRefresh()
         {
             //delegateStartWait ();
             if (!(delegateStartWait == null)) delegateStartWait(); else ;
             
-            m_tecView.ChangeState();
+            ChangeState();
 
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
@@ -702,7 +709,7 @@ namespace Statistic
 
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
-            if (update)
+            if (update == true)
             {
                 if (!(m_pnlQuickData.dtprDate.Value.Date == m_tecView.selectedTime.Date))
                     m_tecView.currHour = false;
@@ -713,6 +720,12 @@ namespace Statistic
             }
             else
                 update = true;
+        }
+
+        private void setNowDate()
+        {
+            //true, т.к. всегда вызов при result=true
+            this.BeginInvoke (new DelegateBoolFunc (SetNowDate), true);
         }
 
         private void SetNowDate(bool received)
@@ -737,6 +750,8 @@ namespace Statistic
 
         private void ChangeState()
         {
+            m_tecView.selectedTime = m_pnlQuickData.dtprDate.Value;
+            
             m_tecView.ChangeState ();
         }
 
@@ -747,28 +762,12 @@ namespace Statistic
             if (isActive == true)
             {
                 currValuesPeriod = 0;
-                lock (m_lockValue)
-                {
-                    ChangeState();
-
-                    try
-                    {
-                        m_sem.Release(1);
-                    }
-                    catch
-                    {
-                    }
-                }
+                
+                ChangeState ();
             }
             else
             {
-                lock (m_lockValue)
-                {
-                    m_newState = true;
-                    m_states.Clear();
-                    m_report.errored_state =
-                    m_report.actioned_state = false;
-                }
+                m_tecView.ClearStates ();
             }
         }
 
@@ -791,7 +790,7 @@ namespace Statistic
         private void TimerCurrent_Tick(Object stateInfo)
         {
             Invoke(delegateTickTime);
-            if ((m_tecView.currHour == true) && (m_tecView.isActive == true))
+            if ((m_tecView.currHour == true) && (isActive == true))
                 if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
                 {
                     currValuesPeriod = 0;

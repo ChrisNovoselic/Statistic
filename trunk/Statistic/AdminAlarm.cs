@@ -29,7 +29,7 @@ namespace Statistic
             m_listTecView = new List<TecView> ();
 
             foreach (StatisticCommon.TEC t in listTEC) {
-                m_listTecView.Add(new TecView(null, null, TecView.TYPE_PANEL.ADMIN_ALARM));
+                m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM));
                 m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
             }
         }

@@ -74,29 +74,15 @@ namespace Statistic
             AdminValues
         };
 
-        public DelegateFunc delegateEventUpdate;
+        //public DelegateFunc delegateEventUpdate;
 
         public int m_msecPeriodUpdate;
 
-        /*public volatile string last_error;
-        public DateTime last_time_error;
-        public volatile bool errored_state;
-
-        public volatile string last_action;
-        public DateTime last_time_action;
-        public volatile bool actioned_state;*/
-        HReports m_report;
-
         public bool m_bIsActive;
 
-        public StatusStrip m_stsStrip;
-
-        public PanelLastMinutes(List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, HReports rep)
+        public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             int i = -1;
-
-            m_stsStrip = stsStrip;
-            m_report = rep;
             
             InitializeComponent();
 
@@ -118,7 +104,7 @@ namespace Statistic
             
             for (i = 0; i < listTec.Count; i++)
             {
-                this.Controls.Add(new PanelTecLastMinutes(listTec[i]), i + 1, 0);
+                this.Controls.Add(new PanelTecLastMinutes(listTec[i], fErrRep, fActRep), i + 1, 0);
                 iCountSubColumns += ((PanelTecLastMinutes)this.Controls [i + 1]).CountTECComponent; //Слева столбец дата/время
             }
 
@@ -130,8 +116,8 @@ namespace Statistic
             }
         }
 
-        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, HReports rep)
-            : this(listTec, stsStrip, rep)
+        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : this(listTec, fErrRep, fActRep)
         {
             container.Add(this);
         }
@@ -310,9 +296,7 @@ namespace Statistic
 
         public partial class PanelTecLastMinutes : TableLayoutPanel
         {
-            private StatisticCommon.TEC m_tec;
-
-            public int m_id_tec { get { return m_tec.m_id; } }
+            public int m_id_tec { get { return m_tecView.m_tec.m_id; } }
 
             List<TECComponentBase> m_list_TECComponents;
             public int CountTECComponent { get { return m_list_TECComponents.Count; } }
@@ -322,38 +306,29 @@ namespace Statistic
             private Dictionary<int, Label[]> m_dictLabelVal;
             private Dictionary<int, ToolTip[]> m_dictToolTip;
 
-            private object lockValue;
-
             private bool m_bIsActive,
                         m_bIsStarted,
                         m_bUpdate;
 
-            private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
+            //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
+            TecView m_tecView;
 
-            DataTable m_tablePBRResponse;
-
-            private volatile string sensorsString_TM;
-
-            private Thread m_taskThread;
-            private Semaphore m_semaState;
-            private volatile bool m_bThreadIsWorking;
-            private volatile bool m_bIsNewState;
-            private volatile List<StatesMachine> m_states;
             private ManualResetEvent m_evTimerCurrent;
             private System.Threading.Timer m_timerCurrent;
 
-            private DelegateFunc delegateUpdateGUI_TM;
-
-            public PanelTecLastMinutes(StatisticCommon.TEC tec)
+            public PanelTecLastMinutes(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
 
-                m_tec = tec;
+                m_tecView = new TecView (null, TecView.TYPE_PANEL.LAST_MINUTES);
+                m_tecView.InitTEC (new List <TEC> () { tec });
+                m_tecView.SetDelegateReport(fErrRep, fActRep);
+
                 Initialize();
             }
 
-            public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec)
-                : this(tec)
+            public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
+                : this(tec, fErrRep, fActRep)
             {
                 container.Add(this);
             }
@@ -370,10 +345,10 @@ namespace Statistic
                 this.RowCount = 24 + COUNT_FIXED_ROWS;
 
                 //Добавить наименование станции
-                Label lblNameTEC = HLabel.createLabel(m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
+                Label lblNameTEC = HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
                 this.Controls.Add(lblNameTEC, 0, 0);
-                
-                foreach (TECComponent g in m_tec.list_TECComponents)
+
+                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
@@ -417,19 +392,11 @@ namespace Statistic
                 else
                     ;
 
-                lockValue = new object();
-                m_listSensorId2TG = new List<TG>(); //[this.RowCount - COUNT_FIXED_ROWS];
-                sensorsString_TM = string.Empty;
-                m_states = new List<StatesMachine>();
-                //delegateUpdateGUI_TM = ShowTMPower;
-
                 m_dictValuesHours = new Dictionary<int, TecView.valuesTECComponent> ();
                 foreach (TECComponent c in m_list_TECComponents)
                 {
                     m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
                 }
-
-                delegateUpdateGUI_TM = ShowLastMinutesTM;
             }
 
             public void Start()
@@ -441,18 +408,7 @@ namespace Statistic
 
                 m_bIsStarted = true;
 
-                m_tec.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
-
-                m_bThreadIsWorking = true;
-
-                m_taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-                m_taskThread.Name = @"Интерфейс к данным (" + GetType ().Name + "): " + m_tec.name_shr + @" - текущие значения...";
-                m_taskThread.IsBackground = true;
-
-                m_semaState = new Semaphore(1, 1);
-
-                m_semaState.WaitOne();
-                m_taskThread.Start();
+                m_tecView.Start ();
 
                 ClearValues();
 
@@ -475,50 +431,14 @@ namespace Statistic
                 m_evTimerCurrent.Reset();
                 m_timerCurrent.Dispose();
 
-                m_bIsStarted = false;
-                bool joined;
-                m_bThreadIsWorking = false;
-                lock (lockValue)
-                {
-                    m_bIsNewState = true;
-                    m_states.Clear();
-                }
+                m_tecView.Stop ();
 
-                if (m_taskThread.IsAlive)
-                {
-                    try
-                    {
-                        m_semaState.Release(1);
-                    }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.Stop () - sem.Release(1)"); }
-
-                    joined = m_taskThread.Join(1000);
-                    if (!joined)
-                        m_taskThread.Abort();
-                    else
-                        ;
-                }
-
-                m_tec.StopDbInterfaces();
-
-                lock (lockValue)
-                {
-                    ((PanelLastMinutes)Parent).m_report.errored_state = false;
-                }
+                FormMainBaseWithStatusStrip.m_report.ClearStates();
             }
 
             private void ChangeState()
             {
-                m_bIsNewState = true;
-                m_states.Clear();
-
-                if ((sensorsString_TM.Equals(string.Empty) == true))
-                    m_states.Add(StatesMachine.Init_TM);
-                else ;
-
-                m_states.Add(StatesMachine.PBRValues);
-                m_states.Add(StatesMachine.AdminValues);
-                m_states.Add(StatesMachine.LastMinutes_TM);
+                m_tecView.ChangeState ();
             }
 
             public void Activate(bool active)
@@ -532,50 +452,11 @@ namespace Statistic
 
                 if (m_bIsActive == true)
                 {
-                    lock (lockValue)
-                    {
-                        ChangeState();
-
-                        try
-                        {
-                            m_semaState.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    ChangeState();
                 }
                 else
                 {
-                    lock (lockValue)
-                    {
-                        m_bIsNewState = true;
-                        m_states.Clear();
-                        ((PanelLastMinutes)Parent).m_report.errored_state =
-                        ((PanelLastMinutes)Parent).m_report.actioned_state = false;
-                    }
-                }
-            }
-
-            private void ErrorReport(string error_string)
-            {
-                lock (lockValue)
-                {
-                    ((PanelLastMinutes)Parent).m_report.last_error = error_string;
-                    ((PanelLastMinutes)Parent).m_report.last_time_error = DateTime.Now;
-                    ((PanelLastMinutes)Parent).m_report.errored_state = true;
-                    ((PanelLastMinutes)Parent).m_stsStrip.BeginInvoke(((PanelLastMinutes)Parent).delegateEventUpdate);
-                }
-            }
-
-            private void ActionReport(string action_string)
-            {
-                lock (lockValue)
-                {
-                    ((PanelLastMinutes)Parent).m_report.last_action = action_string;
-                    ((PanelLastMinutes)Parent).m_report.last_time_action = DateTime.Now;
-                    ((PanelLastMinutes)Parent).m_report.actioned_state = true;
-                    ((PanelLastMinutes)Parent).m_stsStrip.BeginInvoke(((PanelLastMinutes)Parent).delegateEventUpdate);
+                    m_tecView.ClearStates ();
                 }
             }
 
@@ -598,7 +479,7 @@ namespace Statistic
                         strToolTip = string.Empty;
 
                         bool bPmin = false;
-                        if (m_tec.m_id == 5) bPmin = true; else ;
+                        if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
                         strToolTip = d2PercentControl.Calculate(m_dictValuesHours[g.m_id], hour, bPmin, out warn);
 
                         m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
@@ -647,652 +528,258 @@ namespace Statistic
                 ((Label)sender).ForeColor = clr;
             }
 
-            private void GetLastMinutesTMRequest()
-            {
-                m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(DateTime.Now.Date, sensorsString_TM));
-            }
-
-            private bool GetLastMinutesTMResponse(DataTable table_in)
-            {
-                bool bRes = true;
-                int i = -1,
-                    hour = -1,
-                    offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone ().TotalHours;
-                double value = -1;
-                DateTime dtVal;
-                DataRow [] tgRows = null;
-
-                foreach (TECComponent g in m_tec.list_TECComponents)
-                {
-                    if ((g.m_id > 100) && (g.m_id < 500))
-                        foreach (TG tg in g.m_listTG)
-                        {
-                            for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
-                            {
-                                tg.power_LastMinutesTM[i] = 0;
-                            }
-
-                            tgRows = table_in.Select (@"[ID]=" + tg.id_tm);
-                        
-                            for (i = 0; i < tgRows.Length; i++)
-                            {
-                                if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                    return false;
-                                else
-                                    ;
-
-                                //if (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out m_dtLastChangedAt) == false)
-                                //    return false;
-                                //else
-                                //    ;
-
-                                switch (m_tec.type())
-                                {
-                                    case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                                        break;
-                                    case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                                        //value *= 20;
-                                        break;
-                                    default:
-                                        break;
-                                }
-
-                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                    return false;
-                                else
-                                    ;
-
-                                hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
-                                if (! (hour < 24)) {
-                                    hour -= 24;
-                                }
-                                else ;
-
-                                tg.power_LastMinutesTM[hour] = value;
-                                
-                                //m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
-                                //Запрос с учетом значения перехода через сутки
-                                if (hour > 0 && value > 1)
-                                    m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] += value;
-                                else
-                                    ;
-                            }
-                        }
-                    else
-                        ; //Не ГТП
-                }
-
-                return bRes;
-            }
-
-            //private void GetSensorsTMRequest()
-            //{
-            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.sensorsTMRequest());
-            //}
-
-            private bool GetSensorsTEC()
-            {
-                bool bRes = true;
-
-                //ТЭЦ в полном составе
-                int j = -1;
-                for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-                {
-                    if ((m_tec.list_TECComponents[j].m_id > 100) && (m_tec.list_TECComponents[j].m_id < 500))
-                        for (int k = 0; k < m_tec.list_TECComponents[j].m_listTG.Count; k++)
-                            m_listSensorId2TG.Add(m_tec.list_TECComponents[j].m_listTG[k]);
-                        else
-                            ;
-                }
-
-                sensorsString_TM = string.Empty;
-
-                for (int i = 0; i < m_listSensorId2TG.Count; i++)
-                {
-                    if (!(m_listSensorId2TG[i] == null))
-                    {
-                        if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
-                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                                    //Общий источник для всех ТЭЦ
-                                    sensorsString_TM += @", "; //@" OR ";
-                                    break;
-                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                                    //Источник для каждой ТЭЦ свой
-                                    sensorsString_TM += @" OR ";
-                                    break;
-                                default:
-                                    break;
-                            }
-                        else
-                            ;
-
-                        switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
-                        {
-                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                                //Общий источник для всех ТЭЦ
-                                sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
-                                break;
-                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                                //Источник для каждой ТЭЦ свой
-                                sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        //ErrorReportSensors(ref table);
-
-                        return false;
-                    }
-                }
-
-                return bRes;
-            }
-
-            private void StateRequest(StatesMachine state)
-            {
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        ActionReport("Получение идентификаторов датчиков.");
-                        break;
-                    case StatesMachine.LastMinutes_TM:
-                        ActionReport("Получение текущих значений.");
-                        //adminValuesReceived = false;
-                        GetLastMinutesTMRequest();
-                        break;
-                    case StatesMachine.PBRValues:
-                        ActionReport("Получение данных плана.");
-                        //adminValuesReceived = false;
-                        GetPBRValuesRequest();
-                        break;
-                    case StatesMachine.AdminValues:
-                        ActionReport("Получение административных значений.");
-                        //adminValuesReceived = false;
-                        GetAdminValuesRequest(s_typeFields);
-                        break;
-                }
-            }
-
-            private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
-            {
-                error = false;
-                table = null;
-
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        return true;
-                    case StatesMachine.LastMinutes_TM:
-                        return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
-                    case StatesMachine.PBRValues:
-                        return DbSources.Sources ().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], out error, out table);
-                    case StatesMachine.AdminValues:
-                        return DbSources.Sources().Response(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], out error, out table);
-                }
-
-                error = true;
-
-                return false;
-            }
-
-            private bool StateResponse(StatesMachine state, DataTable table)
-            {
-                bool result = false;
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        switch (m_tec.type())
-                        {
-                            case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                                result = GetSensorsTEC();
-                                break;
-                        }
-                        if (result == true)
-                        {
-                        }
-                        break;
-                    case StatesMachine.LastMinutes_TM:
-                        ClearValues (); //Пока пустая???
-                        result = GetLastMinutesTMResponse(table);
-                        if (result == true)
-                        {
-                            this.BeginInvoke(delegateUpdateGUI_TM);
-                        }
-                        else
-                            ;
-                        break;
-                    case StatesMachine.PBRValues:
-                        result = GetPBRValuesResponse(table);
-                        if (result == true)
-                        {
-                        }
-                        else
-                            ;
-                        break;
-                    case StatesMachine.AdminValues:
-                        result = GetAdminValuesResponse(table);
-                        if (result == true)
-                        {
-                        }
-                        else
-                            ;
-                        break;
-                }
-
-                if (result == true)
-                    lock (lockValue)
-                    {
-                        ((PanelLastMinutes)Parent).m_report.errored_state =
-                        ((PanelLastMinutes)Parent).m_report.actioned_state = false;
-                    }
-                else
-                    ;
-
-                return result;
-            }
-
-            private void StateErrors(StatesMachine state, bool response)
-            {
-                string error = string.Empty,
-                        reason = string.Empty,
-                        waiting = string.Empty;
-
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        reason = @"идентификаторов датчиков (телемеханика)";
-                        waiting = @"Переход в ожидание";
-                        break;
-                    case StatesMachine.LastMinutes_TM:
-                        reason = @"значений крайних минут часа";
-                        //waiting = @"Ожидание " + (((PanelLastMinutes)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
-                        waiting = @"Переход в ожидание";
-                        break;
-                    case StatesMachine.PBRValues:
-                        reason = @"данных плана";
-                        break;
-                    case StatesMachine.AdminValues:
-                        reason = @"административных значений";
-                        break;
-                }
-
-                if (response)
-                    reason = @"разбора " + reason;
-                else
-                    reason = @"получения " + reason;
-
-                error = "Ошибка " + reason + ".";
-
-                if (waiting.Equals(string.Empty) == true)
-                    error += " " + waiting + ".";
-                else
-                    ;
-
-                ErrorReport(error);
-            }
-
-            private void TecView_ThreadFunction(object data)
-            {
-                int index;
-                StatesMachine currentState;
-
-                while (m_bThreadIsWorking)
-                {
-                    m_semaState.WaitOne();
-
-                    index = 0;
-
-                    lock (lockValue)
-                    {
-                        if (m_states.Count == 0)
-                            continue;
-                        currentState = m_states[index];
-                        m_bIsNewState = false;
-                    }
-
-                    while (true)
-                    {
-                        bool error = true;
-                        bool dataPresent = false;
-                        DataTable table = null;
-                        for (int i = 0; i < DbInterface.MAX_RETRY && !dataPresent && !m_bIsNewState; i++)
-                        {
-                            if (error)
-                                StateRequest(currentState);
-
-                            error = false;
-                            for (int j = 0; (j < DbInterface.MAX_WAIT_COUNT) && (dataPresent == false) && (error == false) && (m_bIsNewState == false); j++)
-                            {
-                                System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
-                                dataPresent = StateCheckResponse(currentState, out error, out table);
-                            }
-                        }
-
-                        bool responseIsOk = true;
-                        if (dataPresent && !error && !m_bIsNewState)
-                            responseIsOk = StateResponse(currentState, table);
-
-                        if ((!responseIsOk || !dataPresent || error) && !m_bIsNewState)
-                        {
-                            StateErrors(currentState, !responseIsOk);
-                            lock (lockValue)
-                            {
-                                if (m_bIsNewState == false)
-                                {
-                                    m_states.Clear();
-                                    m_bIsNewState = true;
-                                }
-                            }
-                        }
-
-                        index++;
-
-                        lock (lockValue)
-                        {
-                            if (index == m_states.Count)
-                                break;
-                            if (m_bIsNewState)
-                                break;
-                            currentState = m_states[index];
-                        }
-                    }
-                }
-                try
-                {
-                    m_semaState.Release(1);
-                }
-                catch
-                {
-                }
-            }
-
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                lock (lockValue)
+                if (m_bIsActive == true)
                 {
-                    if (m_bIsActive == true)
-                    {
-                        ChangeState();
-
-                        try
-                        {
-                            m_semaState.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                        ;
+                    ChangeState();
                 }
-            }
-
-            private void GetPBRValuesRequest()
-            {
-                lock (lockValue)
-                {
-                    DbSources.Sources ().Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(-1, DateTime.Now.Date, AdminTS.TYPE_FIELDS.DYNAMIC));
-                }
-            }
-
-            private bool GetPBRValuesResponse(DataTable table)
-            {
-                bool bRes = true;
-
-                if (!(table == null))
-                    m_tablePBRResponse = table.Copy();
                 else
                     ;
-
-                return bRes;
             }
 
-            private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
-            {
-                lock (lockValue)
-                {
-                    DbSources.Sources ().Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
-                }
-            }
+            //private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
+            //{
+            //    lock (lockValue)
+            //    {
+            //        DbSources.Sources ().Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(-1, DateTime.Now.Date, mode));
+            //    }
+            //}
 
-            private bool GetAdminValuesResponse(DataTable table_in)
-            {
-                DateTime date = DateTime.Now.Date
-                         , dtPBR;
-                int hour;
+            //private bool GetAdminValuesResponse(DataTable table_in)
+            //{
+            //    DateTime date = DateTime.Now.Date
+            //             , dtPBR;
+            //    int hour;
 
-                int offsetPrev = -1
-                    //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
-                    , i = -1, j = -1,
-                    offsetUDG, offsetPlan, offsetLayout;
+            //    int offsetPrev = -1
+            //        //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePBRResponse.Rows.Count
+            //        , i = -1, j = -1,
+            //        offsetUDG, offsetPlan, offsetLayout;
 
-                offsetUDG = 1;
-                offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
-                offsetLayout = -1;
+            //    offsetUDG = 1;
+            //    offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
+            //    offsetLayout = -1;
 
-                //m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
-                m_tablePBRResponse = TecView.restruct_table_pbrValues(m_tablePBRResponse, m_tec.list_TECComponents, -1);
-                offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
+            //    //m_tablePBRResponse = restruct_table_pbrValues(m_tablePBRResponse);
+            //    m_tablePBRResponse = TecView.restruct_table_pbrValues(m_tablePBRResponse, m_tec.list_TECComponents, -1);
+            //    offsetLayout = (!(m_tablePBRResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePBRResponse.Columns.Count;
 
-                //table_in = restruct_table_adminValues(table_in);
-                table_in = TecView.restruct_table_adminValues(table_in, m_tec.list_TECComponents, -1);
+            //    //table_in = restruct_table_adminValues(table_in);
+            //    table_in = TecView.restruct_table_adminValues(table_in, m_tec.list_TECComponents, -1);
 
-                //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
-                //    try { table_in.Columns.Remove("ID_COMPONENT"); }
-                //    catch (Exception excpt)
-                //    {
-                //        /*
-                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ...");
-                //        */
-                //    }
-                //else
-                //    ;
+            //    //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
+            //    //    try { table_in.Columns.Remove("ID_COMPONENT"); }
+            //    //    catch (Exception excpt)
+            //    //    {
+            //    //        /*
+            //    //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ...");
+            //    //        */
+            //    //    }
+            //    //else
+            //    //    ;
 
-                // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
-                for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
-                {
-                    if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
-                    {
-                        try
-                        {
-                            hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
-                            if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
-                            {
-                                offsetPrev = i;
-                                //foreach (TECComponent g in tec.list_TECComponents)
-                                for (j = 0; j < m_list_TECComponents.Count; j++)
-                                {
-                                    if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count) {
-                                        m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 1];
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 2];
-                                    }
-                                    else {
-                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = 0.0;
-                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = 0.0;
-                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = 0.0;
-                                    }
-                                    //j++;
-                                }
-                            }
-                            else
-                                ;
-                        }
-                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ..."); }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
-                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
-                            {
-                                offsetPrev = i;
-                            }
-                            else
-                                ;
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
+            //    // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
+            //    for (i = 0; i < m_tablePBRResponse.Rows.Count && offsetPrev < 0; i++)
+            //    {
+            //        if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+            //        {
+            //            try
+            //            {
+            //                hour = ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Hour;
+            //                if (hour == 0 && ((DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
+            //                {
+            //                    offsetPrev = i;
+            //                    //foreach (TECComponent g in tec.list_TECComponents)
+            //                    for (j = 0; j < m_list_TECComponents.Count; j++)
+            //                    {
+            //                        if ((offsetPlan + j * 3) < m_tablePBRResponse.Columns.Count) {
+            //                            m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3];
+            //                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 1];
+            //                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = (double)m_tablePBRResponse.Rows[i][offsetPlan + j * 3 + 2];
+            //                        }
+            //                        else {
+            //                             m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[0] = 0.0;
+            //                             m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[0] = 0.0;
+            //                             m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[0] = 0.0;
+            //                        }
+            //                        //j++;
+            //                    }
+            //                }
+            //                else
+            //                    ;
+            //            }
+            //            catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ..."); }
+            //        }
+            //        else
+            //        {
+            //            try
+            //            {
+            //                hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+            //                if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+            //                {
+            //                    offsetPrev = i;
+            //                }
+            //                else
+            //                    ;
+            //            }
+            //            catch
+            //            {
+            //            }
+            //        }
+            //    }
 
-                // разбор остальных значений
-                for (i = 0; i < m_tablePBRResponse.Rows.Count; i++)
-                {
-                    if (i == offsetPrev)
-                        continue;
+            //    // разбор остальных значений
+            //    for (i = 0; i < m_tablePBRResponse.Rows.Count; i++)
+            //    {
+            //        if (i == offsetPrev)
+            //            continue;
 
-                    if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
-                    {
-                        try
-                        {
-                            dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
+            //        if (!(m_tablePBRResponse.Rows[i]["DATE_PBR"] is System.DBNull))
+            //        {
+            //            try
+            //            {
+            //                dtPBR = (DateTime)m_tablePBRResponse.Rows[i]["DATE_PBR"];
 
-                            hour = dtPBR.Hour;
-                            if ((hour == 0) && (!(dtPBR.Day == date.Day)))
-                                hour = 24;
-                            else
-                                if (hour == 0)
-                                    continue;
-                                else
-                                    ;
+            //                hour = dtPBR.Hour;
+            //                if ((hour == 0) && (!(dtPBR.Day == date.Day)))
+            //                    hour = 24;
+            //                else
+            //                    if (hour == 0)
+            //                        continue;
+            //                    else
+            //                        ;
 
-                            //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_list_TECComponents.Count; j++)
-                            {
-                                try
-                                {
-                                    if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull))) {
-                                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
-                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 1];
-                                         m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 2];
-                                    }
-                                    else
-                                        ;
+            //                //foreach (TECComponent g in tec.list_TECComponents)
+            //                for (j = 0; j < m_list_TECComponents.Count; j++)
+            //                {
+            //                    try
+            //                    {
+            //                        if (((offsetPlan + (j * 3)) < m_tablePBRResponse.Columns.Count) && (!(m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull))) {
+            //                             m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3)];
+            //                             m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmin[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 1];
+            //                             m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPmax[hour] = (double)m_tablePBRResponse.Rows[i][offsetPlan + (j * 3) + 2];
+            //                        }
+            //                        else
+            //                            ;
 
-                                    DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
-                                    if (row_in.Length > 0)
-                                    {
-                                        if (row_in.Length > 1)
-                                            ; //Ошибка...
-                                        else
-                                            ;
+            //                        DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+            //                        if (row_in.Length > 0)
+            //                        {
+            //                            if (row_in.Length > 1)
+            //                                ; //Ошибка...
+            //                            else
+            //                                ;
 
-                                        if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)row_in[0][offsetUDG + j * 3];
-                                        else
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
+            //                            if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
+            //                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)row_in[0][offsetUDG + j * 3];
+            //                            else
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
 
-                                        if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)row_in[0][offsetUDG + 1 + j * 3];
-                                        else
-                                            ;
+            //                            if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)row_in[0][offsetUDG + 1 + j * 3];
+            //                            else
+            //                                ;
 
-                                        if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesHours [m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)row_in[0][offsetUDG + 2 + j * 3];
-                                        else
-                                            ;
-                                    }
-                                    else
-                                    {
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
-                                    }
-                                }
-                                catch
-                                {
-                                }
-                                //j++;
-                            }
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
-                            if ((hour == 0) && (!(((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)))
-                                hour = 24;
-                            else
-                                ;
+            //                            if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
+            //                                m_dictValuesHours [m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)row_in[0][offsetUDG + 2 + j * 3];
+            //                            else
+            //                                ;
+            //                        }
+            //                        else
+            //                        {
+            //                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
+            //                        }
+            //                    }
+            //                    catch
+            //                    {
+            //                    }
+            //                    //j++;
+            //                }
+            //            }
+            //            catch
+            //            {
+            //            }
+            //        }
+            //        else
+            //        {
+            //            try
+            //            {
+            //                hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
+            //                if ((hour == 0) && (!(((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)))
+            //                    hour = 24;
+            //                else
+            //                    ;
 
-                            //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_list_TECComponents.Count; j++)
-                            {
-                                try
-                                {
-                                     m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = 0;
+            //                //foreach (TECComponent g in tec.list_TECComponents)
+            //                for (j = 0; j < m_list_TECComponents.Count; j++)
+            //                {
+            //                    try
+            //                    {
+            //                         m_dictValuesHours [m_list_TECComponents [j].m_id].valuesPBR[hour] = 0;
 
-                                    if (i < table_in.Rows.Count)
-                                    {
-                                        if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)table_in.Rows[i][offsetUDG + j * 3];
-                                        else
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
+            //                        if (i < table_in.Rows.Count)
+            //                        {
+            //                            if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
+            //                                //if ((offsetLayout < m_tablePBRResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = (double)table_in.Rows[i][offsetUDG + j * 3];
+            //                            else
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
 
-                                        if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
-                                        else
-                                            ;
+            //                            if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[hour] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+            //                            else
+            //                                ;
 
-                                        if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
-                                        else
-                                            ;
-                                    }
-                                    else
-                                    {
-                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
-                                    }
-                                }
-                                catch
-                                {
-                                }
-                                //j++;
-                            }
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
+            //                            if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
+            //                                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[hour] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+            //                            else
+            //                                ;
+            //                        }
+            //                        else
+            //                        {
+            //                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[hour] = 0;
+            //                        }
+            //                    }
+            //                    catch
+            //                    {
+            //                    }
+            //                    //j++;
+            //                }
+            //            }
+            //            catch
+            //            {
+            //            }
+            //        }
+            //    }
 
-                for (i = 1; i < 25; i++)
-                {
-                    for (j = 0; j < m_list_TECComponents.Count; j++)
-                    {
-                        if (i == 1)
-                        {
-                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe [i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[0]) / 2;
-                        }
-                        else
-                        {
-                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i - 1]) / 2;
-                        }
+            //    for (i = 1; i < 25; i++)
+            //    {
+            //        for (j = 0; j < m_list_TECComponents.Count; j++)
+            //        {
+            //            if (i == 1)
+            //            {
+            //                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe [i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[0]) / 2;
+            //            }
+            //            else
+            //            {
+            //                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBR[i - 1]) / 2;
+            //            }
 
-                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesUDGe[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i];
+            //            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesUDGe[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] + m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i];
 
-                        if (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[i] == 1)
-                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] +
-                                                                                                    m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i]) * m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i] / 100;
-                        else
-                            m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i];
-                    }
-                }
+            //            if (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesISPER[i] == 1)
+            //                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = (m_dictValuesHours[m_list_TECComponents[j].m_id].valuesPBRe[i] +
+            //                                                                                        m_dictValuesHours[m_list_TECComponents[j].m_id].valuesREC[i]) * m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i] / 100;
+            //            else
+            //                m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDiviation[i] = m_dictValuesHours[m_list_TECComponents[j].m_id].valuesDIV[i];
+            //        }
+            //    }
                 
-                return true;
-            }
+            //    return true;
+            //}
+
             /*
             Статический метод в 'PanelTecViewBase'
             private DataTable restruct_table_pbrValues(DataTable table_in)

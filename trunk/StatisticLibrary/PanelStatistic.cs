@@ -19,8 +19,8 @@ namespace StatisticCommon
         //protected volatile string sensorsString_TM = string.Empty;
         //protected volatile string[] sensorsStrings_Fact = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
-        protected StatusStrip stsStrip;
-        protected HReports m_report;
+        //protected StatusStrip stsStrip;
+        //protected HReports m_report;
 
         protected DelegateFunc delegateStartWait;
         protected DelegateFunc delegateStopWait;
@@ -35,23 +35,6 @@ namespace StatisticCommon
         //    error = error.Substring(0, error.LastIndexOf(","));
         //    ErrorReport(error);
         //}
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        public void ErrorReport(string error_string)
-        {
-            m_report.last_error = error_string;
-            m_report.last_time_error = DateTime.Now;
-            m_report.errored_state = true;
-            stsStrip.BeginInvoke(delegateEventUpdate);
-        }
-
-        protected void ActionReport(string action_string)
-        {
-            m_report.last_action = action_string;
-            m_report.last_time_action = DateTime.Now;
-            m_report.actioned_state = true;
-            stsStrip.BeginInvoke(delegateEventUpdate);
-        }
 
         public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
         {

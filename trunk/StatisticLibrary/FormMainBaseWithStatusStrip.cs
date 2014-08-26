@@ -14,16 +14,37 @@ namespace StatisticCommon
         public volatile string last_action;
         public DateTime last_time_action;
         public volatile bool actioned_state;
+
+        public HReports () {
+            ClearStates ();
+        }
+
+        public void ClearStates () {
+            errored_state = actioned_state = false;
+        }
+
+        public void ErrorReport(string msg)
+        {
+            last_error = msg;
+            last_time_error = DateTime.Now;
+            errored_state = true;
+        }
+
+        public void ActionReport (string msg) {
+            last_action = msg;
+            last_time_action = DateTime.Now;
+            actioned_state = true;
+        }
     };
 
     public abstract class FormMainBaseWithStatusStrip : FormMainBase
     {
-        protected System.Windows.Forms.StatusStrip m_statusStripMain;
+        public static System.Windows.Forms.StatusStrip m_statusStripMain;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblMainState;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblDescError;
         protected System.Windows.Forms.ToolStripStatusLabel m_lblDateError;
 
-        public HReports m_report;
+        public static HReports m_report;
 
         protected FormMainBaseWithStatusStrip()
         {
@@ -34,24 +55,24 @@ namespace StatisticCommon
 
         private void InitializeComponent()
         {
-            this.m_statusStripMain = new System.Windows.Forms.StatusStrip();
+            FormMainBaseWithStatusStrip.m_statusStripMain = new System.Windows.Forms.StatusStrip();
             this.m_lblMainState = new System.Windows.Forms.ToolStripStatusLabel();
             this.m_lblDateError = new System.Windows.Forms.ToolStripStatusLabel();
             this.m_lblDescError = new System.Windows.Forms.ToolStripStatusLabel();
 
-            this.m_statusStripMain.SuspendLayout();
+            FormMainBaseWithStatusStrip.m_statusStripMain.SuspendLayout();
 
             // 
             // m_statusStripMain
             // 
-            this.m_statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            FormMainBaseWithStatusStrip.m_statusStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.m_lblMainState,
             this.m_lblDateError,
             this.m_lblDescError});
             //this.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
-            this.m_statusStripMain.Name = "m_statusStripMain";
+            FormMainBaseWithStatusStrip.m_statusStripMain.Name = "m_statusStripMain";
             //this.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
-            this.m_statusStripMain.TabIndex = 4;
+            FormMainBaseWithStatusStrip.m_statusStripMain.TabIndex = 4;
             // 
             // m_lblMainState
             // 
@@ -86,10 +107,10 @@ namespace StatisticCommon
             //this.m_lblDescError.Size = new System.Drawing.Size(667, 17);
             this.m_lblDescError.Spring = true;
 
-            this.Controls.Add(this.m_statusStripMain);
+            this.Controls.Add(FormMainBaseWithStatusStrip.m_statusStripMain);
 
-            this.m_statusStripMain.ResumeLayout(false);
-            this.m_statusStripMain.PerformLayout();
+            FormMainBaseWithStatusStrip.m_statusStripMain.ResumeLayout(false);
+            FormMainBaseWithStatusStrip.m_statusStripMain.PerformLayout();
         }
 
         protected void EventRaised()
@@ -102,12 +123,12 @@ namespace StatisticCommon
             }
         }
 
-        protected virtual void ErrorReport(string msg)
+        protected virtual void ErrorReport()
         {
             m_statusStripMain.BeginInvoke(delegateEvent);
         }
 
-        protected virtual void ActionReport(string msg)
+        protected virtual void ActionReport()
         {
             m_statusStripMain.BeginInvoke(delegateEvent);
         }

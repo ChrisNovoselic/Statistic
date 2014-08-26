@@ -166,10 +166,10 @@ namespace Statistic
             //bool bUseData = true;
             switch (type) {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp(rep, new bool[] { true, false });
+                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS(rep, new bool[] { false, true });
+                    m_admin = new AdminTS_NSS(new bool[] { false, true });
                     break;
                 default:
                     break;
@@ -203,10 +203,10 @@ namespace Statistic
             switch (type)
             {
                 case FormChangeMode.MANAGER.DISP:
-                    m_admin = new AdminTS_KomDisp(rep, new bool[] { true, false });
+                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    m_admin = new AdminTS_NSS(rep, new bool[] { false, true });
+                    m_admin = new AdminTS_NSS(new bool[] { false, true });
                     break;
                 default:
                     break;
@@ -240,7 +240,7 @@ namespace Statistic
             m_admin.SetDelegateWait(fstart, fstop, fev);
         }
 
-        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fact)
+        public void SetDelegateReport(DelegateFunc ferr, DelegateFunc fact)
         {
             m_admin.SetDelegateReport(ferr, fact);
         }

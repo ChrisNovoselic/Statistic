@@ -62,8 +62,8 @@ namespace Statistic
             m_report = new HReports ();
 
             // m_statusStripMain
-            this.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
-            this.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
+            FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
+            FormMainBaseWithStatusStrip.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
             // m_lblMainState
             this.m_lblMainState.Size = new System.Drawing.Size(150, 17);
             // m_lblDateError
@@ -606,7 +606,7 @@ namespace Statistic
                     comp_indx;
                 foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                 {
-                    tecView = new PanelTecViewGraph(t, tec_indx, -1, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
+                    tecView = new PanelTecViewGraph(t, tec_indx, -1, ErrorReport, ActionReport);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);
                     if (t.list_TECComponents.Count > 0)
@@ -614,7 +614,7 @@ namespace Statistic
                         comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            tecView = new PanelTecViewGraph(t, tec_indx, comp_indx, m_statusStripMain, formGraphicsSettings, formParameters, m_report);
+                            tecView = new PanelTecViewGraph(t, tec_indx, comp_indx, ErrorReport, ActionReport);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             comp_indx++;
@@ -829,7 +829,7 @@ namespace Statistic
                         if ((m_report.actioned_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
                                                                             (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
-                            if (selTecView.m_tecView.isActive == true)
+                            if (selTecView.isActive == true)
                             {
                                 m_lblDateError.Text = m_report.last_time_action.ToString();
                                 m_lblDescError.Text = m_report.last_action;
@@ -844,7 +844,7 @@ namespace Statistic
                                                                             (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_eror = true;
-                            if (selTecView.m_tecView.isActive == true)
+                            if (selTecView.isActive == true)
                             {
                                 m_lblDateError.Text = m_report.last_time_error.ToString();
                                 m_lblDescError.Text = m_report.last_error;
@@ -1106,20 +1106,20 @@ namespace Statistic
                 else
                     ;
                 
-                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters, m_report);
+                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
                 m_panelCurPower.SetDelegate(null, null, delegateEvent);
                 //m_panelCurPower.Start();
                 ////В работе постоянно
                 //m_panelCurPower.Activate (true);
 
-                m_panelSNPower = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, formParameters, m_report);
+                m_panelSNPower = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
                 m_panelSNPower.SetDelegate(null, null, delegateEvent);
 
-                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_statusStripMain, m_report);
+                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
                 m_panelLastMinutes.SetDelegate(null, null, delegateEvent);
                 //m_panelLastMinutes.Start();
 
-                m_panelCustomTecView = new PanelCustomTecView (formChangeMode, formGraphicsSettings, formParameters, m_statusStripMain, m_report);
+                m_panelCustomTecView = new PanelCustomTecView(formChangeMode, ErrorReport, ActionReport);
                 //m_panelLastMinutes.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                 m_panelLastMinutes.SetDelegate(null, null, delegateEvent);
                 //m_panelLastMinutes.Start();

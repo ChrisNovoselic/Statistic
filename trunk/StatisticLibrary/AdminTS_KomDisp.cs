@@ -8,8 +8,8 @@ namespace StatisticCommon
     {
         string m_PPBRCSVDirectory; //Для возможности импорта ПБР из *.csv
 
-        public AdminTS_KomDisp(HReports rep, bool[] arMarkSavePPBRValues)
-            : base(rep, arMarkSavePPBRValues)
+        public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
+            : base(arMarkSavePPBRValues)
         {
             delegateImportForeignValuesRequuest = ImpPPBRCSVValuesRequest;
             //delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;

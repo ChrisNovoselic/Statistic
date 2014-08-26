@@ -66,8 +66,8 @@ namespace StatisticCommon
             }
         }
 
-        public AdminTS_NSS(HReports rep, bool[] arMarkPPBRValues)
-            : base(rep, arMarkPPBRValues)
+        public AdminTS_NSS(bool[] arMarkPPBRValues)
+            : base(arMarkPPBRValues)
         {
             delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
             delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;

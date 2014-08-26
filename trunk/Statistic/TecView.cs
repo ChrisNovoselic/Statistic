@@ -47,6 +47,10 @@ namespace Statistic
             PPBRValues,
         }
 
+        public DelegateFunc setDatetimeView;
+        public DelegateIntIntFunc updateGUI_Fact;
+        public DelegateFunc updateGUI_TM;
+
         //private volatile string sensorsString_TM;
         //private List<TG> m_listSensorId2TG;
 
@@ -160,10 +164,12 @@ namespace Statistic
         public DateTime selectedTime;
         //public DateTime serverTime;
 
+        public volatile int m_indx_TEC;
+        public volatile int m_indx_TECComponent;
+        public List <TECComponentBase> m_localTECComponents;
+
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public double recomendation;
-
-        public volatile bool isActive;
 
         //private bool started;
 
@@ -177,26 +183,94 @@ namespace Statistic
             get { return m_list_tec [0]; }
         }
 
+        public List<TG> listTG
+        {
+            get
+            {
+                if (m_indx_TECComponent < 0)
+                    return m_tec.m_listTG;
+                else
+                    return m_tec.list_TECComponents[m_indx_TECComponent].m_listTG;
+            }
+        }
+
+        public int CountTG
+        {
+            get
+            {
+                if (m_indx_TECComponent < 0)
+                    return m_tec.m_listTG.Count;
+                else
+                    return allTECComponents[m_indx_TECComponent].m_listTG.Count;
+            }
+        }
+
         protected override void Initialize () {
             base.Initialize ();
 
             currHour = true;
             lastHour = 0;
             lastMin = 0;
-            
-            isActive = false;
-            m_report.errored_state =
-            m_report.actioned_state = false;
+
+            ClearStates ();
+
             recalcAver = true;
 
             m_lockValue = new object();
 
             m_valuesMins = new valuesTEC(21);
             m_valuesHours = new valuesTEC(24);
+
+            m_localTECComponents = new List<TECComponentBase>();
+            //tgsName = new List<System.Windows.Forms.Label>();
         }
 
-        public TecView(HReports rep, bool[] arMarkSavePPBRValues, TYPE_PANEL type)
-            : base(rep)
+        public void InitializeTECComponents () {
+            //int positionXName = 515, positionXValue = 504, positionYName = 6, positionYValue = 19;
+            //countTG = 0;
+            List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
+
+            if (m_indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+            {
+                foreach (TECComponent g in m_tec.list_TECComponents)
+                {
+                    if ((g.m_id > 100) && (g.m_id < 500))
+                        m_localTECComponents.Add(g);
+                    else
+                        ;
+
+                    //foreach (TG tg in g.m_listTG)
+                    //{
+                    //    //Проверка обработки текущего ТГ
+                    //    if (tg_ids.IndexOf(tg.m_id) == -1)
+                    //    {
+                    //        tg_ids.Add(tg.m_id); //Запомнить, что ТГ обработан
+                    //    
+                    //        //positionYValue = 19;
+                    //        m_pnlQuickData.addTGView(ref tg.name_shr);
+                    //    }
+                    //    else
+                    //        ;
+                    //}
+                }
+            }
+            else
+            {
+                foreach (TG tg in m_tec.list_TECComponents[m_indx_TECComponent].m_listTG)
+                {
+                    //tg_ids.Add(tg.m_id); //Добавить без проверки
+
+                    ////positionYValue = 19;
+                    ////addTGView(ref tg.name_shr, ref positionXName, ref positionYName, ref positionXValue, ref positionYValue);
+                    //m_pnlQuickData.addTGView(ref tg.name_shr);
+
+                    m_localTECComponents.Add(tg);
+                }
+            }
+        }
+
+        public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type)
+            : base()
         {
             m_typePanel = type;
         }
@@ -429,7 +503,8 @@ namespace Statistic
 
         private void GetCurrentTMSNRequest()
         {
-            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
+            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
+            Request(m_tec.m_arIdListeners [(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
         private bool GetCurrentTMSNResponse(DataTable table)
@@ -719,7 +794,8 @@ namespace Statistic
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         selectedTime = selectedTime.AddSeconds(-1 * Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
-                        this.BeginInvoke(delegateSetNowDate, true);
+                        //this.BeginInvoke(delegateSetNowDate, true);
+                        setDatetimeView ();
                     }
                     else
                         ;
@@ -747,6 +823,7 @@ namespace Statistic
                     result = GetCurrentTMGenResponse(table);
                     if (result == true)
                     {
+                        updateGUI_TM ();
                     }
                     else
                         ;
@@ -755,6 +832,7 @@ namespace Statistic
                     result = GetCurrentTMSNResponse(table);
                     if (result == true)
                     {
+                        updateGUI_TM_SN ();
                     }
                     else
                         ;
@@ -763,6 +841,7 @@ namespace Statistic
                     result = GetLastMinutesTMResponse(table, selectedTime);
                     if (result == true)
                     {
+                        updateGUI_LastMinutes();
                     }
                     else
                         ;
@@ -780,7 +859,8 @@ namespace Statistic
                     result = GetMinsResponse(table);
                     if (result == true)
                     {
-                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                        //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                        updateGUI_Fact(lastHour, lastMin);
                     }
                     else
                         ;
@@ -813,7 +893,8 @@ namespace Statistic
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour);
                         adminValuesReceived = true;
-                        this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                        //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                        updateGUI_Fact(lastHour, lastMin);
                     }
                     else
                         ;
@@ -824,28 +905,13 @@ namespace Statistic
             }
 
             if (result == true)
-                m_report.errored_state =
-                m_report.actioned_state = false;
+                FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
 
             Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
-        }
-
-        public void GetCurPower()
-        {
-            ChangeState_CurPower ();
-
-            try
-            {
-                semaState.Release(1);
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().LogExceptionToFile(e, @"TecView::GetCurPower () - semaState.Release (1) - ...");
-            }
         }
 
         private void ChangeState_CurPower () {
@@ -862,6 +928,19 @@ namespace Statistic
             }
         }
 
+        private void ChangeState_LastMinutes () {
+            newState = true;
+            states.Clear();
+
+            if (m_tec.m_bSensorsStrings == false)
+                states.Add((int)StatesMachine.InitSensors);
+            else ;
+
+            states.Add((int)StatesMachine.PPBRValues);
+            states.Add((int)StatesMachine.AdminValues);
+            states.Add((int)StatesMachine.LastMinutes_TM);
+        }
+
         private void ChangeState_View () {
             newState = true;
             states.Clear();
@@ -874,7 +953,7 @@ namespace Statistic
                 }
                 else
                 {
-                    selectedTime = m_pnlQuickData.dtprDate.Value.Date;
+                    //selectedTime = m_pnlQuickData.dtprDate.Value.Date;
                 }
             }
             else
@@ -891,6 +970,18 @@ namespace Statistic
             states.Add((int)StatesMachine.AdminValues);
         }
 
+        private void ChangeState_TMSNPower () {
+            newState = true;
+            states.Clear();
+
+            if (m_tec.m_bSensorsStrings == false)
+                states.Add((int)StatesMachine.InitSensors);
+            else ;
+
+            states.Add((int)StatesMachine.Current_TM_Gen);
+            states.Add((int)StatesMachine.Current_TM_SN);
+        }
+
         public void ChangeState()
         {
             lock (m_lockValue)
@@ -901,9 +992,10 @@ namespace Statistic
                         ChangeState_View ();
                         break;
                     case TecView.TYPE_PANEL.CUR_POWER:
-                        GetCurPower ();
+                        ChangeState_CurPower ();
                         break;
                     case TecView.TYPE_PANEL.LAST_MINUTES:
+                        ChangeState_LastMinutes ();
                         break;
                     case TecView.TYPE_PANEL.ADMIN_ALARM:
                         break;
@@ -1070,10 +1162,9 @@ namespace Statistic
                 m_valuesMins.valuesUDGe[i] = 0;
         }
 
-
         private bool GetAdminValuesResponse(DataTable table_in)
         {
-            DateTime date = m_pnlQuickData.dtprDate.Value.Date
+            DateTime date = selectedTime //m_pnlQuickData.dtprDate.Value.Date
                     , dtPBR;
             int hour;
 
@@ -1089,23 +1180,23 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-            if ((indx_TECComponent < 0) || ((!(indx_TECComponent < 0)) && (m_tec.list_TECComponents[indx_TECComponent].m_id > 500)))
+            if ((m_indx_TECComponent < 0) || ((!(m_indx_TECComponent < 0)) && (m_tec.list_TECComponents[m_indx_TECComponent].m_id > 500)))
             {
-                double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_list_TECComponents.Count, 25];
-                double[,] valuesPmin = new double[m_list_TECComponents.Count, 25];
-                double[,] valuesPmax = new double[m_list_TECComponents.Count, 25];
-                double[,] valuesREC = new double[m_list_TECComponents.Count, 25];
-                int[,] valuesISPER = new int[m_list_TECComponents.Count, 25];
-                double[,] valuesDIV = new double[m_list_TECComponents.Count, 25];
+                double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_localTECComponents.Count, 25];
+                double[,] valuesPmin = new double[m_localTECComponents.Count, 25];
+                double[,] valuesPmax = new double[m_localTECComponents.Count, 25];
+                double[,] valuesREC = new double[m_localTECComponents.Count, 25];
+                int[,] valuesISPER = new int[m_localTECComponents.Count, 25];
+                double[,] valuesDIV = new double[m_localTECComponents.Count, 25];
 
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
 
-                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indx_TECComponent);
-                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_list_TECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
+                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, m_indx_TECComponent);
+                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
 
-                table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, indx_TECComponent);
+                table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, m_indx_TECComponent);
 
                 //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
                 //    try { table_in.Columns.Remove("ID_COMPONENT"); }
@@ -1132,7 +1223,7 @@ namespace Statistic
                             {
                                 offsetPrev = i;
                                 //foreach (TECComponent g in tec.list_TECComponents)
-                                for (j = 0; j < m_list_TECComponents.Count; j++)
+                                for (j = 0; j < m_localTECComponents.Count; j++)
                                 {
                                     if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
                                     {
@@ -1196,7 +1287,7 @@ namespace Statistic
                                     ;
 
                             //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_list_TECComponents.Count; j++)
+                            for (j = 0; j < m_localTECComponents.Count; j++)
                             {
                                 try
                                 {
@@ -1279,7 +1370,7 @@ namespace Statistic
                                     ;
 
                             //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_list_TECComponents.Count; j++)
+                            for (j = 0; j < m_localTECComponents.Count; j++)
                             {
                                 try
                                 {
@@ -1333,7 +1424,7 @@ namespace Statistic
 
                 for (i = 0; i < 24; i++)
                 {
-                    for (j = 0; j < m_list_TECComponents.Count; j++)
+                    for (j = 0; j < m_localTECComponents.Count; j++)
                     {
                         m_valuesHours.valuesPBR[i] += valuesPBR[j, i];
                         m_valuesHours.valuesPmin[i] += valuesPmin[j, i];
@@ -1647,7 +1738,6 @@ namespace Statistic
                 recomendation = 0;
         }
 
-
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
         {
             DataTable table_in_restruct = new DataTable();
@@ -1912,7 +2002,6 @@ namespace Statistic
 
             return table_in_restruct;
         }
-
 
         private bool GetHoursResponse(DataTable table)
         {
@@ -2189,63 +2278,63 @@ namespace Statistic
             return true;
         }
 
-        private bool GetCurrentTMResponse(DataTable table)
-        {
-            bool bRes = true;
-            int i = -1,
-                id = -1;
-            double value = -1;
-            TG tgTmp;
+        //private bool GetCurrentTMResponse(DataTable table)
+        //{
+        //    bool bRes = true;
+        //    int i = -1,
+        //        id = -1;
+        //    double value = -1;
+        //    TG tgTmp;
 
-            foreach (TECComponent g in m_tec.list_TECComponents)
-            {
-                foreach (TG t in g.m_listTG)
-                {
-                    for (i = 0; i < t.power.Length; i++)
-                    {
-                        t.power_TM = 0;
-                    }
-                }
-            }
+        //    foreach (TECComponent g in m_tec.list_TECComponents)
+        //    {
+        //        foreach (TG t in g.m_listTG)
+        //        {
+        //            for (i = 0; i < t.power.Length; i++)
+        //            {
+        //                t.power_TM = 0;
+        //            }
+        //        }
+        //    }
 
-            for (i = 0; i < table.Rows.Count; i++)
-            {
-                if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                    return false;
-                else
-                    ;
+        //    for (i = 0; i < table.Rows.Count; i++)
+        //    {
+        //        if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
+        //            return false;
+        //        else
+        //            ;
 
-                tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+        //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
-                if (tgTmp == null)
-                    return false;
-                else
-                    ;
+        //        if (tgTmp == null)
+        //            return false;
+        //        else
+        //            ;
 
-                if (!(table.Rows[i]["value"] is DBNull))
-                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                        return false;
-                    else
-                        ;
-                else
-                    value = 0.0;
+        //        if (!(table.Rows[i]["value"] is DBNull))
+        //            if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+        //                return false;
+        //            else
+        //                ;
+        //        else
+        //            value = 0.0;
 
-                switch (m_tec.type())
-                {
-                    case TEC.TEC_TYPE.COMMON:
-                        break;
-                    case TEC.TEC_TYPE.BIYSK:
-                        //value *= 20;
-                        break;
-                    default:
-                        break;
-                }
+        //        switch (m_tec.type())
+        //        {
+        //            case TEC.TEC_TYPE.COMMON:
+        //                break;
+        //            case TEC.TEC_TYPE.BIYSK:
+        //                //value *= 20;
+        //                break;
+        //            default:
+        //                break;
+        //        }
 
-                tgTmp.power_TM = value;
-            }
+        //        tgTmp.power_TM = value;
+        //    }
 
-            return bRes;
-        }
+        //    return bRes;
+        //}
 
         private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
@@ -2257,9 +2346,9 @@ namespace Statistic
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
 
-            if (indx_TECComponent < 0)
+            if (m_indx_TECComponent < 0)
             {
-                foreach (TECComponent g in m_list_TECComponents)
+                foreach (TECComponent g in m_localTECComponents)
                 {
                     foreach (TG tg in g.m_listTG)
                     {
@@ -2301,7 +2390,7 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_list_TECComponents)
+                foreach (TG tg in m_localTECComponents)
                 {
                     for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
                     {
@@ -2650,35 +2739,60 @@ namespace Statistic
 
         private void GetHoursRequest(DateTime date)
         {
-            m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
         }
 
         private void GetMinsRequest(int hour)
         {
             //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
-            m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
-        private void GetCurrentTMRequest()
-        {
-            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
-        }
+        //private void GetCurrentTMRequest()
+        //{
+        //    //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
+        //    //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
+        //    Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
+        //}
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
-            m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private void GetPBRValuesRequest()
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
-            m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
+            //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
+            //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
         }
 
         private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
-            m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
+            //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
+            //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date, mode));
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date, mode));
+        }
+
+        public void ClearStates () {
+            lock (m_lockValue)
+            {
+                newState = true;
+                states.Clear();
+
+                if (!(FormMainBaseWithStatusStrip.m_report == null))
+                    FormMainBaseWithStatusStrip.m_report.ClearStates ();
+                else
+                    Logging.Logg().LogErrorToFile(@"TecView::ClearStates () - m_report=null");
+            }
         }
     }
 }

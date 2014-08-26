@@ -52,9 +52,9 @@ namespace Statistic
         enum INDEX_LABEL : int
         {
             NAME,
-            DATETIME_TM,
+            DATETIME_TM_Gen,
             DATETIME_TM_SN,
-            VALUE_TM,
+            VALUE_TM_Gen,
             VALUE_TM_SN,
             COUNT_INDEX_LABEL
         };
@@ -75,16 +75,11 @@ namespace Statistic
 
         public bool m_bIsActive;
 
-        public StatusStrip m_stsStrip;
-
-        public PanelTMSNPower(List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
+        public PanelTMSNPower(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             InitializeComponent();
 
-            m_report = rep;
-
-            m_stsStrip = stsStrip;
-            m_msecPeriodUpdate = Int32.Parse(par.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            m_msecPeriodUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
 
             this.Dock = DockStyle.Fill;
 
@@ -115,8 +110,8 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec, StatusStrip stsStrip, FormParameters par, HReports rep)
-            : this(listTec, stsStrip, par, rep)
+        public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : this(listTec, fErrRep, fActRep)
         {
             container.Add(this);
         }
@@ -128,7 +123,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecTMSNPower)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecTMSNPower)ctrl).m_tec.m_id)) ((PanelTecTMSNPower)ctrl).Start(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecTMSNPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecTMSNPower)ctrl).Start(); else ;
                     i++;
                 }
                 else
@@ -143,7 +138,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecTMSNPower)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecTMSNPower)ctrl).m_tec.m_id)) ((PanelTecTMSNPower)ctrl).Stop(); else ;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecTMSNPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecTMSNPower)ctrl).Stop(); else ;
                     i++;
                 }
                 else
@@ -170,7 +165,7 @@ namespace Statistic
             {
                 if (ctrl.GetType().Equals(typeChildren) == true)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == (((PanelTecTMSNPower)ctrl).m_tec.m_id)))
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == (((PanelTecTMSNPower)ctrl).m_tecView.m_tec.m_id)))
                     {
                         ((PanelTecTMSNPower)ctrl).Activate(active);
                     }
@@ -222,26 +217,10 @@ namespace Statistic
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
 
-            public StatisticCommon.TEC m_tec;
+            bool isActive;
 
-            private List<TG> m_listSensorId2TG;
+            public TecView m_tecView;
 
-            private object lockValue;
-
-            private bool m_bIsActive,
-                        m_bIsStarted,
-                        m_bUpdate;
-
-            private volatile string sensorsString_TM;
-            double m_dblTotalPower_TM_SN;
-            DateTime m_dtLastChangedAt_TM;
-            DateTime m_dtLastChangedAt_TM_SN;
-
-            private Thread m_taskThread;
-            private Semaphore m_semaState;
-            private volatile bool m_bThreadIsWorking;
-            private volatile bool m_bIsNewState;
-            private volatile List<StatesMachine> m_states;
             private ManualResetEvent m_evTimerCurrent;
             private System.Threading.Timer m_timerCurrent;
 
@@ -251,7 +230,6 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tec = tec;
                 Initialize();
             }
 
@@ -282,7 +260,7 @@ namespace Statistic
                 string cntnt = string.Empty;
 
                 i = (int)INDEX_LABEL.NAME;
-                cntnt = m_tec.name_shr;
+                cntnt = m_tecView.m_tec.name_shr;
                 m_arLabel[i] = HLabel.createLabel(cntnt, PanelTMSNPower.s_arLabelStyles[i]);
                 ////Предусмотрим обработчик при изменении значения
                 //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
@@ -293,15 +271,15 @@ namespace Statistic
                 this.SetColumnSpan(m_arLabel[i], this.ColumnCount);
 
                 //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
-                for (i = (int)INDEX_LABEL.DATETIME_TM; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++)
+                for (i = (int)INDEX_LABEL.DATETIME_TM_Gen; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++)
                 {
                     switch (i)
                     {
-                        case (int)INDEX_LABEL.DATETIME_TM:
+                        case (int)INDEX_LABEL.DATETIME_TM_Gen:
                         case (int)INDEX_LABEL.DATETIME_TM_SN:
                             cntnt = @"--:--:--";
                             break;
-                        case (int)INDEX_LABEL.VALUE_TM:
+                        case (int)INDEX_LABEL.VALUE_TM_Gen:
                         case (int)INDEX_LABEL.VALUE_TM_SN:
                             cntnt = @"---";
                             break;
@@ -324,165 +302,64 @@ namespace Statistic
                 for (i = 0; i < COUNT_FIXED_ROWS; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
-                lockValue = new object();
-                m_listSensorId2TG = new List<TG>(); //[this.RowCount - COUNT_FIXED_ROWS];
-                sensorsString_TM = string.Empty;
-                m_states = new List<StatesMachine>();
                 delegateUpdateGUI = ShowPower;
+
+                isActive = false;
             }
 
             public void Start()
             {
-                if (m_bIsStarted == true)
-                    return;
-                else
-                    ;
-
-                m_bIsStarted = true;
-
-                m_tec.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
-
-                m_bThreadIsWorking = true;
-
-                m_taskThread = new Thread(new ParameterizedThreadStart(TecView_ThreadFunction));
-                m_taskThread.Name = @"Интерфейс к данным (" + GetType().Name + "): " + m_tec.name_shr + @" - текущие значения...";
-                m_taskThread.IsBackground = true;
-
-                m_semaState = new Semaphore(1, 1);
-
-                m_semaState.WaitOne();
-                m_taskThread.Start();
+                m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelTMSNPower)Parent).m_msecPeriodUpdate - 1, ((PanelTMSNPower)Parent).m_msecPeriodUpdate - 1);
 
-                m_bUpdate = false;
+                isActive = false;
             }
 
             public void Stop()
             {
-                if (m_bIsStarted == false)
-                    return;
-                else
-                    ;
+                m_tecView.Stop ();
 
                 m_evTimerCurrent.Reset();
                 m_timerCurrent.Dispose();
-
-                m_bIsStarted = false;
-                bool joined;
-                m_bThreadIsWorking = false;
-                lock (lockValue)
-                {
-                    m_bIsNewState = true;
-                    m_states.Clear();
-                }
-
-                if (m_taskThread.IsAlive)
-                {
-                    try
-                    {
-                        m_semaState.Release(1);
-                    }
-                    catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTMSNPower.Stop () - sem.Release(1)"); }
-
-                    joined = m_taskThread.Join(1000);
-                    if (!joined)
-                        m_taskThread.Abort();
-                    else
-                        ;
-                }
-
-                m_tec.StopDbInterfaces();
-
-                lock (lockValue)
-                {
-                    ((PanelTMSNPower)Parent).m_report.errored_state = false;
-                }
             }
 
             private void ChangeState()
             {
-                m_bIsNewState = true;
-                m_states.Clear();
-
-                if ((sensorsString_TM.Equals(string.Empty) == true))
-                    m_states.Add(StatesMachine.Init_TM);
-                else ;
-
-                m_states.Add(StatesMachine.Current_TM_Gen);
-                m_states.Add(StatesMachine.Current_TM_SN);
+                m_tecView.ChangeState ();
             }
 
             public void Activate(bool active)
             {
-                if (m_bIsActive == active)
+                if (isActive == active)
                     return;
                 else
                     ;
 
-                m_bIsActive = active;
+                isActive = active;
 
-                if (m_bIsActive == true)
+                if (isActive == true)
                 {
-                    lock (lockValue)
-                    {
-                        ChangeState();
-
-                        try
-                        {
-                            m_semaState.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
+                    ChangeState();
                 }
                 else
                 {
-                    lock (lockValue)
-                    {
-                        m_bIsNewState = true;
-                        m_states.Clear();
-                        ((PanelTMSNPower)Parent).m_report.errored_state =
-                        ((PanelTMSNPower)Parent).m_report.actioned_state = false;
-                    }
-                }
-            }
-
-            private void ErrorReport(string error_string)
-            {
-                lock (lockValue)
-                {
-                    ((PanelTMSNPower)Parent).m_report.last_error = error_string;
-                    ((PanelTMSNPower)Parent).m_report.last_time_error = DateTime.Now;
-                    ((PanelTMSNPower)Parent).m_report.errored_state = true;
-                    ((PanelTMSNPower)Parent).m_stsStrip.BeginInvoke(((PanelTMSNPower)Parent).delegateEventUpdate);
-                }
-            }
-
-            private void ActionReport(string action_string)
-            {
-                lock (lockValue)
-                {
-                    ((PanelTMSNPower)Parent).m_report.last_action = action_string;
-                    ((PanelTMSNPower)Parent).m_report.last_time_action = DateTime.Now;
-                    ((PanelTMSNPower)Parent).m_report.actioned_state = true;
-                    ((PanelTMSNPower)Parent).m_stsStrip.BeginInvoke(((PanelTMSNPower)Parent).delegateEventUpdate);
+                    m_tecView.ClearStates ();
                 }
             }
 
             private void ShowPower()
             {
-                ShowTMPower();
+                ShowTMGenPower();
                 ShowTMSNPower();
             }
 
-            private void ShowTMPower()
+            private void ShowTMGenPower()
             {
                 double dblTotalPower_TM = 0.0
                         , dblTECComponentPower_TM = 0.0;
-                foreach (TECComponent g in m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
@@ -504,22 +381,23 @@ namespace Statistic
                         ;
                 }
 
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_dblTotalPower_TM_SN);
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], dblTotalPower_TM);
-                try { m_dtLastChangedAt_TM = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM); }
+                //???
+                //setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_Gen], m_tecView.m_dblTotalPower_TM_SN);
+                try { m_tecView.m_dtLastChangedAt_TM_SN = HAdmin.ToCurrentTimeZone(m_tecView.m_dtLastChangedAt_TM_SN); }
                 catch (Exception e)
                 {
                     Logging.Logg().LogExceptionToFile(e, @"PanelTecCurPower::ShowTMPower () - HAdmin.ToCurrentTimeZone () - ...");
                 }
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_dtLastChangedAt_TM.ToString(@"HH:mm:ss");
+                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
             }
 
             private void ShowTMSNPower()
             {
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_dblTotalPower_TM_SN);
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
                 //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
                 //catch (Exception e) { Logging.Logg ().LogExceptionToFile (e, @"PanelTMSNPower::ShowTMSNPower () - ..."); }
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
             }
 
             private double setTextToLabelVal(Label lblVal, double val)
@@ -558,173 +436,112 @@ namespace Statistic
                 ((Label)sender).ForeColor = clr;
             }
 
-            private void GetCurrentTMRequest()
-            {
-                m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(sensorsString_TM));
-            }
+            //private bool GetCurrentTMResponse(DataTable table)
+            //{
+            //    bool bRes = true;
+            //    int i = -1,
+            //        id = -1;
+            //    double value = -1;
+            //    DateTime dtLastChangedAt =
+            //        m_dtLastChangedAt_TM = DateTime.Now;
+            //    TG tgTmp;
 
-            private bool GetCurrentTMResponse(DataTable table)
-            {
-                bool bRes = true;
-                int i = -1,
-                    id = -1;
-                double value = -1;
-                DateTime dtLastChangedAt =
-                    m_dtLastChangedAt_TM = DateTime.Now;
-                TG tgTmp;
+            //    foreach (TECComponent g in m_tec.list_TECComponents)
+            //    {
+            //        foreach (TG t in g.m_listTG)
+            //        {
+            //            t.power_TM = 0;
+            //        }
+            //    }
 
-                foreach (TECComponent g in m_tec.list_TECComponents)
-                {
-                    foreach (TG t in g.m_listTG)
-                    {
-                        t.power_TM = 0;
-                    }
-                }
+            //    for (i = 0; i < table.Rows.Count; i++)
+            //    {
+            //        if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
+            //            return false;
+            //        else
+            //            ;
 
-                for (i = 0; i < table.Rows.Count; i++)
-                {
-                    if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                        return false;
-                    else
-                        ;
+            //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
-                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+            //        if (tgTmp == null)
+            //            return false;
+            //        else
+            //            ;
 
-                    if (tgTmp == null)
-                        return false;
-                    else
-                        ;
+            //        if (!(table.Rows[i]["value"] is DBNull))
+            //            if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+            //                return false;
+            //            else
+            //                ;
+            //        else
+            //            value = 0.0;
 
-                    if (!(table.Rows[i]["value"] is DBNull))
-                        if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                            return false;
-                        else
-                            ;
-                    else
-                        value = 0.0;
+            //        if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+            //            return false;
+            //        else
+            //            ;
 
-                    if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
-                        return false;
-                    else
-                        ;
+            //        if (m_dtLastChangedAt_TM > dtLastChangedAt)
+            //            m_dtLastChangedAt_TM = dtLastChangedAt;
+            //        else
+            //            ;
 
-                    if (m_dtLastChangedAt_TM > dtLastChangedAt)
-                        m_dtLastChangedAt_TM = dtLastChangedAt;
-                    else
-                        ;
+            //        switch (m_tec.type())
+            //        {
+            //            case StatisticCommon.TEC.TEC_TYPE.COMMON:
+            //                break;
+            //            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
+            //                //value *= 20;
+            //                break;
+            //            default:
+            //                break;
+            //        }
 
-                    switch (m_tec.type())
-                    {
-                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                            break;
-                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                            //value *= 20;
-                            break;
-                        default:
-                            break;
-                    }
+            //        tgTmp.power_TM = value;
+            //    }
 
-                    tgTmp.power_TM = value;
-                }
+            //    return bRes;
+            //}
 
-                return bRes;
-            }
+            //private void GetCurrentTMSNRequest()
+            //{
+            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
+            //}
 
-            private void GetCurrentTMSNRequest()
-            {
-                m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
-            }
+            //private bool GetCurrentTMSNResponse(DataTable table)
+            //{
+            //    bool bRes = true;
+            //    int id = -1;
 
-            private bool GetCurrentTMSNResponse(DataTable table)
-            {
-                bool bRes = true;
-                int id = -1;
+            //    m_dtLastChangedAt_TM_SN = DateTime.Now;
 
-                m_dtLastChangedAt_TM_SN = DateTime.Now;
+            //    if (table.Rows.Count == 1)
+            //    {
+            //        if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
+            //            return false;
+            //        else
+            //            ;
 
-                if (table.Rows.Count == 1)
-                {
-                    if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
-                        return false;
-                    else
-                        ;
+            //        if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
+            //            if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
+            //                return false;
+            //            else
+            //                ;
+            //        else
+            //            m_dblTotalPower_TM_SN = 0.0;
 
-                    if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
-                        if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
-                            return false;
-                        else
-                            ;
-                    else
-                        m_dblTotalPower_TM_SN = 0.0;
+            //        if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
+            //            return false;
+            //        else
+            //            ;
+            //    }
+            //    else
+            //    {
+            //        bRes = false;
+            //    }
 
-                    if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
-                        return false;
-                    else
-                        ;
-                }
-                else
-                {
-                    bRes = false;
-                }
-
-                return bRes;
-            }
-
-            private bool GetSensorsTEC()
-            {
-                bool bRes = true;
-
-                int j = -1;
-                for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-                    if (m_tec.list_TECComponents[j].m_id > 1000) m_listSensorId2TG.Add(m_tec.list_TECComponents[j].m_listTG[0]); else ;
-
-                sensorsString_TM = string.Empty;
-
-                for (int i = 0; i < m_listSensorId2TG.Count; i++)
-                {
-                    if (!(m_listSensorId2TG[i] == null))
-                    {
-                        if (sensorsString_TM.Equals(string.Empty) == false)
-                            switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
-                            {
-                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                                    //Общий источник для всех ТЭЦ
-                                    sensorsString_TM += @", "; //@" OR ";
-                                    break;
-                                case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                                    //Источник для каждой ТЭЦ свой
-                                    sensorsString_TM += @" OR ";
-                                    break;
-                                default:
-                                    break;
-                            }
-                        else
-                            ;
-
-                        switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
-                        {
-                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                                //Общий источник для всех ТЭЦ
-                                sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
-                                break;
-                            case StatisticCommon.TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                                //Источник для каждой ТЭЦ свой
-                                sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        //ErrorReportSensors(ref table);
-
-                        return false;
-                    }
-                }
-
-                return bRes;
-            }
+            //    return bRes;
+            //}
 
             //private void ErrorReportSensors(ref DataTable src)
             //{
@@ -736,229 +553,14 @@ namespace Statistic
             //    ErrorReport(error);
             //}
 
-            private void StateRequest(StatesMachine state)
-            {
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        ActionReport("Получение идентификаторов датчиков (" + m_tec.name_shr + @")");
-                        break;
-                    case StatesMachine.Current_TM_Gen:
-                        ActionReport("Получение текущих значений (" + m_tec.name_shr + @"- генерация).");
-                        GetCurrentTMRequest();
-                        break;
-                    case StatesMachine.Current_TM_SN:
-                        ActionReport("Получение текущих значений (" + m_tec.name_shr + @"- собственные нужды).");
-                        GetCurrentTMSNRequest();
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
-            {
-                error = false;
-                table = null;
-
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        return true;
-                        break;
-                    case StatesMachine.Current_TM_Gen:
-                    case StatesMachine.Current_TM_SN:
-                        return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
-                    default:
-                        break;
-                }
-
-                error = true;
-
-                return false;
-            }
-
-            private bool StateResponse(StatesMachine state, DataTable table)
-            {
-                bool result = false;
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        switch (m_tec.type())
-                        {
-                            case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                                result = GetSensorsTEC();
-                                break;
-                            //case TEC.TEC_TYPE.BIYSK:
-                            //result = true;
-                            //break;
-                        }
-                        if (result == true)
-                        {
-                        }
-                        else
-                            ;
-                        break;
-                    case StatesMachine.Current_TM_Gen:
-                        result = GetCurrentTMResponse(table);
-                        break;
-                    case StatesMachine.Current_TM_SN:
-                        result = GetCurrentTMSNResponse(table);
-                        if (result == true)
-                        {
-                            this.BeginInvoke(delegateUpdateGUI);
-                        }
-                        else
-                            ;
-                        break;
-                }
-
-                if (result == true)
-                    lock (lockValue)
-                    {
-                        ((PanelTMSNPower)Parent).m_report.errored_state =
-                        ((PanelTMSNPower)Parent).m_report.actioned_state = false;
-                    }
-                else
-                    ;
-
-                return result;
-            }
-
-            private void StateErrors(StatesMachine state, bool response)
-            {
-                string error = string.Empty,
-                        reason = string.Empty,
-                        waiting = string.Empty;
-
-                switch (state)
-                {
-                    case StatesMachine.Init_TM:
-                        reason = @"идентификаторов датчиков (" + m_tec.name_shr + @"- телемеханика)";
-                        waiting = @"Переход в ожидание";
-                        break;
-                    case StatesMachine.Current_TM_SN:
-                        reason = @"текущих значений (" + m_tec.name_shr + @"- собственные нужды)";
-                        waiting = @"Ожидание " + (((PanelTMSNPower)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
-                        break;
-                    case StatesMachine.Current_TM_Gen:
-                        reason = @"текущих значений (" + m_tec.name_shr + @"- генерация)";
-                        waiting = @"Ожидание " + (((PanelTMSNPower)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
-                        break;
-                    default:
-                        break;
-                }
-
-                if (response)
-                    reason = @"разбора " + reason;
-                else
-                    reason = @"получения " + reason;
-
-                error = "Ошибка " + reason + ".";
-
-                if (waiting.Equals(string.Empty) == true)
-                    error += " " + waiting + ".";
-                else
-                    ;
-
-                ErrorReport(error);
-            }
-
-            private void TecView_ThreadFunction(object data)
-            {
-                int index;
-                StatesMachine currentState;
-
-                while (m_bThreadIsWorking)
-                {
-                    m_semaState.WaitOne();
-
-                    index = 0;
-
-                    lock (lockValue)
-                    {
-                        if (m_states.Count == 0)
-                            continue;
-                        currentState = m_states[index];
-                        m_bIsNewState = false;
-                    }
-
-                    while (true)
-                    {
-                        bool error = true;
-                        bool dataPresent = false;
-                        DataTable table = null;
-                        for (int i = 0; i < DbInterface.MAX_RETRY && !dataPresent && !m_bIsNewState; i++)
-                        {
-                            if (error)
-                                StateRequest(currentState);
-
-                            error = false;
-                            for (int j = 0; (j < DbInterface.MAX_WAIT_COUNT) && (dataPresent == false) && (error == false) && (m_bIsNewState == false); j++)
-                            {
-                                System.Threading.Thread.Sleep(DbInterface.WAIT_TIME_MS);
-                                dataPresent = StateCheckResponse(currentState, out error, out table);
-                            }
-                        }
-
-                        bool responseIsOk = true;
-                        if (dataPresent && !error && !m_bIsNewState)
-                            responseIsOk = StateResponse(currentState, table);
-
-                        if ((!responseIsOk || !dataPresent || error) && !m_bIsNewState)
-                        {
-                            StateErrors(currentState, !responseIsOk);
-                            lock (lockValue)
-                            {
-                                if (m_bIsNewState == false)
-                                {
-                                    m_states.Clear();
-                                    m_bIsNewState = true;
-                                }
-                            }
-                        }
-
-                        index++;
-
-                        lock (lockValue)
-                        {
-                            if (index == m_states.Count)
-                                break;
-                            if (m_bIsNewState)
-                                break;
-                            currentState = m_states[index];
-                        }
-                    }
-                }
-                try
-                {
-                    m_semaState.Release(1);
-                }
-                catch
-                {
-                }
-            }
-
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                lock (lockValue)
+                if (isActive == true)
                 {
-                    if (m_bIsActive == true)
-                    {
-                        ChangeState();
-
-                        try
-                        {
-                            m_semaState.Release(1);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                        ;
+                    ChangeState();
                 }
+                else
+                    ;
             }
         }
     }

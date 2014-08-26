@@ -21,8 +21,8 @@ namespace Statistic
     {
         PanelCustomTecView.HLabelEmpty m_label;
 
-        public PanelTecViewTable(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep, PanelCustomTecView.HLabelEmpty label)
-            : base(tec, num_tec, num_comp, sts, rep)
+        public PanelTecViewTable(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelEmpty label, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : base(tec, num_tec, num_comp, fErrRep, fActRep)
         {
             m_label = label;
 
@@ -89,8 +89,8 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem ñîõðàíèòüToolStripMenuItemHours;
         private System.Windows.Forms.ToolStripMenuItem ýêñåëüToolStripMenuItemHours;
 
-        public PanelTecViewGraph(StatisticCommon.TEC tec, int num_tec, int num_comp, StatusStrip sts, FormGraphicsSettings gs, FormParameters par, HReports rep)
-            : base(tec, num_tec, num_comp, sts, rep)
+        public PanelTecViewGraph(StatisticCommon.TEC tec, int num_tec, int num_comp, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : base(tec, num_tec, num_comp, fErrRep, fActRep)
         {
             InitializeComponent ();
         }

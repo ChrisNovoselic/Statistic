@@ -76,8 +76,8 @@ namespace StatisticCommon
         public enum INDEX_MARK_PPBRVALUES { ENABLED, MARK };
         protected bool [] m_arMarkSavePPBRValues = new bool [] { false, false};
 
-        public AdminTS(HReports rep, bool[] arMarkSavePPBRValues)
-            : base(rep)
+        public AdminTS(bool[] arMarkSavePPBRValues)
+            : base()
         {
             if (! (arMarkSavePPBRValues == null))
                 arMarkSavePPBRValues.CopyTo(m_arMarkSavePPBRValues, 0);
@@ -278,7 +278,7 @@ namespace StatisticCommon
 
         public void Reinit()
         {
-            if (!started)
+            if (! (actived == true))
                 return;
             else
                 ;
@@ -1316,21 +1316,23 @@ namespace StatisticCommon
         protected override bool StateRequest(int /*StatesMachine*/ state)
         {
             bool result = true;
+            string strRep = string.Empty;
+
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
-                    ActionReport("Получение текущего времени сервера.");
+                    strRep = @"Получение текущего времени сервера.";
                     GetCurrentTimeRequest();
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    ActionReport("Получение данных плана.");
+                    strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
                         GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     else
                         ; //result = false;
                     break;
                 case (int)StatesMachine.AdminValues:
-                    ActionReport("Получение административных данных.");
+                    strRep = @"Получение административных данных.";
                     if (indxTECComponents < allTECComponents.Count)
                         GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     else
@@ -1339,15 +1341,15 @@ namespace StatisticCommon
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
                 case (int)StatesMachine.ImpRDGExcelValues:
-                    ActionReport("Импорт РДГ из Excel.");
+                    strRep = @"Импорт РДГ из Excel.";
                     delegateImportForeignValuesRequuest();
                     break;
                 case (int)StatesMachine.ExpRDGExcelValues:
-                    ActionReport("Экспорт РДГ в книгу Excel.");
+                    strRep = @"Экспорт РДГ в книгу Excel.";
                     delegateExportForeignValuesRequuest();
                     break;
                  case (int)StatesMachine.PPBRCSVValues:
-                    ActionReport("Импорт из формата CSV.");
+                    strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
                 case (int)StatesMachine.PPBRDates:
@@ -1367,7 +1369,7 @@ namespace StatisticCommon
                     }
                     else
                         ;                        
-                    ActionReport("Получение списка сохранённых часовых значений.");
+                    strRep = @"Получение списка сохранённых часовых значений.";
                     GetPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.AdminDates:
@@ -1387,18 +1389,18 @@ namespace StatisticCommon
                     }
                     else
                         ;
-                    ActionReport("Получение списка сохранённых часовых значений.");
+                    strRep = @"Получение списка сохранённых часовых значений.";
                     GetAdminDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.SaveAdminValues:
-                    ActionReport("Сохранение административных данных.");
+                    strRep = @"Сохранение административных данных.";
                     if (indxTECComponents < allTECComponents.Count)
                         SetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
                     break;
                 case (int)StatesMachine.SavePPBRValues:
-                    ActionReport("Сохранение ПЛАНА.");
+                    strRep = @"Сохранение ПЛАНА.";
                     if (indxTECComponents < allTECComponents.Count)
                         SetPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
@@ -1413,14 +1415,14 @@ namespace StatisticCommon
                 //    SetLayoutRequest(m_curDate);
                 //    break;
                 case (int)StatesMachine.ClearAdminValues:
-                    ActionReport("Сохранение административных данных.");
+                    strRep = @"Сохранение административных данных.";
                     if (indxTECComponents < allTECComponents.Count)
                         ClearAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
                     break;
                 case (int)StatesMachine.ClearPPBRValues:
-                    ActionReport("Сохранение ПЛАНА.");
+                    strRep = @"Сохранение ПЛАНА.";
                     if (indxTECComponents < allTECComponents.Count)
                         ClearPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
@@ -1429,6 +1431,8 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            FormMainBaseWithStatusStrip.m_report.ActionReport(strRep);
 
             Logging.Logg().LogDebugToFile(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
 
@@ -1510,6 +1514,8 @@ namespace StatisticCommon
         protected override bool StateResponse(int /*StatesMachine*/ state, DataTable table)
         {
             bool result = false;
+            string strRep = string.Empty;
+
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
@@ -1684,7 +1690,7 @@ namespace StatisticCommon
             }
 
             if (result == true)
-                m_report.errored_state = m_report.actioned_state = false;
+                FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
 

@@ -37,8 +37,8 @@ namespace StatisticCommon
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
 
-        protected DelegateStringFunc errorReport;
-        protected DelegateStringFunc actionReport;
+        protected DelegateFunc errorReport;
+        protected DelegateFunc actionReport;
 
         protected DelegateFunc saveComplete = null;
         protected DelegateDateFunction fillData = null;
@@ -102,21 +102,17 @@ namespace StatisticCommon
         //private volatile bool workTread;
         //-------------------------
 
-        protected bool started;
+        protected bool actived;
 
-        protected HReports m_report;
-
-        public HAdmin(HReports report)
+        public HAdmin()
         {
-            m_report = report;
-
             m_IdListenerCurrent = -1;
             
             Initialize ();
         }
 
         protected virtual void Initialize () {
-            started = false;
+            actived = false;
             threadIsWorking = -1;
 
             is_data_error = is_connection_error = false;
@@ -240,14 +236,14 @@ namespace StatisticCommon
         public virtual void Activate(bool active)
         {
             if (active == true) threadIsWorking++; else ;
-            
-            if (started == active)
+
+            if (actived == active)
             {
                 return ;
             }
             else
             {
-                started = active;
+                actived = active;
             }
         }
 
@@ -258,7 +254,7 @@ namespace StatisticCommon
             this.delegateEventUpdate = dStatus;
         }
 
-        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fact)
+        public void SetDelegateReport(DelegateFunc ferr, DelegateFunc fact)
         {
             this.errorReport = ferr;
             this.actionReport = fact;
@@ -378,30 +374,6 @@ namespace StatisticCommon
             return iNum;
         }
 
-        protected void ErrorReport(string error_string)
-        {
-            if (! (m_report == null)) {
-                m_report.last_error = error_string;
-                m_report.last_time_error = DateTime.Now;
-                m_report.errored_state = true;
-            } else ;
-
-            errorReport (error_string);
-        }
-
-        protected void ActionReport(string action_string)
-        {
-            if (! (m_report == null)) {
-                m_report.last_action = action_string;
-                m_report.last_time_action = DateTime.Now;
-                m_report.actioned_state = true;
-            } else ;
-
-            //stsStrip.BeginInvoke(delegateEventUpdate);
-            //delegateEventUpdate ();
-            actionReport(action_string);
-        }
-
         protected virtual void InitializeSyncState ()
         {
             m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
@@ -442,18 +414,27 @@ namespace StatisticCommon
             taskThread.Start();
         }
 
-        public virtual void Stop()
+        public void ClearStates()
         {
-            bool joined;
-            threadIsWorking = -1;
             lock (m_lockObj)
             {
                 newState = true;
                 states.Clear();
-                if (! (m_report == null)) 
-                    m_report.errored_state = false;
-                else ;
+
+                if (!(FormMainBaseWithStatusStrip.m_report == null))
+                    FormMainBaseWithStatusStrip.m_report.errored_state =
+                    FormMainBaseWithStatusStrip.m_report.actioned_state = false;
+                else
+                    Logging.Logg().LogErrorToFile(@"HAdmin::ClearStates () - m_report=null");
             }
+        }
+        
+        public virtual void Stop()
+        {
+            bool joined;
+            threadIsWorking = -1;
+            
+            ClearStates ();
 
             if ((!(taskThread == null)) && taskThread.IsAlive)
             {
@@ -718,6 +699,17 @@ namespace StatisticCommon
         {
             DateTime dtNow = DateTime.Now;
             return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
+        }
+
+        public void ErrorReport (string msg) {
+            FormMainBaseWithStatusStrip.m_report.ErrorReport (msg);
+            errorReport ();
+        }
+
+        public void ActionReport(string msg)
+        {
+            FormMainBaseWithStatusStrip.m_report.ActionReport(msg);
+            actionReport();
         }
 
         public static int DEBUG_ID_TEC = 5;

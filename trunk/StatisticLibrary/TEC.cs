@@ -44,7 +44,7 @@ namespace StatisticCommon
 
         private bool is_connection_error;
         private bool is_data_error;
-        
+
         private int used;
 
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
@@ -69,7 +69,7 @@ namespace StatisticCommon
 
         public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
             string strRes = string.Empty;
-            
+
             if (indx < 0) {
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:

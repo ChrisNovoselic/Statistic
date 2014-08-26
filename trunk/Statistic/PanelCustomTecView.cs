@@ -103,13 +103,8 @@ namespace Statistic
 
         public bool m_bIsActive;
 
-        public StatusStrip m_stsStrip;
-
-        private HReports m_report;
-
         private FormChangeMode m_formChangeMode;
-        private FormGraphicsSettings m_formGraphicSettings;
-        private FormParameters m_formParameters;
+        DelegateFunc m_fErrorReport, m_fActionReport;
 
         private Point getAddress (int indx) {
             Point ptRes = new Point(indx % this.RowCount, indx / this.ColumnCount);
@@ -117,21 +112,18 @@ namespace Statistic
             return ptRes;
         }
 
-        public PanelCustomTecView(FormChangeMode formCM, FormGraphicsSettings formGS, FormParameters formPar, StatusStrip stsStrip, HReports rep)
+        public PanelCustomTecView(FormChangeMode formCM, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             m_formChangeMode = formCM;
-            m_formGraphicSettings = formGS;
-            m_formParameters = formPar;
 
-            m_stsStrip = stsStrip;
+            m_fErrorReport = fErrRep;
+            m_fActionReport = fActRep;
 
-            m_report = rep;
-            
             InitializeComponent();
         }
 
-        public PanelCustomTecView(IContainer container, FormChangeMode formCM, FormGraphicsSettings formGS, FormParameters formPar, StatusStrip stsStrip, HReports rep)
-            : this(formCM, formGS, formPar, stsStrip, rep)
+        public PanelCustomTecView(IContainer container, FormChangeMode formCM, DelegateFunc fErrRep, DelegateFunc fActRep)
+            : this(formCM, fErrRep, fActRep)
         {
             container.Add(this);
         }
@@ -243,7 +235,7 @@ namespace Statistic
                         TECComponent_index = m_formChangeMode.m_list_TECComponent_index[indx];
                     Point ptAddress = getAddress(indxLabel);
 
-                    PanelTecViewTable panelTecView = new PanelTecViewTable(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_stsStrip, m_formGraphicSettings, m_formParameters, m_report, m_arLabelEmpty[indxLabel]);
+                    PanelTecViewTable panelTecView = new PanelTecViewTable(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel], m_fErrorReport, m_fActionReport);
                     this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
                     this.Controls.SetChildIndex(panelTecView, indxLabel);
                     indxLabel = this.Controls.GetChildIndex(panelTecView);
