@@ -117,6 +117,13 @@ namespace StatisticCommon
 
                 if (k < dest.Count) {
                     dest[indx].m_listTG.Add(dest[k].m_listTG[0]);
+                    if ((dest[indx].m_id > 100) && (dest[indx].m_id < 500))
+                        dest[k].m_listTG[0].m_id_owner_gtp = dest[indx].m_id;
+                    else
+                        if ((dest[indx].m_id > 500) && (dest[indx].m_id < 1000))
+                            dest[k].m_listTG[0].m_id_owner_pc = dest[indx].m_id;
+                        else
+                            ;
                 }
                 else
                     ;
@@ -235,7 +242,7 @@ namespace StatisticCommon
                                     if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                                     tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
 
-                                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
+                                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG());
                                     initTG (tec[indx_tec].list_TECComponents[indx].m_listTG[0], list_tg.Rows[k], all_PARAM_TG);
                                 }
                             else
@@ -763,7 +770,7 @@ namespace StatisticCommon
 
                         for (int k = 0; k < list_tg.Rows.Count; k++)
                         {
-                            tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(tec[indx_tec].list_TECComponents[indx]));
+                            tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG());
                             tec[indx_tec].list_TECComponents[indx].m_listTG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
                             if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].m_listTG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                             tec[indx_tec].list_TECComponents[indx].m_listTG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
@@ -791,7 +798,7 @@ namespace StatisticCommon
                     if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                     tec[indx_tec].list_TECComponents[indx].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
 
-                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(new TECComponent(tec[indx_tec], null, null)));
+                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG());
                     tec[indx_tec].list_TECComponents[indx].m_listTG[0].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
                     if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].m_listTG[0].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                     tec[indx_tec].list_TECComponents[indx].m_listTG[0].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);
@@ -863,7 +870,7 @@ namespace StatisticCommon
 
                     for (int k = 0; k < list_tg.Rows.Count; k++)
                     {
-                        tec[i].list_TECComponents[j].m_listTG.Add(new TG(tec[i].list_TECComponents[j]));
+                        tec[i].list_TECComponents[j].m_listTG.Add(new TG());
                         tec[i].list_TECComponents[j].m_listTG[k].name_shr = list_tg.Rows[k]["NAME_SHR"].ToString();
                         if (IsNameField(list_tg, "NAME_FUTURE") == true) tec[i].list_TECComponents[j].m_listTG[k].name_future = list_tg.Rows[k]["NAME_FUTURE"].ToString(); else ;
                         tec[i].list_TECComponents[j].m_listTG[k].m_id = Convert.ToInt32(list_tg.Rows[k]["ID"]);

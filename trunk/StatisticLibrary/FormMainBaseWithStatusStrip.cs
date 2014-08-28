@@ -7,16 +7,37 @@ namespace StatisticCommon
 {
     public class HReports
     {
-        public volatile string last_error;
-        public DateTime last_time_error;
-        public volatile bool errored_state;
+        private volatile string m_last_error;
+        private DateTime m_last_time_error;
+        private volatile bool m_errored_state;
 
-        public volatile string last_action;
-        public DateTime last_time_action;
-        public volatile bool actioned_state;
+        private volatile string m_last_action;
+        private DateTime m_last_time_action;
+        private volatile bool m_actioned_state;
+
+        public string last_error { get { return m_last_error; } set { m_last_error = value; } }
+        public DateTime last_time_error { get { return m_last_time_error; } set { m_last_time_error = value; } }
+        public bool errored_state { get { return m_errored_state; } set { m_errored_state = value; } }
+
+        public string last_action { get { return m_last_action; } set { m_last_action = value; } }
+        public DateTime last_time_action { get { return m_last_time_action; } set { m_last_time_action = value; } }
+        public bool actioned_state { get { return m_actioned_state; } set { m_actioned_state = value; } }
+
+        private event EventHandler errored_stateChanged;
+        private event EventHandler actioned_stateChanged;
 
         public HReports () {
             ClearStates ();
+
+            this.errored_stateChanged += new EventHandler(OnErrored_stateChanged);
+            this.actioned_stateChanged += new EventHandler(OnActioned_stateChanged);            
+        }
+
+        private void OnErrored_stateChanged (object obj, EventArgs ev) {
+        }
+
+        private void OnActioned_stateChanged(object obj, EventArgs ev)
+        {
         }
 
         public void ClearStates () {

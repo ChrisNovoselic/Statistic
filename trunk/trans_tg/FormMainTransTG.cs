@@ -94,10 +94,10 @@ namespace trans_tg
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
-                    m_arAdmin[i] = new AdminTransTG(m_report, new bool [] {false, false});
+                    m_arAdmin[i] = new AdminTransTG(new bool [] {false, false});
                 else
                     if (i == (Int16)CONN_SETT_TYPE.DEST)
-                        m_arAdmin[i] = new AdminTransTG(m_report, new bool[] { false, true });
+                        m_arAdmin[i] = new AdminTransTG(new bool[] { false, true });
                     else
                         ;
 

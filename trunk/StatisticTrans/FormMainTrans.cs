@@ -106,8 +106,8 @@ namespace StatisticTrans
             this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
 
             // m_statusStripMain
-            this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
-            this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
+            FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
+            FormMainBaseWithStatusStrip.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
             // m_lblMainState
             this.m_lblMainState.Size = new System.Drawing.Size(166, 17);
             // m_lblDateError
@@ -854,27 +854,27 @@ namespace StatisticTrans
             formAbout.ShowDialog(this);
         }
 
-        protected override void ErrorReport (string msg) {
-            Logging.Logg().LogErrorToFile(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
+        //protected override void ErrorReport (string msg) {
+        //    Logging.Logg().LogErrorToFile(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
             
-            m_statusStripMain.BeginInvoke(delegateEvent);
+        //    m_statusStripMain.BeginInvoke(delegateEvent);
 
-            m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
+        //    m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
 
-            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
+        //    this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), false);
 
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
-                this.BeginInvoke(new DelegateFunc(trans_auto_next));
-            else
-                ;
-        }
+        //    if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+        //        this.BeginInvoke(new DelegateFunc(trans_auto_next));
+        //    else
+        //        ;
+        //}
 
-        protected override void ActionReport(string msg)
-        {
-            m_statusStripMain.BeginInvoke(delegateEvent);
+        //protected override void ActionReport(string msg)
+        //{
+        //    m_statusStripMain.BeginInvoke(delegateEvent);
 
-            this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), true);
-        }
+        //    this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), true);
+        //}
 
         protected override bool UpdateStatusString()
         {

@@ -11,8 +11,8 @@ namespace StatisticTransModes
 {
     public class AdminTS_Modes : AdminTS
     {
-        public AdminTS_Modes(HReports rep, bool[] arMarkPPBRValues)
-            : base(rep, arMarkPPBRValues)
+        public AdminTS_Modes(bool[] arMarkPPBRValues)
+            : base(arMarkPPBRValues)
         {
         }
 

@@ -53,10 +53,10 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i] = new AdminMC(m_fileINI.GetValueOfKey(@"MCServiceHost"), m_report);
+                        m_arAdmin[i] = new AdminMC(m_fileINI.GetValueOfKey(@"MCServiceHost"));
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        m_arAdmin[i] = new AdminTS_Modes(m_report, new bool[] { false, true });
+                        m_arAdmin[i] = new AdminTS_Modes(new bool[] { false, true });
                         break;
                     default:
                         break;

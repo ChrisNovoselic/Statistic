@@ -18,7 +18,7 @@ namespace trans_mt
             PPBRDates,
         }
 
-        public AdminMT (HReports rep) : base (rep)
+        public AdminMT () : base ()
         {
         }        
 
@@ -260,7 +260,7 @@ namespace trans_mt
             }
 
             if (result == true)
-                m_report.errored_state = m_report.actioned_state = false;
+                FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
 

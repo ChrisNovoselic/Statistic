@@ -306,10 +306,6 @@ namespace Statistic
             private Dictionary<int, Label[]> m_dictLabelVal;
             private Dictionary<int, ToolTip[]> m_dictToolTip;
 
-            private bool m_bIsActive,
-                        m_bIsStarted,
-                        m_bUpdate;
-
             //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
             TecView m_tecView;
 
@@ -320,9 +316,11 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecView (null, TecView.TYPE_PANEL.LAST_MINUTES);
+                m_tecView = new TecView (null, TecView.TYPE_PANEL.LAST_MINUTES, -1, -1);
                 m_tecView.InitTEC (new List <TEC> () { tec });
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
+
+                m_tecView.updateGUI_LastMinutes = new DelegateFunc(showLastMinutesTM);
 
                 Initialize();
             }
@@ -365,7 +363,7 @@ namespace Statistic
                             m_dictToolTip[g.m_id][i] = new ToolTip();
                             m_dictToolTip[g.m_id][i].IsBalloon = true;
                             m_dictToolTip[g.m_id][i].ShowAlways = true;
-                            m_dictToolTip[g.m_id][i].SetToolTip(m_dictLabelVal[g.m_id][i], @"ПБР: ---, d: --%");
+                            m_dictToolTip[g.m_id][i].SetToolTip(m_dictLabelVal[g.m_id][i], Hd2PercentControl.StringToolTipEmpty);
 
                             this.Controls.Add(m_dictLabelVal[g.m_id][i], CountTECComponent, i + COUNT_FIXED_ROWS);
                         }
@@ -391,66 +389,51 @@ namespace Statistic
                     this.SetColumnSpan(lblNameTEC, CountTECComponent);
                 else
                     ;
-
-                m_dictValuesHours = new Dictionary<int, TecView.valuesTECComponent> ();
-                foreach (TECComponent c in m_list_TECComponents)
-                {
-                    m_dictValuesHours.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
-                }
             }
 
             public void Start()
             {
-                if (m_bIsStarted == true)
+                if (! (m_tecView.threadIsWorking < 0))
                     return;
                 else
                     ;
 
-                m_bIsStarted = true;
-
                 m_tecView.Start ();
-
-                ClearValues();
 
                 //Милисекунды до первого запуска функции таймера
                 double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 11, 0) - DateTime.Now).TotalMilliseconds;
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64) msecUpdate, ((PanelLastMinutes)Parent).m_msecPeriodUpdate - 1);
-
-                m_bUpdate = false;
             }
 
             public void Stop()
             {
-                if (m_bIsStarted == false)
+                if (m_tecView.threadIsWorking < 0)
                     return;
                 else
                     ;
 
+                m_tecView.Stop();
+
                 m_evTimerCurrent.Reset();
                 m_timerCurrent.Dispose();
-
-                m_tecView.Stop ();
 
                 FormMainBaseWithStatusStrip.m_report.ClearStates();
             }
 
             private void ChangeState()
             {
+                m_tecView.selectedTime = DateTime.Now;
+                
                 m_tecView.ChangeState ();
             }
 
             public void Activate(bool active)
             {
-                if (m_bIsActive == active)
-                    return;
-                else
-                    ;
+                m_tecView.Activate(active);
 
-                m_bIsActive = active;
-
-                if (m_bIsActive == true)
+                if (m_tecView.m_bIsActive == true)
                 {
                     ChangeState();
                 }
@@ -458,6 +441,11 @@ namespace Statistic
                 {
                     m_tecView.ClearStates ();
                 }
+            }
+
+            private void showLastMinutesTM()
+            {
+                this.BeginInvoke(new DelegateFunc(ShowLastMinutesTM));
             }
 
             private void ShowLastMinutesTM()
@@ -473,21 +461,21 @@ namespace Statistic
                 foreach (TECComponent g in m_list_TECComponents)
                 {
                     cntWarn = 0;
-                    for (int hour = 1; hour < 25; hour++)
+                    for (int hour = 1; hour < 25; hour++) //Если значение за 00:00 пред./сут. запис. в [24]
                     {
                         clrBackColor = s_clrBakColorLabelVal;
                         strToolTip = string.Empty;
 
                         bool bPmin = false;
                         if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                        strToolTip = d2PercentControl.Calculate(m_dictValuesHours[g.m_id], hour, bPmin, out warn);
+                        strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[g.m_id], hour - 1, bPmin, out warn);
 
                         m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
 
-                        if (m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] > 1)
+                        if (m_tecView.m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[hour - 1] > 1)
                         {
                             if ((! (warn == 0)) &&
-                                (m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour] > 1))
+                                (m_tecView.m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[hour - 1] > 1))
                             {
                                 clrBackColor = Color.Red;
                                 cntWarn ++;
@@ -501,7 +489,7 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_dictValuesHours[g.m_id].valuesLastMinutesTM[hour].ToString(@"F2");
+                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_tecView.m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[hour - 1].ToString(@"F2");
                         }
                         else
                             m_dictLabelVal[g.m_id][hour - 1].Text = 0.ToString (@"F0");
@@ -530,7 +518,7 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                if (m_bIsActive == true)
+                if (m_tecView.m_bIsActive == true)
                 {
                     ChangeState();
                 }
@@ -779,248 +767,6 @@ namespace Statistic
                 
             //    return true;
             //}
-
-            /*
-            Статический метод в 'PanelTecViewBase'
-            private DataTable restruct_table_pbrValues(DataTable table_in)
-            {
-                DataTable table_in_restruct = new DataTable();
-                List<DataColumn> cols_data = new List<DataColumn>();
-                DataRow[] dataRows;
-                int i = -1, j = -1, k = -1;
-                string nameFieldDate = "DATE_PBR"; // m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_DATETIME]
-
-                for (i = 0; i < table_in.Columns.Count; i++)
-                {
-                    if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
-                    {
-                        //Преобразование таблицы
-                        break;
-                    }
-                    else
-                        ;
-                }
-
-                if (i < table_in.Columns.Count)
-                {
-                    //List<TG> list_TG = null;
-                    List<TECComponent> list_TECComponents = null;
-                    int count_comp = -1;
-
-                        list_TECComponents = new List<TECComponent>();
-                        for (i = 0; i < m_tec.list_TECComponents.Count; i++)
-                        {
-                            if ((m_tec.list_TECComponents[i].m_id > 100) && (m_tec.list_TECComponents[i].m_id < 500))
-                                list_TECComponents.Add(m_tec.list_TECComponents[i]);
-                            else
-                                ;
-                        }
-
-                    //Преобразование таблицы
-                    for (i = 0; i < table_in.Columns.Count; i++)
-                    {
-                        if ((!(table_in.Columns[i].ColumnName.Equals("ID_COMPONENT") == true))
-                            && (!(table_in.Columns[i].ColumnName.Equals(nameFieldDate) == true))
-                            //&& (!(table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true)))
-                            && (!(table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true)))
-                        //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
-                        {
-                            cols_data.Add(table_in.Columns[i]);
-                        }
-                        else
-                            if ((table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                                //|| (table_in.Columns[i].ColumnName.Equals(m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]) == true))
-                                || (table_in.Columns[i].ColumnName.Equals (@"PBR_NUMBER") == true))
-                            {
-                                table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
-                            }
-                            else
-                                ;
-                    }
-
-                        count_comp = list_TECComponents.Count;
-
-                    for (i = 0; i < count_comp; i++)
-                    {
-                        for (j = 0; j < cols_data.Count; j++)
-                        {
-                            table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                                table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
-                        }
-                    }
-
-                    //if (m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        //table_in_restruct.Columns[m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]].SetOrdinal(table_in_restruct.Columns.Count - 1);
-                        table_in_restruct.Columns[@"PBR_NUMBER"].SetOrdinal(table_in_restruct.Columns.Count - 1);
-                    //else
-                    //    ;
-
-                    List<DataRow[]> listDataRows = new List<DataRow[]>();
-
-                    for (i = 0; i < count_comp; i++)
-                    {
-                            dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
-
-                        listDataRows.Add(new DataRow[dataRows.Length]);
-                        dataRows.CopyTo(listDataRows[i], 0);
-
-                        int indx_row = -1;
-                        for (j = 0; j < listDataRows[i].Length; j++)
-                        {
-                            for (k = 0; k < table_in_restruct.Rows.Count; k++)
-                            {
-                                if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
-                                    break;
-                                else
-                                    ;
-                            }
-
-                            if (!(k < table_in_restruct.Rows.Count))
-                            {
-                                table_in_restruct.Rows.Add();
-
-                                indx_row = table_in_restruct.Rows.Count - 1;
-
-                                //Заполнение DATE_ADMIN (постоянные столбцы)
-                                table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                                //if (m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                                    //table_in_restruct.Rows[indx_row][m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]] = listDataRows[i][j][m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.PBR_NUMBER]];
-                                    table_in_restruct.Rows[indx_row][@"PBR_NUMBER"] = listDataRows[i][j][@"PBR_NUMBER"];
-                                //else
-                                //    ;
-                            }
-                            else
-                                indx_row = k;
-
-                            for (k = 0; k < cols_data.Count; k++)
-                            {
-                                    table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
-                            }
-                        }
-                    }
-                }
-                else
-                    table_in_restruct = table_in;
-
-                return table_in_restruct;
-            }
-
-            Статический метод в 'PanelTecViewBase'
-            private DataTable restruct_table_adminValues(DataTable table_in)
-            {
-                DataTable table_in_restruct = new DataTable();
-                List<DataColumn> cols_data = new List<DataColumn>();
-                DataRow[] dataRows;
-                int i = -1, j = -1, k = -1;
-                string nameFieldDate = "DATE_ADMIN"; // m_tec.m_strNamesField[(int)StatisticCommon.TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
-
-                for (i = 0; i < table_in.Columns.Count; i++)
-                {
-                    if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
-                    {
-                        //Преобразование таблицы
-                        break;
-                    }
-                    else
-                        ;
-                }
-
-                if (i < table_in.Columns.Count)
-                {
-                    List<TG> list_TG = null;
-                    List<TECComponent> list_TECComponents = null;
-                    int count_comp = -1;
-
-                        list_TECComponents = new List<TECComponent>();
-                        for (i = 0; i < m_tec.list_TECComponents.Count; i++)
-                        {
-                            if ((m_tec.list_TECComponents[i].m_id > 100) && (m_tec.list_TECComponents[i].m_id < 500))
-                                list_TECComponents.Add(m_tec.list_TECComponents[i]);
-                            else
-                                ;
-                        }
-
-                    //Преобразование таблицы
-                    for (i = 0; i < table_in.Columns.Count; i++)
-                    {
-                        if ((!(table_in.Columns[i].ColumnName == "ID_COMPONENT")) && (!(table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)))
-                        //if (!(table_in.Columns[i].ColumnName == "ID_COMPONENT"))
-                        {
-                            cols_data.Add(table_in.Columns[i]);
-                        }
-                        else
-                            if (table_in.Columns[i].ColumnName.IndexOf(nameFieldDate) > -1)
-                            {
-                                table_in_restruct.Columns.Add(table_in.Columns[i].ColumnName, table_in.Columns[i].DataType);
-                            }
-                            else
-                                ;
-                    }
-
-                        count_comp = list_TECComponents.Count;
-
-                    for (i = 0; i < count_comp; i++)
-                    {
-                        for (j = 0; j < cols_data.Count; j++)
-                        {
-                            table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-
-                                table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
-                        }
-                    }
-
-                    List<DataRow[]> listDataRows = new List<DataRow[]>();
-
-                    for (i = 0; i < count_comp; i++)
-                    {
-                            dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
-                        listDataRows.Add(new DataRow[dataRows.Length]);
-                        dataRows.CopyTo(listDataRows[i], 0);
-
-                        int indx_row = -1;
-                        for (j = 0; j < listDataRows[i].Length; j++)
-                        {
-                            for (k = 0; k < table_in_restruct.Rows.Count; k++)
-                            {
-                                if (table_in_restruct.Rows[k][nameFieldDate].Equals(listDataRows[i][j][nameFieldDate]) == true)
-                                    break;
-                                else
-                                    ;
-                            }
-
-                            if (!(k < table_in_restruct.Rows.Count))
-                            {
-                                table_in_restruct.Rows.Add();
-
-                                indx_row = table_in_restruct.Rows.Count - 1;
-
-                                //Заполнение DATE_ADMIN (постоянные столбцы)
-                                table_in_restruct.Rows[indx_row][nameFieldDate] = listDataRows[i][j][nameFieldDate];
-                            }
-                            else
-                                indx_row = k;
-
-                            for (k = 0; k < cols_data.Count; k++)
-                            {
-                                    table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
-                            }
-                        }
-                    }
-                }
-                else
-                    table_in_restruct = table_in;
-
-                return table_in_restruct;
-            }
-            */
-            private void ClearValues()
-            {
-                foreach (TECComponent g in m_list_TECComponents)
-                {
-                    for (int i = 0; i < m_dictValuesHours[g.m_id].valuesLastMinutesTM.Length; i++)
-                        m_dictValuesHours[g.m_id].valuesLastMinutesTM[i] = 0.0;
-                }
-            }
         }
     }
 }

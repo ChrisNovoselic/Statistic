@@ -13,7 +13,7 @@ namespace StatisticTransModes
     {
         protected List<string> m_listModesId;
 
-        public AdminModes (HReports rep) : base (rep) {
+        public AdminModes () : base () {
             m_listModesId = new List<string>();
         }
 

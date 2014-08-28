@@ -70,40 +70,56 @@ namespace Statistic
                 }
             }
 
-            if (!(iReverse == 0))
-            {
-                delta = iReverse * (m_valuesBaseCalculate - values.valuesLastMinutesTM[hour]);
-                if (bAbs == true)
-                    delta = Math.Abs(delta);
-                else
-                    ;
+            if (m_valuesBaseCalculate > 1) {
+                strRes += @"ПБР=" + m_valuesBaseCalculate.ToString(@"F2");
+
+                if (values.valuesLastMinutesTM[hour] > 1) {
+                    if (!(iReverse == 0))
+                    {
+                        delta = iReverse * (m_valuesBaseCalculate - values.valuesLastMinutesTM[hour]);
+                        if (bAbs == true)
+                            delta = Math.Abs(delta);
+                        else
+                            ;
+                    }
+                    else
+                        ;
+
+                    dbl2AbsPercentControl = m_valuesBaseCalculate / 100 * 2;
+
+                    if (dbl2AbsPercentControl < 1)
+                        dbl2AbsPercentControl = 1;
+                    else
+                        ;
+
+                    if (valuesBaseCalculate > 1)
+                        dblRel = delta - dbl2AbsPercentControl;
+                    else
+                        ;
+
+                    if ((dblRel > 0) && (!(iReverse == 0)))
+                        err = 1;
+                    else
+                        err = 0;
+
+                    strRes += @"; Откл:" + (dbl2AbsPercentControl + dblRel).ToString(@"F1") + @"(" + (((dbl2AbsPercentControl + dblRel) / m_valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
+                }
+                else {
+                    err = 0;
+
+                    strRes += @";Откл:" + 0.ToString(@"F1") + @"(" + 0.ToString(@"F1") + @"%)";
+                }
             }
-            else
-                ;
-
-            dbl2AbsPercentControl = m_valuesBaseCalculate / 100 * 2;
-
-            if (dbl2AbsPercentControl < 1)
-                dbl2AbsPercentControl = 1;
-            else
-                ;
-
-            if ((values.valuesLastMinutesTM[hour] > 1) && (valuesBaseCalculate > 1))
-                dblRel = delta - dbl2AbsPercentControl;
-            else
-                ;
-
-            if ((dblRel > 0) && (!(iReverse == 0)))
-                err = 1;
-            else
+            else {
                 err = 0;
 
-            //strToolTip += @"УДГэ=" + dblUDGe.ToString (@"F2");
-            strRes += @"ПБР=" + m_valuesBaseCalculate.ToString(@"F2");
-            strRes += @";Откл:" + (dbl2AbsPercentControl + dblRel).ToString(@"F1");
+                strRes += StringToolTipEmpty;
+            }           
 
             return strRes;
         }
+
+        public static string StringToolTipEmpty = @"ПБР:---;Откл:--(--%)";
     }
 
     public abstract class PanelTecViewBase : PanelStatisticView
@@ -120,10 +136,10 @@ namespace Statistic
         private DataGridViewCellStyle dgvCellStyleError;
         private DataGridViewCellStyle dgvCellStyleCommon;
 
-        protected DelegateFunc delegateSetNowDate;
+        //protected DelegateFunc delegateSetNowDate;
 
-        private DelegateIntIntFunc delegateUpdateGUI_Fact;
-        private DelegateFunc delegateUpdateGUI_TM;
+        //private DelegateIntIntFunc delegateUpdateGUI_Fact;
+        //private DelegateFunc delegateUpdateGUI_TM;
 
         //protected object m_lockValue;
 
@@ -208,14 +224,14 @@ namespace Statistic
         {
             //InitializeComponent();
 
-            m_tecView = new TecView(null, TecView.TYPE_PANEL.VIEW);
+            m_tecView = new TecView(null, TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp);
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec });
-            m_tecView.m_indx_TEC = indx_tec;
-            m_tecView.m_indx_TECComponent = indx_comp;
-
-            m_tecView.InitializeTECComponents ();
-
             m_tecView.SetDelegateReport(fErrRep, fActRep);
+
+            m_tecView.setDatetimeView = new DelegateFunc(setNowDate);
+
+            m_tecView.updateGUI_Fact = new DelegateIntIntFunc(updateGUI_Fact);
+            m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
 
             this.m_pnlQuickData = new PanelQuickData(); //Предвосхищая вызов 'InitializeComponent'
             foreach (TG tg in m_tecView.listTG)
@@ -235,16 +251,6 @@ namespace Statistic
             isActive = false;
 
             update = false;
-
-            //listTG = new TG[tg_ids.Count];
-
-            delegateSetNowDate = new DelegateFunc(setNowDate);
-            m_tecView.setDatetimeView = delegateSetNowDate;
-
-            delegateUpdateGUI_Fact = new DelegateIntIntFunc(updateGUI_Fact);
-            delegateUpdateGUI_TM = new DelegateFunc(updateGUI_TM);
-            m_tecView.updateGUI_Fact = delegateUpdateGUI_Fact;
-            m_tecView.updateGUI_TM = delegateUpdateGUI_TM;
 
             delegateTickTime = new DelegateFunc(TickTime);
         }
@@ -359,12 +365,12 @@ namespace Statistic
             FormMainBaseWithStatusStrip.m_report.ClearStates ();
         }
 
-        private void updateGUI_TM()
+        private void updateGUI_TM_Gen()
         {
-            this.BeginInvoke(new DelegateFunc(UpdateGUI_TM));
+            this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
         }
 
-        private void UpdateGUI_TM()
+        private void UpdateGUI_TM_Gen()
         {
             lock (m_tecView.m_lockValue)
             {

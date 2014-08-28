@@ -103,6 +103,7 @@ namespace StatisticCommon
         //-------------------------
 
         protected bool actived;
+        public bool m_bIsActive { get { return actived; } }
 
         public HAdmin()
         {
@@ -162,7 +163,7 @@ namespace StatisticCommon
             }
         }
 
-        public void InitTEC(List <StatisticCommon.TEC> listTEC)
+        public virtual void InitTEC(List <StatisticCommon.TEC> listTEC)
         {
             this.m_list_tec = listTEC;
 
@@ -391,6 +392,11 @@ namespace StatisticCommon
             return DbSources.Sources().Response(idListener, out error, out table);
         }
 
+        public virtual bool Response(out bool error, out DataTable table/*, bool bIsTec*/)
+        {
+            return DbSources.Sources().Response(m_IdListenerCurrent, out error, out table);
+        }
+
         protected abstract bool StateRequest(int /*StatesMachine*/ state);
 
         protected abstract bool StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table);
@@ -428,7 +434,7 @@ namespace StatisticCommon
                     Logging.Logg().LogErrorToFile(@"HAdmin::ClearStates () - m_report=null");
             }
         }
-        
+
         public virtual void Stop()
         {
             bool joined;
@@ -712,6 +718,6 @@ namespace StatisticCommon
             actionReport();
         }
 
-        public static int DEBUG_ID_TEC = 5;
+        public static int DEBUG_ID_TEC = -1;
     }
 }

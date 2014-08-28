@@ -49,7 +49,9 @@ namespace Statistic
 
         public DelegateFunc setDatetimeView;
         public DelegateIntIntFunc updateGUI_Fact;
-        public DelegateFunc updateGUI_TM;
+        public DelegateFunc updateGUI_TM_Gen
+                            , updateGUI_TM_SN
+                            , updateGUI_LastMinutes;
 
         //private volatile string sensorsString_TM;
         //private List<TG> m_listSensorId2TG;
@@ -167,6 +169,7 @@ namespace Statistic
         public volatile int m_indx_TEC;
         public volatile int m_indx_TECComponent;
         public List <TECComponentBase> m_localTECComponents;
+        public Dictionary <int, TecView.valuesTECComponent> m_dictValuesTECComponent;
 
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public double recomendation;
@@ -212,8 +215,6 @@ namespace Statistic
             lastHour = 0;
             lastMin = 0;
 
-            ClearStates ();
-
             recalcAver = true;
 
             m_lockValue = new object();
@@ -223,6 +224,10 @@ namespace Statistic
 
             m_localTECComponents = new List<TECComponentBase>();
             //tgsName = new List<System.Windows.Forms.Label>();
+
+            m_dictValuesTECComponent = new Dictionary<int, TecView.valuesTECComponent>();
+
+            ClearStates();
         }
 
         public void InitializeTECComponents () {
@@ -232,10 +237,15 @@ namespace Statistic
 
             if (m_indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
             {
-                foreach (TECComponent g in m_tec.list_TECComponents)
+                m_dictValuesTECComponent = new Dictionary<int,valuesTECComponent> ();
+                
+                foreach (TECComponent c in m_tec.list_TECComponents)
                 {
-                    if ((g.m_id > 100) && (g.m_id < 500))
-                        m_localTECComponents.Add(g);
+                    if ((c.m_id > 100) && (c.m_id < 500)) {
+                        m_localTECComponents.Add(c);
+
+                        //m_dictValuesTECComponent.Add (c.m_id, new valuesTECComponent(25));
+                    }
                     else
                         ;
 
@@ -264,15 +274,29 @@ namespace Statistic
                     ////addTGView(ref tg.name_shr, ref positionXName, ref positionYName, ref positionXValue, ref positionYValue);
                     //m_pnlQuickData.addTGView(ref tg.name_shr);
 
-                    m_localTECComponents.Add(tg);
+                    foreach (TECComponent c in m_tec.list_TECComponents)
+                    {
+                        if (tg.m_id == c.m_id)
+                            m_localTECComponents.Add(c);
+                        else
+                            ;
+                    }
                 }
+            }
+
+            foreach (TECComponent c in m_localTECComponents)
+            {
+                m_dictValuesTECComponent.Add(c.m_id, new TecView.valuesTECComponent(24 + 1));
             }
         }
 
-        public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type)
+        public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
             : base()
         {
             m_typePanel = type;
+
+            m_indx_TEC = indx_tec;
+            m_indx_TECComponent = indx_comp;
         }
 
         public void ChangeState_AdminAlarm () {
@@ -334,6 +358,13 @@ namespace Statistic
                 Logging.Logg().LogErrorToFile(@"TecView::Stop () - m_list_tec == null");
         }
 
+        public override void InitTEC(List<StatisticCommon.TEC> listTEC)
+        {
+            base.InitTEC(listTEC);
+
+            InitializeTECComponents ();
+        }
+
         public override bool WasChanged()
         {
             bool bRes = false;
@@ -345,6 +376,20 @@ namespace Statistic
         {
             ClearValuesMins();
             ClearValuesHours();
+        }
+
+        public void ClearValuesLastMinutesTM()
+        {
+            for (int i = 0; i < 24; i++) {
+                m_valuesHours.valuesLastMinutesTM [i] = 0.0;
+                
+                if ((i + 1) < 24)
+                    foreach (TECComponent g in m_localTECComponents)
+                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i] = 0.0;
+                else
+                    foreach (TECComponent g in m_localTECComponents)
+                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i + 1] = 0.0;
+            }
         }
 
         public override void CopyCurToPrevRDGValues()
@@ -568,7 +613,8 @@ namespace Statistic
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.AdminDates:
                 case (int)StatesMachine.AdminValues:
-                    bRes = Response(m_IdListenerCurrent, out error, out table);
+                    //bRes = Response(m_IdListenerCurrent, out error, out table);
+                    bRes = Response(out error, out table);
                     break;
                 default:
                     bRes = false;
@@ -666,10 +712,12 @@ namespace Statistic
             else
                 reason = @"получения " + reason;
 
+            msg = m_tec.name_shr;
+
             if (waiting.Equals(string.Empty) == true)
-                msg = "Ошибка " + reason + ". " + waiting + ".";
+                msg += ". Ошибка " + reason + ". " + waiting + ".";
             else
-                msg = "Ошибка " + reason + ".";
+                msg += ". Ошибка " + reason + ".";
 
             ErrorReport(msg);
 
@@ -745,7 +793,7 @@ namespace Statistic
                     break;
             }
 
-            ActionReport (msg);
+            ActionReport (@"Получение " + msg + @".");
 
             return bRes;
         }
@@ -823,7 +871,7 @@ namespace Statistic
                     result = GetCurrentTMGenResponse(table);
                     if (result == true)
                     {
-                        updateGUI_TM ();
+                        if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
                     }
                     else
                         ;
@@ -838,10 +886,14 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
+                    ClearValuesLastMinutesTM ();
                     result = GetLastMinutesTMResponse(table, selectedTime);
                     if (result == true)
                     {
-                        updateGUI_LastMinutes();
+                        if (! (updateGUI_LastMinutes == null))
+                            updateGUI_LastMinutes();
+                        else
+                            ;
                     }
                     else
                         ;
@@ -894,7 +946,7 @@ namespace Statistic
                         ComputeRecomendation(lastHour);
                         adminValuesReceived = true;
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
-                        updateGUI_Fact(lastHour, lastMin);
+                        if (! (updateGUI_Fact == null)) updateGUI_Fact(lastHour, lastMin); else ;
                     }
                     else
                         ;
@@ -919,12 +971,12 @@ namespace Statistic
                 newState = true;
                 states.Clear();
 
-                if (m_tec.GetSensorsString (-1, CONN_SETT_TYPE.DATA_SOTIASSO).Equals(string.Empty) == false)
+                if (m_tec.m_bSensorsStrings == false)
                     states.Add((int)StatesMachine.InitSensors);
                 else ;
 
                 states.Add((int)TecView.StatesMachine.Current_TM_Gen);
-                states.Add((int)TecView.StatesMachine.Current_TM_SN);
+                states.Add((int)TecView.StatesMachine.Current_TM_SN);                
             }
         }
 
@@ -1007,8 +1059,9 @@ namespace Statistic
                 {
                     semaState.Release(1);
                 }
-                catch
+                catch (Exception e)
                 {
+                    Logging.Logg().LogExceptionToFile(e, @"TecView::ChangeState () - semaState.Release(1)...");
                 }
             }
         }
@@ -1111,7 +1164,6 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 m_valuesHours.valuesFact[i] =
-                m_valuesHours.valuesLastMinutesTM[i] =
                 m_valuesHours.valuesDiviation[i] =
                 m_valuesHours.valuesPBR[i] =
                 m_valuesHours.valuesPmin[i] =
@@ -1148,6 +1200,32 @@ namespace Statistic
                 m_valuesHours.valuesUDGe[i] = 0;
 
                 m_valuesHours.valuesForeignCommand[i] = true;
+
+                if (i + 1 < 24) {
+                    for (int j = 0; j < m_localTECComponents.Count; j ++) {
+                        m_dictValuesTECComponent [m_localTECComponents [j].m_id].valuesDiviation [i] = 
+                        m_dictValuesTECComponent [m_localTECComponents [j].m_id].valuesPBR [i] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[i] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[i] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBRe[i] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesUDGe[i] = 0.0;
+
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesForeignCommand[i] = true;
+                    }
+                }
+                else {
+                    for (int j = 0; j < m_localTECComponents.Count; j++)
+                    {
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDiviation[i + 1] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i + 1] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[i + 1] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[i + 1] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBRe[i + 1] =
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesUDGe[i + 1] = 0.0;
+
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesForeignCommand[i + 1] = true;
+                    }
+                }
             }
 
             m_valuesHours.valuesDiviationAddon =
@@ -1182,12 +1260,12 @@ namespace Statistic
 
             if ((m_indx_TECComponent < 0) || ((!(m_indx_TECComponent < 0)) && (m_tec.list_TECComponents[m_indx_TECComponent].m_id > 500)))
             {
-                double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_localTECComponents.Count, 25];
-                double[,] valuesPmin = new double[m_localTECComponents.Count, 25];
-                double[,] valuesPmax = new double[m_localTECComponents.Count, 25];
-                double[,] valuesREC = new double[m_localTECComponents.Count, 25];
-                int[,] valuesISPER = new int[m_localTECComponents.Count, 25];
-                double[,] valuesDIV = new double[m_localTECComponents.Count, 25];
+                //double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_localTECComponents.Count, 25];
+                //double[,] valuesPmin = new double[m_localTECComponents.Count, 25];
+                //double[,] valuesPmax = new double[m_localTECComponents.Count, 25];
+                //double[,] valuesREC = new double[m_localTECComponents.Count, 25];
+                //int[,] valuesISPER = new int[m_localTECComponents.Count, 25];
+                //double[,] valuesDIV = new double[m_localTECComponents.Count, 25];
 
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
@@ -1227,15 +1305,18 @@ namespace Statistic
                                 {
                                     if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
                                     {
-                                        valuesPBR[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
-                                        valuesPmin[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
-                                        valuesPmax[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                        //valuesPBR[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
+                                        m_dictValuesTECComponent [m_localTECComponents[j].m_id].valuesPBR[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
+                                        //m_dictValuesTECComponent.valuesPmin[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
+                                        //valuesPmax[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
                                     }
                                     else
                                     {
-                                        valuesPBR[j, 24] = 0.0;
-                                        valuesPmin[j, 24] = 0.0;
-                                        valuesPmax[j, 24] = 0.0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[24] = 0.0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[24] = 0.0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[24] = 0.0;
                                     }
                                     //j++;
                                 }
@@ -1293,13 +1374,18 @@ namespace Statistic
                                 {
                                     if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
                                     {
-                                        valuesPBR[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
-                                        valuesPmin[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
-                                        valuesPmax[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                        //valuesPBR[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
+                                        //valuesPmin[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                        //valuesPmax[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
                                     }
                                     else
                                     {
-                                        valuesPBR[j, hour - 1] = 0.0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[hour - 1] = 0.0;
+                                        //m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[hour - 1] = 0.0;
+                                        //m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[hour - 1] = 0.0;
                                     }
 
                                     DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
@@ -1313,23 +1399,25 @@ namespace Statistic
 
                                         if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                            //valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = (double)row_in[0][offsetUDG + j * 3];
                                         else
-                                            valuesREC[j, hour - 1] = 0;
+                                            //valuesREC[j, hour - 1] = 0;
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = 0.0;
 
                                         if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            valuesISPER[j, hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            valuesDIV[j, hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        valuesREC[j, hour - 1] = 0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = 0.0;
                                     }
                                 }
                                 catch (Exception e)
@@ -1374,29 +1462,29 @@ namespace Statistic
                             {
                                 try
                                 {
-                                    valuesPBR[j, hour - 1] = 0;
+                                    m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[hour - 1] = 0;
 
                                     if (i < table_in.Rows.Count)
                                     {
                                         if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            valuesREC[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + j * 3];
                                         else
-                                            valuesREC[j, hour - 1] = 0;
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = 0;
 
                                         if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            valuesISPER[j, hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            valuesDIV[j, hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        valuesREC[j, hour - 1] = 0;
+                                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[hour - 1] = 0.0;
                                     }
                                 }
                                 catch
@@ -1422,32 +1510,34 @@ namespace Statistic
                     }
                 }
 
+                //for (int ii = 1; ii < 24 + 1; ii++)
                 for (i = 0; i < 24; i++)
                 {
+                    //i = ii - 1;
                     for (j = 0; j < m_localTECComponents.Count; j++)
                     {
-                        m_valuesHours.valuesPBR[i] += valuesPBR[j, i];
-                        m_valuesHours.valuesPmin[i] += valuesPmin[j, i];
-                        m_valuesHours.valuesPmax[i] += valuesPmax[j, i];
+                        m_valuesHours.valuesPBR[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i];
+                        m_valuesHours.valuesPmin[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmin[i];
+                        m_valuesHours.valuesPmax[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPmax[i];
                         if (i == 0)
                         {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, 24]) / 2;
+                            currPBRe = (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i] + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[24]) / 2;
                             m_valuesHours.valuesPBRe[i] += currPBRe;
                         }
                         else
                         {
-                            currPBRe = (valuesPBR[j, i] + valuesPBR[j, i - 1]) / 2;
+                            currPBRe = (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i] + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i - 1]) / 2;
                             m_valuesHours.valuesPBRe[i] += currPBRe;
                         }
 
-                        m_valuesHours.valuesREC[i] += valuesREC[j, i];
+                        m_valuesHours.valuesREC[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i];
 
-                        m_valuesHours.valuesUDGe[i] += currPBRe + valuesREC[j, i];
+                        m_valuesHours.valuesUDGe[i] += currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i];
 
-                        if (valuesISPER[j, i] == 1)
-                            m_valuesHours.valuesDiviation[i] += (currPBRe + valuesREC[j, i]) * valuesDIV[j, i] / 100;
+                        if (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesISPER[i] == 1)
+                            m_valuesHours.valuesDiviation[i] += (currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i]) * m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i] / 100;
                         else
-                            m_valuesHours.valuesDiviation[i] += valuesDIV[j, i];
+                            m_valuesHours.valuesDiviation[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i];
                     }
                     /*m_valuesHours.valuesPBR[i] = 0.20;
                     m_valuesHours.valuesPBRe[i] = 0.20;
@@ -1493,6 +1583,8 @@ namespace Statistic
                                 valuesPmin[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
                                 valuesPmax[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
                             }
+                            else
+                                ;
                         }
                         catch
                         {
@@ -1657,6 +1749,7 @@ namespace Statistic
                     m_valuesHours.valuesPBR[i] = valuesPBR[i];
                     m_valuesHours.valuesPmin[i] = valuesPmin[i];
                     m_valuesHours.valuesPmax[i] = valuesPmax[i];
+
                     if (i == 0)
                     {
                         currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
@@ -2380,8 +2473,10 @@ namespace Statistic
                             tg.power_LastMinutesTM[hour] = value;
 
                             //Запрос с учетом значения перехода через сутки
-                            if (hour > 0 && value > 1)
+                            if (hour > 0 && value > 1) {
                                 m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                                m_dictValuesTECComponent[tg.m_id_owner_gtp].valuesLastMinutesTM [hour - 1] += value;
+                            }
                             else
                                 ;
                         }
@@ -2390,14 +2485,14 @@ namespace Statistic
             }
             else
             {
-                foreach (TG tg in m_localTECComponents)
+                foreach (TECComponent comp in m_localTECComponents)
                 {
-                    for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                    for (i = 0; i < comp.m_listTG [0].power_LastMinutesTM.Length; i++)
                     {
-                        tg.power_LastMinutesTM[i] = 0;
+                        comp.m_listTG[0].power_LastMinutesTM[i] = 0;
                     }
 
-                    tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+                    tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
 
                     for (i = 0; i < tgRows.Length; i++)
                     {
@@ -2432,7 +2527,7 @@ namespace Statistic
                         else ;
 
                         //if (dtReq.Date.Equals (dtVal.Date) == true) {
-                        tg.power_LastMinutesTM[hour] = value;
+                        comp.m_listTG[0].power_LastMinutesTM[hour] = value;
 
                         if (hour > 0 && value > 1)
                             m_valuesHours.valuesLastMinutesTM[hour - 1] += value;

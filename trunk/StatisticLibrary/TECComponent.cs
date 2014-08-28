@@ -37,11 +37,14 @@ namespace StatisticCommon
         //public int id;
         public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
         public int id_tm;
-        public TECComponent m_owner;
+        //public TECComponent m_owner;
+        public int m_id_owner_gtp,
+                    m_id_owner_pc;
 
-        public TG(TECComponent comp)
+        //public TG(TECComponent comp)
+        public TG()
         {
-            this.m_owner = comp;
+            //this.m_owner = comp;
             power = new double[21];
             power_LastMinutesTM = new double[25];
             receivedMin = new bool[21];
@@ -49,6 +52,9 @@ namespace StatisticCommon
             receivedHourHalf2 = new bool[24];
 
             ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
+
+            m_id_owner_gtp =
+            m_id_owner_pc = -1;
         }
     }
 

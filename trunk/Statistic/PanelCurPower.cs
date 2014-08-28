@@ -217,23 +217,22 @@ namespace Statistic
 
             public TecView m_tecView;
 
-            private bool m_bIsActive,
-                        m_bIsStarted,
-                        m_bUpdate;
-
             private object m_lockRep;
             private ManualResetEvent m_evTimerCurrent;
             private System.Threading.Timer m_timerCurrent;
 
-            private DelegateFunc delegateUpdateGUI;
+            //private DelegateFunc delegateUpdateGUI;
 
             public PanelTecCurPower(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
 
-                m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER);
+                m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER, -1, -1);
                 m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec });
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
+
+                m_tecView.updateGUI_TM_Gen = new DelegateFunc (showTMGenPower);
+                m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
 
                 Initialize();
             }
@@ -348,37 +347,33 @@ namespace Statistic
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((double)(100 - (10 * COUNT_FIXED_ROWS)) / (this.RowCount - COUNT_FIXED_ROWS), 1)));
                 }
 
-                delegateUpdateGUI = ShowPower;
-
                 m_lockRep = new object();
             }
 
             public void Start()
             {
-                if (m_bIsStarted == true)
+                if (! (m_tecView.threadIsWorking < 0))
                     return;
                 else
                     ;
-
-                m_bIsStarted = true;
+                
+                m_tecView.Start ();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1, ((PanelCurPower)Parent).m_msecPeriodUpdate - 1);
-
-                m_bUpdate = false;
             }
 
             public void Stop()
             {
-                if (m_bIsStarted == false)
+                if (m_tecView.threadIsWorking < 0)
                     return;
                 else
                     ;
 
+                m_tecView.Stop();
+
                 m_evTimerCurrent.Reset();
                 m_timerCurrent.Dispose();
-
-                m_bIsStarted = false;
 
                 lock (m_lockRep)
                 {
@@ -393,14 +388,9 @@ namespace Statistic
 
             public void Activate(bool active)
             {
-                if (m_bIsActive == active)
-                    return;
-                else
-                    ;
+                m_tecView.Activate(active);
 
-                m_bIsActive = active;
-
-                if (m_bIsActive == true)
+                if (m_tecView.m_bIsActive == true)
                 {
                     m_tecView.ChangeState();
                 }
@@ -410,9 +400,14 @@ namespace Statistic
                 }
             }
 
-            private void ShowPower () {
-                ShowTMGenPower ();
-                ShowTMSNPower ();
+            private void showTMGenPower()
+            {
+                this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
+            }
+
+            private void showTMSNPower()
+            {
+                this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
             }
 
             private void ShowTMGenPower () {
@@ -794,7 +789,10 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                m_tecView.ChangeState ();
+                if (m_tecView.m_bIsActive == true)
+                    m_tecView.ChangeState ();
+                else
+                    ;
             }
         }
     }

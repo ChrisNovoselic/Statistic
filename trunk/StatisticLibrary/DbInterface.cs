@@ -163,6 +163,8 @@ namespace StatisticCommon
 
         public void Request(int listenerId, string request)
         {
+            //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - listenerId=" + listenerId.ToString() + @", request=" + request);
+            
             if ((m_dictListeners.ContainsKey (listenerId) == false) || (request.Length == 0))
                 return;
             else
@@ -189,20 +191,23 @@ namespace StatisticCommon
 
         public bool Response(int listenerId, out bool error, out DataTable table)
         {
-            if ((m_dictListeners.ContainsKey(listenerId) == false) || listenerId < 0)
+            lock (lockListeners)
             {
-                error = true;
-                table = null;
+                if ((m_dictListeners.ContainsKey(listenerId) == false) || listenerId < 0)
+                {
+                    error = true;
+                    table = null;
 
-                return false;
+                    return false;
+                }
+                else
+                    ;
+
+                error = m_dictListeners[listenerId].dataError;
+                table = m_dictListeners[listenerId].dataTable;
             }
-            else
-                ;
 
-            error = m_dictListeners[listenerId].dataError;
-            table = m_dictListeners[listenerId].dataTable;
-
-            //Logging.Logg().LogDebugToFile(@"DbInterface::GetResponse (int, out bool , out DataTable) - " + listenerId + @", " + error.ToString());
+            //Logging.Logg().LogDebugToFile(@"DbInterface::Response (int, out bool , out DataTable) - listenerId = " + listenerId + @", error = " + error.ToString() + @", m_dictListeners[listenerId].dataPresent = " + m_dictListeners[listenerId].dataPresent);
 
             return m_dictListeners[listenerId].dataPresent;
         }
@@ -260,20 +265,24 @@ namespace StatisticCommon
                 {
                     foreach (KeyValuePair <int, DbInterfaceListener> pair in m_dictListeners)
                     {
-                        lock (lockListeners)
-                        {
-                            if (pair.Value.listenerActive == false)
+                        //lock (lockListeners)
+                        //{
+                            if (pair.Value.listenerActive == false) {
                                 continue;
+                            }
                             else
                                 ;
 
                             request = pair.Value.requestDB;
 
-                            if ((request == null) || (!(request.ToString ().Length > 0)))
+                            if ((request == null) || (!(request.ToString ().Length > 0))) {
                                 continue;
+                            }
                             else
                                 ;
-                        }
+                        //}
+
+                        //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - GetData(...) - request = " + request);
 
                         try
                         {
@@ -286,6 +295,8 @@ namespace StatisticCommon
                             result = false;
                         }
 
+                        //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - result = " + result);
+
                         //lock (lockListeners)
                         //{
                             if (pair.Value.listenerActive == false)
@@ -293,19 +304,28 @@ namespace StatisticCommon
                             else
                                 ;
 
+                            //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.listenerActive = " + pair.Value.listenerActive);
+
                             if (request == pair.Value.requestDB)
                             {
-                                if (result == true)
-                                {
-                                    pair.Value.dataPresent = true;
-                                }
-                                else
-                                {
-                                    pair.Value.dataError = true;
-                                }
+                                pair.Value.dataPresent = result;
+                                pair.Value.dataError = ! result;
+
+                                //if (result == true)
+                                //{
+                                //    pair.Value.dataPresent = true;
+                                //}
+                                //else
+                                //{
+                                //    pair.Value.dataError = true;
+                                //}
 
                                 pair.Value.requestDB = null;
                             }
+                            else
+                                ;
+
+                            //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.dataPresent = " + pair.Value.dataPresent + @", pair.Value.dataError = " + pair.Value.dataError.ToString ());
                         //}
                     }
                 }

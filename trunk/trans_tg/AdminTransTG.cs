@@ -16,8 +16,8 @@ namespace trans_tg
 
         private List <bool> [] m_listTimezoneOffsetHaveDates;
 
-        public AdminTransTG(HReports rep, bool[] arMarkPPBRValues)
-            : base(rep, arMarkPPBRValues)
+        public AdminTransTG(bool[] arMarkPPBRValues)
+            : base(arMarkPPBRValues)
         {
             InitializeAdminTransTG();
         }

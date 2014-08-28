@@ -188,7 +188,7 @@ namespace StatisticCommon
 
                         if (timeStamp == true)
                         {
-                            msg += DateTime.Now.ToString() + Environment.NewLine;
+                            msg += DateTime.Now.ToString(@"dd/MM/yyyy HH:mm:ss.fff") + Environment.NewLine;
                             msg += DatetimeStampSeparator + Environment.NewLine;
                         }
                         else

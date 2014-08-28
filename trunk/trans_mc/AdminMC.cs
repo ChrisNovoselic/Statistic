@@ -21,7 +21,7 @@ namespace trans_mc
             PPBRDates,
         }
 
-        public AdminMC (string strMCServiceHost, HReports rep) : base (rep)
+        public AdminMC (string strMCServiceHost) : base ()
         {
             m_strMCServiceHost = strMCServiceHost;
         }
@@ -231,7 +231,7 @@ namespace trans_mc
             }
 
             if (result == true)
-                m_report.errored_state = m_report.actioned_state = false;
+                FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
 

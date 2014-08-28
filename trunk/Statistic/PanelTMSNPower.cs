@@ -99,7 +99,7 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecTMSNPower(listTec[i]);
+                ptcp = new PanelTecTMSNPower(listTec[i], fErrRep, fActRep);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
 
@@ -224,17 +224,24 @@ namespace Statistic
             private ManualResetEvent m_evTimerCurrent;
             private System.Threading.Timer m_timerCurrent;
 
-            private DelegateFunc delegateUpdateGUI;
+            //private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecTMSNPower(StatisticCommon.TEC tec)
+            public PanelTecTMSNPower(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
+
+                m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER, -1, -1);
+                m_tecView.InitTEC (new List <TEC> () { tec });
+                m_tecView.SetDelegateReport(fErrRep, fActRep);
+
+                m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);
+                m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
 
                 Initialize();
             }
 
-            public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec)
-                : this(tec)
+            public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
+                : this(tec, fErrRep, fActRep)
             {
                 container.Add(this);
             }
@@ -302,8 +309,6 @@ namespace Statistic
                 for (i = 0; i < COUNT_FIXED_ROWS; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
-                delegateUpdateGUI = ShowPower;
-
                 isActive = false;
             }
 
@@ -321,8 +326,8 @@ namespace Statistic
             {
                 m_tecView.Stop ();
 
-                m_evTimerCurrent.Reset();
-                m_timerCurrent.Dispose();
+                if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
+                if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
             }
 
             private void ChangeState()
@@ -349,10 +354,14 @@ namespace Statistic
                 }
             }
 
-            private void ShowPower()
+            private void showTMGenPower()
             {
-                ShowTMGenPower();
-                ShowTMSNPower();
+                this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
+            }
+
+            private void showTMSNPower()
+            {
+                this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
             }
 
             private void ShowTMGenPower()
@@ -383,12 +392,12 @@ namespace Statistic
 
                 //???
                 //setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_Gen], m_tecView.m_dblTotalPower_TM_SN);
-                try { m_tecView.m_dtLastChangedAt_TM_SN = HAdmin.ToCurrentTimeZone(m_tecView.m_dtLastChangedAt_TM_SN); }
-                catch (Exception e)
-                {
-                    Logging.Logg().LogExceptionToFile(e, @"PanelTecCurPower::ShowTMPower () - HAdmin.ToCurrentTimeZone () - ...");
-                }
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_Gen], dblTotalPower_TM);
+                //try { m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen); }
+                //catch (Exception e)
+                //{
+                //    Logging.Logg().LogExceptionToFile(e, @"PanelTecCurPower::ShowTMPower () - HAdmin.ToCurrentTimeZone () - ...");
+                //}
                 m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
             }
 

@@ -901,11 +901,11 @@ namespace Statistic
             }
             else
             {
-                foreach (TG t in m_parent.m_tecView.m_localTECComponents)
+                foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
                 {
-                    if (t.receivedMin[min] == true)
+                    if (comp.m_listTG [0].receivedMin[min] == true)
                     {
-                        showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], t.power[min]);
+                        showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
                         if (m_parent.m_tecView.currHour == true)
                             m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                         else

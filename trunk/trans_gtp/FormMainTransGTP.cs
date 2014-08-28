@@ -94,7 +94,7 @@ namespace trans_gtp
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arAdmin[i] = new AdminTS_KomDisp(m_report, new bool[] { false, true });
+                m_arAdmin[i] = new AdminTS_KomDisp(new bool[] { false, true });
                 idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(i), false, @"CONFIG_DB");
                 try
                 {
