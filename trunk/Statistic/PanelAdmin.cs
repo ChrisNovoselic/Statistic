@@ -161,7 +161,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HReports rep)
+        public PanelAdmin(int idListener, FormChangeMode.MANAGER type)
         {
             //bool bUseData = true;
             switch (type) {
@@ -198,7 +198,7 @@ namespace Statistic
             isActive = false;
         }
 
-        public PanelAdmin(List<StatisticCommon.TEC> tec, FormChangeMode.MANAGER type, HReports rep)
+        public PanelAdmin(List<StatisticCommon.TEC> tec, FormChangeMode.MANAGER type)
         {
             switch (type)
             {
@@ -363,7 +363,7 @@ namespace Statistic
                     break;
             }
 
-            if (bRequery) {
+            if (bRequery == true) {
                 ClearTables();
 
                 m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);

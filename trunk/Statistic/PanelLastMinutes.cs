@@ -424,7 +424,7 @@ namespace Statistic
 
             private void ChangeState()
             {
-                m_tecView.selectedTime = DateTime.Now;
+                m_tecView.m_curDate = DateTime.Now;
                 
                 m_tecView.ChangeState ();
             }

@@ -139,10 +139,10 @@ namespace Statistic
                     switch (i)
                     {
                         case (int)FormChangeMode.MANAGER.DISP:
-                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, m_report);
+                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB);
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
-                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, m_report);
+                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB);
                             break;
                         default:
                             break;
@@ -606,6 +606,11 @@ namespace Statistic
                     comp_indx;
                 foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                 {
+                    if (t.m_bSensorsStrings == false)
+                        continue;
+                    else
+                        ;
+
                     tecView = new PanelTecViewGraph(t, tec_indx, -1, ErrorReport, ActionReport);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);

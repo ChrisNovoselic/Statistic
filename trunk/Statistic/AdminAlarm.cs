@@ -24,17 +24,31 @@ namespace Statistic
         protected void Initialize () {
         }
 
+        private void AdminAlarm_EventAlarmCurPower (int indx, int id_tg) {
+        }
+
+        private void AdminAlarm_EventAlarmTGTurnOnOff(int indx, int id_tg)
+        {
+        }
+
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
         {
             m_listTecView = new List<TecView> ();
 
             foreach (StatisticCommon.TEC t in listTEC) {
-                m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
-                m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
+                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
+                    m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
+                    m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
+                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
+                    m_listTecView[m_listTecView.Count - 1].EventAlarmCurPower += new DelegateIntIntFunc(AdminAlarm_EventAlarmCurPower);
+                    m_listTecView[m_listTecView.Count - 1].EventAlarmTGTurnOnOff += new DelegateIntIntFunc(AdminAlarm_EventAlarmTGTurnOnOff);
+                }
+                else
+                    ;
             }
         }
 
-        public AdminAlarm(HReports rep)
+        public AdminAlarm()
         {
             lockValue = new object ();
         }
@@ -47,7 +61,7 @@ namespace Statistic
                 m_bIsActive = active;
 
             if (m_bIsActive == true)
-                m_timerAlarm.Change(m_msecTimerUpdate, m_msecTimerUpdate);
+                m_timerAlarm.Change(0, m_msecTimerUpdate);
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
         }

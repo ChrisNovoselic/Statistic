@@ -165,7 +165,7 @@ namespace Statistic
         int currValuesPeriod;
 
         public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
-        public int indx_TECComponent { get { return m_tecView.m_indx_TECComponent; } }
+        public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
 
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         //public TG[] sensorId2TG;        
@@ -342,8 +342,8 @@ namespace Statistic
             else
                 ;
 
-            m_tecView.selectedTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
-            m_tecView.serverTime = m_tecView.selectedTime;
+            m_tecView.m_curDate = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+            m_tecView.serverTime = m_tecView.m_curDate;
 
             evTimerCurrent = new ManualResetEvent(true);
             timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
@@ -717,7 +717,7 @@ namespace Statistic
         {
             if (update == true)
             {
-                if (!(m_pnlQuickData.dtprDate.Value.Date == m_tecView.selectedTime.Date))
+                if (!(m_pnlQuickData.dtprDate.Value.Date == m_tecView.m_curDate.Date))
                     m_tecView.currHour = false;
                 else
                     ;
@@ -741,7 +741,7 @@ namespace Statistic
             if (received)
             {
                 update = false;
-                m_pnlQuickData.dtprDate.Value = m_tecView.selectedTime;
+                m_pnlQuickData.dtprDate.Value = m_tecView.m_curDate;
             }
             else
             {
@@ -756,7 +756,7 @@ namespace Statistic
 
         private void ChangeState()
         {
-            m_tecView.selectedTime = m_pnlQuickData.dtprDate.Value;
+            m_tecView.m_curDate = m_pnlQuickData.dtprDate.Value;
             
             m_tecView.ChangeState ();
         }

@@ -278,7 +278,7 @@ namespace StatisticCommon
 
         public void Reinit()
         {
-            if (! (actived == true))
+            if (! (m_bIsActive == true))
                 return;
             else
                 ;
@@ -714,6 +714,17 @@ namespace StatisticCommon
                 item.deviationPercent = false;
                 item.deviation = 0.0;
             }
+        }
+
+        protected void GetCurrentTimeRequest()
+        {
+            if (IsCanUseTECComponents())
+            {
+                GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
+                                    allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN]);
+            }
+            else
+                ;
         }
 
         protected virtual void GetAdminDatesRequest(DateTime date)

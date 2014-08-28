@@ -60,8 +60,8 @@ namespace StatisticCommon
         protected bool is_data_error;
 
         public DateTime m_prevDate
-            , serverTime;
-        protected DateTime m_curDate;
+            , serverTime
+            , m_curDate;
 
         protected volatile bool using_date;
         public bool m_ignore_date;
@@ -102,7 +102,7 @@ namespace StatisticCommon
         //private volatile bool workTread;
         //-------------------------
 
-        protected bool actived;
+        private bool actived;
         public bool m_bIsActive { get { return actived; } }
 
         public HAdmin()
@@ -165,7 +165,14 @@ namespace StatisticCommon
 
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC)
         {
-            this.m_list_tec = listTEC;
+            this.m_list_tec = new List<TEC> ();
+            foreach (TEC t in listTEC)
+            {
+                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
+                    this.m_list_tec.Add (t);
+                else
+                    ;
+            }
 
             initTEC ();
         }
@@ -428,8 +435,7 @@ namespace StatisticCommon
                 states.Clear();
 
                 if (!(FormMainBaseWithStatusStrip.m_report == null))
-                    FormMainBaseWithStatusStrip.m_report.errored_state =
-                    FormMainBaseWithStatusStrip.m_report.actioned_state = false;
+                    FormMainBaseWithStatusStrip.m_report.ClearStates();
                 else
                     Logging.Logg().LogErrorToFile(@"HAdmin::ClearStates () - m_report=null");
             }
@@ -635,43 +641,36 @@ namespace StatisticCommon
                 ;
         }
 
-        protected void GetCurrentTimeRequest()
+        protected void GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE typeDB, int idListatener)
         {
             string query = string.Empty;
-            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
 
-            if (IsCanUseTECComponents())
+            switch (typeDB)
             {
-                typeDB = DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
-                switch (typeDB)
-                {
-                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
-                        query = @"SELECT now()";
-                        break;
-                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
-                        query = @"SELECT GETDATE()";
-                        break;
-                    default:
-                        break;
-                }
-
-                if (query.Equals(string.Empty) == false)
-                    Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query);
-                else
-                    ;
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                    query = @"SELECT now()";
+                    break;
+                case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                    query = @"SELECT GETDATE()";
+                    break;
+                default:
+                    break;
             }
+
+            if (query.Equals(string.Empty) == false)
+                Request(idListatener, query);
             else
                 ;
         }
 
         protected bool IsCanUseTECComponents()
         {
-            bool bRes = false;
-            if ((!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count)) bRes = true; else ;
-            return bRes;
+            //bool bRes = false;
+            return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
+            //return bRes;
         }
 
-        public virtual void AbortRDGExcelValues()
+        public virtual void AbortThreadRDGValues()
         {
             if (m_waitHandleState.Length > 1)
                 ((ManualResetEvent)m_waitHandleState[1]).Set();
@@ -708,16 +707,26 @@ namespace StatisticCommon
         }
 
         public void ErrorReport (string msg) {
-            FormMainBaseWithStatusStrip.m_report.ErrorReport (msg);
-            errorReport ();
+            if (!(errorReport == null))
+            {
+                FormMainBaseWithStatusStrip.m_report.ErrorReport (msg);
+                errorReport ();
+            }
+            else
+                ;
         }
 
         public void ActionReport(string msg)
         {
-            FormMainBaseWithStatusStrip.m_report.ActionReport(msg);
-            actionReport();
+            if (! (actionReport == null))
+            {
+                FormMainBaseWithStatusStrip.m_report.ActionReport(msg);
+                actionReport();
+            }
+            else
+                ;
         }
 
-        public static int DEBUG_ID_TEC = -1;
+        public static int DEBUG_ID_TEC = 5;
     }
 }

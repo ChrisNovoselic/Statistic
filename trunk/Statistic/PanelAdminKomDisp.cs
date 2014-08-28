@@ -152,13 +152,16 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminKomDisp(int idListener, HReports rep)
-            : base(idListener, FormChangeMode.MANAGER.DISP, rep)
+        public PanelAdminKomDisp(int idListener)
+            : base(idListener, FormChangeMode.MANAGER.DISP)
         {
             if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
-                m_adminAlarm = new AdminAlarm(rep);
+                m_adminAlarm = new AdminAlarm();
                 m_adminAlarm.InitTEC(m_admin.m_list_tec);
             } else ;
+
+            this.m_nudnKoeffAlarmCurPower.ReadOnly = true;
+            this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
         protected override void getDataGridViewAdmin()
@@ -251,6 +254,8 @@ namespace Statistic
             {
                 m_admin.indxTECComponents = m_listTECComponentIndex[0];
                 comboBoxTecComponent.SelectedIndex = 0;
+
+                setNudnKoeffAlarmCurPowerValue ();
             }
             else
                 ;
@@ -285,6 +290,21 @@ namespace Statistic
             this.m_btnAlarmTGTurnOnOff.Enabled = false;
 
             if (PanelAdminKomDisp.ALARM_USE == true) m_adminAlarm.Activate(((CheckBox)sender).Checked); else ;
+        }
+
+        protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
+
+            setNudnKoeffAlarmCurPowerValue ();
+        }
+
+        private void setNudnKoeffAlarmCurPowerValue () {
+            m_nudnKoeffAlarmCurPower.Value = m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur / 100;
+        }
+
+        private void NudnKoeffAlarmCurPower_ValueChanged (object obj, EventArgs ev) {
+            m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur = m_nudnKoeffAlarmCurPower.Value * 100;
         }
     }
 }

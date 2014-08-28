@@ -37,11 +37,12 @@ namespace trans_tg
             bool bRes = false;
 
             bRes = IsCanUseTECComponents();
-            int i = -1;
+            int i = -1
+                , iTimeZoneOffset = -1;
 
-            if (bRes)
+            if (bRes == true)
             {
-                int iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+                iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
                 m_listCurTimezoneOffsetRDGExcelValues.Add(new RDGStruct[iTimeZoneOffset]);
 
                 if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;

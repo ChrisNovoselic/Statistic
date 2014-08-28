@@ -18,6 +18,7 @@ namespace StatisticCommon
 
         public TECComponentBase()
         {
+            m_dcKoeffAlarmPcur = -1;
         }
     }
 

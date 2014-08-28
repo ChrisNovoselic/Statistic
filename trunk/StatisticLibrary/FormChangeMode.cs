@@ -44,7 +44,13 @@ namespace StatisticCommon
             m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
             m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
 
-            this.m_list_tec = tec;
+            this.m_list_tec = new List<TEC> ();
+            foreach (TEC t in tec) {
+                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
+                    this.m_list_tec.Add (t);
+                else
+                    ;
+            }
 
             m_modeTECComponent = new HMark ();
 
@@ -179,70 +185,74 @@ namespace StatisticCommon
 
                 foreach (TEC t in m_list_tec)
                 {
-                    across_indx++;
+                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
+                        across_indx++;
 
-                    if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
-                    {
-                        clbMode.Items.Add(t.name_shr);
-                        //Контекстное меню - главная форма
-                        if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr); else ;
-                        if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr);
-
-                        m_list_IdItem.Add(t.m_id);
-
-                        m_list_tec_index.Add(tec_indx);
-                        m_list_TECComponent_index.Add(-1);
-
-                        m_list_across_index.Add(across_indx);
-
-                        if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
-                            clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
-                        }
-                        else
-                            ;
-                    }
-                    else
-                        ;
-
-                    if (t.list_TECComponents.Count > 0)
-                    {
-                        comp_indx = 0;
-                        foreach (TECComponent g in t.list_TECComponents)
+                        if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
                         {
-                            across_indx++;
+                            clbMode.Items.Add(t.name_shr);
+                            //Контекстное меню - главная форма
+                            if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr); else ;
+                            if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr);
 
-                            if ((((g.m_id > 100) && (g.m_id < 500)) && (IsModeTECComponent (MODE_TECCOMPONENT.GTP))) ||
-                                (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
-                                (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
-                            {
-                                clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
-                                //Контекстное меню - главная форма
-                                if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr + " - " + g.name_shr); else ;
-                                if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr + " - " + g.name_shr);
+                            m_list_IdItem.Add(t.m_id);
 
-                                m_list_IdItem.Add(g.m_id);
+                            m_list_tec_index.Add(tec_indx);
+                            m_list_TECComponent_index.Add(-1);
 
-                                m_list_tec_index.Add(tec_indx);
-                                m_list_TECComponent_index.Add(comp_indx);
+                            m_list_across_index.Add(across_indx);
 
-                                m_list_across_index.Add(across_indx);
-
-                                if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
-                                    clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
-                                }
-                                else
-                                    ;
+                            if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
+                                clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
                             }
                             else
                                 ;
-
-                            comp_indx++;
                         }
+                        else
+                            ;
+
+                        if (t.list_TECComponents.Count > 0)
+                        {
+                            comp_indx = 0;
+                            foreach (TECComponent g in t.list_TECComponents)
+                            {
+                                across_indx++;
+
+                                if ((((g.m_id > 100) && (g.m_id < 500)) && (IsModeTECComponent (MODE_TECCOMPONENT.GTP))) ||
+                                    (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
+                                    (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
+                                {
+                                    clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
+                                    //Контекстное меню - главная форма
+                                    if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr + " - " + g.name_shr); else ;
+                                    if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr + " - " + g.name_shr);
+
+                                    m_list_IdItem.Add(g.m_id);
+
+                                    m_list_tec_index.Add(tec_indx);
+                                    m_list_TECComponent_index.Add(comp_indx);
+
+                                    m_list_across_index.Add(across_indx);
+
+                                    if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
+                                        clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
+                                    }
+                                    else
+                                        ;
+                                }
+                                else
+                                    ;
+
+                                comp_indx++;
+                            }
+                        }
+                        else
+                            ;
+
+                        tec_indx++;
                     }
                     else
                         ;
-
-                    tec_indx++;
                 }
 
                 if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && Users.RoleIsDisp == true)

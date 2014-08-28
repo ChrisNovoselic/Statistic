@@ -65,8 +65,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS(int idListener, HReports rep)
-            : base(idListener, FormChangeMode.MANAGER.NSS, rep)
+        public PanelAdminNSS(int idListener)
+            : base(idListener, FormChangeMode.MANAGER.NSS)
         {
         }
 
