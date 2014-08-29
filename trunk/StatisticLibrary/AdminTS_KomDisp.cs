@@ -22,8 +22,10 @@ namespace StatisticCommon
             //Разрешить запись ПБР-значений
             if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = true; else ;
             
-            lock (m_lockObj)
+            lock (m_lockState)
             {
+                ClearStates ();
+                
                 indxTECComponents = indx;
                 m_PPBRCSVDirectory = dir;
 
@@ -42,8 +44,6 @@ namespace StatisticCommon
                 m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
                 states.Add((int)StatesMachine.PPBRCSVValues);
 
                 try

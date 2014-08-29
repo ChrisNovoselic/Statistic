@@ -299,7 +299,7 @@ namespace Statistic
             indxTECComponents = indx_comp;
         }
 
-        public event DelegateIntIntFunc EventAlarmCurPower, EventAlarmTGTurnOnOff;
+        public event DelegateIntIntFunc EventReg;
         
         public override void GetRDGValues(int mode, int indx, DateTime date)
         {
@@ -345,11 +345,29 @@ namespace Statistic
             {
                 Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM);
 
-                if (tg.power_TM < 1) {
-                    EventAlarmTGTurnOnOff (indxTECComponents, tg.m_id);
+                if (tg.m_TurnOnOff == 0) {
+                    if (tg.power_TM < 1)
+                        tg.m_TurnOnOff = -1;
+                    else
+                        tg.m_TurnOnOff = 1;
                 }
                 else
+                    ;
+
+                if (tg.power_TM < 1) {
+                    if (tg.m_TurnOnOff == 1)
+                        EventReg(allTECComponents[indxTECComponents].m_id, tg.m_id);
+                    else {
+                    }
+                }
+                else {
                     power_TM += tg.power_TM;
+
+                    if (tg.m_TurnOnOff == -1)
+                        EventReg(allTECComponents[indxTECComponents].m_id, tg.m_id);
+                    else
+                        ;
+                }
 
                 if (allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) < allTECComponents[indxTECComponents].m_listTG.Count)
                     Console.Write(@", ");
@@ -358,7 +376,7 @@ namespace Statistic
             }
 
             if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                EventAlarmCurPower (indxTECComponents, -1);
+                EventReg(allTECComponents[indxTECComponents].m_id, -1);
             else
                 ;
 
@@ -1016,9 +1034,8 @@ namespace Statistic
         }
 
         private void ChangeState_CurPower () {
-            lock (m_lockObj) {
-                newState = true;
-                states.Clear();
+            lock (m_lockState) {
+                ClearStates ();
 
                 if (m_tec.m_bSensorsStrings == false)
                     states.Add((int)StatesMachine.InitSensors);

@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
 using System.Globalization;
+using System.Drawing;
 
 using StatisticCommon;
 
@@ -24,8 +25,23 @@ namespace Statistic
         private System.Windows.Forms.Button m_btnAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
 
+        private class PanelLabelAlarm : TableLayoutPanel {
+            private Dictionary<KeyValuePair<int, int>, System.Windows.Forms.Label> m_dictLabel;
+            
+            public PanelLabelAlarm () {
+            }
+
+            public void Add () {
+                //this.Controls.Add(m_dictLabelAlarm[cKey]);
+            }
+
+            public void Remove() {
+            }
+        }
+
         public static bool ALARM_USE = true;
         public AdminAlarm m_adminAlarm;
+        private PanelLabelAlarm m_panelLavelAlarm;
 
         protected override void InitializeComponents()
         {
@@ -158,10 +174,59 @@ namespace Statistic
             if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
                 m_adminAlarm = new AdminAlarm();
                 m_adminAlarm.InitTEC(m_admin.m_list_tec);
+
+                m_adminAlarm.EventAdd += new DelegateIntIntFunc(OnAdminAlarm_EventAdd);
+                m_adminAlarm.EventRetry += new DelegateIntIntFunc(OnAdminAlarm_EventRetry);
+
+                this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
             } else ;
 
             this.m_nudnKoeffAlarmCurPower.ReadOnly = true;
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
+        }
+
+        private void EnabledButtonAlarm () {
+            if (m_cbxAlarm.Checked == true) {
+                int id_comp = m_admin.allTECComponents[m_admin.indxTECComponents].m_id;
+                m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
+                m_btnAlarmTGTurnOnOff.Enabled = false;
+                foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG)
+                    if (m_adminAlarm.IsEnabledButtonAlarm(id_comp, tg.m_id) == true)
+                    {
+                        m_btnAlarmTGTurnOnOff.Enabled = true;
+                    
+                        break;
+                    }
+                    else
+                        ;
+            }
+            else
+                ;
+        }
+
+        private void AddLabelAlarm(int id, int id_tg)
+        {
+            KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+            //m_dictLabelAlarm.Add (cKey, new Label ());
+            m_dictLabelAlarm.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Black, Color.Gray, 12F, ContentAlignment.MiddleLeft));
+            m_dictLabelAlarm [cKey].Text = @""; //??? - Õ‡ËÏÂÌÓ‚‡ÌËÂ √“œ (√“œ + “√)
+            
+        }
+
+        private void RemoveLabelAlarm(int id, int id_tg)
+        {
+            //m_dictLabelAlarm.Remove(new KeyValuePair<int, int>(id, id_tg));
+            m_panelLavelAlarm.Add ();
+        }
+
+        private void OnAdminAlarm_EventAdd (int id, int id_tg) {
+            this.BeginInvoke (new DelegateFunc (EnabledButtonAlarm));
+
+            this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm));
+        }
+
+        private void OnAdminAlarm_EventRetry(int id, int id_tg)
+        {
         }
 
         protected override void getDataGridViewAdmin()
@@ -274,12 +339,22 @@ namespace Statistic
                 ;
         }
 
+        private event DelegateIntIntFunc EventConfirm;
+        
         private void btnAlarmCurPower_Click(object sender, EventArgs e)
         {
+            EventConfirm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
+
+            RemoveLabelAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
         }
 
         private void btnAlarmTGTurnOnOff_Click(object sender, EventArgs e)
         {
+            int id_tg = -1; //???
+            
+            EventConfirm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, id_tg);
+
+            RemoveLabelAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, id_tg);
         }
 
         private void m_cbxAlarm_CheckedChanged(object sender, EventArgs e)
@@ -290,21 +365,35 @@ namespace Statistic
             this.m_btnAlarmTGTurnOnOff.Enabled = false;
 
             if (PanelAdminKomDisp.ALARM_USE == true) m_adminAlarm.Activate(((CheckBox)sender).Checked); else ;
+
+            EnabledButtonAlarm();
         }
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
 
+            EnabledButtonAlarm ();
+            
             setNudnKoeffAlarmCurPowerValue ();
         }
 
         private void setNudnKoeffAlarmCurPowerValue () {
+            this.m_nudnKoeffAlarmCurPower.ValueChanged -= new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
             m_nudnKoeffAlarmCurPower.Value = m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur / 100;
+            this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
         private void NudnKoeffAlarmCurPower_ValueChanged (object obj, EventArgs ev) {
             m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur = m_nudnKoeffAlarmCurPower.Value * 100;
+
+            int err = -1
+                , idListenerConfigDB = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            System.Data.Common.DbConnection dbConn = DbSources.Sources ().GetConnection (idListenerConfigDB, out err);
+            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur] = {0} WHERE [ID] = {1} ", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents [m_admin.indxTECComponents].m_id }, out err);
+            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur]=? WHERE [ID]=?", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents[m_admin.indxTECComponents].m_id }, out err);
+            DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur + @" WHERE [ID] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_id, null, null, out err);
+            DbSources.Sources().UnRegister(idListenerConfigDB);
         }
     }
 }

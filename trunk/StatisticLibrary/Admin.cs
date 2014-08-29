@@ -69,7 +69,7 @@ namespace StatisticCommon
 
         protected int[,] m_arHaveDates;
 
-        protected Object m_lockObj;
+        protected Object m_lockState;
 
         protected Thread taskThread;
         protected Semaphore semaState;
@@ -124,7 +124,7 @@ namespace StatisticCommon
 
             m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, 24];
 
-            m_lockObj = new Object();
+            m_lockState = new Object();
 
             states = new List<int /*StatesMachine*/>();
 
@@ -429,16 +429,16 @@ namespace StatisticCommon
 
         public void ClearStates()
         {
-            lock (m_lockObj)
-            {
+            //lock (m_lockState)
+            //{
                 newState = true;
-                states.Clear();
+                states.Clear ();
 
                 if (!(FormMainBaseWithStatusStrip.m_report == null))
                     FormMainBaseWithStatusStrip.m_report.ClearStates();
                 else
                     Logging.Logg().LogErrorToFile(@"HAdmin::ClearStates () - m_report=null");
-            }
+            //}
         }
 
         public virtual void Stop()
@@ -476,7 +476,7 @@ namespace StatisticCommon
 
                 index = 0;
 
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
                     if (states.Count == 0)
                         continue;
@@ -525,7 +525,7 @@ namespace StatisticCommon
                         if (((responseIsOk == false) || (dataPresent == false) || (error == true)) && (newState == false))
                         {
                             StateErrors(currentState, !responseIsOk);
-                            lock (m_lockObj)
+                            lock (m_lockState)
                             {
                                 if (newState == false)
                                 {
@@ -541,7 +541,7 @@ namespace StatisticCommon
                     }
                     else
                     {
-                        lock (m_lockObj)
+                        lock (m_lockState)
                         {
                             if (newState == false)
                             {
@@ -555,7 +555,7 @@ namespace StatisticCommon
 
                     index++;
 
-                    lock (m_lockObj)
+                    lock (m_lockState)
                     {
                         if (index == states.Count)
                             break;

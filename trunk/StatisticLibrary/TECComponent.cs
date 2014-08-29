@@ -41,6 +41,7 @@ namespace StatisticCommon
         //public TECComponent m_owner;
         public int m_id_owner_gtp,
                     m_id_owner_pc;
+        public int m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл.
 
         //public TG(TECComponent comp)
         public TG()
@@ -55,7 +56,8 @@ namespace StatisticCommon
             ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
 
             m_id_owner_gtp =
-            m_id_owner_pc = -1;
+            m_id_owner_pc = -1; //Неизвестный владелец
+            m_TurnOnOff = 0; //Неизвестное состояние
         }
     }
 

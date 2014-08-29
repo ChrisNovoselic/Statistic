@@ -541,7 +541,8 @@ namespace StatisticCommon
                 foreach (DbType type in types)
                 {
                     //cmd.Parameters.AddWithValue(string.Empty, parametrs[commandMySQL.Parameters.Count - 1]);
-                    cmd.Parameters.Add(parametrs[cmd.Parameters.Count - 1]);
+                    //cmd.Parameters.Add(new SqlParameter(cmd.Parameters.Count.ToString (), parametrs[cmd.Parameters.Count]));
+                    cmd.Parameters.Add(new SqlParameter(string.Empty, parametrs[cmd.Parameters.Count]));
                 }
             else
                 ;
@@ -551,8 +552,9 @@ namespace StatisticCommon
         {
             err = 0;
 
-            if ((!(types == null)) || (!(parametrs == null)))
-                err = -1;
+            //if ((!(types == null)) || (!(parametrs == null)))
+            if ((types == null) || (parametrs == null))
+                ;
             else
                 if ((!(types == null)) && (!(parametrs == null)))
                 {
@@ -564,7 +566,7 @@ namespace StatisticCommon
                         ;
                 }
                 else
-                    ;
+                    err = -1;
 
             if (!(err == 0))
             {

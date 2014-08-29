@@ -36,15 +36,14 @@ namespace StatisticTransModes
             if (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true)
             //if ((semaState.WaitOne(msecWaitSemaDbAccess) == true) && (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true))
             {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
+                    ClearStates();
+
                     saveResult = Errors.NoAccess;
                     saving = true;
                     using_date = false;
                     m_curDate = m_prevDate;
-
-                    newState = true;
-                    states.Clear();
 
                     Logging.Logg().LogDebugToFile("AdminTS_Modes::SaveChanges () - states.Clear()");
 

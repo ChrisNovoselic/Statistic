@@ -24,7 +24,7 @@ namespace Statistic
         //public List<TEC> tec;
         private FIleConnSett m_fileConnSett;
         //private ConnectionSettingsSource m_connSettSource;
-        private List <FormConnectionSettings> m_listFormConnectionSettings;
+        public static List <FormConnectionSettings> s_listFormConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
         PanelCurPower m_panelCurPower;
         PanelTMSNPower m_panelSNPower;
@@ -75,10 +75,10 @@ namespace Statistic
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
             m_fileConnSett = new FIleConnSett ("connsett.ini");
-            m_listFormConnectionSettings = new List<FormConnectionSettings> ();
-            m_listFormConnectionSettings.Add (new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
-            m_listFormConnectionSettings.Add(null);
-            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            s_listFormConnectionSettings = new List<FormConnectionSettings> ();
+            s_listFormConnectionSettings.Add (new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(null);
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {                
                 if (Initialize() == false)
                 {
@@ -107,7 +107,7 @@ namespace Statistic
 
             timer.Interval = 666; //Признак первого старта
 
-            int idListenerConfigDB = DbSources.Sources ().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListenerConfigDB = DbSources.Sources ().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_user = null;
             try { m_user = new Users(idListenerConfigDB); }
@@ -429,7 +429,7 @@ namespace Statistic
         private int connectionSettings (CONN_SETT_TYPE type) {
             int iRes = -1;
             DialogResult result;
-            result = m_listFormConnectionSettings [(int)type].ShowDialog(this);
+            result = s_listFormConnectionSettings [(int)type].ShowDialog(this);
             if (result == DialogResult.Yes)
             {
                 StopTabPages ();
@@ -512,7 +512,7 @@ namespace Statistic
 
         private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             FormMainAnalyzer formAnalyzer = new FormMainAnalyzer(idListener, formChangeMode.m_list_tec);
             formAnalyzer.ShowDialog (this);
             DbSources.Sources ().UnRegister (idListener);
@@ -536,8 +536,8 @@ namespace Statistic
                     bShowFormConnectionSettings = true;
                 }
                 else {
-                    if ((!(m_listFormConnectionSettings == null)) &&
-                        (m_listFormConnectionSettings[(int)type] == null) && (!(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB] == null)))
+                    if ((!(s_listFormConnectionSettings == null)) &&
+                        (s_listFormConnectionSettings[(int)type] == null) && (!(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB] == null)))
                     {
                         DelegateReadConnSettFunc delegateRead = null;
                         DelegateSaveConnSettFunc delegateSave = null;
@@ -549,7 +549,7 @@ namespace Statistic
                                 delegateSave = m_fileConnSett.SaveSettingsFile;
                                 break;
                             case CONN_SETT_TYPE.LIST_SOURCE:
-                                idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                                idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
                                 //if (m_connSettSource == null)
                                     connSettSource = new ConnectionSettingsSource(idListener);
                                 //else
@@ -563,14 +563,14 @@ namespace Statistic
                         }
 
                         if ((!(delegateRead == null)) && (!(delegateSave == null)))
-                            m_listFormConnectionSettings[(int)type] = new FormConnectionSettings(idListener, delegateRead, delegateSave);
+                            s_listFormConnectionSettings[(int)type] = new FormConnectionSettings(idListener, delegateRead, delegateSave);
                         else
                             Abort (@"параметры соединения с БД конфигурации", false);
                     }
                     else
                         ;
 
-                    if ((!(m_listFormConnectionSettings[(int)type] == null)) && (!(m_listFormConnectionSettings[(int)type].Ready == 0)))
+                    if ((!(s_listFormConnectionSettings[(int)type] == null)) && (!(s_listFormConnectionSettings[(int)type].Ready == 0)))
                     {
                         bShowFormConnectionSettings = true;
                     }
@@ -711,7 +711,7 @@ namespace Statistic
             StopWait();
             if (formChangeMode.admin_was_checked == true)
             {
-                int idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
                 Passwords.ID_ROLES idRolesPassword = Passwords.ID_ROLES.COM_DISP;
 
                 switch (Users.Role) {
@@ -788,7 +788,7 @@ namespace Statistic
 
         private void сменитьРежимToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 int i = -1;
                 if ((!(formChangeMode == null)) && (formChangeMode.ShowDialog() == System.Windows.Forms.DialogResult.OK))
@@ -1160,7 +1160,7 @@ namespace Statistic
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 if (панельГрафическихToolStripMenuItem.Checked)
                     formGraphicsSettings.Show();
@@ -1295,7 +1295,7 @@ namespace Statistic
 
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 formParameters.ShowDialog(this);
             else
                 ;
@@ -1303,7 +1303,7 @@ namespace Statistic
 
         private void параметрыТГБийскToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in tecViews)
                     if ((tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK) && (!(m_formParametersTG == null)))
@@ -1321,13 +1321,13 @@ namespace Statistic
 
         private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
             formPassword.ShowDialog(this);
             DialogResult dlgRes = formPassword.DialogResult;
             if (dlgRes == DialogResult.Yes)
             {
-                FormTECComponent tecComponent = new FormTECComponent(m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                 if (tecComponent.ShowDialog (this) == DialogResult.Yes) {
                     MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     выходToolStripMenuItem.PerformClick ();
@@ -1351,7 +1351,7 @@ namespace Statistic
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
             formPassword.ShowDialog(this);
             DialogResult dlgRes = formPassword.DialogResult;
@@ -1400,9 +1400,9 @@ namespace Statistic
 
         private void изменитьПарольToolStripMenuItem_Click(object sender, EventArgs e, int id_ext, Passwords.ID_ROLES id_role)
         {
-            if (m_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                int idListener = DbSources.Sources().Register(m_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
                 formPassword.SetIdPass(idListener, id_ext, id_role);
                 DialogResult dlgRes = formPassword.ShowDialog(this);
                 if (dlgRes == DialogResult.Yes)

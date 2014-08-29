@@ -322,8 +322,10 @@ namespace trans_mt
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
             delegateStartWait();
-            lock (m_lockObj)
+            lock (m_lockState)
             {
+                ClearStates();
+
                 indxTECComponents = indx;
 
                 ClearValues();
@@ -333,9 +335,6 @@ namespace trans_mt
 
                 m_prevDate = date.Date;
                 m_curDate = m_prevDate;
-
-                newState = true;
-                states.Clear();
 
                 //if (m_listIGO.Count == 0)
                 //{

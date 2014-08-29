@@ -102,15 +102,14 @@ namespace StatisticCommon
             //if (WaitHandle.WaitAll (new WaitHandle [] {semaState, semaDBAccess}, DbInterface.MAX_WATING) == true)
             //if ((semaState.WaitOne(DbInterface.MAX_WATING) == true) && (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true))
             {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
+                    ClearStates ();
+                    
                     saveResult = Errors.NoAccess;
                     saving = true;
                     using_date = false;
                     m_curDate = m_prevDate;
-
-                    newState = true;
-                    states.Clear();
 
                     Logging.Logg().LogDebugToFile("AdminTS::SaveChanges () - states.Clear()");
 
@@ -169,14 +168,13 @@ namespace StatisticCommon
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
+                    ClearStates ();
+
                     errClearResult = Errors.NoError;
                     using_date = false;
                     m_curDate = m_prevDate;
-
-                    newState = true;
-                    states.Clear();
 
                     Logging.Logg().LogDebugToFile("AdminTS::ClearRDG () - states.Clear()");
 
@@ -285,16 +283,16 @@ namespace StatisticCommon
 
             /*InitDbInterfaces ();*/
 
-            lock (m_lockObj)
+            lock (m_lockState)
             {
+                ClearStates();
+
                 //m_curDate = mcldrDate.SelectionStart;
                 m_curDate = m_prevDate;
                 saving = false;
 
                 using_date = true; //???
 
-                newState = true;
-                states.Clear();
                 states.Add((int)StatesMachine.CurrentTime);
 
                 try
@@ -310,12 +308,11 @@ namespace StatisticCommon
 
         public void GetCurrentTime(int indx)
         {
-            lock (m_lockObj)
+            lock (m_lockState)
             {
-                indxTECComponents = indx;
+                ClearStates();
 
-                newState = true;
-                states.Clear();
+                indxTECComponents = indx;
 
                 Logging.Logg().LogDebugToFile("AdminTS::GetCurrentTime () - states.Clear()");
 
@@ -335,9 +332,11 @@ namespace StatisticCommon
         public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
             //Запретить запись ПБР-значений
             if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
-            
-            lock (m_lockObj)
+
+            lock (m_lockState)
             {
+                ClearStates();
+
                 indxTECComponents = indx;
                 
                 ClearValues();
@@ -347,8 +346,6 @@ namespace StatisticCommon
 
                 m_typeFields = mode;
 
-                newState = true;
-                states.Clear();
                 states.Add((int)StatesMachine.CurrentTime);
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
@@ -368,9 +365,11 @@ namespace StatisticCommon
         {
             //Запретить запись ПБР-значений
             if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
-            
-            lock (m_lockObj)
+
+            lock (m_lockState)
             {
+                ClearStates();
+
                 indxTECComponents = indx;
                 
                 ClearValues();
@@ -383,8 +382,6 @@ namespace StatisticCommon
 
                 m_typeFields = (TYPE_FIELDS)mode;
 
-                newState = true;
-                states.Clear();
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
 
@@ -410,8 +407,10 @@ namespace StatisticCommon
 
         public virtual void ImpRDGExcelValues(int indx, DateTime date)
         {
-            lock (m_lockObj)
+            lock (m_lockState)
             {
+                ClearStates();
+
                 indxTECComponents = indx;
                 
                 ClearValues();
@@ -422,8 +421,6 @@ namespace StatisticCommon
                 m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
-                newState = true;
-                states.Clear();
                 states.Add((int)StatesMachine.ImpRDGExcelValues);
 
                 try
@@ -445,17 +442,16 @@ namespace StatisticCommon
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
             {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
+                    ClearStates();
+
                     indxTECComponents = indx;
 
                     saveResult = Errors.NoAccess;
                     saving = true;
                     using_date = false;
                     m_curDate = m_prevDate;
-
-                    newState = true;
-                    states.Clear();
 
                     states.Add((int)StatesMachine.ExpRDGExcelValues);
 
@@ -481,7 +477,7 @@ namespace StatisticCommon
                 saving = false;
             }
             else {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
                     Logging.Logg().LogDebugToFile("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=false");
                     
@@ -1945,7 +1941,7 @@ namespace StatisticCommon
 
         public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
         {
-            lock (m_lockObj)
+            lock (m_lockState) //???
             {
                 indxTECComponents = indx;
                 m_prevDate = date.Date;
@@ -1955,16 +1951,14 @@ namespace StatisticCommon
             if (resultSaving == Errors.NoError)
             {
                 if (bCallback == true)
-                    lock (m_lockObj)
+                    lock (m_lockState)
                     {
+                        ClearStates();
                         ClearValues();
 
                         //m_prevDate = date.Date;
                         m_curDate = m_prevDate;
                         using_date = false;
-
-                        newState = true;
-                        states.Clear();
 
                         Logging.Logg().LogDebugToFile("AdminTS::SaveRDGValues () - states.Clear()");
 
@@ -2050,16 +2044,14 @@ namespace StatisticCommon
         {
             if (ClearRDG() == Errors.NoError)
             {
-                lock (m_lockObj)
+                lock (m_lockState)
                 {
+                    ClearStates();
                     ClearValues();
 
                     m_prevDate = date.Date;
                     m_curDate = m_prevDate;
                     using_date = false;
-
-                    newState = true;
-                    states.Clear();
 
                     //states.Add((int)StatesMachine.CurrentTime);
                     states.Add((int)StatesMachine.PPBRValues);
