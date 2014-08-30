@@ -1,9 +1,15 @@
+using System;
 using System.Windows.Forms;
 using System.Threading;
 using System.Drawing;
 
 namespace StatisticCommon
 {
+    //public class HException : Exception
+    //{
+    //    public HException(string msg) : base(msg) { }
+    //}
+    
     public abstract class FormMainBase : Form
     {
         protected FormWait formWait;

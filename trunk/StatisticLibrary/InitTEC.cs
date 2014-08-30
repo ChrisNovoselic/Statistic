@@ -22,6 +22,17 @@ namespace StatisticCommon
             req = "SELECT * FROM TEC_LIST";
 
             if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
+            if (!(Users.allTEC == 0))
+            {
+                if (bIgnoreTECInUse == false)
+                    req += @" AND ";
+                else
+                    ;
+
+                req += @"ID =" + Users.allTEC.ToString ();
+            }
+            else
+                ;
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }
@@ -196,7 +207,7 @@ namespace StatisticCommon
                             prefix_pbr = list_tec.Rows[i]["PREFIX_PBR"].ToString();
                         }
 
-                        if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                        //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                             //Создание объекта ТЭЦ
                             tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
                                             list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
@@ -307,9 +318,7 @@ namespace StatisticCommon
                             }
                             else
                                 ; //Ошибка получения параметров соединений с БД
-                        }
-                        else
-                            ;
+                        //} else ;
 
                         //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - list_TG = Ok");
                     }
@@ -369,7 +378,7 @@ namespace StatisticCommon
 
                     //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - Создание объекта ТЭЦ: " + i);
 
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         prefix_admin = string.Empty; prefix_pbr = string.Empty;
                         if ((list_tec.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_tec.Columns.IndexOf("PREFIX_PBR") < 0))
                         {
@@ -447,9 +456,7 @@ namespace StatisticCommon
                             }
                         else
                             ; //Ошибка ???
-                    }
-                    else
-                        ;
+                    //} else ;
                 }
             else
                 ; //Ошибка получения списка ТЭЦ
@@ -705,7 +712,7 @@ namespace StatisticCommon
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
-                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                     //Logging.Logg().LogLock();
                     //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
                     //Logging.Logg().LogUnlock();
@@ -816,9 +823,7 @@ namespace StatisticCommon
                         else
                             ;
                     }
-                }
-                else
-                    ;
+                //} else ;
             }
         }
 
@@ -838,7 +843,7 @@ namespace StatisticCommon
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
-                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                     //Создание объекта ТЭЦ
                     tec.Add(new TEC(Convert.ToInt32(list_tec.Rows[i]["ID"]),
                                     list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
@@ -893,9 +898,7 @@ namespace StatisticCommon
                                 ;
                         }
                     }
-                }
-                else
-                    ;
+                //} else ;
             }
         }
     }

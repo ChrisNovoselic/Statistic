@@ -65,6 +65,8 @@ namespace Statistic
                 //else
                 //    ;
 
+                DbSources.Sources().UnRegister();
+
                 ProgramBase.Exit();
             }
             else

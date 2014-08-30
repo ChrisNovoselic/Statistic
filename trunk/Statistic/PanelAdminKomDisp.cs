@@ -32,7 +32,10 @@ namespace Statistic
             }
 
             public void Add () {
-                //this.Controls.Add(m_dictLabelAlarm[cKey]);
+                //KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+                ////m_dictLabelAlarm.Add (cKey, new Label ());
+                //m_dictLabelAlarm.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Black, Color.Gray, 12F, ContentAlignment.MiddleLeft));
+                //m_dictLabelAlarm [cKey].Text = @""; //??? - Наименование ГТП (ГТП + ТГ)
             }
 
             public void Remove() {
@@ -206,17 +209,13 @@ namespace Statistic
 
         private void AddLabelAlarm(int id, int id_tg)
         {
-            KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
-            //m_dictLabelAlarm.Add (cKey, new Label ());
-            m_dictLabelAlarm.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Black, Color.Gray, 12F, ContentAlignment.MiddleLeft));
-            m_dictLabelAlarm [cKey].Text = @""; //??? - Наименование ГТП (ГТП + ТГ)
-            
+            m_panelLavelAlarm.Add();            
         }
 
         private void RemoveLabelAlarm(int id, int id_tg)
         {
             //m_dictLabelAlarm.Remove(new KeyValuePair<int, int>(id, id_tg));
-            m_panelLavelAlarm.Add ();
+            m_panelLavelAlarm.Remove ();
         }
 
         private void OnAdminAlarm_EventAdd (int id, int id_tg) {

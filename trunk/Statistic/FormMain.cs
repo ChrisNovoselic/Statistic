@@ -49,10 +49,10 @@ namespace Statistic
 
         TcpServerAsync m_TCPServer;
 
-        private void Abort (string msg, bool bThrow = false)
+        public void Abort (string msg, bool bThrow = false)
         {
-            MessageBox.Show(this, msg + ".\nОбратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            if (bThrow == true) throw new Exception(msg); else ;
+            MessageBox.Show(this, msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка в работе программы!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            if (bThrow == true) throw new Exception(msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37."); else ;
         }
 
         public FormMain()
@@ -110,11 +110,15 @@ namespace Statistic
             int idListenerConfigDB = DbSources.Sources ().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_user = null;
-            try { m_user = new Users(idListenerConfigDB); }
+            try {
+                m_user = new Users(idListenerConfigDB);
+            }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
-                bRes = false;
+                //Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
+                //bRes = false;
+
+                Abort(e.Message, true);
             }
 
             bool bUseData = true; //Для объекта 'AdminTS'

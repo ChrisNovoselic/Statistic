@@ -168,10 +168,9 @@ namespace StatisticCommon
             this.m_list_tec = new List<TEC> ();
             foreach (TEC t in listTEC)
             {
-                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
+                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
                     this.m_list_tec.Add (t);
-                else
-                    ;
+                //else ;
             }
 
             initTEC ();
@@ -727,6 +726,9 @@ namespace StatisticCommon
                 ;
         }
 
-        public static int DEBUG_ID_TEC = 5;
+        public static int USERS_ID = 0;
+        public static int USERS_ID_TEC = 5;
+        public static int USERS_ID_ROLE = 2;
+        public static string USERS_DOMAINNAME = @"Отладчик";
     }
 }

@@ -397,7 +397,7 @@ namespace StatisticCommon
         {
             string msg = string.Empty;
             msg += "!Исключение! обработка: " + message + Environment.NewLine;
-            msg += "Исключение: " + e.Message;
+            msg += "Исключение: " + e.Message + Environment.NewLine;
             msg += e.ToString();
 
             LogToFile(msg, true, true, bLock);

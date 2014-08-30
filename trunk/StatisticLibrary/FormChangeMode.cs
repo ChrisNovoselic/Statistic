@@ -46,10 +46,9 @@ namespace StatisticCommon
 
             this.m_list_tec = new List<TEC> ();
             foreach (TEC t in tec) {
-                if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
+                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
                     this.m_list_tec.Add (t);
-                else
-                    ;
+                //else ;
             }
 
             m_modeTECComponent = new HMark ();
@@ -185,7 +184,7 @@ namespace StatisticCommon
 
                 foreach (TEC t in m_list_tec)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
                         across_indx++;
 
                         if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
@@ -250,9 +249,7 @@ namespace StatisticCommon
                             ;
 
                         tec_indx++;
-                    }
-                    else
-                        ;
+                    //} else ;
                 }
 
                 if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && Users.RoleIsDisp == true)

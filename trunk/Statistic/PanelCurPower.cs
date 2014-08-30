@@ -126,7 +126,9 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecCurPower)ctrl).Start(); else ;
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id))
+                        ((PanelTecCurPower)ctrl).Start();
+                    //else ;
                     i++;
                 }
                 else
@@ -138,7 +140,9 @@ namespace Statistic
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id)) ((PanelTecCurPower)ctrl).Stop(); else ;
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id))
+                        ((PanelTecCurPower)ctrl).Stop();
+                    //else ;
                     i ++;
                 }
                 else
@@ -163,12 +167,9 @@ namespace Statistic
             foreach (Control ctrl in this.Controls) {
                 if (ctrl.GetType ().Equals (typeChildren) == true)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id))
-                    {
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecCurPower)ctrl).m_tecView.m_tec.m_id))
                         ((PanelTecCurPower)ctrl).Activate(active);
-                    }
-                    else
-                        ;
+                    //else ;
                     i ++;
                 }
                 else

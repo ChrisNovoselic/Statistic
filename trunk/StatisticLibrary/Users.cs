@@ -74,7 +74,7 @@ namespace StatisticCommon
             //GetUsers(ref connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
 
             if ((err == 0) && (dataUsers.Rows.Count > 0))
-            {
+            {//Найдена хотя бы одна строка
                 for (i = 0; i < dataUsers.Rows.Count; i ++)
                 {
                     //Проверка IP-адрес                    
@@ -102,11 +102,21 @@ namespace StatisticCommon
                     throw new Exception("Пользователь не найден в списке БД конфигурации");
             }
             else
-            {
-                if (err == 0)
-                    throw new Exception ("Список пользователей в БД конфигурации пуст");
+            {//Не найдено ни одной строки
+                if (HAdmin.USERS_DOMAINNAME.Equals(string.Empty) == true)
+                    if (err == 0)
+                        throw new Exception("Пользователь не найден в списке БД конфигурации");
+                    else
+                        throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
                 else
-                    throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
+                {
+                    Logging.Logg ().LogDebugToFile (@"Режим отладки");
+
+                    m_domain_name = HAdmin.USERS_DOMAINNAME;
+                    m_id = HAdmin.USERS_ID;
+                    m_role = HAdmin.USERS_ID_ROLE;
+                    m_id_tec = HAdmin.USERS_ID_TEC;
+                }
             }
 
             //DbTSQLInterface.CloseConnection(connDB, out err);

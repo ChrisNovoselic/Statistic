@@ -129,7 +129,9 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Start(); else ;
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec))
+                        ((PanelTecLastMinutes)ctrl).Start();
+                    //else ;
                     i++;
                 }
                 else
@@ -144,7 +146,9 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Stop(); else ;
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec))
+                        ((PanelTecLastMinutes)ctrl).Stop();
+                    //else ;
                     i++;
                 }
                 else
@@ -166,7 +170,9 @@ namespace Statistic
             {
                 if (ctrl is PanelTecLastMinutes)
                 {
-                    if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec)) ((PanelTecLastMinutes)ctrl).Activate(active); else ;
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == ((PanelTecLastMinutes)ctrl).m_id_tec))
+                        ((PanelTecLastMinutes)ctrl).Activate(active);
+                    //else ;
                     i++;
                 }
                 else

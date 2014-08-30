@@ -158,6 +158,16 @@ namespace StatisticCommon
                 
         }
 
+        public void UnRegister()
+        {
+            List <int> keys = new List<int> ();
+            foreach (int id in m_dictListeners.Keys)
+                keys.Add (id);
+
+            foreach (int id in keys)
+                UnRegister(id);
+        }
+
         /// <summary>
         /// Отмена регистрации клиента соединения
         /// </summary>
