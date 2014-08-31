@@ -744,7 +744,7 @@ namespace StatisticTrans
 
         protected void setDatetimePicker(DateTime date)
         {
-            this.BeginInvoke(new DelegateDateFunction(setDatetimePickerMain), date);
+            this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
         }
 
         private void Stop()

@@ -260,7 +260,7 @@ namespace Statistic
 
         public void CalendarSetDate(DateTime date)
         {
-            BeginInvoke(new DelegateDateFunction(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
+            BeginInvoke(new DelegateDateFunc(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)

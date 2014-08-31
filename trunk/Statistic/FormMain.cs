@@ -144,6 +144,8 @@ namespace Statistic
                     {
                         case (int)FormChangeMode.MANAGER.DISP:
                             m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB);
+                            //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
+                            ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc (OnPanelAdminKomDispEventGUIReg);
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
                             m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB);
@@ -190,6 +192,34 @@ namespace Statistic
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return bRes;
+        }
+
+        private void panelAdminKomDispEventGUIReg(string text)
+        {
+            //Деактивация текущей вкладки
+            activateTabPage(tclTecViews.SelectedIndex, false);
+
+            //Диалоговое окно
+            MessageBox.Show(this, text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            //Активация текущей вкладки
+            activateTabPage(tclTecViews.SelectedIndex, true);
+
+            //Продолжение работы ...
+            ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
+        }
+
+        private void OnPanelAdminKomDispEventGUIReg(string text)
+        {
+            try
+            {
+                this.BeginInvoke(new DelegateStringFunc(panelAdminKomDispEventGUIReg), text);
+                //panelAdminKomDispEventGUIReg(text);
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().LogExceptionToFile(e, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
+            }
         }
 
         void delegateOnCloseTab(object sender, CloseTabEventArgs e)

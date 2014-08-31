@@ -176,6 +176,9 @@ namespace StatisticCommon
         {
             int indxEv = -1;
 
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
             //lock (m_lockSuccessGetData)
             //{
                 foreach (int indx in m_listTECComponentIndexDetail)
@@ -203,6 +206,9 @@ namespace StatisticCommon
 
         private void threadGetRDGExcelValues (object date) {
             int indxEv = -1;
+
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
             //lock (m_lockSuccessGetData)
             //{
@@ -371,6 +377,9 @@ namespace StatisticCommon
 
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
                 bErr = Errors.NoError;
+
+                for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                    ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
                 if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
@@ -594,7 +603,12 @@ namespace StatisticCommon
 
         protected override void InitializeSyncState()
         {
-            m_waitHandleState = new WaitHandle[2] { new AutoResetEvent(true), new ManualResetEvent(false) };
+            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.ERROR + 1];
+            base.InitializeSyncState();
+            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)(INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+            {
+                m_waitHandleState[i] = new ManualResetEvent(false);
+            }
         }
 
         private void /*bool*/ ImpRDGExcelValuesRequest()

@@ -31,14 +31,16 @@ namespace Statistic
             public PanelLabelAlarm () {
             }
 
-            public void Add () {
+            public void Add(string text, int id, int id_tg)
+            {
                 //KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
                 ////m_dictLabelAlarm.Add (cKey, new Label ());
                 //m_dictLabelAlarm.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Black, Color.Gray, 12F, ContentAlignment.MiddleLeft));
                 //m_dictLabelAlarm [cKey].Text = @""; //??? - Наименование ГТП (ГТП + ТГ)
             }
 
-            public void Remove() {
+            public void Remove(int id, int id_tg)
+            {
             }
         }
 
@@ -60,6 +62,8 @@ namespace Statistic
             this.m_btnAlarmCurPower = new System.Windows.Forms.Button();
             this.m_btnAlarmTGTurnOnOff = new System.Windows.Forms.Button();
 
+            m_panelLavelAlarm = new PanelLabelAlarm();
+
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
@@ -71,6 +75,8 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(lblKoeffAlarmCurPower);
             this.m_panelManagement.Controls.Add(m_nudnKoeffAlarmCurPower);
             this.m_panelManagement.Controls.Add(m_btnAlarmCurPower);
+            this.m_panelManagement.Controls.Add(m_panelLavelAlarm);
+
             this.m_panelManagement.Controls.Add(m_btnAlarmTGTurnOnOff);
 
             // 
@@ -168,6 +174,17 @@ namespace Statistic
             this.m_btnAlarmTGTurnOnOff.UseVisualStyleBackColor = true;
             this.m_btnAlarmTGTurnOnOff.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
 
+            // 
+            // m_panelLavelAlarm
+            // 
+            this.m_panelLavelAlarm.Enabled = false;
+            this.m_panelLavelAlarm.Location = new System.Drawing.Point(10, 29 + offsetPosY);
+            this.m_panelLavelAlarm.Name = "panelLavelAlarm";
+            this.m_panelLavelAlarm.Size = new System.Drawing.Size(154, 1);
+            this.m_panelLavelAlarm.TabIndex = 6;
+            this.m_panelLavelAlarm.Text = "Сигнализация";
+            this.m_panelLavelAlarm.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
+
             this.ResumeLayout();
         }
 
@@ -178,8 +195,8 @@ namespace Statistic
                 m_adminAlarm = new AdminAlarm();
                 m_adminAlarm.InitTEC(m_admin.m_list_tec);
 
-                m_adminAlarm.EventAdd += new DelegateIntIntFunc(OnAdminAlarm_EventAdd);
-                m_adminAlarm.EventRetry += new DelegateIntIntFunc(OnAdminAlarm_EventRetry);
+                m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
+                m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
 
                 this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
             } else ;
@@ -188,16 +205,17 @@ namespace Statistic
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
-        private void EnabledButtonAlarm () {
+        private void EnabledButtonAlarm(int id_comp)
+        {
             if (m_cbxAlarm.Checked == true) {
-                int id_comp = m_admin.allTECComponents[m_admin.indxTECComponents].m_id;
+                //int id_comp = m_admin.allTECComponents[m_admin.indxTECComponents].m_id;
                 m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
                 m_btnAlarmTGTurnOnOff.Enabled = false;
                 foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG)
                     if (m_adminAlarm.IsEnabledButtonAlarm(id_comp, tg.m_id) == true)
                     {
                         m_btnAlarmTGTurnOnOff.Enabled = true;
-                    
+
                         break;
                     }
                     else
@@ -207,25 +225,94 @@ namespace Statistic
                 ;
         }
 
+        private TECComponent findTECComponent(int id)
+        {
+            foreach (TECComponent tc in m_admin.allTECComponents)
+            {
+                if (tc.m_id == id)
+                    return tc;
+                else ;
+            }
+
+            return null;
+        }
+
         private void AddLabelAlarm(int id, int id_tg)
         {
-            m_panelLavelAlarm.Add();            
+            TECComponent tc = null;
+            string text = string.Empty;
+            int id_find = -1;
+            if (id_tg < 0)
+                id_find = id_tg;
+            else
+                id_find = id;
+
+            tc = findTECComponent(id_tg);
+            text = tc.tec.name_shr + @" - " + tc.name_shr;
+
+            m_panelLavelAlarm.Add(text, id, id_tg);
         }
 
         private void RemoveLabelAlarm(int id, int id_tg)
         {
-            //m_dictLabelAlarm.Remove(new KeyValuePair<int, int>(id, id_tg));
-            m_panelLavelAlarm.Remove ();
+            m_panelLavelAlarm.Remove(id, id_tg);
         }
 
-        private void OnAdminAlarm_EventAdd (int id, int id_tg) {
-            this.BeginInvoke (new DelegateFunc (EnabledButtonAlarm));
-
-            this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm));
+        //public event DelegateStringFunc EventGUIReg;
+        public DelegateStringFunc EventGUIReg;
+        public void EventGUIConfirm () {
+            m_adminAlarm.Activate(true);
         }
 
-        private void OnAdminAlarm_EventRetry(int id, int id_tg)
+        private void toEventGUIReg(TecView.EventRegEventArgs ev)
         {
+            string msg = string.Empty;
+
+            //Деактивация m_adminAlarm
+            m_adminAlarm.Activate(false);
+
+            int id_evt = -1;
+            if (ev.m_id_tg < 0)
+            {
+                id_evt = ev.m_id_gtp;
+
+                if (ev.m_situation == 1)
+                    msg = @"больше";
+                else
+                    if (ev.m_situation == -1)
+                        msg = @"меньше";
+                    else
+                        msg = @"нет";
+            }
+            else
+            {
+                id_evt = ev.m_id_tg;
+
+                if (ev.m_situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
+                    msg = @"вкл.";
+                else
+                    if (ev.m_situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
+                        msg = @"выкл.";
+                    else
+                        msg = @"нет";
+            }
+
+            TECComponent tc = findTECComponent(id_evt);
+            msg = tc.tec.name_shr + @"::" +  tc.name_shr + Environment.NewLine + @"Информация: " + msg;
+            EventGUIReg(msg);
+        }
+
+        private void OnAdminAlarm_EventAdd (TecView.EventRegEventArgs ev) {
+            this.BeginInvoke (new DelegateIntFunc (EnabledButtonAlarm), ev.m_id_gtp);
+
+            this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
+
+            toEventGUIReg(ev);
+        }
+
+        private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
+        {
+            toEventGUIReg(ev);
         }
 
         protected override void getDataGridViewAdmin()
@@ -339,21 +426,40 @@ namespace Statistic
         }
 
         private event DelegateIntIntFunc EventConfirm;
+
+        private void btnAlarm_Click(int id_gtp, int id_tg)
+        {
+            EventConfirm(id_gtp, id_tg);
+
+            RemoveLabelAlarm(id_gtp, id_tg);
+
+            EnabledButtonAlarm(id_gtp);
+        }
         
         private void btnAlarmCurPower_Click(object sender, EventArgs e)
         {
-            EventConfirm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
-
-            RemoveLabelAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
+            btnAlarm_Click(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
         }
 
         private void btnAlarmTGTurnOnOff_Click(object sender, EventArgs e)
         {
-            int id_tg = -1; //???
-            
-            EventConfirm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, id_tg);
+            TG tg_find = null; //???
+            DateTime dt, dt_find = DateTime.Now;
 
-            RemoveLabelAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, id_tg);
+            foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG) {
+                dt = m_adminAlarm.TGAlarmDatetimeReg (m_admin.allTECComponents[m_admin.indxTECComponents].m_id, tg.m_id);
+                if (dt_find.CompareTo (dt) > 0) {
+                    dt_find = dt;
+                    tg_find = tg;
+                }
+                else
+                    ;
+            }
+
+            if ((! (tg_find == null)) && (dt_find.CompareTo (DateTime.Now) < 0))
+                btnAlarm_Click(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, tg_find.m_id);
+            else
+                ;
         }
 
         private void m_cbxAlarm_CheckedChanged(object sender, EventArgs e)
@@ -365,14 +471,14 @@ namespace Statistic
 
             if (PanelAdminKomDisp.ALARM_USE == true) m_adminAlarm.Activate(((CheckBox)sender).Checked); else ;
 
-            EnabledButtonAlarm();
+            EnabledButtonAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id);
         }
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
 
-            EnabledButtonAlarm ();
+            EnabledButtonAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id);
             
             setNudnKoeffAlarmCurPowerValue ();
         }

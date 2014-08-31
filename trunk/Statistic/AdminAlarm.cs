@@ -16,7 +16,10 @@ namespace Statistic
         private class ALARM_OBJECT
         {
             public INDEX_TYPE_ALARM type; //{ get { return id_tg > 0 ? INDEX_TYPE_ALARM.CUR_POWER : INDEX_TYPE_ALARM.TGTurnOnOff; } }
-            public bool CONFIRM { get { return dtConfirm.CompareTo (dtReg) > 0 ? true : false; } }
+            public bool CONFIRM { get {
+                    return dtConfirm.CompareTo (dtReg) > 0 ? true : false;
+                }
+            }
 
             public DateTime dtReg, dtConfirm;
 
@@ -32,12 +35,29 @@ namespace Statistic
         private System.Threading.Timer m_timerAlarm;
         private Int32 m_msecTimerUpdate = 30 * 1000; //5 * 60 * 1000;
 
-        private bool m_bIsActive;
+        private int m_iActiveCounter;
 
         protected void Initialize () {
         }
 
-        public event DelegateIntIntFunc EventAdd, EventRetry;
+        public DateTime TGAlarmDatetimeReg(int id_comp, int id_tg)
+        {
+            DateTime dtRes = DateTime.Now;
+
+            KeyValuePair<int, int> cKey = new KeyValuePair<int, int>(id_comp, id_tg);
+            if (m_dictAlarmObject.ContainsKey(cKey) == true)
+            {
+                dtRes = m_dictAlarmObject[cKey].dtReg;
+            }
+            else
+                ;
+
+            return dtRes;
+        }
+
+        public delegate void DelegateOnEventReg(TecView.EventRegEventArgs e);
+        public event DelegateOnEventReg EventAdd, EventRetry;
+        public event DelegateIntFunc EventConfirm;
 
         public void OnEventConfirm(int id, int id_tg)
         {
@@ -47,25 +67,30 @@ namespace Statistic
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
             {
                 m_dictAlarmObject [cKey].dtConfirm = DateTime.Now;
+
+                if (!(id_tg < 0))
+                    EventConfirm(id_tg);
+                else
+                    ;
             }
             else
                 Logging.Logg().LogErrorToFile(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!");
         }
 
-        private void OnAdminAlarm_EventReg(int id, int id_tg)
+        private void OnAdminAlarm_EventReg(TecView obj, TecView.EventRegEventArgs ev)
         {
-            ALARM_OBJECT alarmObj = new ALARM_OBJECT(id_tg);
-            KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+            ALARM_OBJECT alarmObj = new ALARM_OBJECT(ev.m_id_tg);
+            KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (ev.m_id_gtp, ev.m_id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == false)
             {
                 m_dictAlarmObject.Add(cKey, alarmObj);
 
-                EventAdd (id, id_tg);
+                EventAdd(ev);
             }
             else {
                 m_dictAlarmObject[cKey].dtReg = DateTime.Now;
 
-                EventRetry(id, id_tg);
+                EventRetry(ev);
             }
         }
 
@@ -76,7 +101,11 @@ namespace Statistic
             KeyValuePair<int, int> cKey = new KeyValuePair<int, int>(id, id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
             {
-                bRes = ! m_dictAlarmObject[cKey].CONFIRM;
+                //bRes = ! m_dictAlarmObject[cKey].CONFIRM;
+                if (m_dictAlarmObject [cKey].dtConfirm.CompareTo (m_dictAlarmObject [cKey].dtReg) > 0)
+                    bRes = false;
+                else
+                    bRes = true;
             }
             else
                 ;
@@ -93,7 +122,8 @@ namespace Statistic
                     m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
-                    m_listTecView[m_listTecView.Count - 1].EventReg += new DelegateIntIntFunc(OnAdminAlarm_EventReg);
+                    m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
+                    EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
                 //} else ;
             }
         }
@@ -103,19 +133,42 @@ namespace Statistic
             m_dictAlarmObject = new Dictionary<KeyValuePair <int, int>,ALARM_OBJECT> ();
             
             lockValue = new object ();
+
+            m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
         }
 
         public void Activate(bool active)
         {
-            if (m_bIsActive == active)
-                return;
-            else
-                m_bIsActive = active;
+            if (active == true)
+            {
+                if (m_iActiveCounter > 1)
+                    return;
+                else
+                    ;
 
-            if (m_bIsActive == true)
-                m_timerAlarm.Change(0, m_msecTimerUpdate);
+                m_iActiveCounter++;
+            }
+            else
+                if (m_iActiveCounter > 1)
+                    m_iActiveCounter--;
+                else
+                    ;
+
+            if (active == true)
+                if (m_iActiveCounter == 0)
+                    m_timerAlarm.Change(0, m_msecTimerUpdate);
+                else
+                    if (m_iActiveCounter > 0)
+                        m_timerAlarm.Change(m_msecTimerUpdate, m_msecTimerUpdate);
+                    else
+                        ;
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
+
+            foreach (TecView tv in m_listTecView)
+            {
+                tv.Activate(active);
+            }
         }
 
         public void Start()
@@ -151,7 +204,7 @@ namespace Statistic
         {
             lock (lockValue)
             {
-                if (m_bIsActive == true)
+                if (! (m_iActiveCounter < 0))
                 {
                     ChangeState();
                 }

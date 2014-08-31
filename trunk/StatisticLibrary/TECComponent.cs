@@ -26,6 +26,7 @@ namespace StatisticCommon
     {
         public enum ID_TIME : int { UNKNOWN = -1, MINUTES, HOURS, COUNT_ID_TIME };
         public enum INDEX_VALUE : int { FACT, TM, COUNT_INDEX_VALUE };
+        public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
         public double[] power;
         public double power_TM;
@@ -41,7 +42,7 @@ namespace StatisticCommon
         //public TECComponent m_owner;
         public int m_id_owner_gtp,
                     m_id_owner_pc;
-        public int m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл.
+        public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл.
 
         //public TG(TECComponent comp)
         public TG()
@@ -57,7 +58,7 @@ namespace StatisticCommon
 
             m_id_owner_gtp =
             m_id_owner_pc = -1; //Неизвестный владелец
-            m_TurnOnOff = 0; //Неизвестное состояние
+            m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
     }
 

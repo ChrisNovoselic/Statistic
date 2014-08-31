@@ -377,7 +377,7 @@ namespace trans_tg
 
         protected override void updateDataGridViewAdmin(DateTime date)
         {
-            this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
+            this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
         }
 
         protected override void buttonClear_Click(object sender, EventArgs e)

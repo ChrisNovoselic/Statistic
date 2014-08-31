@@ -299,8 +299,30 @@ namespace Statistic
             indxTECComponents = indx_comp;
         }
 
-        public event DelegateIntIntFunc EventReg;
-        
+        public class EventRegEventArgs : EventArgs
+        {
+            public int m_id_gtp;
+            public int m_id_tg;
+            public int m_situation;
+
+            //public EventRegEventArgs() : base ()
+            //{
+            //    m_id_gtp = -1;
+            //    m_id_tg = -1;
+            //    m_situation = 0;
+            //}
+
+            public EventRegEventArgs(int id_gtp, int id_tg, int s) : base ()
+            {
+                m_id_gtp = id_gtp;
+                m_id_tg = id_tg;
+                m_situation = s;
+            }
+        }
+
+        public delegate void DelegateOnEventReg (TecView sender, EventRegEventArgs e);
+        public event DelegateOnEventReg EventReg;
+
         public override void GetRDGValues(int mode, int indx, DateTime date)
         {
             m_prevDate = m_curDate;
@@ -322,6 +344,27 @@ namespace Statistic
             states.Add((int)StatesMachine.AdminValues);
         }
 
+        public void OnEventConfirm(int id_tg)
+        {
+            foreach (TECComponent tc in allTECComponents)
+            {
+                if (tc.m_id == id_tg)
+                {
+                    if (tc.m_listTG[0].m_TurnOnOff == TG.INDEX_TURNOnOff.ON)
+                        tc.m_listTG[0].m_TurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                    else
+                        if (tc.m_listTG[0].m_TurnOnOff == TG.INDEX_TURNOnOff.OFF)
+                            tc.m_listTG[0].m_TurnOnOff = TG.INDEX_TURNOnOff.ON;
+                        else
+                            ;
+
+                    break;
+                }
+                else
+                    ;
+            }
+        }
+
         private void getRDGValues () {
             GetRDGValues((int)s_typeFields, indxTECComponents, DateTime.Now);
 
@@ -338,6 +381,7 @@ namespace Statistic
         public void SuccessThreadRDGValues(int curHour, int curMinute)
         {
             double power_TM = 0.0;
+            TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
             Console.WriteLine (@"curHour=" + curHour.ToString () + @"; curMinute=" + curMinute.ToString ());
 
@@ -345,40 +389,78 @@ namespace Statistic
             {
                 Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM);
 
-                if (tg.m_TurnOnOff == 0) {
-                    if (tg.power_TM < 1)
-                        tg.m_TurnOnOff = -1;
+                if (tg.power_TM < 1)
+                    curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                else
+                {
+                    curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+
+                    power_TM += tg.power_TM;
+                }
+
+                //Отладка - изменяем состояние
+                if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
+                {
+                    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
+                    {
+                        power_TM -= tg.power_TM;
+
+                        tg.power_TM = 0.666;
+
+                        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                    }
                     else
-                        tg.m_TurnOnOff = 1;
+                        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
+                        {
+                            tg.power_TM = 66.6;
+
+                            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+                        }
+                        else
+                            ;
+
+                    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
                 }
                 else
                     ;
 
-                if (tg.power_TM < 1) {
-                    if (tg.m_TurnOnOff == 1)
-                        EventReg(allTECComponents[indxTECComponents].m_id, tg.m_id);
-                    else {
-                    }
+                if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
+                {
+                    tg.m_TurnOnOff = curTurnOnOff;
                 }
-                else {
-                    power_TM += tg.power_TM;
+                else
+                {
+                    if (!(tg.m_TurnOnOff == curTurnOnOff))
+                    {
+                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff));
 
-                    if (tg.m_TurnOnOff == -1)
-                        EventReg(allTECComponents[indxTECComponents].m_id, tg.m_id);
+                        //Прекращаем текущий цикл...
+                        //Признак досрочного прерывания цикла для сигн. "Текущая P"
+                        power_TM = -1F;
+
+                        break;
+                    }
                     else
                         ;
                 }
 
-                if (allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) < allTECComponents[indxTECComponents].m_listTG.Count)
+                if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
                     Console.Write(@", ");
                 else
                     ;
             }
 
-            if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                EventReg(allTECComponents[indxTECComponents].m_id, -1);
+            if (!(power_TM < 0))
+                if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
+                    //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                    if (power_TM < m_valuesHours.valuesUDGe[curHour])
+                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                    else
+                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
+                else
+                    ;
             else
-                ;
+                AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.BREAK);
 
             Console.WriteLine ();
 
@@ -390,12 +472,16 @@ namespace Statistic
         {
             int indxEv = -1;
 
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
             foreach (TECComponent tc in allTECComponents) {
                 if ((tc.m_id > 100) && (tc.m_id < 500)) {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0) {
+                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS)
+                    {
                         indxTECComponents = allTECComponents.IndexOf (tc);
-                        
+
                         getRDGValues();
                     }
                     else
@@ -413,6 +499,8 @@ namespace Statistic
         public override void Activate(bool active)
         {
             base.Activate(active);
+
+            ClearStates();
         }
 
         public override void Start()
@@ -700,7 +788,7 @@ namespace Statistic
                 case (int)StatesMachine.InitSensors:
                     reason = @"получения идентификаторов датчиков";
                     waiting = @"Переход в ожидание";
-                    AbortThreadRDGValues ();
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
                 case (int)StatesMachine.CurrentTimeView:
@@ -720,15 +808,17 @@ namespace Statistic
                 case (int)StatesMachine.CurrentHours_Fact:
                     reason = @"получасовых значений";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.Current_TM_Gen:
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
-                    AbortThreadRDGValues();
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.Current_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
@@ -761,13 +851,13 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.PPBRValues:
                     reason = @"данных плана";
-                    AbortThreadRDGValues();
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
                     reason = @"административных значений";
-                    AbortThreadRDGValues();
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 default:
                     msg = @"Неизвестная команда...";
@@ -2961,7 +3051,11 @@ namespace Statistic
 
         protected override void InitializeSyncState()
         {
-            m_waitHandleState = new WaitHandle[2] { new AutoResetEvent(true), new ManualResetEvent(false) };
+            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON];
+            base.InitializeSyncState ();
+            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++ ) {
+                m_waitHandleState [i] = new ManualResetEvent(false);
+            }
         }
     }
 }

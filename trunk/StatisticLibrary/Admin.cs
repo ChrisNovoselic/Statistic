@@ -13,7 +13,7 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
-    public delegate void DelegateDateFunction(DateTime date);
+    public delegate void DelegateDateFunc(DateTime date);
 
     public abstract class HAdmin : object
     {
@@ -41,9 +41,9 @@ namespace StatisticCommon
         protected DelegateFunc actionReport;
 
         protected DelegateFunc saveComplete = null;
-        protected DelegateDateFunction fillData = null;
+        protected DelegateDateFunc fillData = null;
 
-        protected DelegateDateFunction setDatetime;
+        protected DelegateDateFunc setDatetime;
 
         public volatile List<StatisticCommon.TEC> m_list_tec;
         public volatile List<TECComponent> allTECComponents;
@@ -73,6 +73,7 @@ namespace StatisticCommon
 
         protected Thread taskThread;
         protected Semaphore semaState;
+        public enum INDEX_WAITHANDLE_REASON { SUCCESS, ERROR, BREAK, COUNT_INDEX_WAITHANDLE_REASON }
         protected WaitHandle [] m_waitHandleState;
         //protected AutoResetEvent evStateEnd;
         public volatile int threadIsWorking;
@@ -273,11 +274,11 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход");
         }
         
-        public void SetDelegateData(DelegateDateFunction f) { fillData = f; }
+        public void SetDelegateData(DelegateDateFunc f) { fillData = f; }
 
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
-        public void SetDelegateDatetime(DelegateDateFunction f) { setDatetime = f; }
+        public void SetDelegateDatetime(DelegateDateFunc f) { setDatetime = f; }
 
         protected void MessageBox(string msg, MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.Error)
         {
@@ -383,7 +384,12 @@ namespace StatisticCommon
 
         protected virtual void InitializeSyncState ()
         {
-            m_waitHandleState = new WaitHandle [1] { new AutoResetEvent(true) };
+            if (m_waitHandleState == null)
+                m_waitHandleState = new WaitHandle [1];
+            else
+                ;
+
+            m_waitHandleState [(int)INDEX_WAITHANDLE_REASON.SUCCESS] = new AutoResetEvent(true);
         }
 
         //protected abstract bool InitDbInterfaces ();
@@ -669,10 +675,12 @@ namespace StatisticCommon
             //return bRes;
         }
 
-        public virtual void AbortThreadRDGValues()
+        public virtual void AbortThreadRDGValues(INDEX_WAITHANDLE_REASON reason)
         {
-            if (m_waitHandleState.Length > 1)
-                ((ManualResetEvent)m_waitHandleState[1]).Set();
+            if (m_waitHandleState.Length > (int)reason)
+            {
+                ((ManualResetEvent)m_waitHandleState[(int)reason]).Set();
+            }
             else
                 ;
         }
