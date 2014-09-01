@@ -40,6 +40,7 @@
             this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.собственныеНуждыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,7 +106,8 @@
             this.выборОбъектыToolStripMenuItem,
             this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem,
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem,
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem});
+            this.мониторингПоследняяМинутаЧасToolStripMenuItem,
+            this.собственныеНуждыToolStripMenuItem});
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -141,6 +143,14 @@
             this.мониторингПоследняяМинутаЧасToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
             this.мониторингПоследняяМинутаЧасToolStripMenuItem.Text = "Мониторинг - последняя минута часа";
             this.мониторингПоследняяМинутаЧасToolStripMenuItem.CheckedChanged += new System.EventHandler(this.мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged);
+            // 
+            // собственныеНуждыToolStripMenuItem
+            // 
+            this.собственныеНуждыToolStripMenuItem.CheckOnClick = true;
+            this.собственныеНуждыToolStripMenuItem.Name = "собственныеНуждыToolStripMenuItem";
+            this.собственныеНуждыToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.собственныеНуждыToolStripMenuItem.Text = "Собственные нужды";
+            this.собственныеНуждыToolStripMenuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыToolStripMenuItem_CheckedChanged);
             // 
             // выборОбъектыToolStripMenuItem
             // 
@@ -350,6 +360,7 @@
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem собственныеНуждыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;

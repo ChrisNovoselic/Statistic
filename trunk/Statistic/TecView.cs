@@ -11,7 +11,7 @@ namespace Statistic
 {
     public class TecView : HAdmin
     {
-        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, COUNT_TYPE_PANEL };
+        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, COUNT_TYPE_PANEL };
         TYPE_PANEL m_typePanel;
 
         /* Из PanelTecViewBase....
@@ -492,7 +492,10 @@ namespace Statistic
             }
         }
 
-        public void ChangeState_AdminAlarm () {
+        public void ChangeState_SobstvNyzhdy () {
+        }
+
+        private void ChangeState_AdminAlarm () {
             new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
         }
 
@@ -1124,21 +1127,18 @@ namespace Statistic
         }
 
         private void ChangeState_CurPower () {
-            lock (m_lockState) {
-                ClearStates ();
+            ClearStates ();
 
-                if (m_tec.m_bSensorsStrings == false)
-                    states.Add((int)StatesMachine.InitSensors);
-                else ;
+            if (m_tec.m_bSensorsStrings == false)
+                states.Add((int)StatesMachine.InitSensors);
+            else ;
 
-                states.Add((int)TecView.StatesMachine.Current_TM_Gen);
-                states.Add((int)TecView.StatesMachine.Current_TM_SN);                
-            }
+            states.Add((int)TecView.StatesMachine.Current_TM_Gen);
+            states.Add((int)TecView.StatesMachine.Current_TM_SN);
         }
 
         private void ChangeState_LastMinutes () {
-            newState = true;
-            states.Clear();
+            ClearStates ();
 
             if (m_tec.m_bSensorsStrings == false)
                 states.Add((int)StatesMachine.InitSensors);
@@ -1150,8 +1150,7 @@ namespace Statistic
         }
 
         private void ChangeState_View () {
-            newState = true;
-            states.Clear();
+            ClearStates ();
 
             if (m_tec.m_bSensorsStrings == true)
             {
@@ -1179,8 +1178,7 @@ namespace Statistic
         }
 
         private void ChangeState_TMSNPower () {
-            newState = true;
-            states.Clear();
+            ClearStates ();
 
             if (m_tec.m_bSensorsStrings == false)
                 states.Add((int)StatesMachine.InitSensors);
@@ -1192,7 +1190,7 @@ namespace Statistic
 
         public void ChangeState()
         {
-            lock (m_lockValue)
+            lock (m_lockState)
             {
                 switch (m_typePanel)
                 {
@@ -1207,6 +1205,9 @@ namespace Statistic
                         break;
                     case TecView.TYPE_PANEL.ADMIN_ALARM:
                         ChangeState_AdminAlarm();
+                        break;
+                    case TecView.TYPE_PANEL.SOBSTV_NYZHDY:
+                        ChangeState_SobstvNyzhdy();
                         break;
                     default:
                         break;
