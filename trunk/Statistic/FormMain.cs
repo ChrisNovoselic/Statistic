@@ -107,6 +107,18 @@ namespace Statistic
 
             timer.Interval = 666; //Признак первого старта
 
+            try {
+                formParameters = new FormParameters_FIleINI("setup.ini");
+
+                HAdmin.USERS_DOMAINNAME = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
+                HAdmin.USERS_ID = 0; //Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID]);
+                HAdmin.USERS_ID_TEC = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
+                HAdmin.USERS_ID_ROLE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+            }
+            catch (Exception e) {
+                Abort(e.Message, true);
+            }
+
             int idListenerConfigDB = DbSources.Sources ().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_user = null;
@@ -125,7 +137,6 @@ namespace Statistic
 
             if (bRes == true)
             {
-                formParameters = new FormParameters_FIleINI("setup.ini");
                 s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                 if (! (Users.Role == 2)) //Администратор
@@ -135,6 +146,10 @@ namespace Statistic
                     false;
                 }
                 else;
+
+                if (! (Users.allTEC == 0))
+                    PanelAdminKomDisp.ALARM_USE = false;
+                else ;                
 
                 //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                 m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
@@ -641,7 +656,7 @@ namespace Statistic
                 foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                 {
                     if (t.m_bSensorsStrings == false)
-                        continue;
+                        t.InitSensorsTEC ();
                     else
                         ;
 

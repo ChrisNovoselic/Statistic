@@ -33,7 +33,8 @@ namespace Statistic
 
         private ManualResetEvent m_evTimerCurrent;
         private System.Threading.Timer m_timerAlarm;
-        private Int32 m_msecTimerUpdate = 30 * 1000; //5 * 60 * 1000;
+        private Int32 m_msecTimerUpdate;
+        private Int32 m_msecEventRetry;
 
         private int m_iActiveCounter;
 
@@ -79,19 +80,47 @@ namespace Statistic
 
         private void OnAdminAlarm_EventReg(TecView obj, TecView.EventRegEventArgs ev)
         {
-            ALARM_OBJECT alarmObj = new ALARM_OBJECT(ev.m_id_tg);
+            ALARM_OBJECT alarmObj = null;
             KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (ev.m_id_gtp, ev.m_id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == false)
             {
+                alarmObj = new ALARM_OBJECT(ev.m_id_tg);
                 m_dictAlarmObject.Add(cKey, alarmObj);
 
                 EventAdd(ev);
             }
             else {
-                m_dictAlarmObject[cKey].dtReg = DateTime.Now;
+                bool bEventRetry = false;
+                if (m_dictAlarmObject[cKey].CONFIRM == false) {
+                    bEventRetry = true;
+                }
+                else {
+                    if ((m_dictAlarmObject[cKey].dtConfirm - m_dictAlarmObject[cKey].dtReg) > TimeSpan.FromMilliseconds (m_msecEventRetry)) {
+                        bEventRetry = true;
+                    }
+                    else
+                        ;
+                }
 
-                EventRetry(ev);
+                if (bEventRetry == true) {
+                    m_dictAlarmObject[cKey].dtReg = DateTime.Now;
+
+                    EventRetry(ev);
+                }
+                else
+                    ;
             }
+        }
+
+        public bool Confirm (int id_comp, int id_tg) {
+            bool bRes = false;
+            KeyValuePair<int, int>  cKey = new KeyValuePair<int, int>(id_comp, id_tg);
+            if (m_dictAlarmObject.ContainsKey (cKey) == true)
+                bRes = m_dictAlarmObject[cKey].CONFIRM;
+            else
+                bRes = false;
+
+            return bRes;
         }
 
         public bool IsEnabledButtonAlarm(int id, int id_tg)
@@ -101,11 +130,11 @@ namespace Statistic
             KeyValuePair<int, int> cKey = new KeyValuePair<int, int>(id, id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
             {
-                //bRes = ! m_dictAlarmObject[cKey].CONFIRM;
-                if (m_dictAlarmObject [cKey].dtConfirm.CompareTo (m_dictAlarmObject [cKey].dtReg) > 0)
-                    bRes = false;
-                else
-                    bRes = true;
+                bRes = ! m_dictAlarmObject[cKey].CONFIRM;
+                //if (m_dictAlarmObject [cKey].dtConfirm.CompareTo (m_dictAlarmObject [cKey].dtReg) > 0)
+                //    bRes = false;
+                //else
+                //    bRes = true;
             }
             else
                 ;
@@ -135,6 +164,9 @@ namespace Statistic
             lockValue = new object ();
 
             m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
+
+            m_msecTimerUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000; //5 * 60 * 1000;
+            m_msecEventRetry = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
         }
 
         public void Activate(bool active)
@@ -154,12 +186,13 @@ namespace Statistic
                 else
                     ;
 
+            Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)
                 if (m_iActiveCounter == 0)
-                    m_timerAlarm.Change(0, m_msecTimerUpdate);
+                    m_timerAlarm.Change(0, msecTimerUpdate);
                 else
                     if (m_iActiveCounter > 0)
-                        m_timerAlarm.Change(m_msecTimerUpdate, m_msecTimerUpdate);
+                        m_timerAlarm.Change(msecTimerUpdate, msecTimerUpdate);
                     else
                         ;
             else

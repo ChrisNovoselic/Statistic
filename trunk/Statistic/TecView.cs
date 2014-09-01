@@ -398,31 +398,31 @@ namespace Statistic
                     power_TM += tg.power_TM;
                 }
 
-                //Отладка - изменяем состояние
-                if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
-                {
-                    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                    {
-                        power_TM -= tg.power_TM;
+                ////Отладка - изменяем состояние
+                //if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
+                //{
+                //    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
+                //    {
+                //        power_TM -= tg.power_TM;
 
-                        tg.power_TM = 0.666;
+                //        tg.power_TM = 0.666;
 
-                        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                    }
-                    else
-                        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                        {
-                            tg.power_TM = 66.6;
+                //        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                //    }
+                //    else
+                //        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
+                //        {
+                //            tg.power_TM = 66.6;
 
-                            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-                        }
-                        else
-                            ;
+                //            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+                //        }
+                //        else
+                //            ;
 
-                    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
-                }
-                else
-                    ;
+                //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
+                //}
+                //else
+                //    ;
 
                 if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
                 {

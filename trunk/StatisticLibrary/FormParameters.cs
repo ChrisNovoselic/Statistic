@@ -5,9 +5,13 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE, COUNT_PARAMETR_SETUP };
-        protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource" };
-        protected string[] NAMESI_PARAMETR_SETUP = { "мсек", "сек", "ед.", @"мсек", @"мсек", @"ном" };
+        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
+                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE,
+                                    COUNT_PARAMETR_SETUP };
+        protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource", @"Alarm Timer Update" , @"Alarm Event Retry",
+                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"};
+        protected string[] NAMESI_PARAMETR_SETUP = { "мсек", "сек", "ед.", @"мсек", @"мсек", @"ном", "сек", "сек",
+                                                    @"стр", @"ном", @"ном" };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
 
@@ -22,6 +26,12 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_TIME, @"66");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"13");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_DATASOURCE, @"671");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_UPDATE, @"300");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_EVENT_RETRY, @"900");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_DOMAIN_NAME, @"");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_TEC, @"-1");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_ROLE, @"-1");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 

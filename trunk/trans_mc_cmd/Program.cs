@@ -5,6 +5,8 @@ using System.Text;
 using System.Data;
 using System.Data.Common;
 
+using StatisticTrans;
+
 using Modes;
 using ModesApiExternal;
 

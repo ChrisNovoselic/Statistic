@@ -52,74 +52,79 @@ namespace StatisticCommon
 
         public Users(int idListener)
         {
-            int err = 0,
-                i = -1, j = -1;
-            DataTable dataUsers;
+            if (HAdmin.USERS_DOMAINNAME.Equals(@"Users DomainName") == true)
+            {
+                Logging.Logg ().LogDebugToFile (@"Режим отладки");
 
-            //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
-            string domain_name = Environment.UserDomainName + @"\" + Environment.UserName;
-            //Проверка IP-адрес
-            //System.Net.IPAddress [] listIP = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
-            //int indxIP = -1;
-            //if (listIP.Length == 0)
-            //    throw new Exception ("Не удалось получить список IP-адресов клиента");
-            //else
-            //    ;
+                m_domain_name = HAdmin.USERS_DOMAINNAME;
+                m_id = HAdmin.USERS_ID;
+                m_role = HAdmin.USERS_ID_ROLE;
+                m_id_tec = HAdmin.USERS_ID_TEC;
+            }
+            else {
+                int err = 0,
+                    i = -1, j = -1;
+                DataTable dataUsers;
 
-            DbConnection connDB = DbSources.Sources().GetConnection(idListener, out err);
-
-            //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
-            GetUsers(ref connDB, @"DOMAIN_NAME=" + @"'" + domain_name + @"'", string.Empty, out dataUsers, out err);
-            //Проверка IP-адрес
-            //GetUsers(ref connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
-
-            if ((err == 0) && (dataUsers.Rows.Count > 0))
-            {//Найдена хотя бы одна строка
-                for (i = 0; i < dataUsers.Rows.Count; i ++)
-                {
-                    //Проверка IP-адрес                    
-                    //for (indxIP = 0; indxIP < listIP.Length; indxIP ++) {
-                    //    if (listIP[indxIP].Equals(System.Net.IPAddress.Parse (dataUsers.Rows[i][@"IP"].ToString())) == true) {
-                    //        //IP найден
-                    //        break;
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-
+                string domain_name = string.Empty;
+                if (HAdmin.USERS_DOMAINNAME.Equals(string.Empty) == true)
                     //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
-                    if (dataUsers.Rows[i][@"DOMAIN_NAME"].ToString ().Equals (domain_name, StringComparison.CurrentCultureIgnoreCase) == true) break; else ;
-                }
+                    domain_name = Environment.UserDomainName + @"\" + Environment.UserName;
+                else
+                    domain_name = HAdmin.USERS_DOMAINNAME;
+                //Проверка IP-адрес
+                //System.Net.IPAddress [] listIP = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
+                //int indxIP = -1;
+                //if (listIP.Length == 0)
+                //    throw new Exception ("Не удалось получить список IP-адресов клиента");
+                //else
+                //    ;
 
-                if (i < dataUsers.Rows.Count)
-                {
-                    m_domain_name = dataUsers.Rows[i]["DOMAIN_NAME"].ToString ();
-                    m_id = Convert.ToInt32(dataUsers.Rows[i]["ID"]);
-                    m_role = Convert.ToInt32 (dataUsers.Rows [i]["ID_ROLE"]);
-                    m_id_tec = Convert.ToInt32(dataUsers.Rows[i]["ID_TEC"]);
+                DbConnection connDB = DbSources.Sources().GetConnection(idListener, out err);
+
+                //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
+                GetUsers(ref connDB, @"DOMAIN_NAME=" + @"'" + domain_name + @"'", string.Empty, out dataUsers, out err);
+                //Проверка IP-адрес
+                //GetUsers(ref connDB, string.Empty, "DESCRIPTION", out dataUsers, out err);
+
+                if ((err == 0) && (dataUsers.Rows.Count > 0))
+                {//Найдена хотя бы одна строка
+                    for (i = 0; i < dataUsers.Rows.Count; i ++)
+                    {
+                        //Проверка IP-адрес                    
+                        //for (indxIP = 0; indxIP < listIP.Length; indxIP ++) {
+                        //    if (listIP[indxIP].Equals(System.Net.IPAddress.Parse (dataUsers.Rows[i][@"IP"].ToString())) == true) {
+                        //        //IP найден
+                        //        break;
+                        //    }
+                        //    else
+                        //        ;
+                        //}
+
+                        //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
+                        if (dataUsers.Rows[i][@"DOMAIN_NAME"].ToString ().Equals (domain_name, StringComparison.CurrentCultureIgnoreCase) == true) break; else ;
+                    }
+
+                    if (i < dataUsers.Rows.Count)
+                    {
+                        m_domain_name = dataUsers.Rows[i]["DOMAIN_NAME"].ToString ();
+                        m_id = Convert.ToInt32(dataUsers.Rows[i]["ID"]);
+                        m_role = Convert.ToInt32 (dataUsers.Rows [i]["ID_ROLE"]);
+                        m_id_tec = Convert.ToInt32(dataUsers.Rows[i]["ID_TEC"]);
+                    }
+                    else
+                        throw new Exception("Пользователь не найден в списке БД конфигурации");
                 }
                 else
-                    throw new Exception("Пользователь не найден в списке БД конфигурации");
-            }
-            else
-            {//Не найдено ни одной строки
-                if (HAdmin.USERS_DOMAINNAME.Equals(string.Empty) == true)
+                {//Не найдено ни одной строки
                     if (err == 0)
                         throw new Exception("Пользователь не найден в списке БД конфигурации");
                     else
                         throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
-                else
-                {
-                    Logging.Logg ().LogDebugToFile (@"Режим отладки");
-
-                    m_domain_name = HAdmin.USERS_DOMAINNAME;
-                    m_id = HAdmin.USERS_ID;
-                    m_role = HAdmin.USERS_ID_ROLE;
-                    m_id_tec = HAdmin.USERS_ID_TEC;
                 }
-            }
 
-            //DbTSQLInterface.CloseConnection(connDB, out err);
+                //DbTSQLInterface.CloseConnection(connDB, out err);
+            }
 
             Initialize ();
         }

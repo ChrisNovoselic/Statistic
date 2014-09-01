@@ -29,24 +29,48 @@ namespace Statistic
             private Dictionary<KeyValuePair<int, int>, System.Windows.Forms.Label> m_dictLabel;
             
             public PanelLabelAlarm () {
+                m_dictLabel = new Dictionary<KeyValuePair<int,int>,Label> ();
+                this.ColumnCount = 1;
+                this.RowCount = 6;
+
+                for (int i = 0; i < this.RowCount; i ++)
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, this.Height / this.RowCount));
             }
 
             public void Add(string text, int id, int id_tg)
             {
-                //KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
-                ////m_dictLabelAlarm.Add (cKey, new Label ());
-                //m_dictLabelAlarm.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Black, Color.Gray, 12F, ContentAlignment.MiddleLeft));
-                //m_dictLabelAlarm [cKey].Text = @""; //??? - Наименование ГТП (ГТП + ТГ)
+                KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+                //m_dictLabel.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Red, Color.LightGray, 8F, ContentAlignment.MiddleLeft)));
+                m_dictLabel.Add(cKey, new HLabel (new HLabelStyles (Color.Red, Color.LightGray, 8F, ContentAlignment.MiddleLeft)));
+                m_dictLabel[cKey].Text = text; //??? - Наименование ГТП (ГТП + ТГ)
+
+                //if (m_dictLabel.Count < this.RowCount)
+                    this.Controls.Add (m_dictLabel [cKey], 0, m_dictLabel.Count - 1);
+                //else
+                //    ;
             }
 
             public void Remove(int id, int id_tg)
             {
+                KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+                int indx = this.Controls.IndexOf(m_dictLabel[cKey])
+                    , i = -1;
+                this.Controls.Remove(m_dictLabel[cKey]);
+                m_dictLabel.Remove(cKey);
+                //if (indx > 0)
+                    for (i = indx; i < this.RowCount; i ++)
+                        if ((i < this.Controls.Count) && (!(this.Controls[i] == null)))
+                            this.SetRow(this.Controls [i], i);
+                        else
+                            break;
+                //else
+                //    ;                
             }
         }
 
         public static bool ALARM_USE = true;
         public AdminAlarm m_adminAlarm;
-        private PanelLabelAlarm m_panelLavelAlarm;
+        private PanelLabelAlarm m_panelLabelAlarm;
 
         protected override void InitializeComponents()
         {
@@ -62,7 +86,7 @@ namespace Statistic
             this.m_btnAlarmCurPower = new System.Windows.Forms.Button();
             this.m_btnAlarmTGTurnOnOff = new System.Windows.Forms.Button();
 
-            m_panelLavelAlarm = new PanelLabelAlarm();
+            m_panelLabelAlarm = new PanelLabelAlarm();
 
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
@@ -75,7 +99,7 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(lblKoeffAlarmCurPower);
             this.m_panelManagement.Controls.Add(m_nudnKoeffAlarmCurPower);
             this.m_panelManagement.Controls.Add(m_btnAlarmCurPower);
-            this.m_panelManagement.Controls.Add(m_panelLavelAlarm);
+            this.m_panelManagement.Controls.Add(m_panelLabelAlarm);
 
             this.m_panelManagement.Controls.Add(m_btnAlarmTGTurnOnOff);
 
@@ -175,15 +199,19 @@ namespace Statistic
             this.m_btnAlarmTGTurnOnOff.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
 
             // 
-            // m_panelLavelAlarm
+            // m_panelLabelAlarm
             // 
-            this.m_panelLavelAlarm.Enabled = false;
-            this.m_panelLavelAlarm.Location = new System.Drawing.Point(10, 29 + offsetPosY);
-            this.m_panelLavelAlarm.Name = "panelLavelAlarm";
-            this.m_panelLavelAlarm.Size = new System.Drawing.Size(154, 1);
-            this.m_panelLavelAlarm.TabIndex = 6;
-            this.m_panelLavelAlarm.Text = "Сигнализация";
-            this.m_panelLavelAlarm.Click += new System.EventHandler(this.btnAlarmTGTurnOnOff_Click);
+            this.m_panelLabelAlarm.Enabled = false;
+            this.m_panelLabelAlarm.Location = new System.Drawing.Point(10, 410 + offsetPosY);
+            this.m_panelLabelAlarm.Size = new System.Drawing.Size(154, 6 * 29);
+            //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)((AnchorStyles.Left | AnchorStyles.Right) | (AnchorStyles.Bottom)));
+            //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)((AnchorStyles.Left | AnchorStyles.Bottom) | (AnchorStyles.Right)));
+            //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)(AnchorStyles.Left | AnchorStyles.Bottom));
+            //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)(AnchorStyles.Right));
+            this.m_panelLabelAlarm.Name = "panelLabelAlarm";
+            this.m_panelLabelAlarm.TabIndex = 6;
+            this.m_panelLabelAlarm.Text = "Сигнализация";
+            //this.m_panelLabelAlarm.CellBorderStyle = TableLayoutPanelCellBorderStyle.OutsetPartial;
 
             this.ResumeLayout();
         }
@@ -207,8 +235,8 @@ namespace Statistic
 
         private void EnabledButtonAlarm(int id_comp)
         {
-            if (m_cbxAlarm.Checked == true) {
-                //int id_comp = m_admin.allTECComponents[m_admin.indxTECComponents].m_id;
+            if (m_cbxAlarm.Checked == true)
+            {
                 m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
                 m_btnAlarmTGTurnOnOff.Enabled = false;
                 foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG)
@@ -220,6 +248,19 @@ namespace Statistic
                     }
                     else
                         ;
+            }
+            else
+                ;
+        }
+
+        private void EnabledButtonAlarm(int id_comp, int id_tg)
+        {
+            if ((m_cbxAlarm.Checked == true) && (id_comp == m_admin.allTECComponents [m_admin.indxTECComponents].m_id)) {
+                m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
+                if (!(id_tg < 0))
+                    m_btnAlarmTGTurnOnOff.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, id_tg);
+                else
+                    ; //m_btnAlarmTGTurnOnOff.Enabled = false;
             }
             else
                 ;
@@ -243,19 +284,19 @@ namespace Statistic
             string text = string.Empty;
             int id_find = -1;
             if (id_tg < 0)
-                id_find = id_tg;
-            else
                 id_find = id;
+            else
+                id_find = id_tg;
 
-            tc = findTECComponent(id_tg);
+            tc = findTECComponent(id_find);
             text = tc.tec.name_shr + @" - " + tc.name_shr;
 
-            m_panelLavelAlarm.Add(text, id, id_tg);
+            m_panelLabelAlarm.Add(text, id, id_tg);
         }
 
         private void RemoveLabelAlarm(int id, int id_tg)
         {
-            m_panelLavelAlarm.Remove(id, id_tg);
+            m_panelLabelAlarm.Remove(id, id_tg);
         }
 
         //public event DelegateStringFunc EventGUIReg;
@@ -303,7 +344,7 @@ namespace Statistic
         }
 
         private void OnAdminAlarm_EventAdd (TecView.EventRegEventArgs ev) {
-            this.BeginInvoke (new DelegateIntFunc (EnabledButtonAlarm), ev.m_id_gtp);
+            this.BeginInvoke (new DelegateIntIntFunc (EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
 
             this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
 
@@ -433,7 +474,7 @@ namespace Statistic
 
             RemoveLabelAlarm(id_gtp, id_tg);
 
-            EnabledButtonAlarm(id_gtp);
+            EnabledButtonAlarm(id_gtp, id_tg);
         }
         
         private void btnAlarmCurPower_Click(object sender, EventArgs e)
@@ -445,10 +486,13 @@ namespace Statistic
         {
             TG tg_find = null; //???
             DateTime dt, dt_find = DateTime.Now;
+            int id_comp = m_admin.allTECComponents[m_admin.indxTECComponents].m_id
+                , id_tg = -1;
 
+            //Найти ТГ для "подтверждения" сигнализации
             foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG) {
-                dt = m_adminAlarm.TGAlarmDatetimeReg (m_admin.allTECComponents[m_admin.indxTECComponents].m_id, tg.m_id);
-                if (dt_find.CompareTo (dt) > 0) {
+                dt = m_adminAlarm.TGAlarmDatetimeReg (id_comp, tg.m_id);
+                if ((dt_find.CompareTo (dt) > 0) && (m_adminAlarm.Confirm (id_comp, tg.m_id)) == false) {
                     dt_find = dt;
                     tg_find = tg;
                 }
@@ -457,7 +501,7 @@ namespace Statistic
             }
 
             if ((! (tg_find == null)) && (dt_find.CompareTo (DateTime.Now) < 0))
-                btnAlarm_Click(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, tg_find.m_id);
+                btnAlarm_Click(id_comp, tg_find.m_id);
             else
                 ;
         }
