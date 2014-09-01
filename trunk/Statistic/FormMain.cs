@@ -107,19 +107,26 @@ namespace Statistic
 
             timer.Interval = 666; //Признак первого старта
 
+            int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
             try {
-                formParameters = new FormParameters_FIleINI("setup.ini");
+                //formParameters = new FormParameters_FIleINI("setup.ini");
+                formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
                 HAdmin.USERS_DOMAINNAME = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
                 HAdmin.USERS_ID = 0; //Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID]);
                 HAdmin.USERS_ID_TEC = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
                 HAdmin.USERS_ID_ROLE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+
+                PanelAdminKomDisp.ALARM_USE = bool.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_USE]); //True;
+
+                DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]); ;
+                DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]); ;
+                DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]); ;
             }
             catch (Exception e) {
                 Abort(e.Message, true);
             }
-
-            int idListenerConfigDB = DbSources.Sources ().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_user = null;
             try {
@@ -747,9 +754,10 @@ namespace Statistic
 
             bool bTGBiysk = parametrsTGBiysk > 0;
             if ((Users.allTEC == 0) || (Users.allTEC == 6)) {
+                параметрыToolStripMenuItem.Enabled =
+                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (Users.Role == (int)Users.ID_ROLES.ADMIN);
+
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
-                параметрыToolStripMenuItem.Enabled = bTGBiysk;
-                параметрыПриложенияToolStripMenuItem.Enabled = !bTGBiysk;
 
                 m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
             }

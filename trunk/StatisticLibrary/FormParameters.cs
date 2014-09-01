@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 
 namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
-                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE,
+        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
+                                    ALARM_USE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
+                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE,                                    
                                     COUNT_PARAMETR_SETUP };
-        protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource", @"Alarm Timer Update" , @"Alarm Event Retry",
-                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"};
-        protected string[] NAMESI_PARAMETR_SETUP = { "мсек", "сек", "ед.", @"мсек", @"мсек", @"ном", "сек", "сек",
+        protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
+                                                    @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
+                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+                                                    };
+        protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
+                                                    @"лог", "сек", "сек",
                                                     @"стр", @"ном", @"ном" };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -20,12 +26,14 @@ namespace StatisticCommon
             InitializeComponent();
 
             m_arParametrSetup = new Dictionary<int,string> ();
-            m_arParametrSetup.Add ((int)PARAMETR_SETUP.POLL_TIME, @"30000");
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.POLL_TIME, @"30");
             m_arParametrSetup.Add ((int)PARAMETR_SETUP.ERROR_DELAY, @"60");
-            m_arParametrSetup.Add ((int)PARAMETR_SETUP.MAX_ATTEMPT, @"2");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_TIME, @"66");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"13");
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.MAX_ATTEMPT, @"3");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_TIME, @"106");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"39");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_DATASOURCE, @"671");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_USE, @"True");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_UPDATE, @"300");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_EVENT_RETRY, @"900");
 
@@ -45,7 +53,8 @@ namespace StatisticCommon
             mayClose = false;
         }
         
-        private void btnOk_Click(object sender, EventArgs e)
+        //protected override void btnOk_Click(object sender, EventArgs e)
+        protected void btnOk_Click(object sender, EventArgs e)
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++) {
                 m_arParametrSetup[(int)i] = m_dgvData.Rows [(int)i + 0].Cells [1].Value.ToString ();
@@ -107,6 +116,84 @@ namespace StatisticCommon
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+        }
+    }
+
+    public partial class FormParameters_DB : FormParameters
+    {
+        private ConnectionSettings m_connSett;
+        private DbConnection m_dbConn;
+
+        //public FormParameters_DB(int idListener)
+        public FormParameters_DB(ConnectionSettings connSett)
+        {
+            m_connSett = connSett;
+
+            int err = -1;
+            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+
+            loadParam();
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        public override void loadParam()
+        {
+            string strDefault = string.Empty;
+
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+            {
+                m_arParametrSetup[(int)i] = readString(NAME_PARAMETR_SETUP[(int)i], strDefault);
+                if (m_arParametrSetup[(int)i].Equals(strDefault) == true)
+                {
+                    m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
+                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+                }
+                else
+                    ;
+            }
+
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+            {
+                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
+
+                m_dgvData.Rows[(int)i].Height = 19;
+                m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                m_dgvData.Rows[(int)i].HeaderCell.Value = ((int)i).ToString();
+            }
+        }
+
+        public override void saveParam()
+        {
+            int err = -1;
+            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+            
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+                writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        private string readString (string key, string valDef) {
+            string strRes = valDef;
+            int err = -1;
+            DataTable table = null;            
+
+            table = DbTSQLInterface.Select (ref m_dbConn, @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'", null, null, out err);
+            if (table.Rows.Count == 1)
+                strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+            else
+                ;
+
+            return strRes;
+        }
+
+        private void writeString(string key, string val)
+        {
+            int err = -1;
+            DbTSQLInterface.ExecNonQuery (ref m_dbConn, @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'", null, null, out err);
         }
     }
 }

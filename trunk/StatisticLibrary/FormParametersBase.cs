@@ -76,7 +76,9 @@ namespace StatisticCommon
                 mayClose = false;
         }
 
-        virtual public void buttonCancel_Click(object sender, EventArgs e)
+        //protected abstract void btnOk_Click(object sender, EventArgs e);
+
+        public virtual void buttonCancel_Click(object sender, EventArgs e)
         {
             mayClose = true;
             Close();

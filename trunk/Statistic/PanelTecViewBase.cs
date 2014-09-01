@@ -797,7 +797,8 @@ namespace Statistic
         {
             Invoke(delegateTickTime);
             if ((m_tecView.currHour == true) && (isActive == true))
-                if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
+                //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
+                if (!(currValuesPeriod++ < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

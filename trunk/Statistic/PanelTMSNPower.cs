@@ -79,7 +79,7 @@ namespace Statistic
         {
             InitializeComponent();
 
-            m_msecPeriodUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            m_msecPeriodUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000;
 
             this.Dock = DockStyle.Fill;
 
