@@ -1077,6 +1077,26 @@ namespace StatisticCommon
             return query;
         }
 
+        public string hoursTMSNPsumRequest(DateTime dtReq)
+        {
+            string query = string.Empty;
+
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
+            {
+                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                    query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
+                            @" FROM [techsite-2.X.X].[dbo].[P_SUMM_TSN]" +
+                            @"WHERE [ID_TEC] = " + m_id +
+                            @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddDays(1).Date.ToString(@"yyyyMMdd") + @"'" +
+                            @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
+                    break;
+                default:
+                    break;
+            }
+
+            return query;
+        }
+
         public string currentTMRequest(string sensors)
         {
             string query = string.Empty;

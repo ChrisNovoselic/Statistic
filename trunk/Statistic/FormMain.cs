@@ -111,8 +111,8 @@ namespace Statistic
             int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             try {
-                //formParameters = new FormParameters_FIleINI("setup.ini");
-                formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                formParameters = new FormParameters_FIleINI("setup.ini");
+                //formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
                 HAdmin.USERS_DOMAINNAME = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
                 HAdmin.USERS_ID = 0; //Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID]);

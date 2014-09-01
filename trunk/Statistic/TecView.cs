@@ -36,6 +36,7 @@ namespace Statistic
             CurrentTimeView,
             CurrentHours_Fact,
             CurrentMins_Fact,
+            CurrentHours_TM_SN_PSUM,
             Current_TM_Gen,
             Current_TM_SN,
             LastMinutes_TM,
@@ -122,6 +123,7 @@ namespace Statistic
         public class valuesTEC : values
         {
             public volatile double[] valuesFact;
+            public volatile double[] valuesTMSNPsum;
 
             public double valuesFactAddon;
             public double valuesPBRAddon;
@@ -136,6 +138,7 @@ namespace Statistic
                 : base(sz)
             {
                 valuesFact = new double[sz];
+                valuesTMSNPsum = new double[sz];
 
                 valuesFactAddon = 0.0;
                 valuesPBRAddon = 0.0;
@@ -328,8 +331,7 @@ namespace Statistic
             m_prevDate = m_curDate;
             m_curDate = date.Date;
 
-            newState = true;
-            states.Clear();
+            ClearStates();
 
             if ((m_tec.m_bSensorsStrings == false))
             {
@@ -493,6 +495,15 @@ namespace Statistic
         }
 
         public void ChangeState_SobstvNyzhdy () {
+            ClearStates();
+
+            if (m_tec.m_bSensorsStrings == false)
+                states.Add((int)StatesMachine.InitSensors);
+            else ;
+
+            states.Add((int)TecView.StatesMachine.CurrentHours_Fact);            
+            states.Add((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
+            states.Add((int)TecView.StatesMachine.Current_TM_SN);
         }
 
         private void ChangeState_AdminAlarm () {
@@ -758,6 +769,7 @@ namespace Statistic
                 case (int)StatesMachine.CurrentTimeView:
                 case (int)StatesMachine.CurrentHours_Fact:
                 case (int)StatesMachine.CurrentMins_Fact:
+                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                 case (int)StatesMachine.Current_TM_Gen:
                 case (int)StatesMachine.Current_TM_SN:
                 case (int)StatesMachine.LastMinutes_TM:
@@ -817,6 +829,10 @@ namespace Statistic
                     reason = @"3-х минутных значений";
                     waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    break;
+                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                    reason = @"часовых значений (собств. нужды)";
+                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
                 case (int)StatesMachine.Current_TM_Gen:
                     reason = @"текущих значений (генераци€)";
@@ -910,6 +926,10 @@ namespace Statistic
                     msg = @"трЄхминутных значений";
                     adminValuesReceived = false;
                     GetMinsRequest(lastHour);
+                    break;
+                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                    msg = @"часовых значений (собств. нужды)";
+                    GetHoursTMSNPsumRequest(m_curDate.Date);
                     break;
                 case (int)StatesMachine.Current_TM_Gen:
                     msg = @"текущих значений (генераци€)";
@@ -1023,6 +1043,14 @@ namespace Statistic
                     if (result == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                    }
+                    else
+                        ;
+                    break;
+                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                    result = GetHoursTMSNPsumResponse(table);
+                    if (result == true)
+                    {
                     }
                     else
                         ;
@@ -1305,10 +1333,11 @@ namespace Statistic
                     }
                     else
                         lastHour = indx;
+
                 ClearValuesMins();
 
-                newState = true;
-                states.Clear();
+                ClearStates();
+
                 states.Add((int)StatesMachine.RetroMins);
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
@@ -1337,6 +1366,7 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 m_valuesHours.valuesFact[i] =
+                m_valuesHours.valuesTMSNPsum [i] =
                 m_valuesHours.valuesDiviation[i] =
                 m_valuesHours.valuesPBR[i] =
                 m_valuesHours.valuesPmin[i] =
@@ -2602,6 +2632,25 @@ namespace Statistic
         //    return bRes;
         //}
 
+        private bool GetHoursTMSNPsumResponse(DataTable table)
+        {
+            bool bRes = true;
+            int i = -1
+                , hour = -1;
+
+            if (table.Rows.Count > 0)
+                for (i = 0; i < table.Rows.Count; i++)
+                {
+                    hour = Int32.Parse(table.Rows[i][@"HOUR"].ToString());
+
+                    m_valuesHours.valuesTMSNPsum[hour] = double.Parse(table.Rows[i][@"VALUE"].ToString());
+                }
+            else
+                bRes = false;
+
+            return bRes;
+        }
+
         private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
             bool bRes = true;
@@ -3020,12 +3069,10 @@ namespace Statistic
             Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
-        //private void GetCurrentTMRequest()
-        //{
-        //    //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
-        //    //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
-        //    Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
-        //}
+        private void GetHoursTMSNPsumRequest(DateTime dt)
+        {
+            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
+        }
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
