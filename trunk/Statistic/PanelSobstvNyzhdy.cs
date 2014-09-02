@@ -62,9 +62,9 @@ namespace Statistic
         const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 0;
 
         static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200), s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 22F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter)};
+        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 15F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter),
+                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter)};
 
         enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
 
@@ -159,6 +159,19 @@ namespace Statistic
                 if (ctrl.GetType().Equals(typeChildren) == true)
                 {
                     ((PanelTecSobstvNyzhdy)ctrl).Activate(active);
+                }
+                else
+                    ;
+            }
+        }
+
+        public void UpdateGraphicsCurrent()
+        {
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is PanelTecSobstvNyzhdy)
+                {
+                    ((PanelTecSobstvNyzhdy)ctrl).drawGraphHours();
                 }
                 else
                     ;
@@ -463,6 +476,11 @@ namespace Statistic
                 return true;
             }
 
+            public void drawGraphHours()
+            {
+                DrawGraphHours ();
+            }
+
             private void DrawGraphHours()
             {
                 GraphPane pane = m_zedGraphHours.GraphPane;
@@ -528,12 +546,13 @@ namespace Statistic
                             valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
                         }
 
-                    if (minimum > valuesTMSNPsum[i])
+                    if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))
                         minimum = valuesTMSNPsum[i];
                     else
                         ;
 
                     //noValues = false; //???
+                    noValues = ! (valuesTMSNPsum[i] == 0);
 
                     if (maximum < valuesTMSNPsum[i])
                         maximum = valuesTMSNPsum[i];

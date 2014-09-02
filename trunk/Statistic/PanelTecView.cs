@@ -913,7 +913,6 @@ namespace Statistic
                 }
             }
 
-
             pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
 
             LineItem curve2 = pane.AddCurve("сдцЩ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);

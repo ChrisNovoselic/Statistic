@@ -1366,7 +1366,10 @@ namespace Statistic
                 //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
                 ((PanelTecViewGraph)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
             else
-                ;
+                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
+                    ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
+                else
+                    ;
         }
 
         private const int SW_SHOWNOACTIVATE = 4;
@@ -1559,15 +1562,21 @@ namespace Statistic
            
            foreach (ToolStripMenuItem item in ((MenuStrip)sender).Items)
            {
-               if (item.DropDownItems.Count > 0 && item.Enabled == true)
-               {
+                if (item.DropDownItems.Count > 0 && item.Enabled == true)
+                {
                     selItem = getSelectedMenuItem(item);
+                    break;
                 }
                 else
                     ;
             }
 
            if ((!(selItem == null)) && (selItem.Text.Equals(@"Выход") == true))
+                bExit = true;
+            else
+                ;
+
+            if (bExit == false)
                 activateTabPage(tclTecViews.SelectedIndex, true);
             else
                 ;
