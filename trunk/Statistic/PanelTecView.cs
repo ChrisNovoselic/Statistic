@@ -726,6 +726,7 @@ namespace Statistic
         private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left)
+                //Выход, если событие не от "Левой" кн.
                 return true;
 
             object obj;
@@ -733,26 +734,32 @@ namespace Statistic
             bool found;
             int index;
 
+            //Поиск объекта
             found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
 
             if (!(obj is BarItem) && !(obj is LineItem))
+                //Выход, если объект не "требуемого" типа
                 return true;
-
+            
             if (m_tecView.lastMin <= index + 1)
+                //Выход, если выбранный объект находится "в будущем"
                 return true;
 
-            if (found)
+            if (found == true)
             {
+                //Пересчет, перерисовка панели с оперативной информацией с "выбранным" 3-х мин интервалом
                 lock (m_tecView.m_lockValue)
                 {
-                    int oldLastMin = m_tecView.lastMin;
+                    int prevLastMin = m_tecView.lastMin;
                     m_tecView.recalcAver = false;
                     m_tecView.lastMin = index + 2;
                     m_pnlQuickData.ShowFactValues();
                     m_tecView.recalcAver = true;
-                    m_tecView.lastMin = oldLastMin;
+                    m_tecView.lastMin = prevLastMin;
                 }
             }
+            else
+                ;
 
             return true;
         }

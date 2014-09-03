@@ -11,12 +11,12 @@ namespace StatisticCommon
     public delegate void DelegateBoolFunc(bool param);
     public delegate void DelegateObjectFunc(object obj);
     public delegate void DelegateRefObjectFunc(ref object obj);
-    
+
     public static class ProgramBase
     {
         public static string MessageWellcome = "***************Старт приложения...***************";
         public static string MessageExit = "***************Выход из приложения...***************";
-        
+
         //Журналирование старта приложения
         public static void Start()
         {
@@ -32,9 +32,8 @@ namespace StatisticCommon
             Logging.Logg().LogToFile(MessageExit, true, true, true);
         }
 
-        public static void Abort()
-        {
-        }
+        //???
+        public static void Abort() { }
 
         public static string AppName
         {

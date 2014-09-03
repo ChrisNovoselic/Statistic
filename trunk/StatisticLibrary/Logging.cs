@@ -17,7 +17,7 @@ namespace StatisticCommon
     public class Logging //LoggingFS //: Logging
     {
         private enum LOG_MODE { ERROR = -1, UNKNOWN, FILE, DB };
-        
+
         private string m_fileNameStart;
         private string m_fileName;
         private bool externalLog;
@@ -107,7 +107,7 @@ namespace StatisticCommon
                 //throw new Exception(@"private Logging::Logging () - ...", e);
                 ProgramBase.Abort ();
             }
-            
+
             //logIndex = 0;
             delegateUpdateLogText = updateLogText;
             delegateClearLogText = clearLogText;
