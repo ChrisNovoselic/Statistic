@@ -387,87 +387,94 @@ namespace Statistic
 
             Console.WriteLine (@"curHour=" + curHour.ToString () + @"; curMinute=" + curMinute.ToString ());
 
-            foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
+            //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
+            if (((curHour == 24) || (lastHourError == true)) || ((curMinute == 0) || (lastMinError == true)))
             {
-                Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM);
-
-                if (tg.power_TM < 1)
-                    curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                else
+                Logging.Logg().LogErrorToFile(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute);
+            }
+            else {            
+                foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
                 {
-                    curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM);
 
-                    power_TM += tg.power_TM;
-                }
-
-                ////Отладка - изменяем состояние
-                //if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
-                //{
-                //    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                //    {
-                //        power_TM -= tg.power_TM;
-
-                //        tg.power_TM = 0.666;
-
-                //        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                //    }
-                //    else
-                //        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                //        {
-                //            tg.power_TM = 66.6;
-
-                //            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-                //        }
-                //        else
-                //            ;
-
-                //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
-                //}
-                //else
-                //    ;
-
-                if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
-                {
-                    tg.m_TurnOnOff = curTurnOnOff;
-                }
-                else
-                {
-                    if (!(tg.m_TurnOnOff == curTurnOnOff))
+                    if (tg.power_TM < 1)
+                        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                    else
                     {
-                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff));
+                        curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
-                        //Прекращаем текущий цикл...
-                        //Признак досрочного прерывания цикла для сигн. "Текущая P"
-                        power_TM = -1F;
-
-                        break;
+                        power_TM += tg.power_TM;
                     }
+
+                    ////Отладка - изменяем состояние
+                    //if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
+                    //{
+                    //    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
+                    //    {
+                    //        power_TM -= tg.power_TM;
+
+                    //        tg.power_TM = 0.666;
+
+                    //        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                    //    }
+                    //    else
+                    //        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
+                    //        {
+                    //            tg.power_TM = 66.6;
+
+                    //            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+                    //        }
+                    //        else
+                    //            ;
+
+                    //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
+                    //}
+                    //else
+                    //    ;
+
+                    if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
+                    {
+                        tg.m_TurnOnOff = curTurnOnOff;
+                    }
+                    else
+                    {
+                        if (!(tg.m_TurnOnOff == curTurnOnOff))
+                        {
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff));
+
+                            //Прекращаем текущий цикл...
+                            //Признак досрочного прерывания цикла для сигн. "Текущая P"
+                            power_TM = -1F;
+
+                            break;
+                        }
+                        else
+                            ; //EventUnReg...
+                    }
+
+                    if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
+                        Console.Write(@", ");
                     else
                         ;
                 }
 
-                if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
-                    Console.Write(@", ");
-                else
-                    ;
-            }
-
-            if (!(power_TM < 0))
-                if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                    //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                    if (power_TM < m_valuesHours.valuesUDGe[curHour])
-                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                if (!(power_TM < 0))
+                    if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
+                        //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                        if (power_TM < m_valuesHours.valuesUDGe[curHour])
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                        else
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
                     else
-                        EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
+                        ; //EventUnReg...
                 else
-                    ;
-            else
-                AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.BREAK);
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.BREAK);
 
-            Console.WriteLine ();
+                Console.WriteLine ();
 
-            //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
-            //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
+                //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
+                //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
+            }
         }
 
         private void threadGetRDGValues(object synch)
@@ -638,6 +645,23 @@ namespace Statistic
             Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString (-1, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
+        private static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields) {
+            bool bRes = true;
+
+            foreach (string nameField in nameFields) {
+                if (tbl.Columns.IndexOf(nameField) < 0)
+                {
+                    bRes = false;
+
+                    break;
+                }
+                else
+                    ;
+            }
+
+            return bRes;
+        }
+
         private bool GetCurrentTMGenResponse(DataTable table)
         {
             bool bRes = true;
@@ -656,57 +680,63 @@ namespace Statistic
                 }
             }
 
-            for (i = 0; i < table.Rows.Count; i++)
+            bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"value", @"last_changed_at" });
+            if (bRes == true)
             {
-                if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                    return false;
-                else
-                    ;
-
-                tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
-
-                if (tgTmp == null)
-                    return false;
-                else
-                    ;
-
-                if (!(table.Rows[i]["value"] is DBNull))
-                    if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                for (i = 0; i < table.Rows.Count; i++)
+                {
+                    if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
                         return false;
                     else
                         ;
-                else
-                    value = 0.0;
 
-                if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
-                    return false;
-                else
-                    ;
+                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
-                if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt)
-                    m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
-                else
-                    ;
+                    if (tgTmp == null)
+                        return false;
+                    else
+                        ;
 
-                switch (m_tec.type())
-                {
-                    case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                        break;
-                    case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                        //value *= 20;
-                        break;
-                    default:
-                        break;
+                    if (!(table.Rows[i]["value"] is DBNull))
+                        if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                            return false;
+                        else
+                            ;
+                    else
+                        value = 0.0;
+
+                    if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+                        return false;
+                    else
+                        ;
+
+                    if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt)
+                        m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
+                    else
+                        ;
+
+                    switch (m_tec.type())
+                    {
+                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
+                            break;
+                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
+                            //value *= 20;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    tgTmp.power_TM = value;
                 }
 
-                tgTmp.power_TM = value;
+                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
+                catch (Exception e)
+                {
+                    Logging.Logg().LogExceptionToFile(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
+                }
             }
-
-            try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
-            catch (Exception e)
-            {
-                Logging.Logg().LogExceptionToFile(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
-            }
+            else
+                ;
 
             return bRes;
         }
@@ -724,7 +754,8 @@ namespace Statistic
 
             m_dtLastChangedAt_TM_SN = DateTime.Now;
 
-            if (table.Rows.Count == 1)
+            bRes = CheckNameFieldsOfTable(table, new string[] { @"ID_TEC", @"SUM_P_SN", @"LAST_UPDATE" });
+            if ((bRes == true) && (table.Rows.Count == 1))
             {
                 if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
                     return false;
@@ -975,12 +1006,14 @@ namespace Statistic
 
             ActionReport (@"Получение " + msg + @".");
 
+            Logging.Logg().LogDebugToFile(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+
             return bRes;
         }
 
         protected override bool StateResponse(int state, System.Data.DataTable table)
         {
-            bool result = true;
+            bool bRes = true;
 
             switch (state)
             {
@@ -989,20 +1022,20 @@ namespace Statistic
                         {
                             case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                                result = GetSensorsTEC();
+                                bRes = GetSensorsTEC();
                                 break;
                             default:
                                 break;
                         }
-                        if (result == true)
+                        if (bRes == true)
                         {
                         }
                         else
                             ;
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
-                    result = GetCurrentTimeAdminResponse(table);
-                    if (result == true)
+                    bRes = GetCurrentTimeAdminResponse(table);
+                    if (bRes == true)
                     {
                         if (using_date == true) {
                             m_prevDate = serverTime.Date;
@@ -1017,8 +1050,8 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.CurrentTimeView:
-                    result = GetCurrentTimeViewResponse(table);
-                    if (result == true)
+                    bRes = GetCurrentTimeViewResponse(table);
+                    if (bRes == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         m_curDate = m_curDate.AddSeconds(-1 * Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
@@ -1031,16 +1064,16 @@ namespace Statistic
                 case (int)StatesMachine.CurrentHours_Fact:
                     ClearValues();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    result = GetHoursResponse(table);
-                    if (result == true)
+                    bRes = GetHoursResponse(table);
+                    if (bRes == true)
                     {
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
-                    result = GetMinsResponse(table);
-                    if (result == true)
+                    bRes = GetMinsResponse(table);
+                    if (bRes == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
@@ -1048,16 +1081,16 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                    result = GetHoursTMSNPsumResponse(table);
-                    if (result == true)
+                    bRes = GetHoursTMSNPsumResponse(table);
+                    if (bRes == true)
                     {
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.Current_TM_Gen:
-                    result = GetCurrentTMGenResponse(table);
-                    if (result == true)
+                    bRes = GetCurrentTMGenResponse(table);
+                    if (bRes == true)
                     {
                         if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
                     }
@@ -1065,8 +1098,8 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.Current_TM_SN:
-                    result = GetCurrentTMSNResponse(table);
-                    if (result == true)
+                    bRes = GetCurrentTMSNResponse(table);
+                    if (bRes == true)
                     {
                         updateGUI_TM_SN ();
                     }
@@ -1075,8 +1108,8 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     ClearValuesLastMinutesTM ();
-                    result = GetLastMinutesTMResponse(table, m_curDate);
-                    if (result == true)
+                    bRes = GetLastMinutesTMResponse(table, m_curDate);
+                    if (bRes == true)
                     {
                         if (! (updateGUI_LastMinutes == null))
                             updateGUI_LastMinutes();
@@ -1088,16 +1121,16 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.RetroHours:
                     ClearValues();
-                    result = GetHoursResponse(table);
-                    if (result == true)
+                    bRes = GetHoursResponse(table);
+                    if (bRes == true)
                     {
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.RetroMins:
-                    result = GetMinsResponse(table);
-                    if (result == true)
+                    bRes = GetMinsResponse(table);
+                    if (bRes == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                         updateGUI_Fact(lastHour, lastMin);
@@ -1107,8 +1140,8 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result == true)
+                    bRes = GetPPBRDatesResponse(table, m_curDate);
+                    if (bRes == true)
                     {
                     }
                     else
@@ -1116,8 +1149,8 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ClearPBRValues();
-                    result = GetPPBRValuesResponse(table);
-                    if (result == true)
+                    bRes = GetPPBRValuesResponse(table);
+                    if (bRes == true)
                     {
                     }
                     else
@@ -1127,8 +1160,8 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.AdminValues:
                     ClearAdminValues();
-                    result = GetAdminValuesResponse(table);
-                    if (result == true)
+                    bRes = GetAdminValuesResponse(table);
+                    if (bRes == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour);
@@ -1140,18 +1173,18 @@ namespace Statistic
                         ;
                     break;
                 default:
-                    result = false;
+                    bRes = false;
                     break;
             }
 
-            if (result == true)
+            if (bRes == true)
                 FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
 
-            Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+            Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
 
-            return result;
+            return bRes;
         }
 
         private void ChangeState_CurPower () {
@@ -2332,6 +2365,11 @@ namespace Statistic
                 }
             }
 
+            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
+                return false;
+            else
+                ;
+
             if (table.Rows.Count > 0)
             {
                 try
@@ -2446,14 +2484,14 @@ namespace Statistic
                                 break;
                     }
 
-                    //if (!int.TryParse(table.Rows[i][7].ToString(), out id))
-                    if (table.Columns.Contains(@"ID") == true)
+                    ////if (!int.TryParse(table.Rows[i][7].ToString(), out id))
+                    //if (table.Columns.Contains(@"ID") == true)
                         if (int.TryParse(table.Rows[i][@"ID"].ToString(), out id) == false)
                             return false;
                         else
                             ;
-                    else
-                        return false;
+                    //else
+                    //    return false;
 
                     tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
                     if (tgTmp == null)
@@ -2461,14 +2499,14 @@ namespace Statistic
                     else
                         ;
 
-                    //if (!double.TryParse(table.Rows[i][5].ToString(), out value))
-                    if (table.Columns.Contains(@"VALUE0") == true)
+                    ////if (!double.TryParse(table.Rows[i][5].ToString(), out value))
+                    //if (table.Columns.Contains(@"VALUE0") == true)
                         if (double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value) == false)
                             return false;
                         else
                             ;
-                    else
-                        return false;
+                    //else
+                    //    return false;
 
                     switch (m_tec.type())
                     {
@@ -2793,23 +2831,28 @@ namespace Statistic
 
             lastMin = 0;
 
+            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
+                return false;
+            else
+                ;
+
             if (table.Rows.Count > 0)
             {
-                if (table.Columns.Contains(@"DATA_DATE") == true)
+                //if (table.Columns.Contains(@"DATA_DATE") == true)
                     if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
                         return false;
                     else
                         ;
-                else
-                    return false;
+                //else
+                //    return false;
 
-                if (table.Columns.Contains(@"SEASON") == true)
+                //if (table.Columns.Contains(@"SEASON") == true)
                     if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
                         return false;
                     else
                         ;
-                else
-                    return false;
+                //else
+                //    return false;
 
                 need_season = max_season = season;
                 min = (int)(dt.Minute / 3);

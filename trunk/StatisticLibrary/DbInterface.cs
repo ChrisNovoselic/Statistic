@@ -165,13 +165,13 @@ namespace StatisticCommon
         {
             //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - listenerId=" + listenerId.ToString() + @", request=" + request);
             
-            if ((m_dictListeners.ContainsKey (listenerId) == false) || (request.Length == 0))
-                return;
-            else
-                ;
-
             lock (lockListeners)
             {
+                if ((m_dictListeners.ContainsKey (listenerId) == false) || (request.Length == 0))
+                    return;
+                else
+                    ;
+
                 m_dictListeners[listenerId].requestDB = request;
                 m_dictListeners[listenerId].dataPresent = false;
                 m_dictListeners[listenerId].dataError = false;

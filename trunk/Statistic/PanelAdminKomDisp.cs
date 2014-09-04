@@ -168,11 +168,11 @@ namespace Statistic
             m_nudnKoeffAlarmCurPower.Size = new System.Drawing.Size(48, 20);
             m_nudnKoeffAlarmCurPower.TabIndex = 26;
             m_nudnKoeffAlarmCurPower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            m_nudnKoeffAlarmCurPower.Minimum = 0.05M;
-            m_nudnKoeffAlarmCurPower.Maximum = 0.90M;
-            m_nudnKoeffAlarmCurPower.Value = 0.25M;
-            m_nudnKoeffAlarmCurPower.DecimalPlaces = 2;
-            m_nudnKoeffAlarmCurPower.Increment = 0.05M;
+            m_nudnKoeffAlarmCurPower.Minimum = 2M;
+            m_nudnKoeffAlarmCurPower.Maximum = 90M;
+            m_nudnKoeffAlarmCurPower.Value = 20M;
+            //m_nudnKoeffAlarmCurPower.DecimalPlaces = 2;
+            m_nudnKoeffAlarmCurPower.Increment = 2M;
 
             // 
             // m_btnAlarmCurPower
@@ -529,12 +529,12 @@ namespace Statistic
 
         private void setNudnKoeffAlarmCurPowerValue () {
             this.m_nudnKoeffAlarmCurPower.ValueChanged -= new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
-            m_nudnKoeffAlarmCurPower.Value = m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur / 100;
+            m_nudnKoeffAlarmCurPower.Value = m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur;
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
         private void NudnKoeffAlarmCurPower_ValueChanged (object obj, EventArgs ev) {
-            m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur = m_nudnKoeffAlarmCurPower.Value * 100;
+            m_admin.allTECComponents [m_admin.indxTECComponents].m_dcKoeffAlarmPcur = m_nudnKoeffAlarmCurPower.Value;
 
             int err = -1
                 , idListenerConfigDB = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
