@@ -574,15 +574,14 @@ namespace Statistic
 
         public void ClearValuesLastMinutesTM()
         {
-            for (int i = 0; i < 24; i++) {
-                m_valuesHours.valuesLastMinutesTM [i] = 0.0;
-                
-                if ((i + 1) < 24)
-                    foreach (TECComponent g in m_localTECComponents)
-                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i] = 0.0;
+            for (int i = 0; i < 25; i++) {
+                if (i < 24)
+                    m_valuesHours.valuesLastMinutesTM [i] = 0.0;
                 else
-                    foreach (TECComponent g in m_localTECComponents)
-                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i + 1] = 0.0;
+                    ;
+
+                foreach (TECComponent g in m_localTECComponents)
+                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i] = 0.0;
             }
         }
 
@@ -2728,7 +2727,8 @@ namespace Statistic
                                 ;
 
                             hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
-                            if (!(hour < 24)) hour -= 24; else ;
+                            //if (!(hour < 24)) hour -= 24; else ;
+                            if (hour > 24) hour -= 24; else ;
 
                             tg.power_LastMinutesTM[hour] = value;
 

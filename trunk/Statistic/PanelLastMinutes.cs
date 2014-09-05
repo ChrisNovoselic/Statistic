@@ -42,6 +42,9 @@ namespace Statistic
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+
+            //Создание панели с дата/время
+            m_panelDateTime = new PanelDateTime();
         }
 
         #endregion
@@ -51,7 +54,8 @@ namespace Statistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         
-        List <Label> m_listLabelDateTime;
+        private List <Label> m_listLabelDateTime;
+        private PanelDateTime m_panelDateTime;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
@@ -80,6 +84,8 @@ namespace Statistic
 
         public bool m_bIsActive;
 
+        private event DelegateObjectFunc EventChangeDateTime;
+
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             int i = -1;
@@ -93,11 +99,8 @@ namespace Statistic
             this.ColumnCount = listTec.Count + 1;
             this.RowCount = 1;
 
-            //Создание панели с дата/время
-            PanelDateTime panelDateTime = new PanelDateTime();
-
             float fPercentColDatetime = 8F;
-            this.Controls.Add(panelDateTime, 0, 0);
+            this.Controls.Add(m_panelDateTime, 0, 0);
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, fPercentColDatetime));
 
             int iCountSubColumns = 0;
@@ -105,6 +108,7 @@ namespace Statistic
             for (i = 0; i < listTec.Count; i++)
             {
                 this.Controls.Add(new PanelTecLastMinutes(listTec[i], fErrRep, fActRep), i + 1, 0);
+                EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls [i + 1]).OnEventChangeDateTime);
                 iCountSubColumns += ((PanelTecLastMinutes)this.Controls [i + 1]).CountTECComponent; //Слева столбец дата/время
             }
 
@@ -165,6 +169,12 @@ namespace Statistic
 
             m_bIsActive = active;
 
+            if (m_bIsActive == true)
+                //можно, конечно и в цикле дату/время передавать
+                EventChangeDateTime(m_panelDateTime.m_dtprDate.Value);
+            else
+                ;
+
             int i = 0;
             foreach (Control ctrl in this.Controls)
             {
@@ -209,6 +219,11 @@ namespace Statistic
             private void InitializeComponent()
             {
                 components = new System.ComponentModel.Container();
+
+                this.m_dtprDate = new DateTimePicker();
+                this.m_dtprDate.Dock = DockStyle.Fill;
+                //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
+                this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
             }
 
             #endregion
@@ -216,6 +231,7 @@ namespace Statistic
 
         private partial class PanelDateTime : TableLayoutPanel
         {
+            public DateTimePicker m_dtprDate;
             private Dictionary<int, Label> m_dictLabelTime;
 
             public PanelDateTime()
@@ -234,27 +250,27 @@ namespace Statistic
             private void Initialize()
             {
                 int i = -1;
-           
+
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
                 this.RowCount = 24 + COUNT_FIXED_ROWS;
 
-                DateTime dtNow = DateTime.Now.Date;
+                DateTime dtSel = DateTime.Now.Date;
 
                 //Добавить дату
-                Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
-                this.Controls.Add(lblDate, 0, 0);
-                this.SetRowSpan(lblDate, COUNT_FIXED_ROWS);
+                //Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
+                this.Controls.Add(m_dtprDate, 0, 0);
+                this.SetRowSpan(m_dtprDate, COUNT_FIXED_ROWS);
 
                 m_dictLabelTime = new Dictionary<int,Label> ();
 
-                dtNow = dtNow.AddMinutes(59);
+                dtSel = dtSel.AddMinutes(59);
                 for (i = 1; i < 25; i++)
                 {
-                    m_dictLabelTime[i - 1] = HLabel.createLabel(dtNow.ToString (@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
+                    m_dictLabelTime[i - 1] = HLabel.createLabel(dtSel.ToString(@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
                     this.Controls.Add(m_dictLabelTime[i - 1], 0, (i - 1) + COUNT_FIXED_ROWS);
 
-                    dtNow = dtNow.AddHours(1);
+                    dtSel = dtSel.AddHours(1);
                 }
 
                 for (i = 0; i < (24 + COUNT_FIXED_ROWS - 1); i++)
@@ -263,6 +279,12 @@ namespace Statistic
                 }
 
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 6F));
+            }
+
+            private void OnDateTimeValueChanged(object obj, EventArgs ev)
+            {
+                DateTime dt = m_dtprDate.Value;
+                ((PanelLastMinutes)Parent).EventChangeDateTime(dt);
             }
         }
 
@@ -306,8 +328,6 @@ namespace Statistic
 
             List<TECComponentBase> m_list_TECComponents;
             public int CountTECComponent { get { return m_list_TECComponents.Count; } }
-
-            private List<TG> m_listSensorId2TG;
 
             private Dictionary<int, Label[]> m_dictLabelVal;
             private Dictionary<int, ToolTip[]> m_dictToolTip;
@@ -430,8 +450,9 @@ namespace Statistic
 
             private void ChangeState()
             {
-                m_tecView.m_curDate = DateTime.Now;
-                
+                //m_tecView.m_curDate = ... получено при обработке события
+                m_tecView.m_curDate = m_tecView.m_curDate.Add(-HAdmin.GetUTCOffsetOfCurrentTimeZone ());
+
                 m_tecView.ChangeState ();
             }
 
@@ -447,6 +468,12 @@ namespace Statistic
                 {
                     m_tecView.ClearStates ();
                 }
+            }
+
+            public void OnEventChangeDateTime (object obj) {
+                m_tecView.m_curDate = (DateTime)obj;
+
+                ChangeState ();
             }
 
             private void showLastMinutesTM()

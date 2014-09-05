@@ -751,10 +751,10 @@ namespace Statistic
                 lock (m_tecView.m_lockValue)
                 {
                     int prevLastMin = m_tecView.lastMin;
-                    m_tecView.recalcAver = false;
+                    m_tecView.recalcAver = true;
                     m_tecView.lastMin = index + 2;
                     m_pnlQuickData.ShowFactValues();
-                    m_tecView.recalcAver = true;
+                    //m_tecView.recalcAver = true;
                     m_tecView.lastMin = prevLastMin;
                 }
             }
