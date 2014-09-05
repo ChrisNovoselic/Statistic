@@ -765,7 +765,7 @@ namespace Statistic
             valueECur = value / 20;
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur);
 
-            valueEFuture = valueECur * (20 - min - 1);
+            valueEFuture = valueECur * (20 - min - 0);
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture);
 
             if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
