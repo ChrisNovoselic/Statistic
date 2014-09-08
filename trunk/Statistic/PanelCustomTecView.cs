@@ -55,7 +55,7 @@ namespace Statistic
             this.RowCount = 2;
             this.ColumnCount = 2;
 
-            PanelTecViewTable [] arPanelTecViewTable = new PanelTecViewTable [this.RowCount * this.ColumnCount];
+            PanelTecView [] arPanelTecViewTable = new PanelTecView [this.RowCount * this.ColumnCount];
 
             m_arLabelEmpty = new HLabelEmpty[this.RowCount * this.ColumnCount];
             //m_arControls = new Controls[this.RowCount * this.ColumnCount];
@@ -71,6 +71,8 @@ namespace Statistic
                 }
 
                 m_arLabelEmpty[i].ContextMenu.MenuItems.Add(@"-");
+                m_arLabelEmpty[i].ContextMenu.MenuItems.Add(@"Вид");
+                m_arLabelEmpty[i].ContextMenu.MenuItems[m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].MenuItems.AddRange (new MenuItem [] {new MenuItem (@"Таблица(час)", MenuItem_TableHour)});
                 m_arLabelEmpty [i].ContextMenu.MenuItems.Add (@"Очистить");
                 m_arLabelEmpty[i].ContextMenu.MenuItems[m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].Click += MenuItem_OnClick;
 
@@ -132,21 +134,21 @@ namespace Statistic
         {
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecViewTable) ((PanelTecViewTable)panel).Start(); else ;
+                if (panel is PanelTecView) ((PanelTecView)panel).Start(); else ;
             }
         }
 
         public override void Stop () {
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecViewTable) ((PanelTecViewTable)panel).Stop(); else ;
+                if (panel is PanelTecView) ((PanelTecView)panel).Stop(); else ;
             }
         }
 
         public override void Activate (bool active) {
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecViewTable) ((PanelTecViewTable)panel).Activate(active); else ;
+                if (panel is PanelTecView) ((PanelTecView)panel).Activate(active); else ;
             }
         }
 
@@ -176,6 +178,10 @@ namespace Statistic
                 if (indx < 0) indx = 0; else ;
                 le.ContextMenu.MenuItems.Add(indx, createMenuItem(nameItem));
             }
+        }
+
+        private void MenuItem_TableHour(object obj, EventArgs ev)
+        {
         }
 
         private void MenuItem_OnClick(object obj, EventArgs ev)
@@ -235,22 +241,22 @@ namespace Statistic
                         TECComponent_index = m_formChangeMode.m_list_TECComponent_index[indx];
                     Point ptAddress = getAddress(indxLabel);
 
-                    PanelTecViewTable panelTecView = new PanelTecViewTable(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel], m_fErrorReport, m_fActionReport);
+                    PanelTecView panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel], m_fErrorReport, m_fActionReport);
                     this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
                     this.Controls.SetChildIndex(panelTecView, indxLabel);
                     indxLabel = this.Controls.GetChildIndex(panelTecView);
-                    ((PanelTecViewTable)this.Controls [indxLabel]).Start ();
-                    ((PanelTecViewTable)this.Controls[indxLabel]).Activate(true);
+                    ((PanelTecView)this.Controls [indxLabel]).Start ();
+                    ((PanelTecView)this.Controls[indxLabel]).Activate(true);
                 }
             }
         }
 
         private void clearAddress (int indx) {
-            PanelTecViewTable pnlTecView = null;
+            PanelTecView pnlTecView = null;
             foreach (Control panel in this.Controls)
             {
-                if ((panel is PanelTecViewTable) && (this.Controls.IndexOf (panel) == indx)) {
-                    pnlTecView = (PanelTecViewTable)panel;
+                if ((panel is PanelTecView) && (this.Controls.IndexOf (panel) == indx)) {
+                    pnlTecView = (PanelTecView)panel;
 
                     break;
                 }

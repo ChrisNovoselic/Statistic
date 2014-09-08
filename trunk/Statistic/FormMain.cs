@@ -677,7 +677,7 @@ namespace Statistic
                     else
                         ;
 
-                    tecView = new PanelTecViewGraph(t, tec_indx, -1, ErrorReport, ActionReport);
+                    tecView = new PanelTecView(t, tec_indx, -1, null, ErrorReport, ActionReport);
                     tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                     tecViews.Add(tecView);
                     if (t.list_TECComponents.Count > 0)
@@ -685,7 +685,7 @@ namespace Statistic
                         comp_indx = 0;
                         foreach (TECComponent g in t.list_TECComponents)
                         {
-                            tecView = new PanelTecViewGraph(t, tec_indx, comp_indx, ErrorReport, ActionReport);
+                            tecView = new PanelTecView(t, tec_indx, comp_indx, null, ErrorReport, ActionReport);
                             tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
                             tecViews.Add(tecView);
                             comp_indx++;
@@ -1362,9 +1362,9 @@ namespace Statistic
         private void UpdateActiveGui()
         {
             //if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
-            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecViewBase)
+            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
                 //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
-                ((PanelTecViewGraph)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
+                ((PanelTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
             else
                 if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
                     ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();

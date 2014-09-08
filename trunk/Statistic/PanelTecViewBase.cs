@@ -10,6 +10,9 @@ using System.Drawing;
 using System.Threading;
 using System.Globalization;
 
+using ZedGraph;
+using GemBox.Spreadsheet;
+
 using StatisticCommon;
 
 namespace Statistic
@@ -126,9 +129,234 @@ namespace Statistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
+
+        protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
+        {
+            // контекстные меню
+            private class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
+            {
+
+                public System.Windows.Forms.ToolStripMenuItem показыватьЗначенияToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem копироватьToolStripMenuItem;
+                private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+                public System.Windows.Forms.ToolStripMenuItem параметрыПечатиToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem распечататьToolStripMenuItem;
+                private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+                public System.Windows.Forms.ToolStripMenuItem сохранитьToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem эксельToolStripMenuItem;
+
+                public HContextMenuStripZedGraph()
+                {
+                    InitializeComponent();
+                }
+
+                private void InitializeComponent()
+                {
+                    this.показыватьЗначенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+                    this.копироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.сохранитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.эксельToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+                    this.параметрыПечатиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.распечататьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+
+                    // 
+                    // contextMenuStrip
+                    // 
+                    this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                    this.показыватьЗначенияToolStripMenuItem,
+                    this.toolStripSeparator1,
+                    this.копироватьToolStripMenuItem,
+                    this.сохранитьToolStripMenuItem,
+                    this.эксельToolStripMenuItem,
+                    this.toolStripSeparator2,
+                    this.параметрыПечатиToolStripMenuItem,
+                    this.распечататьToolStripMenuItem});
+                    this.Name = "contextMenuStripMins";
+                    this.Size = new System.Drawing.Size(198, 148);
+                    // 
+                    // показыватьЗначенияToolStripMenuItemMins
+                    // 
+                    this.показыватьЗначенияToolStripMenuItem.Name = "показыватьЗначенияToolStripMenuItem";
+                    this.показыватьЗначенияToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.показыватьЗначенияToolStripMenuItem.Text = "Показывать значения";
+                    this.показыватьЗначенияToolStripMenuItem.Checked = true;
+
+                    // 
+                    // toolStripSeparator1Mins
+                    // 
+                    this.toolStripSeparator1.Name = "toolStripSeparator1Mins";
+                    this.toolStripSeparator1.Size = new System.Drawing.Size(194, 6);
+                    // 
+                    // копироватьToolStripMenuItemMins
+                    // 
+                    this.копироватьToolStripMenuItem.Name = "копироватьToolStripMenuItem";
+                    this.копироватьToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.копироватьToolStripMenuItem.Text = "Копировать";
+
+                    // 
+                    // сохранитьToolStripMenuItemMins
+                    // 
+                    this.сохранитьToolStripMenuItem.Name = "сохранитьToolStripMenuItem";
+                    this.сохранитьToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.сохранитьToolStripMenuItem.Text = "Сохранить график";
+
+                    // 
+                    // эксельToolStripMenuItemMins
+                    // 
+                    this.эксельToolStripMenuItem.Name = "эксельToolStripMenuItem";
+                    this.эксельToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.эксельToolStripMenuItem.Text = "Сохранить в MS Excel";
+
+                    // 
+                    // toolStripSeparator2Mins
+                    // 
+                    this.toolStripSeparator2.Name = "toolStripSeparator2";
+                    this.toolStripSeparator2.Size = new System.Drawing.Size(194, 6);
+                    // 
+                    // параметрыПечатиToolStripMenuItemMins
+                    // 
+                    this.параметрыПечатиToolStripMenuItem.Name = "параметрыПечатиToolStripMenuItem";
+                    this.параметрыПечатиToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.параметрыПечатиToolStripMenuItem.Text = "Параметры печати";
+                    // 
+                    // распечататьToolStripMenuItemMins
+                    // 
+                    this.распечататьToolStripMenuItem.Name = "распечататьToolStripMenuItem";
+                    this.распечататьToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.распечататьToolStripMenuItem.Text = "Распечатать";
+                }
+            }
+
+            private object m_lockValue;
+
+            public HZedGraphControl(object lockVal)
+            {
+                InitializeComponent();
+
+                m_lockValue = lockVal;
+            }
+
+            private void InitializeComponent()
+            {
+                this.ContextMenuStrip = new HContextMenuStripZedGraph();
+
+                // 
+                // zedGraphMin
+                // 
+                this.Dock = System.Windows.Forms.DockStyle.Fill;
+                //this.Location = arPlacement[(int)CONTROLS.zedGraphMins].pt;
+                this.Name = "zedGraph";
+                this.ScrollGrace = 0;
+                this.ScrollMaxX = 0;
+                this.ScrollMaxY = 0;
+                this.ScrollMaxY2 = 0;
+                this.ScrollMinX = 0;
+                this.ScrollMinY = 0;
+                this.ScrollMinY2 = 0;
+                //this.Size = arPlacement[(int)CONTROLS.zedGraphMins].sz;
+                this.TabIndex = 0;
+                this.IsEnableHEdit = false;
+                this.IsEnableHPan = false;
+                this.IsEnableHZoom = false;
+                this.IsEnableSelection = false;
+                this.IsEnableVEdit = false;
+                this.IsEnableVPan = false;
+                this.IsEnableVZoom = false;
+                this.IsShowPointValues = true;
+
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).показыватьЗначенияToolStripMenuItem.Click += new System.EventHandler(показыватьЗначенияToolStripMenuItem_Click);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).копироватьToolStripMenuItem.Click += new System.EventHandler(копироватьToolStripMenuItem_Click);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).сохранитьToolStripMenuItem.Click += new System.EventHandler(сохранитьToolStripMenuItem_Click);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).параметрыПечатиToolStripMenuItem.Click += new System.EventHandler(параметрыПечатиToolStripMenuItem_Click);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).распечататьToolStripMenuItem.Click += new System.EventHandler(распечататьToolStripMenuItem_Click);
+
+                this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
+                this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
+            }
+
+            public void InitializeEventHandler(EventHandler fToExcel)
+            {
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).эксельToolStripMenuItem.Click += new System.EventHandler(fToExcel);
+            }
+
+            private void показыватьЗначенияToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                ((ToolStripMenuItem)sender).Checked = !((ToolStripMenuItem)sender).Checked;
+                this.IsShowPointValues = ((ToolStripMenuItem)sender).Checked;
+            }
+
+            private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                lock (m_lockValue)
+                {
+                    this.Copy(false);
+                }
+            }
+
+            private void параметрыПечатиToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                PageSetupDialog pageSetupDialog = new PageSetupDialog();
+                pageSetupDialog.Document = this.PrintDocument;
+                pageSetupDialog.ShowDialog();
+            }
+
+            private void распечататьToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                lock (m_lockValue)
+                {
+                    this.PrintDocument.Print();
+                }
+            }
+
+            private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                lock (m_lockValue)
+                {
+                    this.SaveAs();
+                }
+            }
+
+            private string OnPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
+            {
+                return curve[iPt].Y.ToString("f2");
+            }
+
+            private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
+            {
+                FormMain.formGraphicsSettings.SetScale();
+
+                return true;
+            }
+        }
+
+        protected class HZedGraphControlHours : HZedGraphControl
+        {
+            public HZedGraphControlHours(object obj) : base(obj) { }
+        }
+
+        protected class HZedGraphControlMins : HZedGraphControl
+        {
+            public HZedGraphControlMins(object obj) : base(obj) { InitializeComponent(); }
+
+            private void InitializeComponent()
+            {
+                this.GraphPane.XAxis.ScaleFormatEvent += new Axis.ScaleFormatHandler(XScaleFormatEvent);
+            }
+
+            public string XScaleFormatEvent(GraphPane pane, Axis axis, double val, int index)
+            {
+                return ((val) * 3).ToString();
+            }
+        }
+
         protected PanelQuickData m_pnlQuickData;
 
         protected System.Windows.Forms.SplitContainer stctrView;
+        protected System.Windows.Forms.SplitContainer stctrViewPanel1, stctrViewPanel2;
+        protected HZedGraphControl m_ZedGraphMins;
+        protected HZedGraphControl m_ZedGraphHours;
 
         protected DataGridViewHours m_dgwHours;
         protected DataGridViewMins m_dgwMins;
@@ -184,18 +412,9 @@ namespace Statistic
             this.m_dgwHours = new DataGridViewHours();
             this.m_dgwMins = new DataGridViewMins();
 
-            this.m_pnlQuickData.SuspendLayout();
-
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
 
-            this.SuspendLayout();
-
-            this.RowCount = 2;
-            this.RowStyles.Add(new RowStyle(SizeType.Percent, 86));
-            this.RowStyles.Add(new RowStyle(SizeType.Percent, 14));
-
-            this.Controls.Add(this.m_pnlQuickData, 0, 1);
             this.m_pnlQuickData.Initialize();
             this.Dock = System.Windows.Forms.DockStyle.Fill;
             //this.Location = arPlacement[(int)CONTROLS.THIS].pt;
@@ -208,16 +427,70 @@ namespace Statistic
             this.m_pnlQuickData.dtprDate.ValueChanged += new System.EventHandler(this.dtprDate_ValueChanged);
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).EndInit();
-            this.m_pnlQuickData.ResumeLayout(false);
-            this.m_pnlQuickData.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
 
-            //this.m_dgwMins.Rows.Add(21);
-            //this.m_dgwHours.Rows.Add(25);
+            this.m_ZedGraphMins = new HZedGraphControlMins(m_tecView.m_lockValue);
+            this.m_ZedGraphHours = new HZedGraphControlHours(m_tecView.m_lockValue);
 
-            this.ResumeLayout(false);
+            this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
+            this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
 
             this.stctrView = new System.Windows.Forms.SplitContainer();
+
+            this.m_pnlQuickData.SuspendLayout();
+
+            this.stctrViewPanel1.Panel1.SuspendLayout();
+            this.stctrViewPanel1.Panel2.SuspendLayout();
+            this.stctrViewPanel2.Panel1.SuspendLayout();
+            this.stctrViewPanel2.Panel2.SuspendLayout();
+            this.stctrViewPanel1.SuspendLayout();
+            this.stctrViewPanel2.SuspendLayout();
+            this.stctrView.Panel1.SuspendLayout();
+            this.stctrView.Panel2.SuspendLayout();
+            this.stctrView.SuspendLayout();
+
+            this.SuspendLayout();
+
+            // 
+            // stctrView
+            // 
+            //this.stctrView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            //            | System.Windows.Forms.AnchorStyles.Left)
+            //            | System.Windows.Forms.AnchorStyles.Right)));
+            //this.stctrView.Location = arPlacement[(int)CONTROLS.stctrView].pt;
+            this.stctrView.Dock = DockStyle.Fill;
+            this.stctrView.Name = "stctrView";
+            this.stctrView.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // stctrView.Panel1
+            // 
+            this.stctrViewPanel1.Dock = DockStyle.Fill;
+            //this.stctrViewPanel1.SplitterDistance = 301;
+            this.stctrViewPanel1.SplitterMoved += new SplitterEventHandler(stctrViewPanel1_SplitterMoved);
+            // 
+            // stctrView.Panel2
+            // 
+            this.stctrViewPanel2.Dock = DockStyle.Fill;
+            //this.stctrViewPanel2.SplitterDistance = 291;
+            this.stctrViewPanel2.SplitterMoved += new SplitterEventHandler(stctrViewPanel2_SplitterMoved);
+            //this.stctrView.Size = arPlacement[(int)CONTROLS.stctrView].sz;
+            //this.stctrView.SplitterDistance = 301;
+            this.stctrView.TabIndex = 7;
+
+            this.m_pnlQuickData.ResumeLayout(false);
+            this.m_pnlQuickData.PerformLayout();
+
+            this.stctrViewPanel1.Panel1.ResumeLayout(false);
+            this.stctrViewPanel1.Panel2.ResumeLayout(false);
+            this.stctrViewPanel2.Panel1.ResumeLayout(false);
+            this.stctrViewPanel2.Panel2.ResumeLayout(false);
+            this.stctrViewPanel1.ResumeLayout(false);
+            this.stctrViewPanel2.ResumeLayout(false);
+            this.stctrView.Panel1.ResumeLayout(false);
+            this.stctrView.Panel2.ResumeLayout(false);
+            this.stctrView.ResumeLayout(false);
+
+            this.ResumeLayout(false);
         }
 
         public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, DelegateFunc fErrRep, DelegateFunc fActRep)
@@ -353,6 +626,9 @@ namespace Statistic
 
             update = false;
             SetNowDate(true);
+
+            DrawGraphMins(0);
+            DrawGraphHours();
         }
 
         public override void Stop()
@@ -394,6 +670,9 @@ namespace Statistic
                     FillGridMins(hour);
 
                     m_pnlQuickData.ShowFactValues();
+
+                    DrawGraphMins(hour);
+                    DrawGraphHours();
                 }
                 catch (Exception e)
                 {
@@ -817,6 +1096,480 @@ namespace Statistic
             {
                 Logging.Logg().LogExceptionToFile(e, "Обращение к переменной 'timerCurrent'");
             }
+        }
+
+
+        private void DrawGraphMins(int hour)
+        {
+            if (hour == 24)
+                hour = 23;
+
+            GraphPane pane = m_ZedGraphMins.GraphPane;
+
+            pane.CurveList.Clear();
+
+            int itemscount = 20;
+
+            string[] names = new string[itemscount];
+
+            double[] valuesRecommend = new double[itemscount];
+
+            double[] valuesUDGe = new double[itemscount];
+
+            double[] valuesFact = new double[itemscount];
+
+            for (int i = 0; i < itemscount; i++)
+            {
+                valuesFact[i] = m_tecView.m_valuesMins.valuesFact[i + 1];
+                valuesUDGe[i] = m_tecView.m_valuesMins.valuesUDGe[i + 1];
+            }
+
+            //double[] valuesPDiviation = new double[itemscount];
+
+            //double[] valuesODiviation = new double[itemscount];
+
+            double minimum = double.MaxValue, minimum_scale;
+            double maximum = 0, maximum_scale;
+            bool noValues = true;
+
+            for (int i = 0; i < itemscount; i++)
+            {
+                names[i] = ((i + 1) * 3).ToString();
+                //valuesPDiviation[i] = m_valuesMins.valuesUDGe[i] + m_valuesMins.valuesDiviation[i];
+                //valuesODiviation[i] = m_valuesMins.valuesUDGe[i] - m_valuesMins.valuesDiviation[i];
+
+                if (m_tecView.currHour == true)
+                {
+                    if ((i < (m_tecView.lastMin - 1)) || (!(m_tecView.adminValuesReceived == true)))
+                        valuesRecommend[i] = 0;
+                    else
+                        valuesRecommend[i] = m_tecView.recomendation;
+                }
+
+                //if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
+                //{
+                //    minimum = valuesPDiviation[i];
+                //    noValues = false;
+                //}
+
+                //if (minimum > valuesODiviation[i] && valuesODiviation[i] != 0)
+                //{
+                //    minimum = valuesODiviation[i];
+                //    noValues = false;
+                //}
+
+                if (m_tecView.currHour == true)
+                {
+                    if (minimum > valuesRecommend[i] && valuesRecommend[i] != 0)
+                    {
+                        minimum = valuesRecommend[i];
+                        noValues = false;
+                    }
+                }
+
+                if (minimum > valuesUDGe[i] && valuesUDGe[i] != 0)
+                {
+                    minimum = valuesUDGe[i];
+                    noValues = false;
+                }
+
+                if (minimum > valuesFact[i] && valuesFact[i] != 0)
+                {
+                    minimum = valuesFact[i];
+                    noValues = false;
+                }
+
+                //if (maximum < valuesPDiviation[i])
+                //    maximum = valuesPDiviation[i];
+
+                //if (maximum < valuesODiviation[i])
+                //    maximum = valuesODiviation[i];
+
+                if (m_tecView.currHour == true)
+                {
+                    if (maximum < valuesRecommend[i])
+                        maximum = valuesRecommend[i];
+                    else
+                        ;
+                }
+
+                if (maximum < valuesUDGe[i])
+                    maximum = valuesUDGe[i];
+                else
+                    ;
+
+                if (maximum < valuesFact[i])
+                    maximum = valuesFact[i];
+                else
+                    ;
+            }
+
+            if (!(FormMain.formGraphicsSettings.scale == true))
+                minimum = 0;
+
+            if (noValues)
+            {
+                minimum_scale = 0;
+                maximum_scale = 10;
+            }
+            else
+            {
+                if (minimum != maximum)
+                {
+                    minimum_scale = minimum - (maximum - minimum) * 0.2;
+                    if (minimum_scale < 0)
+                        minimum_scale = 0;
+                    maximum_scale = maximum + (maximum - minimum) * 0.2;
+                }
+                else
+                {
+                    minimum_scale = minimum - minimum * 0.2;
+                    maximum_scale = maximum + maximum * 0.2;
+                }
+            }
+
+            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
+
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
+            //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
+            //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
+
+            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            {
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
+
+                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
+            }
+            else
+            {
+                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                {
+                    if (m_tecView.lastMin > 1)
+                    {
+                        double[] valuesFactLast = new double[m_tecView.lastMin - 1];
+                        for (int i = 0; i < m_tecView.lastMin - 1; i++)
+                            valuesFactLast[i] = valuesFact[i];
+
+                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, FormMain.formGraphicsSettings.pColor);
+
+                        PointPairList valuesRecList = new PointPairList();
+                        if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                            for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
+                                valuesRecList.Add((double)(i + 1), valuesRecommend[i]);
+
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, FormMain.formGraphicsSettings.recColor);
+                    }
+                    else
+                    {
+                        LineItem curve1 = pane.AddCurve("Мощность", null, null, FormMain.formGraphicsSettings.pColor);
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
+                    }
+                }
+            }
+
+            pane.BarSettings.Type = BarType.Overlay;
+
+            pane.XAxis.Type = AxisType.Linear;
+
+            pane.XAxis.Title.Text = "";
+            pane.YAxis.Title.Text = "";
+
+            if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
+                pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                                    (hour + 1).ToString() + "* час";
+            else
+                pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                                    (hour + 1).ToString() + " час";
+
+            pane.XAxis.Scale.Min = 0.5;
+            pane.XAxis.Scale.Max = 20.5;
+            pane.XAxis.Scale.MinorStep = 1;
+            pane.XAxis.Scale.MajorStep = 1;
+
+            pane.XAxis.Scale.TextLabels = names;
+            pane.XAxis.Scale.IsPreventLabelOverlap = false;
+
+            // Включаем отображение сетки напротив крупных рисок по оси X
+            pane.XAxis.MajorGrid.IsVisible = true;
+            // Задаем вид пунктирной линии для крупных рисок по оси X:
+            // Длина штрихов равна 10 пикселям, ... 
+            pane.XAxis.MajorGrid.DashOn = 10;
+            // затем 5 пикселей - пропуск
+            pane.XAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.XAxis.MajorGrid.PenWidth = 0.1F;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+            // Включаем отображение сетки напротив крупных рисок по оси Y
+            pane.YAxis.MajorGrid.IsVisible = true;
+            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
+            pane.YAxis.MajorGrid.DashOn = 10;
+            pane.YAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.YAxis.MajorGrid.PenWidth = 0.1F;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+            // Включаем отображение сетки напротив мелких рисок по оси Y
+            pane.YAxis.MinorGrid.IsVisible = true;
+            // Длина штрихов равна одному пикселю, ... 
+            pane.YAxis.MinorGrid.DashOn = 1;
+            pane.YAxis.MinorGrid.DashOff = 2;
+            // толщина линий
+            pane.YAxis.MinorGrid.PenWidth = 0.1F;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+
+            // Устанавливаем интересующий нас интервал по оси Y
+            pane.YAxis.Scale.Min = minimum_scale;
+            pane.YAxis.Scale.Max = maximum_scale;
+
+            m_ZedGraphMins.AxisChange();
+
+            m_ZedGraphMins.Invalidate();
+        }
+
+        private void DrawGraphHours()
+        {
+            GraphPane pane = m_ZedGraphHours.GraphPane;
+
+            pane.CurveList.Clear();
+
+            int itemscount;
+
+            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                itemscount = 25;
+            else
+                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                    itemscount = 23;
+                else
+                    itemscount = 24;
+
+            string[] names = new string[itemscount];
+
+            double[] valuesPDiviation = new double[itemscount];
+            double[] valuesODiviation = new double[itemscount];
+            double[] valuesUDGe = new double[itemscount];
+            double[] valuesFact = new double[itemscount];
+
+            double minimum = double.MaxValue, minimum_scale;
+            double maximum = 0, maximum_scale;
+            bool noValues = true;
+            for (int i = 0; i < itemscount; i++)
+            {
+                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                {
+                    if (i <= m_tecView.m_valuesHours.hourAddon)
+                    {
+                        names[i] = (i + 1).ToString();
+                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
+                    }
+                    else
+                        if (i == m_tecView.m_valuesHours.hourAddon + 1)
+                        {
+                            names[i] = i.ToString() + "*";
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon + m_tecView.m_valuesHours.valuesDiviationAddon;
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon - m_tecView.m_valuesHours.valuesDiviationAddon;
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGeAddon;
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFactAddon;
+                        }
+                        else
+                        {
+                            this.m_dgwHours.Rows[i].Cells[0].Value = i.ToString();
+                            names[i] = i.ToString();
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] + m_tecView.m_valuesHours.valuesDiviation[i - 1];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] - m_tecView.m_valuesHours.valuesDiviation[i - 1];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i - 1];
+                        }
+
+                }
+                else
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                    {
+                        if (i < m_tecView.m_valuesHours.hourAddon)
+                        {
+                            names[i] = (i + 1).ToString();
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
+                        }
+                        else
+                        {
+                            names[i] = (i + 2).ToString();
+                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] + m_tecView.m_valuesHours.valuesDiviation[i + 1];
+                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] - m_tecView.m_valuesHours.valuesDiviation[i + 1];
+                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1];
+                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i + 1];
+                        }
+                    }
+                    else
+                    {
+                        names[i] = (i + 1).ToString();
+                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
+                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
+                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
+                    }
+
+                if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
+                {
+                    minimum = valuesPDiviation[i];
+                    noValues = false;
+                }
+
+                if (minimum > valuesODiviation[i] && valuesODiviation[i] != 0)
+                {
+                    minimum = valuesODiviation[i];
+                    noValues = false;
+                }
+
+                if (minimum > valuesUDGe[i] && valuesUDGe[i] != 0)
+                {
+                    minimum = valuesUDGe[i];
+                    noValues = false;
+                }
+
+                if (minimum > valuesFact[i] && valuesFact[i] != 0)
+                {
+                    minimum = valuesFact[i];
+                    noValues = false;
+                }
+
+                if (maximum < valuesPDiviation[i])
+                    maximum = valuesPDiviation[i];
+
+                if (maximum < valuesODiviation[i])
+                    maximum = valuesODiviation[i];
+
+                if (maximum < valuesUDGe[i])
+                    maximum = valuesUDGe[i];
+
+                if (maximum < valuesFact[i])
+                    maximum = valuesFact[i];
+            }
+
+            if (!(FormMain.formGraphicsSettings.scale == true))
+                minimum = 0;
+
+            if (noValues)
+            {
+                minimum_scale = 0;
+                maximum_scale = 10;
+            }
+            else
+            {
+                if (minimum != maximum)
+                {
+                    minimum_scale = minimum - (maximum - minimum) * 0.2;
+                    if (minimum_scale < 0)
+                        minimum_scale = 0;
+                    maximum_scale = maximum + (maximum - minimum) * 0.2;
+                }
+                else
+                {
+                    minimum_scale = minimum - minimum * 0.2;
+                    maximum_scale = maximum + maximum * 0.2;
+                }
+            }
+
+            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
+
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
+            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
+            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
+
+
+            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            {
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
+            }
+            else
+            {
+                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                {
+                    int valuescount;
+
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                        valuescount = m_tecView.lastHour + 1;
+                    else
+                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                            valuescount = m_tecView.lastHour - 1;
+                        else
+                            valuescount = m_tecView.lastHour;
+
+                    double[] valuesFactNew = new double[valuescount];
+                    for (int i = 0; i < valuescount; i++)
+                        valuesFactNew[i] = valuesFact[i];
+
+                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, FormMain.formGraphicsSettings.pColor);
+                }
+            }
+
+            pane.XAxis.Type = AxisType.Text;
+            pane.XAxis.Title.Text = "";
+            pane.YAxis.Title.Text = "";
+            pane.Title.Text = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+
+            pane.XAxis.Scale.TextLabels = names;
+            pane.XAxis.Scale.IsPreventLabelOverlap = false;
+
+            // Включаем отображение сетки напротив крупных рисок по оси X
+            pane.XAxis.MajorGrid.IsVisible = true;
+            // Задаем вид пунктирной линии для крупных рисок по оси X:
+            // Длина штрихов равна 10 пикселям, ... 
+            pane.XAxis.MajorGrid.DashOn = 10;
+            // затем 5 пикселей - пропуск
+            pane.XAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.XAxis.MajorGrid.PenWidth = 0.1F;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+            // Включаем отображение сетки напротив крупных рисок по оси Y
+            pane.YAxis.MajorGrid.IsVisible = true;
+            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
+            pane.YAxis.MajorGrid.DashOn = 10;
+            pane.YAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.YAxis.MajorGrid.PenWidth = 0.1F;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+            // Включаем отображение сетки напротив мелких рисок по оси Y
+            pane.YAxis.MinorGrid.IsVisible = true;
+            // Длина штрихов равна одному пикселю, ... 
+            pane.YAxis.MinorGrid.DashOn = 1;
+            pane.YAxis.MinorGrid.DashOff = 2;
+            // толщина линий
+            pane.YAxis.MinorGrid.PenWidth = 0.1F;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+
+            // Устанавливаем интересующий нас интервал по оси Y
+            pane.YAxis.Scale.Min = minimum_scale;
+            pane.YAxis.Scale.Max = maximum_scale;
+
+            m_ZedGraphHours.AxisChange();
+
+            m_ZedGraphHours.Invalidate();
+        }
+
+        public void UpdateGraphicsCurrent()
+        {
+            lock (m_tecView.m_lockValue)
+            {
+                DrawGraphMins(m_tecView.lastHour);
+                DrawGraphHours();
+            }
+        }
+
+        private void stctrViewPanel1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+        }
+
+        private void stctrViewPanel2_SplitterMoved(object sender, SplitterEventArgs e)
+        {
         }
     }
 }
