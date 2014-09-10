@@ -31,12 +31,13 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
-            m_ContextMenuStripListTecViews = new System.Windows.Forms.ContextMenuStrip ();
+            this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.выборОбъектыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выборОбъекты22ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выборОбъекты23ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,7 +61,7 @@
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
-            this.m_ContextMenuStripListTecViews.SuspendLayout ();
+            //this.m_ContextMenuStripListTecViews.SuspendLayout ();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -80,9 +81,9 @@
             // 
             // ContextMenuStrip
             // 
-            this.m_ContextMenuStripListTecViews.Location = new System.Drawing.Point(0, 0);
-            this.m_ContextMenuStripListTecViews.Name = "ContextMenuStripListTecViews";
-            this.m_ContextMenuStripListTecViews.Text = "Контекстное меню";
+            this.ContextMenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.ContextMenuStrip.Name = "ContextMenuStripListTecViews";
+            this.ContextMenuStrip.Text = "Контекстное меню";
             // 
             // файлToolStripMenuItem
             // 
@@ -103,7 +104,8 @@
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.панельГрафическихToolStripMenuItem,
-            this.выборОбъектыToolStripMenuItem,
+            this.выборОбъекты22ToolStripMenuItem,
+            this.выборОбъекты23ToolStripMenuItem,
             this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem,
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem,
             this.мониторингПоследняяМинутаЧасToolStripMenuItem,
@@ -152,13 +154,21 @@
             this.собственныеНуждыToolStripMenuItem.Text = "Собственные нужды";
             this.собственныеНуждыToolStripMenuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыToolStripMenuItem_CheckedChanged);
             // 
-            // выборОбъектыToolStripMenuItem
+            // выборОбъекты22ToolStripMenuItem
             // 
-            this.выборОбъектыToolStripMenuItem.CheckOnClick = true;
-            this.выборОбъектыToolStripMenuItem.Name = "выборОбъектыToolStripMenuItem";
-            this.выборОбъектыToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.выборОбъектыToolStripMenuItem.Text = "Выбор объектов отображения";
-            this.выборОбъектыToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъектыToolStripMenuItem_CheckedChanged);
+            this.выборОбъекты22ToolStripMenuItem.CheckOnClick = true;
+            this.выборОбъекты22ToolStripMenuItem.Name = "выборОбъектывыборОбъекты22ToolStripMenuItem";
+            this.выборОбъекты22ToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.выборОбъекты22ToolStripMenuItem.Text = "Выбор объектов отображения (2X2)";
+            this.выборОбъекты22ToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
+            // 
+            // выборОбъекты23ToolStripMenuItem
+            // 
+            this.выборОбъекты23ToolStripMenuItem.CheckOnClick = true;
+            this.выборОбъекты23ToolStripMenuItem.Name = "выборОбъектывыборОбъекты23ToolStripMenuItem";
+            this.выборОбъекты23ToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.выборОбъекты23ToolStripMenuItem.Text = "Выбор объектов отображения (2X3)";
+            this.выборОбъекты23ToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
             // 
             // настройкиToolStripMenuItem
             // 
@@ -320,7 +330,7 @@
             //this.Controls.Add(this.m_ContextMenuStripListTecViews);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
-            this.ContextMenuStrip = this.m_ContextMenuStripListTecViews;
+            //this.ContextMenuStrip = this.m_ContextMenuStripListTecViews;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -329,8 +339,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
-            this.m_ContextMenuStripListTecViews.ResumeLayout(false);
-            this.m_ContextMenuStripListTecViews.PerformLayout();
+            this.ContextMenuStrip.ResumeLayout(false);
+            this.ContextMenuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -339,7 +349,7 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip;
-        private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
+        //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
@@ -356,7 +366,8 @@
         private System.Windows.Forms.Label lblLabel;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem панельГрафическихToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem выборОбъектыToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem выборОбъекты22ToolStripMenuItem
+            , выборОбъекты23ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;

@@ -45,7 +45,7 @@ namespace StatisticCommon
 
     public partial class HLabel : System.Windows.Forms.Label
     {
-        public enum TYPE_HLABEL { UNKNOWN = -1, TG, TOTAL, COUNT_TYPE_HLABEL };
+        public enum TYPE_HLABEL { UNKNOWN = -1, TG, TOTAL, TOTAL_ZOOM, COUNT_TYPE_HLABEL };
         public TYPE_HLABEL m_type;
 
         public HLabel(Point pt, Size sz, Color foreColor, Color backColor, Single szFont, ContentAlignment align)

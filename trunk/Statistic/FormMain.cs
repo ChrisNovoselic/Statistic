@@ -30,7 +30,8 @@ namespace Statistic
         PanelTMSNPower m_panelSNPower;
         PanelLastMinutes m_panelLastMinutes;
         PanelSobstvNyzhdy m_panelSobstvNyzhdy;
-        PanelCustomTecView m_panelCustomTecView;
+        PanelCustomTecView m_panelCustomTecView22
+            , m_panelCustomTecView23;
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
@@ -181,7 +182,7 @@ namespace Statistic
                     m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
                 }
 
-                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, m_ContextMenuStripListTecViews);
+                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, this.ContextMenuStrip);
 
                 m_passwords = new Passwords ();
                 formPassword = new FormPassword(m_passwords);
@@ -196,7 +197,7 @@ namespace Statistic
             else
             {
                 if (!(formChangeMode == null))
-                    formChangeMode = new FormChangeMode(new List<StatisticCommon.TEC>(), m_ContextMenuStripListTecViews);
+                    formChangeMode = new FormChangeMode(new List<StatisticCommon.TEC>(), this.ContextMenuStrip);
                 else
                     ;
             }
@@ -279,10 +280,14 @@ namespace Statistic
                                 }
                                 else
                                     if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelCustomTecView) {
-                                        выборОбъектыToolStripMenuItem.Checked = false;
+                                        выборОбъекты22ToolStripMenuItem.Checked = false;
                                     }
                                     else
-                                        ;
+                                        if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelCustomTecView) {
+                                            выборОбъекты23ToolStripMenuItem.Checked = false;
+                                        }
+                                        else
+                                            ;
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -370,13 +375,15 @@ namespace Statistic
             //m_panelCurPower.Stop();
 
             мониторингПоследняяМинутаЧасToolStripMenuItem.Checked = false;
-            выборОбъектыToolStripMenuItem.Checked = false;
+            выборОбъекты22ToolStripMenuItem.Checked = false;
+            выборОбъекты23ToolStripMenuItem.Checked = false;
 
             if (!(m_panelCurPower == null)) m_panelCurPower.Stop(); else ;
             if (!(m_panelSNPower == null)) m_panelSNPower.Stop(); else ;
             if (!(m_panelLastMinutes == null)) m_panelLastMinutes.Stop(); else ;
             if (!(m_panelSobstvNyzhdy == null)) m_panelSobstvNyzhdy.Stop(); else ;
-            if (!(m_panelCustomTecView == null)) m_panelCustomTecView.Stop(); else ;
+            if (!(m_panelCustomTecView22 == null)) m_panelCustomTecView22.Stop(); else ;
+            if (!(m_panelCustomTecView23 == null)) m_panelCustomTecView23.Stop(); else ;
         }
 
         private void ClearTabPages()
@@ -1211,7 +1218,8 @@ namespace Statistic
                 m_panelSobstvNyzhdy = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
                 m_panelSobstvNyzhdy.SetDelegate(null, null, delegateEvent);
 
-                m_panelCustomTecView = new PanelCustomTecView(formChangeMode, ErrorReport, ActionReport);
+                m_panelCustomTecView22 = new PanelCustomTecView(formChangeMode, new Size (2, 2), ErrorReport, ActionReport);
+                m_panelCustomTecView23 = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
                 //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
                 //m_panelCustomTecView.Start();
 
@@ -1340,23 +1348,32 @@ namespace Statistic
             }
         }
 
-        private void выборОбъектыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        private void выборОбъектыToolStripMenuItem_CheckedChanged(PanelCustomTecView obj, string nameTab, bool bChecked)
         {
-            string nameTab = @"Объекты по выбору";
-            if (((ToolStripMenuItem)sender).Checked == true)
+            if (bChecked == true)
             {
                 tclTecViews.AddTabPage(nameTab);
-                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelCustomTecView);
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(obj);
 
-                m_panelCustomTecView.Start();
+                obj.Start();
                 ActivateTabPage();
             }
             else
             {
                 tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab(nameTab));
-                m_panelLastMinutes.Activate(false);
-                m_panelLastMinutes.Stop();
+                obj.Activate(false);
+                obj.Stop();
             }
+        }
+
+        private void выборОбъекты22ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            выборОбъектыToolStripMenuItem_CheckedChanged (m_panelCustomTecView22, @"Объекты по выбору 2X2", ((ToolStripMenuItem)sender).Checked);
+        }
+
+        private void выборОбъекты23ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            выборОбъектыToolStripMenuItem_CheckedChanged(m_panelCustomTecView23, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void UpdateActiveGui()
@@ -1369,7 +1386,10 @@ namespace Statistic
                 if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
                     ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
                 else
-                    ;
+                    if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelCustomTecView)
+                        ((PanelCustomTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent();
+                    else
+                        ;
         }
 
         private const int SW_SHOWNOACTIVATE = 4;

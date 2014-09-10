@@ -129,7 +129,6 @@ namespace Statistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
-
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
         {
             // контекстные меню
@@ -436,6 +435,7 @@ namespace Statistic
             this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
 
             this.stctrView = new System.Windows.Forms.SplitContainer();
+            //this.stctrView.IsSplitterFixed = true;
 
             this.m_pnlQuickData.SuspendLayout();
 
@@ -1097,7 +1097,6 @@ namespace Statistic
                 Logging.Logg().LogExceptionToFile(e, "Обращение к переменной 'timerCurrent'");
             }
         }
-
 
         private void DrawGraphMins(int hour)
         {

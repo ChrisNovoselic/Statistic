@@ -26,7 +26,7 @@ namespace Statistic
 
         public Font[] GetFontHLabel()
         {
-            string[] textOfMaxLengths = new string[] { string.Empty, string.Empty };
+            string[] textOfMaxLengths = new string[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL] { string.Empty, string.Empty, string.Empty };
             SizeF[] szLabelOfMinSizes = new SizeF[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL]; //(float.MaxValue, float.MaxValue);
 
             Font[] fonts = null;
@@ -236,6 +236,11 @@ namespace Statistic
                     break;
             }
 
+            if ((((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == false) && (col > 2))
+                col --;
+            else
+                ;
+
             return new TableLayoutPanelCellPosition(col, row);
         }
 
@@ -247,7 +252,29 @@ namespace Statistic
         {
             components = new System.ComponentModel.Container();
 
-            this.RowCount = 12;
+            bool bChecked = true;
+            if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) bChecked = false; else ;
+            this.ContextMenuStrip = new ContextMenuStrip ();
+            this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
+                new ToolStripMenuItem (@"Прогноз ЭЭ"),
+                new ToolStripMenuItem (@"Знач. телеметрии") });
+            this.ContextMenuStrip.Items[0].Enabled = false; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
+            this.ContextMenuStrip.Items[1].Enabled = false; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnVisibleTM;
+
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) {
+                COL_TG_START -= 2;
+            }
+            else
+                ;
+            
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false) {
+                COUNT_LABEL --;
+                COL_TG_START --;
+            }
+            else
+                ;
+
+            this.RowCount = COUNT_ROWS;
 
             for (int i = 0; i < this.RowCount + 1; i++)
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
@@ -328,6 +355,8 @@ namespace Statistic
 
             for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
+                //szFont = 6F;
+
                 switch (i)
                 {
                     case CONTROLS.lblCommonP:
@@ -405,93 +434,121 @@ namespace Statistic
                     ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
                 }
 
-                //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
-                this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
+                bool bAddItem = false;
+                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == false) {
+                    if (i == CONTROLS.lblCommonPVal_TM)
+                        ; //continue;
+                    else {
+                        bAddItem = true;
+                    }
+                }
+                else
+                {
+                    bAddItem = true;
+                }
+
+                if (bAddItem == true)
+                {
+                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
+                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
+                }
+                else
+                    ;
             }
 
             //Ширина столбцов группы "Рекомендация"
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            else
+                ;
 
-            for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == true)
             {
-                switch (i)
+                for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
                 {
-                    case CONTROLS.lblCurrentE:
-                    case CONTROLS.lblHourE:
-                    case CONTROLS.lblDevE:
-                        foreColor = Color.Black;
-                        backClolor = Color.Empty;
-                        szFont = 8F;
-                        align = ContentAlignment.MiddleRight;
-                        //sz = new Size(-1, -1);
-                        //col = 4;
-                        break;
-                    case CONTROLS.lblCurrentEVal:
-                    case CONTROLS.lblHourEVal:
-                    case CONTROLS.lblDevEVal:
-                        foreColor = Color.LimeGreen;
-                        backClolor = Color.Black;
-                        szFont = 15F;
-                        align = ContentAlignment.MiddleCenter;
-                        //sz = arPlacement[(int)i].sz;
-                        //col = 5;
-                        break;
-                    default:
-                        foreColor = Color.Red;
-                        backClolor = Color.Yellow;
-                        szFont = 6F;
-                        align = ContentAlignment.MiddleCenter;
-                        //sz = new Size(-1, -1);
-                        break;
-                }
+                    switch (i)
+                    {
+                        case CONTROLS.lblCurrentE:
+                        case CONTROLS.lblHourE:
+                        case CONTROLS.lblDevE:
+                            foreColor = Color.Black;
+                            backClolor = Color.Empty;
+                            szFont = 8F;
+                            align = ContentAlignment.MiddleRight;
+                            //sz = new Size(-1, -1);
+                            //col = 4;
+                            break;
+                        case CONTROLS.lblCurrentEVal:
+                        case CONTROLS.lblHourEVal:
+                        case CONTROLS.lblDevEVal:
+                            foreColor = Color.LimeGreen;
+                            backClolor = Color.Black;
+                            szFont = 15F;
+                            align = ContentAlignment.MiddleCenter;
+                            //sz = arPlacement[(int)i].sz;
+                            //col = 5;
+                            break;
+                        default:
+                            foreColor = Color.Red;
+                            backClolor = Color.Yellow;
+                            szFont = 6F;
+                            align = ContentAlignment.MiddleCenter;
+                            //sz = new Size(-1, -1);
+                            break;
+                    }
 
-                switch (i)
-                {
-                    case CONTROLS.lblCurrentE:
-                        text = @"Етек"; //@"P тек";
-                        break;
-                    case CONTROLS.lblHourE:
-                        text = @"Ечас";
-                        break;
-                    case CONTROLS.lblDevE:
-                        text = @"Откл";
-                        break;
-                    default:
-                        text = string.Empty;
-                        //text = @"---";
-                        break;
-                }
+                    switch (i)
+                    {
+                        case CONTROLS.lblCurrentE:
+                            text = @"Етек"; //@"P тек";
+                            break;
+                        case CONTROLS.lblHourE:
+                            text = @"Ечас";
+                            break;
+                        case CONTROLS.lblDevE:
+                            text = @"Откл";
+                            break;
+                        default:
+                            text = string.Empty;
+                            //text = @"---";
+                            break;
+                    }
 
-                if (text.Equals(string.Empty) == false)
-                {
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                    if (text.Equals(string.Empty) == false)
+                    {
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                                                                                            new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                            foreColor, backClolor,
+                                                                                            szFont, align));
+                    }
+                    else
+                    {
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
                                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                         foreColor, backClolor,
                                                                                         szFont, align));
-                }
-                else
-                {
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
-                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                    foreColor, backClolor,
-                                                                                    szFont, align));
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
-                    ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                        ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                    }
+
+                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
+                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
                 }
 
-                //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
-                this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
+                //Ширина столбцов группы "Отклонение"
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
             }
+            else
+                ;
 
-            //Ширина столбцов группы "Отклонение"
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            OnSizeChanged(this, EventArgs.Empty);
         }
 
         #endregion
@@ -543,23 +600,46 @@ namespace Statistic
 
         public System.Windows.Forms.Button btnSetNow;
         public DateTimePicker dtprDate;
+        private HLabel m_lblPowerFactZoom;
         public System.Windows.Forms.Label lblServerTime;
         private System.Windows.Forms.Label lblPBRNumber;
 
-        public void Initialize()
-        {
-            int COUNT_TG_IN_COLUMN = 4
+        int COUNT_LABEL = 3 
+                , COUNT_TG_IN_COLUMN = 4
                 , COL_TG_START = 6
                 , COUNT_ROWS = 12;
-            for (int i = 0; i < (m_tgsValues.Count / COUNT_TG_IN_COLUMN) + 1; i++)
+
+        public void Initialize()
+        {
+            int cnt = ((m_tgsValues.Count / COUNT_TG_IN_COLUMN) + ((m_tgsValues.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
+            bool bPowerFactZoom = false;
+
+            for (int i = 0; i < cnt; i++)
             {
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
+                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
+                else
+                    ;
             }
 
+            m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
+            m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
+            m_lblPowerFactZoom.Text = @"Pтек=---.--";
+
+            if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) {
+                this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cnt * COUNT_LABEL + 0, 0);
+                this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88*3));
+
+                bPowerFactZoom = true;
+            }
+            else
+                ;
+
             Panel panelEmpty = new Panel();
-            this.Controls.Add(panelEmpty, COL_TG_START + ((m_tgsValues.Count / COUNT_TG_IN_COLUMN) + 1) * (int)(TG.INDEX_VALUE.COUNT_INDEX_VALUE + 1), 0);
+            this.Controls.Add(panelEmpty, COL_TG_START + cnt * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
             this.SetRowSpan(panelEmpty, COUNT_ROWS);
             this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         }
@@ -601,22 +681,22 @@ namespace Statistic
 
             //positionXName += 69; positionXValue += 69;
 
-            int COUNT_LABEL = 3 //lblName + 2 * lblValue
-                , COUNT_ROWS = 12
-                , COL_TG_START = 6
-                , COUNT_TG_IN_COLUMN = 4;
-
             this.Controls.Add(lblName);
             this.SetCellPosition(lblName, new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
-            this.SetRowSpan(lblName, (12 / 4));
+            this.SetRowSpan(lblName, (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
             this.Controls.Add(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT]);
             this.SetCellPosition(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
             this.SetRowSpan(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
-            this.Controls.Add(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM]);
-            this.SetCellPosition(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
-            this.SetRowSpan(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+            if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
+            {
+                this.Controls.Add(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM]);
+                this.SetCellPosition(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                this.SetRowSpan(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+            }
+            else
+                ;
         }
     }
 
@@ -653,63 +733,67 @@ namespace Statistic
         {
             double value_TM = 0.0;
             int i = 0;
-            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
-            {
-                foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
+
+            if (!(m_parent == null))
+                if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                 {
-                    if (g.m_id < 500)
-                        //Только ГТП
-                        foreach (TG tg in g.m_listTG)
-                        {
-                            if (tg.id_tm > 0)
+                    foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
+                    {
+                        if (g.m_id < 500)
+                            //Только ГТП
+                            foreach (TG tg in g.m_listTG)
                             {
-                                if (tg.power_TM > 1)
+                                if (tg.id_tm > 0)
                                 {
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
-                                    value_TM += tg.power_TM;
+                                    if (tg.power_TM > 1)
+                                    {
+                                        m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
+                                        value_TM += tg.power_TM;
+                                    }
+                                    else
+                                        m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
+
                                 }
                                 else
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
-
+                                {
+                                    m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
+                                }
+                                i++;
+                            }
+                        else
+                            ;
+                    }
+                }
+                else
+                {
+                    foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
+                    {
+                        if (tg.id_tm > 0)
+                        {
+                            if (tg.power_TM > 1)
+                            {
+                                m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
+                                value_TM += tg.power_TM;
                             }
                             else
-                            {
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
-                            }
-                            i++;
-                        }
-                    else
-                        ;
-                }
-            }
-            else
-            {
-                foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
-                {
-                    if (tg.id_tm > 0)
-                    {
-                        if (tg.power_TM > 1)
-                        {
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
-                            value_TM += tg.power_TM;
+                                m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
                         }
                         else
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
+                        {
+                            m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
+                        }
+                        i++;
                     }
-                    else
-                    {
-                        m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
-                    }
-                    i++;
                 }
-            }
+            else
+                ;
 
             if (value_TM < 1)
                 value_TM = 0.0;
             else
                 ;
 
-            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal], value_TM);
+            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal], value_TM, true, string.Empty);
         }
 
         /// <summary>
@@ -717,12 +801,21 @@ namespace Statistic
         /// </summary>
         /// <param name="lbl">элемент управления, как ссылка</param>
         /// <param name="val">значение для отображения</param>
-        private void showValue(ref System.Windows.Forms.Label lbl, double val)
+        private void showValue(ref System.Windows.Forms.Label lbl, double val, bool bPower, string adding)
         {
-            if (val > 1)
-                lbl.Text = val.ToString("F2");
+            if (! (lbl == null))
+                if (val == double.NaN)
+                    lbl.Text = adding;
+                else
+                    if (bPower == true)
+                        if (val > 1)
+                            lbl.Text = val.ToString("F2") + adding;
+                        else
+                            lbl.Text = 0.ToString("F0");
+                    else
+                        lbl.Text = val.ToString("F2") + adding;
             else
-                lbl.Text = 0.ToString("F0");
+                ;
         }
 
         /// <summary>
@@ -743,184 +836,205 @@ namespace Statistic
         /// </summary>
         public void ShowFactValues()
         {
-            int indxStartCommonPVal = PanelQuickData.m_indxStartCommonPVal;
-            int i = -1, j = -1,
-                min = m_parent.m_tecView.lastMin;
+            if (! (m_parent == null)) {
+                int indxStartCommonPVal = PanelQuickData.m_indxStartCommonPVal;
+                int i = -1, j = -1,
+                    min = m_parent.m_tecView.lastMin;
 
-            if (!(min == 0)) min--; else ;
+                if (!(min == 0)) min--; else ;
 
-            double valueEBefore = 0.0,
-                    valueECur = 0.0,
-                    valueEFuture = 0.0;
-            for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                for (j = 0; j < min; j++)
-                    valueEBefore += m_parent.m_tecView.listTG[i].power[j] / 20;
+                double valueEBefore = 0.0,
+                        valueECur = 0.0,
+                        valueEFuture = 0.0;
+                for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
+                    for (j = 0; j < min; j++)
+                        valueEBefore += m_parent.m_tecView.listTG[i].power[j] / 20;
 
-            double value = 0;
-            for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
+                double value = 0;
+                for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
+                    if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
 
-            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value);
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value, true, string.Empty);
+                m_lblPowerFactZoom.Text = @"Pтек=" + value.ToString (@"F2");
 
-            valueECur = value / 20;
-            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur);
+                valueECur = value / 20;
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur, true, string.Empty);
 
-            valueEFuture = valueECur * (20 - min - 0);
-            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture);
+                valueEFuture = valueECur * (20 - min - 0);
+                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture, true, string.Empty);
 
-            if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
-            {
-                showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.m_tecView.recomendation);
-            }
-            else
-            {
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal].Text = "---";
-            }
-
-            double summ = 0;
-            //Для возможности восстановления значения
-            bool bPrevRecalcAver = m_parent.m_tecView.recalcAver;
-
-            if ((m_parent.m_tecView.currHour == true) && (min == 0))
-                m_parent.m_tecView.recalcAver = false;
-            else
-                ;
-
-            if (m_parent.m_tecView.recalcAver == true)
-            {
-                if (m_parent.m_tecView.currHour == true)
+                if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
                 {
-                    for (i = 1; i < m_parent.m_tecView.lastMin; i++)
-                        summ += m_parent.m_tecView.m_valuesMins.valuesFact[i];
-                    if (!(min == 0))
-                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min);
-                    else
-                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = 0.ToString("F0");
+                    showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.m_tecView.recomendation, true, string.Empty);
                 }
                 else
                 {
-                    int hour = m_parent.m_tecView.lastHour;
-                    if (hour == 24)
-                        hour = 23;
-
-                    if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
-                        summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
-                    else
-                        summ = m_parent.m_tecView.m_valuesHours.valuesFact[hour];
-
-                    showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ);
+                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblPBRrecVal - indxStartCommonPVal].Text = "---";
                 }
 
-                //if (! ([lastHour] == 0))
-                if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
-                    (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
-                {
-                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = ((((valueEBefore + valueECur + valueEFuture) -
-                                                m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100).ToString("F2") + "%";
-                }
+                double summ = 0;
+                //Для возможности восстановления значения
+                bool bPrevRecalcAver = m_parent.m_tecView.recalcAver;
+
+                if ((m_parent.m_tecView.currHour == true) && (min == 0))
+                    m_parent.m_tecView.recalcAver = false;
                 else
-                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = "---";
-            }
+                    ;
 
-            if ((m_parent.m_tecView.currHour == true) && (min == 0))
-                m_parent.m_tecView.recalcAver = bPrevRecalcAver;
-            else
-                ;
-
-            if (m_parent.m_tecView.currHour == true)
-            {
-                if (m_parent.m_tecView.lastHourError == true)
+                if (m_parent.m_tecView.recalcAver == true)
                 {
-                    //m_parent.ErrorReport("По текущему часу значений не найдено!");
-                    m_parent.m_tecView.ErrorReport("По текущему часу значений не найдено!");
-                }
-                else
-                {
-                    if (m_parent.m_tecView.lastHourHalfError == true)
+                    if (m_parent.m_tecView.currHour == true)
                     {
-                        m_parent.m_tecView.ErrorReport("За текущий час не получены некоторые получасовые значения!");
+                        for (i = 1; i < m_parent.m_tecView.lastMin; i++)
+                            summ += m_parent.m_tecView.m_valuesMins.valuesFact[i];
+                        if (!(min == 0))
+                            showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min, true, string.Empty);
+                        else
+                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = 0.ToString("F0");
                     }
                     else
                     {
-                        if (m_parent.m_tecView.lastMinError == true)
+                        int hour = m_parent.m_tecView.lastHour;
+                        if (hour == 24)
+                            hour = 23;
+                        else
+                            ;
+
+                        if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
+                            summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
+                        else
+                            summ = m_parent.m_tecView.m_valuesHours.valuesFact[hour];
+
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ, true, string.Empty);
+                    }
+
+                    //if (! ([lastHour] == 0))
+                    if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
+                        (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
+                    {
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], ((((valueEBefore + valueECur + valueEFuture) -
+                                                    m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100), false, @"%");
+                        //m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = .ToString("F2") + "%";
+                    }
+                    else
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NaN, false, @"---");
+                }
+
+                if ((m_parent.m_tecView.currHour == true) && (min == 0))
+                    m_parent.m_tecView.recalcAver = bPrevRecalcAver;
+                else
+                    ;
+
+                if (m_parent.m_tecView.currHour == true)
+                {
+                    if (m_parent.m_tecView.lastHourError == true)
+                    {
+                        //m_parent.ErrorReport("По текущему часу значений не найдено!");
+                        m_parent.m_tecView.ErrorReport("По текущему часу значений не найдено!");
+                    }
+                    else
+                    {
+                        if (m_parent.m_tecView.lastHourHalfError == true)
                         {
-                            m_parent.m_tecView.ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
+                            m_parent.m_tecView.ErrorReport("За текущий час не получены некоторые получасовые значения!");
                         }
                         else
                         {
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
-
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen;
-                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor =
-                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
-            }
-
-            lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
-
-            //ShowTGValue
-            i = 0;
-            if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
-            {
-                foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
-                {
-                    if (g.m_id < 500)
-                        //Только ГТП
-                        foreach (TG tg in g.m_listTG)
-                        {
-                            if (tg.receivedMin[min] == true)
+                            if (m_parent.m_tecView.lastMinError == true)
                             {
-                                showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
-                                if (m_parent.m_tecView.currHour == true)
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
-                                else
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                m_parent.m_tecView.ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
+                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
+                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
+                                m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;
                             }
                             else
                             {
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
+                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
+                                m_lblPowerFactZoom.ForeColor = System.Drawing.Color.LimeGreen;
+
+                                if (! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen; else ;
+                                if (!(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow; else ;
                             }
-                            i++;
                         }
+                    }
+                }
+                else
+                {
+                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
+                    m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;
+
+                    if ((! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) && (! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)))
+                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor =
+                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
                     else
                         ;
                 }
+
+                lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
+
+                //ShowTGValue
+                i = 0;
+                if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+                {
+                    foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                    {
+                        if (g.m_id < 500)
+                            //Только ГТП
+                            foreach (TG tg in g.m_listTG)
+                            {
+                                if (tg.receivedMin[min] == true)
+                                {
+                                    showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
+                                    if (m_parent.m_tecView.currHour == true)
+                                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                                    else
+                                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                }
+                                else
+                                {
+                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                }
+                                i++;
+                            }
+                        else
+                            ;
+                    }
+                }
+                else
+                {
+                    foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
+                    {
+                        if (comp.m_listTG [0].receivedMin[min] == true)
+                        {
+                            showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
+                            if (m_parent.m_tecView.currHour == true)
+                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                            else
+                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                        }
+                        else
+                        {
+                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                        }
+                        i++;
+                    }
+                }
+
+                Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
             }
             else
-            {
-                foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
-                {
-                    if (comp.m_listTG [0].receivedMin[min] == true)
-                    {
-                        showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
-                        if (m_parent.m_tecView.currHour == true)
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
-                        else
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                    }
-                    else
-                    {
-                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                    }
-                    i++;
-                }
-            }
+                ;
+        }
 
-            Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
+        private void OnVisibleForecast (object obj, EventArgs ev) {
+        }
+
+        private void OnVisibleTM(object obj, EventArgs ev)
+        {
         }
     }
 }
