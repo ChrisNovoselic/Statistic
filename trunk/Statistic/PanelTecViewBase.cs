@@ -1049,6 +1049,8 @@ namespace Statistic
                 currValuesPeriod = 0;
                 
                 ChangeState ();
+
+                //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
             }
             else
             {

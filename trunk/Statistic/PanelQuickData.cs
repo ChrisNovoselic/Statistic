@@ -548,7 +548,7 @@ namespace Statistic
             else
                 ;
 
-            OnSizeChanged(this, EventArgs.Empty);
+            //OnSizeChanged(this, EventArgs.Empty);
         }
 
         #endregion
@@ -626,7 +626,7 @@ namespace Statistic
 
             m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
             m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
-            m_lblPowerFactZoom.Text = @"Pтек=---.--";
+            m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
             if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) {
                 this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cnt * COUNT_LABEL + 0, 0);
@@ -664,7 +664,7 @@ namespace Statistic
             //lblValue.TextAlign = ContentAlignment.MiddleCenter;
             //lblValue = HLabel.createLabel(name_shr + "_Fact", new HLabelStyles(new Point(positionXValue, positionYValue), new Size(63, 27), Color.LimeGreen, Color.Black, 15F, ContentAlignment.MiddleCenter));
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
-            hlblValue.Text = name_shr + @"_Fact";
+            hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
             m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
 
@@ -675,7 +675,7 @@ namespace Statistic
             //lblValue.TextAlign = ContentAlignment.MiddleCenter;
             //lblValue = HLabel.createLabel(name_shr + "_TM", new HLabelStyles(new Point(positionXValue, positionYValue), new Size(63, 27), Color.Green, Color.Black, 15F, ContentAlignment.MiddleCenter));
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
-            hlblValue.Text = name_shr + @"_TM";
+            hlblValue.Text = @"---.--"; //name_shr + @"_TM";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
             m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
