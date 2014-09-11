@@ -40,12 +40,6 @@ namespace StatisticCommon
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
-        public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к 'DbInterface' в 'tec.cs' для 'Data' и 'PanelAdmin.cs' для 'AdminValues', 'PBR'
-
-        private bool is_connection_error;
-        private bool is_data_error;
-
-        private int used;
 
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
@@ -110,22 +104,7 @@ namespace StatisticCommon
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
-            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i ++) {
-                m_arIdListeners [i] = -1;
-            }
-
             m_strNamesField = new List<string> ();
-
-            //if ((type () == TEC_TYPE.BIYSK) && (bUseData == true))
-            //    parametersTGForm = new FormParametersTG_FileINI (@"setup.ini");
-            //else
-            //    ;
-
-            is_data_error = is_connection_error = false;
-
-            used = 0;
         }
 
         public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
@@ -141,94 +120,6 @@ namespace StatisticCommon
             m_strNamesField.Add(pbr_number); //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        public void Request(CONN_SETT_TYPE indx_src, string request)
-        {
-            if (!(m_arIdListeners[(int)indx_src] < 0))
-                DbSources.Sources ().Request (m_arIdListeners [(int)indx_src], request);
-            else
-                ;
-        }
-
-        public bool Response(CONN_SETT_TYPE indx_src, out bool error, out DataTable table)
-        {
-            if (!(m_arIdListeners[(int)indx_src] < 0))
-                return DbSources.Sources ().Response(m_arIdListeners[(int)indx_src], out error, out table);
-            else
-            {
-                error = true;
-                table = null;
-
-                return false;
-            }
-        }
-
-        private void register(CONN_SETT_TYPE type)
-        {
-            m_arIdListeners[(int)type] = DbSources.Sources().Register(connSetts[(int)type], true, @"ТЭЦ=" + name_shr + @"; DESC=" + type.ToString());
-
-            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_ASKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
-                if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
-                {
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.COMMON;
-                }
-                else
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
-            else
-                ;
-
-            m_arInterfaceType[(int)type] = DbTSQLInterface.getTypeDB(connSetts[(int)type].port);
-        }
-
-        public void StartDbInterfaces(CONN_SETT_TYPE limConnSettType)
-        {
-            if (! (connSetts == null)) {
-                CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
-                
-                if (used == 0)
-                {                    
-                    //m_arIdListeners = new  int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
-                    //for (CONN_SETT_TYPE i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-                    for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
-                    {
-                        if (!(connSetts[(int)i] == null))
-                        {
-                            register (i);
-                        }
-                        else
-                            ;
-                    }
-                }
-                else {
-                    for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
-                    {
-                        if (!(connSetts[(int)i] == null) && (m_arIdListeners[(int)i] < 0))
-                        {
-                            register (i);
-                        }
-                        else
-                            ;
-                    }
-                }
-
-                used++;
-
-                if (used > list_TECComponents.Count)
-                    used = list_TECComponents.Count;
-                else
-                    ;
-
-                if ((limConnSettType > (CONN_SETT_TYPE.PBR + 1)) && (m_bSensorsStrings == false))
-                    InitSensorsTEC ();
-                else
-                    ;
-            }
-            else
-                //Вообще нельзя что-либо инициализировать
-                Logging.Logg().LogErrorToFile(@"TEC::StartDbInterfaces () - connSetts == null ...");
-        }
-
-        //m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]
         public static string AddSensor(string prevSensors, int sensor, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
         {
             string strRes = prevSensors;
@@ -337,62 +228,6 @@ namespace StatisticCommon
             }
         }
 
-        private void stopDbInterfaces()
-        {
-            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                if (!(m_arIdListeners[i] < 0))
-                {
-                    DbSources.Sources().UnRegister(m_arIdListeners[i]);
-                    m_arIdListeners[i] = -1;
-                }
-                else
-                    ;
-            }
-        }
-
-        public void StopDbInterfaces()
-        {
-            used--;
-            if (used == 0)
-            {
-                stopDbInterfaces();
-            }
-            else
-                ;
-
-            if (used < 0)
-                used = 0;
-            else
-                ;
-        }
-
-        public void StopDbInterfacesForce()
-        {
-            if (used > 0)
-            {
-                stopDbInterfaces();
-            }
-            else
-                ;
-        }
-
-        public void RefreshConnectionSettings()
-        {
-            if (used > 0)
-            {
-                for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-                {
-                    if (! (m_arIdListeners [i] < 0))
-                        DbSources.Sources ().SetConnectionSettings (m_arIdListeners [i], connSetts [i], true);
-                    else
-                        ;
-                }                
-            }
-            else
-                ;
-        }
-
         public int connSettings (DataTable source, int type) {
             int iRes = 0, iVal = -1;
             bool bRes = false, bVal = false;
@@ -419,6 +254,18 @@ namespace StatisticCommon
                 else
                     connSetts[type].ignore = false;
             }
+
+            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_ASKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
+                if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
+                {
+                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
+                }
+                else
+                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_ASKUE] = TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
+            else
+                ;
+
+            m_arInterfaceType[(int)type] = DbTSQLInterface.getTypeDB(connSetts[(int)type].port);
 
             return iRes;
         }

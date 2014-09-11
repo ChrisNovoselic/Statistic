@@ -174,6 +174,8 @@ namespace Statistic
         public List <TECComponentBase> m_localTECComponents;
         public Dictionary <int, TecView.valuesTECComponent> m_dictValuesTECComponent;
 
+        public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к
+
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public double recomendation;
 
@@ -300,6 +302,13 @@ namespace Statistic
 
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
+
+            m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            {
+                m_arIdListeners[i] = -1;
+            }
         }
 
         public class EventRegEventArgs : EventArgs
@@ -528,13 +537,7 @@ namespace Statistic
         {
             ClearValues();
 
-            if (!(m_list_tec == null))
-                foreach (TEC t in m_list_tec)
-                {
-                    t.StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
-                }
-            else
-                Logging.Logg().LogErrorToFile(@"TecView::Start () - m_list_tec == null");
+            StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
             
             base.Start();
         }
@@ -543,13 +546,7 @@ namespace Statistic
         {
             base.Stop();
 
-            if (!(m_list_tec == null))
-                foreach (TEC t in m_list_tec)
-                {
-                    t.StopDbInterfaces();
-                }
-            else
-                Logging.Logg().LogErrorToFile(@"TecView::Stop () - m_list_tec == null");
+            StopDbInterfaces();
         }
 
         public override void InitTEC(List<StatisticCommon.TEC> listTEC)
@@ -604,7 +601,7 @@ namespace Statistic
 
             if (IsCanUseTECComponents() == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request (m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date, s_typeFields, allTECComponents[indxTECComponents]));
+                Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date, s_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -641,7 +638,7 @@ namespace Statistic
         private void GetCurrentTMGenRequest()
         {
             //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString (-1, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(-1, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields) {
@@ -743,7 +740,7 @@ namespace Statistic
         private void GetCurrentTMSNRequest()
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
-            Request(m_tec.m_arIdListeners [(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
         private bool GetCurrentTMSNResponse(DataTable table)
@@ -1292,11 +1289,11 @@ namespace Statistic
             if (IsCanUseTECComponents())
             {
                 GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN]);
+                                    m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
             }
             else
                 GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(m_tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN]);
+                                    m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
         }
 
         private bool GetCurrentTimeAdminResponse(DataTable table)
@@ -2698,105 +2695,110 @@ namespace Statistic
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
 
-            if (indxTECComponents < 0)
-            {
-                foreach (TECComponent g in m_localTECComponents)
+            bRes = CheckNameFieldsOfTable(table_in, new string[] { @"ID", @"value", @"last_changed_at" });
+
+            if (bRes == false)
+                ;
+            else
+                if (indxTECComponents < 0)
                 {
-                    foreach (TG tg in g.m_listTG)
+                    foreach (TECComponent g in m_localTECComponents)
                     {
-                        for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                        foreach (TG tg in g.m_listTG)
                         {
-                            tg.power_LastMinutesTM[i] = 0;
+                            for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
+                            {
+                                tg.power_LastMinutesTM[i] = 0;
+                            }
+
+                            tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+
+                            for (i = 0; i < tgRows.Length; i++)
+                            {
+                                if (!(tgRows[i]["value"] is DBNull))
+                                    if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                        return false;
+                                    else
+                                        ;
+                                else
+                                    value = 0.0;
+
+                                if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
+                                    return false;
+                                else
+                                    ;
+
+                                hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
+                                //if (!(hour < 24)) hour -= 24; else ;
+                                if (hour > 24) hour -= 24; else ;
+
+                                tg.power_LastMinutesTM[hour] = value;
+
+                                //Запрос с учетом значения перехода через сутки
+                                if (hour > 0 && value > 1) {
+                                    m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
+                                    m_dictValuesTECComponent[tg.m_id_owner_gtp].valuesLastMinutesTM [hour - 1] += value;
+                                }
+                                else
+                                    ;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (TECComponent comp in m_localTECComponents)
+                    {
+                        for (i = 0; i < comp.m_listTG [0].power_LastMinutesTM.Length; i++)
+                        {
+                            comp.m_listTG[0].power_LastMinutesTM[i] = 0;
                         }
 
-                        tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+                        tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
 
                         for (i = 0; i < tgRows.Length; i++)
                         {
-                            if (!(tgRows[i]["value"] is DBNull))
+                            if (tgRows[i] == null)
+                                continue;
+                            else
+                                ;
+
+                            try
+                            {
                                 if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
                                     return false;
                                 else
                                     ;
-                            else
-                                value = 0.0;
 
-                            if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
-                                return false;
-                            else
-                                ;
-
-                            hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
-                            //if (!(hour < 24)) hour -= 24; else ;
-                            if (hour > 24) hour -= 24; else ;
-
-                            tg.power_LastMinutesTM[hour] = value;
-
-                            //Запрос с учетом значения перехода через сутки
-                            if (hour > 0 && value > 1) {
-                                m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
-                                m_dictValuesTECComponent[tg.m_id_owner_gtp].valuesLastMinutesTM [hour - 1] += value;
+                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
+                                    return false;
+                                else
+                                    ;
                             }
+                            catch (Exception e)
+                            {
+                                Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                                dtVal = DateTime.Now.Date;
+                            }
+
+                            hour = dtVal.Hour + offsetUTC + 1;
+                            //if (!(hour < 24))
+                            if (hour > 24)
+                                hour -= 24;
+                            else ;
+
+                            //if (dtReq.Date.Equals (dtVal.Date) == true) {
+                            comp.m_listTG[0].power_LastMinutesTM[hour] = value;
+
+                            if (hour > 0 && value > 1)
+                                m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
                             else
                                 ;
+                            //} else ;
                         }
                     }
                 }
-            }
-            else
-            {
-                foreach (TECComponent comp in m_localTECComponents)
-                {
-                    for (i = 0; i < comp.m_listTG [0].power_LastMinutesTM.Length; i++)
-                    {
-                        comp.m_listTG[0].power_LastMinutesTM[i] = 0;
-                    }
-
-                    tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
-
-                    for (i = 0; i < tgRows.Length; i++)
-                    {
-                        if (tgRows[i] == null)
-                            continue;
-                        else
-                            ;
-
-                        try
-                        {
-                            if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                return false;
-                            else
-                                ;
-
-                            if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                return false;
-                            else
-                                ;
-                        }
-                        catch (Exception e)
-                        {
-                            Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
-
-                            dtVal = DateTime.Now.Date;
-                        }
-
-                        hour = dtVal.Hour + offsetUTC + 1;
-                        //if (!(hour < 24))
-                        if (hour > 24)
-                            hour -= 24;
-                        else ;
-
-                        //if (dtReq.Date.Equals (dtVal.Date) == true) {
-                        comp.m_listTG[0].power_LastMinutesTM[hour] = value;
-
-                        if (hour > 0 && value > 1)
-                            m_valuesHours.valuesLastMinutesTM[hour - 1] += value;
-                        else
-                            ;
-                        //} else ;
-                    }
-                }
-            }
 
             return bRes;
         }
@@ -3101,7 +3103,7 @@ namespace Statistic
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
         }
 
         private void GetMinsRequest(int hour)
@@ -3109,19 +3111,19 @@ namespace Statistic
             //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
         private void GetHoursTMSNPsumRequest(DateTime dt)
         {
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private void GetPPBRValuesRequest()
@@ -3129,7 +3131,7 @@ namespace Statistic
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date, s_typeFields));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date, s_typeFields));
         }
 
         private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
@@ -3137,7 +3139,7 @@ namespace Statistic
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date, mode));
-            Request(m_tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date, mode));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date, mode));
         }
 
         protected override void InitializeSyncState()

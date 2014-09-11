@@ -95,10 +95,11 @@ namespace Statistic
                                 iEnd = (int)INDEX_PROPERTIES_VIEW.TABLE_HOURS;
                             }
 
-                            for (i = iStart; ! (i > iEnd); i ++)
+                            for (i = iStart; ! (i > iEnd); i ++) {
+                                cnt -= m_propView [i] ;
                                 m_propView [i] = 0; //Снять с отображения
+                            }
 
-                            cnt = 1;
                         //} else ;
                     }
                     else

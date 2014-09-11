@@ -80,6 +80,8 @@ namespace StatisticCommon
         protected volatile bool newState;
         protected volatile List<int /*StatesMachine*/> states;
 
+        protected Dictionary <int, int []> m_dictIdListeners;
+
         private enum StateActions
         {
             Request,
@@ -109,6 +111,8 @@ namespace StatisticCommon
         public HAdmin()
         {
             m_IdListenerCurrent = -1;
+
+            m_dictIdListeners = new Dictionary<int,int[]> ();
             
             Initialize ();
         }
@@ -253,6 +257,98 @@ namespace StatisticCommon
             {
                 actived = active;
             }
+        }
+
+
+        private void register(int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)
+        {
+            m_dictIdListeners[id][(int)type] = DbSources.Sources().Register(connSett, true, @"ТЭЦ=" + name + @"; DESC=" + type.ToString());
+        }
+
+        public void StartDbInterfaces(CONN_SETT_TYPE limConnSettType)
+        {
+            if (!(m_list_tec == null))
+                foreach (TEC t in m_list_tec)
+                    if (!(t.connSetts == null))
+                    {
+                        CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+
+                        if (m_dictIdListeners.ContainsKey(t.m_id) == false) {
+                            m_dictIdListeners.Add (t.m_id, new int [(int)i]);
+
+                            for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
+                                m_dictIdListeners[t.m_id][(int)i] = -1;
+                        } else
+                            ;
+
+                        for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
+                        {
+                            if (!(t.connSetts[(int)i] == null))
+                            {
+                                if (m_dictIdListeners[t.m_id][(int)i] < 0)
+                                    ;
+                                else
+                                    DbSources.Sources().UnRegister(m_dictIdListeners[t.m_id][(int)i]);
+
+                                register(t.m_id, t.connSetts[(int)i], t.name_shr, i);
+                            }
+                            else
+                                ;
+                        }
+
+                        if ((limConnSettType > (CONN_SETT_TYPE.PBR + 1)) && (t.m_bSensorsStrings == false))
+                            t.InitSensorsTEC();
+                        else
+                            ;
+                    }
+                    else
+                        //Вообще нельзя что-либо инициализировать
+                        Logging.Logg().LogErrorToFile(@"HAdmin::StartDbInterfaces () - connSetts == null ...");
+            else
+                //Вообще нельзя что-либо инициализировать
+                Logging.Logg().LogErrorToFile(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...");
+        }
+
+        private void stopDbInterfaces()
+        {
+            if (!(m_list_tec == null))
+                foreach (TEC t in m_list_tec)
+                    for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                    {
+                        if ((m_dictIdListeners.ContainsKey (t.m_id) == true) && (!(m_dictIdListeners[t.m_id][i] < 0)))
+                        {
+                            DbSources.Sources().UnRegister(m_dictIdListeners[t.m_id][i]);
+                            m_dictIdListeners[t.m_id][i] = -1;
+                        }
+                        else
+                            ;
+                    }
+            else
+                //Вообще нельзя что-либо инициализировать
+                Logging.Logg().LogErrorToFile(@"HAdmin::stopDbInterfaces () - m_list_tec == null ...");
+        }
+
+        public void StopDbInterfaces()
+        {
+            stopDbInterfaces();
+        }
+
+        public void RefreshConnectionSettings()
+        {
+            if (threadIsWorking > 0)
+            {
+                foreach (TEC t in m_list_tec) {
+                    for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                    {
+                        if (!(m_dictIdListeners [t.m_id][i] < 0))
+                            DbSources.Sources().SetConnectionSettings(m_dictIdListeners[t.m_id][i], t.connSetts[i], true);
+                        else
+                            ;
+                    }
+                }
+            }
+            else
+                ;
         }
 
         public void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
@@ -450,6 +546,8 @@ namespace StatisticCommon
         {
             bool joined;
             threadIsWorking = -1;
+
+            StopDbInterfaces ();
             
             ClearStates ();
 

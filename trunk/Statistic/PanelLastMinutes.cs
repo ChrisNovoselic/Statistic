@@ -163,8 +163,8 @@ namespace Statistic
         {
             int i = 0;
 
-            m_evTimerCurrent.Reset();
-            m_timerCurrent.Dispose();
+            if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
+            if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
 
             foreach (Control ctrl in this.Controls)
             {

@@ -1313,7 +1313,7 @@ namespace Statistic
 
         private void мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            string nameTab = "Монитор P-2%";
+            string nameTab = "Монитор P-d4%";
             if (((ToolStripMenuItem)sender).Checked == true)
             {
                 tclTecViews.AddTabPage(nameTab);

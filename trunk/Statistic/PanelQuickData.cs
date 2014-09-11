@@ -804,7 +804,7 @@ namespace Statistic
         private void showValue(ref System.Windows.Forms.Label lbl, double val, bool bPower, string adding)
         {
             if (! (lbl == null))
-                if (val == double.NaN)
+                if (val == double.NegativeInfinity)
                     lbl.Text = adding;
                 else
                     if (bPower == true)
@@ -917,7 +917,7 @@ namespace Statistic
                         //m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = .ToString("F2") + "%";
                     }
                     else
-                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NaN, false, @"---");
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---");
                 }
 
                 if ((m_parent.m_tecView.currHour == true) && (min == 0))

@@ -484,13 +484,13 @@ namespace Statistic
             if (!(obj is BarItem) && !(obj is LineItem))
                 return true;
 
-            if (found == true)
+            if ((! (m_tecView == null)) && (found == true))
             {
-                delegateStartWait();
+                if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
                 m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                delegateStopWait();
+                if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }
 
             return true;

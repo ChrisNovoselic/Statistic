@@ -398,11 +398,11 @@ namespace StatisticCommon
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
+            Request(m_dictIdListeners [t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date, mode));
         }
 
         private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode) {
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date, mode));
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetAdminValueQuery(comp, date, mode));
         }
 
         public virtual void ImpRDGExcelValues(int indx, DateTime date)
@@ -717,7 +717,7 @@ namespace StatisticCommon
             if (IsCanUseTECComponents())
             {
                 GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN]);
+                                    m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
             }
             else
                 ;
@@ -734,7 +734,7 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -750,7 +750,7 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -926,7 +926,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
@@ -975,7 +975,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("AdminTS::ClearAdminValuesRequest ()");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
@@ -1132,7 +1132,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("AdminTS::SetPPBRRequest ()");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
@@ -1181,7 +1181,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("ClearPPBRRequest");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(t.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         public int GetIndexTECComponent (int idTEC, int idComp) {
@@ -1297,7 +1297,7 @@ namespace StatisticCommon
 
             if (!(m_list_tec == null))
                 foreach (TEC t in m_list_tec) {
-                    t.StartDbInterfaces(CONN_SETT_TYPE.PBR + 1);
+                    StartDbInterfaces(CONN_SETT_TYPE.PBR + 1);
                 }
             else
                 Logging.Logg().LogErrorToFile(@"AdminTS::Start () - m_list_tec == null");
@@ -1314,7 +1314,7 @@ namespace StatisticCommon
             if (! (m_list_tec == null))
                 foreach (TEC t in m_list_tec)
                 {
-                    t.StopDbInterfaces();
+                    StopDbInterfaces();
                 }
             else
                 Logging.Logg().LogErrorToFile(@"AdminTS::Stop () - m_list_tec == null");
