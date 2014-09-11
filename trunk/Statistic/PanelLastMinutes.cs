@@ -57,6 +57,9 @@ namespace Statistic
         private List <Label> m_listLabelDateTime;
         private PanelDateTime m_panelDateTime;
 
+        private ManualResetEvent m_evTimerCurrent;
+        private System.Threading.Timer m_timerCurrent;
+
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
         static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
@@ -89,7 +92,12 @@ namespace Statistic
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             int i = -1;
-            
+
+            m_msecPeriodUpdate =
+                //30 //Для отладки
+                60 * 60
+                * 1000;
+
             InitializeComponent();
 
             this.Dock = DockStyle.Fill;
@@ -141,11 +149,23 @@ namespace Statistic
                 else
                     ;
             }
+
+            //Милисекунды до первого запуска функции таймера
+            double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 6, 0) - DateTime.Now).TotalMilliseconds;
+
+            m_evTimerCurrent = new ManualResetEvent(true);
+            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64)msecUpdate, m_msecPeriodUpdate - 1);
+            //Для отладки
+            //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, m_msecPeriodUpdate - 1);
         }
 
         public override void Stop()
         {
             int i = 0;
+
+            m_evTimerCurrent.Reset();
+            m_timerCurrent.Dispose();
+
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is PanelTecLastMinutes)
@@ -169,12 +189,6 @@ namespace Statistic
 
             m_bIsActive = active;
 
-            if (m_bIsActive == true)
-                //можно, конечно и в цикле дату/время передавать
-                EventChangeDateTime(m_panelDateTime.m_dtprDate.Value);
-            else
-                ;
-
             int i = 0;
             foreach (Control ctrl in this.Controls)
             {
@@ -188,6 +202,23 @@ namespace Statistic
                 else
                     ;
             }
+
+            if (m_bIsActive == true)
+                EventChangeDateTime (m_panelDateTime.m_dtprDate.Value);
+            else
+                ;
+        }
+
+        private void setDatetimePicker(DateTime dtSet)
+        {
+            m_panelDateTime.m_dtprDate.Value = dtSet;
+        }
+
+        private void TimerCurrent_Tick (object obj) {
+            if (m_bIsActive == true)
+                this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now);
+            else
+                ;
         }
 
         partial class PanelDateTime
@@ -335,9 +366,6 @@ namespace Statistic
             //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
             TecView m_tecView;
 
-            private ManualResetEvent m_evTimerCurrent;
-            private System.Threading.Timer m_timerCurrent;
-
             public PanelTecLastMinutes(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
@@ -425,12 +453,6 @@ namespace Statistic
                     ;
 
                 m_tecView.Start ();
-
-                //Милисекунды до первого запуска функции таймера
-                double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 11, 0) - DateTime.Now).TotalMilliseconds;
-
-                m_evTimerCurrent = new ManualResetEvent(true);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64) msecUpdate, ((PanelLastMinutes)Parent).m_msecPeriodUpdate - 1);
             }
 
             public void Stop()
@@ -441,9 +463,6 @@ namespace Statistic
                     ;
 
                 m_tecView.Stop();
-
-                m_evTimerCurrent.Reset();
-                m_timerCurrent.Dispose();
 
                 FormMainBaseWithStatusStrip.m_report.ClearStates();
             }
@@ -462,7 +481,7 @@ namespace Statistic
 
                 if (m_tecView.m_bIsActive == true)
                 {
-                    ChangeState();
+                    //ChangeState();
                 }
                 else
                 {
@@ -547,16 +566,6 @@ namespace Statistic
                     clr = Color.Green;
 
                 ((Label)sender).ForeColor = clr;
-            }
-
-            private void TimerCurrent_Tick(Object stateInfo)
-            {
-                if (m_tecView.m_bIsActive == true)
-                {
-                    ChangeState();
-                }
-                else
-                    ;
             }
 
             //private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
