@@ -1441,7 +1441,7 @@ namespace StatisticCommon
 
             FormMainBaseWithStatusStrip.m_report.ActionReport(strRep);
 
-            Logging.Logg().LogDebugToFile(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+            //Logging.Logg().LogDebugToFile(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
 
             return result;
         }
@@ -1701,7 +1701,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().LogDebugToFile(@"AdminTS::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+            //Logging.Logg().LogDebugToFile(@"AdminTS::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
         }

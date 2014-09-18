@@ -130,8 +130,17 @@ namespace StatisticCommon
         }
 
         private void Initialize () {
-            //Logging.Logg().LogDebugToFile ("Users::Initialize () - Ok");
-            Logging.Logg().LogToFile(@"Пользователь: " + DomainName + @", (id=" + Id + @"), роль: " + Role + @", id_tec=" + allTEC, true, true, true);
+            string strMes = string.Empty;
+
+            strMes = @"Пользователь: " + DomainName + @", (id=" + Id + @"), роль: " + Role + @", id_tec=" + allTEC;
+
+            System.Net.IPAddress[] listIP = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
+            int indxIP = -1;
+            for (indxIP = 0; indxIP < listIP.Length; indxIP ++) {
+                strMes += @", ip[" + indxIP + @"]=" + listIP[indxIP].ToString ();
+            }
+
+            Logging.Logg().LogToFile(strMes, true, true, true);
         }
 
         public static int Role {
