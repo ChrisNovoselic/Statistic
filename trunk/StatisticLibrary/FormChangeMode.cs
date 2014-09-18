@@ -25,6 +25,7 @@ namespace StatisticCommon
         private List <CheckBox> m_listCheckBoxTECComponent;
         public List<int> was_checked;
         public bool /*[]*/ admin_was_checked;
+        private List <int> m_listIDsProfileCheckedIndices;
         public bool closing;
 
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
@@ -36,10 +37,19 @@ namespace StatisticCommon
 
         private HMark m_modeTECComponent;
 
-        public FormChangeMode(List <TEC> tec, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
+        public FormChangeMode(List <TEC> tec, int [] arIDsCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
             this.Text = @"Выбор режима";
+
+            m_listIDsProfileCheckedIndices = new List<int>();
+            if (arIDsCheckedIndices.Length > 0) {
+                foreach (int val in arIDsCheckedIndices) {
+                    m_listIDsProfileCheckedIndices.Add(val);
+                }
+            }
+            else
+                ;
 
             m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
             m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
@@ -256,6 +266,10 @@ namespace StatisticCommon
                     if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
+                        if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
+                            admin_was_checked = true;
+                            clbMode.SetItemCheckState (clbMode.Items.Count - 1, CheckState.Checked);
+                        } else ;
                     }
                     else
                         if ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.NSS))

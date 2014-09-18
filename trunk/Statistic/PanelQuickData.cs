@@ -1024,7 +1024,7 @@ namespace Statistic
                     }
                 }
 
-                Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
+                //Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
             }
             else
                 ;

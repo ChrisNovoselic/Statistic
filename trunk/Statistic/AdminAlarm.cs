@@ -12,7 +12,28 @@ namespace Statistic
     public class AdminAlarm
     {
         public enum INDEX_TYPE_ALARM { CUR_POWER, TGTurnOnOff }
-        
+        public enum INDEX_STATES_ALARM { QUEUEDED = -1, PROCESSED, CONFIRMED }
+
+        //private bool m_bDestGUIActivated;
+        //public bool DestGUIActivated { get { return m_bDestGUIActivated; } set { if (! (m_bDestGUIActivated == value)) OnChangedDestGUIActivated (value); else ; } }
+        //private void OnChangedDestGUIActivated(bool newVal) {
+        //    m_bDestGUIActivated = newVal;
+
+        //    if (m_bDestGUIActivated == true) {
+        //        //ѕередать все накопленные событи€ "родителю"
+        //        foreach (KeyValuePair <int, int> cKey in m_dictAlarmObject.Keys) {
+        //            if (m_dictAlarmObject [cKey].state < INDEX_STATES_ALARM.PROCESSED) {
+        //                m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED;
+        //                EventAdd (m_dictAlarmObject [cKey].m_evReg);
+        //            }
+        //            else
+        //                ;
+        //        }
+        //    }
+        //    else
+        //        ;
+        //}
+
         private class ALARM_OBJECT
         {
             public INDEX_TYPE_ALARM type; //{ get { return id_tg > 0 ? INDEX_TYPE_ALARM.CUR_POWER : INDEX_TYPE_ALARM.TGTurnOnOff; } }
@@ -21,9 +42,11 @@ namespace Statistic
                 }
             }
 
+            public TecView.EventRegEventArgs m_evReg;
             public DateTime dtReg, dtConfirm;
+            public INDEX_STATES_ALARM state;
 
-            public ALARM_OBJECT(int tg) { dtReg = dtConfirm = DateTime.Now; }
+            public ALARM_OBJECT(TecView.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
         }
 
         List<TecView> m_listTecView;
@@ -68,6 +91,7 @@ namespace Statistic
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
             {
                 m_dictAlarmObject [cKey].dtConfirm = DateTime.Now;
+                m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.CONFIRMED;
 
                 if (!(id_tg < 0))
                     EventConfirm(id_tg);
@@ -84,10 +108,14 @@ namespace Statistic
             KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (ev.m_id_gtp, ev.m_id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == false)
             {
-                alarmObj = new ALARM_OBJECT(ev.m_id_tg);
+                alarmObj = new ALARM_OBJECT(ev);
                 m_dictAlarmObject.Add(cKey, alarmObj);
 
-                EventAdd(ev);
+                //if (m_bDestGUIActivated == true) {
+                    m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED;
+                    
+                    EventAdd(ev);
+                //} else ;
             }
             else {
                 bool bEventRetry = false;
@@ -105,7 +133,11 @@ namespace Statistic
                 if (bEventRetry == true) {
                     m_dictAlarmObject[cKey].dtReg = DateTime.Now;
 
-                    EventRetry(ev);
+                    //if (m_bDestGUIActivated == true) {
+                        if (m_dictAlarmObject [cKey].state < INDEX_STATES_ALARM.PROCESSED) m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED; else ;
+
+                        EventRetry(ev);
+                    //} else ;
                 }
                 else
                     ;
@@ -164,9 +196,10 @@ namespace Statistic
             lockValue = new object ();
 
             m_iActiveCounter = -1; //ƒл€ отслеживани€ 1-й по счету "активации"
+            //m_bDestGUIActivated = false; //јктивна ли вкладка (родитель) дл€ отображени€ событий сигнализации
 
             m_msecTimerUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000; //5 * 60 * 1000;
-            m_msecEventRetry = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
+            m_msecEventRetry = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000; 
         }
 
         public void Activate(bool active)

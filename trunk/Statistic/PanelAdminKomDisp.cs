@@ -18,7 +18,7 @@ namespace Statistic
     {
         private System.Windows.Forms.Button btnImportCSV;
 
-        private System.Windows.Forms.CheckBox m_cbxAlarm;
+        public System.Windows.Forms.CheckBox m_cbxAlarm;
         private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
         private Label lblKoeffAlarmCurPower;
         private NumericUpDown m_nudnKoeffAlarmCurPower;
@@ -136,7 +136,8 @@ namespace Statistic
             // m_cbxAlarm
             // 
             this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
-            this.m_cbxAlarm.Checked = false;
+            this.m_cbxAlarm.Checked = false; //PanelAdminKomDisp.ALARM_USE;
+
             this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
             this.m_cbxAlarm.Name = "cbxAlarm";
             //this.m_cbxAlarm.Size = new System.Drawing.Size(154, 8);
@@ -144,7 +145,7 @@ namespace Statistic
             //this.m_cbxAlarm.TabIndex = 4;
             this.m_cbxAlarm.TabStop = false;
             this.m_cbxAlarm.Text = @"Синализация вкл.";
-            this.m_cbxAlarm.CheckedChanged += new EventHandler(m_cbxAlarm_CheckedChanged);
+            this.m_cbxAlarm.CheckedChanged += new EventHandler(cbxAlarm_CheckedChanged);
 
             int offsetPosY = 28;
             //
@@ -233,6 +234,13 @@ namespace Statistic
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
+        public override void Activate(bool activate)
+        {
+            //m_adminAlarm.DestGUIActivated = activate;
+
+            base.Activate (activate);
+        }
+
         private void EnabledButtonAlarm(int id_comp)
         {
             if (m_cbxAlarm.Checked == true)
@@ -318,10 +326,10 @@ namespace Statistic
                 id_evt = ev.m_id_gtp;
 
                 if (ev.m_situation == 1)
-                    msg = @"больше";
+                    msg = @"вверх";
                 else
                     if (ev.m_situation == -1)
-                        msg = @"меньше";
+                        msg = @"вниз";
                     else
                         msg = @"нет";
             }
@@ -506,7 +514,7 @@ namespace Statistic
                 ;
         }
 
-        private void m_cbxAlarm_CheckedChanged(object sender, EventArgs e)
+        private void cbxAlarm_CheckedChanged(object sender, EventArgs e)
         {
             this.lblKoeffAlarmCurPower.Enabled =
             this.m_nudnKoeffAlarmCurPower.Enabled = ((CheckBox)sender).Checked;

@@ -467,6 +467,9 @@ namespace Statistic
                         ;
                 }
 
+                //Для отладки
+                //EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+
                 if (!(power_TM < 0))
                     if (Math.Abs(power_TM - m_valuesHours.valuesUDGe[curHour]) > m_valuesHours.valuesUDGe[curHour] * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
                         //EventReg(allTECComponents[indxTECComponents].m_id, -1);
@@ -1002,7 +1005,7 @@ namespace Statistic
 
             ActionReport (@"Получение " + msg + @".");
 
-            Logging.Logg().LogDebugToFile(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+            //Logging.Logg().LogDebugToFile(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
             return bRes;
         }
@@ -1178,7 +1181,7 @@ namespace Statistic
             else
                 ;
 
-            Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
+            //Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
 
             return bRes;
         }
@@ -1754,22 +1757,27 @@ namespace Statistic
                         if (i == 0)
                         {
                             currPBRe = (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i] + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[24]) / 2;
-                            m_valuesHours.valuesPBRe[i] += currPBRe;
                         }
                         else
                         {
-                            currPBRe = (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i] + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i - 1]) / 2;
-                            m_valuesHours.valuesPBRe[i] += currPBRe;
+                            currPBRe = (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i] + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBR[i - 1]) / 2;                            
                         }
+
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesPBRe [i] = currPBRe;
+                        m_valuesHours.valuesPBRe[i] += currPBRe;
 
                         m_valuesHours.valuesREC[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i];
 
+                        m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesUDGe[i] = currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i];
                         m_valuesHours.valuesUDGe[i] += currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i];
 
-                        if (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesISPER[i] == 1)
-                            m_valuesHours.valuesDiviation[i] += (currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i]) * m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i] / 100;
-                        else
-                            m_valuesHours.valuesDiviation[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i];
+                        if (m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesISPER[i] == 1) {
+                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDiviation[i] = (currPBRe + m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesREC[i]) * m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i] / 100;
+                        }
+                        else {
+                            m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDiviation[i] = m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDIV[i];
+                        }
+                        m_valuesHours.valuesDiviation[i] += m_dictValuesTECComponent[m_localTECComponents[j].m_id].valuesDiviation[i];
                     }
                     /*m_valuesHours.valuesPBR[i] = 0.20;
                     m_valuesHours.valuesPBRe[i] = 0.20;

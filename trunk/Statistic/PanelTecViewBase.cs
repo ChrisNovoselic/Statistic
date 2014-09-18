@@ -751,7 +751,7 @@ namespace Statistic
 
             setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
 
-            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridMins () - ...");
+            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridMins () - ...");
         }
 
         private void FillGridHours()
@@ -978,7 +978,7 @@ namespace Statistic
 
             setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
 
-            Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridHours () - ...");
+            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridHours () - ...");
         }
 
         private void NewDateRefresh()

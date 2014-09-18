@@ -137,12 +137,17 @@ namespace Statistic
             catch (Exception e)
             {
                 //Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
-                //bRes = false;
+                bRes = false;
 
                 Abort(e.Message, true);
             }
 
             bool bUseData = true; //Для объекта 'AdminTS'
+
+            prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
+            m_prevSelectedIndex = 1; //??? = -1
+
+            tecViews = new List<PanelTecViewBase>();
 
             if (bRes == true)
             {
@@ -182,7 +187,18 @@ namespace Statistic
                     m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
                 }
 
-                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, this.ContextMenuStrip);
+                int [] arIDs = null;
+                if (((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP)) && (PanelAdminKomDisp.ALARM_USE == true))
+                {
+                    prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
+                    arIDs = new int[] { 0 };
+                }
+                else
+                    arIDs = new int[] { };
+
+                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, arIDs, this.ContextMenuStrip);
+                formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
+                if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
 
                 m_passwords = new Passwords ();
                 formPassword = new FormPassword(m_passwords);
@@ -196,22 +212,8 @@ namespace Statistic
             }
             else
             {
-                if (!(formChangeMode == null))
-                    formChangeMode = new FormChangeMode(new List<StatisticCommon.TEC>(), this.ContextMenuStrip);
-                else
-                    ;
+                сменитьРежимToolStripMenuItem.Enabled = false;
             }
-
-            if (!(formChangeMode == null))
-                formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
-            else
-               ;
-
-            tecViews = new List<PanelTecViewBase>();
-
-            prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
-
-            m_prevSelectedIndex = 1;
 
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
@@ -1158,7 +1160,7 @@ namespace Statistic
                 int i = -1;
 
                 // отображаем вкладки ТЭЦ
-                int index;
+                int index = -1;
                 for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
                 {
                     StatisticCommon.TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
@@ -1178,27 +1180,38 @@ namespace Statistic
                         ;
                 }
 
-                if (tclTecViews.TabPages.Count > 0)
-                {
-                    ActivateTabPage ();
-                }
-                else
-                    ;
-
                 if (formChangeMode.admin_was_checked == true)
                 {
                     //Никогда не выполняется...
                     //if (formPassword.ShowDialog() == DialogResult.Yes)
                     {
+                        if (! (m_arPanelAdmin == null))
+                            foreach (PanelAdmin pa in m_arPanelAdmin)
+                                if (! (pa == null))
+                                    pa.Start ();
+                                else
+                                    ;
+                        else
+                            ;
+
                         AddTabPageAdmin ();
                     }
                 }
                 else
                     ;
 
+                if ((tclTecViews.TabPages.Count > 0) || (formChangeMode.admin_was_checked == true))
+                {
+                    ActivateTabPage ();
+                }
+                else
+                    ;
+
                 if ((PanelAdminKomDisp.ALARM_USE == true) && (! (((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null))
-                    && (PanelAdminKomDisp.ALARM_USE == true))
+                    && (PanelAdminKomDisp.ALARM_USE == true)) {
                     ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Start();
+                    ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_cbxAlarm.Checked = true;
+                }
                 else
                     ;
                 
