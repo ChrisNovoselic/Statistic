@@ -33,10 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Infrastructure">
-      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
+      <HintPath>..\..\ModesApiDLL\Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="ModesApiExternal">
-      <HintPath>..\..\MCApiDLL\ModesApiExternal.dll</HintPath>
+      <HintPath>..\..\ModesApiDLL\ModesApiExternal.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

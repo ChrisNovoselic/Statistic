@@ -241,6 +241,8 @@ namespace Statistic
             else
                 ;
 
+            Console.WriteLine(@"PanelQuickData::getPositionCell () - " + indx.ToString () + @"[row=" + row + @", col=" + col + @"]");
+
             return new TableLayoutPanelCellPosition(col, row);
         }
 
@@ -259,8 +261,8 @@ namespace Statistic
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
                 new ToolStripMenuItem (@"Знач. телеметрии") });
             //Checked = bChecked;
-            this.ContextMenuStrip.Items[0].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = false; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
-            this.ContextMenuStrip.Items[1].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = true; this.ContextMenuStrip.Items[1].Click += OnVisibleTM;
+            this.ContextMenuStrip.Items[0].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = true; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
+            this.ContextMenuStrip.Items[1].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = false; this.ContextMenuStrip.Items[1].Click += OnVisibleTM;
 
             this.RowCount = COUNT_ROWS;
 
@@ -515,6 +517,8 @@ namespace Statistic
             m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
             m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
+            m_panelEmpty = new Panel();
+
             //OnSizeChanged(this, EventArgs.Empty);
         }
 
@@ -580,11 +584,13 @@ namespace Statistic
         public void RestructControl () {
             COUNT_LABEL = 3; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
 
+            Console.WriteLine(@"PanelQuickData::RestructControl () - вХод...");
+
             //Удаление ОБЩих элементов управления
             for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
-                if (! (this.m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null))
-                    this.Controls.Remove (this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null))
+                    if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]) < 0)) this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]); else ;
                 else
                     ;
             }
@@ -592,11 +598,29 @@ namespace Statistic
             for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
             {
                 if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null))
-                    this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]) < 0)) this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]); else ;
                 else
                     ;
             }
 
+            //Удаление ТГ
+            if (m_tgLabels.Count > 0)
+                for (int i = 1; i < m_tgLabels.Count + 1; i++)
+                    for (int j = 0; j < (int)TG.INDEX_VALUE.COUNT_INDEX_VALUE; j++)
+                        if ((!(m_tgLabels[i - 1][j] == null)) && (!(this.Controls.IndexOf(m_tgLabels[i - 1][j]) < 0)))
+                            this.Controls.Remove(m_tgLabels[i - 1][j]);
+                        else
+                            ;
+            else
+                ;
+
+            //Удаление ДУБЛирующей подписи
+            if (!(this.Controls.IndexOf(m_lblPowerFactZoom) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
+
+            //Удаление ПУСТой панели
+            if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_panelEmpty); else ;
+
+            //Удаление стилей столбцов
             while (this.ColumnStyles.Count > 1)
                 this.ColumnStyles.RemoveAt(this.ColumnStyles.Count - 1);
 
@@ -612,37 +636,6 @@ namespace Statistic
             }
             else
                 ;
-
-            int cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
-            bool bPowerFactZoom = false;
-
-            for (int i = 0; i < cntCols; i++)
-            {
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
-                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
-                    //Телеметрия ТГ
-                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
-                else
-                    ;
-            }
-
-            if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) {
-                if (!(this.Controls.IndexOf(m_lblPowerFactZoom) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
-                this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
-                this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88*3));
-
-                bPowerFactZoom = true;
-            }
-            else
-                ;
-
-            if (m_panelEmpty == null) m_panelEmpty = new Panel(); else ;
-            if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
-            this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
-            this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
             for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
@@ -698,22 +691,40 @@ namespace Statistic
             else
                 ;
 
+            int cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
+            bool bPowerFactZoom = false;
+
+            for (int i = 0; i < cntCols; i++)
+            {
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
+                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
+                    //Телеметрия ТГ
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
+                else
+                    ;
+            }
+
             if (m_tgLabels.Count > 0)
             {
+                int r = -1, c = -1;
                 for (int i = 1; i < m_tgLabels.Count + 1; i++)
                 {
                     this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC]);
-                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                    c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition(c, r));
                     this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
                     this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT]);
-                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                    c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition(c, r));
                     this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
                     if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
                     {
                         this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM]);
-                        this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                        c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                        this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition(c, r));
                         this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
                     }
                     else
@@ -722,6 +733,22 @@ namespace Statistic
             }
             else {
             }
+
+            //if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST))
+            if ((((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) && (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false))
+            {
+                this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
+                this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88 * 3));
+
+                bPowerFactZoom = true;
+            }
+            else
+                ;
+
+            this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
+            this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         }
 
         //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
