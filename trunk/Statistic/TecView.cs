@@ -2827,6 +2827,11 @@ namespace Statistic
             /*Form2 f2 = new Form2();
             f2.FillMinTable(table);*/
 
+            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
+                return false;
+            else
+                ;
+
             foreach (TECComponent g in m_tec.list_TECComponents)
             {
                 foreach (TG t in g.m_listTG)
@@ -2840,11 +2845,6 @@ namespace Statistic
             }
 
             lastMin = 0;
-
-            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
-                return false;
-            else
-                ;
 
             if (table.Rows.Count > 0)
             {

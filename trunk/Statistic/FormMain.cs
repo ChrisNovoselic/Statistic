@@ -282,14 +282,15 @@ namespace Statistic
                                 }
                                 else
                                     if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelCustomTecView) {
-                                        выборОбъекты22ToolStripMenuItem.Checked = false;
+                                        if (e.TabHeaderText.Contains (@"2X2") == true)
+                                            выборОбъекты22ToolStripMenuItem.Checked = false;
+                                        else if (e.TabHeaderText.Contains (@"2X3") == true)
+                                                выборОбъекты23ToolStripMenuItem.Checked = false;
+                                            else
+                                                ;
                                     }
                                     else
-                                        if (tclTecViews.TabPages [e.TabIndex].Controls [0] is PanelCustomTecView) {
-                                            выборОбъекты23ToolStripMenuItem.Checked = false;
-                                        }
-                                        else
-                                            ;
+                                        ;
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)

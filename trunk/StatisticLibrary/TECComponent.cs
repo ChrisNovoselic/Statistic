@@ -25,7 +25,7 @@ namespace StatisticCommon
     public class TG : TECComponentBase
     {
         public enum ID_TIME : int { UNKNOWN = -1, MINUTES, HOURS, COUNT_ID_TIME };
-        public enum INDEX_VALUE : int { FACT, TM, COUNT_INDEX_VALUE };
+        public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
         public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
         public double[] power;

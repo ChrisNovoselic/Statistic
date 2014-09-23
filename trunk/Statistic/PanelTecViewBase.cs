@@ -414,7 +414,7 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
 
-            this.m_pnlQuickData.Initialize();
+            this.m_pnlQuickData.RestructControl();
             this.Dock = System.Windows.Forms.DockStyle.Fill;
             //this.Location = arPlacement[(int)CONTROLS.THIS].pt;
             this.Name = "pnlTecView";

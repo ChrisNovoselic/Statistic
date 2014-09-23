@@ -258,21 +258,9 @@ namespace Statistic
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
                 new ToolStripMenuItem (@"Знач. телеметрии") });
-            this.ContextMenuStrip.Items[0].Enabled = false; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
-            this.ContextMenuStrip.Items[1].Enabled = false; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnVisibleTM;
-
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) {
-                COL_TG_START -= 2;
-            }
-            else
-                ;
-            
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false) {
-                COUNT_LABEL --;
-                COL_TG_START --;
-            }
-            else
-                ;
+            //Checked = bChecked;
+            this.ContextMenuStrip.Items[0].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = false; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
+            this.ContextMenuStrip.Items[1].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = true; this.ContextMenuStrip.Items[1].Click += OnVisibleTM;
 
             this.RowCount = COUNT_ROWS;
 
@@ -346,6 +334,7 @@ namespace Statistic
             //Ширина столбца группы "Элементы управления"
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
 
+            //Создание ОБЩих элементов управления
             Color foreColor, backClolor;
             float szFont;
             ContentAlignment align;
@@ -419,52 +408,27 @@ namespace Statistic
 
                 if (text.Equals(string.Empty) == false)
                 {
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
-                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                    foreColor, backClolor,
-                                                                                    szFont, align));
+                    if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
+                    else ;
                 }
                 else
                 {
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
-                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                    foreColor, backClolor,
-                                                                                    szFont, align));
-                    m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
-                    ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
-                }
-
-                bool bAddItem = false;
-                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == false) {
-                    if (i == CONTROLS.lblCommonPVal_TM)
-                        ; //continue;
-                    else {
-                        bAddItem = true;
+                    if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                    {
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
+                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                        ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
                     }
+                    else ;
                 }
-                else
-                {
-                    bAddItem = true;
-                }
-
-                if (bAddItem == true)
-                {
-                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
-                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
-                }
-                else
-                    ;
             }
-
-            //Ширина столбцов группы "Рекомендация"
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
-            else
-                ;
 
             if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == true)
             {
@@ -520,33 +484,36 @@ namespace Statistic
 
                     if (text.Equals(string.Empty) == false)
                     {
-                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
-                                                                                            new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                            foreColor, backClolor,
-                                                                                            szFont, align));
+                        if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                            m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
+                                                                                                new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                                foreColor, backClolor,
+                                                                                                szFont, align));
+                        else ;
                     }
                     else
                     {
-                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
-                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                        foreColor, backClolor,
-                                                                                        szFont, align));
-                        m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
-                        ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                        if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                        {
+                            m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
+                                                                                            new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                            foreColor, backClolor,
+                                                                                            szFont, align));
+                            m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                            ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                        }
+                        else
+                            ;
                     }
-
-                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
-                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
-                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
                 }
-
-                //Ширина столбцов группы "Отклонение"
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
             }
             else
                 ;
+
+            //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
+            m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
+            m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
+            m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
             //OnSizeChanged(this, EventArgs.Empty);
         }
@@ -577,7 +544,7 @@ namespace Statistic
         //    widthLabelName = 30;
         //HPlacement[] arPlacement =
         //        {   new HPlacement (112, 6, widthLabelName, 13), new HPlacement (143, 0, 79, 27), //lblCommonP, lblCommonPVal
-        //                                                        new HPlacement (224, 0, 79, 27),
+        //                                                            new HPlacement (224, 0, 79, 27),
         //            new HPlacement (112, 36, widthLabelName, 13), new HPlacement (143, 30, 79, 27), //lblAverP, lblAverPVal
         //            new HPlacement (112, 66, widthLabelName, 13), new HPlacement (143, 60, 79, 27),
         //            new HPlacement (330, 6, widthLabelName, 13), new HPlacement (360, 0, 79, 27), //lblCurrentE, lblCurrentEVal
@@ -596,40 +563,73 @@ namespace Statistic
         public System.Windows.Forms.Label[] m_arLabelCommon;
 
         //private List<System.Windows.Forms.Label> tgsName;
-        private List<System.Windows.Forms.Label[]> m_tgsValues = new List<System.Windows.Forms.Label[]>();
+        private List<System.Windows.Forms.Label[]> m_tgLabels = new List<System.Windows.Forms.Label[]>();
 
         public System.Windows.Forms.Button btnSetNow;
         public DateTimePicker dtprDate;
         private HLabel m_lblPowerFactZoom;
         public System.Windows.Forms.Label lblServerTime;
         private System.Windows.Forms.Label lblPBRNumber;
+        private Panel m_panelEmpty;
 
-        int COUNT_LABEL = 3 
-                , COUNT_TG_IN_COLUMN = 4
-                , COL_TG_START = 6
+        int COUNT_LABEL
+                , COUNT_TG_IN_COLUMN
+                , COL_TG_START
                 , COUNT_ROWS = 12;
 
-        public void Initialize()
-        {
-            int cnt = ((m_tgsValues.Count / COUNT_TG_IN_COLUMN) + ((m_tgsValues.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
-            bool bPowerFactZoom = false;
+        public void RestructControl () {
+            COUNT_LABEL = 3; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
 
-            for (int i = 0; i < cnt; i++)
+            //Удаление ОБЩих элементов управления
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
-                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
-                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75));
+                if (! (this.m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null))
+                    this.Controls.Remove (this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                 else
                     ;
             }
 
-            m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
-            m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
-            m_lblPowerFactZoom.Text = @"Pтек=----.--";
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
+            {
+                if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null))
+                    this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                else
+                    ;
+            }
+
+            while (this.ColumnStyles.Count > 1)
+                this.ColumnStyles.RemoveAt(this.ColumnStyles.Count - 1);
+
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) {
+                COL_TG_START -= 2;
+            }
+            else
+                ;
+            
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false) {
+                COUNT_LABEL --;
+                COL_TG_START --;
+            }
+            else
+                ;
+
+            int cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
+            bool bPowerFactZoom = false;
+
+            for (int i = 0; i < cntCols; i++)
+            {
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
+                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
+                    //Телеметрия ТГ
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
+                else
+                    ;
+            }
 
             if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) {
-                this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cnt * COUNT_LABEL + 0, 0);
+                if (!(this.Controls.IndexOf(m_lblPowerFactZoom) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
+                this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
                 this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88*3));
 
@@ -638,20 +638,100 @@ namespace Statistic
             else
                 ;
 
-            Panel panelEmpty = new Panel();
-            this.Controls.Add(panelEmpty, COL_TG_START + cnt * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
-            this.SetRowSpan(panelEmpty, COUNT_ROWS);
+            if (m_panelEmpty == null) m_panelEmpty = new Panel(); else ;
+            if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
+            this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
+            this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
             this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
+            {
+                bool bAddItem = false;
+                if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false)
+                {
+                    if (i == CONTROLS.lblCommonPVal_TM)
+                        ; //continue;
+                    else
+                    {
+                        bAddItem = true;
+                    }
+                }
+                else
+                {
+                    bAddItem = true;
+                }
+
+                if (bAddItem == true)
+                {
+                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
+                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
+                }
+                else
+                    ;
+            }
+
+            //Ширина столбцов группы "Рекомендация"
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
+                //Телеметрия для объекта отображения
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            else
+                ;
+
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == true)
+            {
+                for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
+                {
+                    //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                    this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], getPositionCell(i));
+                    this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonPVal], 4);
+                }
+
+                //Ширина столбцов группы "Отклонение"
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
+            }
+            else
+                ;
+
+            if (m_tgLabels.Count > 0)
+            {
+                for (int i = 1; i < m_tgLabels.Count + 1; i++)
+                {
+                    this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC]);
+                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                    this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+
+                    this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT]);
+                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                    this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+
+                    if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
+                    {
+                        this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM]);
+                        this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition((i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2), (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
+                        this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+                    }
+                    else
+                        ;
+                }
+            }
+            else {
+            }
         }
 
         //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
         public void addTGView(ref string name_shr)
         {
             int cnt = -1;
-            m_tgsValues.Add(new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
-            cnt = m_tgsValues.Count;
+            m_tgLabels.Add(new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+            cnt = m_tgLabels.Count;
 
-            System.Windows.Forms.Label lblName = HLabel.createLabel(name_shr,
+            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(name_shr,
                                                                     new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                     Color.Black, Color.Empty,
                                                                     8F, ContentAlignment.MiddleRight))
@@ -666,7 +746,7 @@ namespace Statistic
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
             hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-            m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
+            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
 
             //positionYValue += 29;
 
@@ -677,26 +757,9 @@ namespace Statistic
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
             hlblValue.Text = @"---.--"; //name_shr + @"_TM";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-            m_tgsValues[m_tgsValues.Count - 1][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
+            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
             //positionXName += 69; positionXValue += 69;
-
-            this.Controls.Add(lblName);
-            this.SetCellPosition(lblName, new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
-            this.SetRowSpan(lblName, (COUNT_ROWS / COUNT_TG_IN_COLUMN));
-
-            this.Controls.Add(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT]);
-            this.SetCellPosition(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
-            this.SetRowSpan(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
-
-            if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
-            {
-                this.Controls.Add(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM]);
-                this.SetCellPosition(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition((cnt - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2), (cnt - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN)));
-                this.SetRowSpan(m_tgsValues[cnt - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
-            }
-            else
-                ;
         }
     }
 
@@ -747,16 +810,16 @@ namespace Statistic
                                 {
                                     if (tg.power_TM > 1)
                                     {
-                                        m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
+                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
                                         value_TM += tg.power_TM;
                                     }
                                     else
-                                        m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
+                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
 
                                 }
                                 else
                                 {
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
+                                    m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = "---";
                                 }
                                 i++;
                             }
@@ -772,15 +835,15 @@ namespace Statistic
                         {
                             if (tg.power_TM > 1)
                             {
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
+                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
                                 value_TM += tg.power_TM;
                             }
                             else
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
+                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
                         }
                         else
                         {
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.TM].Text = "---";
+                            m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = "---";
                         }
                         i++;
                     }
@@ -843,19 +906,42 @@ namespace Statistic
 
                 if (!(min == 0)) min--; else ;
 
-                double valueEBefore = 0.0,
-                        valueECur = 0.0,
-                        valueEFuture = 0.0;
+                bool bPrevValueValidate = false
+                    , bMinValuesReceived = true;
+                double prevValue = 0.0, value = 0.0
+                    , valueEBefore = 0.0
+                    , valueECur = 0.0
+                    , valueEFuture = 0.0;
+
+                bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
+
+                for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
+                    if (m_parent.m_tecView.listTG[i].receivedMin [min] == true)
+                        if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
+                    else {
+                        bMinValuesReceived = false;
+
+                        break;
+                    }
+
+                if ((bMinValuesReceived == true) && (value < 1) && (bPrevValueValidate == true) && (!(prevValue < 1)))
+                {
+                    Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - value < 1.0");
+
+                    return;
+                }
+                else
+                    ;
+
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
                     for (j = 0; j < min; j++)
                         valueEBefore += m_parent.m_tecView.listTG[i].power[j] / 20;
 
-                double value = 0;
-                for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
-
                 showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value, true, string.Empty);
-                m_lblPowerFactZoom.Text = @"Pтек=" + value.ToString (@"F2");
+                //if (this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM_FUTURE_EE] = false)
+                //if ((!(Users.Role == (int)Users.ID_ROLES.KOM_DISP)) && (!(Users.Role == (int)Users.ID_ROLES.ADMIN)))
+                    m_lblPowerFactZoom.Text = @"Pтек=" + value.ToString (@"F2");
+                //else ;
 
                 valueECur = value / 20;
                 showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur, true, string.Empty);
@@ -909,15 +995,22 @@ namespace Statistic
                     }
 
                     //if (! ([lastHour] == 0))
+                    double dblDevEVal = -1.0;
+                    bool bDevEVal = true;
                     if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
                         (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
                     {
-                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], ((((valueEBefore + valueECur + valueEFuture) -
-                                                    m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100), false, @"%");
-                        //m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal].Text = .ToString("F2") + "%";
+                        dblDevEVal = ((((valueEBefore + valueECur + valueEFuture) -
+                                    m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100);
+                        if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;                            
                     }
                     else
-                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---");
+                        bDevEVal = false;
+
+                    if (bDevEVal == true)
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], dblDevEVal, false, @"%");
+                    else
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---"); ;
                 }
 
                 if ((m_parent.m_tecView.currHour == true) && (min == 0))
@@ -986,16 +1079,16 @@ namespace Statistic
                             {
                                 if (tg.receivedMin[min] == true)
                                 {
-                                    showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
+                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
                                     if (m_parent.m_tecView.currHour == true)
-                                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                                        m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                                     else
-                                        m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                        m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                                 }
                                 else
                                 {
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                                    m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                    m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                    m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                                 }
                                 i++;
                             }
@@ -1009,16 +1102,16 @@ namespace Statistic
                     {
                         if (comp.m_listTG [0].receivedMin[min] == true)
                         {
-                            showValue(m_tgsValues[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
+                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
                             if (m_parent.m_tecView.currHour == true)
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                                m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                             else
-                                m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         else
                         {
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                            m_tgsValues[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                            m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                            m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         i++;
                     }
@@ -1031,10 +1124,16 @@ namespace Statistic
         }
 
         private void OnVisibleForecast (object obj, EventArgs ev) {
+            //((ToolStripMenuItem)obj).Checked = !((ToolStripMenuItem)obj).Checked;
+            ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = !((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked;
+
+            RestructControl ();
         }
 
-        private void OnVisibleTM(object obj, EventArgs ev)
-        {
+        private void OnVisibleTM(object obj, EventArgs ev) {
+            ((ToolStripMenuItem)obj).Checked = ! ((ToolStripMenuItem)obj).Checked;
+
+            RestructControl(); 
         }
     }
 }

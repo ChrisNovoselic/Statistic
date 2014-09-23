@@ -67,9 +67,18 @@ namespace StatisticCommon
                 DataTable dataUsers;
 
                 string domain_name = string.Empty;
-                if (HAdmin.USERS_DOMAINNAME.Equals(string.Empty) == true)
+                if (HAdmin.USERS_DOMAINNAME.Equals(string.Empty) == true) {
                     //Проверка ИМЯ_ПОЛЬЗОВАТЕЛЯ
-                    domain_name = Environment.UserDomainName + @"\" + Environment.UserName;
+                    try { domain_name = Environment.UserDomainName + @"\" + Environment.UserName; }
+                    catch (Exception e) {
+                        string [] args = Environment.GetCommandLineArgs ();
+                        if (args.Length > 1) {
+                            domain_name = args[1].Substring(args[1].IndexOf('=') + 1, args[1].Length - (args[1].IndexOf('=') + 1));
+                        }
+                        else
+                            throw e;
+                    }
+                }
                 else
                     domain_name = HAdmin.USERS_DOMAINNAME;
                 //Проверка IP-адрес
