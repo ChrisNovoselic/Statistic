@@ -13,7 +13,7 @@ namespace StatisticCommon
                                     COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
-                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+                                                    @"udn", @"itec", @"irole"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     @"лог", "сек", "сек",

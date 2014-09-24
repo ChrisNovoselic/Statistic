@@ -832,9 +832,6 @@ namespace StatisticCommon
                 ;
         }
 
-        public static string USERS_DOMAINNAME = string.Empty; //@"Users DomainName";
-        public static int USERS_ID = -1; //0;
-        public static int USERS_ID_TEC = -1; //5
-        public static int USERS_ID_ROLE = -1; //2;
+        public static object [] s_REGISTRATION_INI = new object [(int)Users.INDEX_REGISTRATION.COUNT_INDEX_REGISTRATION];
     }
 }

@@ -115,10 +115,10 @@ namespace Statistic
                 formParameters = new FormParameters_FIleINI("setup.ini");
                 //formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
-                HAdmin.USERS_DOMAINNAME = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
-                HAdmin.USERS_ID = 0; //Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID]);
-                HAdmin.USERS_ID_TEC = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
-                HAdmin.USERS_ID_ROLE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+                HAdmin.s_REGISTRATION_INI [(int)Users.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
+                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
+                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
+                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
 
                 PanelAdminKomDisp.ALARM_USE = bool.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_USE]); //True;
 

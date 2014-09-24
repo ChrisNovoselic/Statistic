@@ -254,15 +254,16 @@ namespace Statistic
         {
             components = new System.ComponentModel.Container();
 
-            bool bChecked = true;
+            bool bChecked = true
+                , bEnabled = true;
             if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) bChecked = false; else ;
             this.ContextMenuStrip = new ContextMenuStrip ();
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
                 new ToolStripMenuItem (@"Знач. телеметрии") });
             //Checked = bChecked;
-            this.ContextMenuStrip.Items[0].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = true; this.ContextMenuStrip.Items[0].Click += OnVisibleForecast;
-            this.ContextMenuStrip.Items[1].Enabled = true; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = false; this.ContextMenuStrip.Items[1].Click += OnVisibleTM;
+            this.ContextMenuStrip.Items[0].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnItemClick;
+            this.ContextMenuStrip.Items[1].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = bChecked; this.ContextMenuStrip.Items[1].Click += OnItemClick;
 
             this.RowCount = COUNT_ROWS;
 
@@ -432,85 +433,80 @@ namespace Statistic
                 }
             }
 
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == true)
+            for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
             {
-                for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
+                switch (i)
                 {
-                    switch (i)
-                    {
-                        case CONTROLS.lblCurrentE:
-                        case CONTROLS.lblHourE:
-                        case CONTROLS.lblDevE:
-                            foreColor = Color.Black;
-                            backClolor = Color.Empty;
-                            szFont = 8F;
-                            align = ContentAlignment.MiddleRight;
-                            //sz = new Size(-1, -1);
-                            //col = 4;
-                            break;
-                        case CONTROLS.lblCurrentEVal:
-                        case CONTROLS.lblHourEVal:
-                        case CONTROLS.lblDevEVal:
-                            foreColor = Color.LimeGreen;
-                            backClolor = Color.Black;
-                            szFont = 15F;
-                            align = ContentAlignment.MiddleCenter;
-                            //sz = arPlacement[(int)i].sz;
-                            //col = 5;
-                            break;
-                        default:
-                            foreColor = Color.Red;
-                            backClolor = Color.Yellow;
-                            szFont = 6F;
-                            align = ContentAlignment.MiddleCenter;
-                            //sz = new Size(-1, -1);
-                            break;
-                    }
+                    case CONTROLS.lblCurrentE:
+                    case CONTROLS.lblHourE:
+                    case CONTROLS.lblDevE:
+                        foreColor = Color.Black;
+                        backClolor = Color.Empty;
+                        szFont = 8F;
+                        align = ContentAlignment.MiddleRight;
+                        //sz = new Size(-1, -1);
+                        //col = 4;
+                        break;
+                    case CONTROLS.lblCurrentEVal:
+                    case CONTROLS.lblHourEVal:
+                    case CONTROLS.lblDevEVal:
+                        foreColor = Color.LimeGreen;
+                        backClolor = Color.Black;
+                        szFont = 15F;
+                        align = ContentAlignment.MiddleCenter;
+                        //sz = arPlacement[(int)i].sz;
+                        //col = 5;
+                        break;
+                    default:
+                        foreColor = Color.Red;
+                        backClolor = Color.Yellow;
+                        szFont = 6F;
+                        align = ContentAlignment.MiddleCenter;
+                        //sz = new Size(-1, -1);
+                        break;
+                }
 
-                    switch (i)
-                    {
-                        case CONTROLS.lblCurrentE:
-                            text = @"Етек"; //@"P тек";
-                            break;
-                        case CONTROLS.lblHourE:
-                            text = @"Ечас";
-                            break;
-                        case CONTROLS.lblDevE:
-                            text = @"Откл";
-                            break;
-                        default:
-                            text = string.Empty;
-                            //text = @"---";
-                            break;
-                    }
+                switch (i)
+                {
+                    case CONTROLS.lblCurrentE:
+                        text = @"Етек"; //@"P тек";
+                        break;
+                    case CONTROLS.lblHourE:
+                        text = @"Ечас";
+                        break;
+                    case CONTROLS.lblDevE:
+                        text = @"Откл";
+                        break;
+                    default:
+                        text = string.Empty;
+                        //text = @"---";
+                        break;
+                }
 
-                    if (text.Equals(string.Empty) == false)
-                    {
-                        if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
-                            m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
-                                                                                                new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                                foreColor, backClolor,
-                                                                                                szFont, align));
-                        else ;
-                    }
-                    else
-                    {
-                        if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
-                        {
-                            m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
+                if (text.Equals(string.Empty) == false)
+                {
+                    if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = HLabel.createLabel(text,
                                                                                             new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                             foreColor, backClolor,
                                                                                             szFont, align));
-                            m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
-                            ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
-                        }
-                        else
-                            ;
+                    else ;
+                }
+                else
+                {
+                    if (m_arLabelCommon[(int)i - m_indxStartCommonPVal] == null)
+                    {
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal] = new HLabel(/*i.ToString(); @"---",*/
+                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                        foreColor, backClolor,
+                                                                                        szFont, align));
+                        m_arLabelCommon[(int)i - m_indxStartCommonPVal].Text = @"---";
+                        ((HLabel)m_arLabelCommon[(int)i - m_indxStartCommonPVal]).m_type = HLabel.TYPE_HLABEL.TOTAL;
                     }
+                    else
+                        ;
                 }
             }
-            else
-                ;
 
             //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
             m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
@@ -1150,14 +1146,7 @@ namespace Statistic
                 ;
         }
 
-        private void OnVisibleForecast (object obj, EventArgs ev) {
-            //((ToolStripMenuItem)obj).Checked = !((ToolStripMenuItem)obj).Checked;
-            ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = !((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked;
-
-            RestructControl ();
-        }
-
-        private void OnVisibleTM(object obj, EventArgs ev) {
+        private void OnItemClick(object obj, EventArgs ev) {
             ((ToolStripMenuItem)obj).Checked = ! ((ToolStripMenuItem)obj).Checked;
 
             RestructControl(); 

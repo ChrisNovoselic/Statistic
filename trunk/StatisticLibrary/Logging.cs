@@ -52,14 +52,18 @@ namespace StatisticCommon
             get
             {
                 string appName = string.Empty;
-                int posAppName = System.Environment.CommandLine.LastIndexOf('\\') + 1
+                string [] args = System.Environment.GetCommandLineArgs ();
+                int posAppName = -1
                     , posDelim = -1;
+
+                posAppName = args[0].LastIndexOf('\\') + 1;
+
                 //Отсечь параметры (после пробела)
-                posDelim = System.Environment.CommandLine.IndexOf(' ', posAppName);
+                posDelim = args[0].IndexOf(' ', posAppName);
                 if (!(posDelim < 0))
-                    appName = System.Environment.CommandLine.Substring(posAppName, posDelim - posAppName - 1);
+                    appName = args[0].Substring(posAppName, posDelim - posAppName - 1);
                 else
-                    appName = System.Environment.CommandLine.Substring(posAppName);
+                    appName = args[0].Substring(posAppName);
                 //Отсечь расширение
                 posDelim = appName.IndexOf('.');
                 if (!(posDelim < 0))
