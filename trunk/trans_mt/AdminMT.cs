@@ -241,7 +241,7 @@ namespace trans_mt
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result == true)
                     {
-                        fillData(m_curDate);
+                        readyData(m_curDate);
                     }
                     else
                         ;
@@ -317,6 +317,8 @@ namespace trans_mt
             }
             else
                 ;
+
+            if (!(errorData == null)) errorData(); else ;
         }
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)

@@ -61,6 +61,12 @@ namespace trans_gtp
             m_fileINI.Add (@"ТипБДКфгИсточник", @"190");
             m_fileINI.Add (@"РДГФорматТаблицаИсточник", @"STATIC");
 
+            ////Для переназначения идентификаторов источников данных БийскТЭЦ
+            //m_fileINI.Add(@"ID_БДНазначение_ASKUE", @"6,");
+            //m_fileINI.Add(@"ID_БДНазначение_SOTIASSO", @"6,");
+            //m_fileINI.Add(@"ID_БДНазначение_PPBR_PBR", @"6,103");
+            //m_fileINI.Add(@"ID_БДНазначение_PPBR_ADMIN", @"6,");
+
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
@@ -90,6 +96,9 @@ namespace trans_gtp
             else
                 ;
 
+            HMark markQueries = new HMark ();
+            markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+
             int idListener = -1;
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
@@ -99,7 +108,7 @@ namespace trans_gtp
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    ((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], markQueries, true);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -110,7 +119,72 @@ namespace trans_gtp
                     break;
                 }
 
-                //((AdminTS)m_arAdmin[i]).connSettConfigDB = m_formConnectionSettings.getConnSett(i);
+                ////Для переназначения идентификаторов источников данных БийскТЭЦ
+                //int j = -1;
+                //string val = m_fileINI.GetValueOfKey (@"ID_БДНазначение_PPBR_PBR");
+                //val = val.Split (',')[0];
+                //for (j = 0; j < m_arAdmin[i].m_list_tec.Count; j ++) {
+                //    if (m_arAdmin[i].m_list_tec[j].m_id == Int32.Parse (val))
+                //        break;
+                //    else
+                //        ;
+                //}
+
+                //if (j < m_arAdmin[i].m_list_tec.Count) {
+                //} else {
+                //}
+
+                if (i == (int)CONN_SETT_TYPE.DEST) {
+                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                        string prefix_admin = @""
+                            , prefix_pbr = @"BiTEC";
+                        int err = -1
+                            , indx = -1
+                            , indx_tec = 0;
+
+                        //Создание объекта ТЭЦ
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].m_arNameTableAdminValues [(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].m_arNameTableUsedPPBRvsPBR [(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR";
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].prefix_admin = prefix_admin;
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].prefix_pbr = prefix_pbr;
+
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
+                                            @"", //ADMIN_REC
+                                            @"", //ADMIN_IS_PER
+                                            @"", //ADMIN_DIVIAT
+                                            @"Date_time", //PBR_DATETIME
+                                            @"PBR", //PPBRvsPBR
+                                            @"PBR_number");
+
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(InitTECBase.TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
+
+                        if (err == 0)
+                        {
+                            for (int c = 0; c < m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents.Count; c ++) {
+                                if ((m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id > 100) && (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id < 500)) {
+                                    switch (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id) {
+                                        case 117:
+                                            prefix_pbr = @"TG1";
+                                            break;
+                                        case 118:
+                                            prefix_pbr = @"TG28";
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].prefix_admin = prefix_admin;
+                                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents[c].prefix_pbr = prefix_pbr;
+                                } else {
+                                }
+                            }
+                            
+                        }
+                        else
+                            ; //Ошибка получения параметров соединений с БД
+                    //} else ;
+                }
+                else {
+                }
 
                 for (AdminTS.TYPE_FIELDS tf = AdminTS.TYPE_FIELDS.STATIC; i < (int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS; tf++)
                     if (arStrTypeField[i].Equals(tf.ToString()) == true)
@@ -129,7 +203,7 @@ namespace trans_gtp
                 m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
-                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);
                 m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
 
                 m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);

@@ -500,21 +500,36 @@ namespace StatisticCommon
             return bRes;
         }
 
+        protected bool GetAdminValuesResponseWithoutAdminValues(DateTime date)
+        {
+            bool bRes = false;
+
+            return bRes;
+        }
+
         protected virtual bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
             DataTable table = null;
-            DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
+            int i = -1, j = -1, k = -1,
+                hour = -1, day = -1;
             int [] arIndexTables = {0, 1},
                 arFieldsCount = {-1, -1};
 
-            int i = -1, j = -1, k = -1,
-                hour = -1;
+            if (tableAdminValuesResponse == null) {
+                tableAdminValuesResponse = new DataTable ();
+
+                //for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i ++)
+                //    tableAdminValuesResponse.Rows.Add (new object [] {});
+            } else { }
+
+            DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
 
             //int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
             //if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
-            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR"),
-                offsetPBRNumber = -1;
+            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR")
+                , offsetPBRNumber = -1
+                , offsetDATE_ADMIN = -1;
             if (offsetPBR > 0) offsetPBR = 0; else ;
 
             //Удаление столбцов 'ID_COMPONENT'
@@ -587,16 +602,18 @@ namespace StatisticCommon
             }
 
             offsetPBRNumber = m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER");
+            offsetDATE_ADMIN = table.Columns.IndexOf("DATE_ADMIN");
             
             //0 - DATE_ADMIN, 1 - REC, 2 - IS_PER, 3 - DIVIAT, 4 - DATE_PBR, 5 - PBR, 6 - PBR_NUMBER
             for (i = 0; i < table.Rows.Count; i++)
             {
-                if (table.Rows[i][0] is System.DBNull)
+                if (table.Rows[i][0] is System.DBNull) //"DATE_PBR" ???
                 {
                     try
                     {
                         hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
+                        day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+                        if ((hour == 0) && (day != date.Day))
                             hour = 24;
                         else
                             if (hour == 0)
@@ -635,8 +652,16 @@ namespace StatisticCommon
                 {
                     try
                     {
-                        hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day != date.Day)
+                        if (!(offsetDATE_ADMIN < 0)) {
+                            hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
+                            day = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day;
+                        }
+                        else {
+                            hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                            day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+                        }
+                        
+                        if ((hour == 0) && (! (day == date.Day)))
                             hour = 24;
                         else
                             if (hour == 0)
@@ -644,9 +669,16 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount [0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
-                        m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
-                        m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
+                        if (!(offsetDATE_ADMIN < 0)) {
+                            m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount [0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
+                            m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
+                            m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
+                        }
+                        else {
+                            m_curRDGValues[hour - 1].recomendation = 0.0;
+                            m_curRDGValues[hour - 1].deviationPercent = false;
+                            m_curRDGValues[hour - 1].deviation = 0F;
+                        }
                         if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0)) {
                             //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                             //{
@@ -678,10 +710,13 @@ namespace StatisticCommon
                     catch { }
                 }
 
-                if (! (offsetPBRNumber < 0))
-                    m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString ();
+                if (hour > 0)
+                    if (!(offsetPBRNumber < 0))
+                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString ();
+                    else
+                        m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour - 1);
                 else
-                    m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour - 1);
+                    ;
             }
 
             return true;
@@ -716,8 +751,19 @@ namespace StatisticCommon
         {
             if (IsCanUseTECComponents())
             {
-                GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
+                TEC tec = allTECComponents[indxTECComponents].tec;
+                int indx = -1;
+                if (tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
+                    indx = (int)CONN_SETT_TYPE.ADMIN;
+                else if (tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.PBR) == true)
+                        indx = (int)CONN_SETT_TYPE.PBR;
+                        else
+                            ;
+                
+                if (! (indx < 0))
+                    GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(tec.connSetts[indx].port), m_dictIdListeners[tec.m_id][indx]);
+                else
+                    ;
             }
             else
                 ;
@@ -750,7 +796,8 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
+                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -1061,6 +1108,8 @@ namespace StatisticCommon
                                         @"', '" + strPBRNumber +
                                         @"', '" + "0" +
                                         @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
@@ -1094,7 +1143,7 @@ namespace StatisticCommon
                 {
                     case AdminTS.TYPE_FIELDS.STATIC:
                         string name = t.NameFieldOfPBRRequest(comp);
-                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
+                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR," + name + "_Pmin," + name + "_Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     case AdminTS.TYPE_FIELDS.DYNAMIC:
                         query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
@@ -1132,7 +1181,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("AdminTS::SetPPBRRequest ()");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
@@ -1181,7 +1230,7 @@ namespace StatisticCommon
             Logging.Logg().LogDebugToFile("ClearPPBRRequest");
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
         public int GetIndexTECComponent (int idTEC, int idComp) {
@@ -1296,9 +1345,9 @@ namespace StatisticCommon
             //    ;
 
             if (!(m_list_tec == null))
-                foreach (TEC t in m_list_tec) {
-                    StartDbInterfaces(CONN_SETT_TYPE.PBR + 1);
-                }
+                //foreach (TEC t in m_list_tec) {
+                    StartDbInterfaces();
+                //}
             else
                 Logging.Logg().LogErrorToFile(@"AdminTS::Start () - m_list_tec == null");
 
@@ -1340,7 +1389,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
-                    if (indxTECComponents < allTECComponents.Count)
+                    if ((indxTECComponents < allTECComponents.Count) && (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
                         GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     else
                         ; //result = false;
@@ -1397,11 +1446,14 @@ namespace StatisticCommon
                     else
                         ;
                     strRep = @"Получение списка сохранённых часовых значений.";
-                    GetAdminDatesRequest(m_curDate);
+                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                        GetAdminDatesRequest(m_curDate);
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.SaveAdminValues:
                     strRep = @"Сохранение административных данных.";
-                    if (indxTECComponents < allTECComponents.Count)
+                    if ((indxTECComponents < allTECComponents.Count) && (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true))
                         SetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
@@ -1485,11 +1537,20 @@ namespace StatisticCommon
                         else
                             ;
                         break;
+                    case (int)StatesMachine.AdminDates:
+                        if (allTECComponents [indxTECComponents].tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
+                            bRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                        else {
+                            error = false;
+                            table = null;
+
+                            bRes = true;
+                        }
+                        break;
                     case (int)StatesMachine.CurrentTime:
                     case (int)StatesMachine.PPBRValues:
                     case (int)StatesMachine.AdminValues:
                     case (int)StatesMachine.PPBRDates:
-                    case (int)StatesMachine.AdminDates:                    
                     case (int)StatesMachine.SaveAdminValues:
                     case (int)StatesMachine.SavePPBRValues:
                     //case (int)StatesMachine.UpdateValuesPPBR:
@@ -1550,10 +1611,21 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.AdminValues:
-                    result = GetAdminValuesResponse(table, m_curDate);
+                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                        result = GetAdminValuesResponse(table, m_curDate);
+                    else {
+                        table = null;
+
+                        if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                            //result = GetAdminValuesResponseWithoutAdminValues(m_curDate);
+                            result = GetAdminValuesResponse(null, m_curDate);
+                        else
+                            result = false;
+                    }
+
                     if (result == true)
                     {
-                        fillData(m_prevDate);
+                        readyData(m_prevDate);
                     }
                     else
                         ;
@@ -1564,7 +1636,7 @@ namespace StatisticCommon
                     result = delegateImportForeignValuesResponse();
                     if (result == true)
                     {
-                        fillData(m_prevDate);
+                        readyData(m_prevDate);
                     }
                     else
                         ;
@@ -1588,7 +1660,7 @@ namespace StatisticCommon
                     result = delegateImportForeignValuesResponse();
                     if (result)
                     {
-                        fillData(m_prevDate);
+                        readyData(m_prevDate);
                     }
                     else
                         ;
@@ -1604,7 +1676,11 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminDates:
                     ClearAdminDates();
-                    result = GetAdminDatesResponse(table, m_curDate);
+                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                        result = GetAdminDatesResponse(table, m_curDate);
+                    else
+                        result = true;
+
                     if (result == true)
                     {
                     }
@@ -1929,12 +2005,14 @@ namespace StatisticCommon
 
             error = "Ошибка " + reason + ".";
 
-            if (waiting.Equals(string.Empty) == true)
+            if (waiting.Equals(string.Empty) == false)
                 error += " " + waiting + ".";
             else
                 ;
 
             ErrorReport(error);
+
+            if (! (errorData == null)) errorData (); else ;
 
             Logging.Logg().LogErrorToFile(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...");
         }
@@ -2079,14 +2157,16 @@ namespace StatisticCommon
 
             for (int i = 0; i < m_list_tec.Count; i ++) {
                 if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
-                    m_list_tec[i].connSettings(StatisticCommon.InitTEC_200.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                    m_list_tec[i].connSettings(StatisticCommon.InitTEC_200.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                    //TYPE_DATABASE_CFG.CFG_200 = ???
+                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
                 }
                 else {
                     if (m_list_tec[i].type() == TEC.TEC_TYPE.BIYSK)
                     {
-                        m_list_tec[i].connSettings(StatisticCommon.InitTEC_200.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                        m_list_tec[i].connSettings(StatisticCommon.InitTEC_200.getConnSettingsOfIdSource(idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                        //TYPE_DATABASE_CFG.CFG_200 = ???
+                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
                     }
                     else
                     {

@@ -161,7 +161,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, FormChangeMode.MANAGER type)
+        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HMark markQueries)
         {
             //bool bUseData = true;
             switch (type) {
@@ -175,7 +175,7 @@ namespace Statistic
                     break;
             }
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, false); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
@@ -188,7 +188,7 @@ namespace Statistic
             else
                 ;
 
-            m_admin.SetDelegateData(this.setDataGridViewAdmin);
+            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
 
             m_admin.m_typeFields = s_typeFields;
@@ -212,7 +212,11 @@ namespace Statistic
                     break;
             }
 
-            try { m_admin.InitTEC(tec); }
+            HMark markQueries = new HMark ();
+            markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+
+            try { m_admin.InitTEC(tec, markQueries); }
             catch (Exception e)
             {
                 Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
@@ -225,7 +229,7 @@ namespace Statistic
             else
                 ;
 
-            m_admin.SetDelegateData(this.setDataGridViewAdmin);
+            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
 
             m_admin.m_typeFields = s_typeFields;

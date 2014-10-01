@@ -10,6 +10,7 @@ namespace StatisticCommon
     public class InitTECBase
     {
         public enum TYPE_DATABASE_CFG { CFG_190, CFG_200, UNKNOWN };
+        protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
         
         public List<TEC> tec;
         protected /*static*/ DbConnection m_connConfigDB;
@@ -47,20 +48,20 @@ namespace StatisticCommon
             return DbTSQLInterface.Select(ref m_connConfigDB, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), null, null, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(int idListener, int id_ext, int id_role, out int err)
+        public static DataTable getConnSettingsOfIdSource(TYPE_DATABASE_CFG typeDB_CFG, int idListener, int id_ext, int id_role, out int err)
         {
             DbConnection conn = DbSources.Sources().GetConnection(idListener, out err);
-            return getConnSettingsOfIdSource(ref conn, id_ext, id_role, out err);
+            return getConnSettingsOfIdSource(typeDB_CFG, ref conn, id_ext, id_role, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(ref DbConnection conn, int id_ext, int id_role, out int err)
+        public static DataTable getConnSettingsOfIdSource(TYPE_DATABASE_CFG typeDB_CFG, ref DbConnection conn, int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(ref conn, id_ext, id_role, out err);
+            return ConnectionSettingsSource.GetConnectionSettings(typeDB_CFG, ref conn, id_ext, id_role, out err);
         }
 
         protected DataTable getConnSettingsOfIdSource(int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, id_ext, id_role, out err);
+            return ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, id_ext, id_role, out err);
         }
 
         protected List<int> getMCentreId(DataTable data, int row)
@@ -409,11 +410,11 @@ namespace StatisticCommon
                                             list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                             list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                        tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_ASKUE);
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO); else ;
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
-                        if ((err == 0) && ((list_tec.Rows[i]["ID_SOURCE_MTERM"] is DBNull) == false)) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_MTERM"]), -1, out err), (int)CONN_SETT_TYPE.MTERM); else ;
+                        tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_ASKUE);
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO); else ;
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
+                        if ((err == 0) && ((list_tec.Rows[i]["ID_SOURCE_MTERM"] is DBNull) == false)) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_MTERM"]), -1, out err), (int)CONN_SETT_TYPE.MTERM); else ;
 
                         tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                         tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();

@@ -217,8 +217,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminKomDisp(int idListener)
-            : base(idListener, FormChangeMode.MANAGER.DISP)
+        public PanelAdminKomDisp(int idListener, HMark markQueries)
+            : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
             if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
                 m_adminAlarm = new AdminAlarm();

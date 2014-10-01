@@ -719,6 +719,16 @@ namespace StatisticTrans
             }
         }
 
+        protected virtual void errorDataGridViewAdmin()
+        {
+            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            {
+                IAsyncResult asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+            }
+            else
+                ;
+        }
+
         protected abstract void updateDataGridViewAdmin (DateTime date);
 
         protected virtual void saveDataGridViewAdminComplete()

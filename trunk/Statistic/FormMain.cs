@@ -168,16 +168,20 @@ namespace Statistic
                 //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                 m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
+                HMark markQueries = new HMark ();
+                markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
+                markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+
                 for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
                     switch (i)
                     {
                         case (int)FormChangeMode.MANAGER.DISP:
-                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB);
+                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
                             //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
                             ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc (OnPanelAdminKomDispEventGUIReg);
                             break;
                         case (int)FormChangeMode.MANAGER.NSS:
-                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB);
+                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
                             break;
                         default:
                             break;

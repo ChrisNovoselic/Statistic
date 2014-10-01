@@ -40,11 +40,16 @@ namespace StatisticCommon
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
+        //Обрабатывать ли данные?
+        public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
 
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 
         //public FormParametersTG parametersTGForm;
 
+        /// <summary>
+        /// Признак инициализации строки с идентификаторами ТГ
+        /// </summary>
         public bool m_bSensorsStrings {
             get {
                 bool bRes = false;
@@ -104,20 +109,23 @@ namespace StatisticCommon
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            m_strNamesField = new List<string> ();
+            m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
+            for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
+            
         }
 
         public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
                                     string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
-            m_strNamesField.Add(admin_datetime); //INDEX_NAME_FIELD.ADMIN_DATETIME
-            m_strNamesField.Add(admin_rec); //INDEX_NAME_FIELD.REC
-            m_strNamesField.Add(admin_is_per); //INDEX_NAME_FIELD.IS_PER
-            m_strNamesField.Add(admin_diviat); //INDEX_NAME_FIELD.DIVIAT
+            //INDEX_NAME_FIELD.ADMIN_DATETIME
+            m_strNamesField [(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
+            m_strNamesField[(int)INDEX_NAME_FIELD.REC] = admin_rec; //INDEX_NAME_FIELD.REC
+            m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] = admin_is_per; //INDEX_NAME_FIELD.IS_PER
+            m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] = admin_diviat; //INDEX_NAME_FIELD.DIVIAT
 
-            m_strNamesField.Add(pbr_datetime); //INDEX_NAME_FIELD.PBR_DATETIME
-            m_strNamesField.Add(ppbr_vs_pbr); //INDEX_NAME_FIELD.PBR
+            m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] = pbr_datetime; //INDEX_NAME_FIELD.PBR_DATETIME
+            m_strNamesField[(int)INDEX_NAME_FIELD.PBR] = ppbr_vs_pbr; //INDEX_NAME_FIELD.PBR
 
-            m_strNamesField.Add(pbr_number); //INDEX_NAME_FIELD.PBR_NUMBER
+            m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
         public static string AddSensor(string prevSensors, int sensor, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
@@ -313,7 +321,7 @@ namespace StatisticCommon
             string strRes = string.Empty;
 
             if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
-                if (g.prefix_admin.Length > 0)
+                if (g.prefix_pbr.Length > 0)
                 {
                     //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
                     //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +

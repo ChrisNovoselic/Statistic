@@ -178,10 +178,16 @@ namespace Statistic
         {
             m_listTecView = new List<TecView> ();
 
+            HMark markQueries = new HMark ();
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO);
+
             foreach (StatisticCommon.TEC t in listTEC) {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
-                    m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t });
+                    m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
                     EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;

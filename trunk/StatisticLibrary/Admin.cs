@@ -41,7 +41,8 @@ namespace StatisticCommon
         protected DelegateFunc actionReport;
 
         protected DelegateFunc saveComplete = null;
-        protected DelegateDateFunc fillData = null;
+        protected DelegateDateFunc readyData = null;
+        protected DelegateFunc errorData = null;
 
         protected DelegateDateFunc setDatetime;
 
@@ -145,6 +146,10 @@ namespace StatisticCommon
             //}
         }
 
+        /// <summary>
+        /// Удалить ТЭЦ из списка по идентификатору
+        /// </summary>
+        /// <param name="id_tec">идентификатор ТЭЦ</param>
         public void RemoveTEC(int id_tec)
         {
             foreach (TEC t in this.m_list_tec) {
@@ -168,7 +173,7 @@ namespace StatisticCommon
             }
         }
 
-        public virtual void InitTEC(List <StatisticCommon.TEC> listTEC)
+        public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
         {
             this.m_list_tec = new List<TEC> ();
             foreach (TEC t in listTEC)
@@ -178,10 +183,10 @@ namespace StatisticCommon
                 //else ;
             }
 
-            initTEC ();
+            initTEC(markQueries);
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, bool bIgnoreTECInUse)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
         {
             //Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
 
@@ -213,16 +218,19 @@ namespace StatisticCommon
             else
                 this.m_list_tec = new List <TEC> ();
 
-            initTEC ();
+            initTEC(markQueries);
         }
 
-        private void initTEC () {
+        private void initTEC(HMark markQueries)
+        {
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
                 //Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
+
+                t.m_markQueries = markQueries;
 
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
@@ -259,13 +267,12 @@ namespace StatisticCommon
             }
         }
 
-
         private void register(int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)
         {
             m_dictIdListeners[id][(int)type] = DbSources.Sources().Register(connSett, true, @"ТЭЦ=" + name + @"; DESC=" + type.ToString());
         }
 
-        public void StartDbInterfaces(CONN_SETT_TYPE limConnSettType)
+        public void StartDbInterfaces()
         {
             if (!(m_list_tec == null))
                 foreach (TEC t in m_list_tec)
@@ -274,16 +281,16 @@ namespace StatisticCommon
                         CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
 
                         if (m_dictIdListeners.ContainsKey(t.m_id) == false) {
-                            m_dictIdListeners.Add (t.m_id, new int [(int)i]);
+                            m_dictIdListeners.Add(t.m_id, new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE]);
 
-                            for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
+                            for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                                 m_dictIdListeners[t.m_id][(int)i] = -1;
                         } else
                             ;
 
-                        for (i = CONN_SETT_TYPE.ADMIN; i < limConnSettType; i++)
+                        for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                         {
-                            if (!(t.connSetts[(int)i] == null))
+                            if ((!(t.connSetts[(int)i] == null)) && (t.m_markQueries.IsMarked ((int)i) == true))
                             {
                                 if (m_dictIdListeners[t.m_id][(int)i] < 0)
                                     ;
@@ -296,7 +303,8 @@ namespace StatisticCommon
                                 ;
                         }
 
-                        if ((limConnSettType > (CONN_SETT_TYPE.PBR + 1)) && (t.m_bSensorsStrings == false))
+                        if (((t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_ASKUE) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.MTERM) == true)) &&
+                            (t.m_bSensorsStrings == false))
                             t.InitSensorsTEC();
                         else
                             ;
@@ -369,8 +377,8 @@ namespace StatisticCommon
 
             Logging.Logg().LogDebugToFile(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход");
         }
-        
-        public void SetDelegateData(DelegateDateFunc f) { fillData = f; }
+
+        public void SetDelegateData(DelegateDateFunc s, DelegateFunc e) { readyData = s; errorData = e; }
 
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 

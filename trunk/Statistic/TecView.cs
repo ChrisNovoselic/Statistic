@@ -540,7 +540,7 @@ namespace Statistic
         {
             ClearValues();
 
-            StartDbInterfaces(CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
+            StartDbInterfaces();
             
             base.Start();
         }
@@ -552,9 +552,9 @@ namespace Statistic
             StopDbInterfaces();
         }
 
-        public override void InitTEC(List<StatisticCommon.TEC> listTEC)
+        public override void InitTEC(List<StatisticCommon.TEC> listTEC, HMark markQueries)
         {
-            base.InitTEC(listTEC);
+            base.InitTEC(listTEC, markQueries);
 
             InitializeTECComponents ();
         }

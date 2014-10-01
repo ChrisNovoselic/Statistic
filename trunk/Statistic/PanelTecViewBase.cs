@@ -19,9 +19,9 @@ namespace Statistic
 {
     public class Hd2PercentControl
     {
-        private double m_valuesBaseCalculate;
+        //private double m_valuesBaseCalculate;
 
-        public double valuesBaseCalculate { get { return m_valuesBaseCalculate; } }
+        //public double valuesBaseCalculate { get { return m_valuesBaseCalculate; } }
         //public double difference { get { return m_valuesBaseCalculate; } }
 
         public Hd2PercentControl() { }
@@ -29,6 +29,7 @@ namespace Statistic
         public string Calculate(TecView.values values, int hour, bool bPmin, out int err)
         {
             string strRes = string.Empty;
+            double valuesBaseCalculate = -1F;
 
             double dblRel = 0.0
                     , delta = -1.0
@@ -39,21 +40,22 @@ namespace Statistic
 
             if (values.valuesPBR[hour] == values.valuesPmax[hour])
             {
-                m_valuesBaseCalculate = values.valuesPBR[hour];
+                valuesBaseCalculate = values.valuesPBR[hour];
                 iReverse = 1;
             }
             else
             {
                 //Вычисление "ВК"
                 //if (values.valuesUDGe[hour] == values.valuesPBR[hour])
-                if (!(values.valuesREC[hour] == 0))
+                //if (!(values.valuesREC[hour] == 0))
+                if (values.valuesREC[hour] == 0)
                     values.valuesForeignCommand[hour] = false;
                 else
                     ;
 
                 if (values.valuesForeignCommand[hour] == true)
                 {
-                    m_valuesBaseCalculate = values.valuesUDGe[hour];
+                    valuesBaseCalculate = values.valuesUDGe[hour];
                     iReverse = 1;
                     bAbs = true;
                 }
@@ -62,7 +64,7 @@ namespace Statistic
                     if (bPmin == true)
                         if (values.valuesPBR[hour] == values.valuesPmin[hour])
                         {
-                            m_valuesBaseCalculate = values.valuesPBR[hour];
+                            valuesBaseCalculate = values.valuesPBR[hour];
                             iReverse = -1;
                         }
                         else
@@ -73,13 +75,17 @@ namespace Statistic
                 }
             }
 
-            if (m_valuesBaseCalculate > 1) {
-                strRes += @"ПБР=" + m_valuesBaseCalculate.ToString(@"F2");
+            if (valuesBaseCalculate > 1) {
+                strRes += @"Уров=" + valuesBaseCalculate.ToString(@"F2");
+                strRes += @"; ПБР=" + values.valuesPBR[hour].ToString (@"F2") + @"; Pmax=" + values.valuesPmax[hour].ToString (@"F2");
+                if (bPmin == true) {
+                    strRes += @"; Pmin=" + values.valuesPmin[hour].ToString (@"F2");
+                } else ;
 
                 if (values.valuesLastMinutesTM[hour] > 1) {
                     if (!(iReverse == 0))
                     {
-                        delta = iReverse * (m_valuesBaseCalculate - values.valuesLastMinutesTM[hour]);
+                        delta = iReverse * (valuesBaseCalculate - values.valuesLastMinutesTM[hour]);
                         if (bAbs == true)
                             delta = Math.Abs(delta);
                         else
@@ -88,7 +94,7 @@ namespace Statistic
                     else
                         ;
 
-                    dbl2AbsPercentControl = m_valuesBaseCalculate / 100 * 2;
+                    dbl2AbsPercentControl = valuesBaseCalculate / 100 * 2;
 
                     if (dbl2AbsPercentControl < 1)
                         dbl2AbsPercentControl = 1;
@@ -105,24 +111,32 @@ namespace Statistic
                     else
                         err = 0;
 
-                    strRes += @"; Откл:" + (dbl2AbsPercentControl + dblRel).ToString(@"F1") + @"(" + (((dbl2AbsPercentControl + dblRel) / m_valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
+                    strRes += @"; Откл=" + (dbl2AbsPercentControl + dblRel).ToString(@"F1") + @"(" + (((dbl2AbsPercentControl + dblRel) / valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
                 }
                 else {
                     err = 0;
 
-                    strRes += @";Откл:" + 0.ToString(@"F1") + @"(" + 0.ToString(@"F1") + @"%)";
+                    strRes += @";Откл=" + 0.ToString(@"F1") + @"(" + 0.ToString(@"F1") + @"%)";
                 }
             }
             else {
                 err = 0;
 
-                strRes += StringToolTipEmpty;
+                strRes += @"Уров=---.-";
+                strRes += @"; ПБР=" + values.valuesPBR[hour].ToString(@"F2") + @"; Pmax=" + values.valuesPmax[hour].ToString(@"F2");
+                if (bPmin == true)
+                {
+                    strRes += @"; Pmin=" + values.valuesPmin[hour].ToString(@"F2");
+                }
+                else ;
+
+                strRes += @"; Откл=--(--%)";
             }           
 
             return strRes;
         }
 
-        public static string StringToolTipEmpty = @"ПБР:---;Откл:--(--%)";
+        public static string StringToolTipEmpty = @"Уров=---.-; Откл=--(--%)";
     }
 
     public abstract class PanelTecViewBase : PanelStatisticView
@@ -498,7 +512,14 @@ namespace Statistic
             //InitializeComponent();
 
             m_tecView = new TecView(null, TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp);
-            m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec });
+
+            HMark markQueries = new HMark();
+            markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+
+            m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
             m_tecView.SetDelegateReport(fErrRep, fActRep);
 
             m_tecView.setDatetimeView = new DelegateFunc(setNowDate);

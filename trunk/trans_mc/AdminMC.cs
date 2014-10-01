@@ -212,7 +212,7 @@ namespace trans_mc
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result == true)
                     {
-                        fillData(m_curDate);
+                        readyData(m_curDate);
                     }
                     else
                         ;
@@ -291,6 +291,8 @@ namespace trans_mc
             }
             else
                 ;
+
+            if (! (errorData == null)) errorData(); else ;
         }
 
         private bool InitIGO ()

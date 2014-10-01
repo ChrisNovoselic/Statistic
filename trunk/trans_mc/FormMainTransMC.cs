@@ -48,6 +48,11 @@ namespace trans_mc
             bool bIgnoreTECInUse = false;
             string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
+
+            HMark markQueries = new HMark();
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 switch (i)
@@ -63,7 +68,7 @@ namespace trans_mc
                 }
                 try
                 {
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, typeConfigDB, bIgnoreTECInUse);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, typeConfigDB, markQueries, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -107,7 +112,7 @@ namespace trans_mc
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                     m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
-                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);
                     m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
 
                     m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);

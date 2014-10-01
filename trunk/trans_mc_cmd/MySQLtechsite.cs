@@ -110,7 +110,11 @@ namespace trans_mc_cmd
             {
                 m_admin = new AdminTS(new bool [] {false, true});
 
-                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, typeConfigDB, true);
+                HMark markQueries = new HMark ();
+                markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+                markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+
+                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, typeConfigDB, markQueries, true);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_listIdMCTECComponent = new List<int>();

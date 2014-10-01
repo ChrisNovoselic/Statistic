@@ -232,7 +232,11 @@ namespace Statistic
                 InitializeComponent();
 
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER, -1, -1);
-                m_tecView.InitTEC (new List <TEC> () { tec });
+
+                HMark markQueries = new HMark();
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+
+                m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
 
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);

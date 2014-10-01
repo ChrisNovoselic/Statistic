@@ -371,7 +371,13 @@ namespace Statistic
                 InitializeComponent();
 
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.LAST_MINUTES, -1, -1);
-                m_tecView.InitTEC (new List <TEC> () { tec });
+
+                HMark markQueries = new HMark();
+                markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+                markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+
+                m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
 
                 m_tecView.updateGUI_LastMinutes = new DelegateFunc(showLastMinutesTM);

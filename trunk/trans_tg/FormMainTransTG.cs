@@ -90,6 +90,10 @@ namespace trans_tg
 
             bool bIgnoreTECInUse = false;
 
+            HMark markQueries = new HMark();
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+
             int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
@@ -102,7 +106,7 @@ namespace trans_tg
                         ;
 
                 try {
-                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, bIgnoreTECInUse);
+                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, markQueries, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -136,7 +140,7 @@ namespace trans_tg
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                     m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
 
-                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin);
+                    m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);
                     m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);
 
                     m_arAdmin[i].SetDelegateDatetime(setDatetimePicker);

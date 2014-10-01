@@ -225,7 +225,7 @@ namespace StatisticCommon
 
         public static int Role {
             get {
-                return (int)m_registration[(int)INDEX_REGISTRATION.ROLE];
+                return (m_registration == null) ? 0 : ((! ((int)INDEX_REGISTRATION.ID_TEC < m_registration.Length)) || (m_registration[(int)INDEX_REGISTRATION.ROLE] == null)) ? (int)Users.ID_ROLES.ADMIN : (int)m_registration[(int)INDEX_REGISTRATION.ROLE];
             }
         }
 
@@ -237,7 +237,7 @@ namespace StatisticCommon
         {
             get
             {
-                return (int)m_registration[(int)INDEX_REGISTRATION.ID_TEC];
+                return (m_registration == null) ? 0 : ((! ((int)INDEX_REGISTRATION.ID_TEC < m_registration.Length)) || (m_registration[(int)INDEX_REGISTRATION.ID_TEC] == null)) ? 0 : (int)m_registration[(int)INDEX_REGISTRATION.ID_TEC];
             }
         }
 
@@ -245,7 +245,7 @@ namespace StatisticCommon
         {
             get
             {
-                return (int)m_registration[(int)INDEX_REGISTRATION.ID];
+                return (m_registration == null) ? 0 : ((! ((int)INDEX_REGISTRATION.ID_TEC < m_registration.Length)) || (m_registration[(int)INDEX_REGISTRATION.ID] == null)) ? 0 : (int)m_registration[(int)INDEX_REGISTRATION.ID];
             }
         }
 
