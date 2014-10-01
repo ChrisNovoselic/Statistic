@@ -49,6 +49,8 @@ namespace StatisticTrans
 
         protected CheckBox m_checkboxModeMashine;
 
+        protected HMark m_markQueries;
+
         protected bool m_bTransAuto {
             get
             {
@@ -86,11 +88,18 @@ namespace StatisticTrans
             InitializeComponent();
 
             m_report = new HReports();
+            m_markQueries = new HMark();
 
             m_fileINI = new FileINI (@"setup.ini", par, val);
 
             m_fileINI.Add(@"ОкноНазначение", @"Конвертер (...)" );
             m_fileINI.Add (@"ID_TECNotUse", string.Empty);
+
+            m_fileINI.Add(@"ОпросСохранениеППБР", false.ToString ());
+            m_fileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString());
+
+            this.Text =
+            this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
 
             m_listID_TECNotUse = new List<int>();
             string[] arStrID_TECNotUse = m_fileINI.GetValueOfKey (@"ID_TECNotUse").Split(',');
@@ -102,8 +111,33 @@ namespace StatisticTrans
                     ;
             }
 
-            this.Text =
-            this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
+            string strChecked = string.Empty;
+            bool bRes = false
+                , bChecked = false;
+            strChecked = m_fileINI.GetValueOfKey(@"ОпросСохранениеППБР");
+            if (bool.TryParse(strChecked, out bChecked) == true)
+                опросСохранППБРToolStripMenuItem.Checked = bChecked;
+            else
+                опросСохранППБРToolStripMenuItem.Checked = false;
+
+            bRes = 
+            bChecked = false;
+            strChecked = m_fileINI.GetValueOfKey(@"ОпросСохранениеАдминЗнач");
+            if (bool.TryParse(strChecked, out bChecked) == true)
+                опросСохранАдминЗначенияToolStripMenuItem.Checked = bChecked;
+            else
+                опросСохранАдминЗначенияToolStripMenuItem.Checked = false;
+
+            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
+            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
+
+            if ((m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.PBR) == false) &&
+                (m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN) == false))
+            {
+                throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
+            }
+            else
+                ;
 
             // m_statusStripMain
             FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
@@ -661,25 +695,48 @@ namespace StatisticTrans
             buttonSourceExport.Enabled = enabled;
         }
 
-        protected void CreateFormConnectionSettingsCfgDB(string connSettFileName)
+        /// <summary>
+        /// Создание формы для редактирования параметров соединения с БД конфигурации
+        /// </summary>
+        /// <param name="connSettFileName">наименование файла с параметрами соединения</param>
+        /// <param name="bCheckAdminLength">признак проверки кол-ва параметров соединения по кол-ву объекьлв 'HAdmin'</param>
+        protected void CreateFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
+            bool bShowFormConnSett = false;
+            
             m_fileConnSett = new FIleConnSett(connSettFileName);
             m_formConnectionSettingsConfigDB = new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
-        }
 
-        protected void CreateFormConnectionSettingsCfgDBofAdmins(string connSettFileName)
-        {
-            CreateFormConnectionSettingsCfgDB(connSettFileName);
+            if (m_formConnectionSettingsConfigDB.Ready == 0)
+                ;
+            else
+                bShowFormConnSett = true;
 
-            if ((!(m_formConnectionSettingsConfigDB.Ready == 0)) || (m_formConnectionSettingsConfigDB.Count < 2))
+            if (bCheckAdminLength == true)
             {
-                while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
-                    m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
+                if (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
+                {
+                    while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
+                        m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
+
+                    if (bShowFormConnSett == false) bShowFormConnSett = true; else ;
+                }
+                else
+                    ;
             }
+            else
+            {
+            }
+
+            if (bShowFormConnSett == true)
+                конфигурацияБДToolStripMenuItem.PerformClick();
             else
                 ;
         }
 
+        /// <summary>
+        /// Заполнение списка компонентов
+        /// </summary>
         protected virtual void FillComboBoxTECComponent () {
             if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
             {
@@ -697,6 +754,10 @@ namespace StatisticTrans
                 ;
         }
 
+        /// <summary>
+        /// Заполнение таблицы полученными данными (при [авто]режиме экспорт данных + переход к следующему элементу списка компонентов)
+        /// </summary>
+        /// <param name="date">дата</param>
         protected virtual void setDataGridViewAdmin(DateTime date)
         {
             //if (WindowState == FormWindowState.Minimized)
@@ -719,6 +780,9 @@ namespace StatisticTrans
             }
         }
 
+        /// <summary>
+        /// При [авто]режиме переход к следующему элементу списка компонентов
+        /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
@@ -731,6 +795,9 @@ namespace StatisticTrans
 
         protected abstract void updateDataGridViewAdmin (DateTime date);
 
+        /// <summary>
+        /// При [авто]режиме переход к следующему элементу списка компонентов
+        /// </summary>
         protected virtual void saveDataGridViewAdminComplete()
         {
             Logging.Logg().LogDebugToFile(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
@@ -834,7 +901,8 @@ namespace StatisticTrans
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            buttonClose_Click (null, null);
+            //buttonClose_Click (null, null);
+            buttonClose.PerformClick();
         }
 
         private void конфигурацияБДToolStripMenuItem_Click(object sender, EventArgs e)

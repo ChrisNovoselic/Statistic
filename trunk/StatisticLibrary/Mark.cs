@@ -23,9 +23,9 @@ namespace StatisticCommon
             Int32 val = Pow2Bit (bit);
 
             if (opt == true)
-                m_mark += val;
+                if (!((m_mark & val) == val)) m_mark += val; else ;
             else
-                m_mark -= val;
+                if ((m_mark & val) == val) m_mark -= val; else ;
         }
 
         public void Set(int bit, bool val)

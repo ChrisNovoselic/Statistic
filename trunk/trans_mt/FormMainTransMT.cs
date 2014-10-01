@@ -28,7 +28,7 @@ namespace trans_mt
         {
             int i = -1;
 
-            CreateFormConnectionSettingsCfgDB("connsett_mt.ini");
+            CreateFormConnectionSettings("connsett_mt.ini", false);
 
             m_fileINI.Add(@"ТипБДКфгИсточник", @"200");
             m_fileINI.Add(@"ИгнорДатаВремя-ModesTerminale", false.ToString ());

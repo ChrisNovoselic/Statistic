@@ -67,7 +67,7 @@ namespace trans_tg
         {
             int i = -1;
 
-            CreateFormConnectionSettingsCfgDBofAdmins("connsett_tg.ini");
+            CreateFormConnectionSettings("connsett_tg.ini", true);
 
             int iConfigDB = -1;
             string keyTypeConfigDB = @"ТипБДКфгНазначение";

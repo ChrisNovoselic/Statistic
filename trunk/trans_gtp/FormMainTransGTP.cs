@@ -56,7 +56,19 @@ namespace trans_gtp
         {
             int i = -1;
 
-            CreateFormConnectionSettingsCfgDB("connsett_gtp.ini");
+            CreateFormConnectionSettings("connsett_gtp.ini", true);
+
+            //Добавление необходимого кол-ва элементов настроек для соединения с БД конфигурации
+            //if (m_formConnectionSettingsConfigDB.Count < 2)
+            //{
+            //    while (!(m_formConnectionSettingsConfigDB.Count < 2))
+            //        m_formConnectionSettingsConfigDB.addConnSett(m_formConnectionSettingsConfigDB.Count);
+            //    конфигурацияБДToolStripMenuItem.PerformClick();
+
+            //    return;
+            //}
+            //else
+            //    ;
 
             m_fileINI.Add (@"ТипБДКфгИсточник", @"190");
             m_fileINI.Add (@"РДГФорматТаблицаИсточник", @"STATIC");
@@ -96,8 +108,7 @@ namespace trans_gtp
             else
                 ;
 
-            HMark markQueries = new HMark ();
-            markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            m_fileINI.Add(@"ТЭЦПараметрыНазначение", @"{}");
 
             int idListener = -1;
             //Инициализация объектов получения данных
@@ -108,7 +119,7 @@ namespace trans_gtp
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], markQueries, true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], m_markQueries, true);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -135,6 +146,8 @@ namespace trans_gtp
                 //}
 
                 if (i == (int)CONN_SETT_TYPE.DEST) {
+                    string strTECParametersDest = m_fileINI.GetValueOfKey(@"ТЭЦПараметрыНазначение");
+                    if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         string prefix_admin = @""
                             , prefix_pbr = @"BiTEC";
@@ -143,10 +156,10 @@ namespace trans_gtp
                             , indx_tec = 0;
 
                         //Создание объекта ТЭЦ
-                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].m_arNameTableAdminValues [(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
-                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].m_arNameTableUsedPPBRvsPBR [(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR";
-                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].prefix_admin = prefix_admin;
-                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[0].prefix_pbr = prefix_pbr;
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableAdminValues[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR";
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_admin = prefix_admin;
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_pbr = prefix_pbr;
 
                         m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
                                             @"", //ADMIN_REC
@@ -181,7 +194,7 @@ namespace trans_gtp
                         }
                         else
                             ; //Ошибка получения параметров соединений с БД
-                    //} else ;
+                    } else ;
                 }
                 else {
                 }

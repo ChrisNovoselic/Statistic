@@ -48,6 +48,8 @@
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.конфигурацияБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.опросСохранППБРToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.опросСохранАдминЗначенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
@@ -228,17 +230,35 @@
             // настройкиToolStripMenuItem
             // 
             this.настройкиToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.конфигурацияБДToolStripMenuItem});
+                this.конфигурацияБДToolStripMenuItem,
+                this.опросСохранППБРToolStripMenuItem,
+                this.опросСохранАдминЗначенияToolStripMenuItem});
             this.настройкиToolStripMenuItem.Name = "настройкиToolStripMenuItem";
             this.настройкиToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
             this.настройкиToolStripMenuItem.Text = "Настройки";
             // 
-            // выходToolStripMenuItem
+            // конфигурацияБДToolStripMenuItem
             // 
             this.конфигурацияБДToolStripMenuItem.Name = "конфигурацияБДToolStripMenuItem";
             this.конфигурацияБДToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
             this.конфигурацияБДToolStripMenuItem.Text = "БД конфигурации";
             this.конфигурацияБДToolStripMenuItem.Click += new System.EventHandler(this.конфигурацияБДToolStripMenuItem_Click);
+            // 
+            // опросСохранППБРToolStripMenuItem
+            // 
+            this.опросСохранППБРToolStripMenuItem.Name = "опросСохранППБРToolStripMenuItem";
+            this.опросСохранППБРToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.опросСохранППБРToolStripMenuItem.Text = "Опрос/сохранение ППБР";
+            //this.опросСохранППБРToolStripMenuItem.Click += new System.EventHandler(this.опросСохранППБРToolStripMenuItem_Click);
+            this.опросСохранППБРToolStripMenuItem.Enabled = false;
+            // 
+            // опросСохранАдминЗначенияToolStripMenuItem
+            // 
+            this.опросСохранАдминЗначенияToolStripMenuItem.Name = "опросСохранАдминЗначенияToolStripMenuItem";
+            this.опросСохранАдминЗначенияToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.опросСохранАдминЗначенияToolStripMenuItem.Text = "Опрос/сохранение админ./знач.";
+            //this.опросСохранАдминЗначенияToolStripMenuItem.Click += new System.EventHandler(this.опросСохранАдминЗначенияToolStripMenuItem_Click);
+            this.опросСохранАдминЗначенияToolStripMenuItem.Enabled = false;
             // 
             // помощьToolStripMenuItem
             // 
@@ -350,7 +370,9 @@
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem конфигурацияБДToolStripMenuItem;
+        protected System.Windows.Forms.ToolStripMenuItem конфигурацияБДToolStripMenuItem;
+        protected System.Windows.Forms.ToolStripMenuItem опросСохранППБРToolStripMenuItem;
+        protected System.Windows.Forms.ToolStripMenuItem опросСохранАдминЗначенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         protected System.Windows.Forms.Timer timerMain;
