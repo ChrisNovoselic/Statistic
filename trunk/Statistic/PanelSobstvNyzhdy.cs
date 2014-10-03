@@ -389,7 +389,7 @@ namespace Statistic
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
                 //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
-                //catch (Exception e) { Logging.Logg ().LogExceptionToFile (e, @"PanelSobstvNyzhdy::ShowTMSNPower () - ..."); }
+                //catch (Exception e) { Logging.Logg ().Exception (e, @"PanelSobstvNyzhdy::ShowTMSNPower () - ..."); }
                 m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
 
                 DrawGraphHours();

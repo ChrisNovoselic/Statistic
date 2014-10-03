@@ -385,7 +385,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, @"TecView::ChangeState () - semaState.Release (1) - ...");
+                Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release (1) - ...");
             }
         }
 
@@ -399,7 +399,7 @@ namespace Statistic
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (lastHourError == true)) || ((curMinute == 0) || (lastMinError == true)))
             {
-                Logging.Logg().LogErrorToFile(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute);
+                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute);
             }
             else {            
                 foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
@@ -731,7 +731,7 @@ namespace Statistic
                 try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
+                    Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
                 }
             }
             else
@@ -927,7 +927,7 @@ namespace Statistic
 
             ErrorReport(msg);
 
-            Logging.Logg().LogErrorToFile(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
+            Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
         }
 
         protected override bool StateRequest(int state)
@@ -1005,7 +1005,7 @@ namespace Statistic
 
             ActionReport (@"Получение " + msg + @".");
 
-            //Logging.Logg().LogDebugToFile(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+            //Logging.Logg().Debug(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
             return bRes;
         }
@@ -1181,7 +1181,7 @@ namespace Statistic
             else
                 ;
 
-            //Logging.Logg().LogDebugToFile(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
+            //Logging.Logg().Debug(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
 
             return bRes;
         }
@@ -1280,7 +1280,7 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().LogExceptionToFile(e, @"TecView::ChangeState () - semaState.Release(1)...");
+                        Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)...");
                     }
                 else
                     ;
@@ -1315,7 +1315,7 @@ namespace Statistic
                 }
                 catch (Exception excpt)
                 {
-                    Logging.Logg().LogExceptionToFile(excpt, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
+                    Logging.Logg().Exception(excpt, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
 
                     return false;
                 }
@@ -1378,7 +1378,7 @@ namespace Statistic
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
 
             }
         }
@@ -1516,7 +1516,7 @@ namespace Statistic
                 //    catch (Exception excpt)
                 //    {
                 //        /*
-                //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...");
+                //        Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...");
                 //        */
                 //    }
                 //else
@@ -1559,7 +1559,7 @@ namespace Statistic
                             else
                                 ;
                         }
-                        catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
+                        catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
                     }
                     else
                     {
@@ -1657,7 +1657,7 @@ namespace Statistic
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                                 }
                                 //j++;
                             }
@@ -1676,7 +1676,7 @@ namespace Statistic
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                            Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                         }
                     }
                     else
@@ -1923,7 +1923,7 @@ namespace Statistic
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().LogExceptionToFile(e, "PanelTecViewBase::GetAdminValueResponse ()...");
+                            Logging.Logg().Exception(e, "PanelTecViewBase::GetAdminValueResponse ()...");
                         }
                     }
                     else
@@ -2388,7 +2388,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...");
 
                     dt = DateTime.Now.Date;
                 }
@@ -2465,7 +2465,7 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...");
 
                         dt = DateTime.Now.Date;
                     }
@@ -2785,7 +2785,7 @@ namespace Statistic
                             }
                             catch (Exception e)
                             {
-                                Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                                Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
 
                                 dtVal = DateTime.Now.Date;
                             }
@@ -2940,7 +2940,7 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
 
                         dt = DateTime.Now.Date;
                     }

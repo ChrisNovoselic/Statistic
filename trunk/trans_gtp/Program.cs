@@ -21,7 +21,7 @@ namespace trans_gtp
             try { formMain = new FormMainTransGTP(); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "!Ошибка! запуска приложения.");
+                Logging.Logg().Exception(e, "!Ошибка! запуска приложения.");
             }
 
             if (!(formMain == null))
@@ -30,6 +30,8 @@ namespace trans_gtp
                 ;
 
             ProgramBase.Exit();
+
+            DbSources.Sources().UnRegister();
         }
     }
 }

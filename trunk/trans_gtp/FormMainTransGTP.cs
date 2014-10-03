@@ -124,7 +124,7 @@ namespace trans_gtp
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "FormMainTransGTP::FormMainTransGTP ()");
+                    Logging.Logg().Exception(e, "FormMainTransGTP::FormMainTransGTP ()");
                     //ErrorReport("Ошибка соединения. Перехож в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;

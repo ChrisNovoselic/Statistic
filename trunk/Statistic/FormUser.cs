@@ -395,7 +395,7 @@ namespace Statistic
                 (comboBoxRole.SelectedIndex < m_listRolesID.Count))
                 m_users_edit.Rows[dgvUsers.SelectedRows [0].Index]["ID_ROLE"] = m_listRolesID [comboBoxRole.SelectedIndex];
             else {
-                Logging.Logg().LogErrorToFile(@"FormUsers::comboBoxRole_SelectedIndexChanged ()- индекс за пределами диапазона...", true);
+                Logging.Logg().Error(@"FormUsers::comboBoxRole_SelectedIndexChanged ()- индекс за пределами диапазона...", true);
                 return;
             }
 

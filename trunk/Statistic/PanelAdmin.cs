@@ -178,12 +178,12 @@ namespace Statistic
             try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
+                Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
             }
 
             if (!(m_admin.m_list_tec.Count > 0))
             {
-                Logging.Logg().LogErrorToFile(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
+                Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
             }
             else
                 ;
@@ -219,12 +219,12 @@ namespace Statistic
             try { m_admin.InitTEC(tec, markQueries); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
+                Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
             }
 
             if (!(m_admin.m_list_tec.Count > 0))
             {
-                Logging.Logg().LogErrorToFile(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
+                Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...");
             }
             else
                 ;

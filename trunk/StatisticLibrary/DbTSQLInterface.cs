@@ -17,7 +17,7 @@ namespace StatisticCommon
 
         public static string MessageDbOpen = "Соединение с базой установлено";
         public static string MessageDbClose = "Соединение с базой разорвано";
-        public static string MessageDbException = "!Исключение! при работе с БД";
+        public static string MessageDbException = "!Исключение! Работа с БД";
 
         private DbConnection m_dbConnection;
         private DbCommand m_dbCommand;
@@ -270,21 +270,21 @@ namespace StatisticCommon
             }
             else
                 ;
-            Logging.Logg().LogToFile(log, true, true, true);
+            Logging.Logg().Post(Logging.ID_MESSAGE.EXCEPTION_DB, log, true, true, true);
         }
 
         private static void logging_close_db (DbConnection conn)
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogDebugToFile(MessageDbClose + " (" + s + ")");
+            Logging.Logg().Debug(MessageDbClose + " (" + s + ")");
         }
 
         private static void logging_open_db (DbConnection conn)
         {
             string s = ConnectionStringToLog(conn.ConnectionString);
 
-            Logging.Logg().LogDebugToFile(MessageDbOpen + " (" + s + ")", true);
+            Logging.Logg().Debug(MessageDbOpen + " (" + s + ")", true);
         }
 
         public static DbTSQLInterface.DB_TSQL_INTERFACE_TYPE getTypeDB(int port)
@@ -570,7 +570,7 @@ namespace StatisticCommon
 
             if (!(err == 0))
             {
-                Logging.Logg().LogErrorToFile("!Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны");
+                Logging.Logg().Error("!Ошибка! static DbTSQLInterface::ParametrsValidate () - types OR parametrs не корректны");
             }
             else
                 ;

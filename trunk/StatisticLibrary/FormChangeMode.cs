@@ -317,7 +317,7 @@ namespace StatisticCommon
                     ev_сменить–ежим();
             }
             catch (Exception e) {
-                Logging.Logg().LogExceptionToFile(e, @"FormChangeMode::btnOk_Click () - ...");
+                Logging.Logg().Exception(e, @"FormChangeMode::btnOk_Click () - ...");
             }
         }
 

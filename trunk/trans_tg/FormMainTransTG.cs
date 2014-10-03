@@ -111,7 +111,7 @@ namespace trans_tg
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "FormMainTransTG::FormMainTransTG ()");
+                    Logging.Logg().Exception(e, "FormMainTransTG::FormMainTransTG ()");
                     //ErrorReport("Ошибка соединения. Перехож в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;
@@ -404,11 +404,11 @@ namespace trans_tg
             //Вариант №2
             bCompletedSaveChanges = WaitHandle.WaitAny(new WaitHandle[] { ((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete }, 0) == 0;
 
-            Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString());
+            Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString());
 
             if (bCompletedSaveChanges == true)
             {
-                //Logging.Logg().LogDebugToFile(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString());
+                //Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString());
                 //if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true) {
                     base.saveDataGridViewAdminComplete();
                 //} else ;

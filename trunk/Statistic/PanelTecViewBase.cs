@@ -697,7 +697,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, @"PanelTecViewBase::UpdateGUI_Fact () - ...");
+                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ...");
                 }
             }
         }
@@ -772,7 +772,7 @@ namespace Statistic
 
             setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
 
-            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridMins () - ...");
+            //Logging.Logg().Debug(@"PanelTecViewBase::FillGridMins () - ...");
         }
 
         private void FillGridHours()
@@ -999,7 +999,7 @@ namespace Statistic
 
             setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
 
-            //Logging.Logg().LogDebugToFile(@"PanelTecViewBase::FillGridHours () - ...");
+            //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
 
         private void NewDateRefresh()
@@ -1117,7 +1117,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "Обращение к переменной 'timerCurrent'");
+                Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
             }
         }
 

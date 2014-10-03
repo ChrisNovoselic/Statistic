@@ -33,6 +33,20 @@ namespace StatisticCommon
             marked(val, bit);
         }
 
+        public void SetOf(HMark mark)
+        {
+            //for (int i = 0; i < sizeof (Int32) * 8; i ++)
+            //    marked (IsMarked (i), i);
+            m_mark = mark.Value;
+        }
+
+        public void Add(HMark mark)
+        {
+            for (int i = 0; i < sizeof(Int32) * 8; i++) {
+                if ((IsMarked(mark.Value, i) == true) && (IsMarked(i) == false)) marked(true, i); else ;
+            }
+        }
+
         public void Marked (int bit) {
             marked (true, bit);
         }

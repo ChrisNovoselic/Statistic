@@ -20,7 +20,7 @@ namespace trans_mc
             try { formMain = new FormMainTransMC(); }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "Ошибка запуска приложения.");
+                Logging.Logg().Exception(e, "Ошибка запуска приложения.");
             }
 
             if (!(formMain == null))
@@ -29,6 +29,8 @@ namespace trans_mc
                 ;
 
             ProgramBase.Exit();
+
+            DbSources.Sources().UnRegister();
         }
     }
 }

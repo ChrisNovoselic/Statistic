@@ -10,8 +10,14 @@ using MySql.Data.MySqlClient;
 //namespace Statistic
 namespace StatisticCommon
 {
+    /// <summary>
+    /// Класс для работы с параметрами списка источников данных
+    /// </summary>
     public class ConnectionSettingsSource
     {
+        /// <summary>
+        /// Идентификатор БД конфигурации
+        /// </summary>
         private int m_idListener;
 
         public ConnectionSettingsSource (int idListener)
@@ -19,11 +25,23 @@ namespace StatisticCommon
             m_idListener = idListener;
         }
 
+        /// <summary>
+        /// Запрос для получения таблицы (одна строка) с параметрами источника данных
+        /// </summary>
+        /// <param name="id">идентификатор источника данных в таблице 'SOURCE'</param>
+        /// <returns>строка с параметрами источника данных</returns>
         private static string ConnectionSettingsRequest (int id)
         {
             return "SELECT src.* FROM SOURCE src WHERE src.ID = " + id.ToString();
         }
 
+        /// <summary>
+        /// Запрос пароля (шифрованного для 2.Х.Х и не шифрованного для 1.9.Х)
+        /// </summary>
+        /// <param name="typeDB_CFG">тип базы данных конфигурации (1.9.Х/2.Х.Х)</param>
+        /// <param name="id">идентификатор пользователя(роли) - часть составного ключа</param>
+        /// <param name="id_role">роль пользователя (только для 2.Х.Х), "роль" источника данных 501</param>
+        /// <returns>текст запроса</returns>
         private static string PasswordRequest(InitTECBase.TYPE_DATABASE_CFG typeDB_CFG, int id, int id_role)
         {
             string strRes = string.Empty;
@@ -44,6 +62,14 @@ namespace StatisticCommon
             return strRes;
         }
 
+        /// <summary>
+        /// Получение таблицы с параметрами соединения источника данных дешифрованным паролем
+        /// </summary>
+        /// <param name="src">таблица - рез-т выполнения функции 'GetConnectionSettings'</param>
+        /// <param name="row_src"></param>
+        /// <param name="psw"></param>
+        /// <param name="row_psw"></param>
+        /// <returns></returns>
         private static DataTable GetConnectionSettings(ref DataTable src, int row_src, ref DataTable psw, int row_psw)
         {
             string errMsg, strPsw;

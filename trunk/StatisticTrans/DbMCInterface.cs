@@ -57,7 +57,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "DbMCInterface::Connect ()");
+                Logging.Logg().Exception(e, "DbMCInterface::Connect ()");
             }
 
             lock (lockConnectionSettings)
@@ -72,11 +72,11 @@ namespace StatisticCommon
             {
                 ModesApiFactory.Initialize((string)m_connectionSettings);
 
-                Logging.Logg().LogDebugToFile("Соединение с Modes-Centre (" + (string)m_connectionSettings + ")");
+                Logging.Logg().Debug("Соединение с Modes-Centre (" + (string)m_connectionSettings + ")");
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")");
+                Logging.Logg().Exception(e, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")");
             }
 
             bRes = 
@@ -92,7 +92,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().LogDebugToFile("Соединение с Modes-Centre(" + (string)m_connectionSettings + ") - УСПЕХ");
+            Logging.Logg().Debug("Соединение с Modes-Centre(" + (string)m_connectionSettings + ") - УСПЕХ");
 
             return result;
         }
@@ -160,7 +160,7 @@ namespace StatisticCommon
 
             string [] args = ((string)query).Split (';');
 
-            Logging.Logg().LogDebugToFile("DbMCInterface::GetData () - " + query + ")");
+            Logging.Logg().Debug("DbMCInterface::GetData () - " + query + ")");
 
             switch (args[0])
             {

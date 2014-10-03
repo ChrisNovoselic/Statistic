@@ -53,7 +53,7 @@ namespace StatisticCommon
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(250, 58);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Программа \"Статистика\" верс.2.0.3b\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r" +
+            this.label1.Text = "Программа \"Статистика\" верс.2.0.4b\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r" +
     "\nразработчик: Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин А.Н., e-mail:";
             // 
             // llblMailTo

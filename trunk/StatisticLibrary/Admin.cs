@@ -188,7 +188,7 @@ namespace StatisticCommon
 
         public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
         {
-            //Logging.Logg().LogDebugToFile("Admin::InitTEC () - вход...");
+            //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
             //m_ignore_connsett_data = ! bUseData;
 
@@ -228,9 +228,12 @@ namespace StatisticCommon
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
-                //Logging.Logg().LogDebugToFile("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
+                //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 
-                t.m_markQueries = markQueries;
+                if (t.m_markQueries == null)
+                    t.m_markQueries = markQueries;
+                else
+                    t.m_markQueries.Add (markQueries);
 
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
@@ -311,10 +314,10 @@ namespace StatisticCommon
                     }
                     else
                         //Вообще нельзя что-либо инициализировать
-                        Logging.Logg().LogErrorToFile(@"HAdmin::StartDbInterfaces () - connSetts == null ...");
+                        Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - connSetts == null ...");
             else
                 //Вообще нельзя что-либо инициализировать
-                Logging.Logg().LogErrorToFile(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...");
+                Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...");
         }
 
         private void stopDbInterfaces()
@@ -333,7 +336,7 @@ namespace StatisticCommon
                     }
             else
                 //Вообще нельзя что-либо инициализировать
-                Logging.Logg().LogErrorToFile(@"HAdmin::stopDbInterfaces () - m_list_tec == null ...");
+                Logging.Logg().Error(@"HAdmin::stopDbInterfaces () - m_list_tec == null ...");
         }
 
         public void StopDbInterfaces()
@@ -375,7 +378,7 @@ namespace StatisticCommon
         public void SetDelegateSaveComplete(DelegateFunc f) {            
             saveComplete = f;
 
-            Logging.Logg().LogDebugToFile(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход");
+            Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход");
         }
 
         public void SetDelegateData(DelegateDateFunc s, DelegateFunc e) { readyData = s; errorData = e; }
@@ -388,7 +391,7 @@ namespace StatisticCommon
         {
             //MessageBox.Show(this, msg, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-            Logging.Logg().LogToFile(msg, true, true, true);
+            Logging.Logg().Error(msg);
         }
 
         public abstract void ClearValues();
@@ -546,7 +549,7 @@ namespace StatisticCommon
                 if (!(FormMainBaseWithStatusStrip.m_report == null))
                     FormMainBaseWithStatusStrip.m_report.ClearStates();
                 else
-                    Logging.Logg().LogErrorToFile(@"HAdmin::ClearStates () - m_report=null");
+                    Logging.Logg().Error(@"HAdmin::ClearStates () - m_report=null");
             //}
         }
 
@@ -564,7 +567,7 @@ namespace StatisticCommon
                 try { semaState.Release(1); }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "HAdmin::StopThreadSourceData () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, "HAdmin::StopThreadSourceData () - semaState.Release(1)");
                 }
 
                 joined = taskThread.Join(666);
@@ -683,7 +686,7 @@ namespace StatisticCommon
 
                 try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
                 catch (Exception e) {
-                    Logging.Logg().LogExceptionToFile(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
+                    Logging.Logg().Exception(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
                 }
             }
             try
@@ -692,7 +695,7 @@ namespace StatisticCommon
             }
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "HAdmin::TecView_ThreadFunction () - semaState.Release(1)");
+                Logging.Logg().Exception(e, "HAdmin::TecView_ThreadFunction () - semaState.Release(1)");
             }
         }
 

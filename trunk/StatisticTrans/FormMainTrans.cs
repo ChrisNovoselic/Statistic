@@ -800,7 +800,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void saveDataGridViewAdminComplete()
         {
-            Logging.Logg().LogDebugToFile(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
+            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
             
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
@@ -811,7 +811,7 @@ namespace StatisticTrans
             else
                 ;
 
-            Logging.Logg().LogDebugToFile(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...");
+            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...");
         }
 
         protected void setDatetimePickerMain(DateTime date)
@@ -933,7 +933,7 @@ namespace StatisticTrans
         }
 
         //protected override void ErrorReport (string msg) {
-        //    Logging.Logg().LogErrorToFile(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
+        //    Logging.Logg().Error(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
             
         //    m_statusStripMain.BeginInvoke(delegateEvent);
 
@@ -1010,7 +1010,7 @@ namespace StatisticTrans
         }
 
         protected void trans_auto_next () {
-            Logging.Logg().LogDebugToFile(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex);
+            Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex);
             
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {

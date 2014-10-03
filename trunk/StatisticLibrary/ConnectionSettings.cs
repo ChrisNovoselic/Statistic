@@ -93,6 +93,23 @@ namespace StatisticCommon
             SetDefault();
         }
 
+        /// <summary>
+        /// Конструктор только для параметров соединения с БД логирования
+        /// </summary>
+        /// <param name="r"></param>
+        public ConnectionSettings(DataRow r)
+        {
+            id = -666667; //Int32.Parse (r[@"ID"].ToString ());
+            name = r[@"NAME_SHR"].ToString ();
+            server = r[@"IP"].ToString ();
+            dbName = r[@"DB_NAME"].ToString();
+            userName = r[@"UID"].ToString();
+            password = r[@"PASSWORD"].ToString();
+            port = Int32.Parse (r[@"PORT"].ToString ());
+
+            ignore = Int32.Parse(r[@"IGNORE"].ToString ()) == 1;
+        }
+
         public void SetDefault()
         {
             id = -1;
@@ -115,7 +132,7 @@ namespace StatisticCommon
                 }
             }
             catch (Exception e) {
-                Logging.Logg().LogExceptionToFile(e, @"ConnectionSettings::Validate() - ...");
+                Logging.Logg().Exception(e, @"ConnectionSettings::Validate() - ...");
             }
 
             if (port > 65535)

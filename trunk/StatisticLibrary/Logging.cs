@@ -16,7 +16,8 @@ namespace StatisticCommon
 
     public class Logging //LoggingFS //: Logging
     {
-        private enum LOG_MODE { ERROR = -1, UNKNOWN, FILE, DB };
+        public enum LOG_MODE { ERROR = -1, UNKNOWN, FILE, DB };
+        public enum ID_MESSAGE { START = 1, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR };
 
         private string m_fileNameStart;
         private string m_fileName;
@@ -26,7 +27,7 @@ namespace StatisticCommon
         private Semaphore sema;
         private LogStreamWriter m_sw;
         private FileInfo m_fi;
-        private LOG_MODE logging = LOG_MODE.FILE;
+        public static LOG_MODE s_mode = LOG_MODE.UNKNOWN;
         private bool logRotate = true;
         private const int MAX_ARCHIVE = 6;
         private static int logRotateSizeDefault = (int) Math.Floor((double)(1024 * 1024 * 5)); //1024 * 1024 * 5;
@@ -42,7 +43,8 @@ namespace StatisticCommon
 
         protected static Logging m_this = null;
 
-        public static int m_iIdListener = -1;
+        public static int s_iIdListener = -1;
+        private List <string> m_listQueueMessage;
 
         /// <summary>
         /// Имя приложения без расширения
@@ -79,7 +81,16 @@ namespace StatisticCommon
         {
             if (m_this == null)
             {
-                m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+                switch (s_mode) {
+                    case LOG_MODE.FILE:
+                        m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+                        break;
+                    case LOG_MODE.DB:
+                    case LOG_MODE.UNKNOWN:
+                    default:
+                        m_this = new Logging ();
+                        break;
+                }
             }
             else
                 ;
@@ -117,6 +128,9 @@ namespace StatisticCommon
             delegateClearLogText = clearLogText;
         }
 
+        private Logging () {
+        }
+
         /// <summary>
         /// Приостановка логгирования
         /// </summary>
@@ -125,7 +139,7 @@ namespace StatisticCommon
         {
             LogLock();
 
-            LogDebugToFile("Пауза ведения журнала...", false);
+            Debug("Пауза ведения журнала...", false);
 
             m_sw.Close();
 
@@ -139,7 +153,7 @@ namespace StatisticCommon
         {
             m_sw = new LogStreamWriter(m_fi.FullName, true, Encoding.GetEncoding("windows-1251"));
 
-            LogDebugToFile("Возобновление ведения журнала...", false);
+            Debug("Возобновление ведения журнала...", false);
 
             LogUnlock();
         }
@@ -160,6 +174,11 @@ namespace StatisticCommon
             sema.Release();
         }
 
+        private string getInsertQuery (int id, string msg) {
+            return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
+                                @"(" + id + @"," + Users.Id + @",GETDATE(),'" + msg + @"')";
+        }
+        
         /// <summary>
         /// Запись сообщения в лог-файл
         /// </summary>
@@ -167,13 +186,30 @@ namespace StatisticCommon
         /// <param name="separator">признак наличия разделителя</param>
         /// <param name="timeStamp">признак наличия метки времени</param>
         /// <param name="locking">признак блокирования при записи сообщения</param>
-        public void LogToFile(string message, bool separator, bool timeStamp, bool locking/* = false*/)
+        public void Post(ID_MESSAGE id, string message, bool separator, bool timeStamp, bool locking/* = false*/)
         {
-            if (logging > LOG_MODE.UNKNOWN)
+            if (s_mode > LOG_MODE.UNKNOWN)
             {
-                switch (logging)
+                switch (s_mode)
                 {
                     case LOG_MODE.DB:
+                        string query = getInsertQuery ((int)id, message);
+                        if (! (s_iIdListener < 0)) {
+                            if (m_listQueueMessage.Count > 0) {
+                                string queryQueue = string.Empty;
+                                while (m_listQueueMessage.Count > 0) {
+                                    queryQueue += m_listQueueMessage[0] + @";";
+                                    m_listQueueMessage.RemoveAt(0);
+                                }
+
+                                DbSources.Sources().Request(s_iIdListener, queryQueue + query);
+                            }
+                            else                            
+                                DbSources.Sources().Request(s_iIdListener, query);
+                        } else {
+                            if (m_listQueueMessage == null) m_listQueueMessage = new List<string>(); else ;
+                            m_listQueueMessage.Add(query);
+                        }
                         break;
                     case LOG_MODE.FILE:
                         if (locking == true)
@@ -387,24 +423,29 @@ namespace StatisticCommon
             }
         }
 
-        public void LogErrorToFile(string message, bool bLock = true)
+        public void Action(string message, bool bLock = true)
         {
-            LogToFile("!Ошибка!: " + message, true, true, bLock);
+            Post(ID_MESSAGE.ACTION, "!Действие!: " + message, true, true, bLock);
         }
 
-        public void LogDebugToFile(string message, bool bLock = true)
+        public void Error(string message, bool bLock = true)
         {
-            LogToFile("!Отладка!: " + message, true, true, bLock);
+            Post(ID_MESSAGE.ERROR, "!Ошибка!: " + message, true, true, bLock);
         }
 
-        public void LogExceptionToFile(Exception e, string message, bool bLock = true)
+        public void Debug(string message, bool bLock = true)
+        {
+            Post(ID_MESSAGE.DEBUG, "!Отладка!: " + message, true, true, bLock);
+        }
+
+        public void Exception(Exception e, string message, bool bLock = true)
         {
             string msg = string.Empty;
             msg += "!Исключение! обработка: " + message + Environment.NewLine;
             msg += "Исключение: " + e.Message + Environment.NewLine;
             msg += e.ToString();
 
-            LogToFile(msg, true, true, bLock);
+            Post(ID_MESSAGE.EXCEPTION, msg, true, true, bLock);
         }
 
         internal class LogStreamWriter : StreamWriter

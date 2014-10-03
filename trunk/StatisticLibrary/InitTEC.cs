@@ -165,7 +165,7 @@ namespace StatisticCommon
         /// <param name="bUseData"></param>
         public InitTEC_200(int idListener, bool bIgnoreTECInUse, bool bUseData)
         {
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - вход...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вход...");
 
             int err = -1;
 
@@ -174,7 +174,7 @@ namespace StatisticCommon
 
             tec = new List<TEC>();
             //m_user = new Users(idListener);
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
 
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
@@ -192,11 +192,11 @@ namespace StatisticCommon
             if (err == 0) {
                 for (int i = 0; i < list_tec.Rows.Count; i++)
                 {
-                    //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
+                    //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
                     if ((Users.allTEC == 0) || (Users.Role < (int)Users.ID_ROLES.USER) || (Users.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                     {
-                        //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
+                        //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 
                         prefix_admin = string.Empty; prefix_pbr = string.Empty;
                         if ((list_tec.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_tec.Columns.IndexOf("PREFIX_PBR") < 0))
@@ -240,7 +240,7 @@ namespace StatisticCommon
                                 tec[indx_tec].m_strTemplateNameSgnDataTM = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_TM"].ToString();
                                 tec[indx_tec].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
 
-                                //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - tec.Add () = Ok");
+                                //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Add () = Ok");
 
                                 list_tg = getListTG(FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
@@ -265,14 +265,14 @@ namespace StatisticCommon
                                 {
                                     list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
-                                    //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - list_TECComponents.Count = " + list_TECComponents.Rows.Count);
+                                    //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TECComponents.Count = " + list_TECComponents.Rows.Count);
 
                                     if (err == 0)
                                         try
                                         {
                                             for (int j = 0; j < list_TECComponents.Rows.Count; j++)
                                             {
-                                                //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - ...tec[indx_tec].list_TECComponents.Add(new TECComponent...");
+                                                //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - ...tec[indx_tec].list_TECComponents.Add(new TECComponent...");
 
                                                 prefix_admin = string.Empty; prefix_pbr = string.Empty;
                                                 if ((list_TECComponents.Columns.IndexOf("PREFIX_ADMIN") < 0) && (list_TECComponents.Columns.IndexOf("PREFIX_PBR") < 0)) {
@@ -285,7 +285,7 @@ namespace StatisticCommon
                                                 tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], prefix_admin, prefix_pbr));
 
                                                 indx = tec[indx_tec].list_TECComponents.Count - 1;
-                                                //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - indx = " + indx);
+                                                //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - indx = " + indx);
 
                                                 tec[indx_tec].list_TECComponents[indx].name_shr = list_TECComponents.Rows[j]["NAME_SHR"].ToString(); //list_TECComponents.Rows[j]["NAME_GNOVOS"]
                                                 if (IsNameField(list_TECComponents, "NAME_FUTURE") == true) tec[indx_tec].list_TECComponents[indx].name_future = list_TECComponents.Rows[j]["NAME_FUTURE"].ToString(); else ;
@@ -311,7 +311,7 @@ namespace StatisticCommon
                                         }
                                         catch (Exception e)
                                         {
-                                            Logging.Logg().LogExceptionToFile(e, "InitTEC::InitTEC (3 параметра) - ...for (int j = 0; j < list_TECComponents.Rows.Count; j++)...");
+                                            Logging.Logg().Exception(e, "InitTEC::InitTEC (3 параметра) - ...for (int j = 0; j < list_TECComponents.Rows.Count; j++)...");
                                         }
                                     else
                                         ; //Ошибка при получении списка компонентов
@@ -321,7 +321,7 @@ namespace StatisticCommon
                                 ; //Ошибка получения параметров соединений с БД
                         //} else ;
 
-                        //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - list_TG = Ok");
+                        //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TG = Ok");
                     }
                     else
                         ;
@@ -332,12 +332,12 @@ namespace StatisticCommon
 
             //DbTSQLInterface.CloseConnection(m_connConfigDB, out err);
 
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (3 параметра) - вЫход...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
         }
 
         public InitTEC_200(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
         {
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - вход...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
 
             tec = new List<TEC> ();
 
@@ -366,7 +366,7 @@ namespace StatisticCommon
             //dbInterface.Stop();
             //dbInterface.ListenerUnregister(listenerId);
 
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
@@ -377,7 +377,7 @@ namespace StatisticCommon
             if (err == 0)
                 for (int i = 0; i < list_tec.Rows.Count; i ++) {
 
-                    //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - Создание объекта ТЭЦ: " + i);
+                    //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - Создание объекта ТЭЦ: " + i);
 
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         prefix_admin = string.Empty; prefix_pbr = string.Empty;
@@ -685,7 +685,7 @@ namespace StatisticCommon
             tec[i].TECComponent[j].TG[k++].name = "ТГ8";
             */
 
-            //Logging.Logg().LogDebugToFile("InitTEC::InitTEC (4 параметра) - вЫход...");
+            //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
         }
     }
 
@@ -708,20 +708,20 @@ namespace StatisticCommon
             list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
 
             //Logging.Logg ().LogLock ();
-            //Logging.Logg().LogToFile("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
+            //Logging.Logg().Send("InitTEC::InitTEC () - m_user.Role = " + m_user.Role, true, false, false);
             //Logging.Logg().LogUnlock();
 
             for (int i = 0; i < list_tec.Rows.Count; i++)
             {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                     //Logging.Logg().LogLock();
-                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
+                    //Logging.Logg().Send("InitTEC::InitTEC () - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"], true, false, false);
                     //Logging.Logg().LogUnlock();
 
                     //if ((m_user.allTEC == 0) || (m_user.Role < 100) || (m_user.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                     //{
                     //Logging.Logg().LogLock();
-                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
+                    //Logging.Logg().Send("InitTEC::InitTEC () - tec.Count = " + tec.Count, true, false, false);
                     //Logging.Logg().LogUnlock();
 
                     //Создание объекта ТЭЦ
@@ -757,7 +757,7 @@ namespace StatisticCommon
                     tec[i].m_strTemplateNameSgnDataFact = list_tec.Rows[i]["TEMPLATE_NAME_SGN_DATA_FACT"].ToString();
 
                     //Logging.Logg().LogLock();
-                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
+                    //Logging.Logg().Send("InitTEC::InitTEC () - tec.Add () = Ok", true, false, false);
                     //Logging.Logg().LogUnlock();
 
                     int indx = -1;
@@ -766,7 +766,7 @@ namespace StatisticCommon
                         list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
                         //Logging.Logg().LogLock();
-                        //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
+                        //Logging.Logg().Send("InitTEC::InitTEC () - list_TECComponents.Count = " + list_TECComponents.Rows.Count, true, false, false);
                         //Logging.Logg().LogUnlock();
 
                         for (int j = 0; j < list_TECComponents.Rows.Count; j++)
@@ -800,7 +800,7 @@ namespace StatisticCommon
                     }
 
                     //Logging.Logg().LogLock();
-                    //Logging.Logg().LogToFile("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
+                    //Logging.Logg().Send("InitTEC::InitTEC () - list_TECComponents = Ok", true, false, false);
                     //Logging.Logg().LogUnlock();
 
                     list_tg = getListTG(FormChangeMode.getPrefixMode((int)FormChangeMode.MODE_TECCOMPONENT.TEC), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);

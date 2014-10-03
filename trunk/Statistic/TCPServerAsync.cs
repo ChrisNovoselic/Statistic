@@ -74,7 +74,7 @@ namespace Statistic{
             
             try { this.tcpListener.Start(); }
             catch (Exception e) {
-                Logging.Logg().LogExceptionToFile(e, @"tcpListener.Start()");
+                Logging.Logg().Exception(e, @"tcpListener.Start()");
                 iRes = -1;
             }
             this.tcpListener.BeginAcceptTcpClient(AcceptTcpClientCallback, null);
@@ -174,7 +174,7 @@ namespace Statistic{
             catch (Exception e)
             {
                 //Ожидаемое исключение
-                //Logging.Logg().LogExceptionToFile(e, "TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
+                //Logging.Logg().Exception(e, "TCPServerAsync::AcceptTcpClientCallback () - ожидаемое исключение");
                 Console.WriteLine("TCPServertAsync::AcceptTcpClientCallback () - An error has occured when call this methode...type of exception: " + e.GetType().FullName);
             }
             
@@ -230,7 +230,7 @@ namespace Statistic{
                     {
                         err = -2;
 
-                        Logging.Logg ().LogExceptionToFile (e, @"");
+                        Logging.Logg ().Exception (e, @"");
                     }
                 }
                 else

@@ -8,6 +8,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
+using System.Data.Common; //для DbConnection
+
 namespace StatisticCommon
 {
     public abstract partial class FormParametersTG : FormParametersBase
@@ -89,26 +91,22 @@ namespace StatisticCommon
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < COUNT_TG; i++)
+            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
-                m_tg_id[(int)TG.ID_TIME.MINUTES, i] = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i];
-                m_tg_id[(int)TG.ID_TIME.HOURS, i] = m_tg_id_default[(int)TG.ID_TIME.HOURS, i];
-            }
-
-            for (int i = 0; i < COUNT_TG; i++)
-            {
-                m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id_default[(int)TG.ID_TIME.MINUTES, i].ToString();
-                m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id_default[(int)TG.ID_TIME.HOURS, i].ToString();
+                for (int j = 0; j < COUNT_TG; j++)
+                    m_tg_id[i, j] = m_tg_id_default[i, j];
             }
 
             m_State++;
+            
+            loadParam ();
         }
 
         override public void buttonCancel_Click(object sender, EventArgs e)
         {
-            loadParam();
-
             m_State = 0;
+            
+            loadParam();            
 
             base.buttonCancel_Click(sender, e);
         }
@@ -140,6 +138,13 @@ namespace StatisticCommon
 
             Close();
         }
+
+        public override void loadParam()
+        {            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            {
+                for (int j = 0; j < COUNT_TG; j++)
+                    m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
+            }        }
     }
 
     public partial class FormParametersTG_FileINI : FormParametersTG
@@ -183,10 +188,10 @@ namespace StatisticCommon
                     {
                         WriteTGIds(i, j);
                     }
-
-                    m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
                 }
             }
+
+            base.loadParam();
         }
 
         private void WriteTGIds(int id_time, int num_tg)
@@ -208,6 +213,163 @@ namespace StatisticCommon
                     WriteTGIds(i, j);
                 }
             }
+        }
+    }
+
+    public partial class FormParametersTG_DB : FormParametersTG
+    {
+        private string[] NAME_FIELDS_TIME = { "ID_3", "ID_30" };
+        private const string SENSORS_NAME_PREFIX = @"ТГ"
+            , SENSORS_NAME_POSTFIX = @" Pmanual"; //обязательно с пробелом
+
+        ConnectionSettings m_connSett;
+        int m_idListenerConfigDB;
+        TEC m_tec;
+
+        public FormParametersTG_DB(ConnectionSettings connSett, List <TEC> list_tec)
+        {
+            m_connSett = connSett;
+            m_idListenerConfigDB = -1;
+
+            //Поиск Бийской ТЭЦ
+            int indx_tec = -1;
+            foreach (TEC t in list_tec) {
+                if (t.type () == TEC.TEC_TYPE.BIYSK)
+                {
+                    indx_tec = list_tec.IndexOf (t);
+                } else { }                    
+            }
+
+            if (indx_tec < 0)
+                throw new Exception(@"FormParametersTG_DB::конструктор () - Бийская ТЭЦ в списке не найдена...");
+            else
+                m_tec = list_tec [indx_tec];
+
+            loadParam();
+        }
+
+        private void Start () {
+            m_idListenerConfigDB = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+        }
+
+        private void Stop () {
+            DbSources.Sources().UnRegister(m_idListenerConfigDB);
+            m_idListenerConfigDB = -1;
+        }
+
+        private string getQueryParam (int ver) {
+            return @"SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC]
+                            WHERE [LAST_UPDATE] = (SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
+        }
+
+        private string getWhereParamTG (int num) {
+            return @"[SENSORS_NAME] LIKE '" + SENSORS_NAME_PREFIX + num.ToString() + SENSORS_NAME_POSTFIX + @"'";
+        }
+
+        public override void loadParam()
+        {
+            int j = -1
+                , err = -1
+                , tg_id;
+
+            Start ();
+
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
+
+            DataTable tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)m_State), null, null, out err);
+            DataRow [] rowsRes;
+
+            if (err == 0)
+            {    
+                for (j = 0; j < COUNT_TG; j++)
+                {
+                    rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                    if (rowsRes.Length == 1)
+                        for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                            if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
+                                m_tg_id[i, j] = tg_id;
+                            else ;
+                    else
+                        break;
+                }
+
+                if (! (j < COUNT_TG)) {
+                    //tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)TYPE_VALUE.PREVIOUS), null, null, out err);
+                    tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam(m_State + 1), null, null, out err);
+
+                    if (err == 0) {
+                        if (tblTGSensors.Rows.Count < COUNT_TG)
+                            err = -2;
+                        else
+                            ;
+                    } else {
+                    }
+
+                    if (err == 0) {
+                        for (j = 0; j < COUNT_TG; j++)
+                        {
+                            rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                            if (rowsRes.Length == 1) {
+                                for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                                    if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
+                                        m_tg_id_default[i, j] = tg_id;
+                                    else ;
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                    } else {
+                        for (j = 0; j < COUNT_TG; j++)
+                        {
+                            for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                            {
+                                m_tg_id_default [i, j] = m_tg_id [i, j];
+                            }
+                        }
+                    }
+
+                    if (!(j < COUNT_TG))
+                        base.loadParam ();
+                    else
+                        ;
+                }
+                else
+                    ; //Ошибка
+            }
+            else
+                ; //Ошибка получения объекта "соединение" с БД конфигурации
+
+            Stop ();
+        }
+
+        public override void saveParam()
+        {
+            Start ();
+
+            int err = -1;
+            DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
+            
+            string queryInsert = @"INSERT INTO [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
+
+            for (int j = 0; j < COUNT_TG; j++)
+            {
+                queryInsert += @"(";
+                queryInsert += m_tec.m_id + @",";
+                queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString () + SENSORS_NAME_POSTFIX + @"'" + @",";
+                queryInsert += @"GETDATE(),";
+                queryInsert += m_tec.m_listTG [j].m_id + @",";
+                queryInsert += m_array_tbxTG[(int)TG.ID_TIME.MINUTES, j].Text + @",";
+                queryInsert += m_array_tbxTG[(int)TG.ID_TIME.HOURS, j].Text;
+                queryInsert += @"),";
+            }
+
+            //Удалить лишнюю запятую...
+            queryInsert = queryInsert.Substring (0, queryInsert.Length - 1);
+
+            DbTSQLInterface.ExecNonQuery (ref conn, queryInsert, null, null, out err);
+
+            Stop ();
         }
     }
 }

@@ -23,13 +23,16 @@ namespace StatisticCommon
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Logging.Logg().LogToFile(MessageWellcome, true, true, true);
+            //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
+            //Logging.s_mode = Logging.LOG_MODE.DB;
+            Logging.s_mode = Logging.LOG_MODE.FILE;
+            Logging.Logg().Post(Logging.ID_MESSAGE.START, MessageWellcome, true, true, true);
         }
 
         //Журналирование завершения приложения
         public static void Exit()
         {
-            Logging.Logg().LogToFile(MessageExit, true, true, true);
+            Logging.Logg().Post(Logging.ID_MESSAGE.STOP, MessageExit, true, true, true);
         }
 
         //???

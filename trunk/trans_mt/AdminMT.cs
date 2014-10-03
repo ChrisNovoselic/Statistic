@@ -37,7 +37,7 @@ namespace trans_mt
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query);
 
-            Logging.Logg().LogDebugToFile("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
+            Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
         }
 
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -140,7 +140,7 @@ namespace trans_mt
                         m_curRDGValues[hour - 1].deviation = 0;
                     }
                     catch (Exception e) {
-                        Logging.Logg().LogExceptionToFile(e, @"AdminMT::GetPPBRValuesResponse () - ...");
+                        Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...");
                     }
             }
 
@@ -204,7 +204,7 @@ namespace trans_mt
                     break;
             }
 
-            Logging.Logg().LogDebugToFile(@"AdminMT::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMT::StateRequest () - state=" + state.ToString() + @" - вЫход...");
 
             return result;
         }
@@ -264,7 +264,7 @@ namespace trans_mt
             else
                 ;
 
-            Logging.Logg().LogDebugToFile(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
 
             return result;
         }
@@ -353,7 +353,7 @@ namespace trans_mt
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "AdminMC::GetRDGValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, "AdminMC::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }

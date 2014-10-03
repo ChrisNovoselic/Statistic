@@ -136,7 +136,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                //Logging.Logg().LogExceptionToFile(e, "FormMain::Initialize ()");
+                //Logging.Logg().Exception(e, "FormMain::Initialize ()");
                 bRes = false;
 
                 Abort(e.Message, true);
@@ -163,7 +163,19 @@ namespace Statistic
 
                 if (! (Users.allTEC == 0))
                     PanelAdminKomDisp.ALARM_USE = false;
-                else ;                
+                else ;
+
+                //Если ранее тип логирования не был назанчен...
+                if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN) {
+                    //назначить тип логирования - БД
+                    Logging.s_mode = Logging.LOG_MODE.DB;
+                } else { }
+
+                if (Logging.s_mode == Logging.LOG_MODE.DB) {
+                    //Инициализация БД-логирования
+                    int err = -1;
+                    StatisticCommon.Logging.s_iIdListener = DbSources.Sources().Register(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]), true, @"LOGGING_DB");
+                } else { }
 
                 //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                 m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
@@ -248,7 +260,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
+                Logging.Logg().Exception(e, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
             }
         }
 
@@ -395,7 +407,7 @@ namespace Statistic
 
         private void ClearTabPages()
         {
-            Logging.Logg().LogDebugToFile(@"FormMain::ClearTabPages () - вХод...");
+            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вХод...");
             
             List<int> indxRemove = new List<int>();
 
@@ -422,7 +434,7 @@ namespace Statistic
 
             //selectedTecViews.Clear();
 
-            Logging.Logg().LogDebugToFile(@"FormMain::ClearTabPages () - вЫход...");
+            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вЫход...");
         }
 
         private void activateTabPage(int indx, bool active)
@@ -460,7 +472,7 @@ namespace Statistic
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
 
-            Logging.Logg().LogDebugToFile(strMsgDebug + @" - вЫход...");
+            Logging.Logg().Debug(strMsgDebug + @" - вЫход...");
         }
 
         private void ActivateTabPage()
@@ -783,7 +795,8 @@ namespace Statistic
 
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
 
-                m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
+                //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
+                m_formParametersTG = new FormParametersTG_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);
             }
             else
                 ;
@@ -1451,14 +1464,18 @@ namespace Statistic
             if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in tecViews)
-                    if ((tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK) && (!(m_formParametersTG == null)))
+                    if (tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
-                        //tv.tec.parametersTGForm.ShowDialog(this);
-                        m_formParametersTG.ShowDialog(this);
+                        if (!(m_formParametersTG == null))
+                            //tv.tec.parametersTGForm.ShowDialog(this);
+                            m_formParametersTG.ShowDialog(this);
+                        else
+                            Logging.Logg().Error(@"FormMain::параметрыТГБийскToolStripMenuItem_Click () - m_formParametersTG == null");
+
                         break;
                     }
                     else
-                        Logging.Logg().LogErrorToFile(@"FormMain::параметрыТГБийскToolStripMenuItem_Click () - m_formParametersTG == null");
+                        ;
             }
             else
                 ;

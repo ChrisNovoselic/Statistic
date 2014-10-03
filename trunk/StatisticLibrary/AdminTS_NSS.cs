@@ -549,7 +549,7 @@ namespace StatisticCommon
 
                             try { excelAppWorkcell.Value = curRDGValues[i].pbr - curRDGValues[i].recomendation; }
                             catch (Exception e) {
-                                Logging.Logg().LogExceptionToFile(e, "excelAppWorkcell.set_Value () - ...");
+                                Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...");
 
                                 i = 24;
                                 break;
@@ -562,7 +562,7 @@ namespace StatisticCommon
                                 try { excelAppWorkcell.Value = curRDGValues[24 - iTimeZoneOffset].pbr - curRDGValues[24 - iTimeZoneOffset].recomendation; }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().LogExceptionToFile(e, "excelAppWorkcell.set_Value () - ...");
+                                    Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...");
 
                                     i = 24;
                                     break;
@@ -613,7 +613,7 @@ namespace StatisticCommon
 
         private void /*bool*/ ImpRDGExcelValuesRequest()
         {
-            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - в’од...");
+            Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - в’од...");
 
             //bool bRes = true;
             int err = 0,
@@ -627,18 +627,18 @@ namespace StatisticCommon
             DataTable tableRDGExcelValuesNextDay;
             if (!(m_tableRDGExcelValuesResponse == null)) m_tableRDGExcelValuesResponse.Clear(); else ;
 
-            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - path_rdg_excel=" + path_rdg_excel + @", nameFileRDGExcel=" + nameFileRDGExcel(m_curDate.Date));
+            Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - path_rdg_excel=" + path_rdg_excel + @", nameFileRDGExcel=" + nameFileRDGExcel(m_curDate.Date));
 
             delegateStartWait();
             if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
             {
                 try { m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel (m_curDate.Date) + ".xls", strSelect, out err); }
                 catch (Exception e) {
-                    Logging.Logg().LogExceptionToFile(e, @"AdminTS_NSS::ImpRDGExcelValuesRequest () - DbTSQLInterface.Select (" + strSelect + @") - ...");
+                    Logging.Logg().Exception(e, @"AdminTS_NSS::ImpRDGExcelValuesRequest () - DbTSQLInterface.Select (" + strSelect + @") - ...");
                 }
 
                 if (! (m_tableRDGExcelValuesResponse ==  null)) {
-                    Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse.Rows.Count=" + m_tableRDGExcelValuesResponse.Rows.Count);
+                    Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse.Rows.Count=" + m_tableRDGExcelValuesResponse.Rows.Count);
 
                     if (m_tableRDGExcelValuesResponse.Rows.Count > 0)
                     {
@@ -678,18 +678,18 @@ namespace StatisticCommon
                         ;
                 }
                 else
-                    Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse=null");
+                    Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse=null");
             }
             else
                 ;
 
             //Logging.Logg ().LogLock ();
-            //Logging.Logg().LogToFile("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
+            //Logging.Logg().Send("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
             //Logging.Logg().LogUnlock();
 
             delegateStopWait();
 
-            Logging.Logg().LogDebugToFile(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - вџход...");
+            Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - вџход...");
 
             //return bRes;
         }

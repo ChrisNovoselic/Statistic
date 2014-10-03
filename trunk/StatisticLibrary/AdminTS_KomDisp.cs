@@ -50,9 +50,9 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch
+                catch (Exception e)
                 {
-                    Logging.Logg().LogToFile("catch - GetPPBRCSVValues () - semaState.Release(1)", true, true, true);
+                    Logging.Logg().Exception(e, "catch - GetPPBRCSVValues () - semaState.Release(1)");
                 }
             }
         }
@@ -106,7 +106,7 @@ namespace StatisticCommon
                         ;
 
                     //Logging.Logg ().LogLock ();
-                    //Logging.Logg().LogToFile("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
+                    //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
                     //Logging.Logg().LogUnlock();
 
                     File.Delete(strPPBRCSVNameFileTemp);

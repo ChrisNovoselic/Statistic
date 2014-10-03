@@ -163,7 +163,7 @@ namespace StatisticCommon
 
         public void Request(int listenerId, string request)
         {
-            //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - listenerId=" + listenerId.ToString() + @", request=" + request);
+            //Logging.Logg().Debug(@"DbInterface::Request (int, string) - listenerId=" + listenerId.ToString() + @", request=" + request);
             
             lock (lockListeners)
             {
@@ -182,11 +182,11 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg ().LogExceptionToFile (e, @"DbInterface::Request (int, string)");
+                    Logging.Logg ().Exception (e, @"DbInterface::Request (int, string)");
                 }
             }
 
-            //Logging.Logg().LogDebugToFile(@"DbInterface::Request (int, string) - " + listenerId + @", " + request);
+            //Logging.Logg().Debug(@"DbInterface::Request (int, string) - " + listenerId + @", " + request);
         }
 
         public bool Response(int listenerId, out bool error, out DataTable table)
@@ -207,7 +207,7 @@ namespace StatisticCommon
                 table = m_dictListeners[listenerId].dataTable;
             }
 
-            //Logging.Logg().LogDebugToFile(@"DbInterface::Response (int, out bool , out DataTable) - listenerId = " + listenerId + @", error = " + error.ToString() + @", m_dictListeners[listenerId].dataPresent = " + m_dictListeners[listenerId].dataPresent);
+            //Logging.Logg().Debug(@"DbInterface::Response (int, out bool , out DataTable) - listenerId = " + listenerId + @", error = " + error.ToString() + @", m_dictListeners[listenerId].dataPresent = " + m_dictListeners[listenerId].dataPresent);
 
             return m_dictListeners[listenerId].dataPresent;
         }
@@ -220,7 +220,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "DbInterface::SetConnectionSettings () - обращение к переменной sem (вызов: sem.Release ())");
+                Logging.Logg().Exception(e, "DbInterface::SetConnectionSettings () - обращение к переменной sem (вызов: sem.Release ())");
             }
         }
 
@@ -259,7 +259,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - m_listListeners.Count = " + m_listListeners.Count);
+                //Logging.Logg().Debug("DbInterface::DbInterface_ThreadFunction () - m_listListeners.Count = " + m_listListeners.Count);
 
                 lock (lockListeners)
                 {
@@ -282,7 +282,7 @@ namespace StatisticCommon
                                 ;
                         //}
 
-                        //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - GetData(...) - request = " + request);
+                        //Logging.Logg().Debug("DbInterface::DbInterface_ThreadFunction () - GetData(...) - request = " + request);
 
                         try
                         {
@@ -290,12 +290,12 @@ namespace StatisticCommon
                         }
                         catch (DbException e)
                         {
-                            Logging.Logg().LogExceptionToFile(e, "DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - request = " + request);
+                            Logging.Logg().Exception(e, "DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - request = " + request);
                         
                             result = false;
                         }
 
-                        //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - result = " + result);
+                        //Logging.Logg().Debug("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - result = " + result);
 
                         //lock (lockListeners)
                         //{
@@ -304,7 +304,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.listenerActive = " + pair.Value.listenerActive);
+                            //Logging.Logg().Debug("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.listenerActive = " + pair.Value.listenerActive);
 
                             if (request == pair.Value.requestDB)
                             {
@@ -325,7 +325,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            //Logging.Logg().LogDebugToFile("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.dataPresent = " + pair.Value.dataPresent + @", pair.Value.dataError = " + pair.Value.dataError.ToString ());
+                            //Logging.Logg().Debug("DbInterface::DbInterface_ThreadFunction () - result = GetData(...) - pair.Value.dataPresent = " + pair.Value.dataPresent + @", pair.Value.dataError = " + pair.Value.dataError.ToString ());
                         //}
                     }
                 }
@@ -336,7 +336,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().LogExceptionToFile(e, "DbInterface::DbInterface_ThreadFunction () - выход...");
+                Logging.Logg().Exception(e, "DbInterface::DbInterface_ThreadFunction () - выход...");
             }
 
             Disconnect();

@@ -130,7 +130,7 @@ namespace update_pbr
                             query += @" WHERE `" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @"`>'" + DateTime.Now.Date.ToString(@"yyyyMMdd") + @"'";
 
                             Console.WriteLine(query);
-                            Logging.Logg().LogDebugToFile(query);
+                            Logging.Logg().Debug(query);
 
                             DbTSQLInterface.ExecNonQuery(ref dbConn, query, null, null, out err);
                             break;
@@ -185,7 +185,7 @@ namespace update_pbr
                             query += @" WHERE `" + @"DATE_TIME" + @"`>'" + DateTime.Now.Date.ToString(@"yyyyMMdd") + @"'";
 
                             Console.WriteLine(query);
-                            Logging.Logg().LogDebugToFile(query);
+                            Logging.Logg().Debug(query);
 
                             DbTSQLInterface.ExecNonQuery(ref dbConn, query, null, null, out err);
                             break;
@@ -204,12 +204,14 @@ namespace update_pbr
                     strMsg += @"Пропуск..."; ; //ТЭЦ не обрабатываем
 
                 Console.WriteLine(strMsg + Environment.NewLine);
-                Logging.Logg().LogDebugToFile(strMsg);
+                Logging.Logg().Debug(strMsg);
             }
 
             Console.WriteLine(@"Выход...");
 
             ProgramBase.Exit();
+
+            DbSources.Sources().UnRegister();
         }
     }
 }

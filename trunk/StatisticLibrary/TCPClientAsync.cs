@@ -192,7 +192,7 @@ namespace StatisticCommon
                 try { networkStream = m_tcpClient.GetStream(); }
                 catch (Exception e)
                 {
-                    Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Write(byte[] ) - ...");
+                    Logging.Logg().Exception(e, "TCPClientAsync::Write(byte[] ) - ...");
                 }
                 //Начало операции асинхронной записи
                 networkStream.BeginWrite(bytes, 0, bytes.Length, WriteCallback, null);
@@ -360,7 +360,7 @@ namespace StatisticCommon
                     try { m_tcpClient.Close(); }
                     catch (Exception e)
                     {
-                        //Logging.Logg().LogExceptionToFile(e, "TCPClientAsync::Disconnect () - tcpClient.Close()");
+                        //Logging.Logg().Exception(e, "TCPClientAsync::Disconnect () - tcpClient.Close()");
                         Console.WriteLine("TCPClientAsync::Disconnect () - tcpClient.Close () - An error has occured when call this methode...type exception: " + e.GetType().FullName);
                     }
 

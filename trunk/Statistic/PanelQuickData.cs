@@ -56,7 +56,7 @@ namespace Statistic
                     }
                     else
                     {
-                        Logging.Logg().LogErrorToFile(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text);
+                        Logging.Logg().Error(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text);
 
                         break;
                     }
@@ -101,7 +101,7 @@ namespace Statistic
                 }
             }
             else
-                ; //Logging.Logg ().LogErrorToFile (@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN");
+                ; //Logging.Logg ().Error (@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN");
 
             return fonts;
         }
@@ -118,14 +118,14 @@ namespace Statistic
                         if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
                             ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
                         else
-                            Logging.Logg().LogErrorToFile(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null");
+                            Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null");
                     }
                     else
                     {
                     }
                 }
             else
-                Logging.Logg().LogErrorToFile(@"HPanelTableLayout::OnSizeChanged () - fonts=null");
+                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts=null");
         }
     }
 
@@ -241,7 +241,7 @@ namespace Statistic
             else
                 ;
 
-            Console.WriteLine(@"PanelQuickData::getPositionCell () - " + indx.ToString () + @"[row=" + row + @", col=" + col + @"]");
+            //Console.WriteLine(@"PanelQuickData::getPositionCell () - " + indx.ToString () + @"[row=" + row + @", col=" + col + @"]");
 
             return new TableLayoutPanelCellPosition(col, row);
         }
@@ -580,7 +580,7 @@ namespace Statistic
         public void RestructControl () {
             COUNT_LABEL = 3; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
 
-            Console.WriteLine(@"PanelQuickData::RestructControl () - вХод...");
+            //Console.WriteLine(@"PanelQuickData::RestructControl () - вХод...");
 
             //Удаление ОБЩих элементов управления
             for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
@@ -949,7 +949,7 @@ namespace Statistic
 
                 if ((bMinValuesReceived == true) && (value < 1) && (bPrevValueValidate == true) && (!(prevValue < 1)))
                 {
-                    Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - value < 1.0");
+                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1.0");
 
                     return;
                 }
@@ -1140,7 +1140,7 @@ namespace Statistic
                     }
                 }
 
-                //Logging.Logg().LogDebugToFile(@"PanelQuickData::ShowFactValues () - вЫход...");
+                //Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - вЫход...");
             }
             else
                 ;

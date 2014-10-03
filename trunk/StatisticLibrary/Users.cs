@@ -45,7 +45,7 @@ namespace StatisticCommon
             
         //    for (j = 0; j < str.Length; j++)
         //    {
-        //        Logging.Logg().LogDebugToFile(@"val[" + j.ToString () + "] = " + val [j]);
+        //        Logging.Logg().Debug(@"val[" + j.ToString () + "] = " + val [j]);
 
         //        val[j] = Convert.ToInt32(str[j]);
         //    }
@@ -220,7 +220,7 @@ namespace StatisticCommon
                 strMes += @", ip[" + indxIP + @"]=" + listIP[indxIP].ToString ();
             }
 
-            Logging.Logg().LogToFile(strMes, true, true, true);
+            Logging.Logg().Action(strMes);
         }
 
         public static int Role {

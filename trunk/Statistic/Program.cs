@@ -29,14 +29,14 @@ namespace Statistic
                 try { formMain = new FormMain(); }
                 catch (Exception e)
                 {
-                    Logging.Logg ().LogExceptionToFile (e, "Ошибка запуска приложения.");
+                    Logging.Logg ().Exception (e, "Ошибка запуска приложения.");
                 }
 
                 if (!(formMain == null))
                     try { Application.Run(formMain); }
                     catch (Exception e)
                     {
-                        Logging.Logg ().LogExceptionToFile (e, "Ошибка выполнения приложения.");
+                        Logging.Logg ().Exception (e, "Ошибка выполнения приложения.");
                     }
                 else
                     ;
@@ -65,9 +65,9 @@ namespace Statistic
                 //else
                 //    ;
 
-                DbSources.Sources().UnRegister();
-
                 ProgramBase.Exit();
+
+                DbSources.Sources().UnRegister();
             }
             else
                 ;

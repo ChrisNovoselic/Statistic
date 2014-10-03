@@ -609,7 +609,7 @@ namespace Statistic
             //    //    catch (Exception excpt)
             //    //    {
             //    //        /*
-            //    //        Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ...");
+            //    //        Logging.Logg().Exception(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ...");
             //    //        */
             //    //    }
             //    //else
@@ -645,7 +645,7 @@ namespace Statistic
             //                else
             //                    ;
             //            }
-            //            catch (Exception excpt) { Logging.Logg().LogExceptionToFile(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ..."); }
+            //            catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - PanelLastMinutes.GetAdminValuesResponse () - ..."); }
             //        }
             //        else
             //        {
