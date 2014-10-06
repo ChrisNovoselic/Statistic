@@ -87,7 +87,7 @@ namespace trans_mc_cmd
 
             int iConfigDB = -1;
             ConnectionSettings connSett = Program.ReadConnSettFromFileINI(out iConfigDB);
-            connSett.id = FIleConnSett.UN_ENUMERABLE_ID;
+            connSett.id = ConnectionSettings.UN_ENUMERABLE_ID;
 
             Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
 

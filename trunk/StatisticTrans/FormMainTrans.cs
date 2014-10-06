@@ -92,6 +92,14 @@ namespace StatisticTrans
 
             m_fileINI = new FileINI (@"setup.ini", par, val);
 
+            m_fileINI.Add(@"Main DataSource", @"671");
+            s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(@"Main DataSource"));
+
+            m_fileINI.Add(@"i_app", @"-1");
+            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(@"i_app"));
+
+            Logging.ReLogg (Logging.LOG_MODE.FILE);
+
             m_fileINI.Add(@"ОкноНазначение", @"Конвертер (...)" );
             m_fileINI.Add (@"ID_TECNotUse", string.Empty);
 

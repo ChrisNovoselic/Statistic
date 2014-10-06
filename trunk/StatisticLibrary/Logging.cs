@@ -44,7 +44,7 @@ namespace StatisticCommon
         protected static Logging m_this = null;
 
         public static int s_iIdListener = -1;
-        private List <string> m_listQueueMessage;
+        private static List<MESSAGE> m_listQueueMessage;
 
         /// <summary>
         /// Имя приложения без расширения
@@ -75,6 +75,12 @@ namespace StatisticCommon
 
                 return appName;
             }
+        }
+
+        public static void ReLogg(LOG_MODE mode)
+        {
+            m_this = null;
+            s_mode = mode;
         }
 
         public static Logging Logg()
@@ -174,9 +180,27 @@ namespace StatisticCommon
             sema.Release();
         }
 
-        private string getInsertQuery (int id, string msg) {
-            return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
-                                @"(" + id + @"," + Users.Id + @",GETDATE(),'" + msg + @"')";
+        private class MESSAGE {
+            public int m_id;
+            public string m_strDatetimeReg;
+            public string m_text;            
+
+            public MESSAGE (int id, DateTime dtReg, string text) {
+                m_id = id;
+                m_strDatetimeReg = dtReg.ToString (@"yyyyMMdd HH:mm:ss.fff");
+                m_text = text;
+            }
+        }
+
+        private string getInsertQuery (MESSAGE msg) {
+            return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_APP],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
+                                @"(" + msg.m_id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",'" + msg.m_strDatetimeReg + @"','" + msg.m_text + @"')";
+        }
+
+        private string getInsertQuery(int id, string text)
+        {
+            return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_APP],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
+                                @"(" + id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",GETDATE (),'" + text + @"')";
         }
         
         /// <summary>
@@ -193,25 +217,43 @@ namespace StatisticCommon
                 switch (s_mode)
                 {
                     case LOG_MODE.DB:
-                        string query = getInsertQuery ((int)id, message);
                         if (! (s_iIdListener < 0)) {
                             if (m_listQueueMessage.Count > 0) {
-                                string queryQueue = string.Empty;
+                                string query = string.Empty
+                                    , queryQueue = string.Empty;
                                 while (m_listQueueMessage.Count > 0) {
-                                    queryQueue += m_listQueueMessage[0] + @";";
+                                    queryQueue += getInsertQuery (m_listQueueMessage[0]) + @";";
                                     m_listQueueMessage.RemoveAt(0);
                                 }
 
                                 DbSources.Sources().Request(s_iIdListener, queryQueue + query);
                             }
                             else                            
-                                DbSources.Sources().Request(s_iIdListener, query);
+                                DbSources.Sources().Request(s_iIdListener, getInsertQuery ((int)id, message));
                         } else {
-                            if (m_listQueueMessage == null) m_listQueueMessage = new List<string>(); else ;
-                            m_listQueueMessage.Add(query);
+                            if (m_listQueueMessage == null) m_listQueueMessage = new List<MESSAGE>(); else ;
+                            m_listQueueMessage.Add(new MESSAGE ((int)id, DateTime.Now, message));
                         }
                         break;
                     case LOG_MODE.FILE:
+                        string msg = string.Empty;
+                        if ((!(m_listQueueMessage == null)) && (m_listQueueMessage.Count > 0))
+                        {
+                             while (m_listQueueMessage.Count > 0) {
+                                 msg += MessageSeparator + Environment.NewLine;
+
+                                 msg += m_listQueueMessage[0].m_strDatetimeReg + Environment.NewLine;
+                                 msg += DatetimeStampSeparator + Environment.NewLine;
+
+                                 msg += m_listQueueMessage[0].m_text + Environment.NewLine;
+
+                                 m_listQueueMessage.RemoveAt(0);
+                             }
+                        }
+                        else
+                        {
+                        }
+
                         if (locking == true)
                         {
                             LogLock();
@@ -220,7 +262,6 @@ namespace StatisticCommon
                         else
                             ;
 
-                        string msg = string.Empty;
                         if (separator == true)
                             msg += MessageSeparator + Environment.NewLine;
                         else

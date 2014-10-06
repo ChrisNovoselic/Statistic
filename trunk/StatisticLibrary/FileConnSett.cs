@@ -8,8 +8,6 @@ namespace StatisticCommon
 {
     public class FIleConnSett
     {
-        public static int UN_ENUMERABLE_ID = -666666;
-        
         private bool mayToProtected;
         
         public string m_NameFile = string.Empty;
@@ -68,7 +66,7 @@ namespace StatisticCommon
                     while (i < countParts)
                     {
                         connSetts.Add(new ConnectionSettings ());
-                        connSetts[connSetts.Count - 1].id = UN_ENUMERABLE_ID - i;
+                        connSetts[connSetts.Count - 1].id = ConnectionSettings.UN_ENUMERABLE_ID - i;
                         //connSetts[connSetts.Count - 1].port = 1433;
 
                         pos2 = st.IndexOf(';', pos1);

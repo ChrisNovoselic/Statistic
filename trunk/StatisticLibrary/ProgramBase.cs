@@ -14,6 +14,8 @@ namespace StatisticCommon
 
     public static class ProgramBase
     {
+        public enum ID_APP { STATISTIC = 1, TRANS_GTP_TO_NE22, TRANS_GTP_FROM_NE22, TRANS_BYISK_GTP_TO_NE22, TRANS_MODES_CENTRE, TRANS_MODES_CENTRE_CMD, TRANS_MODES_TERMINALE }
+        
         public static string MessageWellcome = "***************Старт приложения...***************";
         public static string MessageExit = "***************Выход из приложения...***************";
 
@@ -37,6 +39,8 @@ namespace StatisticCommon
 
         //???
         public static void Abort() { }
+
+        public static int s_iAppID = -1;
 
         public static string AppName
         {

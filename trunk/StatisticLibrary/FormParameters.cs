@@ -52,7 +52,7 @@ namespace StatisticCommon
 
             mayClose = false;
         }
-        
+
         //protected override void btnOk_Click(object sender, EventArgs e)
         protected void btnOk_Click(object sender, EventArgs e)
         {
@@ -83,6 +83,7 @@ namespace StatisticCommon
         public FormParameters_FIleINI(string nameSetupFileINI)
         {
             m_FileINI = new FileINI(nameSetupFileINI);
+            ProgramBase.s_iAppID = (int)ProgramBase.ID_APP.STATISTIC;
 
             loadParam();
         }
