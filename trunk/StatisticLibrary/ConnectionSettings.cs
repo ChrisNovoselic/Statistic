@@ -20,6 +20,7 @@ namespace StatisticCommon
     public class ConnectionSettings
     {
         public static int UN_ENUMERABLE_ID = -666666;
+        public static int ID_LISTENER_LOGGING = UN_ENUMERABLE_ID + 1;
 
         public volatile int id;
         public volatile string name;
@@ -101,7 +102,7 @@ namespace StatisticCommon
         /// <param name="r"></param>
         public ConnectionSettings(DataRow r)
         {
-            id = UN_ENUMERABLE_ID + 1; //Int32.Parse (r[@"ID"].ToString ());
+            id = ID_LISTENER_LOGGING; //Int32.Parse (r[@"ID"].ToString ());
             name = r[@"NAME_SHR"].ToString ();
             server = r[@"IP"].ToString ();
             dbName = r[@"DB_NAME"].ToString();

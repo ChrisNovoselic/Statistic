@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Threading;
+using System.Data.Common;
 
 namespace StatisticCommon
 {
@@ -21,9 +22,9 @@ namespace StatisticCommon
 
         private string m_fileNameStart;
         private string m_fileName;
-        private bool externalLog;
-        private DelegateStringFunc delegateUpdateLogText;
-        private DelegateFunc delegateClearLogText;
+        //private bool externalLog;
+        //private DelegateStringFunc delegateUpdateLogText;
+        //private DelegateFunc delegateClearLogText;
         private Semaphore sema;
         private LogStreamWriter m_sw;
         private FileInfo m_fi;
@@ -43,8 +44,32 @@ namespace StatisticCommon
 
         protected static Logging m_this = null;
 
-        public static int s_iIdListener = -1;
+        private static ConnectionSettings s_connSett = null;
+        private static int s_iIdListener = -1;
+        private static DbConnection s_dbConn = null;
+        
+        public static ConnectionSettings ConnSett {
+            //get { return s_connSett; }
+            set {
+                s_connSett = new ConnectionSettings ();
+
+                s_connSett.id = value.id;
+                s_connSett.name = value.name;
+                s_connSett.server = value.server;
+                s_connSett.port = value.port;
+                s_connSett.dbName = value.dbName;
+                s_connSett.userName = value.userName;
+                s_connSett.password = value.password;
+
+                s_connSett.ignore = value.ignore;
+
+                if (! (connect () == 0)) disconnect (); else ;
+            }
+        }
         private static List<MESSAGE> m_listQueueMessage;
+
+        private Thread m_thread;
+        private ManualResetEvent [] m_arEvtThread;
 
         /// <summary>
         /// Имя приложения без расширения
@@ -77,6 +102,29 @@ namespace StatisticCommon
             }
         }
 
+        private static int connect () {
+            int err = -1;
+
+            if (! (s_connSett == null)) {
+                s_iIdListener = DbSources.Sources().Register(s_connSett, false, @"LOGGING_DB");
+                if (!(s_iIdListener < 0))
+                    s_dbConn = DbSources.Sources().GetConnection(s_iIdListener, out err);
+                else
+                    ;
+            }
+            else
+                ;
+
+            return err;
+        }
+
+        private static void disconnect()
+        {
+            if (!(s_iIdListener < 0)) DbSources.Sources().UnRegister(s_iIdListener); else ;
+            s_iIdListener = -1;
+            s_dbConn = null;
+        }
+
         public static void ReLogg(LOG_MODE mode)
         {
             m_this = null;
@@ -89,7 +137,8 @@ namespace StatisticCommon
             {
                 switch (s_mode) {
                     case LOG_MODE.FILE:
-                        m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+                        //m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt", false, null, null);
+                        m_this = new Logging(System.Environment.CurrentDirectory + @"\" + AppName + "_" + Environment.MachineName + "_log.txt");
                         break;
                     case LOG_MODE.DB:
                     case LOG_MODE.UNKNOWN:
@@ -104,6 +153,157 @@ namespace StatisticCommon
             return m_this;
         }
 
+        private void start () {
+            m_arEvtThread = new ManualResetEvent[] { new ManualResetEvent(false), new ManualResetEvent(false) };
+
+            m_thread = new Thread (new ParameterizedThreadStart (threadPost));
+            m_thread.Name = @"Логгирование приложения..." + AppName;
+            m_thread.IsBackground = true;
+            m_thread.Start ();
+        }
+
+        public void Stop () {
+            m_arEvtThread[(int)INDEX_SEMATHREAD.STOP].Set ();
+
+            if (m_thread.Join (6666) == false)
+                m_thread.Abort ();
+            else
+                ;
+
+            disconnect();
+
+            m_thread = null;
+        }
+
+        private void threadPost (object par) {
+            while (true) {
+                INDEX_SEMATHREAD indx = (INDEX_SEMATHREAD)WaitHandle.WaitAny(m_arEvtThread);
+
+                //Отправление сообщений...
+                int err = -1;
+                string toPost = string.Empty;
+
+                if (m_listQueueMessage.Count > 0)
+                {
+                    switch (s_mode) {
+                        case LOG_MODE.DB:
+                            while (m_listQueueMessage.Count > 0)
+                            {
+                                toPost += getInsertQuery(m_listQueueMessage[0]) + @";";
+                                m_listQueueMessage.RemoveAt(0);
+                            }
+
+                            DbTSQLInterface.ExecNonQuery(ref s_dbConn, toPost, null, null, out err);
+
+                            if (!(err == 0))
+                            {
+                                disconnect();
+                            }
+                            else
+                                ;
+                            break;
+                        case LOG_MODE.FILE:
+                            bool locking = false;
+                            if ((!(m_listQueueMessage == null)) && (m_listQueueMessage.Count > 0))
+                            {
+                                while (m_listQueueMessage.Count > 0) {
+                                    if (m_listQueueMessage[0].m_bSeparator == true)
+                                        toPost += MessageSeparator + Environment.NewLine;
+                                    else
+                                        ;
+
+                                    if (m_listQueueMessage[0].m_bDatetimeStamp == true)
+                                    {
+                                        toPost += m_listQueueMessage[0].m_strDatetimeReg + Environment.NewLine;
+                                        toPost += DatetimeStampSeparator + Environment.NewLine;
+                                    }
+                                    else
+                                        ;
+
+                                    toPost += m_listQueueMessage[0].m_text + Environment.NewLine;
+
+                                    if (m_listQueueMessage.Count == 1)
+                                        locking = m_listQueueMessage[0].m_bLockFile;
+                                    else
+                                        ;
+
+                                    m_listQueueMessage.RemoveAt(0);
+                                }
+
+                                if (locking == true)
+                                {
+                                    LogLock();
+                                    LogCheckRotate();
+                                }
+                                else
+                                    ;
+
+                                if (File.Exists(m_fileName) == true)
+                                {
+                                    try
+                                    {
+                                        if ((m_sw == null) || (m_fi == null))
+                                        {
+                                            //Вариант №1
+                                            //FileInfo f = new FileInfo(m_fileName);
+                                            //FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
+                                            //m_sw = new LogStreamWriter(fs, Encoding.GetEncoding("windows-1251"));
+                                            //Вариант №2                        
+                                            m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
+
+                                            m_fi = new FileInfo(m_fileName);
+                                        }
+                                        else
+                                            ;
+
+                                        m_sw.Write(toPost);
+                                        m_sw.Flush();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        /*m_sw.Close ();*/
+                                        m_sw = null;
+                                        m_fi = null;
+                                    }
+                                }
+                                else
+                                    ;
+
+                                //if (externalLog == true)
+                                //{
+                                //    if (timeStamp == true)
+                                //        delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
+                                //    else
+                                //        delegateUpdateLogText(message + Environment.NewLine);
+                                //}
+                                //else
+                                //    ;
+
+                                if (locking == true)
+                                    LogUnlock();
+                                else
+                                    ;
+                            }
+                            else
+                            {
+                            }
+                            break;
+                        case LOG_MODE.UNKNOWN:
+                        default:
+                            break;
+                    }
+                }
+                else
+                    ;
+
+                if (indx == INDEX_SEMATHREAD.STOP)
+                    break;
+                else {
+                    m_arEvtThread[(int)INDEX_SEMATHREAD.MSG].Reset();                    
+                }
+            }
+        }
+
         /// <summary>
         /// Конструктор
         /// </summary>
@@ -111,9 +311,10 @@ namespace StatisticCommon
         /// <param name="extLog">признак - внешнее логгирование</param>
         /// <param name="updateLogText">функция записи во внешний лог-файл</param>
         /// <param name="clearLogText">функция очистки внешнего лог-файла</param>
-        private Logging(string name, bool extLog, DelegateStringFunc updateLogText, DelegateFunc clearLogText)
+        //private Logging(string name, bool extLog, DelegateStringFunc updateLogText, DelegateFunc clearLogText)
+        private Logging(string name)
         {
-            externalLog = extLog;
+            //externalLog = extLog;
             logRotateSize = logRotateSizeDefault;
             logRotateFiles = logRotateFilesDefault;
             m_fileNameStart = m_fileName = name;
@@ -130,11 +331,14 @@ namespace StatisticCommon
             }
 
             //logIndex = 0;
-            delegateUpdateLogText = updateLogText;
-            delegateClearLogText = clearLogText;
+            //delegateUpdateLogText = updateLogText;
+            //delegateClearLogText = clearLogText;
+
+            start ();
         }
 
         private Logging () {
+            start();
         }
 
         /// <summary>
@@ -143,11 +347,21 @@ namespace StatisticCommon
         /// <returns>строка с именем лог-файла</returns>
         public string Suspend()
         {
-            LogLock();
+            switch (s_mode) {
+                case LOG_MODE.FILE:
+                    LogLock();
 
-            Debug("Пауза ведения журнала...", false);
+                    Debug("Пауза ведения журнала...", false);
 
-            m_sw.Close();
+                    m_sw.Close();
+                    break;
+                case LOG_MODE.DB:
+                    Debug("Пауза ведения журнала...", false);
+                    break;
+                case LOG_MODE.UNKNOWN:
+                default:
+                    break;
+            }
 
             return m_fi.FullName;
         }
@@ -157,11 +371,22 @@ namespace StatisticCommon
         /// </summary>
         public void Resume()
         {
-            m_sw = new LogStreamWriter(m_fi.FullName, true, Encoding.GetEncoding("windows-1251"));
+            switch (s_mode)
+            {
+                case LOG_MODE.FILE:
+                    m_sw = new LogStreamWriter(m_fi.FullName, true, Encoding.GetEncoding("windows-1251"));
 
-            Debug("Возобновление ведения журнала...", false);
+                    Debug("Возобновление ведения журнала...", false);
 
-            LogUnlock();
+                    LogUnlock();
+                    break;
+                case LOG_MODE.DB:
+                    Debug("Возобновление ведения журнала...", false);
+                    break;
+                case LOG_MODE.UNKNOWN:
+                default:
+                    break;
+            }
         }
 
         /// <summary>
@@ -180,16 +405,30 @@ namespace StatisticCommon
             sema.Release();
         }
 
+        private enum INDEX_SEMATHREAD {MSG, STOP};
         private class MESSAGE {
             public int m_id;
             public string m_strDatetimeReg;
-            public string m_text;            
+            public string m_text;
+            
+            public bool m_bSeparator
+                , m_bDatetimeStamp
+                , m_bLockFile;
 
-            public MESSAGE (int id, DateTime dtReg, string text) {
+            public MESSAGE (int id, DateTime dtReg, string text, bool bSep, bool bDatetime, bool bLock) {
                 m_id = id;
                 m_strDatetimeReg = dtReg.ToString (@"yyyyMMdd HH:mm:ss.fff");
                 m_text = text;
+
+                m_bSeparator= bSep;
+                m_bDatetimeStamp = bDatetime;
+                m_bLockFile = bLock;
             }
+        }
+
+        private void addMessage (int id_msg, string msg, bool bSep, bool bDatetime, bool bLock) {
+            if (m_listQueueMessage == null) m_listQueueMessage = new List<MESSAGE>(); else ;
+            m_listQueueMessage.Add(new MESSAGE((int)id_msg, DateTime.Now, msg, bSep, bDatetime, bLock));
         }
 
         private string getInsertQuery (MESSAGE msg) {
@@ -214,118 +453,46 @@ namespace StatisticCommon
         {
             if (s_mode > LOG_MODE.UNKNOWN)
             {
+                bool bAddMessage = false;
+
                 switch (s_mode)
                 {
                     case LOG_MODE.DB:
-                        if (! (s_iIdListener < 0)) {
-                            if (m_listQueueMessage.Count > 0) {
-                                string query = string.Empty
-                                    , queryQueue = string.Empty;
-                                while (m_listQueueMessage.Count > 0) {
-                                    queryQueue += getInsertQuery (m_listQueueMessage[0]) + @";";
-                                    m_listQueueMessage.RemoveAt(0);
-                                }
+                        if (s_dbConn == null) {
+                            if (! (connect () == 0)) disconnect (); else ;
+                        }
+                        else
+                            ;
 
-                                DbSources.Sources().Request(s_iIdListener, queryQueue + query);
-                            }
-                            else                            
-                                DbSources.Sources().Request(s_iIdListener, getInsertQuery ((int)id, message));
+                        if (! (s_dbConn == null)) {
+                            //...запомнить очередное сообщение...
+                            addMessage ((int)id, message, true, true, true); //3 крайних параметра для БД ничего не значат...
+
+                            bAddMessage = true;
                         } else {
-                            if (m_listQueueMessage == null) m_listQueueMessage = new List<MESSAGE>(); else ;
-                            m_listQueueMessage.Add(new MESSAGE ((int)id, DateTime.Now, message));
+                            addMessage((int)id, message, true, true, true); //3 крайних параметра для БД ничего не значат...
                         }
                         break;
                     case LOG_MODE.FILE:
                         string msg = string.Empty;
-                        if ((!(m_listQueueMessage == null)) && (m_listQueueMessage.Count > 0))
-                        {
-                             while (m_listQueueMessage.Count > 0) {
-                                 msg += MessageSeparator + Environment.NewLine;
+                        
+                        addMessage ((int)id, message, separator, timeStamp, locking); //3 крайних параметра для БД ничего не значат...
 
-                                 msg += m_listQueueMessage[0].m_strDatetimeReg + Environment.NewLine;
-                                 msg += DatetimeStampSeparator + Environment.NewLine;
+                        bAddMessage = true;
 
-                                 msg += m_listQueueMessage[0].m_text + Environment.NewLine;
-
-                                 m_listQueueMessage.RemoveAt(0);
-                             }
-                        }
-                        else
-                        {
-                        }
-
-                        if (locking == true)
-                        {
-                            LogLock();
-                            LogCheckRotate();
-                        }
-                        else
-                            ;
-
-                        if (separator == true)
-                            msg += MessageSeparator + Environment.NewLine;
-                        else
-                            ;
-
-                        if (timeStamp == true)
-                        {
-                            msg += DateTime.Now.ToString(@"dd/MM/yyyy HH:mm:ss.fff") + Environment.NewLine;
-                            msg += DatetimeStampSeparator + Environment.NewLine;
-                        }
-                        else
-                            ;
-
-                        msg += message + Environment.NewLine;
-
-                        if (File.Exists(m_fileName) == true)
-                        {
-                            try
-                            {
-                                if ((m_sw == null) || (m_fi == null))
-                                {
-                                    //Вариант №1
-                                    //FileInfo f = new FileInfo(m_fileName);
-                                    //FileStream fs = f.Open(FileMode.Append, FileAccess.Write, FileShare.Write);
-                                    //m_sw = new LogStreamWriter(fs, Encoding.GetEncoding("windows-1251"));
-                                    //Вариант №2                        
-                                    m_sw = new LogStreamWriter(m_fileName, true, Encoding.GetEncoding("windows-1251"));
-
-                                    m_fi = new FileInfo(m_fileName);
-                                }
-                                else
-                                    ;
-
-                                m_sw.Write(msg);
-                                m_sw.Flush();
-                            }
-                            catch (Exception e)
-                            {
-                                /*m_sw.Close ();*/
-                                m_sw = null;
-                                m_fi = null;
-                            }
-                        }
-                        else
-                            ;
-
-                        if (externalLog == true)
-                        {
-                            if (timeStamp == true)
-                                delegateUpdateLogText(DateTime.Now.ToString() + ": " + message + Environment.NewLine);
-                            else
-                                delegateUpdateLogText(message + Environment.NewLine);
-                        }
-                        else
-                            ;
-
-                        if (locking == true)
-                            LogUnlock();
-                        else
-                            ;
                         break;
                     default:
                         break;
                 }
+
+                if (bAddMessage == true)
+                    if (m_arEvtThread[(int)INDEX_SEMATHREAD.MSG].WaitOne(0) == false)
+                        //Не установлен - отправить сообщения...
+                        m_arEvtThread[(int)INDEX_SEMATHREAD.MSG].Set();
+                    else
+                        ; //Установлен - ...
+                else
+                    ;
             }
             else
                 ;
@@ -356,10 +523,10 @@ namespace StatisticCommon
 
         private void LogRotateNowLocked()
         {
-            if (externalLog == true)
-                delegateClearLogText();
-            else
-                ;
+            //if (externalLog == true)
+            //    delegateClearLogText();
+            //else
+            //    ;
 
             try
             {

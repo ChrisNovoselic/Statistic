@@ -26,8 +26,8 @@ namespace StatisticCommon
             Application.SetCompatibleTextRenderingDefault(false);
 
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            //Logging.s_mode = Logging.LOG_MODE.DB;
-            Logging.s_mode = Logging.LOG_MODE.FILE;
+            Logging.s_mode = Logging.LOG_MODE.DB;
+            //Logging.s_mode = Logging.LOG_MODE.FILE;
             Logging.Logg().Post(Logging.ID_MESSAGE.START, MessageWellcome, true, true, true);
         }
 
@@ -35,6 +35,7 @@ namespace StatisticCommon
         public static void Exit()
         {
             Logging.Logg().Post(Logging.ID_MESSAGE.STOP, MessageExit, true, true, true);
+            Logging.Logg().Stop ();
         }
 
         //???

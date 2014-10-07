@@ -27,11 +27,13 @@ namespace StatisticCommon
             }
         }
         protected Dictionary <int, DbSourceListener> m_dictListeners;
+        private object m_objDictListeners;
 
         protected DbSources()
         {
             m_dictDbInterfaces = new Dictionary <int, DbInterface> ();
             m_dictListeners = new Dictionary<int,DbSourceListener> ();
+            m_objDictListeners = new object ();
         }
 
         public static DbSources Sources () {
@@ -147,15 +149,16 @@ namespace StatisticCommon
         private void registerListener(int idReg, int id, int idListener, bool active, out int err)
         {
             err = -1;
+            DbConnection dbConn = null;
             
             if (active == true) {
-                m_dictListeners.Add(idReg, new DbSourceListener(id, idListener, null));
                 err = 0;
             }
             else {
-                m_dictListeners.Add(idReg, new DbSourceListener(id, idListener, DbTSQLInterface.getConnection((ConnectionSettings)m_dictDbInterfaces[id].m_connectionSettings, out err)));
+                dbConn = DbTSQLInterface.getConnection((ConnectionSettings)m_dictDbInterfaces[id].m_connectionSettings, out err);
             }
-                
+
+            m_dictListeners.Add(idReg, new DbSourceListener(id, idListener, dbConn));
         }
 
         public void UnRegister()
@@ -175,30 +178,36 @@ namespace StatisticCommon
         public void UnRegister(int id)
         {
             int err = -1;
-            
-            if (m_dictListeners.ContainsKey (id) == true)
-            {                
-                m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerUnregister(m_dictListeners[id].iListenerId);
-                if (! (m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerCount > 0)) {
-                    m_dictDbInterfaces [m_dictListeners [id].idDbInterface].Stop ();
 
-                    m_dictDbInterfaces.Remove(m_dictListeners[id].idDbInterface);
+            lock (m_objDictListeners) {
+                if (m_dictListeners.ContainsKey (id) == true)
+                {
+                    if (m_dictDbInterfaces.ContainsKey(m_dictListeners[id].idDbInterface) == true) {
+                        m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerUnregister(m_dictListeners[id].iListenerId);
+                        if (! (m_dictDbInterfaces[m_dictListeners[id].idDbInterface].ListenerCount > 0)) {
+                            m_dictDbInterfaces [m_dictListeners [id].idDbInterface].Stop ();
 
-                    if (m_dictListeners[id].dbConn == null)
-                    {
+                            m_dictDbInterfaces.Remove(m_dictListeners[id].idDbInterface);
+
+                            if (m_dictListeners[id].dbConn == null)
+                            {
+                            }
+                            else
+                            {
+                                DbTSQLInterface.closeConnection(ref m_dictListeners[id].dbConn, out err);
+                            }
+                        }
+                        else
+                            ;
                     }
                     else
-                    {
-                        DbTSQLInterface.closeConnection(ref m_dictListeners[id].dbConn, out err);
-                    }
+                        ;
+
+                    m_dictListeners.Remove(id);
                 }
                 else
                     ;
-
-                m_dictListeners.Remove(id);
             }
-            else
-                ;
         }
 
         /// <summary>

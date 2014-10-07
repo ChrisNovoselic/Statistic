@@ -95,8 +95,24 @@ namespace StatisticTrans
             m_fileINI.Add(@"Main DataSource", @"671");
             s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(@"Main DataSource"));
 
-            m_fileINI.Add(@"i_app", @"-1");
-            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(@"i_app"));
+            m_fileINI.Add(@"iapp", @"-1");
+            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(@"iapp"));
+
+            ////Если ранее тип логирования не был назанчен...
+            //if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN)
+            //{
+            //    //назначить тип логирования - БД
+            //    Logging.s_mode = Logging.LOG_MODE.DB;
+            //}
+            //else { }
+
+            //if (Logging.s_mode == Logging.LOG_MODE.DB)
+            //{
+            //    //Инициализация БД-логирования
+            //    int err = -1;
+            //    StatisticCommon.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
+            //}
+            //else { }
 
             Logging.ReLogg (Logging.LOG_MODE.FILE);
 

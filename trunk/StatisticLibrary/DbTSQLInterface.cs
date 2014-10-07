@@ -140,11 +140,11 @@ namespace StatisticCommon
             {
                 m_dbConnection.Open();
                 result = true;
-                logging_open_db (m_dbConnection);
+                if (!(((ConnectionSettings)m_connectionSettings).id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_open_db(m_dbConnection); } else ;                
             }
             catch (Exception e)
             {
-                logging_catch_db(m_dbConnection, e);
+                if (!(((ConnectionSettings)m_connectionSettings).id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_catch_db(m_dbConnection, e); } else ;
             }
 
             return result;
@@ -191,7 +191,8 @@ namespace StatisticCommon
 
                 m_dbConnection.Close();
                 result = true;
-                logging_close_db (m_dbConnection);
+
+                if (!(((ConnectionSettings)m_connectionSettings).id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_close_db(m_dbConnection); } else ;
 
             }
             catch (Exception e)
@@ -281,7 +282,7 @@ namespace StatisticCommon
         }
 
         private static void logging_open_db (DbConnection conn)
-        {
+        {            
             string s = ConnectionStringToLog(conn.ConnectionString);
 
             Logging.Logg().Debug(MessageDbOpen + " (" + s + ")", true);
@@ -335,11 +336,11 @@ namespace StatisticCommon
                 {
                     connRes.Open();
 
-                    logging_open_db(connRes);
+                    if (!(connSett.id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_open_db(connRes); } else ;
                 }
                 catch (Exception e)
                 {
-                    logging_catch_db(connRes, e);
+                    if (!(connSett.id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_catch_db(connRes, e); } else ;
 
                     connRes = null;
 
@@ -362,6 +363,7 @@ namespace StatisticCommon
                 {
                     conn.Close();
 
+                    //if (!(((ConnectionSettings)m_connectionSettings).id == ConnectionSettings.ID_LISTENER_LOGGING)) { logging_close_db(conn); } else ;
                     logging_close_db (conn);
                 }
                 else

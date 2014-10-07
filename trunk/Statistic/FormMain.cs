@@ -174,7 +174,7 @@ namespace Statistic
                 if (Logging.s_mode == Logging.LOG_MODE.DB) {
                     //Инициализация БД-логирования
                     int err = -1;
-                    StatisticCommon.Logging.s_iIdListener = DbSources.Sources().Register(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]), true, @"LOGGING_DB");
+                    StatisticCommon.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
                 } else { }
 
                 //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
