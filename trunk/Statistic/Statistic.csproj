@@ -135,18 +135,6 @@
     <Compile Include="FormUser.Designer.cs">
       <DependentUpon>FormUser.cs</DependentUpon>
     </Compile>
-    <Compile Include="HTabCtrlEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="HTabCtrlEx.Designer.cs">
-      <DependentUpon>HTabCtrlEx.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HTabPageEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="HTabPageEx.Designer.cs">
-      <DependentUpon>HTabPageEx.cs</DependentUpon>
-    </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -256,12 +244,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\closeInActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\closeNonActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
       <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
       <Name>HClassLibrary</Name>
@@ -270,12 +252,6 @@
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\menuInActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\menuNonActive.ico" />
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="Statistic.pdb">

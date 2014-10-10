@@ -1,4 +1,6 @@
-﻿namespace Statistic
+﻿using HClassLibrary;
+
+namespace Statistic
 {
     partial class FormMain
     {
