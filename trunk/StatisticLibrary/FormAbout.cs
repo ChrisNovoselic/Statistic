@@ -13,6 +13,8 @@ namespace StatisticCommon
         public FormAbout()
         {
             InitializeComponent();
+
+            m_lblTradeMarkVersion.Text = Properties.Resources.TradeMarkVersion;
         }
 
         private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

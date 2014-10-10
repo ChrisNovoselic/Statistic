@@ -8,15 +8,24 @@ namespace StatisticCommon
 {
     public class FIleConnSett
     {
-        private bool mayToProtected;
-        
-        public string m_NameFile = string.Empty;
-        //private List<ConnectionSettings> m_connectionSettings;
+        public delegate void DelegateOnEventFileConnSettSave(eventFileConnSettSave e);
+        public event DelegateOnEventFileConnSettSave EventFileConnSettSave;
+        public class eventFileConnSettSave : EventArgs {
+            public char [] hash;
+            public int length;
+            public eventFileConnSettSave(char [] data, int l) { hash = data; length = l; }
+        }
 
-        public FIleConnSett(string nameFile)
+        public enum MODE { FILE, SETTINGS };
+        private MODE m_mode;
+        private bool mayToProtected;
+
+        private string m_arg = string.Empty;
+
+        public FIleConnSett(string arg, MODE mode)
         {
-            m_NameFile = nameFile;
-            //m_connectionSettings = new List<ConnectionSettings> ();
+            m_arg = arg;
+            m_mode = mode;
         }
 
         /// <summary>
@@ -33,20 +42,29 @@ namespace StatisticCommon
             mayToProtected = true;
 
             char[] file = new char[1024];
-            int count;
-            StreamReader sr = new StreamReader(m_NameFile);
-            count = sr.ReadBlock(file, 0, 1024);
-            sr.Close();
+            int count = -1;
+            if (m_mode == MODE.FILE) {
+                    StreamReader sr = new StreamReader(m_arg);
+                    count = sr.ReadBlock(file, 0, 1024);
+                    sr.Close();
+            } else {
+                file = m_arg.ToCharArray();
+                count = file.Length;
+            }
 
             StringBuilder sb = new StringBuilder(1024);
             int i = 0, j = 0, k = 3,
                 countParts = 0;
 
-            sb = Crypt.Crypting().Decrypt(file, count, out msgErr);
-            if (msgErr.Length > 0)
+            if (! (count > 0)) {
                 mayToProtected = false;
-            else
-                ;
+            } else {
+                sb = Crypt.Crypting().Decrypt(file, count, out msgErr);
+                if (msgErr.Length > 0)
+                    mayToProtected = false;
+                else
+                    ;
+            }
 
             if (mayToProtected == true)
             {
@@ -193,11 +211,14 @@ namespace StatisticCommon
         /// <param name="mes">сообщение после выполнения операции</param>
         public void ReadSettingsFile (int notUsed, out List <ConnectionSettings> listConnSett, out int res, out string mes)
         {
-            if (File.Exists(m_NameFile) == false)
+            //MessageBox.Show (null, m_mode.ToString (), );
+            Console.WriteLine(@"FileConnSett::ReadSettingsFile () - mode=" + m_mode.ToString());
+
+            if ((m_mode == MODE.FILE) && (File.Exists(m_arg) == false))
             {//Не найден файл
                 listConnSett = new List<ConnectionSettings>();
                 res = 1;
-                mes = "Не найден файл";
+                mes = "Не найден файл: " + m_arg;
             }
             else
                 res = ParseSettingsFile(out listConnSett, out mes);
@@ -212,8 +233,6 @@ namespace StatisticCommon
         public void SaveSettingsFile(int notUsed, List<ConnectionSettings> listConnSett, out int err)
         {
             err = 1;
-
-            StreamWriter sw = new StreamWriter(m_NameFile, false);
 
             StringBuilder sb = new StringBuilder(1024);
 
@@ -233,7 +252,13 @@ namespace StatisticCommon
 
             if (err > 0)
             {
-                sw.Write(file, 0, err);
+                if (m_mode == MODE.FILE) {
+                    StreamWriter sw = new StreamWriter(m_arg, false);
+                    sw.Write(file, 0, err);
+                    sw.Close();
+                } else {
+                    EventFileConnSettSave(new eventFileConnSettSave (file, err));
+                }
 
                 err = 0; //Успешно
                 mayToProtected = true;
@@ -243,8 +268,6 @@ namespace StatisticCommon
                 err = 1; //Ошибка
                 mayToProtected = false;
             }
-
-            sw.Close();
         }
     }
 }

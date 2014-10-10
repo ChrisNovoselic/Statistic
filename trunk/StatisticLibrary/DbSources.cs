@@ -57,59 +57,62 @@ namespace StatisticCommon
             int id = -1,
                 err = -1;
 
-            if (connSett is ConnectionSettings == true)
-                if ((m_dictDbInterfaces.ContainsKey(((ConnectionSettings)connSett).id) == true) && (bReq == false))
+            lock (m_objDictListeners)
+            {
+                if (connSett is ConnectionSettings == true)
+                    if ((m_dictDbInterfaces.ContainsKey(((ConnectionSettings)connSett).id) == true) && (bReq == false))
+                    {
+                        id = m_dictDbInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
+                    }
+                    else 
+                        ;
+                else
+                    if (connSett is string == true) {
+                    }
+                    else
+                        ;
+
+                if ((id < 0) && (m_dictDbInterfaces.ContainsKey(((ConnectionSettings)connSett).id) == false))
                 {
+                    string dbNameType = string.Empty;
+                    DbTSQLInterface.DB_TSQL_INTERFACE_TYPE dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
+                    switch (((ConnectionSettings)connSett).port)
+                    {
+                        case -666:
+                            dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre;
+                            break;
+                        case 1433:
+                            dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
+                            break;
+                        case 3306:
+                            dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
+                        
+                            break;
+                        default:
+                            break;
+                    }
+
+                    dbNameType = dbType.ToString();
+
+                    switch (dbType) {
+                        case DbInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre:
+                            //m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbMCInterface (dbType, @"Интерфейс: " + dbNameType));
+                            break;
+                        case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
+                        case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
+                            m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД" + @"; " + desc));
+                            break;
+                        default:
+                            break;
+                    }
+                    if (active == true) m_dictDbInterfaces[((ConnectionSettings)connSett).id].Start(); else ;
+                    m_dictDbInterfaces[((ConnectionSettings)connSett).id].SetConnectionSettings(connSett, active);
+
                     id = m_dictDbInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
-                }
-                else 
-                    ;
-            else
-                if (connSett is string == true) {
                 }
                 else
                     ;
-
-            if (id < 0)
-            {
-                string dbNameType = string.Empty;
-                DbTSQLInterface.DB_TSQL_INTERFACE_TYPE dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
-                switch (((ConnectionSettings)connSett).port)
-                {
-                    case -666:
-                        dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre;
-                        break;
-                    case 1433:
-                        dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MSSQL;
-                        break;
-                    case 3306:
-                        dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.MySQL;
-                        
-                        break;
-                    default:
-                        break;
-                }
-
-                dbNameType = dbType.ToString();
-
-                switch (dbType) {
-                    case DbInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre:
-                        //m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbMCInterface (dbType, @"Интерфейс: " + dbNameType));
-                        break;
-                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
-                    case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
-                        m_dictDbInterfaces.Add(((ConnectionSettings)connSett).id, new DbTSQLInterface(dbType, @"Интерфейс: " + dbNameType + @"-БД" + @"; " + desc));
-                        break;
-                    default:
-                        break;
-                }
-                if (active == true) m_dictDbInterfaces[((ConnectionSettings)connSett).id].Start(); else ;
-                m_dictDbInterfaces[((ConnectionSettings)connSett).id].SetConnectionSettings(connSett, active);
-
-                id = m_dictDbInterfaces[((ConnectionSettings)connSett).id].ListenerRegister();
             }
-            else
-                ;
 
             return RegisterListener (((ConnectionSettings)connSett).id, id, active, out err);
         }
@@ -127,21 +130,24 @@ namespace StatisticCommon
         protected int RegisterListener(int id, int idListener, bool active, out int err)
         {
             int iRes = -1;
-            for (iRes = 0; iRes < m_dictListeners.Keys.Count; iRes ++)
-            {
-                if (m_dictListeners.ContainsKey(iRes) == false)
-                {
-                    //registerListener(iRes, ((ConnectionSettings)connSett).id, id, active, out err);
-                    break;
-                }
-                else
-                    ;
-            }
 
-            //if (! (iRes < m_dictListeners.Keys.Count))
-                registerListener(iRes, id, idListener, active, out err);
-            //else
-            //    ;
+            lock (m_objDictListeners) {
+                for (iRes = 0; iRes < m_dictListeners.Keys.Count; iRes ++)
+                {
+                    if (m_dictListeners.ContainsKey(iRes) == false)
+                    {
+                        //registerListener(iRes, ((ConnectionSettings)connSett).id, id, active, out err);
+                        break;
+                    }
+                    else
+                        ;
+                }
+
+                //if (! (iRes < m_dictListeners.Keys.Count))
+                    registerListener(iRes, id, idListener, active, out err);
+                //else
+                //    ;
+            }
 
             return iRes;
         }

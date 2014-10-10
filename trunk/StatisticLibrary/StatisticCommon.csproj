@@ -31,6 +31,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>StatisticCommon_TemporaryKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -211,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\btnAdd.JPG" />
+    <None Include="StatisticCommon_TemporaryKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\btnDel.JPG" />

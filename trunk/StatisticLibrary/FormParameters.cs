@@ -9,18 +9,19 @@ namespace StatisticCommon
     {
         public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
                                     ALARM_USE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
-                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE,                                    
-                                    ID_APP,
-                                    COUNT_PARAMETR_SETUP };
+                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+                                    //, ID_APP
+                                    , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"udn", @"itec", @"irole"
-                                                    , @"iapp"
+                                                    //, @"iapp"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     @"лог", "сек", "сек",
                                                     @"стр", @"ном", @"ном"
-                                                    , @"ном" };
+                                                    //, @"ном"
+                                                    };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
 
@@ -44,7 +45,7 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_TEC, @"-1");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_ROLE, @"-1");
 
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 
@@ -88,7 +89,9 @@ namespace StatisticCommon
         public FormParameters_FIleINI(string nameSetupFileINI)
         {
             m_FileINI = new FileINI(nameSetupFileINI);
-            ProgramBase.s_iAppID = Int32.Parse (m_arParametrSetup[(int)PARAMETR_SETUP.ID_APP]); //(int)ProgramBase.ID_APP.STATISTIC;
+            //ProgramBase.s_iAppID = (int)ProgramBase.ID_APP.STATISTIC;
+            //ProgramBase.s_iAppID = Int32.Parse(m_arParametrSetup[(int)PARAMETR_SETUP.ID_APP]);
+            //ProgramBase.s_iAppID = Properties.s
 
             loadParam();
         }
@@ -97,9 +100,10 @@ namespace StatisticCommon
         {
             string strDefault = string.Empty;
 
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++) {
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+            {
                 m_arParametrSetup[(int)i] = m_FileINI.ReadString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], strDefault);
-                if (m_arParametrSetup[(int)i].Equals (strDefault) == true)
+                if (m_arParametrSetup[(int)i].Equals(strDefault) == true)
                 {
                     m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
                     m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
@@ -110,7 +114,7 @@ namespace StatisticCommon
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_dgvData.Rows.Insert((int)i, new object [] {NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i]});
+                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
 
                 m_dgvData.Rows[(int)i].Height = 19;
                 m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -120,13 +124,19 @@ namespace StatisticCommon
 
         public override void saveParam()
         {
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++)
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
         }
     }
 
     public partial class FormParameters_DB : FormParameters
     {
+        private string[] KEYDB_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
+                                                    @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
+                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+                                                    //, @"ID_APP"
+                                                    };
+        
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
 
@@ -150,7 +160,7 @@ namespace StatisticCommon
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_arParametrSetup[(int)i] = readString(NAME_PARAMETR_SETUP[(int)i], strDefault);
+                m_arParametrSetup[(int)i] = readString(KEYDB_PARAMETR_SETUP[(int)i], strDefault);
                 if (m_arParametrSetup[(int)i].Equals(strDefault) == true)
                 {
                     m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
@@ -162,7 +172,7 @@ namespace StatisticCommon
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
+                m_dgvData.Rows.Insert((int)i, new object[] { KEYDB_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
 
                 m_dgvData.Rows[(int)i].Height = 19;
                 m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;

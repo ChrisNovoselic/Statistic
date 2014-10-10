@@ -29,8 +29,6 @@ namespace trans_mc
                 ;
 
             ProgramBase.Exit();
-
-            DbSources.Sources().UnRegister();
         }
     }
 }

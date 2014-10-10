@@ -61,6 +61,15 @@ namespace Statistic.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на 1.
+        /// </summary>
+        public static string AppID {
+            get {
+                return ResourceManager.GetString("AppID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
         /// </summary>
         public static System.Drawing.Icon closeInActive {

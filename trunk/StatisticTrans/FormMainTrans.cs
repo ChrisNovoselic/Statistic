@@ -83,7 +83,8 @@ namespace StatisticTrans
             }
         }
 
-        public FormMainTrans(string []par, string [] val)
+        public FormMainTrans(string[] par, string[] val)
+        //public FormMainTrans(int id_app, string []par, string [] val)
         {
             InitializeComponent();
 
@@ -92,11 +93,23 @@ namespace StatisticTrans
 
             m_fileINI = new FileINI (@"setup.ini", par, val);
 
-            m_fileINI.Add(@"Main DataSource", @"671");
-            s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(@"Main DataSource"));
+            string keyPar = string.Empty
+                , valDefPar = string.Empty;
 
-            m_fileINI.Add(@"iapp", @"-1");
-            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(@"iapp"));
+            keyPar = @"Main DataSource"; valDefPar = @"671";
+            m_fileINI.Add(keyPar, valDefPar);
+            s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
+
+            //Ошибка для отладки
+            //System.Threading.Timer tm = null;
+            //tm.Dispose ();
+            
+            //Вариант №1
+            keyPar = @"iapp"; valDefPar = ((int)ProgramBase.ID_APP.TRANS_GTP).ToString ();
+            m_fileINI.Add(keyPar, valDefPar);
+            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
+            //Вариант №2
+            //ProgramBase.s_iAppID = id_app;
 
             ////Если ранее тип логирования не был назанчен...
             //if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN)
@@ -728,7 +741,7 @@ namespace StatisticTrans
         {
             bool bShowFormConnSett = false;
             
-            m_fileConnSett = new FIleConnSett(connSettFileName);
+            m_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
             m_formConnectionSettingsConfigDB = new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
 
             if (m_formConnectionSettingsConfigDB.Ready == 0)

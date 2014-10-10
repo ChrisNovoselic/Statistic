@@ -86,6 +86,17 @@ namespace StatisticCommon
             //Есть ли параметры в CMD_LINE
             if (args.Length > 1)
             {
+                if ((args.Length == 2) && ((args[1].Equals(@"/?") == true) || (args[1].Equals(@"?") == true) || (args[1].Equals(@"/help") == true) || (args[1].Equals(@"help") == true)))
+                { //Выдать сообщение-подсказку...
+                    Console.WriteLine (Properties.Resources.TradeMarkVersion + @"...");
+                    Console.WriteLine(@"Обрабатываемые аргументы командной строки:");
+                    Console.WriteLine("\t/udn=");
+                    Console.WriteLine("\t/irole=");
+                    Console.WriteLine("\t/itec=");
+                }
+                else
+                    ;
+
                 for (int i = 1; i < m_NameArgs.Length; i++)
                 {
                     for (int j = 1; j < args.Length; j++)
@@ -199,10 +210,13 @@ namespace StatisticCommon
                 }
                 else
                 {//Не найдено ни одной строки
-                    if (err == 0)
-                        throw new Exception("Пользователь не найден в списке БД конфигурации");
+                    if (connDB == null)
+                        throw new HException(-4, "Нет соединения с БД конфигурации");
                     else
-                        throw new Exception("Ошибка получения списка пользователей из БД конфигурации");
+                        if (err == 0)
+                            throw new HException(-3, "Пользователь не найден в списке БД конфигурации");
+                        else
+                            throw new HException(-2, "Ошибка получения списка пользователей из БД конфигурации");
                 }
             }
             else {

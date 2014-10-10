@@ -25,18 +25,23 @@ namespace Statistic
             FormMain formMain = null;
             
             if (iRes == 0)
-            {
+            {                
+                string strHeader = string.Empty;
                 try { formMain = new FormMain(); }
                 catch (Exception e)
                 {
-                    Logging.Logg ().Exception (e, "Ошибка запуска приложения.");
+                    strHeader = "Ошибка запуска приложения";
+                    MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeader);
+                    Logging.Logg ().Exception (e, strHeader);
                 }
 
                 if (!(formMain == null))
                     try { Application.Run(formMain); }
                     catch (Exception e)
                     {
-                        Logging.Logg ().Exception (e, "Ошибка выполнения приложения.");
+                        strHeader = "Ошибка выполнения приложения";
+                        MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeader);
+                        Logging.Logg().Exception(e, strHeader);
                     }
                 else
                     ;
@@ -66,8 +71,6 @@ namespace Statistic
                 //    ;
 
                 ProgramBase.Exit();
-
-                DbSources.Sources().UnRegister();
             }
             else
                 ;

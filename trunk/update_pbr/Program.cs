@@ -20,7 +20,7 @@ namespace update_pbr
                 ;
             ConnectionSettings connSett = new ConnectionSettings ();
             System.Data.Common.DbConnection dbConn = null;
-            FIleConnSett fileConnSett = new FIleConnSett(@"connsett_ne22.ini");
+            FIleConnSett fileConnSett = new FIleConnSett(@"connsett_ne22.ini", FIleConnSett.MODE.FILE);
             FileINI fileINI = null;
             //fileINI = new FileINI(@"setup.ini", new string[] { @"ID_TECNotUse" }, new string[] { @"6" });
             fileINI = new FileINI(@"setup.ini");
@@ -201,7 +201,7 @@ namespace update_pbr
                     DbSources.Sources().UnRegister(idListenerDB);
                 }
                 else
-                    strMsg += @"Пропуск..."; ; //ТЭЦ не обрабатываем
+                    strMsg += @"Пропуск..."; //ТЭЦ не обрабатываем
 
                 Console.WriteLine(strMsg + Environment.NewLine);
                 Logging.Logg().Debug(strMsg);
@@ -210,8 +210,6 @@ namespace update_pbr
             Console.WriteLine(@"Выход...");
 
             ProgramBase.Exit();
-
-            DbSources.Sources().UnRegister();
         }
     }
 }

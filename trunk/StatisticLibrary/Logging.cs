@@ -20,6 +20,8 @@ namespace StatisticCommon
         public enum LOG_MODE { ERROR = -1, UNKNOWN, FILE, DB };
         public enum ID_MESSAGE { START = 1, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR };
 
+        private int MAX_COUNT_MESSAGE_ONETIME = 66;
+        
         private string m_fileNameStart;
         private string m_fileName;
         //private bool externalLog;
@@ -44,6 +46,8 @@ namespace StatisticCommon
 
         protected static Logging m_this = null;
 
+        private object m_objQueueMessage;
+
         private static ConnectionSettings s_connSett = null;
         private static int s_iIdListener = -1;
         private static DbConnection s_dbConn = null;
@@ -62,14 +66,14 @@ namespace StatisticCommon
                 s_connSett.password = value.password;
 
                 s_connSett.ignore = value.ignore;
-
-                if (! (connect () == 0)) disconnect (); else ;
             }
         }
         private static List<MESSAGE> m_listQueueMessage;
 
-        private Thread m_thread;
+        private Thread m_threadPost;
+        private System.Threading.Timer m_timerConnSett;
         private ManualResetEvent [] m_arEvtThread;
+        private ManualResetEvent m_evtConnSett;
 
         /// <summary>
         /// Имя приложения без расширения
@@ -154,25 +158,43 @@ namespace StatisticCommon
         }
 
         private void start () {
-            m_arEvtThread = new ManualResetEvent[] { new ManualResetEvent(false), new ManualResetEvent(false) };
+            m_arEvtThread = new ManualResetEvent[] { new ManualResetEvent(false), new ManualResetEvent(false) };            
 
-            m_thread = new Thread (new ParameterizedThreadStart (threadPost));
-            m_thread.Name = @"Логгирование приложения..." + AppName;
-            m_thread.IsBackground = true;
-            m_thread.Start ();
+            m_objQueueMessage = new object ();
+
+            m_threadPost = new Thread (new ParameterizedThreadStart (threadPost));
+            m_threadPost.Name = @"Логгирование приложения..." + AppName;
+            m_threadPost.IsBackground = true;
+            m_threadPost.Start();
+
+            if (s_mode == LOG_MODE.DB) {
+                m_evtConnSett = new ManualResetEvent(false);
+                m_timerConnSett = new System.Threading.Timer (TimerConnSett_Tick, null, 0, 6666);
+            }
+            else
+                ;
         }
 
         public void Stop () {
             m_arEvtThread[(int)INDEX_SEMATHREAD.STOP].Set ();
 
-            if (m_thread.Join (6666) == false)
-                m_thread.Abort ();
+            if ((! (m_threadPost == null)) && (m_threadPost.Join(6666) == false))
+                m_threadPost.Abort ();
             else
                 ;
 
-            disconnect();
+            if ((s_mode == LOG_MODE.DB) && (! (m_timerConnSett == null))) {
+                m_timerConnSett.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerConnSett.Dispose ();
+                m_timerConnSett = null;
 
-            m_thread = null;
+                disconnect();
+                m_evtConnSett.Reset();
+            }
+            else
+                ;
+
+            m_threadPost = null;
         }
 
         private void threadPost (object par) {
@@ -187,47 +209,59 @@ namespace StatisticCommon
                 {
                     switch (s_mode) {
                         case LOG_MODE.DB:
-                            while (m_listQueueMessage.Count > 0)
-                            {
-                                toPost += getInsertQuery(m_listQueueMessage[0]) + @";";
-                                m_listQueueMessage.RemoveAt(0);
-                            }
+                            int cnt = 0;
+                            if (m_evtConnSett.WaitOne (0) == true)
+                            {                                
+                                lock (m_objQueueMessage)
+                                {
+                                    while ((cnt < m_listQueueMessage.Count) && (cnt < MAX_COUNT_MESSAGE_ONETIME))
+                                    {
+                                        toPost += getInsertQuery(m_listQueueMessage[cnt ++]) + @";";
+                                    }
 
-                            DbTSQLInterface.ExecNonQuery(ref s_dbConn, toPost, null, null, out err);
+                                    DbTSQLInterface.ExecNonQuery(ref s_dbConn, toPost, null, null, out err);
 
-                            if (!(err == 0))
-                            {
-                                disconnect();
+                                    if (!(err == 0))
+                                    {
+                                        disconnect();
+                                        m_evtConnSett.Reset ();
+                                    }
+                                    else
+                                        m_listQueueMessage.RemoveRange(0, cnt);
+                                }
                             }
                             else
-                                ;
+                                ; //Нет соединения с БД
                             break;
                         case LOG_MODE.FILE:
                             bool locking = false;
                             if ((!(m_listQueueMessage == null)) && (m_listQueueMessage.Count > 0))
                             {
-                                while (m_listQueueMessage.Count > 0) {
-                                    if (m_listQueueMessage[0].m_bSeparator == true)
-                                        toPost += MessageSeparator + Environment.NewLine;
-                                    else
-                                        ;
+                                lock (m_objQueueMessage)
+                                {
+                                    while (m_listQueueMessage.Count > 0) {
+                                        if (m_listQueueMessage[0].m_bSeparator == true)
+                                            toPost += MessageSeparator + Environment.NewLine;
+                                        else
+                                            ;
 
-                                    if (m_listQueueMessage[0].m_bDatetimeStamp == true)
-                                    {
-                                        toPost += m_listQueueMessage[0].m_strDatetimeReg + Environment.NewLine;
-                                        toPost += DatetimeStampSeparator + Environment.NewLine;
+                                        if (m_listQueueMessage[0].m_bDatetimeStamp == true)
+                                        {
+                                            toPost += m_listQueueMessage[0].m_strDatetimeReg + Environment.NewLine;
+                                            toPost += DatetimeStampSeparator + Environment.NewLine;
+                                        }
+                                        else
+                                            ;
+
+                                        toPost += m_listQueueMessage[0].m_text + Environment.NewLine;
+
+                                        if (m_listQueueMessage.Count == 1)
+                                            locking = m_listQueueMessage[0].m_bLockFile;
+                                        else
+                                            ;
+
+                                        m_listQueueMessage.RemoveAt(0);
                                     }
-                                    else
-                                        ;
-
-                                    toPost += m_listQueueMessage[0].m_text + Environment.NewLine;
-
-                                    if (m_listQueueMessage.Count == 1)
-                                        locking = m_listQueueMessage[0].m_bLockFile;
-                                    else
-                                        ;
-
-                                    m_listQueueMessage.RemoveAt(0);
                                 }
 
                                 if (locking == true)
@@ -302,6 +336,18 @@ namespace StatisticCommon
                     m_arEvtThread[(int)INDEX_SEMATHREAD.MSG].Reset();                    
                 }
             }
+        }
+
+        private void TimerConnSett_Tick (object par) {
+            if (m_evtConnSett.WaitOne (0) == false)
+                if (connect() == 0)
+                    m_evtConnSett.Set();
+                else {
+                    disconnect();
+                    m_evtConnSett.Reset();
+                }
+            else
+                ;
         }
 
         /// <summary>
@@ -428,18 +474,18 @@ namespace StatisticCommon
 
         private void addMessage (int id_msg, string msg, bool bSep, bool bDatetime, bool bLock) {
             if (m_listQueueMessage == null) m_listQueueMessage = new List<MESSAGE>(); else ;
-            m_listQueueMessage.Add(new MESSAGE((int)id_msg, DateTime.Now, msg, bSep, bDatetime, bLock));
+            lock (m_objQueueMessage) { m_listQueueMessage.Add(new MESSAGE((int)id_msg, DateTime.Now, msg, bSep, bDatetime, bLock)); }
         }
 
         private string getInsertQuery (MESSAGE msg) {
             return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_APP],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
-                                @"(" + msg.m_id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",'" + msg.m_strDatetimeReg + @"','" + msg.m_text + @"')";
+                                @"(" + msg.m_id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",'" + msg.m_strDatetimeReg + @"','" + msg.m_text.Replace ('\'', '`') + @"')";
         }
 
         private string getInsertQuery(int id, string text)
         {
             return @"INSERT INTO [techsite-2.X.X].[dbo].[logging]([ID_LOGMSG],[ID_APP],[ID_USER],[DATETIME_WR],[MESSAGE])VALUES" +
-                                @"(" + id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",GETDATE (),'" + text + @"')";
+                                @"(" + id + @"," + ProgramBase.s_iAppID + @"," + Users.Id + @",GETDATE (),'" + text.Replace('\'', '`') + @"')";
         }
         
         /// <summary>
@@ -458,28 +504,19 @@ namespace StatisticCommon
                 switch (s_mode)
                 {
                     case LOG_MODE.DB:
-                        if (s_dbConn == null) {
-                            if (! (connect () == 0)) disconnect (); else ;
-                        }
-                        else
-                            ;
+                        //...запомнить очередное сообщение...
+                        addMessage((int)id, message, true, true, true); //3 крайних параметра для БД ничего не значат...
 
-                        if (! (s_dbConn == null)) {
-                            //...запомнить очередное сообщение...
-                            addMessage ((int)id, message, true, true, true); //3 крайних параметра для БД ничего не значат...
-
+                        if (m_evtConnSett.WaitOne (0) == true) {
+                            //Установить признак возможности для отправки
                             bAddMessage = true;
                         } else {
-                            addMessage((int)id, message, true, true, true); //3 крайних параметра для БД ничего не значат...
                         }
                         break;
                     case LOG_MODE.FILE:
-                        string msg = string.Empty;
-                        
                         addMessage ((int)id, message, separator, timeStamp, locking); //3 крайних параметра для БД ничего не значат...
-
+                        //Установить признак возможности для отправки
                         bAddMessage = true;
-
                         break;
                     default:
                         break;

@@ -17,7 +17,7 @@ namespace StatisticAnalyzer
         {
             ProgramBase.Start();
 
-            FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini");
+            FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini", FIleConnSett.MODE.FILE);
             FormConnectionSettings formConnSett = new FormConnectionSettings(-1, fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
 
             int idListener = DbSources.Sources().Register(formConnSett.getConnSett(), false, @"CONFIG_DB");

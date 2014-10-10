@@ -99,5 +99,7 @@ namespace StatisticCommon
                     ;
             }
         }
+
+        public virtual void Close (bool bForce) { base.Close (); }
     }
 }

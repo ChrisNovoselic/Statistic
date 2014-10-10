@@ -30,8 +30,6 @@ namespace trans_tg
                 ;
 
             ProgramBase.Exit();
-
-            DbSources.Sources().UnRegister();
         }
     }
 }

@@ -51,7 +51,7 @@ namespace StatisticCommon
 
             string msgErr = string.Empty;
             ReadSettings (m_idListener, out m_connectionSettingsEdit, out m_iReady, out msgErr);
-            if ((!(m_iReady == 0)) && (msgErr.Length > 0)) MessageBox.Show(this, msgErr, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error); else ;
+            if ((!(m_iReady == 0)) && (msgErr.Length > 0)) MessageBox.Show(this, msgErr, "Ошибка!!!", MessageBoxButtons.OK, MessageBoxIcon.Error); else ;
 
             if (!(m_iReady == 0))
             {

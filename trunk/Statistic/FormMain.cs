@@ -51,17 +51,28 @@ namespace Statistic
 
         TcpServerAsync m_TCPServer;
 
+        public void Abort(string msg)
+        {
+            throw new Exception(msg);
+        }
+
         public void Abort (string msg, bool bThrow = false)
         {
-            MessageBox.Show(this, msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка в работе программы!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            if (bThrow == true) throw new Exception(msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37."); else ;
+            this.Activate();
+
+            string msgThrow = msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.";
+            MessageBox.Show(this, msgThrow, "Ошибка в работе программы!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            if (bThrow == true) Abort(msgThrow); else ;
         }
 
         public FormMain()
         {
             InitializeComponent();
 
+            ProgramBase.s_iMessageShowUnhandledException = 1;
+
             m_report = new HReports ();
+            //MessageBox.Show((IWin32Window)null, @"FormMain::FormMain () - new HReports ()", @"Отладка!");
 
             // m_statusStripMain
             FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
@@ -76,44 +87,37 @@ namespace Statistic
             delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
             delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
-            m_fileConnSett = new FIleConnSett ("connsett.ini");
-            s_listFormConnectionSettings = new List<FormConnectionSettings> ();
-            s_listFormConnectionSettings.Add (new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
-            s_listFormConnectionSettings.Add(null);
-            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
-            {                
-                if (Initialize() == false)
-                {
-                    Abort (@"Параметры соединения с БД конфигурации", true);
-                }
-                else
-                    ;
-            }
-            else
-            {//Файла с параметрами соединения нет совсем
-                connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
-            }
-
-            tclTecViews.OnClose += delegateOnCloseTab;
-
             m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
             m_TCPServer.delegateRead = ReadAnalyzer;
 
             if (!(m_TCPServer.Start() == 0)) Abort(@"Запуск дублирующего экземпляра приложения", true); else ;
+
+            tclTecViews.OnClose += delegateOnCloseTab;
         }
 
-        private bool Initialize()
+        private int Initialize(out string msgError)
         {
-            bool bRes = true;
+            StartWait ();
+            
+            msgError = string.Empty;
+            //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - вХод...", @"Отладка!");
+
+            int iRes = 0;
             int i = -1;
 
             timer.Interval = 666; //Признак первого старта
 
+            prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
+            m_prevSelectedIndex = 1; //??? = -1
+
+            tecViews = new List<PanelTecViewBase>();
+
             int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - DbSources.Sources().Register (...)", @"Отладка!");
 
             try {
-                formParameters = new FormParameters_FIleINI("setup.ini");
-                //formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                //formParameters = new FormParameters_FIleINI("setup.ini");
+                formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
                 HAdmin.s_REGISTRATION_INI [(int)Users.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
                 HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
@@ -122,12 +126,13 @@ namespace Statistic
 
                 PanelAdminKomDisp.ALARM_USE = bool.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_USE]); //True;
 
-                DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]); ;
-                DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]); ;
-                DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]); ;
+                DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+                DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+                DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
             }
             catch (Exception e) {
-                Abort(e.Message, true);
+                msgError = e.Message;
+                iRes = -5;
             }
 
             m_user = null;
@@ -136,20 +141,16 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                //Logging.Logg().Exception(e, "FormMain::Initialize ()");
-                bRes = false;
+                if (e is HException) {
+                    iRes = ((HException)e).m_code; //-2, -3, -4
+                } else {
+                    iRes = -1;
+                }                
 
-                Abort(e.Message, true);
+                msgError = e.Message;
             }
 
-            bool bUseData = true; //Для объекта 'AdminTS'
-
-            prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
-            m_prevSelectedIndex = 1; //??? = -1
-
-            tecViews = new List<PanelTecViewBase>();
-
-            if (bRes == true)
+            if (iRes == 0)
             {
                 s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
@@ -164,6 +165,9 @@ namespace Statistic
                 if (! (Users.allTEC == 0))
                     PanelAdminKomDisp.ALARM_USE = false;
                 else ;
+
+                //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
+                ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
 
                 //Если ранее тип логирования не был назанчен...
                 if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN) {
@@ -221,7 +225,7 @@ namespace Statistic
                 formSetPassword = new FormSetPassword(m_passwords);
                 formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
-                if (bRes == true)
+                if (iRes == 0)
                     timer.Start();
                 else
                     ;
@@ -233,7 +237,9 @@ namespace Statistic
 
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
-            return bRes;
+            StopWait();
+
+            return iRes;
         }
 
         private void panelAdminKomDispEventGUIReg(string text)
@@ -321,7 +327,7 @@ namespace Statistic
             if ((!(formChangeMode == null)) && formChangeMode.admin_was_checked)
             //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
             {
-                if (!(m_arPanelAdmin == null))
+                if (!(m_arPanelAdmin == null)) {
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
                         if (!(m_arPanelAdmin[i] == null))
                             if (m_arPanelAdmin[i].MayToClose() == false)
@@ -333,23 +339,33 @@ namespace Statistic
                                     ;
                             else {
                                 m_arPanelAdmin[i].Stop ();
+                                m_arPanelAdmin[i] = null;
 
-                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm (); else ;
-                                
+                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm (); else ;                                
                             }
                         else
                             ;
-                else
+
+                    m_arPanelAdmin = null;
+                } else
                     ;
             }
             else
                 stopAdminAlarm ();
 
-            timer.Stop();
+            if (! (timer == null)) {
+                timer.Stop();
+                timer = null;
+            } else
+                ;
 
             StopTabPages ();
 
-            m_TCPServer.Stop ();
+            if (! (m_TCPServer == null)) {
+                m_TCPServer.Stop ();
+                m_TCPServer = null;
+            } else
+                ;
         }
 
         private void stopAdminAlarm () {
@@ -494,28 +510,80 @@ namespace Statistic
             m_prevSelectedIndex = tclTecViews.SelectedIndex;
         }
 
+        private void OnEventFileConnSettSave (FIleConnSett.eventFileConnSettSave ev) {
+            Properties.Settings.Default[@"connsett"] = new string(ev.hash, 0, ev.length);
+            Properties.Settings.Default.Save ();
+        }
+
+        private void MainForm_FormLoad(object sender, EventArgs e) {
+            m_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
+            //m_fileConnSett = new FIleConnSett(new string [] {@"connsett", Properties.Settings.Default.Properties[@"connsett"].ToString ()});
+            //m_fileConnSett = new FIleConnSett(Properties.Settings.Default.Properties [@"connsett"].DefaultValue.ToString (), FIleConnSett.MODE.SETTINGS);
+            //m_fileConnSett = new FIleConnSett((string)Properties.Settings. [@"connsett"], FIleConnSett.MODE.SETTINGS);
+            //m_fileConnSett = new FIleConnSett((string)Properties.Settings.Default[@"connsett"], FIleConnSett.MODE.SETTINGS);
+            //MessageBox.Show((IWin32Window)null, @"FormMain::FormMain () - new FIleConnSett (...)", @"Отладка!");
+
+            //Только для 'FIleConnSett.MODE.SETTINGS'
+            //m_fileConnSett.EventFileConnSettSave += new FIleConnSett.DelegateOnEventFileConnSettSave(OnEventFileConnSettSave);
+
+            s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(null);
+            if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            {
+                string msg = string.Empty;
+                switch (Initialize(out msg))
+                {
+                    case -1:
+                        Abort(@"Неизвестная причина", false);
+                        break;
+                    case -2:
+                    case -3:
+                    case -5:
+                    case -4: //@"Необходимо изменить параметры соединения с БД"
+                        Abort(msg, false);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
+                сменитьРежимToolStripMenuItem.Enabled = false;
+                
+                Abort(@"Необходимо изменить параметры соединения с БД конфигурации", false);
+            }
+
+            this.Activate();
+        }
+
+        public override void Close(bool bForce) { if (bForce == false) base.Close(bForce); else MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.ApplicationExitCall, true)); }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.Cancel == false)
-                if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
-                {
-                    //Нет, не закрываем
-                    activateTabPage(tclTecViews.SelectedIndex, true);
+            if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (timer == null)))
+                if (e.Cancel == false)
+                    if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                    {
+                        //Нет, не закрываем
+                        activateTabPage(tclTecViews.SelectedIndex, true);
 
-                    //Продолжаем и устанавливаем признак: завершить обработку события 'e'
-                    e.Cancel = true;
-                }
-                else
-                {
-                    //Да, закрываем; признаку оставляем прежнее значение: продолжить обработку события 'e'
-                    Stop (e);
-                }
-            else {
-                //Закрываем и устанавливаем признак: продолжить обработку события 'e'
-                e.Cancel = false;
+                        //Продолжаем и устанавливаем признак: завершить обработку события 'e'
+                        e.Cancel = true;
+                    }
+                    else
+                    {
+                        //Да, закрываем; признаку оставляем прежнее значение: продолжить обработку события 'e'
+                        Stop (e);
+                    }
+                else {
+                    //Закрываем и устанавливаем признак: продолжить обработку события 'e'
+                    e.Cancel = false;
 
-                Stop(e);
-            }
+                    Stop(e);
+                }
+            else
+                ;
         }
 
         private int connectionSettings (CONN_SETT_TYPE type) {
@@ -535,11 +603,13 @@ namespace Statistic
                 else
                     ;
 
-                if (Initialize() == true)
-                    iRes = 0;
+                string msg = string.Empty;
+                iRes = Initialize(out msg);
+                if (! (iRes == 0))
+                    //@"Ошибка инициализации пользовательских компонентов формы"
+                    Abort(msg, false);
                 else
-                    //iRes = 1;
-                    Abort(@"Ошибка инициализации пользовательских компонентов формы");
+                    ;
 
                 //foreach (PanelTecViewBase t in tecViews)
                 //{
@@ -667,6 +737,7 @@ namespace Statistic
                         bShowFormConnectionSettings = true;
                     }
                     else {
+                        if (idListener < 0) idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB"); else ;
                         formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
                         DialogResult dlgRes = formPassword.ShowDialog(this);
                         if ((dlgRes == DialogResult.Yes) || (dlgRes == DialogResult.Abort))
@@ -676,12 +747,12 @@ namespace Statistic
                     }
                 }
 
+                DbSources.Sources().UnRegister(idListener);
+
                 if (bShowFormConnectionSettings == true)
                     connectionSettings(type);
                 else
                     ;
-
-                DbSources.Sources().UnRegister (idListener);
             }
             else
                 ;
@@ -895,6 +966,21 @@ namespace Statistic
             }
             else
                 ; //Нет соединения с конфигурационной БД
+        }
+
+        private void сменитьРежимToolStripMenuItem_EnabledChanged (object sender, EventArgs e) {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            видToolStripMenuItem.Enabled =
+            настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
+            текущееСостояниеПользовательToolStripMenuItem.Enabled =
+            изменитьПарольДиспетчераToolStripMenuItem.Enabled =
+            изменитьПарольАдминистратораToolStripMenuItem.Enabled =
+            toolStripMenuItemИзменитьПарольНСС.Enabled =
+            изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled =
+            изментьСоставПользовательToolStripMenuItem.Enabled =
+            параметрыToolStripMenuItem.Enabled =
+                item.Enabled;
         }
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)

@@ -186,6 +186,7 @@
             this.сменитьРежимToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.сменитьРежимToolStripMenuItem.Text = "Сменить режим";
             this.сменитьРежимToolStripMenuItem.Click += new System.EventHandler(this.сменитьРежимToolStripMenuItem_Click);
+            this.сменитьРежимToolStripMenuItem.EnabledChanged += new System.EventHandler(сменитьРежимToolStripMenuItem_EnabledChanged);
             // 
             // настройкиСоединенияБДКонфToolStripMenuItem
             // 
@@ -337,6 +338,7 @@
             this.Text = "Статистика";
             this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(MainForm_FormLoad);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ContextMenuStrip.ResumeLayout(false);

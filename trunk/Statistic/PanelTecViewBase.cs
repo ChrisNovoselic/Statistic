@@ -785,7 +785,7 @@ namespace Statistic
             int receivedHour = m_tecView.lastReceivedHour;
             int itemscount;
             int warn = -1,
-                cntWarn = -1; ;
+                cntWarn = -1;
             string strWarn = string.Empty;
 
             if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)

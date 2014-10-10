@@ -1033,7 +1033,7 @@ namespace Statistic
                     if (bDevEVal == true)
                         showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], dblDevEVal, false, @"%");
                     else
-                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---"); ;
+                        showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---");
                 }
 
                 if ((m_parent.m_tecView.currHour == true) && (min == 0))

@@ -30,8 +30,6 @@ namespace trans_gtp
                 ;
 
             ProgramBase.Exit();
-
-            DbSources.Sources().UnRegister();
         }
     }
 }

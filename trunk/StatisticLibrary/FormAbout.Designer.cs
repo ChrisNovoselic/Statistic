@@ -34,6 +34,7 @@ namespace StatisticCommon
             this.llblMailTo = new System.Windows.Forms.LinkLabel();
             this.btnClose = new System.Windows.Forms.Button();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.m_lblTradeMarkVersion = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -49,12 +50,12 @@ namespace StatisticCommon
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(66, 12);
+            this.label1.Location = new System.Drawing.Point(66, 25);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(250, 58);
+            this.label1.Size = new System.Drawing.Size(264, 48);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Программа \"Статистика\" верс.2.0.4b\r\nзаказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r" +
-    "\nразработчик: Качайло Михаил, e-mail: \r\nсоразработчик: Хряпин А.Н., e-mail:";
+            this.label1.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразработчик: Качайло Михаил, e-mail" +
+    ": \r\nсоразработчик: Хряпин А.Н., e-mail:";
             // 
             // llblMailTo
             // 
@@ -88,11 +89,22 @@ namespace StatisticCommon
             this.linkLabel1.Text = "ChrjapinAN@nske.ru";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
+            // m_lblTradeMarkVersion
+            // 
+            this.m_lblTradeMarkVersion.AutoSize = true;
+            this.m_lblTradeMarkVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.m_lblTradeMarkVersion.Location = new System.Drawing.Point(66, 8);
+            this.m_lblTradeMarkVersion.Name = "m_lblTradeMarkVersion";
+            this.m_lblTradeMarkVersion.Size = new System.Drawing.Size(118, 13);
+            this.m_lblTradeMarkVersion.TabIndex = 4;
+            this.m_lblTradeMarkVersion.Text = "Trade-Mark-Version";
+            // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(393, 97);
+            this.Controls.Add(this.m_lblTradeMarkVersion);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.llblMailTo);
@@ -117,5 +129,6 @@ namespace StatisticCommon
         private System.Windows.Forms.LinkLabel llblMailTo;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.Label m_lblTradeMarkVersion;
     }
 }

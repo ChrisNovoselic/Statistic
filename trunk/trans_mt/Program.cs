@@ -30,8 +30,6 @@ namespace trans_mt
                 ;
 
             ProgramBase.Exit();
-
-            DbSources.Sources().UnRegister();
         }
     }
 }
