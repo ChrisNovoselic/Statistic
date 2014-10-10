@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -33,8 +34,8 @@ namespace trans_mc
             m_fileINI.Add(@"MCServiceHost", string.Empty);
             m_fileINI.Add(@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
-            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
-            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
+            TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
             {
                 if (t.ToString().Contains(m_fileINI.GetValueOfKey(@"ТипБДКфгНазначение")) == true)
                 {
@@ -50,8 +51,8 @@ namespace trans_mc
             int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

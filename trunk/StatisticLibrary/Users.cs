@@ -15,6 +15,7 @@ namespace StatisticCommon
                             COUNT_ID_ROLES = 7};
 
         public enum INDEX_REGISTRATION {ID, DOMAIN_NAME, ROLE, ID_TEC, COUNT_INDEX_REGISTRATION};
+        public static object[] s_REGISTRATION_INI = new object[(int)Users.INDEX_REGISTRATION.COUNT_INDEX_REGISTRATION];
         private enum STATE_REGISTRATION {UNKNOWN = -1, CMD, INI, ENV, COUNT_STATE_REGISTRATION};
         private string[] m_NameArgs = { @"iuser", @"udn", @"irole", @"itec" }; //Длина = COUNT_INDEX_REGISTRATION
 

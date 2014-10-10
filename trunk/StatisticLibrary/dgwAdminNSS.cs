@@ -7,6 +7,8 @@ using System.Data;
 using System.Globalization;
 using System.Drawing;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public class DataGridViewAdminNSS : DataGridViewAdmin

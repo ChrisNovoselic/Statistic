@@ -7,6 +7,8 @@ using System.IO;
 using System.Windows.Forms;     
 using System.Threading;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public class TEC

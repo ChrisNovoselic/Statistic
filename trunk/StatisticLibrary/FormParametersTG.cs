@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 
 using System.Data.Common; //для DbConnection
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public abstract partial class FormParametersTG : FormParametersBase
@@ -140,11 +142,13 @@ namespace StatisticCommon
         }
 
         public override void loadParam()
-        {            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+        {
+            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                     m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
-            }        }
+            }
+        }
     }
 
     public partial class FormParametersTG_FileINI : FormParametersTG

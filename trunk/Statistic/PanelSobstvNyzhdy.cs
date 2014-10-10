@@ -12,6 +12,7 @@ using System.Data;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic

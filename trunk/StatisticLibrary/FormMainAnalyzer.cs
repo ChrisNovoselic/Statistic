@@ -14,6 +14,8 @@ using System.Net.Sockets;
 
 using System.IO;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip

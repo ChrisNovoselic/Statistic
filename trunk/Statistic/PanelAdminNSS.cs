@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -249,14 +250,14 @@ namespace Statistic
             //if (exportFolder.SelectedPath.Length > 0) {
                 getDataGridViewAdmin();
 
-                HAdmin.Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-                if (resultSaving == HAdmin.Errors.NoError)
+                Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                if (resultSaving == Errors.NoError)
                 {
                     btnRefresh.PerformClick ();
                 }
                 else
                 {
-                    if (resultSaving == HAdmin.Errors.InvalidValue)
+                    if (resultSaving == Errors.InvalidValue)
                         MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                     else
                         MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);

@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace StatisticTrans
@@ -22,7 +23,7 @@ namespace StatisticTrans
         private const Int32 TIMER_START_INTERVAL = 666;
 
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
-        protected enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
+        public enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
         protected System.Windows.Forms.Control[,] m_arUIControls;
@@ -123,7 +124,7 @@ namespace StatisticTrans
             //{
             //    //Инициализация БД-логирования
             //    int err = -1;
-            //    StatisticCommon.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
+            //    StatisticCommon.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
             //}
             //else { }
 
@@ -165,11 +166,11 @@ namespace StatisticTrans
             else
                 опросСохранАдминЗначенияToolStripMenuItem.Checked = false;
 
-            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
-            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
+            m_markQueries.Set((int)HClassLibrary.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
+            m_markQueries.Set((int)HClassLibrary.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
 
-            if ((m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.PBR) == false) &&
-                (m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN) == false))
+            if ((m_markQueries.IsMarked((int)HClassLibrary.CONN_SETT_TYPE.PBR) == false) &&
+                (m_markQueries.IsMarked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN) == false))
             {
                 throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
             }
@@ -693,7 +694,7 @@ namespace StatisticTrans
             if (!(comboBoxTECComponent.SelectedIndex < 0) &&
                 (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < m_arAdmin[i].allTECComponents.Count))
             {
-                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
+                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)HClassLibrary.CONN_SETT_TYPE.PBR];
                 for (int j = 0; j < (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; j++)
                 {
                     switch (j)

@@ -11,6 +11,8 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {    
     public class AdminTS : HAdmin
@@ -434,7 +436,7 @@ namespace StatisticCommon
             }
         }
 
-        public virtual HAdmin.Errors ExpRDGExcelValues(int indx, DateTime date)
+        public virtual Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
             Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
@@ -2156,15 +2158,15 @@ namespace StatisticCommon
             for (int i = 0; i < m_list_tec.Count; i ++) {
                 if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
                     //TYPE_DATABASE_CFG.CFG_200 = ???
-                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(HClassLibrary.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(HClassLibrary.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
                 }
                 else {
                     if (m_list_tec[i].type() == TEC.TEC_TYPE.BIYSK)
                     {
                         //TYPE_DATABASE_CFG.CFG_200 = ???
-                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(StatisticCommon.InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
+                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
                     }
                     else
                     {

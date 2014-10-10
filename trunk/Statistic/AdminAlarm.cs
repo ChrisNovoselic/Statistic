@@ -5,6 +5,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -179,10 +180,10 @@ namespace Statistic
             m_listTecView = new List<TecView> ();
 
             HMark markQueries = new HMark ();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO);
+            markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             foreach (StatisticCommon.TEC t in listTEC) {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {

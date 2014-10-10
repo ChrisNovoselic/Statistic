@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public class TcpClientAsync

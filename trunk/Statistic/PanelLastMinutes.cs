@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Data;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic

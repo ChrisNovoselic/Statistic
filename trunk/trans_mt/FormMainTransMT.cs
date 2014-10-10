@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -36,11 +37,11 @@ namespace trans_mt
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
-            InitTECBase.TYPE_DATABASE_CFG[] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
+            TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 arConfigDB[i] = Int32.Parse(m_fileINI.GetValueOfKey(arKeyTypeConfigDB[i]));
-                for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
+                for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
                     {
@@ -57,9 +58,9 @@ namespace trans_mt
             int idListener = -1;
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.MTERM);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.MTERM);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

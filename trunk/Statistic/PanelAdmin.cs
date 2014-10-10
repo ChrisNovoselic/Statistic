@@ -9,6 +9,7 @@ using System.IO;
 //using System.Threading;
 using System.Globalization;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -175,7 +176,7 @@ namespace Statistic
                     break;
             }
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
@@ -270,7 +271,7 @@ namespace Statistic
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
         {
             DialogResult result;
-            HAdmin.Errors resultSaving;
+            Errors resultSaving;
 
             bool bRequery = false;
 
@@ -287,13 +288,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == HAdmin.Errors.NoError)
+                    if (resultSaving == Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == HAdmin.Errors.InvalidValue)
+                        if (resultSaving == Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -328,7 +329,7 @@ namespace Statistic
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
-            HAdmin.Errors resultSaving;
+            Errors resultSaving;
 
             bool bRequery = false;
 
@@ -345,13 +346,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == HAdmin.Errors.NoError)
+                    if (resultSaving == Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == HAdmin.Errors.InvalidValue)
+                        if (resultSaving == Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -380,8 +381,8 @@ namespace Statistic
         {
             getDataGridViewAdmin();
 
-            HAdmin.Errors resultSaving = m_admin.SaveChanges();
-            if (resultSaving == HAdmin.Errors.NoError)
+            Errors resultSaving = m_admin.SaveChanges();
+            if (resultSaving == Errors.NoError)
             {
                 ClearTables();
 
@@ -389,7 +390,7 @@ namespace Statistic
             }
             else
             {
-                if (resultSaving == HAdmin.Errors.InvalidValue)
+                if (resultSaving == Errors.InvalidValue)
                     MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 else
                     MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -430,7 +431,7 @@ namespace Statistic
         public bool MayToClose()
         {
             DialogResult result;
-            HAdmin.Errors resultSaving;
+            Errors resultSaving;
 
             getDataGridViewAdmin();
 
@@ -445,11 +446,11 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == HAdmin.Errors.NoError)
+                    if (resultSaving == Errors.NoError)
                         return true;
                     else
                     {
-                        if (resultSaving == HAdmin.Errors.InvalidValue)
+                        if (resultSaving == Errors.InvalidValue)
                             if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
                                 return true;
                             else

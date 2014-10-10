@@ -6,6 +6,8 @@ using System.Threading;
 
 using Excel = Microsoft.Office.Interop.Excel;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public class AdminTS_NSS : AdminTS

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -32,18 +33,18 @@ namespace Statistic
             if (e.KeyCode == Keys.Enter)
             {
                 delegateStartWait();
-                HAdmin.Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idExtPassword, (uint)m_idRolePassword);
+                Errors errRes = m_pass.ComparePassword(tbxPassword.Text, (uint)m_idExtPassword, (uint)m_idRolePassword);
                 delegateStopWait();
                 tbxPassword.Clear ();
                 //StopWait();
                 switch (errRes)
                 {
-                    case HAdmin.Errors.NoAccess:
+                    case Errors.NoAccess:
                         this.DialogResult = DialogResult.Abort;
                         closing = true;
                         Close();
                         break;
-                    case HAdmin.Errors.NoSet:
+                    case Errors.NoSet:
                         if (MessageBox.Show(this, "Хотите установить?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                             this.DialogResult = DialogResult.Retry;
@@ -54,7 +55,7 @@ namespace Statistic
                         {
                         }
                         break;
-                    case HAdmin.Errors.InvalidValue:
+                    case Errors.InvalidValue:
                         if (MessageBox.Show(this, "Хотите попробовать снова?", "Ошибка", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                         {
                         }
@@ -65,8 +66,8 @@ namespace Statistic
                             Close();
                         }
                         break;
-                    case HAdmin.Errors.ParseError:
-                    case HAdmin.Errors.NoError:
+                    case Errors.ParseError:
+                    case Errors.NoError:
                         this.DialogResult = DialogResult.Yes;
                         closing = true;
                         Close();

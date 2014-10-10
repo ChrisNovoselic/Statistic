@@ -5,6 +5,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic

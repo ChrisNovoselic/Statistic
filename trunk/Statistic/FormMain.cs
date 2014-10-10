@@ -15,6 +15,7 @@ using System.Net;
 //???
 //using System.Security.Cryptography;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -119,10 +120,10 @@ namespace Statistic
                 //formParameters = new FormParameters_FIleINI("setup.ini");
                 formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
-                HAdmin.s_REGISTRATION_INI [(int)Users.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
-                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
-                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
-                HAdmin.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+                Users.s_REGISTRATION_INI [(int)Users.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
+                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
+                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
+                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
 
                 PanelAdminKomDisp.ALARM_USE = bool.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_USE]); //True;
 
@@ -178,7 +179,7 @@ namespace Statistic
                 if (Logging.s_mode == Logging.LOG_MODE.DB) {
                     //Инициализация БД-логирования
                     int err = -1;
-                    StatisticCommon.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(InitTECBase.TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
+                    HClassLibrary.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
                 } else { }
 
                 //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];

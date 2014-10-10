@@ -9,6 +9,7 @@ using System.Net.Sockets;
 
 using System.IO;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic

@@ -11,6 +11,8 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public delegate void DelegateDateFunc(DateTime date);
@@ -87,15 +89,6 @@ namespace StatisticCommon
         {
             Request,
             Data,
-        }
-
-        public enum Errors
-        {
-            NoError,
-            InvalidValue,
-            NoAccess,
-            NoSet,
-            ParseError,
         }
 
         //Для особкнной ТЭЦ (Бийск)
@@ -186,7 +179,7 @@ namespace StatisticCommon
             initTEC(markQueries);
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
@@ -195,10 +188,10 @@ namespace StatisticCommon
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
                     switch (typeCfg) {
-                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
+                        case TYPE_DATABASE_CFG.CFG_190:
                             this.m_list_tec = new InitTEC_190(idListener, bIgnoreTECInUse, false).tec;
                             break;
-                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
+                        case TYPE_DATABASE_CFG.CFG_200:
                             this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, false).tec;
                             break;
                         default:
@@ -206,10 +199,10 @@ namespace StatisticCommon
                     }
                 else
                     switch (typeCfg) {
-                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
+                        case TYPE_DATABASE_CFG.CFG_190:
                             this.m_list_tec = new InitTEC_190(idListener, (short)mode, bIgnoreTECInUse, false).tec;
                             break;
-                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
+                        case TYPE_DATABASE_CFG.CFG_200:
                             this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, false).tec;
                             break;
                         default:
@@ -842,7 +835,5 @@ namespace StatisticCommon
             else
                 ;
         }
-
-        public static object [] s_REGISTRATION_INI = new object [(int)Users.INDEX_REGISTRATION.COUNT_INDEX_REGISTRATION];
     }
 }

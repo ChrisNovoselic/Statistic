@@ -6,6 +6,7 @@ using System.Data;
 using System.Globalization;
 using System.Threading;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_tg
@@ -24,8 +25,9 @@ namespace trans_tg
 
         private void InitializeAdminTransTG()
         {
-            m_listTimezoneOffsetHaveDates = new List<bool>[(int)CONN_SETT_TYPE.PBR + 1];
-            for (int i = 0; i < (int)CONN_SETT_TYPE.PBR + 1; i ++) {
+            m_listTimezoneOffsetHaveDates = new List<bool>[(int)HClassLibrary.CONN_SETT_TYPE.PBR + 1];
+            for (int i = 0; i < (int)HClassLibrary.CONN_SETT_TYPE.PBR + 1; i++)
+            {
                 m_listTimezoneOffsetHaveDates[i] = new List<bool>();
             }
 
@@ -61,7 +63,7 @@ namespace trans_tg
             return bRes;
         }
 
-        protected override void ClearDates(CONN_SETT_TYPE type)
+        protected override void ClearDates(HClassLibrary.CONN_SETT_TYPE type)
         {
             base.ClearDates(type);
             
@@ -75,7 +77,7 @@ namespace trans_tg
 
         }
 
-        protected override bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
+        protected override bool GetDatesResponse(HClassLibrary.CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
             //bool bIsHourTimezoneOffsetRDGExcel = false;
@@ -116,7 +118,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)HClassLibrary.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -132,7 +134,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)HClassLibrary.CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -222,7 +224,7 @@ namespace trans_tg
 
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
-                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates [(int)CONN_SETT_TYPE.ADMIN].Count; i++)
+                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)HClassLibrary.CONN_SETT_TYPE.ADMIN].Count; i++)
                 {
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)

@@ -7,7 +7,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 
-//using Statistic;
+using HClassLibrary;
 
 namespace StatisticCommon
 {

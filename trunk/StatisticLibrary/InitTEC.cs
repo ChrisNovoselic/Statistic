@@ -5,11 +5,12 @@ using System.Data;
 using System.Data.Common;
 using MySql.Data.MySqlClient;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public class InitTECBase
     {
-        public enum TYPE_DATABASE_CFG { CFG_190, CFG_200, UNKNOWN };
         protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
         
         public List<TEC> tec;

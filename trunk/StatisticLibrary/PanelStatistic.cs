@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Data;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public abstract class PanelStatistic : TableLayoutPanel
