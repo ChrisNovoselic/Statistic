@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+//using System..SqlClient;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -99,7 +99,7 @@ namespace Statistic
         private int Initialize(out string msgError)
         {
             StartWait ();
-            
+
             msgError = string.Empty;
             //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - вХод...", @"Отладка!");
 

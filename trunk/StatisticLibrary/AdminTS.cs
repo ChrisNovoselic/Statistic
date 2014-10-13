@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+//using System.Data.SqlClient;
 using System.Data.OleDb;
 using System.IO;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
 

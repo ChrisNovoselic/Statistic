@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Data.Common;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
 
 using HClassLibrary;
 
