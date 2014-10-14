@@ -52,7 +52,6 @@
             this.опросСохранАдминЗначенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.timerMain = new System.Windows.Forms.Timer(this.components);
             this.notifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.развернутьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -275,10 +274,6 @@
             this.оПрограммеToolStripMenuItem.Text = "О программе";
             this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
             // 
-            // timerMain
-            // 
-            this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
-            // 
             // notifyIconMain
             //
             //this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -375,7 +370,6 @@
         protected System.Windows.Forms.ToolStripMenuItem опросСохранАдминЗначенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
-        protected System.Windows.Forms.Timer timerMain;
         protected System.Windows.Forms.NotifyIcon notifyIconMain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem развернутьToolStripMenuItem;

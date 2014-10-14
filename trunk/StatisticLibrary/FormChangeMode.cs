@@ -264,8 +264,8 @@ namespace StatisticCommon
                     //} else ;
                 }
 
-                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && Users.RoleIsDisp == true)
-                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP)))
+                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true)
+                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                         if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
@@ -274,7 +274,7 @@ namespace StatisticCommon
                         } else ;
                     }
                     else
-                        if ((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.NSS))
+                        if ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.NSS))
                             clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
                         else
                             ;
@@ -300,7 +300,7 @@ namespace StatisticCommon
             for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
                 //(IsModeTECComponent (MODE_TECCOMPONENT.GTP) == true)) || (IsModeTECComponent (MODE_TECCOMPONENT.TG) == true)
                 //if (((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true)) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
-                if ((getModeTECComponent () > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1) && (Users.RoleIsDisp == true))
+                if ((getModeTECComponent() > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1) && (HStatisticUsers.RoleIsDisp == true))
                     admin_was_checked = true;
                 else
                     was_checked.Add(clbMode.CheckedIndices[i]);
@@ -409,7 +409,7 @@ namespace StatisticCommon
         private void ChangeMode_Shown(object sender, EventArgs e)
         {
             //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0) && (Users.RoleIsDisp == true))
+            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0) && (HStatisticUsers.RoleIsDisp == true))
                 clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
             else
                 ;

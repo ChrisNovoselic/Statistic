@@ -24,14 +24,14 @@ namespace StatisticCommon
             req = "SELECT * FROM TEC_LIST";
 
             if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
-            if (!(Users.allTEC == 0))
+            if (!(HStatisticUsers.allTEC == 0))
             {
                 if (bIgnoreTECInUse == false)
                     req += @" AND ";
                 else
                     ;
 
-                req += @"ID =" + Users.allTEC.ToString ();
+                req += @"ID =" + HStatisticUsers.allTEC.ToString();
             }
             else
                 ;
@@ -195,7 +195,7 @@ namespace StatisticCommon
                 {
                     //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
-                    if ((Users.allTEC == 0) || (Users.Role < (int)Users.ID_ROLES.USER) || (Users.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
+                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.Role < (int)HStatisticUsers.ID_ROLES.USER) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
                     {
                         //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 

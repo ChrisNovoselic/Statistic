@@ -153,6 +153,8 @@ namespace StatisticCommon
 
     public partial class FormParametersTG_FileINI : FormParametersTG
     {
+        private enum TYPE_VALUE : int { CURRENT, PREVIOUS, COUNT_TYPE_VALUE };
+        
         private const char SEP_ID_TG = ',';
         private string[] NAME_TIME = { "min", "hour" };
         private static string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск (" + ProgramBase.AppName + ")";

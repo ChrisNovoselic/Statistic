@@ -93,9 +93,6 @@
     <Compile Include="FormParameters.Designer.cs">
       <DependentUpon>FormParameters.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormParametersBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="FormParametersTG.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -120,6 +117,7 @@
     <Compile Include="TECComponent.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Users.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

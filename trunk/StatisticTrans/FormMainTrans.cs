@@ -20,7 +20,6 @@ namespace StatisticTrans
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
-        private const Int32 TIMER_START_INTERVAL = 666;
 
         protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
         public enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
@@ -33,8 +32,6 @@ namespace StatisticTrans
         protected System.Windows.Forms.Timer timerService;
 
         protected HAdmin[] m_arAdmin;
-        private FIleConnSett m_fileConnSett;
-        protected FormConnectionSettings m_formConnectionSettingsConfigDB;
         protected GroupBox[] m_arGroupBox;
 
         protected DataGridViewAdmin m_dgwAdminTable;
@@ -566,7 +563,10 @@ namespace StatisticTrans
         }
 
         protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
-        
+
+        protected override void UpdateActiveGui() {}
+        protected override void HideGraphicsSettings() { }
+
         protected void InitializeComponentTransSrc(string text)
         {
             int i = -1;
@@ -646,14 +646,13 @@ namespace StatisticTrans
 
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
         }
-        
+
         protected List<int> m_listID_TECNotUse;
-        
+
         protected abstract void start();
-        
-        protected virtual void Start() {
-            timerMain.Interval = 666; //Признак первой итерации
-            timerMain.Start();
+
+        protected override void Start() {
+            base.Start ();
         }
 
         protected void RemoveTEC (HAdmin admin) {
@@ -742,20 +741,21 @@ namespace StatisticTrans
         {
             bool bShowFormConnSett = false;
             
-            m_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
-            m_formConnectionSettingsConfigDB = new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile);
+            s_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
+            s_listFormConnectionSettings = new List <FormConnectionSettings> ();
+            s_listFormConnectionSettings.Add (new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
 
-            if (m_formConnectionSettingsConfigDB.Ready == 0)
+            if (s_listFormConnectionSettings [(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 ;
             else
                 bShowFormConnSett = true;
 
             if (bCheckAdminLength == true)
             {
-                if (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
+                if (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
                 {
-                    while (m_formConnectionSettingsConfigDB.Count < m_arAdmin.Length)
-                        m_formConnectionSettingsConfigDB.addConnSett(new ConnectionSettings());
+                    while (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
+                        s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].addConnSett(new ConnectionSettings());
 
                     if (bShowFormConnSett == false) bShowFormConnSett = true; else ;
                 }
@@ -862,7 +862,7 @@ namespace StatisticTrans
             this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
         }
 
-        private void Stop()
+        protected override void Stop()
         {
             ClearTables();
 
@@ -879,7 +879,7 @@ namespace StatisticTrans
                     ;
             }
 
-            timerMain.Stop();
+            base.Stop();
         }
 
         protected virtual void buttonClose_Click(object sender, EventArgs e)
@@ -916,8 +916,8 @@ namespace StatisticTrans
             if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
 
-                if (m_formConnectionSettingsConfigDB.Count > 1)
-                    m_formConnectionSettingsConfigDB.SelectedIndex = m_IndexDB;
+                if (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count > 1)
+                    s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].SelectedIndex = m_IndexDB;
                 else
                     ;
 
@@ -946,14 +946,14 @@ namespace StatisticTrans
         private void конфигурацияБДToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //m_formConnectionSettings.StartPosition = FormStartPosition.CenterParent;
-            m_formConnectionSettingsConfigDB.ShowDialog(this);
+            s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].ShowDialog(this);
 
             //Эмуляция нажатия кнопки "Ок"
             /*
             m_formConnectionSettings.btnOk_Click(null, null);
             */
 
-            DialogResult dlgRes = m_formConnectionSettingsConfigDB.DialogResult;
+            DialogResult dlgRes = s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].DialogResult;
             if (dlgRes == System.Windows.Forms.DialogResult.Yes)
             {
                 Stop();
@@ -1083,57 +1083,30 @@ namespace StatisticTrans
             return (((DateTime)dateApp.Date) - DateTime.Now) > timeSpan ? false : true;
         }
 
-        private void timerMain_Tick(object sender, EventArgs e)
+        protected override void timer_Start()
         {
-            if (timerMain.Interval == TIMER_START_INTERVAL)
+            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
+
+            if (m_modeMashine == MODE_MASHINE.AUTO)
             {
-                //Первый запуск
-                timerMain.Interval = 1000;
+                FillComboBoxTECComponent();
 
-                m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
+                trans_auto_start();
 
-                if (m_modeMashine == MODE_MASHINE.AUTO)
-                {
-                    FillComboBoxTECComponent();
-
-                    trans_auto_start();
-
-                    //return;
-                }
-                else
-                    if (m_modeMashine == MODE_MASHINE.SERVICE)
-                        m_checkboxModeMashine.Checked = true;
-                    else
-                        FillComboBoxTECComponent();
+                //return;
             }
             else
-                ;
-
-            lock (lockEvent)
-            {
-                bool have_eror = UpdateStatusString();
-
-                if (have_eror)
-                    m_lblMainState.Text = "ОШИБКА";
+                if (m_modeMashine == MODE_MASHINE.SERVICE)
+                    m_checkboxModeMashine.Checked = true;
                 else
-                    ;
-
-                if (!have_eror || !show_error_alert)
-                    m_lblMainState.Text = "";
-                else
-                    ;
-
-                show_error_alert = !show_error_alert;
-                m_lblDescError.Invalidate();
-                m_lblDateError.Invalidate();
-            }
-        }
+                    FillComboBoxTECComponent();
+        }        
 
         private void timerService_Tick(object sender, EventArgs e)
         {
             enabledUIControl(false);
 
-            if (timerService.Interval == TIMER_START_INTERVAL)
+            if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
             {
                 //Первый запуск
                 if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //случайное совпадение
@@ -1262,7 +1235,7 @@ namespace StatisticTrans
         private void InitializeTimerService () {
             if (timerService == null) {
                 timerService = new System.Windows.Forms.Timer(this.components);
-                timerService.Interval = TIMER_START_INTERVAL; //Пеавый запуск
+                timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Пеавый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
             }
             else

@@ -95,7 +95,7 @@ namespace trans_tg
             markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
 
-            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)

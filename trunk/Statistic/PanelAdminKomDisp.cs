@@ -221,7 +221,8 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
-            if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
+            if ((HStatisticUsers.Role < (int)HStatisticUsers.ID_ROLES.USER) && ALARM_USE == true)
+            {
                 m_adminAlarm = new AdminAlarm();
                 m_adminAlarm.InitTEC(m_admin.m_list_tec);
 

@@ -22,10 +22,6 @@ namespace Statistic
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
-        //public List<TEC> tec;
-        private FIleConnSett m_fileConnSett;
-        //private ConnectionSettingsSource m_connSettSource;
-        public static List <FormConnectionSettings> s_listFormConnectionSettings;
         private PanelAdmin [] m_arPanelAdmin;
         PanelCurPower m_panelCurPower;
         PanelTMSNPower m_panelSNPower;
@@ -47,46 +43,16 @@ namespace Statistic
         public static FormGraphicsSettings formGraphicsSettings;
         public static FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
-        Users m_user;
+        HStatisticUsers m_user;
         FormParametersTG m_formParametersTG;
 
         TcpServerAsync m_TCPServer;
-
-        public void Abort(string msg)
-        {
-            throw new Exception(msg);
-        }
-
-        public void Abort (string msg, bool bThrow = false)
-        {
-            this.Activate();
-
-            string msgThrow = msg + @"." + Environment.NewLine + @"Обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.";
-            MessageBox.Show(this, msgThrow, "Ошибка в работе программы!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-            if (bThrow == true) Abort(msgThrow); else ;
-        }
 
         public FormMain()
         {
             InitializeComponent();
 
             ProgramBase.s_iMessageShowUnhandledException = 1;
-
-            m_report = new HReports ();
-            //MessageBox.Show((IWin32Window)null, @"FormMain::FormMain () - new HReports ()", @"Отладка!");
-
-            // m_statusStripMain
-            FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 762);
-            FormMainBaseWithStatusStrip.m_statusStripMain.Size = new System.Drawing.Size(982, 22);
-            // m_lblMainState
-            this.m_lblMainState.Size = new System.Drawing.Size(150, 17);
-            // m_lblDateError
-            this.m_lblDateError.Size = new System.Drawing.Size(150, 17);
-            // m_lblDescError
-            this.m_lblDescError.Size = new System.Drawing.Size(667, 17);
-
-            delegateUpdateActiveGui = new DelegateFunc(UpdateActiveGui);
-            delegateHideGraphicsSettings = new DelegateFunc(HideGraphicsSettings);
 
             m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
             m_TCPServer.delegateRead = ReadAnalyzer;
@@ -106,8 +72,6 @@ namespace Statistic
             int iRes = 0;
             int i = -1;
 
-            timer.Interval = 666; //Признак первого старта
-
             prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
             m_prevSelectedIndex = 1; //??? = -1
 
@@ -120,10 +84,11 @@ namespace Statistic
                 //formParameters = new FormParameters_FIleINI("setup.ini");
                 formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
-                Users.s_REGISTRATION_INI [(int)Users.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
-                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
-                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
-                Users.s_REGISTRATION_INI[(int)Users.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+                //Предустановленные в файле/БД конфигурации
+                HUsers.s_REGISTRATION_INI [(int)HUsers.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
 
                 PanelAdminKomDisp.ALARM_USE = bool.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_USE]); //True;
 
@@ -138,7 +103,7 @@ namespace Statistic
 
             m_user = null;
             try {
-                m_user = new Users(idListenerConfigDB);
+                m_user = new HStatisticUsers(idListenerConfigDB);
             }
             catch (Exception e)
             {
@@ -155,7 +120,7 @@ namespace Statistic
             {
                 s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                if (! (Users.Role == 2)) //Администратор
+                if (! (HStatisticUsers.Role == 2)) //Администратор
                 {
                     параметрыToolStripMenuItem.Enabled =
                     администрированиеToolStripMenuItem.Enabled =
@@ -163,7 +128,7 @@ namespace Statistic
                 }
                 else;
 
-                if (! (Users.allTEC == 0))
+                if (!(HStatisticUsers.allTEC == 0))
                     PanelAdminKomDisp.ALARM_USE = false;
                 else ;
 
@@ -209,7 +174,7 @@ namespace Statistic
                 }
 
                 int [] arIDs = null;
-                if (((Users.Role == (int)Users.ID_ROLES.ADMIN) || (Users.Role == (int)Users.ID_ROLES.KOM_DISP)) && (PanelAdminKomDisp.ALARM_USE == true))
+                if (((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)) && (PanelAdminKomDisp.ALARM_USE == true))
                 {
                     prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
                     arIDs = new int[] { 0 };
@@ -227,7 +192,7 @@ namespace Statistic
                 formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
                 if (iRes == 0)
-                    timer.Start();
+                    Start (); //Старт 1-сек-го таймера для строки стостояния
                 else
                     ;
             }
@@ -321,7 +286,7 @@ namespace Statistic
             Close();
         }
 
-        private void Stop(FormClosingEventArgs e = null)
+        private void Stop(FormClosingEventArgs e)
         {
             int i = -1;
 
@@ -354,11 +319,7 @@ namespace Statistic
             else
                 stopAdminAlarm ();
 
-            if (! (timer == null)) {
-                timer.Stop();
-                timer = null;
-            } else
-                ;
+            Stop ();
 
             StopTabPages ();
 
@@ -517,7 +478,7 @@ namespace Statistic
         }
 
         private void MainForm_FormLoad(object sender, EventArgs e) {
-            m_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //m_fileConnSett = new FIleConnSett(new string [] {@"connsett", Properties.Settings.Default.Properties[@"connsett"].ToString ()});
             //m_fileConnSett = new FIleConnSett(Properties.Settings.Default.Properties [@"connsett"].DefaultValue.ToString (), FIleConnSett.MODE.SETTINGS);
             //m_fileConnSett = new FIleConnSett((string)Properties.Settings. [@"connsett"], FIleConnSett.MODE.SETTINGS);
@@ -528,7 +489,7 @@ namespace Statistic
             //m_fileConnSett.EventFileConnSettSave += new FIleConnSett.DelegateOnEventFileConnSettSave(OnEventFileConnSettSave);
 
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, m_fileConnSett.ReadSettingsFile, m_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
@@ -562,7 +523,7 @@ namespace Statistic
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (timer == null)))
+            if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
                 if (e.Cancel == false)
                     if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                     {
@@ -595,7 +556,8 @@ namespace Statistic
             {
                 StopTabPages ();
 
-                if (timer.Enabled) timer.Stop(); else ;
+                base.Stop();
+
                 int i = -1;
                 if (!(m_arPanelAdmin == null))
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
@@ -708,8 +670,8 @@ namespace Statistic
                         switch (type)
                         {
                             case CONN_SETT_TYPE.CONFIG_DB:
-                                delegateRead = m_fileConnSett.ReadSettingsFile;
-                                delegateSave = m_fileConnSett.SaveSettingsFile;
+                                delegateRead = s_fileConnSett.ReadSettingsFile;
+                                delegateSave = s_fileConnSett.SaveSettingsFile;
                                 break;
                             case CONN_SETT_TYPE.LIST_SOURCE:
                                 idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
@@ -861,9 +823,10 @@ namespace Statistic
             //}
 
             bool bTGBiysk = parametrsTGBiysk > 0;
-            if ((Users.allTEC == 0) || (Users.allTEC == 6)) {
+            if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == 6))
+            {
                 параметрыToolStripMenuItem.Enabled =
-                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (Users.Role == (int)Users.ID_ROLES.ADMIN);
+                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN);
 
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
 
@@ -880,16 +843,17 @@ namespace Statistic
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
                 Passwords.ID_ROLES idRolesPassword = Passwords.ID_ROLES.COM_DISP;
 
-                switch (Users.Role) {
-                    case (int)Users.ID_ROLES.ADMIN:
+                switch (HStatisticUsers.Role)
+                {
+                    case (int)HStatisticUsers.ID_ROLES.ADMIN:
                         if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                             ;
                         else
                             idRolesPassword = Passwords.ID_ROLES.NSS;
                         break;
-                    case (int)Users.ID_ROLES.KOM_DISP:
+                    case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
                         break;
-                    case (int)Users.ID_ROLES.NSS:
+                    case (int)HStatisticUsers.ID_ROLES.NSS:
                         idRolesPassword = Passwords.ID_ROLES.NSS;
                         break;
                     default:
@@ -1185,9 +1149,9 @@ namespace Statistic
             StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //FormChangeMode.MODE_TECCOMPONENT.TG;
             StatisticCommon.FormChangeMode.MANAGER modeAdmin = FormChangeMode.MANAGER.NSS;
 
-            if (Users.RoleIsDisp == true) {
-                switch (Users.Role) {
-                    case (int)Users.ID_ROLES.ADMIN:
+            if (HStatisticUsers.RoleIsDisp == true) {
+                switch (HStatisticUsers.Role) {
+                    case (int)HStatisticUsers.ID_ROLES.ADMIN:
                         if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                         {
                             mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
@@ -1196,11 +1160,11 @@ namespace Statistic
                         else
                             mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //PC или TG не важно
                         break;
-                    case (int)Users.ID_ROLES.KOM_DISP:
+                    case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
                         mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                         modeAdmin = FormChangeMode.MANAGER.DISP;
                         break;
-                    case (int)Users.ID_ROLES.NSS:
+                    case (int)HStatisticUsers.ID_ROLES.NSS:
                         break;
                     default:
                         break;
@@ -1258,110 +1222,87 @@ namespace Statistic
             }
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        protected override void  timer_Start()
         {
-            if (timer.Interval == 666)
+ 	        int i = -1;
+
+            // отображаем вкладки ТЭЦ
+            int index = -1;
+            for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
             {
-                int i = -1;
+                StatisticCommon.TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
 
-                // отображаем вкладки ТЭЦ
-                int index = -1;
-                for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++)
+                if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
                 {
-                    StatisticCommon.TEC t = m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec[formChangeMode.m_list_tec_index[i]];
+                    if (formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]] == -1)
+                        tclTecViews.AddTabPage(t.name_shr);
+                    else
+                        tclTecViews.AddTabPage(t.name_shr + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr);
 
-                    if ((index = formChangeMode.was_checked.IndexOf(i)) >= 0)
-                    {
-                        if (formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]] == -1)
-                            tclTecViews.AddTabPage(t.name_shr);
-                        else
-                            tclTecViews.AddTabPage(t.name_shr + " - " + t.list_TECComponents[formChangeMode.m_list_TECComponent_index[formChangeMode.was_checked[index]]].name_shr);
+                    tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
 
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[i]);
+                    tecViews[i].Start();
+                }
+                else
+                    ;
+            }
 
-                        tecViews[i].Start();
-                    }
+            if (formChangeMode.admin_was_checked == true)
+            {
+                //Никогда не выполняется...
+                //if (formPassword.ShowDialog() == DialogResult.Yes)
+                {
+                    if (!(m_arPanelAdmin == null))
+                        foreach (PanelAdmin pa in m_arPanelAdmin)
+                            if (!(pa == null))
+                                pa.Start();
+                            else
+                                ;
                     else
                         ;
+
+                    AddTabPageAdmin();
                 }
-
-                if (formChangeMode.admin_was_checked == true)
-                {
-                    //Никогда не выполняется...
-                    //if (formPassword.ShowDialog() == DialogResult.Yes)
-                    {
-                        if (! (m_arPanelAdmin == null))
-                            foreach (PanelAdmin pa in m_arPanelAdmin)
-                                if (! (pa == null))
-                                    pa.Start ();
-                                else
-                                    ;
-                        else
-                            ;
-
-                        AddTabPageAdmin ();
-                    }
-                }
-                else
-                    ;
-
-                if ((tclTecViews.TabPages.Count > 0) || (formChangeMode.admin_was_checked == true))
-                {
-                    ActivateTabPage ();
-                }
-                else
-                    ;
-
-                if ((PanelAdminKomDisp.ALARM_USE == true) && (! (((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null))
-                    && (PanelAdminKomDisp.ALARM_USE == true)) {
-                    ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Start();
-                    ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_cbxAlarm.Checked = true;
-                }
-                else
-                    ;
-                
-                m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-                m_panelCurPower.SetDelegate(null, null, delegateEvent);
-                //m_panelCurPower.Start();
-                ////В работе постоянно
-                //m_panelCurPower.Activate (true);
-
-                m_panelSNPower = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-                m_panelSNPower.SetDelegate(null, null, delegateEvent);
-
-                m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-                m_panelLastMinutes.SetDelegate(null, null, delegateEvent);
-                //m_panelLastMinutes.Start();
-
-                m_panelSobstvNyzhdy = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-                m_panelSobstvNyzhdy.SetDelegate(null, null, delegateEvent);
-
-                m_panelCustomTecView22 = new PanelCustomTecView(formChangeMode, new Size (2, 2), ErrorReport, ActionReport);
-                m_panelCustomTecView23 = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
-                //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
-                //m_panelCustomTecView.Start();
-
-                timer.Interval = 1000;
             }
+            else
+                ;
 
-            lock (lockEvent)
+            if ((tclTecViews.TabPages.Count > 0) || (formChangeMode.admin_was_checked == true))
             {
-                bool have_eror = UpdateStatusString();
-
-                if (have_eror == true)
-                    m_lblMainState.Text = "ОШИБКА";
-                else
-                    ;
-
-                if ((have_eror == false) || (show_error_alert == false))
-                    m_lblMainState.Text = "";
-                else
-                    ;
-
-                show_error_alert = !show_error_alert;
-                m_lblDescError.Invalidate();
-                m_lblDateError.Invalidate();
+                ActivateTabPage();
             }
+            else
+                ;
+
+            if ((PanelAdminKomDisp.ALARM_USE == true) && (!(((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null))
+                && (PanelAdminKomDisp.ALARM_USE == true))
+            {
+                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Start();
+                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_cbxAlarm.Checked = true;
+            }
+            else
+                ;
+
+            m_panelCurPower = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_panelCurPower.SetDelegate(null, null, delegateEvent);
+            //m_panelCurPower.Start();
+            ////В работе постоянно
+            //m_panelCurPower.Activate (true);
+
+            m_panelSNPower = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_panelSNPower.SetDelegate(null, null, delegateEvent);
+
+            m_panelLastMinutes = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_panelLastMinutes.SetDelegate(null, null, delegateEvent);
+            //m_panelLastMinutes.Start();
+
+            m_panelSobstvNyzhdy = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_panelSobstvNyzhdy.SetDelegate(null, null, delegateEvent);
+
+            m_panelCustomTecView22 = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, ActionReport);
+            m_panelCustomTecView23 = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
+            //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
+            //m_panelCustomTecView.Start();
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1384,7 +1325,7 @@ namespace Statistic
 
         }
 
-        public void HideGraphicsSettings()
+        protected override void HideGraphicsSettings()
         {
             панельГрафическихToolStripMenuItem.Checked = false;
         }
@@ -1494,7 +1435,7 @@ namespace Statistic
             выборОбъектыToolStripMenuItem_CheckedChanged(m_panelCustomTecView23, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
         }
 
-        private void UpdateActiveGui()
+        protected override void UpdateActiveGui()
         {
             //if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
             if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
@@ -1729,17 +1670,17 @@ namespace Statistic
                 FormChangeMode.MANAGER modeRes = FormChangeMode.MANAGER.UNKNOWN;
 
                 if (formChangeMode.admin_was_checked == true) {
-                    switch (Users.Role) {
-                        case (int)Users.ID_ROLES.ADMIN:
+                    switch (HStatisticUsers.Role) {
+                        case (int)HStatisticUsers.ID_ROLES.ADMIN:
                             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                                 modeRes = FormChangeMode.MANAGER.DISP;
                             else
                                 modeRes = FormChangeMode.MANAGER.NSS;
                             break;
-                        case (int)Users.ID_ROLES.KOM_DISP:
+                        case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
                             modeRes = FormChangeMode.MANAGER.DISP;
                             break;
-                        case (int)Users.ID_ROLES.NSS:
+                        case (int)HStatisticUsers.ID_ROLES.NSS:
                             modeRes = FormChangeMode.MANAGER.NSS;
                             break;
                         default:

@@ -47,7 +47,7 @@ namespace Statistic
 
             foreach (Control ctrl in this.Controls)
             {
-                if (ctrl is StatisticCommon.HLabel)
+                if (ctrl is HClassLibrary.HLabel)
                 {
                     indx = (int)((HLabel)ctrl).m_type;
                     if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
@@ -114,7 +114,7 @@ namespace Statistic
             if (!(fonts == null))
                 foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
                 {
-                    if (ctrl is StatisticCommon.HLabel)
+                    if (ctrl is HClassLibrary.HLabel)
                     {
                         if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
                             ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
@@ -257,7 +257,11 @@ namespace Statistic
 
             bool bChecked = true
                 , bEnabled = true;
-            if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) bChecked = false; else ;
+            if ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.NSS) ||
+                (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.MAJOR_MASHINIST) ||
+                (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.MASHINIST))
+                    bChecked = false;
+            else ;
             this.ContextMenuStrip = new ContextMenuStrip ();
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),

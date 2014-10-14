@@ -48,7 +48,7 @@ namespace trans_mc
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
-            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             HMark markQueries = new HMark();
             markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
