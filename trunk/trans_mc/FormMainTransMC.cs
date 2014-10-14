@@ -29,7 +29,7 @@ namespace trans_mc
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mc.ini", true);
+            CreateFormConnectionSettings("connsett_mc.ini", false);
 
             m_fileINI.Add(@"MCServiceHost", string.Empty);
             m_fileINI.Add(@"ИгнорДатаВремя-ModesCentre", false.ToString());

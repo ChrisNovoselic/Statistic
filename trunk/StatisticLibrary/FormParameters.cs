@@ -143,7 +143,7 @@ namespace StatisticCommon
         private DbConnection m_dbConn;
 
         //public FormParameters_DB(int idListener)
-        public FormParameters_DB(ConnectionSettings connSett)
+        public FormParameters_DB(ConnectionSettings connSett) : base ()
         {
             m_connSett = connSett;
 
