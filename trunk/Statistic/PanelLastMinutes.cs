@@ -700,7 +700,7 @@ namespace Statistic
             //                        else
             //                            ;
 
-            //                        DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+            //                        DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyyMMdd HH:mm:ss") + "'");
             //                        if (row_in.Length > 0)
             //                        {
             //                            if (row_in.Length > 1)

@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainName", "DomainName\Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HClassLibrary", "..\HClassLibrary\HClassLibrary.csproj", "{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,12 @@ Global
 		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|x86.ActiveCfg = Release|Any CPU
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|Any CPU.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|x86.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|Any CPU.ActiveCfg = Release
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|Mixed Platforms.ActiveCfg = Release
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

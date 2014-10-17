@@ -606,10 +606,10 @@ namespace Statistic
                     else
                         ;
 
-                    formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
-
                     formChangeMode.admin_was_checked = false;
                     prevStateIsAdmin = FormChangeMode.MANAGER.UNKNOWN;
+                    
+                    formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
 
                     StopWait();
 

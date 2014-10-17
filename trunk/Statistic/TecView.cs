@@ -298,7 +298,7 @@ namespace Statistic
 
         public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
             : base()
-        {
+        {            
             m_typePanel = type;
 
             m_indx_TEC = indx_tec;
@@ -926,7 +926,10 @@ namespace Statistic
             else
                 msg += ". Ошибка " + reason + ".";
 
-            ErrorReport(msg);
+            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+                ErrorReport(msg);
+            else
+                ;
 
             Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
         }
@@ -1004,7 +1007,10 @@ namespace Statistic
                     break;
             }
 
-            ActionReport (@"Получение " + msg + @".");
+            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+                ActionReport (@"Получение " + msg + @".");
+            else
+                ;
 
             //Logging.Logg().Debug(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
@@ -1177,7 +1183,7 @@ namespace Statistic
                     break;
             }
 
-            if (bRes == true)
+            if ((bRes == true) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
                 FormMainBaseWithStatusStrip.m_report.ClearStates ();
             else
                 ;
@@ -2339,19 +2345,19 @@ namespace Statistic
 
         private bool GetHoursResponse(DataTable table)
         {
-            int i, j, half, hour = 0, halfAddon;
+            int i, j, half, hour = 0, halfAddon
+                , id = -1
+                , season = 0, prev_season = 0; ;
             double hourVal = 0, halfVal = 0, value, hourValAddon = 0;
-            double[] oldValuesTG = new double[CountTG];
-            int[] oldIdTG = new int[CountTG];
-            int id;
+            double[] prevValuesTG = new double[CountTG];
+            int[] prevIdTG = new int[CountTG];
             TG tgTmp;
             bool end = false;
             DateTime dt, dtNeeded;
-            int season = 0, prev_season = 0;
             bool jump_forward = false, jump_backward = false;
 
             lastHour = lastReceivedHour = 0;
-            half = 0;
+            half = 0; //Индекс получаса
             halfAddon = 0;
 
             /*Form2 f2 = new Form2();
@@ -2359,10 +2365,12 @@ namespace Statistic
 
             lastHourHalfError = lastHourError = false;
 
+            //Предполагаем, что не получено ни одного значения ни за один получасовой интервал
             foreach (TECComponent g in m_tec.list_TECComponents)
             {
                 foreach (TG t in g.m_listTG)
                 {
+                    //t.power.Length == t.receivedHourHalf1.Length == t.receivedHourHalf2.Length
                     for (i = 0; i < t.power.Length; i++)
                     {
                         t.receivedHourHalf1[i] = t.receivedHourHalf2[i] = false;
@@ -2370,11 +2378,13 @@ namespace Statistic
                 }
             }
 
+            //Проверка наличия в таблице необходимых полей
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
                 return false;
             else
                 ;
 
+            //Проверка наличия в таблице строк
             if (table.Rows.Count > 0)
             {
                 try
@@ -2405,52 +2415,65 @@ namespace Statistic
                     ;
             }
             else
-            {
-                if (currHour)
-                {
-                    if (m_curDate.Hour != 0)
-                    {
+            {//Ошибка - завершаем выполнение функции
+                if (currHour == true)
+                {//Отображается текущий час
+                    if (! (m_curDate.Hour == 0))
+                    {//Не начало суток
                         lastHour = lastReceivedHour = m_curDate.Hour;
+                        //Признак частичной ошибки
                         lastHourError = true;
                     }
+                    else
+                        ;
                 }
-                /*f2.FillHourValues(lastHour, selectedTime, m_tecView.m_valuesHours.valuesFact);
-                f2.ShowDialog();*/
+                else
+                    ;
+
+                //Завершаем выполнение функции, но возращаем признак успеха ???
                 return true;
             }
 
-            for (i = 0; hour < 24 && !end; )
+            //Цикл по часам суток (i - индекс строки в таблице)
+            for (i = 0; (hour < 24) && (end == false); )
             {
-                if (half == 2 || halfAddon == 2) // прошёл один час
+                if ((half == 2) || (halfAddon == 2)) // прошёл один час
                 {
-                    if (!jump_backward)
-                    {
-                        if (jump_forward)
+                    if (jump_backward == false)
+                    {//Нет прыжка назад
+                        if (jump_forward == true)
                             m_valuesHours.hourAddon = hour; // уточнить
+                        else
+                            ;
+
                         m_valuesHours.valuesFact[hour] = hourVal / 2000;
                         hour++;
                         half = 0;
                         hourVal = 0;
                     }
                     else
-                    {
+                    {//Есть прыжок назад
                         m_valuesHours.valuesFactAddon = hourValAddon / 2000;
                         m_valuesHours.hourAddon = hour - 1;
                         hourValAddon = 0;
                         prev_season = season;
                         halfAddon++;
                     }
+
                     lastHour = lastReceivedHour = hour;
                 }
+                else
+                    ;
 
                 halfVal = 0;
 
                 jump_forward = false;
                 jump_backward = false;
 
+                //Цикл по эн./блокам
                 for (j = 0; j < CountTG; j++, i++)
                 {
-                    if (i >= table.Rows.Count)
+                    if (! (i < table.Rows.Count))
                     {
                         end = true;
                         break;
@@ -2471,7 +2494,7 @@ namespace Statistic
                         dt = DateTime.Now.Date;
                     }
 
-                    if (dt.CompareTo(dtNeeded) != 0)
+                    if (! (dt.CompareTo(dtNeeded) == 0))
                     {
                         GetSeason(dt, season, out season);
                         if (dt.CompareTo(dtNeeded.AddMinutes(-30)) == 0 && prev_season == 1 && season == 2)
@@ -2525,7 +2548,7 @@ namespace Statistic
                     }
 
                     halfVal += value;
-                    if (!jump_backward)
+                    if (jump_backward == false)
                     {
                         if (half == 0)
                             tgTmp.receivedHourHalf1[hour] = true;
@@ -2543,56 +2566,55 @@ namespace Statistic
 
                 dtNeeded = dtNeeded.AddMinutes(30);
 
-                if (!jump_backward)
+                if (jump_backward == false)
                 {
-                    if (jump_forward)
+                    if (jump_forward == true)
+                        //Прыжок вперед - смена сезона Зима-Лето
                         m_valuesHours.season = seasonJumpE.WinterToSummer;
 
-                    if (!end)
+                    if (end == false)
                         half++;
 
                     hourVal += halfVal;
                 }
                 else
                 {
+                    //Прыжок назад - смена сезона Лето-Зима
                     m_valuesHours.season = seasonJumpE.SummerToWinter;
                     m_valuesHours.addonValues = true;
 
-                    if (!end)
+                    if (end == false)
                         halfAddon++;
 
                     hourValAddon += halfVal;
                 }
             }
 
-            /*f2.FillHourValues(lastHour, selectedTime, m_valuesHours.valuesFact);
-            f2.ShowDialog();*/
-
-            if (currHour)
-            {
+            if (currHour == true)
+            {//Отображение тек./часа
                 if (lastHour < m_curDate.Hour)
-                {
+                {//Ошибка получения часовых значений данных 
                     lastHourError = true;
                     lastHour = m_curDate.Hour;
                 }
                 else
                 {
                     if ((m_curDate.Hour == 0) && (! (lastHour == 24)) && (! (dtNeeded.Date == m_curDate.Date)))
-                    {
+                    {//Переход через границу суток
                         lastHourError = true;
                         lastHour = 24;
                     }
                     else
                     {
-                        if (lastHour != 0)
-                        {
+                        if (! (lastHour == 0))
+                        {//Не начало суток
                             for (i = 0; i < listTG.Count; i++)
                             {
                                 if ((half & 1) == 1)
                                 {
                                     //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h1 " + sensorId2TG[i].receivedHourHalf1[lastHour - 1].ToString());
-                                    if (!listTG[i].receivedHourHalf1[lastHour - 1])
-                                    {
+                                    if (listTG[i].receivedHourHalf1[lastHour - 1] == false)
+                                    {//Ошибка получения 1-ого получасового значения
                                         lastHourHalfError = true;
                                         break;
                                     }
@@ -2600,8 +2622,9 @@ namespace Statistic
                                 else
                                 {
                                     //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h2 " + sensorId2TG[i].receivedHourHalf2[lastHour - 1].ToString());
-                                    if (!listTG[i].receivedHourHalf2[lastHour - 1])
+                                    if (listTG[i].receivedHourHalf2[lastHour - 1] == false)
                                     {
+                                        //Ошибка получения 2-ого получасового значения
                                         lastHourHalfError = true;
                                         break;
                                     }
@@ -2903,7 +2926,7 @@ namespace Statistic
             }
             else
             {
-                if (m_valuesHours.addonValues)
+                if (m_valuesHours.addonValues == true)
                 {
                     need_season = max_season;
                 }
@@ -2911,7 +2934,7 @@ namespace Statistic
 
             for (i = 0; !end && min < 21; min++)
             {
-                if (jump)
+                if (jump == true)
                 {
                     min--;
                 }

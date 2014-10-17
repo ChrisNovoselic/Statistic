@@ -29,7 +29,7 @@ namespace Statistic
             }
 
             FormMain formMain = null;
-            
+
             if (iRes == 0)
             {                
                 string strHeader = string.Empty;

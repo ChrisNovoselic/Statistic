@@ -811,8 +811,15 @@ namespace StatisticCommon
 
         public static TimeSpan GetUTCOffsetOfCurrentTimeZone()
         {
+            //System.Collections.ObjectModel.ReadOnlyCollection <TimeZoneInfo> tzi = TimeZoneInfo.GetSystemTimeZones ();
+            //foreach (TimeZoneInfo tz in tzi) {
+            //    Console.WriteLine (tz.DisplayName + @", " +  tz.StandardName + @", " + tz.Id);
+            //}
+
             DateTime dtNow = DateTime.Now;
-            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
+
+            //return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
+            return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Current_TimeZone).GetUtcOffset(dtNow);
         }
 
         public void ErrorReport (string msg) {

@@ -130,7 +130,7 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
                 else
                     ;
 

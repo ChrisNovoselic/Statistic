@@ -355,7 +355,7 @@ namespace trans_tg
             for (int i = 0; i < 24; i++)
             {
                 if (m_dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    m_dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                    m_dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
                 else
                     ;
 

@@ -66,7 +66,7 @@ namespace StatisticTransModes
 
             for (int i = 0; i < 24; i++)
             {
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
 
                 switch (indxDB)
                 {
