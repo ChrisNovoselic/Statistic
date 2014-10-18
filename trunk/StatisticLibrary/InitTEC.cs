@@ -109,7 +109,7 @@ namespace StatisticCommon
 
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
-            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ft_ALL_PARAM_TG] (" + ver + @")", null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG] (" + ver + @")", null, null, out err);
         }
         
         private bool IsNameField(DataRow data, string nameField) { return data.Table.Columns.IndexOf(nameField) > -1 ? true : false; }
@@ -195,7 +195,8 @@ namespace StatisticCommon
                 {
                     //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
-                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.Role < (int)HStatisticUsers.ID_ROLES.USER) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
+                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])) ||
+                         (HStatisticUsers.RoleIsDisp == true))
                     {
                         //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 

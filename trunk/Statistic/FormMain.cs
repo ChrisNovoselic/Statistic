@@ -120,7 +120,7 @@ namespace Statistic
             {
                 s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                if (! (HStatisticUsers.Role == 2)) //Администратор
+                if (HStatisticUsers.RoleIsAdmin == false) //Администратор
                 {
                     параметрыToolStripMenuItem.Enabled =
                     администрированиеToolStripMenuItem.Enabled =
@@ -174,7 +174,7 @@ namespace Statistic
                 }
 
                 int [] arIDs = null;
-                if (((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)) && (PanelAdminKomDisp.ALARM_USE == true))
+                if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
                 {
                     prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
                     arIDs = new int[] { 0 };
@@ -826,7 +826,7 @@ namespace Statistic
             if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == 6))
             {
                 параметрыToolStripMenuItem.Enabled =
-                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN);
+                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (HStatisticUsers.RoleIsAdmin == true);
 
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
 
@@ -845,7 +845,7 @@ namespace Statistic
 
                 switch (HStatisticUsers.Role)
                 {
-                    case (int)HStatisticUsers.ID_ROLES.ADMIN:
+                    case HStatisticUsers.ID_ROLES.ADMIN:
                         if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                             ;
                         else
@@ -853,7 +853,7 @@ namespace Statistic
                         break;
                     case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
                         break;
-                    case (int)HStatisticUsers.ID_ROLES.NSS:
+                    case HStatisticUsers.ID_ROLES.NSS:
                         idRolesPassword = Passwords.ID_ROLES.NSS;
                         break;
                     default:
@@ -1151,7 +1151,7 @@ namespace Statistic
 
             if (HStatisticUsers.RoleIsDisp == true) {
                 switch (HStatisticUsers.Role) {
-                    case (int)HStatisticUsers.ID_ROLES.ADMIN:
+                    case HStatisticUsers.ID_ROLES.ADMIN:
                         if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                         {
                             mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
@@ -1164,7 +1164,7 @@ namespace Statistic
                         mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                         modeAdmin = FormChangeMode.MANAGER.DISP;
                         break;
-                    case (int)HStatisticUsers.ID_ROLES.NSS:
+                    case HStatisticUsers.ID_ROLES.NSS:
                         break;
                     default:
                         break;
@@ -1671,7 +1671,7 @@ namespace Statistic
 
                 if (formChangeMode.admin_was_checked == true) {
                     switch (HStatisticUsers.Role) {
-                        case (int)HStatisticUsers.ID_ROLES.ADMIN:
+                        case HStatisticUsers.ID_ROLES.ADMIN:
                             if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)
                                 modeRes = FormChangeMode.MANAGER.DISP;
                             else
@@ -1680,7 +1680,7 @@ namespace Statistic
                         case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
                             modeRes = FormChangeMode.MANAGER.DISP;
                             break;
-                        case (int)HStatisticUsers.ID_ROLES.NSS:
+                        case HStatisticUsers.ID_ROLES.NSS:
                             modeRes = FormChangeMode.MANAGER.NSS;
                             break;
                         default:

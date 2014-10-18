@@ -255,13 +255,9 @@ namespace Statistic
         {
             components = new System.ComponentModel.Container();
 
-            bool bChecked = true
-                , bEnabled = true;
-            if ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.NSS) ||
-                (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.MAJOR_MASHINIST) ||
-                (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.MASHINIST))
-                    bChecked = false;
-            else ;
+            bool bEnabled = true
+                , bChecked = ! HStatisticUsers.RoleIsOperationPersonal;
+
             this.ContextMenuStrip = new ContextMenuStrip ();
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),

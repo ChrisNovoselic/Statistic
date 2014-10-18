@@ -265,7 +265,7 @@ namespace StatisticCommon
                 }
 
                 if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true)
-                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)))
+                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                         if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
@@ -274,7 +274,7 @@ namespace StatisticCommon
                         } else ;
                     }
                     else
-                        if ((HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.ADMIN) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.NSS))
+                        if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsNSS == true))
                             clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
                         else
                             ;

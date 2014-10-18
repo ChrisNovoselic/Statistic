@@ -469,7 +469,7 @@ namespace StatisticCommon
         //    {
         //        case INDEX_TYPE_SOURCE_DATA.COMMON:
         //            //Общий источник для всех ТЭЦ
-        //            query = @"SELECT [name] as NAME, [TEMPLATE_NAME_SGN_DATA_TM] as TEMPLATE_NAME, [ID_IN_REALS_RV] as ID FROM [techsite_cfg-2.X.X].[dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
+        //            query = @"SELECT [name] as NAME, [TEMPLATE_NAME_SGN_DATA_TM] as TEMPLATE_NAME, [ID_IN_REALS_RV] as ID FROM [dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
         //            foreach (TECComponent tc in list_TECComponents)
         //            {
         //                if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf(tc.m_id) < 0))
@@ -490,7 +490,7 @@ namespace StatisticCommon
         //}
 
         private string minsCommonRequest (DateTime dt, string sen) {
-            return @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
+            return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 2 + @"," +
                 //usingDate.ToString("yyyy.MM.dd") + @"," +
                                 @"'" + dt.ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
@@ -576,7 +576,7 @@ namespace StatisticCommon
         }
 
         private string hoursCommonRequest (DateTime dt, string sen) {
-            return @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_value_askue](" + m_id + @"," +
+            return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 12 + @"," +
                                 @"'" + dt.ToString("yyyyMMdd") + @"'" + @"," +
                                 @"'" + dt.AddDays(1).ToString("yyyyMMdd") + @"'" +
@@ -942,7 +942,7 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
-                            @" FROM [techsite-2.X.X].[dbo].[P_SUMM_TSN]" +
+                            @" FROM [dbo].[P_SUMM_TSN]" +
                             @"WHERE [ID_TEC] = " + m_id +
                             @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddDays(1).Date.ToString(@"yyyyMMdd") + @"'" +
                             @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
@@ -963,7 +963,7 @@ namespace StatisticCommon
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
                     query = @"SELECT [ID_IN_SOTIASSO] as id, [last_changed_at], [Current_Value_SOTIASSO] as value " +
-                            @"FROM [techsite-2.X.X].[dbo].[v_ALL_VALUE_SOTIASSO] " +
+                            @"FROM [dbo].[v_ALL_VALUE_SOTIASSO] " +
                             @"WHERE [ID_TEC]=" + m_id + @" " +
                             @"AND [ID_IN_SOTIASSO] IN (" + sensors + @")";
                     break;
@@ -999,12 +999,12 @@ namespace StatisticCommon
                     //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
                     //Если данные в БД по ГринвичУ
                     //dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
-                    //query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
+                    //query = @"SELECT * FROM [dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
                     //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
                     //        @"AND [ID] IN (" + sensors + @") " +
                     //        @"ORDER BY [ID],[last_changed_at]";
 
-                    query = @"SELECT * FROM [techsite-2.X.X].[dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
+                    query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
                             @" WHERE [ID] IN (" + sensors + @")" +
                             @" ORDER BY [ID],[last_changed_at]";
                     break;

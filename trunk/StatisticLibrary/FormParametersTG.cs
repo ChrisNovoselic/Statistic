@@ -264,8 +264,8 @@ namespace StatisticCommon
         }
 
         private string getQueryParam (int ver) {
-            return @"SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC]
-                            WHERE [LAST_UPDATE] = (SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
+            return @"SELECT * FROM [dbo].[ID_TG_ASKUE_BiTEC]
+                            WHERE [LAST_UPDATE] = (SELECT * FROM [dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
         }
 
         private string getWhereParamTG (int num) {
@@ -356,7 +356,7 @@ namespace StatisticCommon
             int err = -1;
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
             
-            string queryInsert = @"INSERT INTO [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
+            string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
 
             for (int j = 0; j < COUNT_TG; j++)
             {
