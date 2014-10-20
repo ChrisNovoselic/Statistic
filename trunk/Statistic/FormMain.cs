@@ -851,7 +851,7 @@ namespace Statistic
                         else
                             idRolesPassword = Passwords.ID_ROLES.NSS;
                         break;
-                    case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
+                    case HStatisticUsers.ID_ROLES.KOM_DISP:
                         break;
                     case HStatisticUsers.ID_ROLES.NSS:
                         idRolesPassword = Passwords.ID_ROLES.NSS;
@@ -1160,7 +1160,7 @@ namespace Statistic
                         else
                             mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //PC или TG не важно
                         break;
-                    case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
+                    case HStatisticUsers.ID_ROLES.KOM_DISP:
                         mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                         modeAdmin = FormChangeMode.MANAGER.DISP;
                         break;
@@ -1677,7 +1677,7 @@ namespace Statistic
                             else
                                 modeRes = FormChangeMode.MANAGER.NSS;
                             break;
-                        case (int)HStatisticUsers.ID_ROLES.KOM_DISP:
+                        case HStatisticUsers.ID_ROLES.KOM_DISP:
                             modeRes = FormChangeMode.MANAGER.DISP;
                             break;
                         case HStatisticUsers.ID_ROLES.NSS:

@@ -265,7 +265,7 @@ namespace StatisticCommon
                 }
 
                 if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true)
-                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.Role == (int)HStatisticUsers.ID_ROLES.KOM_DISP)))
+                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                         if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
