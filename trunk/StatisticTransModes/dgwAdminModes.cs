@@ -92,7 +92,7 @@ namespace StatisticTransModes
 
         public override void ClearTables()
         {
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < Rows.Count; i++)
             {
                 Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = 
                 Rows[i].Cells[(int)DESC_INDEX.PBR].Value =

@@ -98,6 +98,9 @@ namespace StatisticTrans
             m_fileINI.Add(keyPar, valDefPar);
             s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
 
+            keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
+            m_fileINI.Add(keyPar, valDefPar);
+
             //Ошибка для отладки
             //System.Threading.Timer tm = null;
             //tm.Dispose ();
@@ -652,6 +655,16 @@ namespace StatisticTrans
         protected abstract void start();
 
         protected override void Start() {
+            string keyPar = @"Season DateTime";
+            if (DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Date == DateTime.Now.Date) {
+                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type ++)
+                    m_arAdmin [(int)type].HourSeason = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Hour - 1;
+
+                initAdminTableRows (0);
+            }
+            else
+                ;
+            
             base.Start ();
         }
 
@@ -779,7 +792,7 @@ namespace StatisticTrans
             if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
             {
                 comboBoxTECComponent.Items.Clear();
-                
+
                 for (int i = 0; i < m_listTECComponentIndex.Count; i++)
                     comboBoxTECComponent.Items.Add(((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].name_shr);
 
@@ -798,6 +811,30 @@ namespace StatisticTrans
         /// <param name="date">дата</param>
         protected virtual void setDataGridViewAdmin(DateTime date)
         {
+            //if (m_IndexDB == (short)CONN_SETT_TYPE.SOURCE) {
+            //    string strDatetimeSeason = m_fileINI.GetValueOfKey(@"Season DateTime");
+            //    if (strDatetimeSeason.Equals(string.Empty) == false)
+            //    {
+            //        DateTime dtSeason = DateTime.Parse(strDatetimeSeason);
+
+            //        if ((date == dtSeason.Date))
+            //        {
+            //            //Преобразовать массивы m_arAdmin
+            //            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
+            //            {
+            //                m_arAdmin[(int)type].ToSummerWinter(dtSeason.Hour - 1);
+            //            }
+            //        }
+            //        else
+            //        {
+            //        }
+            //    }
+            //    else
+            //    {
+            //    }
+            //} else {
+            //}
+
             //if (WindowState == FormWindowState.Minimized)
             //if (m_bTransAuto == true)
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
@@ -832,6 +869,19 @@ namespace StatisticTrans
         }
 
         protected abstract void updateDataGridViewAdmin (DateTime date);
+
+        protected void initAdminTableRows (int indx) {
+            if (m_arAdmin[indx].HourSeason < 0)
+            {
+                while (m_dgwAdminTable.Rows.Count > 24)
+                    m_dgwAdminTable.Rows.RemoveAt(0);
+            }
+            else
+            {
+                while (m_dgwAdminTable.Rows.Count < 25)
+                    m_dgwAdminTable.Rows.Insert(0, 1);
+            }
+        }
 
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
@@ -1179,6 +1229,18 @@ namespace StatisticTrans
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
+            string keyPar = @"Season DateTime";
+            int hourSeason = -1;
+            if (DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Date == dateTimePickerMain.Value.Date)
+                hourSeason = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Hour - 1;
+            else
+                ;
+
+            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
+                    m_arAdmin[(int)type].HourSeason = hourSeason;
+
+            initAdminTableRows (0);
+
             comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
         }
 

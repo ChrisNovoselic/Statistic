@@ -102,12 +102,35 @@ namespace StatisticCommon
         private bool actived;
         public bool m_bIsActive { get { return actived; } }
 
+        private int m_iHourSeason;
+        public int HourSeason
+        {
+            get { return m_iHourSeason; }
+            set
+            {
+                if (!(m_iHourSeason == value))
+                {
+                    if (value < 0) {
+                        
+                    } else {
+                    }
+
+                    m_iHourSeason = value;
+                }
+                else
+                {
+                }
+            }
+        }
+
         public HAdmin()
         {
             m_IdListenerCurrent = -1;
 
             m_dictIdListeners = new Dictionary<int,int[]> ();
-            
+
+            m_iHourSeason = -1;
+
             Initialize ();
         }
 
@@ -387,7 +410,36 @@ namespace StatisticCommon
             Logging.Logg().Error(msg);
         }
 
-        public abstract void ClearValues();
+        public virtual void ClearValues() {
+            int cntHours = 24;
+
+            if (HourSeason < 0)
+            {
+                if (m_curRDGValues.Length > 24)
+                {
+                    m_curRDGValues = null;
+                }
+                else
+                {
+                }
+            }
+            else
+            {
+                if (m_curRDGValues.Length < 25)
+                {
+                    m_curRDGValues = null;
+                    cntHours = 25;
+                }
+                else
+                {
+                }
+            }
+
+            if (m_curRDGValues == null)
+                m_curRDGValues = new RDGStruct[cntHours];
+            else
+                ;
+        }
 
         public abstract void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date);
 
@@ -713,10 +765,49 @@ namespace StatisticCommon
             return modeRes;
         }
 
-        public abstract void CopyCurToPrevRDGValues();
+        public virtual void CopyCurToPrevRDGValues() {
+            if (!(m_prevRDGValues.Length == m_curRDGValues.Length))
+            {
+                m_prevRDGValues = null;
+                m_prevRDGValues = new RDGStruct[m_curRDGValues.Length];
+            }
+            else
+            {
+            }
+        }
 
-        public abstract void getCurRDGValues (HAdmin source);
+        public virtual void getCurRDGValues (HAdmin source) {
+            if (!(m_curRDGValues.Length == source.m_curRDGValues.Length))
+            {
+                m_prevRDGValues = null;
+                m_prevRDGValues = new RDGStruct[source.m_curRDGValues.Length];
+            }
+            else
+            {
+            }
+        }
 
+        public void ToSummerWinter (int h) {
+            RDGStruct[] copyRDGValues = new RDGStruct[m_curRDGValues.Length];
+            m_curRDGValues.CopyTo(copyRDGValues, 0);
+
+            m_curRDGValues = null;
+            m_curRDGValues = new RDGStruct [25];
+
+            int i = -1
+                , offset = 0;
+
+            for (i = 0; i < 25; i ++) {
+                m_curRDGValues[i] = copyRDGValues[i - offset];
+                
+                if (i == h) {
+                    m_curRDGValues[i + 1] = copyRDGValues[(i + 1) + offset++];
+                    i ++;
+                } else {
+                }
+            }
+        }
+        
         protected virtual bool GetCurrentTimeResponse(DataTable table)
         {
             if (table.Rows.Count == 1)
@@ -727,7 +818,7 @@ namespace StatisticCommon
             {
                 DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
                 int timezone_offset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
-                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
+                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight) == true)
                     timezone_offset++;
                 else
                     ;

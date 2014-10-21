@@ -477,7 +477,7 @@ namespace Statistic
             private void ChangeState()
             {
                 //m_tecView.m_curDate = ... получено при обработке события
-                m_tecView.m_curDate = m_tecView.m_curDate.Add(-HAdmin.GetUTCOffsetOfCurrentTimeZone ());
+                //m_tecView.m_curDate = m_tecView.m_curDate.Add(-HAdmin.GetUTCOffsetOfCurrentTimeZone ());
 
                 m_tecView.ChangeState ();
             }

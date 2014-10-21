@@ -15,6 +15,10 @@ namespace trans_mc
         [STAThread]
         static void Main()
         {
+            //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
+            //Logging.s_mode = Logging.LOG_MODE.DB;
+            Logging.s_mode = Logging.LOG_MODE.FILE;
+
             ProgramBase.Start();
 
             FormMainTransMC formMain = null;

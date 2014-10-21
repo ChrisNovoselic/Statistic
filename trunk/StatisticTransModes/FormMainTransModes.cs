@@ -62,11 +62,27 @@ namespace StatisticTransModes
 
         protected override void updateDataGridViewAdmin(DateTime date)
         {
-            int indxDB = m_IndexDB;
+            int indxDB = m_IndexDB
+                , offset = 0;
 
-            for (int i = 0; i < 24; i++)
+            //this.BeginInvoke(new HClassLibrary.DelegateIntFunc(initAdminTableRows), indxDB);
+
+            string strFmtDateHour = string.Empty;
+            for (int i = 0; i < m_arAdmin[indxDB].m_curRDGValues.Length; i++)
             {
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
+                strFmtDateHour = @"dd-MM-yyyy HH";
+
+                if ((!(m_arAdmin[indxDB].HourSeason < 0)) && (i == (m_arAdmin[indxDB].HourSeason + 0)))
+                {
+                    strFmtDateHour += @"*";
+                    
+                    offset ++;
+                } else
+                    ;
+
+                strFmtDateHour += @":00";
+
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDateHour);
 
                 switch (indxDB)
                 {

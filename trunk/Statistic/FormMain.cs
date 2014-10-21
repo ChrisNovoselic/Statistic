@@ -333,7 +333,8 @@ namespace Statistic
         private void stopAdminAlarm () {
             if ((!(m_arPanelAdmin == null)) && (!(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] == null)) && (m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] is PanelAdminKomDisp)
             //if (i == (int)FormChangeMode.MANAGER.DISP)
-            && (PanelAdminKomDisp.ALARM_USE == true))
+            && (PanelAdminKomDisp.ALARM_USE == true)
+            && (! (((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null)))
             {
                 ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Activate(false);
                 ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Stop();
@@ -970,7 +971,7 @@ namespace Statistic
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (m_prevSelectedIndex < tclTecViews.TabPages.Count))
             {
-                if (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewBase)
+                if ((tclTecViews.TabPages[m_prevSelectedIndex].Controls.Count > 0) && (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewBase))
                 {
                     selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 

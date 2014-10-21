@@ -30,9 +30,20 @@ namespace StatisticCommon
             }
         }
 
+        public static bool RoleIsKomDisp
+        {
+            get
+            {
+                return Role == ID_ROLES.KOM_DISP;
+            }
+        }
+
         public static bool RoleIsDisp
         {
-            get { return ((Role == ID_ROLES.ADMIN) || (Role == ID_ROLES.KOM_DISP) || (Role == ID_ROLES.NSS)); }
+            get
+            {
+                return ((Role == ID_ROLES.ADMIN) || (Role == ID_ROLES.KOM_DISP) || (Role == ID_ROLES.NSS));
+            }
         }
 
         public static bool RoleIsAdmin

@@ -264,13 +264,18 @@ namespace StatisticCommon
                     //} else ;
                 }
 
-                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true)
-                    if (IsModeTECComponent(MODE_TECCOMPONENT.GTP) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)))
+                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true) {
+                    if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
                         if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
-                            admin_was_checked = true;
-                            clbMode.SetItemCheckState (clbMode.Items.Count - 1, CheckState.Checked);
+                            CheckState csAdmin = CheckState.Indeterminate;
+                            if (HStatisticUsers.RoleIsKomDisp == true)
+                                admin_was_checked = true;
+                            else
+                                ;
+                            csAdmin = admin_was_checked == true ? CheckState.Checked : CheckState.Unchecked;
+                            clbMode.SetItemCheckState (clbMode.Items.Count - 1, csAdmin);
                         } else ;
                     }
                     else
@@ -278,6 +283,7 @@ namespace StatisticCommon
                             clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
                         else
                             ;
+                }
                 else
                     ;
             }

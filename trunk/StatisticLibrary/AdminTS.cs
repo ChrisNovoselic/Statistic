@@ -2251,7 +2251,9 @@ namespace StatisticCommon
         /// </summary>
         public override void CopyCurToPrevRDGValues()
         {
-            for (int i = 0; i < 24; i++)
+            base.CopyCurToPrevRDGValues ();
+
+            for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 m_prevRDGValues[i].pbr = Math.Round(m_curRDGValues[i].pbr, 2);
                 m_prevRDGValues[i].pmin = Math.Round(m_curRDGValues[i].pmin, 2);
@@ -2269,7 +2271,9 @@ namespace StatisticCommon
         /// <param name="source">источник</param>
         public override void getCurRDGValues(HAdmin source)
         {
-            for (int i = 0; i < 24; i++)
+            base.getCurRDGValues (source);
+
+            for (int i = 0; i < source.m_curRDGValues.Length; i++)
             {
                 m_curRDGValues[i].pbr = ((HAdmin)source).m_curRDGValues[i].pbr;
                 m_curRDGValues[i].pmin = ((HAdmin)source).m_curRDGValues[i].pmin;
@@ -2283,7 +2287,9 @@ namespace StatisticCommon
 
         public override void ClearValues()
         {
-            for (int i = 0; i < 24; i++)
+            base.ClearValues ();
+            
+            for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 m_curRDGValues[i].pbr =
                 m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 
@@ -2298,7 +2304,7 @@ namespace StatisticCommon
 
         public override bool WasChanged()
         {
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 if (m_prevRDGValues[i].pbr != m_curRDGValues[i].pbr /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
                     return true;

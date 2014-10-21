@@ -521,7 +521,7 @@ namespace Statistic
                 states.Add((int)StatesMachine.InitSensors);
             else ;
 
-            states.Add((int)TecView.StatesMachine.CurrentHours_Fact);            
+            states.Add((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             states.Add((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
             states.Add((int)TecView.StatesMachine.Current_TM_SN);
         }
@@ -582,7 +582,7 @@ namespace Statistic
                     ;
 
                 foreach (TECComponent g in m_localTECComponents)
-                        m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i] = 0.0;
+                    m_dictValuesTECComponent[g.m_id].valuesLastMinutesTM[i] = 0.0;
             }
         }
 
@@ -729,11 +729,12 @@ namespace Statistic
                     tgTmp.power_TM = value;
                 }
 
-                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
-                }
+                //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!!
+                //try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
+                //catch (Exception e)
+                //{
+                //    Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
+                //}
             }
             else
                 ;
@@ -2721,8 +2722,9 @@ namespace Statistic
         {
             bool bRes = true;
             int i = -1,
-                hour = -1,
-                offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
+                hour = -1
+                //26.10.2014 u/ ???
+                , offsetUTC = 0; //(int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
             double value = -1;
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
@@ -2872,6 +2874,7 @@ namespace Statistic
 
             if (table.Rows.Count > 0)
             {
+                //Определить 1-ю отметку времени и сезон для этой отметки времени
                 //if (table.Columns.Contains(@"DATA_DATE") == true)
                     if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
                         return false;
@@ -2894,65 +2897,84 @@ namespace Statistic
             }
             else
             {
-                if (currHour)
+                //Ошибка - нет ни одной строки
+                if (currHour == true)
                 {
-                    if ((m_curDate.Minute / 3) != 0)
-                    {
+                    if (! ((m_curDate.Minute / 3) == 0))
+                    {//Ошибка - номер 3-хмин > 1
                         lastMinError = true;
                         lastMin = ((m_curDate.Minute) / 3) + 1;
                     }
+                    else
+                        ; //Успех
                 }
                 /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
                 f2.ShowDialog();*/
                 return true;
             }
 
+            //Проверить наличие среди записей "другого" сезона (с большим числом записей)
             for (i = 0; i < table.Rows.Count; i++)
             {
                 if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
                     return false;
-                if (season > max_season)
+                else
+                    ;
+
+                if (max_season < season)
+                {
                     max_season = season;
+                    break;
+                }
+                else
+                    ;
             }
 
-            if (currHour)
-            {
-                if (need_season != max_season)
-                {
+            if (currHour == true)
+            {//На отображении вызван "текущий" час
+                if (! (need_season == max_season))
+                {//Среди полученных записей - записи с разными сезонами
                     m_valuesHours.addonValues = true;
                     m_valuesHours.hourAddon = lastHour - 1;
                     need_season = max_season;
                 }
+                else
+                    ; //сезон одинаков для всех записей
             }
             else
-            {
+            {//На отображении вызвана "ретроспектива"
                 if (m_valuesHours.addonValues == true)
                 {
                     need_season = max_season;
                 }
+                else
+                    ;
             }
 
-            for (i = 0; !end && min < 21; min++)
+            for (i = 0; (end == false) && (min < 21); min++)
             {
+                //При 1-м проходе всегда == false
                 if (jump == true)
                 {
                     min--;
                 }
                 else
-                {
+                {//Всегда выполняется при 1-ом проходе
                     m_valuesMins.valuesFact[min] = 0;
                     minVal = 0;
                 }
 
                 /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
                                  ", table.Rows.Count " + table.Rows.Count.ToString());*/
+                
+                //
                 jump = false;
                 for (j = 0; j < CountTG; j++, i++)
                 {
                     if (i >= table.Rows.Count)
                     {
-                        end = true;
-                        break;
+                        end = true; //Установка признака выхода из цикла 'i'
+                        break; //Выход из цикла 'j'
                     }
 
                     try
@@ -2969,7 +2991,7 @@ namespace Statistic
                         dt = DateTime.Now.Date;
                     }
 
-                    if (season != need_season)
+                    if (! (season == need_season))
                     {
                         jump = true;
                         i++;
@@ -3010,13 +3032,13 @@ namespace Statistic
                     tgTmp.receivedMin[min] = true;
                 }
 
-                if (!jump)
+                if (jump == false)
                 {
                     dtNeeded = dtNeeded.AddMinutes(3);
 
                     //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
 
-                    if (!end)
+                    if (end == false)
                     {
                         m_valuesMins.valuesFact[min] = minVal / 1000;
                         lastMin = min + 1;

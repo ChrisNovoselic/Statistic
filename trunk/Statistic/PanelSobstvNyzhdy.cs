@@ -259,6 +259,7 @@ namespace Statistic
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
 
                 HMark markQueries = new HMark();
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE); //Только для определения сезона ???
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
