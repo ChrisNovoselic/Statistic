@@ -50,6 +50,16 @@ namespace StatisticCommon
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgwAdminTable_KeyUp);
         }
 
+        public void InitRows(int cnt, bool bIns)
+        {
+            if (bIns == true)
+                while (Rows.Count < cnt)
+                    Rows.Insert(0, 1);
+            else
+                while (Rows.Count > cnt)
+                    Rows.RemoveAt(0);
+        }
+
         protected void RowsAdd () { Rows.Add(24); }
 
         /*

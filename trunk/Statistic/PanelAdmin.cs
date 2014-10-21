@@ -251,6 +251,8 @@ namespace Statistic
         }
 
         public override void Start () {
+            initAdminTableRows();
+            
             m_admin.Start ();
         }
 
@@ -266,6 +268,19 @@ namespace Statistic
         public void CalendarSetDate(DateTime date)
         {
             BeginInvoke(new DelegateDateFunc(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
+        }
+
+        protected void initAdminTableRows()
+        {
+            if (DateTime.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]).Date == mcldrDate.SelectionStart.Date)
+                m_admin.HourSeason = DateTime.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]).Hour - 1;
+            else
+                m_admin.HourSeason = -1;
+
+            if (m_admin.HourSeason < 0)
+                dgwAdminTable.InitRows(24, false);
+            else
+                dgwAdminTable.InitRows(25, true);
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
@@ -311,6 +326,8 @@ namespace Statistic
 
             if (bRequery == true) {
                 ClearTables();
+
+                initAdminTableRows();
 
                 m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }

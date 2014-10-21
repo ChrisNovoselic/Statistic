@@ -857,15 +857,23 @@ namespace StatisticCommon
             return iRes;
         }
 
+        public int GetSeasonHourOffset(int h)
+        {
+            return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
+        }
+
         protected virtual string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
             date = date.Date;
-            int currentHour = getCurrentHour (date);                
+            int offset = -1
+                , currentHour = getCurrentHour (date);
 
-            for (int i = currentHour; i < 24; i++)
+            for (int i = currentHour; i < m_curRDGValues.Length; i++)
             {
+                offset = GetSeasonHourOffset(i);
+
                 // запись для этого часа имеется, модифицируем её
                 if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
                 {
@@ -874,7 +882,9 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.STATIC:
                             //name = t.NameFieldOfAdminRequest(comp);
                             string name = t.NameFieldOfAdminRequest(comp);
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] + " SET " + name + @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] +
+                                        @" SET " + name +
+                                        @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + name + @"_IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
@@ -885,10 +895,13 @@ namespace StatisticCommon
                                         @"; ";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] + " SET " + @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] +
+                                        @" SET " +
+                                        @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"' WHERE " +
+                                        @"', " + "SEASON=" + (offset > 0 ? (SEASON + seasonJumpE.WinterToSummer) : (SEASON + seasonJumpE.WinterToSummer)) +
+                                        @" WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id +
@@ -913,11 +926,12 @@ namespace StatisticCommon
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (comp.m_id) +
+                                        @", " + (offset > 0 ? (SEASON + seasonJumpE.WinterToSummer) : (SEASON + seasonJumpE.WinterToSummer)) +
                                         @"),";
                             break;
                         default:
@@ -970,6 +984,7 @@ namespace StatisticCommon
                                 @", " + "IS_PER" +
                                 @", " + "DIVIAT" +
                                 @", " + "ID_COMPONENT" +
+                                @", " + "SEASON" +
                                 @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     default:

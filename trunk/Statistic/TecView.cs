@@ -68,13 +68,6 @@ namespace Statistic
                     //, m_tableRDGExcelValuesResponse
                     ;
 
-        public enum seasonJumpE
-        {
-            None,
-            WinterToSummer,
-            SummerToWinter,
-        }
-
         public abstract class values
         {
             public volatile double[] valuesLastMinutesTM;
@@ -132,7 +125,7 @@ namespace Statistic
             public double valuesUDGeAddon;
             public double valuesDiviationAddon;
             public int hourAddon;
-            public seasonJumpE season;
+            public HAdmin.seasonJumpE season;
             public bool addonValues;
 
             public valuesTEC(int sz)
@@ -147,7 +140,7 @@ namespace Statistic
                 valuesUDGeAddon = 0.0;
                 valuesDiviationAddon = 0.0;
                 hourAddon = 0;
-                season = seasonJumpE.None;
+                season = HAdmin.seasonJumpE.None;
                 addonValues = false;
             }
         }

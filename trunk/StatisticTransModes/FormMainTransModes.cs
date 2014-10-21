@@ -70,17 +70,7 @@ namespace StatisticTransModes
             string strFmtDateHour = string.Empty;
             for (int i = 0; i < m_arAdmin[indxDB].m_curRDGValues.Length; i++)
             {
-                strFmtDateHour = @"dd-MM-yyyy HH";
-
-                if ((!(m_arAdmin[indxDB].HourSeason < 0)) && (i == (m_arAdmin[indxDB].HourSeason + 0)))
-                {
-                    strFmtDateHour += @"*";
-                    
-                    offset ++;
-                } else
-                    ;
-
-                strFmtDateHour += @":00";
+                strFmtDateHour = m_arAdmin[indxDB].GetFmtDatetime(i, out offset);
 
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDateHour);
 

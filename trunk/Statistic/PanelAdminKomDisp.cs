@@ -371,9 +371,12 @@ namespace Statistic
         {
             double value;
             bool valid;
+            int offset = -1;
 
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
             {
+                offset = m_admin.GetSeasonHourOffset(i);
+                
                 for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
                 {
                     switch (j)
@@ -418,9 +421,15 @@ namespace Statistic
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            for (int i = 0; i < 24; i++)
+            int offset = -1;
+            string strFmtDatetime = string.Empty;
+            
+            for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
             {
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
+                strFmtDatetime = m_admin.GetFmtDatetime (i, out offset);
+
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
+
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();

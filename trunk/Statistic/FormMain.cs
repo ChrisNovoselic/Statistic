@@ -174,7 +174,8 @@ namespace Statistic
                 }
 
                 int [] arIDs = null;
-                if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
+                //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
+                if ((HStatisticUsers.RoleIsKomDisp == true) && (PanelAdminKomDisp.ALARM_USE == true))
                 {
                     prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
                     arIDs = new int[] { 0 };

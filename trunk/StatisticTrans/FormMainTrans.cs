@@ -872,15 +872,9 @@ namespace StatisticTrans
 
         protected void initAdminTableRows (int indx) {
             if (m_arAdmin[indx].HourSeason < 0)
-            {
-                while (m_dgwAdminTable.Rows.Count > 24)
-                    m_dgwAdminTable.Rows.RemoveAt(0);
-            }
+                m_dgwAdminTable.InitRows(24, false);
             else
-            {
-                while (m_dgwAdminTable.Rows.Count < 25)
-                    m_dgwAdminTable.Rows.Insert(0, 1);
-            }
+                m_dgwAdminTable.InitRows(25, true);
         }
 
         /// <summary>

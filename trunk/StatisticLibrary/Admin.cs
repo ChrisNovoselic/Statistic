@@ -19,6 +19,14 @@ namespace StatisticCommon
 
     public abstract class HAdmin : object
     {
+        public static int SEASON = 5;
+        public enum seasonJumpE
+        {
+            None,
+            WinterToSummer,
+            SummerToWinter,
+        }
+        
         public struct /*class*/ RDGStruct
         {
             //public double [] ppbr;
@@ -453,9 +461,30 @@ namespace StatisticCommon
 
         protected virtual void ClearDates(CONN_SETT_TYPE type)
         {
-            int i = 1;
+            int i = 1
+                , cntHours = 24
+                , length = m_arHaveDates.Length / m_arHaveDates.Rank;
 
-            for (i = 0; i < 24; i++)
+            if (HourSeason < 0)
+                if (length > 24)
+                    m_arHaveDates = null;
+                else
+                    ;
+            else
+                if (length < 25)
+                {
+                    m_arHaveDates = null;
+                    cntHours = 25;
+                }
+                else
+                    ;
+
+            if (m_arHaveDates == null)
+                m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, cntHours];
+            else
+                ;
+
+            for (i = 0; i < cntHours; i++)
             {
                 m_arHaveDates[(int)type, i] = 0; //false;
             }
@@ -881,6 +910,32 @@ namespace StatisticCommon
         protected bool IsHaveDates(CONN_SETT_TYPE type, int indx)
         {
             return m_arHaveDates[(int)type, indx] > 0 ? true : false;
+        }
+
+        public string GetFmtDatetime(int h, out int offset)
+        {
+            offset = 0;
+            
+            string strRes = @"dd-MM-yyyy HH";
+
+            if (!(HourSeason < 0))
+            {
+                if (h == (HourSeason + 0))
+                    strRes += @"*";
+                else
+                    ;
+
+                if (!(h < HourSeason))
+                    offset++;
+                else
+                    ;
+            }
+            else
+                ;
+
+            strRes += @":00";
+
+            return strRes;
         }
 
         public static string s_Name_Current_TimeZone = @"Russian Standard Time";
