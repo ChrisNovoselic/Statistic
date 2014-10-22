@@ -65,9 +65,11 @@ namespace StatisticTransModes
             }
         }
 
-        public override void ClearValues(int cnt = -1)
+        //public override void ClearValues(int cnt = -1)
+        public override void ClearValues()
         {
-            base.ClearValues(cnt);
+            //base.ClearValues(cnt);
+            base.ClearValues();
 
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {

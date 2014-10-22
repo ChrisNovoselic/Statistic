@@ -458,7 +458,8 @@ namespace StatisticCommon
             int cntHours = 24;
 
             //if (cnt < 0) {
-                if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
+            //ѕроверка признака "обычного" размера массива
+            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
                 {
                     if (m_curRDGValues.Length > 24)
                     {

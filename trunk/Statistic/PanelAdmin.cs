@@ -272,13 +272,14 @@ namespace Statistic
 
         protected void initAdminTableRows()
         {
+            //Установить признак "[НЕ]обычного" размера массива 'm_curRDGValues'
+            m_admin.m_curDate = mcldrDate.SelectionStart.Date;
+            
             if (mcldrDate.SelectionStart.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
                 dgwAdminTable.InitRows(24, false);
-                m_admin.ClearValues (24);
             }
             else {
-                dgwAdminTable.InitRows(25, true);
-                m_admin.ClearValues(25);
+                dgwAdminTable.InitRows(25, true);                
             }
         }
 
@@ -491,7 +492,6 @@ namespace Statistic
         {
             isActive = active;
 
-            if (m_admin.m_curDate.Year == 1) m_admin.m_curDate = mcldrDate.SelectionStart; else ;
             m_admin.Activate (active);
         }
     }
