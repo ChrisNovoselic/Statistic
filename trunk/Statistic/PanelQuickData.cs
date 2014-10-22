@@ -996,7 +996,7 @@ namespace Statistic
                     if (m_parent.m_tecView.currHour == true)
                     {
                         for (i = 1; i < m_parent.m_tecView.lastMin; i++)
-                            summ += m_parent.m_tecView.m_valuesMins.valuesFact[i];
+                            summ += m_parent.m_tecView.m_valuesMins[i].valuesFact;
                         if (!(min == 0))
                             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min, true, string.Empty);
                         else
@@ -1010,10 +1010,10 @@ namespace Statistic
                         else
                             ;
 
-                        if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
-                            summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
-                        else
-                            summ = m_parent.m_tecView.m_valuesHours.valuesFact[hour];
+                        //if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
+                        //    summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
+                        //else
+                            summ = m_parent.m_tecView.m_valuesHours[hour].valuesFact;
 
                         showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ, true, string.Empty);
                     }
@@ -1021,11 +1021,11 @@ namespace Statistic
                     //if (! ([lastHour] == 0))
                     double dblDevEVal = -1.0;
                     bool bDevEVal = true;
-                    if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
-                        (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
+                    if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.Length) &&
+                        (!(m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe == 0)))
                     {
                         dblDevEVal = ((((valueEBefore + valueECur + valueEFuture) -
-                                    m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100);
+                                    m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
                         if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;                            
                     }
                     else

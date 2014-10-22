@@ -34,8 +34,8 @@ namespace StatisticCommon
         public bool[] receivedMin;
         public bool[] receivedHourHalf1;
         public bool[] receivedHourHalf2;
-        public bool receivedHourHalf1Addon;
-        public bool receivedHourHalf2Addon;
+        //public bool receivedHourHalf1Addon;
+        //public bool receivedHourHalf2Addon;
         //public int id;
         public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
         public int id_tm;

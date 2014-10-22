@@ -493,15 +493,7 @@ namespace Statistic
 
                 pane.CurveList.Clear();
 
-                int itemscount;
-
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                    itemscount = 25;
-                else
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                        itemscount = 23;
-                    else
-                        itemscount = 24;
+                int itemscount = m_tecView.m_valuesHours.Length;
 
                 string[] names = new string[itemscount];
 
@@ -512,45 +504,8 @@ namespace Statistic
                 bool noValues = true;
                 for (int i = 0; i < itemscount; i++)
                 {
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                    {
-                        if (i <= m_tecView.m_valuesHours.hourAddon)
-                        {
-                            names[i] = (i + 1).ToString();
-                            valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
-                        }
-                        else
-                            if (i == m_tecView.m_valuesHours.hourAddon + 1)
-                            {
-                                names[i] = i.ToString() + "*";
-                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesFactAddon;
-                            }
-                            else
-                            {
-                                names[i] = i.ToString();
-                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i - 1];
-                            }
-
-                    }
-                    else
-                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                        {
-                            if (i < m_tecView.m_valuesHours.hourAddon)
-                            {
-                                names[i] = (i + 1).ToString();
-                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
-                            }
-                            else
-                            {
-                                names[i] = (i + 2).ToString();
-                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i + 1];
-                            }
-                        }
-                        else
-                        {
-                            names[i] = (i + 1).ToString();
-                            valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
-                        }
+                    names[i] = i.ToString();
+                    valuesTMSNPsum[i] = m_tecView.m_valuesHours[i].valuesTMSNPsum;
 
                     if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))
                         minimum = valuesTMSNPsum[i];
@@ -604,12 +559,12 @@ namespace Statistic
                     {
                         int valuescount;
 
-                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                            valuescount = m_tecView.lastHour + 1;
-                        else
-                            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                                valuescount = m_tecView.lastHour - 1;
-                            else
+                        //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                        //    valuescount = m_tecView.lastHour + 1;
+                        //else
+                        //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                        //        valuescount = m_tecView.lastHour - 1;
+                        //    else
                                 valuescount = m_tecView.lastHour;
 
                         double[] valuesTMSNPsum1 = new double[valuescount];

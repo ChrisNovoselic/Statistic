@@ -865,15 +865,14 @@ namespace StatisticTrans
         protected abstract void updateDataGridViewAdmin (DateTime date);
 
         protected void initAdminTableRows (/*int indx = индекс для m_arAdmin*/) {
+            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
+                m_arAdmin[(int)type].m_curDate = dateTimePickerMain.Value;
+
             if (dateTimePickerMain.Value.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
                 m_dgwAdminTable.InitRows(24, false);
-                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
-                    m_arAdmin[(int)type].ClearValues(24);
             }
             else {
                 m_dgwAdminTable.InitRows(25, true);
-                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type ++)
-                    m_arAdmin [(int)type].ClearValues (25);
             }
         }
 
