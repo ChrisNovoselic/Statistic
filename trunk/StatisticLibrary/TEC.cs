@@ -903,7 +903,8 @@ namespace StatisticCommon
                     selectAdmin = selectAdminValueQuery(comp);
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
+                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] +
+                                ", " + @"[SEASON]";
 
                     selectAdmin += ";";
 

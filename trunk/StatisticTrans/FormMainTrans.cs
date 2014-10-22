@@ -100,6 +100,8 @@ namespace StatisticTrans
 
             keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
             m_fileINI.Add(keyPar, valDefPar);
+            keyPar = @"Season Action"; valDefPar = @"-1";
+            m_fileINI.Add(keyPar, valDefPar);
 
             //Ошибка для отладки
             //System.Threading.Timer tm = null;
@@ -655,15 +657,7 @@ namespace StatisticTrans
         protected abstract void start();
 
         protected override void Start() {
-            string keyPar = @"Season DateTime";
-            if (DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Date == DateTime.Now.Date) {
-                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type ++)
-                    m_arAdmin [(int)type].HourSeason = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Hour - 1;
-
-                initAdminTableRows (0);
-            }
-            else
-                ;
+            initAdminTableRows ();
             
             base.Start ();
         }
@@ -870,11 +864,17 @@ namespace StatisticTrans
 
         protected abstract void updateDataGridViewAdmin (DateTime date);
 
-        protected void initAdminTableRows (int indx) {
-            if (m_arAdmin[indx].HourSeason < 0)
+        protected void initAdminTableRows (/*int indx = индекс для m_arAdmin*/) {
+            if (dateTimePickerMain.Value.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
                 m_dgwAdminTable.InitRows(24, false);
-            else
+                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
+                    m_arAdmin[(int)type].ClearValues(24);
+            }
+            else {
                 m_dgwAdminTable.InitRows(25, true);
+                for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type ++)
+                    m_arAdmin [(int)type].ClearValues (25);
+            }
         }
 
         /// <summary>
@@ -1131,6 +1131,11 @@ namespace StatisticTrans
         {
             m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
 
+            string keyPar = @"Season DateTime";
+            HAdmin.SeasonDateTime = DateTime.Parse (m_fileINI.GetValueOfKey (keyPar));
+            keyPar = @"Season Action";
+            HAdmin.SeasonDateTime = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar));
+
             if (m_modeMashine == MODE_MASHINE.AUTO)
             {
                 FillComboBoxTECComponent();
@@ -1223,17 +1228,7 @@ namespace StatisticTrans
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
-            string keyPar = @"Season DateTime";
-            int hourSeason = -1;
-            if (DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Date == dateTimePickerMain.Value.Date)
-                hourSeason = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar)).Hour - 1;
-            else
-                ;
-
-            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
-                    m_arAdmin[(int)type].HourSeason = hourSeason;
-
-            initAdminTableRows (0);
+            initAdminTableRows ();
 
             comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
         }

@@ -560,7 +560,7 @@ namespace Statistic
             return bRes;
         }
 
-        public override void  ClearValues()
+        public override void  ClearValues(int cnt = -1)
         {
             ClearValuesMins();
             ClearValuesHours();
@@ -1394,7 +1394,7 @@ namespace Statistic
                 m_valuesMins.valuesUDGe[i] = 0;
         }
 
-        protected void ClearValuesHours()
+        protected void ClearValuesHours(int cnt = -1)
         {
             for (int i = 0; i < 24; i++)
             {

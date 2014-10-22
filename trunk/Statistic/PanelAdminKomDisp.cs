@@ -371,11 +371,11 @@ namespace Statistic
         {
             double value;
             bool valid;
-            int offset = -1;
+            //int offset = -1;
 
             for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
             {
-                offset = m_admin.GetSeasonHourOffset(i);
+                //offset = m_admin.GetSeasonHourOffset(i);
                 
                 for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
                 {
@@ -426,7 +426,8 @@ namespace Statistic
             
             for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
             {
-                strFmtDatetime = m_admin.GetFmtDatetime (i, out offset);
+                strFmtDatetime = m_admin.GetFmtDatetime (i);
+                offset = m_admin.GetSeasonHourOffset (i);
 
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
 
@@ -566,3 +567,4 @@ namespace Statistic
         }
     }
 }
+

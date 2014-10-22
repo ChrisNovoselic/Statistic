@@ -19,12 +19,30 @@ namespace StatisticCommon
 
     public abstract class HAdmin : object
     {
-        public static int SEASON = 5;
+        public static int SEASON_BASE = 5;
         public enum seasonJumpE
         {
             None,
             WinterToSummer,
             SummerToWinter,
+        }
+
+        protected int GetSeasonValue (int h) {
+            int iRes = SEASON_BASE;
+
+            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
+                    
+            } else {
+                if (m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) < 0) {
+                    //ДО перехода
+                    iRes += (int)seasonJumpE.SummerToWinter;
+                } else {
+                    //ПОСЛЕ перехода
+                    iRes += (int)seasonJumpE.WinterToSummer;
+                }
+            }
+
+            return iRes;
         }
         
         public struct /*class*/ RDGStruct
@@ -110,24 +128,40 @@ namespace StatisticCommon
         private bool actived;
         public bool m_bIsActive { get { return actived; } }
 
-        private int m_iHourSeason;
-        public int HourSeason
-        {
-            get { return m_iHourSeason; }
-            set
-            {
-                if (!(m_iHourSeason == value))
-                {
-                    if (value < 0) {
+        //private int m_iSeasonHour;
+        //protected int SeasonHour
+        //{
+        //    get { return m_iSeasonHour; }
+        //    set
+        //    {
+        //        if (!(m_iSeasonHour == value))
+        //        {
+        //            if (value < 0) {
                         
-                    } else {
-                    }
+        //            } else {
+        //            }
 
-                    m_iHourSeason = value;
-                }
-                else
-                {
-                }
+        //            m_iSeasonHour = value;
+        //        }
+        //        else
+        //        {
+        //        }
+        //    }
+        //}
+
+        private static int m_iSeasonAction;
+        public static int SeasonAction {
+            get { return m_iSeasonAction; } set { m_iSeasonAction = value; }
+        }
+
+        private static DateTime m_dtSeason;
+        public static DateTime SeasonDateTime {
+            get {
+                return m_dtSeason;
+            }
+
+            set {
+                m_dtSeason = value;
             }
         }
 
@@ -137,7 +171,7 @@ namespace StatisticCommon
 
             m_dictIdListeners = new Dictionary<int,int[]> ();
 
-            m_iHourSeason = -1;
+            //m_iSeasonHour = -1;
 
             Initialize ();
         }
@@ -418,30 +452,38 @@ namespace StatisticCommon
             Logging.Logg().Error(msg);
         }
 
-        public virtual void ClearValues() {
+        //public virtual void ClearValues(int cnt = -1) {
+        public virtual void ClearValues()
+        {
             int cntHours = 24;
 
-            if (HourSeason < 0)
-            {
-                if (m_curRDGValues.Length > 24)
+            //if (cnt < 0) {
+                if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
                 {
-                    m_curRDGValues = null;
+                    if (m_curRDGValues.Length > 24)
+                    {
+                        m_curRDGValues = null;
+                    }
+                    else
+                    {
+                    }
                 }
                 else
                 {
+                    if (m_curRDGValues.Length < 25)
+                    {
+                        m_curRDGValues = null;
+                        cntHours = 25;
+                    }
+                    else
+                    {
+                    }
                 }
-            }
-            else
-            {
-                if (m_curRDGValues.Length < 25)
-                {
-                    m_curRDGValues = null;
-                    cntHours = 25;
-                }
-                else
-                {
-                }
-            }
+            //} else {
+            //    m_curRDGValues = null;
+            //    cntHours = cnt;
+            //}
+
 
             if (m_curRDGValues == null)
                 m_curRDGValues = new RDGStruct[cntHours];
@@ -465,7 +507,7 @@ namespace StatisticCommon
                 , cntHours = 24
                 , length = m_arHaveDates.Length / m_arHaveDates.Rank;
 
-            if (HourSeason < 0)
+            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
                 if (length > 24)
                     m_arHaveDates = null;
                 else
@@ -816,27 +858,6 @@ namespace StatisticCommon
             }
         }
 
-        public void ToSummerWinter (int h) {
-            RDGStruct[] copyRDGValues = new RDGStruct[m_curRDGValues.Length];
-            m_curRDGValues.CopyTo(copyRDGValues, 0);
-
-            m_curRDGValues = null;
-            m_curRDGValues = new RDGStruct [25];
-
-            int i = -1
-                , offset = 0;
-
-            for (i = 0; i < 25; i ++) {
-                m_curRDGValues[i] = copyRDGValues[i - offset];
-                
-                if (i == h) {
-                    m_curRDGValues[i + 1] = copyRDGValues[(i + 1) + offset++];
-                    i ++;
-                } else {
-                }
-            }
-        }
-        
         protected virtual bool GetCurrentTimeResponse(DataTable table)
         {
             if (table.Rows.Count == 1)
@@ -912,21 +933,69 @@ namespace StatisticCommon
             return m_arHaveDates[(int)type, indx] > 0 ? true : false;
         }
 
-        public string GetFmtDatetime(int h, out int offset)
+        public int GetSeasonHourOffset(int h)
         {
-            offset = 0;
-            
-            string strRes = @"dd-MM-yyyy HH";
+            int iRes = 0;
 
-            if (!(HourSeason < 0))
-            {
-                if (h == (HourSeason + 0))
-                    strRes += @"*";
+            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
+                if (! (h < HAdmin.SeasonDateTime.Hour))
+                    iRes = 1;
                 else
                     ;
+            } else {
+            }
 
-                if (!(h < HourSeason))
-                    offset++;
+            return iRes;
+            //return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
+        }
+
+        protected void GetSeasonHours(ref int prev_h, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
+        {
+            int offset = 0;
+            
+            //Проверка перехода сезонов
+            if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
+            {
+                //Необходимо искать одинаковые часы
+                if (prev_h < 0)
+                    ; //Не было ни одного предыдущего часа                                
+                else
+                {
+                    if (prev_h == h)
+                    {
+                        //Найден одинаковый
+                        offset++;
+                    }
+                    else
+                    {
+                        if (prev_h < h)
+                            //Норма
+                            if (HAdmin.SeasonDateTime.Hour < h)
+                                offset ++;
+                            else
+                                ;
+                        else
+                            ; //Ошибка ???
+                    }
+                }
+            }
+            else
+            {
+                //Оставить "как есть"
+            }
+
+            prev_h = h; //Запомнить текущий
+            h += offset;
+        }
+
+        public string GetFmtDatetime(int h)
+        {
+            string strRes = @"dd-MM-yyyy HH";
+
+            if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
+            {
+                if (h == (HAdmin.SeasonDateTime.Hour))
+                    strRes += @"*";
                 else
                     ;
             }

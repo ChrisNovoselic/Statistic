@@ -272,15 +272,14 @@ namespace Statistic
 
         protected void initAdminTableRows()
         {
-            if (DateTime.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]).Date == mcldrDate.SelectionStart.Date)
-                m_admin.HourSeason = DateTime.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]).Hour - 1;
-            else
-                m_admin.HourSeason = -1;
-
-            if (m_admin.HourSeason < 0)
+            if (mcldrDate.SelectionStart.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
                 dgwAdminTable.InitRows(24, false);
-            else
+                m_admin.ClearValues (24);
+            }
+            else {
                 dgwAdminTable.InitRows(25, true);
+                m_admin.ClearValues(25);
+            }
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
@@ -492,6 +491,7 @@ namespace Statistic
         {
             isActive = active;
 
+            if (m_admin.m_curDate.Year == 1) m_admin.m_curDate = mcldrDate.SelectionStart; else ;
             m_admin.Activate (active);
         }
     }

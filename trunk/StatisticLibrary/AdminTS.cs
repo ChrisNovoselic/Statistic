@@ -605,7 +605,8 @@ namespace StatisticCommon
 
             offsetPBRNumber = m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER");
             offsetDATE_ADMIN = table.Columns.IndexOf("DATE_ADMIN");
-            
+
+            int prev_hour = -1; //Для поиска одинаковых часов
             //0 - DATE_ADMIN, 1 - REC, 2 - IS_PER, 3 - DIVIAT, 4 - DATE_PBR, 5 - PBR, 6 - PBR_NUMBER
             for (i = 0; i < table.Rows.Count; i++)
             {
@@ -615,6 +616,7 @@ namespace StatisticCommon
                     {
                         hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
                         day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+
                         if ((hour == 0) && (day != date.Day))
                             hour = 24;
                         else
@@ -622,6 +624,8 @@ namespace StatisticCommon
                                 continue;
                             else
                                 ;
+
+                        GetSeasonHours (ref prev_hour, ref hour);
 
                         //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                         //{
@@ -670,6 +674,8 @@ namespace StatisticCommon
                                 continue;
                             else
                                 ;
+
+                        GetSeasonHours(ref prev_hour, ref hour);
 
                         if (!(offsetDATE_ADMIN < 0)) {
                             m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount [0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
@@ -811,6 +817,8 @@ namespace StatisticCommon
 
         protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
+            int prev_hour = -1;
+
             for (int i = 0, hour; i < table.Rows.Count; i++)
             {
                 try
@@ -821,8 +829,9 @@ namespace StatisticCommon
                     else
                         ;
 
-                    m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
+                    GetSeasonHours (ref prev_hour, ref hour);
 
+                    m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
                 }
                 catch { }
             }
@@ -855,11 +864,6 @@ namespace StatisticCommon
                 ;
 
             return iRes;
-        }
-
-        public int GetSeasonHourOffset(int h)
-        {
-            return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
         }
 
         protected virtual string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
@@ -900,9 +904,9 @@ namespace StatisticCommon
                                         @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                        @"', " + "SEASON=" + (offset > 0 ? (SEASON + seasonJumpE.WinterToSummer) : (SEASON + seasonJumpE.WinterToSummer)) +
+                                        @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                         @" WHERE " +
-                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                        @"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
                                         @"'" +
                                         @" AND ID_COMPONENT = " + comp.m_id +
                                         @" AND " +
@@ -931,7 +935,7 @@ namespace StatisticCommon
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (comp.m_id) +
-                                        @", " + (offset > 0 ? (SEASON + seasonJumpE.WinterToSummer) : (SEASON + seasonJumpE.WinterToSummer)) +
+                                        @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                         @"),";
                             break;
                         default:
@@ -2300,9 +2304,9 @@ namespace StatisticCommon
             }
         }
 
-        public override void ClearValues()
+        public override void ClearValues(int cnt = -1)
         {
-            base.ClearValues ();
+            base.ClearValues (cnt);
             
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
