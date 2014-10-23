@@ -452,6 +452,9 @@ namespace Statistic
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], dblTotalPower_TM);
 
+                switch (m_tecView.m_dtLastChangedAt_TM_Gen.Kind) {
+                }
+
                 m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
             }
 

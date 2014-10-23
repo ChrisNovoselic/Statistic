@@ -1013,8 +1013,14 @@ namespace StatisticCommon
             DateTime dtRes;
             if (! (dt.Kind == DateTimeKind.Local))
                 dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
-            else
-                dtRes = dt;
+            else {
+                dtRes = dt - TimeZoneInfo.Local.GetUtcOffset (dt);
+                if (dtRes.IsDaylightSavingTime () == true) {
+                    dtRes = dtRes.AddHours(-1);
+                } else { }
+
+                dtRes = dtRes.Add (GetUTCOffsetOfCurrentTimeZone ());
+            }
 
             return dtRes;
         }

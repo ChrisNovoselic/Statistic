@@ -534,14 +534,14 @@ namespace Statistic
 
                         bool bPmin = false;
                         if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                        strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[g.m_id], hour - 1, bPmin, out warn);
+                        strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id], bPmin, out warn);
 
                         m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
 
                         if (m_tecView.m_dictValuesTECComponent[g.m_id][hour - 1].valuesLastMinutesTM > 1)
                         {
                             if ((! (warn == 0)) &&
-                                (m_tecView.m_dictValuesTECComponent[g.m_id][hour - 1].valuesLastMinutesTM > 1))
+                                (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1))
                             {
                                 clrBackColor = Color.Red;
                                 cntWarn ++;
@@ -555,7 +555,7 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_tecView.m_dictValuesTECComponent[g.m_id][hour - 1].valuesLastMinutesTM.ToString(@"F2");
+                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM.ToString(@"F2");
                         }
                         else
                             m_dictLabelVal[g.m_id][hour - 1].Text = 0.ToString (@"F0");

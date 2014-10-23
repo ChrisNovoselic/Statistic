@@ -27,7 +27,7 @@ namespace Statistic
 
         public Hd2PercentControl() { }
 
-        public string Calculate(TecView.values [] values, int hour, bool bPmin, out int err)
+        public string Calculate(TecView.values values, bool bPmin, out int err)
         {
             string strRes = string.Empty;
             double valuesBaseCalculate = -1F;
@@ -39,9 +39,9 @@ namespace Statistic
             int iReverse = 0;
             bool bAbs = false;
 
-            if (values[hour].valuesPBR == values[hour].valuesPmax)
+            if (values.valuesPBR == values.valuesPmax)
             {
-                valuesBaseCalculate = values[hour].valuesPBR;
+                valuesBaseCalculate = values.valuesPBR;
                 iReverse = 1;
             }
             else
@@ -49,23 +49,23 @@ namespace Statistic
                 //Âû÷èñëåíèå "ÂÊ"
                 //if (values.valuesUDGe[hour] == values.valuesPBR[hour])
                 //if (!(values.valuesREC[hour] == 0))
-                if (values[hour].valuesREC == 0)
-                    values[hour].valuesForeignCommand = false;
+                if (values.valuesREC == 0)
+                    values.valuesForeignCommand = false;
                 else
                     ;
 
-                if (values[hour].valuesForeignCommand == true)
+                if (values.valuesForeignCommand == true)
                 {
-                    valuesBaseCalculate = values[hour].valuesUDGe;
+                    valuesBaseCalculate = values.valuesUDGe;
                     iReverse = 1;
                     bAbs = true;
                 }
                 else
                 {
                     if (bPmin == true)
-                        if (values[hour].valuesPBR == values[hour].valuesPmin)
+                        if (values.valuesPBR == values.valuesPmin)
                         {
-                            valuesBaseCalculate = values[hour].valuesPBR;
+                            valuesBaseCalculate = values.valuesPBR;
                             iReverse = -1;
                         }
                         else
@@ -78,16 +78,16 @@ namespace Statistic
 
             if (valuesBaseCalculate > 1) {
                 strRes += @"Óðîâ=" + valuesBaseCalculate.ToString(@"F2");
-                strRes += @"; ÏÁÐ=" + values[hour].valuesPBR.ToString(@"F2") + @"; Pmax=" + values[hour].valuesPmax.ToString(@"F2");
+                strRes += @"; ÏÁÐ=" + values.valuesPBR.ToString(@"F2") + @"; Pmax=" + values.valuesPmax.ToString(@"F2");
                 if (bPmin == true) {
-                    strRes += @"; Pmin=" + values[hour].valuesPmin.ToString(@"F2");
+                    strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 } else ;
 
-                if (values[hour].valuesLastMinutesTM > 1)
+                if (values.valuesLastMinutesTM > 1)
                 {
                     if (!(iReverse == 0))
                     {
-                        delta = iReverse * (valuesBaseCalculate - values[hour].valuesLastMinutesTM);
+                        delta = iReverse * (valuesBaseCalculate - values.valuesLastMinutesTM);
                         if (bAbs == true)
                             delta = Math.Abs(delta);
                         else
@@ -125,10 +125,10 @@ namespace Statistic
                 err = 0;
 
                 strRes += @"Óðîâ=---.-";
-                strRes += @"; ÏÁÐ=" + values[hour].valuesPBR.ToString(@"F2") + @"; Pmax=" + values[hour].valuesPmax.ToString(@"F2");
+                strRes += @"; ÏÁÐ=" + values.valuesPBR.ToString(@"F2") + @"; Pmax=" + values.valuesPmax.ToString(@"F2");
                 if (bPmin == true)
                 {
-                    strRes += @"; Pmin=" + values[hour].valuesPmin.ToString(@"F2");
+                    strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 }
                 else ;
 
@@ -788,7 +788,7 @@ namespace Statistic
             {
                 bool bPmin = false;
                 if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                d2PercentControl.Calculate(m_tecView.m_valuesHours, i, bPmin, out warn);
+                d2PercentControl.Calculate(m_tecView.m_valuesHours[i], bPmin, out warn);
 
                 if ((!(warn == 0)) &&
                    (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1))

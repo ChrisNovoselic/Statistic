@@ -940,7 +940,7 @@ namespace Statistic
                 bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    if (m_parent.m_tecView.listTG[i].receivedMin [min] == true)
+                    if (! (m_parent.m_tecView.listTG[i].power[min] < 0))
                         if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
                     else {
                         bMinValuesReceived = false;
@@ -1101,7 +1101,7 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                if (tg.receivedMin[min] == true)
+                                if (! (tg.power[min] < 0))
                                 {
                                     showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
                                     if (m_parent.m_tecView.currHour == true)
@@ -1124,7 +1124,7 @@ namespace Statistic
                 {
                     foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
                     {
-                        if (comp.m_listTG [0].receivedMin[min] == true)
+                        if (! (comp.m_listTG[0].power[min] < 0))
                         {
                             showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
                             if (m_parent.m_tecView.currHour == true)
