@@ -1129,7 +1129,7 @@ namespace Statistic
                     if (bRes == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
-                        ComputeRecomendation(lastHour - 1);
+                        ComputeRecomendation(lastHour - 0);
                         adminValuesReceived = true;
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                         if (! (updateGUI_Fact == null)) updateGUI_Fact(lastHour, lastMin); else ;
@@ -1301,7 +1301,11 @@ namespace Statistic
             {
                 currHour = false;
 
-                lastHour = indx;
+                //Отладка ???
+                //if (indx == 0)
+                //    lastHour = 1;
+                //else
+                    lastHour = indx;
 
                 ClearValuesMins();
 
@@ -2009,8 +2013,17 @@ namespace Statistic
             }
 
             hour = lastHour;
+
+            //Отладка ???
+            if (hour == 0)
+                hour = 1;
+            else
+                ;
+
             if (hour == 24)
                 hour = 23;
+            else
+                ;
 
             for (i = 0; i < 21; i++)
             {
@@ -2025,7 +2038,7 @@ namespace Statistic
 
         private void ComputeRecomendation(int hour)
         {
-            if (hour == m_valuesHours.Length)
+            if (! (hour < m_valuesHours.Length))
                 //???
                 hour = m_valuesHours.Length - 1;
             else
@@ -2330,16 +2343,10 @@ namespace Statistic
         private bool GetHoursResponse(DataTable table)
         {
             int i, j, half = 0, hour = 0
-                , id = -1
-                , season = 0, prev_season = 0;
-            //bool end = false;
+                , prev_season = 0, season = 0, offset_season = 0;
             double hourVal = 0, halfVal = 0, value;
-            //double[] prevValuesTG = new double[CountTG];
-            //int[] prevIdTG = new int[CountTG];
-            TG tgTmp;
-            //bool end = false;
-            DateTime dt = DateTime.Now, dtNeeded;
-            //bool jump_forward = false, jump_backward = false;
+            DateTime dt , dtNeeded;
+            dt = dtNeeded = DateTime.Now;
 
             double[, ,] powerHourHalf = new double[listTG.Count, 2, m_valuesHours.Length];
 
@@ -2375,36 +2382,7 @@ namespace Statistic
                 ;
 
             //Проверка наличия в таблице строк
-            if (table.Rows.Count > 0)
-            {
-                try
-                {
-                    //if (!DateTime.TryParse(table.Rows[0][6].ToString(), out dt))
-                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
-                        return false;
-
-                    //if (!int.TryParse(table.Rows[0][8].ToString(), out season))
-                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
-                        return false;
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...");
-
-                    //dt = DateTime.Now.Date;
-                }
-
-                //GetSeason(dt, season, out season);
-                //prev_season = season;
-                //hour = dt.Hour;
-                dtNeeded = dt;
-
-                //if (dt.Minute == 0)
-                //    half++;
-                //else
-                //    ;
-            }
-            else
+            if (! (table.Rows.Count > 0))
             {//Ошибка - завершаем выполнение функции
                 if (currHour == true)
                 {//Отображается текущий час
@@ -2423,22 +2401,59 @@ namespace Statistic
                 //Завершаем выполнение функции, но возращаем признак успеха ???
                 return true;
             }
+            else
+                ;
 
             i = 0;
             DataRow [] tgRows = null;
             //Цикл по ТГ 
             foreach (TG tg in listTG)
-            {
+            {                
                 tgRows = table.Select(@"ID=" + tg.ids_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
 
+                hour = -1;
+                offset_season = 0;
                 foreach (DataRow r in tgRows) {
                     try
                     {
                         if (DateTime.TryParse(r[@"DATA_DATE"].ToString(), out dt) == false)
                             return false;
+                        else
+                            ;
 
                         if (int.TryParse(r[@"SEASON"].ToString(), out season) == false)
                             return false;
+                        else
+                            ;
+
+                        if (hour < 0)
+                        {
+                            GetSeason(dt, season, out season);
+                            prev_season = season;
+                            hour = 0;
+                            dtNeeded = dt;
+                        }
+                        else
+                            ;
+
+                        //Отладка ???
+                        //if ((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && (! (dt.Hour < HAdmin.SeasonDateTime.Hour)))
+                        if (((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && ((dt.Hour + dt.Minute / 30) > HAdmin.SeasonDateTime.Hour)) ||
+                            ((dt.Hour == 0) && (dt.Minute == 0) && (dt.AddDays(-1).CompareTo(HAdmin.SeasonDateTime.Date) == 0)))
+                        {
+                            if (HAdmin.SeasonAction < 0)
+                                season = (int)HAdmin.seasonJumpE.SummerToWinter;
+                            else
+                                if (HAdmin.SeasonAction > 0)
+                                    season = (int)HAdmin.seasonJumpE.WinterToSummer;
+                                else
+                                    season = (int)HAdmin.seasonJumpE.None;
+
+                            season += DateTime.Now.Year * 2;
+                        }
+                        else
+                        {
+                        }
                     }
                     catch (Exception e)
                     {
@@ -2467,20 +2482,63 @@ namespace Statistic
                     hour = (dt.Hour + dt.Minute / 30);
                     if (hour == 0)
                         if (! (dt.Date == m_curDate))
-                            hour = m_valuesHours.Length;
+                            //hour = m_valuesHours.Length;
+                            hour = 24;
                         else
                             ;
                     else
                         ;
 
-                    hour += GetSeasonHourOffset(dt.Hour);
+                    //if (!(prev_season == (int)HAdmin.seasonJumpE.None))
+                    //{
+                        //Отладка ???
+                        if (season > DateTime.Now.Year)
+                            GetSeason(dt, season, out season);
+                        else
+                            ;
 
-                    powerHourHalf[i, dt.Minute / 30, hour - 1] = (value / 2000);
+                        if ((! (season == (int)HAdmin.seasonJumpE.None)) && (! (prev_season == season)))
+                        {
+                            if (offset_season == 1)
+                            {//Ошибка ??? 2 перехода за сутки
+
+                            }
+                            else
+                            {
+                                if (prev_season == (int)HAdmin.seasonJumpE.None)
+                                {
+                                    if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
+                                        offset_season = 1;
+                                    else
+                                        //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
+                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                                }
+                                else
+                                    if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
+                                        offset_season = 1;
+                                    else
+                                        //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
+                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                            }
+                        }
+                        else
+                            ;
+                    //} else ;
+
+                    //Отладка ???
+                    if (season > DateTime.Now.Year)
+                        GetSeason(dt, season, out season);
+                    else
+                        ;
+
+                    prev_season = season;
+
+                    powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, hour - 1 + offset_season] = (value / 2000);
                 }
 
                 //??? якобы для перехода через границу суток
                 dtNeeded = dtNeeded.AddMinutes(30);
-                
+
                 i ++;
             }
 
@@ -2490,7 +2548,7 @@ namespace Statistic
                 
                 for (j = 0; j < 2; j ++) {
                     halfVal = -1F;
-                    i = 0;
+                    i = 0; //Индекс ТГ
                     foreach (TG tg in listTG)
                     {
                         if (powerHourHalf [i, j, hour] < 0) {
@@ -2513,19 +2571,29 @@ namespace Statistic
                             hourVal += halfVal;
                         } else {
                             //Нет данных за получас ни для одного ТГ
-                            break;
+                            if (currHour == true)
+                                break;
+                            else
+                                ;
                         }
                     }
                 }
 
                 if (j < 2)
-                {
-                    //Нет данных за один из получасов
-                    if (j == 0)
-                        break; //1-ый получас
+                {//Нет данных за один из получасов
+                    if (!(hour > m_curDate.Hour))
+                    {
+                        break;
+                    }
                     else
-                        //2-ой получас
-                        ;
+                    {//hour > m_curDate.Hour
+                        if (j == 0)
+                            //1-ый получас
+                            ; //break;
+                        else
+                            //2-ой получас
+                            ;
+                    }
                 }
                 else
                 {
@@ -2536,105 +2604,20 @@ namespace Statistic
                 }
             }
 
+            if (hour == m_valuesHours.Length)
+                hour = 24;
+            else
+                if (hour == 0)
+                    hour = 1;
+                else
+                    ;
+
             lastHour = hour;
-
-            ////Цикл по часам суток (i - индекс строки в таблице)
-            //for (i = 0; (hour < 24) && (end == false); )
-            //{
-            //    if (half == 2) // прошёл один час
-            //    {
-            //        m_valuesHours[hour].valuesFact = hourVal / 2000;
-            //        hour++;
-            //        half = 0;
-            //        hourVal = 0;
-
-            //        lastHour = lastReceivedHour = hour;
-            //    }
-            //    else
-            //        ;
-
-            //    halfVal = 0;
-
-            //    //Цикл по эн./блокам
-            //    for (j = 0; j < CountTG; j++, i++)
-            //    {
-            //        if (! (i < table.Rows.Count))
-            //        {
-            //            end = true;
-            //            break;
-            //        }
-
-            //        try
-            //        {
-            //            if (DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt) == false)
-            //                return false;
-
-            //            if (int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season) == false)
-            //                return false;
-            //        }
-            //        catch (Exception e)
-            //        {
-            //            Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...");
-
-            //            dt = DateTime.Now.Date;
-            //        }
-
-            //        ////if (!int.TryParse(table.Rows[i][7].ToString(), out id))
-            //        //if (table.Columns.Contains(@"ID") == true)
-            //            if (int.TryParse(table.Rows[i][@"ID"].ToString(), out id) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        //else
-            //        //    return false;
-
-            //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, TG.ID_TIME.HOURS);
-            //        if (tgTmp == null)
-            //            return false;
-            //        else
-            //            ;
-
-            //        ////if (!double.TryParse(table.Rows[i][5].ToString(), out value))
-            //        //if (table.Columns.Contains(@"VALUE0") == true)
-            //            if (double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        //else
-            //        //    return false;
-
-            //        switch (m_tec.type())
-            //        {
-            //            case TEC.TEC_TYPE.COMMON:
-            //                break;
-            //            case TEC.TEC_TYPE.BIYSK:
-            //                value *= 2;
-            //                break;
-            //            default:
-            //                break;
-            //        }
-
-            //        halfVal += value;
-
-            //        if (half == 0)
-            //            tgTmp.receivedHourHalf1[hour] = true;
-            //        else
-            //            tgTmp.receivedHourHalf2[hour] = true;
-
-            //    }
-
-            //    dtNeeded = dtNeeded.AddMinutes(30);
-
-            //    if (end == false)
-            //        half++;
-
-            //    hourVal += halfVal;
-            //}
 
             if (currHour == true)
             {//Отображение тек./часа
                 if (lastHour < m_curDate.Hour)
-                {//Ошибка получения часовых значений данных 
+                {//Ошибка получения часовых значений
                     lastHourError = true;
                     lastHour = m_curDate.Hour;
                 }

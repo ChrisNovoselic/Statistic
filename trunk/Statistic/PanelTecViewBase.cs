@@ -1108,8 +1108,10 @@ namespace Statistic
 
         private void DrawGraphMins(int hour)
         {
-            if (hour == 24)
-                hour = 23;
+            if (!(hour < m_tecView.m_valuesHours.Length))
+                hour = m_tecView.m_valuesHours.Length - 1;
+            else
+                ;
 
             GraphPane pane = m_ZedGraphMins.GraphPane;
 

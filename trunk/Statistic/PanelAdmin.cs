@@ -265,9 +265,16 @@ namespace Statistic
 
         public virtual void setDataGridViewAdmin(DateTime date) {}
 
+        private void setDate(DateTime dt)
+        {
+            mcldrDate.SetDate(dt);
+
+            initTableHourRows();
+        }
+        
         public void CalendarSetDate(DateTime date)
         {
-            BeginInvoke(new DelegateDateFunc(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
+            BeginInvoke(new DelegateDateFunc(setDate), date);
         }
 
         protected override void initTableHourRows()
