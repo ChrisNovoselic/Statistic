@@ -151,6 +151,11 @@ namespace Statistic
             }
         }
 
+        protected override void initTableHourRows()
+        {
+            //Ничего не делаем, т.к. нет таблиц с часовыми значениями
+        }
+
         public override void Activate(bool active)
         {
             if (m_bIsActive == active)
@@ -427,146 +432,6 @@ namespace Statistic
 
                 return 0;
             }
-
-            private void PanelTecCurPower_TextChangedValue(object sender, EventArgs ev)
-            {
-                double val = -1.0;
-                int ext = 2;
-                Color clr;
-                if (double.TryParse(((Label)sender).Text, out val) == true)
-                {
-                    if (val > 1)
-                        clr = Color.LimeGreen;
-                    else
-                    {
-                        clr = Color.Green;
-                        ext = 0;
-                    }
-
-                    ((Label)sender).Text = val.ToString(@"F" + ext.ToString());
-                }
-                else
-                    clr = Color.Green;
-
-                ((Label)sender).ForeColor = clr;
-            }
-
-            //private bool GetCurrentTMResponse(DataTable table)
-            //{
-            //    bool bRes = true;
-            //    int i = -1,
-            //        id = -1;
-            //    double value = -1;
-            //    DateTime dtLastChangedAt =
-            //        m_dtLastChangedAt_TM = DateTime.Now;
-            //    TG tgTmp;
-
-            //    foreach (TECComponent g in m_tec.list_TECComponents)
-            //    {
-            //        foreach (TG t in g.m_listTG)
-            //        {
-            //            t.power_TM = 0;
-            //        }
-            //    }
-
-            //    for (i = 0; i < table.Rows.Count; i++)
-            //    {
-            //        if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-            //            return false;
-            //        else
-            //            ;
-
-            //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
-
-            //        if (tgTmp == null)
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (!(table.Rows[i]["value"] is DBNull))
-            //            if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        else
-            //            value = 0.0;
-
-            //        if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (m_dtLastChangedAt_TM > dtLastChangedAt)
-            //            m_dtLastChangedAt_TM = dtLastChangedAt;
-            //        else
-            //            ;
-
-            //        switch (m_tec.type())
-            //        {
-            //            case StatisticCommon.TEC.TEC_TYPE.COMMON:
-            //                break;
-            //            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-            //                //value *= 20;
-            //                break;
-            //            default:
-            //                break;
-            //        }
-
-            //        tgTmp.power_TM = value;
-            //    }
-
-            //    return bRes;
-            //}
-
-            //private void GetCurrentTMSNRequest()
-            //{
-            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
-            //}
-
-            //private bool GetCurrentTMSNResponse(DataTable table)
-            //{
-            //    bool bRes = true;
-            //    int id = -1;
-
-            //    m_dtLastChangedAt_TM_SN = DateTime.Now;
-
-            //    if (table.Rows.Count == 1)
-            //    {
-            //        if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
-            //            if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        else
-            //            m_dblTotalPower_TM_SN = 0.0;
-
-            //        if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
-            //            return false;
-            //        else
-            //            ;
-            //    }
-            //    else
-            //    {
-            //        bRes = false;
-            //    }
-
-            //    return bRes;
-            //}
-
-            //private void ErrorReportSensors(ref DataTable src)
-            //{
-            //    string error = "Ошибка определения идентификаторов датчиков в строке ";
-            //    for (int j = 0; j < src.Rows.Count; j++)
-            //        error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
-
-            //    error = error.Substring(0, error.LastIndexOf(","));
-            //    ErrorReport(error);
-            //}
 
             private void TimerCurrent_Tick(Object stateInfo)
             {

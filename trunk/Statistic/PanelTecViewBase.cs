@@ -602,9 +602,7 @@ namespace Statistic
         }
 
         public override void Start()
-        {            
-            m_tecView.Start ();
-
+        {
             FillDefaultMins();
             FillDefaultHours();
 
@@ -615,8 +613,11 @@ namespace Statistic
             else
                 ;
 
-            m_tecView.m_curDate = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
-            m_tecView.serverTime = m_tecView.m_curDate;
+            m_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+
+            initTableHourRows ();
+
+            m_tecView.Start();
 
             evTimerCurrent = new ManualResetEvent(true);
             timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
@@ -639,6 +640,21 @@ namespace Statistic
             if (!(timerCurrent == null)) timerCurrent.Dispose(); else ;
 
             FormMainBaseWithStatusStrip.m_report.ClearStates ();
+        }
+
+        protected override void initTableHourRows()
+        {
+            m_tecView.m_curDate = m_pnlQuickData.dtprDate.Value.Date;
+            m_tecView.serverTime = m_tecView.m_curDate;
+
+            if (m_tecView.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
+            {
+                m_dgwHours.InitRows(24, false);                
+            }
+            else
+            {
+                m_dgwHours.InitRows(25, true);
+            }
         }
 
         private void updateGUI_TM_Gen()
@@ -982,10 +998,14 @@ namespace Statistic
         {
             if (update == true)
             {
-                if (!(m_pnlQuickData.dtprDate.Value.Date == m_tecView.m_curDate.Date))
+                //Сравниваем даты/время ????
+                if (!(m_pnlQuickData.dtprDate.Value.Date.CompareTo (m_tecView.m_curDate.Date) == 0))
                     m_tecView.currHour = false;
                 else
                     ;
+
+                //В этом методе даты/время приравниваем ???
+                initTableHourRows ();
 
                 NewDateRefresh();
             }

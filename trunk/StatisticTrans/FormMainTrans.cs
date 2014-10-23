@@ -657,7 +657,7 @@ namespace StatisticTrans
         protected abstract void start();
 
         protected override void Start() {
-            initAdminTableRows ();
+            initTableHourRows();
             
             base.Start ();
         }
@@ -864,7 +864,8 @@ namespace StatisticTrans
 
         protected abstract void updateDataGridViewAdmin (DateTime date);
 
-        protected void initAdminTableRows (/*int indx = индекс для m_arAdmin*/) {
+        protected void initTableHourRows(/*int indx = индекс для m_arAdmin*/)
+        {
             for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
                 m_arAdmin[(int)type].m_curDate = dateTimePickerMain.Value;
 
@@ -1227,7 +1228,7 @@ namespace StatisticTrans
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
-            initAdminTableRows ();
+            initTableHourRows();
 
             comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
         }

@@ -178,6 +178,10 @@ namespace Statistic
             }
         }
 
+        protected override void initTableHourRows () {
+            //Ничего не делаем, т.к. нет таблиц с часовыми значениями
+        }
+
         partial class PanelTecCurPower
         {
             /// <summary>
@@ -387,6 +391,10 @@ namespace Statistic
                 }
             }
 
+            public void InitTableHourRows (DateTime dt) {
+                m_tecView.m_curDate = dt;
+            }
+
             private void ChangeState()
             {
                 m_tecView.ChangeState ();
@@ -467,331 +475,22 @@ namespace Statistic
                 return 0;
             }
 
-            private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {
-                double val = -1.0;
-                int ext = 2;
-                Color clr;
-                if (double.TryParse(((Label)sender).Text, out val) == true) {
-                    if (val > 1)
-                        clr = Color.LimeGreen;
-                    else {
-                        clr = Color.Green;
-                        ext = 0;
-                    }
-
-                    ((Label)sender).Text = val.ToString (@"F" + ext.ToString ());
-                }
-                else
-                    clr = Color.Green;
-
-                ((Label)sender).ForeColor = clr;
-            }
-
-            //private void GetCurrentTMRequest()
-            //{
-            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMRequest(sensorsString_TM));
-            //}
-
-            //private bool GetCurrentTMResponse(DataTable table)
-            //{
-            //    bool bRes = true;
-            //    int i = -1,
-            //        id = -1;
-            //    double value = -1;
-            //    DateTime dtLastChangedAt =
-            //        m_dtLastChangedAt_TM = DateTime.Now;
-            //    TG tgTmp;
-
-            //    foreach (TECComponent g in m_tec.list_TECComponents)
-            //    {
-            //        foreach (TG t in g.m_listTG)
-            //        {
-            //            t.power_TM = 0;
-            //        }
-            //    }
-
-            //    for (i = 0; i < table.Rows.Count; i++)
-            //    {
-            //        if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-            //            return false;
-            //        else
-            //            ;
-
-            //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
-
-            //        if (tgTmp == null)
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (! (table.Rows[i]["value"] is DBNull))
-            //            if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        else
-            //            value = 0.0;
-
-            //        if ((! (value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (m_dtLastChangedAt_TM > dtLastChangedAt)
-            //            m_dtLastChangedAt_TM = dtLastChangedAt;
-            //        else
-            //            ;
-
-            //        switch (m_tec.type())
-            //        {
-            //            case TEC.TEC_TYPE.COMMON:
-            //                break;
-            //            case TEC.TEC_TYPE.BIYSK:
-            //                //value *= 20;
-            //                break;
-            //            default:
-            //                break;
+            //private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {
+            //    double val = -1.0;
+            //    int ext = 2;
+            //    Color clr;
+            //    if (double.TryParse(((Label)sender).Text, out val) == true) {
+            //        if (val > 1)
+            //            clr = Color.LimeGreen;
+            //        else {
+            //            clr = Color.Green;
+            //            ext = 0;
             //        }
 
-            //        tgTmp.power_TM = value;
-            //    }
-
-            //    return bRes;
-            //}
-
-            //private void GetCurrentTMSNRequest()
-            //{
-            //    m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.currentTMSNRequest());
-            //}
-
-            //private bool GetCurrentTMSNResponse(DataTable table)
-            //{
-            //    bool bRes = true;
-            //    int id = -1;
-
-            //    m_dtLastChangedAt_TM_SN = DateTime.Now;
-
-            //    if (table.Rows.Count == 1)
-            //    {
-            //        if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
-            //            return false;
-            //        else
-            //            ;
-
-            //        if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
-            //            if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
-            //                return false;
-            //            else
-            //                ;
-            //        else
-            //            m_dblTotalPower_TM_SN = 0.0;
-
-            //        if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
-            //            return false;
-            //        else
-            //            ;
+            //        ((Label)sender).Text = val.ToString (@"F" + ext.ToString ());
             //    }
             //    else
-            //    {
-            //        bRes = false;
-            //    }
-
-            //    return bRes;
-            //}
-
-            //private bool GetSensorsTEC()
-            //{
-            //    bool bRes = true;
-
-            //    int j = -1;
-            //    for (j = 0; j < m_tec.list_TECComponents.Count; j++)
-            //        if (m_tec.list_TECComponents [j].m_id > 1000) m_listSensorId2TG.Add(m_tec.list_TECComponents[j].m_listTG [0]); else ;                
-
-            //    sensorsString_TM = string.Empty;
-
-            //    for (int i = 0; i < m_listSensorId2TG.Count; i++)
-            //    {
-            //        if (!(m_listSensorId2TG[i] == null))
-            //        {
-            //            if (sensorsString_TM.Equals(string.Empty) == false)
-            //                switch (m_tec.m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
-            //                    case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-            //                        //Общий источник для всех ТЭЦ
-            //                        sensorsString_TM += @", "; //@" OR ";
-            //                        break;
-            //                    case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-            //                        //Источник для каждой ТЭЦ свой
-            //                        sensorsString_TM += @" OR ";
-            //                        break;
-            //                    default:
-            //                        break;
-            //                }
-            //            else
-            //                ;
-
-            //            switch (m_tec.m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
-            //            {
-            //                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-            //                    //Общий источник для всех ТЭЦ
-            //                    sensorsString_TM += m_listSensorId2TG[i].id_tm.ToString();
-            //                    break;
-            //                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-            //                    //Источник для каждой ТЭЦ свой
-            //                    sensorsString_TM += @"[dbo].[NAME_TABLE].[ID] = " + m_listSensorId2TG[i].id_tm.ToString();
-            //                    break;
-            //                default:
-            //                    break;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            //ErrorReportSensors(ref table);
-
-            //            return false;
-            //        }
-            //    }
-
-            //    return bRes;
-            //}
-
-            //private void ErrorReportSensors(ref DataTable src)
-            //{
-            //    string error = "Ошибка определения идентификаторов датчиков в строке ";
-            //    for (int j = 0; j < src.Rows.Count; j++)
-            //        error += src.Rows[j][0].ToString() + " = " + src.Rows[j][1].ToString() + ", ";
-
-            //    error = error.Substring(0, error.LastIndexOf(","));
-            //    ErrorReport(error);
-            //}
-
-            //private void StateRequest(StatesMachine state)
-            //{
-            //    switch (state)
-            //    {
-            //        case StatesMachine.Init_TM:
-            //            ActionReport("Получение идентификаторов датчиков (" + m_tec.name_shr + @")");
-            //            break;
-            //        case StatesMachine.Current_TM_Gen:
-            //            ActionReport("Получение текущих значений (" + m_tec.name_shr + @"- генерация).");
-            //            GetCurrentTMRequest();
-            //            break;
-            //        case StatesMachine.Current_TM_SN:
-            //            ActionReport("Получение текущих значений (" + m_tec.name_shr + @"- собственные нужды).");
-            //            GetCurrentTMSNRequest();
-            //            break;
-            //        default:
-            //            break;
-            //    }
-            //}
-
-            //private bool StateCheckResponse(StatesMachine state, out bool error, out DataTable table)
-            //{
-            //    error = false;
-            //    table = null;
-
-            //    switch (state)
-            //    {
-            //        case StatesMachine.Init_TM:
-            //            return true;
-            //            break;
-            //        case StatesMachine.Current_TM_Gen:
-            //        case StatesMachine.Current_TM_SN:
-            //            return m_tec.Response(CONN_SETT_TYPE.DATA_SOTIASSO, out error, out table);
-            //        default:
-            //            break;
-            //    }
-
-            //    error = true;
-
-            //    return false;
-            //}
-
-            //private bool StateResponse(StatesMachine state, DataTable table)
-            //{
-            //    bool result = false;
-            //    switch (state)
-            //    {
-            //        case StatesMachine.Init_TM:
-            //            switch (m_tec.type())
-            //            {
-            //                case TEC.TEC_TYPE.COMMON:
-            //                case TEC.TEC_TYPE.BIYSK:
-            //                    result = GetSensorsTEC();
-            //                    break;
-            //                //case TEC.TEC_TYPE.BIYSK:
-            //                    //result = true;
-            //                    //break;
-            //            }
-            //            if (result == true)
-            //            {
-            //            }
-            //            else
-            //                ;
-            //            break;
-            //        case StatesMachine.Current_TM_Gen:
-            //            result = GetCurrentTMResponse(table);
-            //            break;
-            //        case StatesMachine.Current_TM_SN:
-            //            result = GetCurrentTMSNResponse(table);
-            //            if (result == true)
-            //            {
-            //                this.BeginInvoke(delegateUpdateGUI);
-            //            }
-            //            else
-            //                ;
-            //            break;
-            //    }
-
-            //    if (result == true)
-            //        lock (lockValue)
-            //        {
-            //            ((PanelCurPower)Parent).m_report.errored_state =
-            //            ((PanelCurPower)Parent).m_report.actioned_state = false;
-            //        }
-            //    else
-            //        ;
-
-            //    return result;
-            //}
-
-            //private void StateErrors(StatesMachine state, bool response)
-            //{
-            //    string  error = string.Empty,
-            //            reason = string.Empty,
-            //            waiting = string.Empty;
-
-            //    switch (state)
-            //    {
-            //        case StatesMachine.Init_TM:
-            //            reason = @"идентификаторов датчиков (" + m_tec.name_shr + @"- телемеханика)";
-            //            waiting = @"Переход в ожидание";
-            //            break;
-            //        case StatesMachine.Current_TM_SN:
-            //            reason = @"текущих значений (" + m_tec.name_shr + @"- собственные нужды)";
-            //            waiting = @"Ожидание " + (((PanelCurPower)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
-            //            break;
-            //        case StatesMachine.Current_TM_Gen:
-            //            reason = @"текущих значений (" + m_tec.name_shr + @"- генерация)";
-            //            waiting = @"Ожидание " + (((PanelCurPower)Parent).m_msecPeriodUpdate / 1000).ToString() + " секунд";
-            //            break;
-            //        default:
-            //            break;
-            //    }
-
-            //    if (response)
-            //        reason = @"разбора " + reason;
-            //    else
-            //        reason = @"получения " + reason;
-
-            //    error = "Ошибка " + reason + ".";
-
-            //    if (waiting.Equals(string.Empty) == true)
-            //        error += " " + waiting + ".";
-            //    else
-            //        ;
-
-            //    ErrorReport(error);
-            //}
+            //        clr = Color.Green;
 
             private void TimerCurrent_Tick(Object stateInfo)
             {

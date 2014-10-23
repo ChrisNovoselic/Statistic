@@ -251,7 +251,7 @@ namespace Statistic
         }
 
         public override void Start () {
-            initAdminTableRows();
+            initTableHourRows();
             
             m_admin.Start ();
         }
@@ -270,12 +270,13 @@ namespace Statistic
             BeginInvoke(new DelegateDateFunc(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
         }
 
-        protected void initAdminTableRows()
+        protected override void initTableHourRows()
         {
             //Установить признак "[НЕ]обычного" размера массива 'm_curRDGValues'
             m_admin.m_curDate = mcldrDate.SelectionStart.Date;
-            
-            if (mcldrDate.SelectionStart.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
+
+            if (m_admin.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
+            {
                 dgwAdminTable.InitRows(24, false);
             }
             else {
@@ -327,7 +328,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                initAdminTableRows();
+                initTableHourRows();
 
                 m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }

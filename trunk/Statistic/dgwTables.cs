@@ -6,9 +6,11 @@ using System.Windows.Forms;
 using System.Data;
 using System.Globalization;
 
-namespace StatisticCommon
+using StatisticCommon;
+
+namespace Statistic
 {
-    public class DataGridViewTables : DataGridView
+    public class DataGridViewTables : DataGridViewBase
     {
         protected class ColumnProperies {
             public int width;

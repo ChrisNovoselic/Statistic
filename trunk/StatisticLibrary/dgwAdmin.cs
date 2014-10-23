@@ -8,7 +8,25 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
-    public abstract class DataGridViewAdmin : DataGridView
+    public class DataGridViewBase : DataGridView
+    {
+        public DataGridViewBase()
+            : base()
+        {
+        }
+
+        public void InitRows(int cnt, bool bIns)
+        {
+            if (bIns == true)
+                while (Rows.Count < cnt)
+                    Rows.Insert(0, 1);
+            else
+                while (Rows.Count > cnt)
+                    Rows.RemoveAt(0);
+        }
+    }
+    
+    public abstract class DataGridViewAdmin : DataGridViewBase
     {
         protected const double maxPlanValue = 1500;
         protected const double maxRecomendationValue = 1500;
@@ -48,16 +66,6 @@ namespace StatisticCommon
             RowsAdd ();
 
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.dgwAdminTable_KeyUp);
-        }
-
-        public void InitRows(int cnt, bool bIns)
-        {
-            if (bIns == true)
-                while (Rows.Count < cnt)
-                    Rows.Insert(0, 1);
-            else
-                while (Rows.Count > cnt)
-                    Rows.RemoveAt(0);
         }
 
         protected void RowsAdd () { Rows.Add(24); }

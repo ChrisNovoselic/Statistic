@@ -140,6 +140,11 @@ namespace Statistic
             }
         }
 
+        protected override void initTableHourRows()
+        {
+            //Ничего не делаем (на данный момент), т.к. собственные нужды отображаем только тек./сутки
+        }
+
         public override void Activate(bool active)
         {
             if (m_bIsActive == active)
@@ -408,29 +413,6 @@ namespace Statistic
                     if (!(lblVal == null)) lblVal.Text = 0.ToString(@"F0"); else ;
 
                 return 0;
-            }
-
-            private void PanelTecCurPower_TextChangedValue(object sender, EventArgs ev)
-            {
-                double val = -1.0;
-                int ext = 2;
-                Color clr;
-                if (double.TryParse(((System.Windows.Forms.Label)sender).Text, out val) == true)
-                {
-                    if (val > 1)
-                        clr = Color.LimeGreen;
-                    else
-                    {
-                        clr = Color.Green;
-                        ext = 0;
-                    }
-
-                    ((System.Windows.Forms.Label)sender).Text = val.ToString(@"F" + ext.ToString());
-                }
-                else
-                    clr = Color.Green;
-
-                ((System.Windows.Forms.Label)sender).ForeColor = clr;
             }
 
             private void TimerCurrent_Tick(Object stateInfo)
