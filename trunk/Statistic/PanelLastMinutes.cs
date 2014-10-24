@@ -538,7 +538,7 @@ namespace Statistic
 
                         m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
 
-                        if (m_tecView.m_dictValuesTECComponent[g.m_id][hour - 1].valuesLastMinutesTM > 1)
+                        if (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1)
                         {
                             if ((! (warn == 0)) &&
                                 (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1))

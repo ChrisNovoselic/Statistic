@@ -996,16 +996,17 @@ namespace StatisticCommon
             switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    //Общий источник для всех ТЭЦ
+                    //Вар. №1 Общий источник для всех ТЭЦ
                     //Если данные в БД по мск
                     //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
+                    //Вар. №2
                     //Если данные в БД по ГринвичУ
                     //dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
                     //query = @"SELECT * FROM [dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
                     //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
                     //        @"AND [ID] IN (" + sensors + @") " +
                     //        @"ORDER BY [ID],[last_changed_at]";
-
+                    //Вар. №3 - функция
                     query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
                             @" WHERE [ID] IN (" + sensors + @")" +
                             @" ORDER BY [ID],[last_changed_at]";

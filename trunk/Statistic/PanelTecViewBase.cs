@@ -572,7 +572,8 @@ namespace Statistic
 
         private void FillDefaultHours()
         {
-            int count;
+            int count
+                , hour;
 
             this.m_dgwHours.Rows.Clear();
 
@@ -580,9 +581,25 @@ namespace Statistic
 
             this.m_dgwHours.Rows.Add(count + 1);
 
+            bool bSeasobDate = false;
+            if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0)
+                bSeasobDate = true;
+            else
+                ;                
+
             for (int i = 0; i < count; i++)
             {
-                this.m_dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
+                hour = i + 1;                
+                if (bSeasobDate == true) {
+                    hour -= m_tecView.GetSeasonHourOffset (hour);
+                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
+                    if ((hour) == HAdmin.SeasonDateTime.Hour)
+                        this.m_dgwHours.Rows[i].Cells[0].Value += @"*";
+                    else
+                        ;
+                }
+                else
+                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
 
                 this.m_dgwHours.Rows[i].Cells[1].Value = 0.ToString("F2");
                 this.m_dgwHours.Rows[i].Cells[2].Value = 0.ToString("F2");
@@ -783,6 +800,7 @@ namespace Statistic
                 cntWarn = -1;
             string strWarn = string.Empty;
 
+            DataGridViewCellStyle curCellStyle;
             cntWarn = 0;
             for (int i = 0; i < itemscount; i++)
             {
@@ -792,15 +810,15 @@ namespace Statistic
 
                 if ((!(warn == 0)) &&
                    (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1))
-                {
-                    m_dgwHours.Rows[i].Cells[6].Style = dgvCellStyleError;
                     cntWarn++;
-                }
                 else
-                {
-                    m_dgwHours.Rows[i].Cells[6].Style = dgvCellStyleCommon;
                     cntWarn = 0;
-                }
+
+                if (! (cntWarn == 0))
+                    curCellStyle = dgvCellStyleError;
+                else
+                    curCellStyle = dgvCellStyleCommon;
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
 
                 if (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1)
                 {
@@ -809,36 +827,36 @@ namespace Statistic
                     else
                         strWarn = string.Empty;
 
-                    m_dgwHours.Rows[i].Cells[6].Value = strWarn + m_tecView.m_valuesHours[i].valuesLastMinutesTM.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i].valuesLastMinutesTM.ToString("F2");
                 }
                 else
-                    m_dgwHours.Rows[i].Cells[6].Value = 0.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
 
                 //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
                 //{
                     //if (i <= m_tecView.m_valuesHours.hourAddon)
                     //{
-                        m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
                         sumFact += m_tecView.m_valuesHours[i].valuesFact;
 
-                        m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
-                        m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
-                        m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
                         sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
-                        if ((i < receivedHour) && (! (m_tecView.m_valuesHours[i].valuesUDGe == 0)))
+                        if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
                         {
-                            m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
                             if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
                                 && (! (m_tecView.m_valuesHours[i].valuesDiviation == 0)))
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
                             else
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
                             sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
                         }
                         else
                         {
-                            m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
                         }
                     //}
                     //else
@@ -974,9 +992,9 @@ namespace Statistic
                 //        }
                 //    }
             }
-            m_dgwHours.Rows[itemscount].Cells[1].Value = sumFact.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[4].Value = sumUDGe.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[5].Value = sumDiviation.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
 
             setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
 
@@ -1283,10 +1301,18 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
 
-            //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
-            //    pane.Title.Text = //"—редн€€ мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
-            //                        (hour + 1).ToString() + "* час";
-            //else
+            if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
+                int offset = m_tecView.GetSeasonHourOffset(hour);
+                pane.Title.Text = //"—редн€€ мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                                    (hour + 1 - offset).ToString();
+                if (HAdmin.SeasonDateTime.Hour == hour)
+                    pane.Title.Text += "*";
+                else
+                    ;
+
+                pane.Title.Text += @" час";
+            }
+            else
                 pane.Title.Text = //"—редн€€ мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + " час";
 
@@ -1357,7 +1383,17 @@ namespace Statistic
             bool noValues = true;
             for (int i = 0; i < itemscount; i++)
             {
-                names[i] = (i + 1).ToString();
+                if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0) {
+                    names[i] = (i + 1 - m_tecView.GetSeasonHourOffset(i + 1)).ToString();
+
+                    if ((i + 0) == HAdmin.SeasonDateTime.Hour)
+                        names[i] += @"*";
+                    else
+                        ;
+                }
+                else
+                    names[i] = (i + 1).ToString();
+
                 valuesPDiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe; //+ m_tecView.m_valuesHours.valuesDiviation;
                 valuesODiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe; //- m_tecView.m_valuesHours.valuesDiviation;
                 valuesUDGe[i] = m_tecView.m_valuesHours[i].valuesUDGe;
@@ -1429,7 +1465,6 @@ namespace Statistic
             LineItem curve2 = pane.AddCurve("”ƒ√э", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
             LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
             LineItem curve3 = pane.AddCurve("¬озможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
-
 
             if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {

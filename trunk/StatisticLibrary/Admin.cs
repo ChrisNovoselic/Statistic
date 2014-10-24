@@ -938,7 +938,8 @@ namespace StatisticCommon
             int iRes = 0;
 
             if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
-                if (! (h < HAdmin.SeasonDateTime.Hour))
+                //if (! (h < HAdmin.SeasonDateTime.Hour))
+                if (h > HAdmin.SeasonDateTime.Hour)
                     iRes = 1;
                 else
                     ;
@@ -970,7 +971,8 @@ namespace StatisticCommon
                     {
                         if (prev_h < h)
                             //Норма
-                            if (HAdmin.SeasonDateTime.Hour < h)
+                            //if (HAdmin.SeasonDateTime.Hour < h)
+                            if (! (HAdmin.SeasonDateTime.Hour > h))
                                 offset ++;
                             else
                                 ;

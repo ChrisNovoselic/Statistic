@@ -424,12 +424,11 @@ namespace Statistic
             int offset = -1;
             string strFmtDatetime = string.Empty;
 
-            if (! (this.dgwAdminTable.Rows.Count == m_admin.m_curRDGValues.Length))
-                if (this.dgwAdminTable.Rows.Count < m_admin.m_curRDGValues.Length)
-                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, true);
-                else
-                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, false);
-            
+            //??? не очень изящное решение
+            m_evtAdminTableRowCount.Reset ();
+            this.BeginInvoke (new DelegateFunc (normalizedTableHourRows));
+            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+
             for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
             {
                 strFmtDatetime = m_admin.GetFmtDatetime (i);

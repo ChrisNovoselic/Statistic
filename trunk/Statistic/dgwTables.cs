@@ -21,7 +21,7 @@ namespace Statistic
             public DataGridViewTextBoxColumn obj;
         };
         
-        protected enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
+        public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
         protected ColumnProperies [] m_arColumns;
         protected int m_iWIdthDefault;
 

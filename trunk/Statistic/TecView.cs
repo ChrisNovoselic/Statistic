@@ -1520,17 +1520,17 @@ namespace Statistic
                                     if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
                                     {
                                         //valuesPBR[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
-                                        m_dictValuesTECComponent[24][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
+                                        m_dictValuesTECComponent[0][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
                                         //m_dictValuesTECComponent.valuesPmin[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
-                                        m_dictValuesTECComponent[24][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
+                                        m_dictValuesTECComponent[0][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
                                         //valuesPmax[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
-                                        m_dictValuesTECComponent[24][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                        m_dictValuesTECComponent[0][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[24][id].valuesPBR = 0.0;
-                                        m_dictValuesTECComponent[24][id].valuesPmin = 0.0;
-                                        m_dictValuesTECComponent[24][id].valuesPmax = 0.0;
+                                        m_dictValuesTECComponent[0][id].valuesPBR = 0.0;
+                                        m_dictValuesTECComponent[0][id].valuesPmin = 0.0;
+                                        m_dictValuesTECComponent[0][id].valuesPmax = 0.0;
                                     }
                                     //j++;
                                 }
@@ -1558,6 +1558,7 @@ namespace Statistic
                     }
                 }
 
+                int prev_hour = -1; //Для поиска одинаковых часов
                 // разбор остальных значений
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
                 {
@@ -1581,6 +1582,8 @@ namespace Statistic
                                 else
                                     ;
 
+                            GetSeasonHours(ref prev_hour, ref hour);
+
                             //foreach (TECComponent g in tec.list_TECComponents)
                             for (j = 0; j < m_localTECComponents.Count; j++)
                             {
@@ -1593,15 +1596,15 @@ namespace Statistic
                                     if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
                                     {
                                         //valuesPBR[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
-                                        m_dictValuesTECComponent[hour - 1][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
+                                        m_dictValuesTECComponent[hour - 0][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
                                         //valuesPmin[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
-                                        m_dictValuesTECComponent[hour - 1][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                        m_dictValuesTECComponent[hour - 0][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
                                         //valuesPmax[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
-                                        m_dictValuesTECComponent[hour - 1][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                        m_dictValuesTECComponent[hour - 0][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 1][id].valuesPBR = 0.0;
+                                        m_dictValuesTECComponent[hour - 0][id].valuesPBR = 0.0;
                                         //m_dictValuesTECComponent[id].valuesPmin[hour - 1] = 0.0;
                                         //m_dictValuesTECComponent[id].valuesPmax[hour - 1] = 0.0;
                                     }
@@ -1618,24 +1621,24 @@ namespace Statistic
                                         if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
                                             //valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
-                                            m_dictValuesTECComponent[hour - 1][id].valuesREC = (double)row_in[0][offsetUDG + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0][offsetUDG + j * 3];
                                         else
                                             //valuesREC[j, hour - 1] = 0;
-                                            m_dictValuesTECComponent[hour - 1][id].valuesREC = 0.0;
+                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
 
                                         if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 1][id].valuesISPER = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 1][id].valuesDIV = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 1][id].valuesREC = 0.0;
+                                        m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
                                     }
                                 }
                                 catch (Exception e)
@@ -1684,29 +1687,29 @@ namespace Statistic
                                 {
                                     id = m_localTECComponents[j].m_id;
 
-                                    m_dictValuesTECComponent[hour - 1][id].valuesPBR = 0;
+                                    m_dictValuesTECComponent[hour - 0][id].valuesPBR = 0;
 
                                     if (i < table_in.Rows.Count)
                                     {
                                         if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
                                             //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesTECComponent[hour - 1][id].valuesREC = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)table_in.Rows[i][offsetUDG + j * 3];
                                         else
-                                            m_dictValuesTECComponent[hour - 1][id].valuesREC = 0;
+                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = 0;
 
                                         if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 1][id].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
                                         else
                                             ;
 
                                         if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 1][id].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 1][id].valuesREC = 0.0;
+                                        m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
                                     }
                                 }
                                 catch
@@ -1733,41 +1736,42 @@ namespace Statistic
                 }
 
                 //for (int ii = 1; ii < 24 + 1; ii++)
-                for (i = 0; i < 24; i++)
+                //for (i = 0; i < 24; i++)
+                for (i = 0; i < m_valuesHours.Length; i++) //??? m_valuesHours.Length == m_dictValuesTECComponent.Length + 1
                 {
                     //i = ii - 1;
                     for (j = 0; j < m_localTECComponents.Count; j++)
                     {
                         int id = m_localTECComponents [j].m_id;
                         
-                        m_valuesHours[i].valuesPBR += m_dictValuesTECComponent[i][id].valuesPBR;
-                        m_valuesHours[i].valuesPmin += m_dictValuesTECComponent[i][id].valuesPmin;
-                        m_valuesHours[i].valuesPmax += m_dictValuesTECComponent[i][id].valuesPmax;
+                        m_valuesHours[i].valuesPBR += m_dictValuesTECComponent[i + 1][id].valuesPBR;
+                        m_valuesHours[i].valuesPmin += m_dictValuesTECComponent[i + 1][id].valuesPmin;
+                        m_valuesHours[i].valuesPmax += m_dictValuesTECComponent[i + 1][id].valuesPmax;
                         if (i == 0)
                         {
-                            currPBRe = (m_dictValuesTECComponent[i][id].valuesPBR + m_dictValuesTECComponent[24][id].valuesPBR) / 2;
+                            currPBRe = (m_dictValuesTECComponent[i + 1][id].valuesPBR + m_dictValuesTECComponent[0][id].valuesPBR) / 2;
                         }
                         else
                         {
-                            currPBRe = (m_dictValuesTECComponent[i][id].valuesPBR + m_dictValuesTECComponent[i - 1][id].valuesPBR) / 2;                            
+                            currPBRe = (m_dictValuesTECComponent[i + 1][id].valuesPBR + m_dictValuesTECComponent[i][id].valuesPBR) / 2;                            
                         }
 
-                        m_dictValuesTECComponent[i][id].valuesPBRe = currPBRe;
+                        m_dictValuesTECComponent[i + 1][id].valuesPBRe = currPBRe;
                         m_valuesHours[i].valuesPBRe += currPBRe;
 
-                        m_valuesHours[i].valuesREC += m_dictValuesTECComponent[i][id].valuesREC;
+                        m_valuesHours[i].valuesREC += m_dictValuesTECComponent[i + 1][id].valuesREC;
 
-                        m_dictValuesTECComponent[i][id].valuesUDGe = currPBRe + m_dictValuesTECComponent[i][id].valuesREC;
-                        m_valuesHours[i].valuesUDGe += currPBRe + m_dictValuesTECComponent[i][id].valuesREC;
+                        m_dictValuesTECComponent[i + 1][id].valuesUDGe = currPBRe + m_dictValuesTECComponent[i + 1][id].valuesREC;
+                        m_valuesHours[i].valuesUDGe += currPBRe + m_dictValuesTECComponent[i + 1][id].valuesREC;
 
-                        if (m_dictValuesTECComponent[i][id].valuesISPER == 1)
+                        if (m_dictValuesTECComponent[i + 1][id].valuesISPER == 1)
                         {
-                            m_dictValuesTECComponent[i][id].valuesDiviation = (currPBRe + m_dictValuesTECComponent[i][id].valuesREC) * m_dictValuesTECComponent[i][id].valuesDIV / 100;
+                            m_dictValuesTECComponent[i + 1][id].valuesDiviation = (currPBRe + m_dictValuesTECComponent[i + 1][id].valuesREC) * m_dictValuesTECComponent[i + 1][id].valuesDIV / 100;
                         }
                         else {
-                            m_dictValuesTECComponent[i][id].valuesDiviation = m_dictValuesTECComponent[i][id].valuesDIV;
+                            m_dictValuesTECComponent[i + 1][id].valuesDiviation = m_dictValuesTECComponent[i + 1][id].valuesDIV;
                         }
-                        m_valuesHours[i].valuesDiviation += m_dictValuesTECComponent[i][id].valuesDiviation;
+                        m_valuesHours[i].valuesDiviation += m_dictValuesTECComponent[i + 1][id].valuesDiviation;
                     }
                     /*m_valuesHours[i].valuesPBR = 0.20;
                     m_valuesHours[i].valuesPBRe = 0.20;
@@ -1787,12 +1791,14 @@ namespace Statistic
             }
             else
             {
-                double[] valuesPBR = new double[25];
-                double[] valuesPmin = new double[25];
-                double[] valuesPmax = new double[25];
-                double[] valuesREC = new double[25];
-                int[] valuesISPER = new int[25];
-                double[] valuesDIV = new double[25];
+                int lValues = m_valuesHours.Length + 1;
+
+                double[] valuesPBR = new double[lValues];
+                double[] valuesPmin = new double[lValues];
+                double[] valuesPmax = new double[lValues];
+                double[] valuesREC = new double[lValues];
+                int[] valuesISPER = new int[lValues];
+                double[] valuesDIV = new double[lValues];
 
                 offsetUDG = 1;
                 offsetPlan = 1;
@@ -1811,9 +1817,9 @@ namespace Statistic
                             if (hour == 0 && ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Day == date.Day)
                             {
                                 offsetPrev = i;
-                                valuesPBR[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
-                                valuesPmin[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
-                                valuesPmax[24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
+                                valuesPBR[0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
+                                valuesPmin[0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
+                                valuesPmax[0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
                             }
                             else
                                 ;
@@ -1838,6 +1844,7 @@ namespace Statistic
                     }
                 }
 
+                int prev_hour = -1; //Для определения одинаковых часов
                 // разбор остальных значений
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
                 {
@@ -1861,11 +1868,13 @@ namespace Statistic
                                 else
                                     ;
 
+                            GetSeasonHours (ref prev_hour, ref hour);
+
                             if ((offsetPlan < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan] is System.DBNull)))
                             {
-                                valuesPBR[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
-                                valuesPmin[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
-                                valuesPmax[hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
+                                valuesPBR[hour - 0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan];
+                                valuesPmin[hour - 0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 1];
+                                valuesPmax[hour - 0] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + 2];
                             }
                             else
                                 ;
@@ -1881,23 +1890,23 @@ namespace Statistic
 
                                 if (!(row_in[0][offsetUDG] is System.DBNull))
                                     //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
-                                    valuesREC[hour - 1] = (double)row_in[0][offsetUDG + 0];
+                                    valuesREC[hour - 0] = (double)row_in[0][offsetUDG + 0];
                                 else
-                                    valuesREC[hour - 1] = 0;
+                                    valuesREC[hour - 0] = 0;
 
                                 if (!(row_in[0][offsetUDG + 1] is System.DBNull))
-                                    valuesISPER[hour - 1] = (int)row_in[0][offsetUDG + 1];
+                                    valuesISPER[hour - 0] = (int)row_in[0][offsetUDG + 1];
                                 else
                                     ;
 
                                 if (!(row_in[0][offsetUDG + 2] is System.DBNull))
-                                    valuesDIV[hour - 1] = (double)row_in[0][offsetUDG + 2];
+                                    valuesDIV[hour - 0] = (double)row_in[0][offsetUDG + 2];
                                 else
                                     ;
                             }
                             else
                             {
-                                valuesREC[hour - 1] = 0;
+                                valuesREC[hour - 0] = 0;
                                 //valuesISPER[hour - 1] = 0;
                                 //valuesDIV[hour - 1] = 0;
                             }
@@ -1931,29 +1940,31 @@ namespace Statistic
                                 else
                                     ;
 
-                            valuesPBR[hour - 1] = 0;
+                            GetSeasonHours (ref prev_hour, ref hour);
+
+                            valuesPBR[hour - 0] = 0;
 
                             if (i < table_in.Rows.Count)
                             {
                                 if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
                                     //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
-                                    valuesREC[hour - 1] = (double)table_in.Rows[i][offsetUDG + 0];
+                                    valuesREC[hour - 0] = (double)table_in.Rows[i][offsetUDG + 0];
                                 else
-                                    valuesREC[hour - 1] = 0;
+                                    valuesREC[hour - 0] = 0;
 
                                 if (!(table_in.Rows[i][offsetUDG + 1] is System.DBNull))
-                                    valuesISPER[hour - 1] = (int)table_in.Rows[i][offsetUDG + 1];
+                                    valuesISPER[hour - 0] = (int)table_in.Rows[i][offsetUDG + 1];
                                 else
                                     ;
 
                                 if (!(table_in.Rows[i][offsetUDG + 2] is System.DBNull))
-                                    valuesDIV[hour - 1] = (double)table_in.Rows[i][offsetUDG + 2];
+                                    valuesDIV[hour - 0] = (double)table_in.Rows[i][offsetUDG + 2];
                                 else
                                     ;
                             }
                             else
                             {
-                                valuesREC[hour - 1] = 0;
+                                valuesREC[hour - 0] = 0;
                                 //valuesISPER[hour - 1] = 0;
                                 //valuesDIV[hour - 1] = 0;
                             }
@@ -1978,27 +1989,27 @@ namespace Statistic
                 for (i = 0; i < m_valuesHours.Length; i++)
                 {
 
-                    m_valuesHours[i].valuesPBR = valuesPBR[i];
-                    m_valuesHours[i].valuesPmin = valuesPmin[i];
-                    m_valuesHours[i].valuesPmax = valuesPmax[i];
+                    m_valuesHours[i].valuesPBR = valuesPBR[i + 1];
+                    m_valuesHours[i].valuesPmin = valuesPmin[i + 1];
+                    m_valuesHours[i].valuesPmax = valuesPmax[i + 1];
 
                     if (i == 0)
                     {
-                        currPBRe = (valuesPBR[i] + valuesPBR[24]) / 2;
+                        currPBRe = (valuesPBR[i + 1] + valuesPBR[0]) / 2;
                         m_valuesHours[i].valuesPBRe = currPBRe;
                     }
                     else
                     {
-                        currPBRe = (valuesPBR[i] + valuesPBR[i - 1]) / 2;
+                        currPBRe = (valuesPBR[i + 1] + valuesPBR[i - 0]) / 2;
                         m_valuesHours[i].valuesPBRe = currPBRe;
                     }
 
-                    m_valuesHours[i].valuesUDGe = currPBRe + valuesREC[i];
+                    m_valuesHours[i].valuesUDGe = currPBRe + valuesREC[i + 1];
 
-                    if (valuesISPER[i] == 1)
-                        m_valuesHours[i].valuesDiviation = (currPBRe + valuesREC[i]) * valuesDIV[i] / 100;
+                    if (valuesISPER[i + 1] == 1)
+                        m_valuesHours[i].valuesDiviation = (currPBRe + valuesREC[i + 1]) * valuesDIV[i] / 100;
                     else
-                        m_valuesHours[i].valuesDiviation = valuesDIV[i];
+                        m_valuesHours[i].valuesDiviation = valuesDIV[i + 1];
                 }
 
                 //if (m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
@@ -2020,17 +2031,18 @@ namespace Statistic
             else
                 ;
 
-            if (hour == 24)
-                hour = 23;
+            if (hour == m_valuesHours.Length)
+                hour = m_valuesHours.Length - 1;
             else
                 ;
 
             for (i = 0; i < 21; i++)
             {
-                m_valuesMins[i].valuesPBR = m_valuesHours[hour - 1].valuesPBR;
-                m_valuesMins[i].valuesPBRe = m_valuesHours[hour - 1].valuesPBRe;
-                m_valuesMins[i].valuesUDGe = m_valuesHours[hour - 1].valuesUDGe;
-                m_valuesMins[i].valuesDiviation = m_valuesHours[hour - 1].valuesDiviation;
+                //??? [hour - 1] vs [hour - 0] 26.10.2014 с учетом того, что перенесена запись '00:00' из [24] -> [0]
+                m_valuesMins[i].valuesPBR = m_valuesHours[hour - 0].valuesPBR;
+                m_valuesMins[i].valuesPBRe = m_valuesHours[hour - 0].valuesPBRe;
+                m_valuesMins[i].valuesUDGe = m_valuesHours[hour - 0].valuesUDGe;
+                m_valuesMins[i].valuesDiviation = m_valuesHours[hour - 0].valuesDiviation;
             }
 
             return true;
@@ -2755,7 +2767,7 @@ namespace Statistic
             int i = -1,
                 hour = -1
                 //26.10.2014 u/ ???
-                , offsetUTC = 0; //(int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours;
+                , offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours; //= 0
             double value = -1;
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
@@ -3193,7 +3205,8 @@ namespace Statistic
             //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            //26.10.2014 г.
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
         private void GetHoursTMSNPsumRequest(DateTime dt)
