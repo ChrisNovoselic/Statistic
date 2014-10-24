@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 //using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 
@@ -83,11 +82,11 @@ namespace trans_gtp
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
-            TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
+            InitTECBase.TYPE_DATABASE_CFG[] arTypeConfigDB = new InitTECBase.TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { InitTECBase.TYPE_DATABASE_CFG.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 arConfigDB[i] = Int32.Parse (m_fileINI.GetValueOfKey (arKeyTypeConfigDB[i]));
-                for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+                for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
                     {
@@ -116,7 +115,7 @@ namespace trans_gtp
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 m_arAdmin[i] = new AdminTS_KomDisp(new bool[] { false, true });
-                idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
+                idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(i), false, @"CONFIG_DB");
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
@@ -170,7 +169,7 @@ namespace trans_gtp
                                             @"PBR", //PPBRvsPBR
                                             @"PBR_number");
 
-                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)HClassLibrary.CONN_SETT_TYPE.PBR);
+                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(InitTECBase.TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
                         if (err == 0)
                         {
@@ -295,7 +294,7 @@ namespace trans_gtp
 
             for (int i = 0; i < 24; i++)
             {
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation.ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent.ToString();

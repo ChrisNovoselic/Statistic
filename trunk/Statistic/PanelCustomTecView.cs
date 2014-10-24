@@ -7,7 +7,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -192,17 +191,12 @@ namespace Statistic
                 
             }
 
-            /// <summary>
-            /// Добавить "постоянные" элементы в контекстное меню (Содержание, Очистить)
-            /// </summary>
-            /// <param name="indx">индекс 1-го из добавляемых пунктов (Содержание)</param>
-            /// <param name="f">функция-обработчик выбора пункта очистить</param>
-            public void AddContextMenuFixedMenuItems (int indx, EventHandler fClear) {
+            public void AddContextMenuFixedMenuItems (int indx, EventHandler f) {
                 this.ContextMenu.MenuItems.Add(@"-");
                 this.ContextMenu.MenuItems.Add(@"Содержание", createContentMenuItems());
                 this.ContextMenu.MenuItems[indx].Enabled = false;
                 this.ContextMenu.MenuItems.Add(@"Очистить");
-                this.ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].Click += fClear;
+                this.ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].Click += f;
 
                 ContentMenuStateChange ();
             }
@@ -338,11 +332,6 @@ namespace Statistic
             {
                 if (panel is PanelTecView) ((PanelTecView)panel).Activate(active); else ;
             }
-        }
-
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
         }
 
         protected void Clear () {

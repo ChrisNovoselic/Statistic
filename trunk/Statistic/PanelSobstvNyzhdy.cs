@@ -12,7 +12,6 @@ using System.Data;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -140,11 +139,6 @@ namespace Statistic
             }
         }
 
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем (на данный момент), т.к. собственные нужды отображаем только тек./сутки
-        }
-
         public override void Activate(bool active)
         {
             if (m_bIsActive == active)
@@ -264,7 +258,6 @@ namespace Statistic
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
 
                 HMark markQueries = new HMark();
-                markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE); //Только для определения сезона ???
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
@@ -415,6 +408,29 @@ namespace Statistic
                 return 0;
             }
 
+            private void PanelTecCurPower_TextChangedValue(object sender, EventArgs ev)
+            {
+                double val = -1.0;
+                int ext = 2;
+                Color clr;
+                if (double.TryParse(((System.Windows.Forms.Label)sender).Text, out val) == true)
+                {
+                    if (val > 1)
+                        clr = Color.LimeGreen;
+                    else
+                    {
+                        clr = Color.Green;
+                        ext = 0;
+                    }
+
+                    ((System.Windows.Forms.Label)sender).Text = val.ToString(@"F" + ext.ToString());
+                }
+                else
+                    clr = Color.Green;
+
+                ((System.Windows.Forms.Label)sender).ForeColor = clr;
+            }
+
             private void TimerCurrent_Tick(Object stateInfo)
             {
                 if (isActive == true)
@@ -475,7 +491,15 @@ namespace Statistic
 
                 pane.CurveList.Clear();
 
-                int itemscount = m_tecView.m_valuesHours.Length;
+                int itemscount;
+
+                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                    itemscount = 25;
+                else
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                        itemscount = 23;
+                    else
+                        itemscount = 24;
 
                 string[] names = new string[itemscount];
 
@@ -486,8 +510,45 @@ namespace Statistic
                 bool noValues = true;
                 for (int i = 0; i < itemscount; i++)
                 {
-                    names[i] = i.ToString();
-                    valuesTMSNPsum[i] = m_tecView.m_valuesHours[i].valuesTMSNPsum;
+                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                    {
+                        if (i <= m_tecView.m_valuesHours.hourAddon)
+                        {
+                            names[i] = (i + 1).ToString();
+                            valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
+                        }
+                        else
+                            if (i == m_tecView.m_valuesHours.hourAddon + 1)
+                            {
+                                names[i] = i.ToString() + "*";
+                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesFactAddon;
+                            }
+                            else
+                            {
+                                names[i] = i.ToString();
+                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i - 1];
+                            }
+
+                    }
+                    else
+                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                        {
+                            if (i < m_tecView.m_valuesHours.hourAddon)
+                            {
+                                names[i] = (i + 1).ToString();
+                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
+                            }
+                            else
+                            {
+                                names[i] = (i + 2).ToString();
+                                valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i + 1];
+                            }
+                        }
+                        else
+                        {
+                            names[i] = (i + 1).ToString();
+                            valuesTMSNPsum[i] = m_tecView.m_valuesHours.valuesTMSNPsum[i];
+                        }
 
                     if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))
                         minimum = valuesTMSNPsum[i];
@@ -541,12 +602,12 @@ namespace Statistic
                     {
                         int valuescount;
 
-                        //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                        //    valuescount = m_tecView.lastHour + 1;
-                        //else
-                        //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                        //        valuescount = m_tecView.lastHour - 1;
-                        //    else
+                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                            valuescount = m_tecView.lastHour + 1;
+                        else
+                            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                                valuescount = m_tecView.lastHour - 1;
+                            else
                                 valuescount = m_tecView.lastHour;
 
                         double[] valuesTMSNPsum1 = new double[valuescount];

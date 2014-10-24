@@ -8,7 +8,6 @@ using System.Data.Common;
 //using System.Data.Odbc;
 using MySql.Data.MySqlClient;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_mc_cmd
@@ -96,8 +95,8 @@ namespace trans_mc_cmd
             m_idListener = DbSources.Sources().Register(connSett, false, @"CONFIG_DB");
             m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
 
-            TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t ++) {
+            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t ++) {
                 if (t.ToString().Contains(iConfigDB.ToString()) == true)
                 {
                     typeConfigDB = t;
@@ -112,8 +111,8 @@ namespace trans_mc_cmd
                 m_admin = new AdminTS(new bool [] {false, true});
 
                 HMark markQueries = new HMark ();
-                markQueries.Marked ((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
-                markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
+                markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+                markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
                 m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, typeConfigDB, markQueries, true);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
@@ -134,7 +133,7 @@ namespace trans_mc_cmd
                 {
                     DbSources.Sources ().UnRegister (m_idListener);
 
-                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)HClassLibrary.CONN_SETT_TYPE.PBR], false, @"PBR");
+                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false, @"PBR");
                     m_connection = DbSources.Sources().GetConnection (m_idListener, out iRes);
                     m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
                 }

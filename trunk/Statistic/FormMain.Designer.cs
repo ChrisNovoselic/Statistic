@@ -1,6 +1,4 @@
-﻿using HClassLibrary;
-
-namespace Statistic
+﻿namespace Statistic
 {
     partial class FormMain
     {
@@ -60,6 +58,7 @@ namespace Statistic
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tclTecViews = new HTabCtrlEx (); //System.Windows.Forms.TabControl();
+            this.timer = new System.Windows.Forms.Timer(this.components);
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             //this.m_ContextMenuStripListTecViews.SuspendLayout ();
@@ -303,6 +302,11 @@ namespace Statistic
             this.tclTecViews.TabIndex = 3;
             this.tclTecViews.SelectedIndexChanged += new System.EventHandler(this.tclTecViews_SelectedIndexChanged);
             // 
+            // timer
+            // 
+            this.timer.Interval = 1000;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            // 
             // lblLabel
             // 
             this.lblLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -341,6 +345,7 @@ namespace Statistic
             this.ContextMenuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion
@@ -357,6 +362,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem текущееСостояниеПользовательToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
+        private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.Label lblLabel;

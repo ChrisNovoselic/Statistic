@@ -6,8 +6,6 @@ using System.Threading;
 
 using Excel = Microsoft.Office.Interop.Excel;
 
-using HClassLibrary;
-
 namespace StatisticCommon
 {
     public class AdminTS_NSS : AdminTS
@@ -424,7 +422,7 @@ namespace StatisticCommon
 
         private string nameFileRDGExcel (DateTime dt) {
             //return dt.GetDateTimeFormats()[4];
-            return dt.ToString (@"yyyyMMdd");
+            return dt.ToString (@"yyyy-MM-dd");
         }
 
         protected void /*bool*/ ExpRDGExcelValuesRequest()
@@ -648,9 +646,9 @@ namespace StatisticCommon
                             m_tableRDGExcelValuesResponse.Rows.RemoveAt(m_tableRDGExcelValuesResponse.Rows.Count - 1);
 
                         //if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).GetDateTimeFormats()[4] + ".xls") == true)
-                        if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyyMMdd") + ".xls") == true)
+                        if (File.Exists(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls") == true)
                         {
-                            tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyyMMdd") + ".xls", strSelect, out err);
+                            tableRDGExcelValuesNextDay = DbTSQLInterface.Select(path_rdg_excel + "\\" + m_curDate.Date.AddDays(1).ToString(@"yyyy-MM-dd") + ".xls", strSelect, out err);
                             if (tableRDGExcelValuesNextDay.Rows.Count > 0)
                             {
                                 while (tableRDGExcelValuesNextDay.Rows[tableRDGExcelValuesNextDay.Rows.Count - 1][1] is DBNull)

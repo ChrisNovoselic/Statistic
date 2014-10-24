@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -16,11 +15,6 @@ namespace Statistic
         static void Main()
         {
             int iRes = 0;
-
-            //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            //Logging.s_mode = Logging.LOG_MODE.DB;
-            Logging.s_mode = Logging.LOG_MODE.FILE;
-
             try { ProgramBase.Start (); }
             catch (Exception e) {
                 //MessageBox.Show(null, @"Возможно, повторный запуск приложения" + @".\nили обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
@@ -29,7 +23,7 @@ namespace Statistic
             }
 
             FormMain formMain = null;
-
+            
             if (iRes == 0)
             {                
                 string strHeader = string.Empty;

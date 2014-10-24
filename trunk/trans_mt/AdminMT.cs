@@ -5,9 +5,7 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
 using StatisticCommon;
-using StatisticTrans;
 using StatisticTransModes;
 
 namespace trans_mt
@@ -58,7 +56,7 @@ namespace trans_mt
                         //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
                         //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
                         //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
-                        hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
+                        hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - ts.Hours).ToString(@"yyyy-MM-dd HH:00:00.000") + @"#");
 
                         PBRNumber = -1;
 
@@ -154,7 +152,7 @@ namespace trans_mt
             int i = -1;
 
             if (m_list_tec.Count > 0) {
-                m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec[0].connSetts[(int)HClassLibrary.CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
+                m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec [0].connSetts [(int)CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
 
                 bRes = false;
             }

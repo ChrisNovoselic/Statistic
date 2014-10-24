@@ -2,8 +2,6 @@ using System;
 using System.Windows.Forms;
 using System.IO;
 
-using HClassLibrary;
-
 namespace StatisticCommon
 {
     public class AdminTS_KomDisp : AdminTS

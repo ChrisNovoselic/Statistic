@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace update_pbr
@@ -87,7 +86,7 @@ namespace update_pbr
                         //case 6:
                         case TEC.TEC_TYPE.BIYSK:
                             idListenerCfgDB = DbSources.Sources().Register(listConnSetts[0], false, @"Конф. БД");
-                            t.connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListenerCfgDB, 103, -1, out err), (int)CONN_SETT_TYPE.PBR);
+                            t.connSettings(ConnectionSettingsSource.GetConnectionSettings(InitTECBase.TYPE_DATABASE_CFG.CFG_190, idListenerCfgDB, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
                             DbSources.Sources().UnRegister(idListenerCfgDB);
                             break;
                         default:

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.ComponentModel;
+using System.ComponentModel;
 //using System.Data;
 using System.Drawing;
 //using System.Linq;
@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 
@@ -76,9 +75,9 @@ namespace trans_tg
             //string sec = "Main (" + ProgramBase.AppName + ")";
             iConfigDB = Int32.Parse (m_fileINI.GetValueOfKey (keyTypeConfigDB));
 
-            TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            InitTECBase.TYPE_DATABASE_CFG iTypeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
 
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
             {
                 if (t.ToString().Contains(iConfigDB.ToString()) == true)
                 {
@@ -92,10 +91,10 @@ namespace trans_tg
             bool bIgnoreTECInUse = false;
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
@@ -355,7 +354,7 @@ namespace trans_tg
             for (int i = 0; i < 24; i++)
             {
                 if (m_dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    m_dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
+                    m_dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 else
                     ;
 

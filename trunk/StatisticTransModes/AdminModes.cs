@@ -39,9 +39,7 @@ namespace StatisticTransModes
 
         public override void getCurRDGValues(HAdmin source)
         {
-            base.getCurRDGValues (source);
-
-            for (int i = 0; i < source.m_curRDGValues.Length; i++)
+            for (int i = 0; i < 24; i++)
             {
                 m_curRDGValues[i].pbr = source.m_curRDGValues[i].pbr;
                 m_curRDGValues[i].pmin = source.m_curRDGValues[i].pmin;
@@ -53,9 +51,7 @@ namespace StatisticTransModes
 
         public override void CopyCurToPrevRDGValues()
         {
-            base.CopyCurToPrevRDGValues ();
-            
-            for (int i = 0; i < m_curRDGValues.Length; i++)
+            for (int i = 0; i < 24; i++)
             {
                 m_prevRDGValues[i].pbr = m_curRDGValues[i].pbr;
                 m_prevRDGValues[i].pmin = m_curRDGValues[i].pmin;
@@ -65,15 +61,11 @@ namespace StatisticTransModes
             }
         }
 
-        //public override void ClearValues(int cnt = -1)
         public override void ClearValues()
         {
-            //base.ClearValues(cnt);
-            base.ClearValues();
-
-            for (int i = 0; i < m_curRDGValues.Length; i++)
+            for (int i = 0; i < 24; i++)
             {
-                m_curRDGValues[i].pbr = m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 0.0;
+                m_curRDGValues[i].pbr = m_curRDGValues[i].pmin = m_curRDGValues[i].pbr = 0.0;
                 m_curRDGValues[i].pbr_number = string.Empty;
             }
 
@@ -84,7 +76,7 @@ namespace StatisticTransModes
         {
             int i = -1, j = -1;
 
-            for (i = 0; i < m_curRDGValues.Length; i++)
+            for (i = 0; i < 24; i++)
             {
                 for (j = 0; j < 3 /*4 для SN???*/; j++)
                 {

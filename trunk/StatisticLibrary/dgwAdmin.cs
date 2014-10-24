@@ -2,31 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 
 namespace StatisticCommon
 {
-    public class DataGridViewBase : DataGridView
-    {
-        public DataGridViewBase()
-            : base()
-        {
-        }
-
-        public void InitRows(int cnt, bool bIns)
-        {
-            if (bIns == true)
-                while (Rows.Count < cnt)
-                    Rows.Insert(0, 1);
-            else
-                while (Rows.Count > cnt)
-                    Rows.RemoveAt(0);
-        }
-    }
-    
-    public abstract class DataGridViewAdmin : DataGridViewBase
+    public abstract class DataGridViewAdmin : DataGridView
     {
         protected const double maxPlanValue = 1500;
         protected const double maxRecomendationValue = 1500;

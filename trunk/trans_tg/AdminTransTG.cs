@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_tg
@@ -25,9 +24,8 @@ namespace trans_tg
 
         private void InitializeAdminTransTG()
         {
-            m_listTimezoneOffsetHaveDates = new List<bool>[(int)HClassLibrary.CONN_SETT_TYPE.PBR + 1];
-            for (int i = 0; i < (int)HClassLibrary.CONN_SETT_TYPE.PBR + 1; i++)
-            {
+            m_listTimezoneOffsetHaveDates = new List<bool>[(int)CONN_SETT_TYPE.PBR + 1];
+            for (int i = 0; i < (int)CONN_SETT_TYPE.PBR + 1; i ++) {
                 m_listTimezoneOffsetHaveDates[i] = new List<bool>();
             }
 
@@ -63,7 +61,7 @@ namespace trans_tg
             return bRes;
         }
 
-        protected override void ClearDates(HClassLibrary.CONN_SETT_TYPE type)
+        protected override void ClearDates(CONN_SETT_TYPE type)
         {
             base.ClearDates(type);
             
@@ -77,7 +75,7 @@ namespace trans_tg
 
         }
 
-        protected override bool GetDatesResponse(HClassLibrary.CONN_SETT_TYPE type, DataTable table, DateTime date)
+        protected override bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
             //bool bIsHourTimezoneOffsetRDGExcel = false;
@@ -118,7 +116,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)HClassLibrary.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -134,7 +132,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)HClassLibrary.CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -148,15 +146,15 @@ namespace trans_tg
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
                     strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE " +
-                          @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                          @"DATE > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
-                          @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                          @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +
+                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
                     break;
                 default:
@@ -176,16 +174,16 @@ namespace trans_tg
                 case AdminTS.TYPE_FIELDS.STATIC:
                     strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
                             @" WHERE " +
-                            @"DATE_TIME > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                            @"DATE_TIME > '" + dt.ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
-                            @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                            @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyy-MM-dd HH:mm:ss") +
+                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 default:
@@ -224,7 +222,7 @@ namespace trans_tg
 
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
-                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)HClassLibrary.CONN_SETT_TYPE.ADMIN].Count; i++)
+                for (int i = currentHour; i < m_listTimezoneOffsetHaveDates [(int)CONN_SETT_TYPE.ADMIN].Count; i++)
                 {
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
@@ -239,7 +237,7 @@ namespace trans_tg
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"' WHERE " +
-                                            @"DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                            @"DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                                 break;
@@ -255,7 +253,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -305,7 +303,7 @@ namespace trans_tg
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
-                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                                 break;
@@ -321,8 +319,8 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyy-MM-dd HH:mm:ss") +
+                                            @"', '" + serverTime.ToString("yyyy-MM-dd HH:mm:ss") +
                                             @"', '" + GetPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +

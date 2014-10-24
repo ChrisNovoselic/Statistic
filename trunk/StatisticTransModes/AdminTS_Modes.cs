@@ -5,7 +5,6 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace StatisticTransModes

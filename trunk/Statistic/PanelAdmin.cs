@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 //using System.Security.Cryptography;
 using System.IO;
-using System.Threading; //для ManualResetEvent
+//using System.Threading;
 using System.Globalization;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -22,7 +21,6 @@ namespace Statistic
 
         protected System.Windows.Forms.MonthCalendar mcldrDate;
 
-        protected ManualResetEvent m_evtAdminTableRowCount;
         protected DataGridViewAdmin dgwAdminTable;
 
         private System.Windows.Forms.Button btnSet;
@@ -165,9 +163,19 @@ namespace Statistic
 
         public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HMark markQueries)
         {
-            preInitialize (type);
+            //bool bUseData = true;
+            switch (type) {
+                case FormChangeMode.MANAGER.DISP:
+                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
+                    break;
+                case FormChangeMode.MANAGER.NSS:
+                    m_admin = new AdminTS_NSS(new bool[] { false, true });
+                    break;
+                default:
+                    break;
+            }
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, InitTECBase.TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...");
@@ -180,14 +188,30 @@ namespace Statistic
             else
                 ;
 
-            initialize ();
+            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
+            m_admin.SetDelegateDatetime(this.CalendarSetDate);
+
+            m_admin.m_typeFields = s_typeFields;
+            
+            InitializeComponents();
+            
+            isActive = false;
         }
 
         public PanelAdmin(List<StatisticCommon.TEC> tec, FormChangeMode.MANAGER type)
         {
-            preInitialize (type);
-            
-            //Для установки типов соединения (оптимизация кол-ва соединений с БД)
+            switch (type)
+            {
+                case FormChangeMode.MANAGER.DISP:
+                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
+                    break;
+                case FormChangeMode.MANAGER.NSS:
+                    m_admin = new AdminTS_NSS(new bool[] { false, true });
+                    break;
+                default:
+                    break;
+            }
+
             HMark markQueries = new HMark ();
             markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)CONN_SETT_TYPE.PBR);
@@ -204,29 +228,6 @@ namespace Statistic
             }
             else
                 ;
-
-            initialize ();
-        }
-
-        private void preInitialize(FormChangeMode.MANAGER type)
-        {
-            switch (type)
-            {
-                case FormChangeMode.MANAGER.DISP:
-                    //Возможность редактирования значений ПБР: изменяема, НЕ разрешена
-                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
-                    break;
-                case FormChangeMode.MANAGER.NSS:
-                    //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
-                    m_admin = new AdminTS_NSS(new bool[] { false, true });
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void initialize () {
-            m_evtAdminTableRowCount = new ManualResetEvent (false);
 
             m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
@@ -249,8 +250,6 @@ namespace Statistic
         }
 
         public override void Start () {
-            initTableHourRows();
-            
             m_admin.Start ();
         }
 
@@ -263,64 +262,15 @@ namespace Statistic
 
         public virtual void setDataGridViewAdmin(DateTime date) {}
 
-        /// <summary>
-        /// Установка значения даты/времени в элементе управления 'календарь' и
-        /// выполнение функции, связанной с изменением значения даты/времени
-        /// </summary>
-        /// <param name="dt"></param>
-        private void setDate(DateTime dt)
-        {
-            mcldrDate.SetDate(dt);
-
-            initTableHourRows();
-        }
-
-        /// <summary>
-        /// Делегат для установки значения в элементе управления 'календарь'
-        /// при вызове из 'другого' потока
-        /// </summary>
-        /// <param name="date"></param>
         public void CalendarSetDate(DateTime date)
         {
-            BeginInvoke(new DelegateDateFunc(setDate), date);
-        }
-
-        /// <summary>
-        /// инициализация даты/времени для определения размера массива с данными и
-        /// кол-ва строк таблицы в соответствии с этим размером
-        /// </summary>
-        protected override void initTableHourRows()
-        {
-            //Установить признак "[НЕ]обычного" размера массива 'm_curRDGValues'
-            m_admin.m_curDate = mcldrDate.SelectionStart.Date;
-
-            if (m_admin.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
-            {
-                dgwAdminTable.InitRows(24, false);
-            }
-            else {
-                dgwAdminTable.InitRows(25, true);                
-            }
-        }
-
-        /// <summary>
-        /// Приведение кол-ва строк таблицы в соответствие с кол-ом элементов в массиве с данными
-        /// решение (по объекту синхронизации 'PanelAdminKomDisp::setDataGridViewAdmin () - ...') далеко не изящное, НО временное ???
-        /// </summary>
-        protected void normalizedTableHourRows () {
-            if (!(this.dgwAdminTable.Rows.Count == m_admin.m_curRDGValues.Length))
-                if (this.dgwAdminTable.Rows.Count < m_admin.m_curRDGValues.Length)
-                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, true);
-                else
-                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, false);
-
-            m_evtAdminTableRowCount.Set();
+            BeginInvoke(new DelegateDateFunc(mcldrDate.SetDate), date); //mcldrDate.SetDate(date);
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
         {
             DialogResult result;
-            Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -337,13 +287,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -360,8 +310,6 @@ namespace Statistic
 
             if (bRequery == true) {
                 ClearTables();
-
-                initTableHourRows();
 
                 m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
@@ -380,7 +328,7 @@ namespace Statistic
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
-            Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -397,13 +345,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == HAdmin.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -432,8 +380,8 @@ namespace Statistic
         {
             getDataGridViewAdmin();
 
-            Errors resultSaving = m_admin.SaveChanges();
-            if (resultSaving == Errors.NoError)
+            HAdmin.Errors resultSaving = m_admin.SaveChanges();
+            if (resultSaving == HAdmin.Errors.NoError)
             {
                 ClearTables();
 
@@ -441,7 +389,7 @@ namespace Statistic
             }
             else
             {
-                if (resultSaving == Errors.InvalidValue)
+                if (resultSaving == HAdmin.Errors.InvalidValue)
                     MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 else
                     MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -482,7 +430,7 @@ namespace Statistic
         public bool MayToClose()
         {
             DialogResult result;
-            Errors resultSaving;
+            HAdmin.Errors resultSaving;
 
             getDataGridViewAdmin();
 
@@ -497,11 +445,11 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == HAdmin.Errors.NoError)
                         return true;
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == HAdmin.Errors.InvalidValue)
                             if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
                                 return true;
                             else

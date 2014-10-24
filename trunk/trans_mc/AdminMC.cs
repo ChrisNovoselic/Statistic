@@ -5,7 +5,6 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTransModes;
 
@@ -65,23 +64,20 @@ namespace trans_mc
             bool bRes = true;
             int i = -1, j = -1,
                 hour = -1,
-                offsetPBR = 2
-                , offset = 0;
+                offsetPBR = 2;
 
             for (i = 0; i < table.Rows.Count; i ++)
             {
                 try
                     {
                         hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        if ((hour == 0) && (! (((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)))
+                        if (hour == 0 && ((DateTime)table.Rows[i]["DATE_PBR"]).Day != date.Day)
                             hour = 24;
                         else
                             if (hour == 0)
                                 continue;
                             else
                                 ;
-
-                        hour += offset;
 
                         m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
 
@@ -109,26 +105,6 @@ namespace trans_mc
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
-
-                        if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
-                        {
-                            m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;
-
-                            m_curRDGValues[hour].pbr = m_curRDGValues[hour - 1].pbr;
-
-                            m_curRDGValues[hour].pmin = m_curRDGValues[hour - 1].pmin;
-
-                            m_curRDGValues[hour].pmax = m_curRDGValues[hour - 1].pmax;
-
-                            m_curRDGValues[hour].recomendation = m_curRDGValues[hour - 1].recomendation;
-                            m_curRDGValues[hour].deviationPercent = m_curRDGValues[hour - 1].deviationPercent;
-                            m_curRDGValues[hour].deviation = m_curRDGValues[hour - 1].deviation;
-
-                            offset ++;
-                        }
-                        else
-                        {
-                        }
                     }
                     catch { }
             }

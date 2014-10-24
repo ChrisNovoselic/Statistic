@@ -3,16 +3,12 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Data;
 
-using HClassLibrary;
-
 namespace StatisticCommon
 {
     public abstract class PanelStatistic : TableLayoutPanel
     {
         public abstract void Start();
         public abstract void Stop();
-
-        protected abstract void initTableHourRows ();
 
         public abstract void Activate(bool active);
     }

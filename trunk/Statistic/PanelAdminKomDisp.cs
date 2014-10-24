@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Security.Cryptography;
 using System.IO;
@@ -10,7 +10,6 @@ using System.Threading;
 using System.Globalization;
 using System.Drawing;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -221,9 +220,7 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
-            //if (((HStatisticUsers.RoleIsKomDisp == true) || (HStatisticUsers.RoleIsAdmin == true)) && ALARM_USE == true)
-            if ((HStatisticUsers.RoleIsKomDisp == true) && ALARM_USE == true)
-            {
+            if ((Users.Role < (int)Users.ID_ROLES.USER) && ALARM_USE == true) {
                 m_adminAlarm = new AdminAlarm();
                 m_adminAlarm.InitTEC(m_admin.m_list_tec);
 
@@ -371,12 +368,9 @@ namespace Statistic
         {
             double value;
             bool valid;
-            //int offset = -1;
 
-            for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
+            for (int i = 0; i < 24; i++)
             {
-                //offset = m_admin.GetSeasonHourOffset(i);
-                
                 for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
                 {
                     switch (j)
@@ -421,21 +415,9 @@ namespace Statistic
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            int offset = -1;
-            string strFmtDatetime = string.Empty;
-
-            //??? не очень изящное решение
-            m_evtAdminTableRowCount.Reset ();
-            this.BeginInvoke (new DelegateFunc (normalizedTableHourRows));
-            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
-
-            for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
+            for (int i = 0; i < 24; i++)
             {
-                strFmtDatetime = m_admin.GetFmtDatetime (i);
-                offset = m_admin.GetSeasonHourOffset (i);
-
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
-
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
@@ -565,11 +547,10 @@ namespace Statistic
             int err = -1
                 , idListenerConfigDB = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             System.Data.Common.DbConnection dbConn = DbSources.Sources ().GetConnection (idListenerConfigDB, out err);
-            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = {0} WHERE [ID] = {1} ", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents [m_admin.indxTECComponents].m_id }, out err);
-            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur]=? WHERE [ID]=?", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents[m_admin.indxTECComponents].m_id }, out err);
-            DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur + @" WHERE [ID] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_id, null, null, out err);
+            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur] = {0} WHERE [ID] = {1} ", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents [m_admin.indxTECComponents].m_id }, out err);
+            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur]=? WHERE [ID]=?", new System.Data.DbType[] { System.Data.DbType.Decimal, System.Data.DbType.Int16 }, new object[] { m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur, m_admin.allTECComponents[m_admin.indxTECComponents].m_id }, out err);
+            DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [techsite_cfg-2.X.X].[dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_dcKoeffAlarmPcur + @" WHERE [ID] = " + m_admin.allTECComponents[m_admin.indxTECComponents].m_id, null, null, out err);
             DbSources.Sources().UnRegister(idListenerConfigDB);
         }
     }
 }
-

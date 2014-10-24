@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
-//using System..SqlClient;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Threading;
 using System.Globalization;
@@ -13,7 +13,6 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -251,9 +250,9 @@ namespace Statistic
                         ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
                     }
 
-                    //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
-                    //    ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
-                    //else
+                    if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
+                        ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+                    else
                         ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
 
                     ws.Cells[2, 0].Value = "Минута";

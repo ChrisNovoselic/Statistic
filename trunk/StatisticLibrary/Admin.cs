@@ -2,16 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
-//using System.Data.SqlClient;
+using System.Data.SqlClient;
 using System.Data.OleDb;
 using System.IO;
-//using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Globalization;
-
-using HClassLibrary;
 
 namespace StatisticCommon
 {
@@ -19,32 +17,6 @@ namespace StatisticCommon
 
     public abstract class HAdmin : object
     {
-        public static int SEASON_BASE = 5;
-        public enum seasonJumpE
-        {
-            None,
-            WinterToSummer,
-            SummerToWinter,
-        }
-
-        protected int GetSeasonValue (int h) {
-            int iRes = SEASON_BASE;
-
-            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
-                    
-            } else {
-                if (m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) < 0) {
-                    //ДО перехода
-                    iRes += (int)seasonJumpE.SummerToWinter;
-                } else {
-                    //ПОСЛЕ перехода
-                    iRes += (int)seasonJumpE.WinterToSummer;
-                }
-            }
-
-            return iRes;
-        }
-        
         public struct /*class*/ RDGStruct
         {
             //public double [] ppbr;
@@ -117,6 +89,15 @@ namespace StatisticCommon
             Data,
         }
 
+        public enum Errors
+        {
+            NoError,
+            InvalidValue,
+            NoAccess,
+            NoSet,
+            ParseError,
+        }
+
         //Для особкнной ТЭЦ (Бийск)
         //private volatile DbDataInterface dataInterface;
         
@@ -128,51 +109,12 @@ namespace StatisticCommon
         private bool actived;
         public bool m_bIsActive { get { return actived; } }
 
-        //private int m_iSeasonHour;
-        //protected int SeasonHour
-        //{
-        //    get { return m_iSeasonHour; }
-        //    set
-        //    {
-        //        if (!(m_iSeasonHour == value))
-        //        {
-        //            if (value < 0) {
-                        
-        //            } else {
-        //            }
-
-        //            m_iSeasonHour = value;
-        //        }
-        //        else
-        //        {
-        //        }
-        //    }
-        //}
-
-        private static int m_iSeasonAction;
-        public static int SeasonAction {
-            get { return m_iSeasonAction; } set { m_iSeasonAction = value; }
-        }
-
-        private static DateTime m_dtSeason;
-        public static DateTime SeasonDateTime {
-            get {
-                return m_dtSeason;
-            }
-
-            set {
-                m_dtSeason = value;
-            }
-        }
-
         public HAdmin()
         {
             m_IdListenerCurrent = -1;
 
             m_dictIdListeners = new Dictionary<int,int[]> ();
-
-            //m_iSeasonHour = -1;
-
+            
             Initialize ();
         }
 
@@ -244,7 +186,7 @@ namespace StatisticCommon
             initTEC(markQueries);
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, InitTECBase.TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
@@ -253,10 +195,10 @@ namespace StatisticCommon
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
                     switch (typeCfg) {
-                        case TYPE_DATABASE_CFG.CFG_190:
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
                             this.m_list_tec = new InitTEC_190(idListener, bIgnoreTECInUse, false).tec;
                             break;
-                        case TYPE_DATABASE_CFG.CFG_200:
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
                             this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, false).tec;
                             break;
                         default:
@@ -264,10 +206,10 @@ namespace StatisticCommon
                     }
                 else
                     switch (typeCfg) {
-                        case TYPE_DATABASE_CFG.CFG_190:
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_190:
                             this.m_list_tec = new InitTEC_190(idListener, (short)mode, bIgnoreTECInUse, false).tec;
                             break;
-                        case TYPE_DATABASE_CFG.CFG_200:
+                        case InitTECBase.TYPE_DATABASE_CFG.CFG_200:
                             this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, false).tec;
                             break;
                         default:
@@ -452,44 +394,7 @@ namespace StatisticCommon
             Logging.Logg().Error(msg);
         }
 
-        //public virtual void ClearValues(int cnt = -1) {
-        public virtual void ClearValues()
-        {
-            int cntHours = 24;
-
-            //if (cnt < 0) {
-                //Проверка признака "обычного" размера массива
-                if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
-                {
-                    if (m_curRDGValues.Length > 24)
-                    {
-                        m_curRDGValues = null;
-                    }
-                    else
-                    {
-                    }
-                }
-                else
-                {
-                    if (m_curRDGValues.Length < 25)
-                    {
-                        m_curRDGValues = null;
-                        cntHours = 25;
-                    }
-                    else
-                    {
-                    }
-                }
-            //} else {
-            //    m_curRDGValues = null;
-            //    cntHours = cnt;
-            //}
-
-            if (m_curRDGValues == null)
-                m_curRDGValues = new RDGStruct[cntHours];
-            else
-                ;
-        }
+        public abstract void ClearValues();
 
         public abstract void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date);
 
@@ -503,30 +408,9 @@ namespace StatisticCommon
 
         protected virtual void ClearDates(CONN_SETT_TYPE type)
         {
-            int i = 1
-                , cntHours = 24
-                , length = m_arHaveDates.Length / m_arHaveDates.Rank;
+            int i = 1;
 
-            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
-                if (length > 24)
-                    m_arHaveDates = null;
-                else
-                    ;
-            else
-                if (length < 25)
-                {
-                    m_arHaveDates = null;
-                    cntHours = 25;
-                }
-                else
-                    ;
-
-            if (m_arHaveDates == null)
-                m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, cntHours];
-            else
-                ;
-
-            for (i = 0; i < cntHours; i++)
+            for (i = 0; i < 24; i++)
             {
                 m_arHaveDates[(int)type, i] = 0; //false;
             }
@@ -836,27 +720,9 @@ namespace StatisticCommon
             return modeRes;
         }
 
-        public virtual void CopyCurToPrevRDGValues() {
-            if (!(m_prevRDGValues.Length == m_curRDGValues.Length))
-            {
-                m_prevRDGValues = null;
-                m_prevRDGValues = new RDGStruct[m_curRDGValues.Length];
-            }
-            else
-            {
-            }
-        }
+        public abstract void CopyCurToPrevRDGValues();
 
-        public virtual void getCurRDGValues (HAdmin source) {
-            if (!(m_curRDGValues.Length == source.m_curRDGValues.Length))
-            {
-                m_prevRDGValues = null;
-                m_prevRDGValues = new RDGStruct[source.m_curRDGValues.Length];
-            }
-            else
-            {
-            }
-        }
+        public abstract void getCurRDGValues (HAdmin source);
 
         protected virtual bool GetCurrentTimeResponse(DataTable table)
         {
@@ -868,7 +734,7 @@ namespace StatisticCommon
             {
                 DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
                 int timezone_offset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
-                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight) == true)
+                if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
                     timezone_offset++;
                 else
                     ;
@@ -933,96 +799,14 @@ namespace StatisticCommon
             return m_arHaveDates[(int)type, indx] > 0 ? true : false;
         }
 
-        public int GetSeasonHourOffset(int h)
-        {
-            int iRes = 0;
-
-            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
-                //if (! (h < HAdmin.SeasonDateTime.Hour))
-                if (h > HAdmin.SeasonDateTime.Hour)
-                    iRes = 1;
-                else
-                    ;
-            } else {
-            }
-
-            return iRes;
-            //return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
-        }
-
-        protected void GetSeasonHours(ref int prev_h, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
-        {
-            int offset = 0;
-            
-            //Проверка перехода сезонов
-            if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
-            {
-                //Необходимо искать одинаковые часы
-                if (prev_h < 0)
-                    ; //Не было ни одного предыдущего часа                                
-                else
-                {
-                    if (prev_h == h)
-                    {
-                        //Найден одинаковый
-                        offset++;
-                    }
-                    else
-                    {
-                        if (prev_h < h)
-                            //Норма
-                            //if (HAdmin.SeasonDateTime.Hour < h)
-                            if (! (HAdmin.SeasonDateTime.Hour > h))
-                                offset ++;
-                            else
-                                ;
-                        else
-                            ; //Ошибка ???
-                    }
-                }
-            }
-            else
-            {
-                //Оставить "как есть"
-            }
-
-            prev_h = h; //Запомнить текущий
-            h += offset;
-        }
-
-        public string GetFmtDatetime(int h)
-        {
-            string strRes = @"dd-MM-yyyy HH";
-
-            if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
-            {
-                if (h == (HAdmin.SeasonDateTime.Hour))
-                    strRes += @"*";
-                else
-                    ;
-            }
-            else
-                ;
-
-            strRes += @":00";
-
-            return strRes;
-        }
-
         public static string s_Name_Current_TimeZone = @"Russian Standard Time";
         public static DateTime ToCurrentTimeZone(DateTime dt)
         {
             DateTime dtRes;
             if (! (dt.Kind == DateTimeKind.Local))
                 dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
-            else {
-                dtRes = dt - TimeZoneInfo.Local.GetUtcOffset (dt);
-                if (dtRes.IsDaylightSavingTime () == true) {
-                    dtRes = dtRes.AddHours(-1);
-                } else { }
-
-                dtRes = dtRes.Add (GetUTCOffsetOfCurrentTimeZone ());
-            }
+            else
+                dtRes = dt;
 
             return dtRes;
         }
@@ -1034,15 +818,8 @@ namespace StatisticCommon
 
         public static TimeSpan GetUTCOffsetOfCurrentTimeZone()
         {
-            //System.Collections.ObjectModel.ReadOnlyCollection <TimeZoneInfo> tzi = TimeZoneInfo.GetSystemTimeZones ();
-            //foreach (TimeZoneInfo tz in tzi) {
-            //    Console.WriteLine (tz.DisplayName + @", " +  tz.StandardName + @", " + tz.Id);
-            //}
-
             DateTime dtNow = DateTime.Now;
-
-            //return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
-            return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Current_TimeZone).GetUtcOffset(dtNow);
+            return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
         }
 
         public void ErrorReport (string msg) {
@@ -1065,5 +842,7 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        public static object [] s_REGISTRATION_INI = new object [(int)Users.INDEX_REGISTRATION.COUNT_INDEX_REGISTRATION];
     }
 }

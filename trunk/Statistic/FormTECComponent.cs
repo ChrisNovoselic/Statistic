@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic

@@ -7,7 +7,6 @@ using System.Data;
 using System.Data.Common;
 //using System.Data.Odbc;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_mc_cmd

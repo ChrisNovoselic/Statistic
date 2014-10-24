@@ -10,7 +10,6 @@ using StatisticTrans;
 using Modes;
 using ModesApiExternal;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_mc_cmd

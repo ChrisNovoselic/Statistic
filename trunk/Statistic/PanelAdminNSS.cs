@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
 using System.Globalization;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -130,7 +129,7 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
+                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyy-MM-dd HH");
                 else
                     ;
 
@@ -250,14 +249,14 @@ namespace Statistic
             //if (exportFolder.SelectedPath.Length > 0) {
                 getDataGridViewAdmin();
 
-                Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-                if (resultSaving == Errors.NoError)
+                HAdmin.Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                if (resultSaving == HAdmin.Errors.NoError)
                 {
                     btnRefresh.PerformClick ();
                 }
                 else
                 {
-                    if (resultSaving == Errors.InvalidValue)
+                    if (resultSaving == HAdmin.Errors.InvalidValue)
                         MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                     else
                         MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);

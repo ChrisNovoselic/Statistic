@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 
@@ -144,7 +144,7 @@ namespace StatisticCommon
 
         public override void ClearTables()
         {
-            for (int i = 0; i < Rows.Count; i++)
+            for (int i = 0; i < 24; i++)
             {
                 Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = "";
                 Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = "";

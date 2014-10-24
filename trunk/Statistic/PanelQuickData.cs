@@ -6,7 +6,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -47,7 +46,7 @@ namespace Statistic
 
             foreach (Control ctrl in this.Controls)
             {
-                if (ctrl is HClassLibrary.HLabel)
+                if (ctrl is StatisticCommon.HLabel)
                 {
                     indx = (int)((HLabel)ctrl).m_type;
                     if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
@@ -114,7 +113,7 @@ namespace Statistic
             if (!(fonts == null))
                 foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
                 {
-                    if (ctrl is HClassLibrary.HLabel)
+                    if (ctrl is StatisticCommon.HLabel)
                     {
                         if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
                             ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
@@ -255,9 +254,9 @@ namespace Statistic
         {
             components = new System.ComponentModel.Container();
 
-            bool bEnabled = true
-                , bChecked = ! HStatisticUsers.RoleIsOperationPersonal;
-
+            bool bChecked = true
+                , bEnabled = true;
+            if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST)) bChecked = false; else ;
             this.ContextMenuStrip = new ContextMenuStrip ();
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
@@ -940,7 +939,7 @@ namespace Statistic
                 bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    if (! (m_parent.m_tecView.listTG[i].power[min] < 0))
+                    if (m_parent.m_tecView.listTG[i].receivedMin [min] == true)
                         if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
                     else {
                         bMinValuesReceived = false;
@@ -996,7 +995,7 @@ namespace Statistic
                     if (m_parent.m_tecView.currHour == true)
                     {
                         for (i = 1; i < m_parent.m_tecView.lastMin; i++)
-                            summ += m_parent.m_tecView.m_valuesMins[i].valuesFact;
+                            summ += m_parent.m_tecView.m_valuesMins.valuesFact[i];
                         if (!(min == 0))
                             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min, true, string.Empty);
                         else
@@ -1010,10 +1009,10 @@ namespace Statistic
                         else
                             ;
 
-                        //if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
-                        //    summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
-                        //else
-                            summ = m_parent.m_tecView.m_valuesHours[hour].valuesFact;
+                        if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
+                            summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
+                        else
+                            summ = m_parent.m_tecView.m_valuesHours.valuesFact[hour];
 
                         showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal], summ, true, string.Empty);
                     }
@@ -1021,11 +1020,11 @@ namespace Statistic
                     //if (! ([lastHour] == 0))
                     double dblDevEVal = -1.0;
                     bool bDevEVal = true;
-                    if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.Length) &&
-                        (!(m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe == 0)))
+                    if ((m_parent.m_tecView.lastHour < m_parent.m_tecView.m_valuesHours.valuesUDGe.Length) &&
+                        (!(m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour] == 0)))
                     {
                         dblDevEVal = ((((valueEBefore + valueECur + valueEFuture) -
-                                    m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
+                                    m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) / m_parent.m_tecView.m_valuesHours.valuesUDGe[m_parent.m_tecView.lastHour]) * 100);
                         if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;                            
                     }
                     else
@@ -1101,7 +1100,7 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                if (! (tg.power[min] < 0))
+                                if (tg.receivedMin[min] == true)
                                 {
                                     showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
                                     if (m_parent.m_tecView.currHour == true)
@@ -1124,7 +1123,7 @@ namespace Statistic
                 {
                     foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
                     {
-                        if (! (comp.m_listTG[0].power[min] < 0))
+                        if (comp.m_listTG [0].receivedMin[min] == true)
                         {
                             showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
                             if (m_parent.m_tecView.currHour == true)

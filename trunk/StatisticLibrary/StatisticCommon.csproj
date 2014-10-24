@@ -32,15 +32,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>StatisticCommon_TemporaryKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="MySQL.Data">
+      <HintPath>..\MySQL.Data.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
@@ -61,6 +63,24 @@
     <Compile Include="AdminTS_NSS.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ConnectionSettings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ConnectionSettingsSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Crypt.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbSources.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbTSQLInterface.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dgwAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -69,6 +89,12 @@
     </Compile>
     <Compile Include="dgwAdminNSS.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="FileConnSett.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileINI.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
@@ -82,11 +108,20 @@
     <Compile Include="FormChangeMode.Designer.cs">
       <DependentUpon>FormChangeMode.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormConnectionSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormConnectionSettings.Designer.cs">
+      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormMainAnalyzer.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormMainAnalyzer.designer.cs">
       <DependentUpon>FormMainAnalyzer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMainBase.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormParameters.cs">
       <SubType>Form</SubType>
@@ -94,23 +129,51 @@
     <Compile Include="FormParameters.Designer.cs">
       <DependentUpon>FormParameters.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormParametersBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormParametersTG.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormParametersTG.Designer.cs">
       <DependentUpon>FormParametersTG.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormWait.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormWait.Designer.cs">
+      <DependentUpon>FormWait.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="InitTEC.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Logging.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LogParse.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PanelStatistic.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Passwords.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProgramBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TCPClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TCPClientAsync.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="TEC.cs">
       <SubType>Code</SubType>
@@ -119,6 +182,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Users.cs" />
+    <Compile Include="FormMainBaseWithStatusStrip.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Mark.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">
@@ -126,7 +193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormChangeMode.resx">
       <DependentUpon>FormChangeMode.cs</DependentUpon>
-      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormConnectionSettings.resx">
+      <DependentUpon>FormConnectionSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMainAnalyzer.resx">
       <DependentUpon>FormMainAnalyzer.cs</DependentUpon>
@@ -137,6 +206,9 @@
     <EmbeddedResource Include="FormParametersTG.resx">
       <DependentUpon>FormParametersTG.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormWait.resx">
+      <DependentUpon>FormWait.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -145,15 +217,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\btnAdd.JPG" />
+    <None Include="StatisticCommon_TemporaryKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\btnDel.JPG" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
-      <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
-      <Name>HClassLibrary</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

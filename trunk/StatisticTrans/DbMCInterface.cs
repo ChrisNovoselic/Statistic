@@ -10,8 +10,6 @@ using System.Data.OleDb;
 using Modes;
 using ModesApiExternal;
 
-using HClassLibrary;
-
 namespace StatisticCommon
 {
     public class DbMCInterface : DbInterface
