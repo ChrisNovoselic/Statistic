@@ -54,9 +54,6 @@
     <ApplicationIcon>Resources\statistic4.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySQL.Data">
-      <HintPath>..\MySQL.Data.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -114,6 +111,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
+      <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
+      <Name>HClassLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>

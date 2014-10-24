@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -45,7 +46,7 @@ namespace Statistic
 
             DbConnection connConfigDB = DbSources.Sources().GetConnection(m_idListener, out err);
 
-            Users.GetUsers(ref connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
+            HStatisticUsers.GetUsers(ref connConfigDB, @"", @"DESCRIPTION", out m_users_origin, out err);
             m_users_edit = m_users_origin.Copy ();
             //m_userRows = m_users_edit.Select();
 
@@ -63,7 +64,7 @@ namespace Statistic
             m_listRolesID = new List<int>();
             DataTable roles;
             //roles = DbTSQLInterface.Select(m_connectionSetttings, "SELECT * FROM roles WHERE ID < 500", out err);
-            Users.GetRoles(ref connConfigDB, @"", @"DESCRIPTION", out roles, out err);
+            HStatisticUsers.GetRoles(ref connConfigDB, @"", @"DESCRIPTION", out roles, out err);
             for (i = 0; i < roles.Rows.Count; i++)
             {
                 m_listRolesID.Add(Convert.ToInt32 (roles.Rows[i]["ID"]));

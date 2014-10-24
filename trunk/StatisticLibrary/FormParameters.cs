@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
@@ -10,17 +12,17 @@ namespace StatisticCommon
         public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
                                     ALARM_USE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
                                     USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
-                                    //, ID_APP
+                                    , SEASON_DATETIME, SEASON_ACTION
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"udn", @"itec", @"irole"
-                                                    //, @"iapp"
+                                                    , @"Season DateTime", @"Season Action"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     @"лог", "сек", "сек",
                                                     @"стр", @"ном", @"ном"
-                                                    //, @"ном"
+                                                    , @"дата/время", @"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -44,6 +46,9 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_DOMAIN_NAME, @"");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_TEC, @"-1");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_ROLE, @"-1");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.SEASON_DATETIME, @"26.10.2014 02:00");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.SEASON_ACTION, @"-1");
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
 
@@ -134,14 +139,14 @@ namespace StatisticCommon
         private string[] KEYDB_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
-                                                    //, @"ID_APP"
+                                                    , @"Season DateTime", @"Season Action"
                                                     };
-        
+
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
 
         //public FormParameters_DB(int idListener)
-        public FormParameters_DB(ConnectionSettings connSett)
+        public FormParameters_DB(ConnectionSettings connSett) : base ()
         {
             m_connSett = connSett;
 

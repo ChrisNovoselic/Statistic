@@ -28,14 +28,13 @@ namespace StatisticCommon
         public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
         public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
-        public double[] power;
-        public double power_TM;
+        public double[] power; //для мин./значений
+        public double power_TM; //для мин./значений
         public double[] power_LastMinutesTM;
-        public bool[] receivedMin;
-        public bool[] receivedHourHalf1;
-        public bool[] receivedHourHalf2;
-        public bool receivedHourHalf1Addon;
-        public bool receivedHourHalf2Addon;
+        //public bool[] receivedMin;
+        //public bool[,] receivedHourHalf;
+        //public bool receivedHourHalf1Addon;
+        //public bool receivedHourHalf2Addon;
         //public int id;
         public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
         public int id_tm;
@@ -50,9 +49,8 @@ namespace StatisticCommon
             //this.m_owner = comp;
             power = new double[21];
             power_LastMinutesTM = new double[25];
-            receivedMin = new bool[21];
-            receivedHourHalf1 = new bool[24];
-            receivedHourHalf2 = new bool[24];
+            //receivedMin = new bool[21];
+            //receivedHourHalf = new bool[2, 24];
 
             ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
 

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+//using System.ComponentModel;
 //using System.Data;
 using System.Drawing;
 //using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -28,13 +29,13 @@ namespace trans_mc
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mc.ini", true);
+            CreateFormConnectionSettings("connsett_mc.ini", false);
 
             m_fileINI.Add(@"MCServiceHost", string.Empty);
             m_fileINI.Add(@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
-            InitTECBase.TYPE_DATABASE_CFG typeConfigDB = InitTECBase.TYPE_DATABASE_CFG.UNKNOWN;
-            for (InitTECBase.TYPE_DATABASE_CFG t = InitTECBase.TYPE_DATABASE_CFG.CFG_190; t < InitTECBase.TYPE_DATABASE_CFG.UNKNOWN; t++)
+            TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
             {
                 if (t.ToString().Contains(m_fileINI.GetValueOfKey(@"ТипБДКфгНазначение")) == true)
                 {
@@ -47,11 +48,11 @@ namespace trans_mc
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
-            int idListener = DbMCSources.Sources().Register(m_formConnectionSettingsConfigDB.getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
 using System.Data.Common; //для DbConnection
+
+using HClassLibrary;
 
 namespace StatisticCommon
 {
@@ -140,15 +142,19 @@ namespace StatisticCommon
         }
 
         public override void loadParam()
-        {            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+        {
+            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                     m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
-            }        }
+            }
+        }
     }
 
     public partial class FormParametersTG_FileINI : FormParametersTG
     {
+        private enum TYPE_VALUE : int { CURRENT, PREVIOUS, COUNT_TYPE_VALUE };
+        
         private const char SEP_ID_TG = ',';
         private string[] NAME_TIME = { "min", "hour" };
         private static string NAME_SECTION_TG_ID = "Идентификаторы ТГ Бийск (" + ProgramBase.AppName + ")";
@@ -258,8 +264,8 @@ namespace StatisticCommon
         }
 
         private string getQueryParam (int ver) {
-            return @"SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC]
-                            WHERE [LAST_UPDATE] = (SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
+            return @"SELECT * FROM [dbo].[ID_TG_ASKUE_BiTEC]
+                            WHERE [LAST_UPDATE] = (SELECT * FROM [dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
         }
 
         private string getWhereParamTG (int num) {
@@ -350,7 +356,7 @@ namespace StatisticCommon
             int err = -1;
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
             
-            string queryInsert = @"INSERT INTO [techsite_cfg-2.X.X].[dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
+            string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
 
             for (int j = 0; j < COUNT_TG; j++)
             {

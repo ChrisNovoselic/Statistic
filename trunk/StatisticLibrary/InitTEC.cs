@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Data.Common;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
+
+using HClassLibrary;
 
 namespace StatisticCommon
 {
     public class InitTECBase
     {
-        public enum TYPE_DATABASE_CFG { CFG_190, CFG_200, UNKNOWN };
         protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
         
         public List<TEC> tec;
@@ -23,14 +24,14 @@ namespace StatisticCommon
             req = "SELECT * FROM TEC_LIST";
 
             if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
-            if (!(Users.allTEC == 0))
+            if (!(HStatisticUsers.allTEC == 0))
             {
                 if (bIgnoreTECInUse == false)
                     req += @" AND ";
                 else
                     ;
 
-                req += @"ID =" + Users.allTEC.ToString ();
+                req += @"ID =" + HStatisticUsers.allTEC.ToString();
             }
             else
                 ;
@@ -108,7 +109,7 @@ namespace StatisticCommon
 
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
-            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ft_ALL_PARAM_TG] (" + ver + @")", null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG] (" + ver + @")", null, null, out err);
         }
         
         private bool IsNameField(DataRow data, string nameField) { return data.Table.Columns.IndexOf(nameField) > -1 ? true : false; }
@@ -194,7 +195,8 @@ namespace StatisticCommon
                 {
                     //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
-                    if ((Users.allTEC == 0) || (Users.Role < (int)Users.ID_ROLES.USER) || (Users.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])))
+                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])) ||
+                         (HStatisticUsers.RoleIsDisp == true))
                     {
                         //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 

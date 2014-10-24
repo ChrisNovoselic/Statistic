@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -13,6 +13,8 @@ using System.Net;
 using System.Net.Sockets;
 
 using System.IO;
+
+using HClassLibrary;
 
 namespace StatisticCommon
 {
@@ -44,7 +46,7 @@ namespace StatisticCommon
         {
             InitializeComponent();
             /*
-            //При наследовании от ''
+            //При наследовании от 'FormMainBaseWithStatusStrip'
             // m_statusStripMain
             this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
             this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
@@ -75,10 +77,10 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
             //DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
-            Users.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
+            HStatisticUsers.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
             FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
 
-            Users.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
+            HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
             FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
             //DbTSQLInterface.CloseConnection (connDB, out err);
@@ -511,7 +513,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                Users.GetUsers(ref m_connConfigDB, where, list_sorted, out m_tableUsers, out err);
+                HStatisticUsers.GetUsers(ref m_connConfigDB, where, list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
                 Thread_ProcCheckedStart();

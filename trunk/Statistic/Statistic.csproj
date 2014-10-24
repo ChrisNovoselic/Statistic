@@ -19,7 +19,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile />
     <PublishUrl>\\10.100.104.18\2.x.x\</PublishUrl>
-    <Install>true</Install>
+    <Install>false</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateMode>Foreground</UpdateMode>
@@ -41,10 +41,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -56,7 +57,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>EA6D98CE4B9E16E71CFAB7DDB7110A860DCAD70F</ManifestCertificateThumbprint>
@@ -65,21 +66,22 @@
     <ManifestKeyFile>Statistic_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>Statistic_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="GemBox.Spreadsheet, Version=33.1.0.1000, Culture=neutral, PublicKeyToken=b1b72c69714d4847, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\GemBox.Spreadsheet.dll</HintPath>
-    </Reference>
-    <Reference Include="MySQL.Data">
-      <HintPath>..\MySQL.Data.dll</HintPath>
+      <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -91,7 +93,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="ZedGraph, Version=5.0.9.41461, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ZedGraph.dll</HintPath>
+      <HintPath>..\..\ExternalDLL\ZedGraph.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -111,18 +113,6 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormPassword.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormPassword.designer.cs">
-      <DependentUpon>FormPassword.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormSetPassword.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormSetPassword.designer.cs">
-      <DependentUpon>FormSetPassword.cs</DependentUpon>
-    </Compile>
     <Compile Include="FormTECComponent.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,18 +124,6 @@
     </Compile>
     <Compile Include="FormUser.Designer.cs">
       <DependentUpon>FormUser.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HTabCtrlEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="HTabCtrlEx.Designer.cs">
-      <DependentUpon>HTabCtrlEx.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HTabPageEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="HTabPageEx.Designer.cs">
-      <DependentUpon>HTabPageEx.cs</DependentUpon>
     </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
@@ -184,18 +162,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="FormPasswordBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormPasswordBase.designer.cs">
-      <DependentUpon>FormPasswordBase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TCPServer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TCPServerAsync.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="TecView.cs" />
     <Compile Include="PanelSobstvNyzhdy.cs">
       <SubType>Component</SubType>
@@ -207,13 +173,6 @@
       <DependentUpon>FormMain.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormPassword.resx">
-      <DependentUpon>FormPassword.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormSetPassword.resx">
-      <DependentUpon>FormSetPassword.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FormTECComponent.resx">
       <DependentUpon>FormTECComponent.cs</DependentUpon>
     </EmbeddedResource>
@@ -224,10 +183,6 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormPasswordBase.resx">
-      <DependentUpon>FormPasswordBase.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="bin\Debug\connsett.ini" />
@@ -262,40 +217,32 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\closeInActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\closeNonActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
+      <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
+      <Name>HClassLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\menuInActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\menuNonActive.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <PublishFile Include="Statistic.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticCommon.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>

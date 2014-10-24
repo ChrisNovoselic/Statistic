@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 
-namespace StatisticCommon
+using StatisticCommon;
+
+namespace Statistic
 {
-    public class DataGridViewTables : DataGridView
+    public class DataGridViewTables : DataGridViewBase
     {
         protected class ColumnProperies {
             public int width;
@@ -19,7 +21,7 @@ namespace StatisticCommon
             public DataGridViewTextBoxColumn obj;
         };
         
-        protected enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
+        public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
         protected ColumnProperies [] m_arColumns;
         protected int m_iWIdthDefault;
 

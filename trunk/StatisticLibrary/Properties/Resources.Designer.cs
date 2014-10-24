@@ -91,7 +91,7 @@ namespace StatisticCommon.Properties {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Программа &quot;Статистика&quot; верс.2.0.4b.
+        ///   Ищет локализованную строку, похожую на Программа &quot;Статистика&quot; верс.2.0.5b.
         /// </summary>
         internal static string TradeMarkVersion {
             get {

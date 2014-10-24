@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
-using System.ComponentModel;
+//using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
+//using System.Data.SqlClient;
 using System.Drawing;
 using System.Threading;
 using System.Globalization;
@@ -13,6 +13,7 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -26,7 +27,7 @@ namespace Statistic
 
         public Hd2PercentControl() { }
 
-        public string Calculate(TecView.values values, int hour, bool bPmin, out int err)
+        public string Calculate(TecView.values values, bool bPmin, out int err)
         {
             string strRes = string.Empty;
             double valuesBaseCalculate = -1F;
@@ -38,9 +39,9 @@ namespace Statistic
             int iReverse = 0;
             bool bAbs = false;
 
-            if (values.valuesPBR[hour] == values.valuesPmax[hour])
+            if (values.valuesPBR == values.valuesPmax)
             {
-                valuesBaseCalculate = values.valuesPBR[hour];
+                valuesBaseCalculate = values.valuesPBR;
                 iReverse = 1;
             }
             else
@@ -48,23 +49,23 @@ namespace Statistic
                 //Вычисление "ВК"
                 //if (values.valuesUDGe[hour] == values.valuesPBR[hour])
                 //if (!(values.valuesREC[hour] == 0))
-                if (values.valuesREC[hour] == 0)
-                    values.valuesForeignCommand[hour] = false;
+                if (values.valuesREC == 0)
+                    values.valuesForeignCommand = false;
                 else
                     ;
 
-                if (values.valuesForeignCommand[hour] == true)
+                if (values.valuesForeignCommand == true)
                 {
-                    valuesBaseCalculate = values.valuesUDGe[hour];
+                    valuesBaseCalculate = values.valuesUDGe;
                     iReverse = 1;
                     bAbs = true;
                 }
                 else
                 {
                     if (bPmin == true)
-                        if (values.valuesPBR[hour] == values.valuesPmin[hour])
+                        if (values.valuesPBR == values.valuesPmin)
                         {
-                            valuesBaseCalculate = values.valuesPBR[hour];
+                            valuesBaseCalculate = values.valuesPBR;
                             iReverse = -1;
                         }
                         else
@@ -77,15 +78,16 @@ namespace Statistic
 
             if (valuesBaseCalculate > 1) {
                 strRes += @"Уров=" + valuesBaseCalculate.ToString(@"F2");
-                strRes += @"; ПБР=" + values.valuesPBR[hour].ToString (@"F2") + @"; Pmax=" + values.valuesPmax[hour].ToString (@"F2");
+                strRes += @"; ПБР=" + values.valuesPBR.ToString(@"F2") + @"; Pmax=" + values.valuesPmax.ToString(@"F2");
                 if (bPmin == true) {
-                    strRes += @"; Pmin=" + values.valuesPmin[hour].ToString (@"F2");
+                    strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 } else ;
 
-                if (values.valuesLastMinutesTM[hour] > 1) {
+                if (values.valuesLastMinutesTM > 1)
+                {
                     if (!(iReverse == 0))
                     {
-                        delta = iReverse * (valuesBaseCalculate - values.valuesLastMinutesTM[hour]);
+                        delta = iReverse * (valuesBaseCalculate - values.valuesLastMinutesTM);
                         if (bAbs == true)
                             delta = Math.Abs(delta);
                         else
@@ -123,10 +125,10 @@ namespace Statistic
                 err = 0;
 
                 strRes += @"Уров=---.-";
-                strRes += @"; ПБР=" + values.valuesPBR[hour].ToString(@"F2") + @"; Pmax=" + values.valuesPmax[hour].ToString(@"F2");
+                strRes += @"; ПБР=" + values.valuesPBR.ToString(@"F2") + @"; Pmax=" + values.valuesPmax.ToString(@"F2");
                 if (bPmin == true)
                 {
-                    strRes += @"; Pmin=" + values.valuesPmin[hour].ToString(@"F2");
+                    strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 }
                 else ;
 
@@ -570,48 +572,41 @@ namespace Statistic
 
         private void FillDefaultHours()
         {
-            int count;
+            int count
+                , hour;
 
             this.m_dgwHours.Rows.Clear();
 
-            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                count = 25;
-            else
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    count = 23;
-                else
-                    count = 24;
+            count = m_tecView.m_valuesHours.Length;
 
             this.m_dgwHours.Rows.Add(count + 1);
 
+            bool bSeasobDate = false;
+            if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0)
+                bSeasobDate = true;
+            else
+                ;                
+
             for (int i = 0; i < count; i++)
             {
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                {
-                    if (i <= m_tecView.m_valuesHours.hourAddon)
-                        this.m_dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
+                hour = i + 1;                
+                if (bSeasobDate == true) {
+                    hour -= m_tecView.GetSeasonHourOffset (hour);
+                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
+                    if ((hour) == HAdmin.SeasonDateTime.Hour)
+                        this.m_dgwHours.Rows[i].Cells[0].Value += @"*";
                     else
-                        if (i == m_tecView.m_valuesHours.hourAddon + 1)
-                            this.m_dgwHours.Rows[i].Cells[0].Value = i.ToString() + "*";
-                        else
-                            this.m_dgwHours.Rows[i].Cells[0].Value = i.ToString();
+                        ;
                 }
                 else
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    {
-                        if (i < m_tecView.m_valuesHours.hourAddon)
-                            this.m_dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
-                        else
-                            this.m_dgwHours.Rows[i].Cells[0].Value = (i + 2).ToString();
-                    }
-                    else
-                        this.m_dgwHours.Rows[i].Cells[0].Value = (i + 1).ToString();
+                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
 
                 this.m_dgwHours.Rows[i].Cells[1].Value = 0.ToString("F2");
                 this.m_dgwHours.Rows[i].Cells[2].Value = 0.ToString("F2");
                 this.m_dgwHours.Rows[i].Cells[3].Value = 0.ToString("F2");
                 this.m_dgwHours.Rows[i].Cells[4].Value = 0.ToString("F2");
                 this.m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                this.m_dgwHours.Rows[i].Cells[6].Value = 0.ToString("F2");
             }
 
             this.m_dgwHours.Rows[count].Cells[0].Value = "Сумма";
@@ -620,12 +615,11 @@ namespace Statistic
             this.m_dgwHours.Rows[count].Cells[3].Value = "-";
             this.m_dgwHours.Rows[count].Cells[4].Value = 0.ToString("F2");
             this.m_dgwHours.Rows[count].Cells[5].Value = 0.ToString("F2");
+            this.m_dgwHours.Rows[count].Cells[6].Value = 0.ToString("F2");
         }
 
         public override void Start()
-        {            
-            m_tecView.Start ();
-
+        {
             FillDefaultMins();
             FillDefaultHours();
 
@@ -636,8 +630,11 @@ namespace Statistic
             else
                 ;
 
-            m_tecView.m_curDate = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
-            m_tecView.serverTime = m_tecView.m_curDate;
+            m_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+
+            initTableHourRows ();
+
+            m_tecView.Start();
 
             evTimerCurrent = new ManualResetEvent(true);
             timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
@@ -660,6 +657,21 @@ namespace Statistic
             if (!(timerCurrent == null)) timerCurrent.Dispose(); else ;
 
             FormMainBaseWithStatusStrip.m_report.ClearStates ();
+        }
+
+        protected override void initTableHourRows()
+        {
+            m_tecView.m_curDate = m_pnlQuickData.dtprDate.Value.Date;
+            m_tecView.serverTime = m_tecView.m_curDate;
+
+            if (m_tecView.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
+            {
+                m_dgwHours.InitRows(24, false);                
+            }
+            else
+            {
+                m_dgwHours.InitRows(25, true);
+            }
         }
 
         private void updateGUI_TM_Gen()
@@ -726,25 +738,25 @@ namespace Statistic
             else
                 ;
 
-            for (int i = 0; i < m_tecView.m_valuesMins.valuesFact.Length - 1; i++)
+            for (int i = 0; i < m_tecView.m_valuesMins.Length - 1; i++)
             {
-                m_dgwMins.Rows[i].Cells[1].Value = m_tecView.m_valuesMins.valuesFact[i + 1].ToString("F2");
-                sumFact += m_tecView.m_valuesMins.valuesFact[i + 1];
+                m_dgwMins.Rows[i].Cells[1].Value = m_tecView.m_valuesMins[i + 1].valuesFact.ToString("F2");
+                sumFact += m_tecView.m_valuesMins[i + 1].valuesFact;
 
-                m_dgwMins.Rows[i].Cells[2].Value = m_tecView.m_valuesMins.valuesPBR[i].ToString("F2");
-                m_dgwMins.Rows[i].Cells[3].Value = m_tecView.m_valuesMins.valuesPBRe[i].ToString("F2");
-                m_dgwMins.Rows[i].Cells[4].Value = m_tecView.m_valuesMins.valuesUDGe[i].ToString("F2");
-                sumUDGe += m_tecView.m_valuesMins.valuesUDGe[i];
-                if (i < min && m_tecView.m_valuesMins.valuesUDGe[i] != 0)
+                m_dgwMins.Rows[i].Cells[2].Value = m_tecView.m_valuesMins[i].valuesPBR.ToString("F2");
+                m_dgwMins.Rows[i].Cells[3].Value = m_tecView.m_valuesMins[i].valuesPBRe.ToString("F2");
+                m_dgwMins.Rows[i].Cells[4].Value = m_tecView.m_valuesMins[i].valuesUDGe.ToString("F2");
+                sumUDGe += m_tecView.m_valuesMins[i].valuesUDGe;
+                if (i < min && m_tecView.m_valuesMins[i].valuesUDGe != 0)
                 {
-                    m_dgwMins.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i])).ToString("F2");
+                    m_dgwMins.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe)).ToString("F2");
                     //if (Math.Abs(m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i]) > m_tecView.m_valuesMins.valuesDiviation[i]
                     //    && m_tecView.m_valuesMins.valuesDiviation[i] != 0)
                     //    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleError;
                     //else
                     m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleCommon;
 
-                    sumDiviation += m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i];
+                    sumDiviation += m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe;
                 }
                 else
                 {
@@ -766,7 +778,7 @@ namespace Statistic
                     ;
 
                 m_dgwMins.Rows[20].Cells[1].Value = (sumFact / min).ToString("F2");
-                m_dgwMins.Rows[20].Cells[4].Value = m_tecView.m_valuesMins.valuesUDGe[0].ToString("F2");
+                m_dgwMins.Rows[20].Cells[4].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
                 m_dgwMins.Rows[20].Cells[5].Value = (sumDiviation / min).ToString("F2");
             }
 
@@ -783,219 +795,206 @@ namespace Statistic
             Hd2PercentControl d2PercentControl = new Hd2PercentControl();
             int hour = m_tecView.lastHour;
             int receivedHour = m_tecView.lastReceivedHour;
-            int itemscount;
+            int itemscount = m_tecView.m_valuesHours.Length;
             int warn = -1,
                 cntWarn = -1;
             string strWarn = string.Empty;
 
-            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-            {
-                itemscount = 25;
-            }
-            else
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                {
-                    itemscount = 23;
-                }
-                else
-                {
-                    itemscount = 24;
-                }
-
+            DataGridViewCellStyle curCellStyle;
             cntWarn = 0;
             for (int i = 0; i < itemscount; i++)
             {
                 bool bPmin = false;
                 if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                d2PercentControl.Calculate(m_tecView.m_valuesHours, i, bPmin, out warn);
+                d2PercentControl.Calculate(m_tecView.m_valuesHours[i], bPmin, out warn);
 
                 if ((!(warn == 0)) &&
-                   (m_tecView.m_valuesHours.valuesLastMinutesTM[i] > 1))
-                {
-                    m_dgwHours.Rows[i].Cells[6].Style = dgvCellStyleError;
+                   (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1))
                     cntWarn++;
-                }
                 else
-                {
-                    m_dgwHours.Rows[i].Cells[6].Style = dgvCellStyleCommon;
                     cntWarn = 0;
-                }
 
-                if (m_tecView.m_valuesHours.valuesLastMinutesTM[i] > 1)
+                if (! (cntWarn == 0))
+                    curCellStyle = dgvCellStyleError;
+                else
+                    curCellStyle = dgvCellStyleCommon;
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
+
+                if (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1)
                 {
                     if (cntWarn > 0)
                         strWarn = cntWarn + @":";
                     else
                         strWarn = string.Empty;
 
-                    m_dgwHours.Rows[i].Cells[6].Value = strWarn + m_tecView.m_valuesHours.valuesLastMinutesTM[i].ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i].valuesLastMinutesTM.ToString("F2");
                 }
                 else
-                    m_dgwHours.Rows[i].Cells[6].Value = 0.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
 
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                {
-                    if (i <= m_tecView.m_valuesHours.hourAddon)
-                    {
-                        m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
-                        sumFact += m_tecView.m_valuesHours.valuesFact[i];
+                //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                //{
+                    //if (i <= m_tecView.m_valuesHours.hourAddon)
+                    //{
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
+                        sumFact += m_tecView.m_valuesHours[i].valuesFact;
 
-                        m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
-                        m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
-                        m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
-                        sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
-                        if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
+                        sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
+                        if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
                         {
-                            m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
-                            if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
-                                && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
+                            if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
+                                && (! (m_tecView.m_valuesHours[i].valuesDiviation == 0)))
+                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
                             else
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
+                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
+                            sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
                         }
                         else
                         {
-                            m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
                         }
-                    }
-                    else
-                        if (i == m_tecView.m_valuesHours.hourAddon + 1)
-                        {
-                            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFactAddon.ToString("F2");
-                            sumFact += m_tecView.m_valuesHours.valuesFactAddon;
+                    //}
+                    //else
+                        //if (i == m_tecView.m_valuesHours.hourAddon + 1)
+                        //{
+                        //    m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFactAddon.ToString("F2");
+                        //    sumFact += m_tecView.m_valuesHours.valuesFactAddon;
 
-                            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBRAddon.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBReAddon.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGeAddon.ToString("F2");
-                            sumUDGe += m_tecView.m_valuesHours.valuesUDGeAddon;
-                            if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGeAddon != 0)
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon)).ToString("F2");
-                                if (Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon) > m_tecView.m_valuesHours.valuesDiviationAddon
-                                    && m_tecView.m_valuesHours.valuesDiviationAddon != 0)
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                                else
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon);
-                            }
-                            else
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            }
-                        }
-                        else
-                        {
-                            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i - 1].ToString("F2");
-                            sumFact += m_tecView.m_valuesHours.valuesFact[i - 1];
+                        //    m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBRAddon.ToString("F2");
+                        //    m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBReAddon.ToString("F2");
+                        //    m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGeAddon.ToString("F2");
+                        //    sumUDGe += m_tecView.m_valuesHours.valuesUDGeAddon;
+                        //    if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGeAddon != 0)
+                        //    {
+                        //        m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon)).ToString("F2");
+                        //        if (Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon) > m_tecView.m_valuesHours.valuesDiviationAddon
+                        //            && m_tecView.m_valuesHours.valuesDiviationAddon != 0)
+                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                        //        else
+                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                        //        sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon);
+                        //    }
+                        //    else
+                        //    {
+                        //        m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                        //        m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i - 1].ToString("F2");
+                        //    sumFact += m_tecView.m_valuesHours.valuesFact[i - 1];
 
-                            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i - 1].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i - 1].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i - 1].ToString("F2");
-                            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i - 1];
-                            if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGe[i - 1] != 0)
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1])).ToString("F2");
-                                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]) > m_tecView.m_valuesHours.valuesDiviation[i - 1]
-                                    && m_tecView.m_valuesHours.valuesDiviation[i - 1] != 0)
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                                else
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]);
-                            }
-                            else
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            }
-                        }
+                        //    m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i - 1].ToString("F2");
+                        //    m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i - 1].ToString("F2");
+                        //    m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i - 1].ToString("F2");
+                        //    sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i - 1];
+                        //    if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGe[i - 1] != 0)
+                        //    {
+                        //        m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1])).ToString("F2");
+                        //        if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]) > m_tecView.m_valuesHours.valuesDiviation[i - 1]
+                        //            && m_tecView.m_valuesHours.valuesDiviation[i - 1] != 0)
+                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                        //        else
+                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                        //        sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]);
+                        //    }
+                        //    else
+                        //    {
+                        //        m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                        //        m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                        //    }
+                        //}
 
-                }
-                else
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    {
-                        if (i < m_tecView.m_valuesHours.hourAddon)
-                        {
-                            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
-                            sumFact += m_tecView.m_valuesHours.valuesFact[i];
+                //}
+                //else
+                //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                //    {
+                //        if (i < m_tecView.m_valuesHours.hourAddon)
+                //        {
+                //            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
+                //            sumFact += m_tecView.m_valuesHours.valuesFact[i];
 
-                            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
-                            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
-                            if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
-                                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
-                                    && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                                else
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
-                            }
-                            else
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            }
-                        }
-                        else
-                        {
-                            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i + 1].ToString("F2");
-                            sumFact += m_tecView.m_valuesHours.valuesFact[i + 1];
+                //            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
+                //            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
+                //            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
+                //            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
+                //            if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
+                //            {
+                //                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
+                //                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
+                //                    && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
+                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                //                else
+                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
+                //            }
+                //            else
+                //            {
+                //                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i + 1].ToString("F2");
+                //            sumFact += m_tecView.m_valuesHours.valuesFact[i + 1];
 
-                            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i + 1].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i + 1].ToString("F2");
-                            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i + 1].ToString("F2");
-                            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i + 1];
-                            if (i < receivedHour - 1 && m_tecView.m_valuesHours.valuesUDGe[i + 1] != 0)
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1])).ToString("F2");
-                                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]) > m_tecView.m_valuesHours.valuesDiviation[i + 1]
-                                    && m_tecView.m_valuesHours.valuesDiviation[i + 1] != 0)
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                                else
-                                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]);
-                            }
-                            else
-                            {
-                                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
-                        sumFact += m_tecView.m_valuesHours.valuesFact[i];
+                //            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i + 1].ToString("F2");
+                //            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i + 1].ToString("F2");
+                //            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i + 1].ToString("F2");
+                //            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i + 1];
+                //            if (i < receivedHour - 1 && m_tecView.m_valuesHours.valuesUDGe[i + 1] != 0)
+                //            {
+                //                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1])).ToString("F2");
+                //                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]) > m_tecView.m_valuesHours.valuesDiviation[i + 1]
+                //                    && m_tecView.m_valuesHours.valuesDiviation[i + 1] != 0)
+                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                //                else
+                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]);
+                //            }
+                //            else
+                //            {
+                //                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //            }
+                //        }
+                //    }
+                //    else
+                //    {
+                //        m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
+                //        sumFact += m_tecView.m_valuesHours.valuesFact[i];
 
-                        m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
-                        m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
-                        m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
-                        sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
-                        if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
-                        {
-                            m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
-                            if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
-                                && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                            else
-                                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                            sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
-                        }
-                        else
-                        {
-                            m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                        }
-                    }
+                //        m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
+                //        m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
+                //        m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
+                //        sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
+                //        if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
+                //        {
+                //            m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
+                //            if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
+                //                && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
+                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
+                //            else
+                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //            sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
+                //        }
+                //        else
+                //        {
+                //            m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
+                //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                //        }
+                //    }
             }
-            m_dgwHours.Rows[itemscount].Cells[1].Value = sumFact.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[4].Value = sumUDGe.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[5].Value = sumDiviation.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
+            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
 
             setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
 
@@ -1017,10 +1016,14 @@ namespace Statistic
         {
             if (update == true)
             {
-                if (!(m_pnlQuickData.dtprDate.Value.Date == m_tecView.m_curDate.Date))
+                //Сравниваем даты/время ????
+                if (!(m_pnlQuickData.dtprDate.Value.Date.CompareTo (m_tecView.m_curDate.Date) == 0))
                     m_tecView.currHour = false;
                 else
                     ;
+
+                //В этом методе даты/время приравниваем ???
+                initTableHourRows ();
 
                 NewDateRefresh();
             }
@@ -1123,8 +1126,10 @@ namespace Statistic
 
         private void DrawGraphMins(int hour)
         {
-            if (hour == 24)
-                hour = 23;
+            if (!(hour < m_tecView.m_valuesHours.Length))
+                hour = m_tecView.m_valuesHours.Length - 1;
+            else
+                ;
 
             GraphPane pane = m_ZedGraphMins.GraphPane;
 
@@ -1142,8 +1147,8 @@ namespace Statistic
 
             for (int i = 0; i < itemscount; i++)
             {
-                valuesFact[i] = m_tecView.m_valuesMins.valuesFact[i + 1];
-                valuesUDGe[i] = m_tecView.m_valuesMins.valuesUDGe[i + 1];
+                valuesFact[i] = m_tecView.m_valuesMins[i + 1].valuesFact;
+                valuesUDGe[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe;
             }
 
             //double[] valuesPDiviation = new double[itemscount];
@@ -1296,9 +1301,17 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
 
-            if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
+            if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
+                int offset = m_tecView.GetSeasonHourOffset(hour);
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
-                                    (hour + 1).ToString() + "* час";
+                                    (hour + 1 - offset).ToString();
+                if (HAdmin.SeasonDateTime.Hour == hour)
+                    pane.Title.Text += "*";
+                else
+                    ;
+
+                pane.Title.Text += @" час";
+            }
             else
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + " час";
@@ -1356,15 +1369,7 @@ namespace Statistic
 
             pane.CurveList.Clear();
 
-            int itemscount;
-
-            if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                itemscount = 25;
-            else
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    itemscount = 23;
-                else
-                    itemscount = 24;
+            int itemscount = m_tecView.m_valuesHours.Length;
 
             string[] names = new string[itemscount];
 
@@ -1378,84 +1383,41 @@ namespace Statistic
             bool noValues = true;
             for (int i = 0; i < itemscount; i++)
             {
-                if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                {
-                    if (i <= m_tecView.m_valuesHours.hourAddon)
-                    {
-                        names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
-                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
-                    }
-                    else
-                        if (i == m_tecView.m_valuesHours.hourAddon + 1)
-                        {
-                            names[i] = i.ToString() + "*";
-                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon + m_tecView.m_valuesHours.valuesDiviationAddon;
-                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGeAddon - m_tecView.m_valuesHours.valuesDiviationAddon;
-                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGeAddon;
-                            valuesFact[i] = m_tecView.m_valuesHours.valuesFactAddon;
-                        }
-                        else
-                        {
-                            this.m_dgwHours.Rows[i].Cells[0].Value = i.ToString();
-                            names[i] = i.ToString();
-                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] + m_tecView.m_valuesHours.valuesDiviation[i - 1];
-                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1] - m_tecView.m_valuesHours.valuesDiviation[i - 1];
-                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i - 1];
-                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i - 1];
-                        }
+                if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0) {
+                    names[i] = (i + 1 - m_tecView.GetSeasonHourOffset(i + 1)).ToString();
 
+                    if ((i + 0) == HAdmin.SeasonDateTime.Hour)
+                        names[i] += @"*";
+                    else
+                        ;
                 }
                 else
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    {
-                        if (i < m_tecView.m_valuesHours.hourAddon)
-                        {
-                            names[i] = (i + 1).ToString();
-                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
-                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
-                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
-                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
-                        }
-                        else
-                        {
-                            names[i] = (i + 2).ToString();
-                            valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] + m_tecView.m_valuesHours.valuesDiviation[i + 1];
-                            valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1] - m_tecView.m_valuesHours.valuesDiviation[i + 1];
-                            valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i + 1];
-                            valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i + 1];
-                        }
-                    }
-                    else
-                    {
-                        names[i] = (i + 1).ToString();
-                        valuesPDiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] + m_tecView.m_valuesHours.valuesDiviation[i];
-                        valuesODiviation[i] = m_tecView.m_valuesHours.valuesUDGe[i] - m_tecView.m_valuesHours.valuesDiviation[i];
-                        valuesUDGe[i] = m_tecView.m_valuesHours.valuesUDGe[i];
-                        valuesFact[i] = m_tecView.m_valuesHours.valuesFact[i];
-                    }
+                    names[i] = (i + 1).ToString();
 
-                if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
+                valuesPDiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe + m_tecView.m_valuesHours[i].valuesDiviation;
+                valuesODiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe - m_tecView.m_valuesHours[i].valuesDiviation;
+                valuesUDGe[i] = m_tecView.m_valuesHours[i].valuesUDGe;
+                valuesFact[i] = m_tecView.m_valuesHours[i].valuesFact;
+
+                if ((minimum > valuesPDiviation[i]) && (! (valuesPDiviation[i] == 0)))
                 {
                     minimum = valuesPDiviation[i];
                     noValues = false;
                 }
 
-                if (minimum > valuesODiviation[i] && valuesODiviation[i] != 0)
+                if ((minimum > valuesODiviation[i]) && (! (valuesODiviation[i] == 0)))
                 {
                     minimum = valuesODiviation[i];
                     noValues = false;
                 }
 
-                if (minimum > valuesUDGe[i] && valuesUDGe[i] != 0)
+                if ((minimum > valuesUDGe[i]) && (! (valuesUDGe[i] == 0)))
                 {
                     minimum = valuesUDGe[i];
                     noValues = false;
                 }
 
-                if (minimum > valuesFact[i] && valuesFact[i] != 0)
+                if ((minimum > valuesFact[i]) && (! (valuesFact[i] == 0)))
                 {
                     minimum = valuesFact[i];
                     noValues = false;
@@ -1504,7 +1466,6 @@ namespace Statistic
             LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
             LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
 
-
             if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
                 BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
@@ -1515,12 +1476,12 @@ namespace Statistic
                 {
                     int valuescount;
 
-                    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                        valuescount = m_tecView.lastHour + 1;
-                    else
-                        if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                            valuescount = m_tecView.lastHour - 1;
-                        else
+                    //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
+                    //    valuescount = m_tecView.lastHour + 1;
+                    //else
+                    //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
+                    //        valuescount = m_tecView.lastHour - 1;
+                    //    else
                             valuescount = m_tecView.lastHour;
 
                     double[] valuesFactNew = new double[valuescount];

@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "update_pbr", "update_pbr\up
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainName", "DomainName\DomainName.csproj", "{C1553A5F-B379-4D6E-9AF3-6C222F484DD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HClassLibrary", "..\HClassLibrary\HClassLibrary.csproj", "{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +159,22 @@ Global
 		{C1553A5F-B379-4D6E-9AF3-6C222F484DD7}.Release|Mixed Platforms.Build.0 = Release|x86
 		{C1553A5F-B379-4D6E-9AF3-6C222F484DD7}.Release|x86.ActiveCfg = Release|x86
 		{C1553A5F-B379-4D6E-9AF3-6C222F484DD7}.Release|x86.Build.0 = Release|x86
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}.Release|x86.ActiveCfg = Release|Any CPU
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|Any CPU.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Debug|x86.ActiveCfg = Debug
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|Any CPU.ActiveCfg = Release
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|Mixed Platforms.ActiveCfg = Release
+		{C88FE9BE-BEE6-4DF4-BD69-BF7DA4048E95}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
