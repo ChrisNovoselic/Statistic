@@ -106,7 +106,8 @@ namespace StatisticCommon
             this.name_shr = name_shr;
             this.m_arNameTableAdminValues = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS]; this.m_arNameTableUsedPPBRvsPBR = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS];
             this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_pbr;
-            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "AdminValuesOfID"; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "PPBRvsPBROfID";
+            //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "AdminValuesOfID"; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "PPBRvsPBROfID";
+            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
             this.prefix_admin = prefix_admin; this.prefix_pbr = prefix_pbr;
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -851,6 +852,8 @@ namespace StatisticCommon
                         //Такого столбца для ГТП нет
                         @", " + "ID_COMPONENT" +
 
+                        @", " + "SEASON" +
+
                         @" " + @"FROM " + m_arNameTableAdminValues[(int)mode] +
 
                         @" " + @"WHERE" +
@@ -936,7 +939,7 @@ namespace StatisticCommon
             return query;
         }
 
-        public string hoursTMSNPsumRequest(DateTime dtReq)
+        public string hoursTMSNPsumRequest(DateTime dtReq, int cntHours)
         {
             string query = string.Empty;
 
@@ -946,7 +949,7 @@ namespace StatisticCommon
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
                             @" FROM [dbo].[P_SUMM_TSN]" +
                             @"WHERE [ID_TEC] = " + m_id +
-                            @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddDays(1).Date.ToString(@"yyyyMMdd") + @"'" +
+                            @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddHours(cntHours).ToString(@"yyyyMMdd HH:00:01") + @"'" +
                             @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
                     break;
                 default:
@@ -989,7 +992,7 @@ namespace StatisticCommon
             return query;
         }
 
-        public string lastMinutesTMRequest(DateTime dt, string sensors)
+        public string lastMinutesTMRequest(DateTime dt, string sensors, int cntHours)
         {
             string query = string.Empty;
 
@@ -1000,16 +1003,18 @@ namespace StatisticCommon
                     //Если данные в БД по мск
                     //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
                     //Вар. №2
-                    //Если данные в БД по ГринвичУ
-                    //dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone()).TotalMinutes);
-                    //query = @"SELECT * FROM [dbo].[ft_get_current-day_value_SOTIASSO_0] (" + m_id + @")" +
-                    //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                    //        @"AND [ID] IN (" + sensors + @") " +
-                    //        @"ORDER BY [ID],[last_changed_at]";
+                    //Если данные в БД по ГринвичУ;
+                    dt = dt.AddHours(-1 * (((dt - (TimeZone.CurrentTimeZone.ToUniversalTime(dt))).TotalHours) + 0));
+                    query = @"SELECT * FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
+                            @" WHERE [ID_TEC]=" + m_id +
+                            @" AND DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyyMMdd HH:mm:ss") +
+                            @"' AND '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"' " +
+                            @"AND [ID] IN (" + sensors + @") " +
+                            @"ORDER BY [ID],[last_changed_at]";
                     //Вар. №3 - функция
-                    query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
-                            @" WHERE [ID] IN (" + sensors + @")" +
-                            @" ORDER BY [ID],[last_changed_at]";
+                    //query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
+                    //        @" WHERE [ID] IN (" + sensors + @")" +
+                    //        @" ORDER BY [ID],[last_changed_at]";
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     //Если данные в БД по мск
@@ -1158,7 +1163,7 @@ namespace StatisticCommon
                           @"' ORDER BY DATE ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE, ID FROM " + m_arNameTableAdminValues[(int)mode] + " WHERE" +
+                    strRes = @"SELECT DATE, ID, SEASON FROM " + m_arNameTableAdminValues[(int)mode] + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyyMMdd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +

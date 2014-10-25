@@ -933,62 +933,96 @@ namespace StatisticCommon
             return m_arHaveDates[(int)type, indx] > 0 ? true : false;
         }
 
-        public int GetSeasonHourOffset(int h)
+        public static int GetSeasonHourOffset(DateTime dt, int h)
         {
             int iRes = 0;
 
-            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
+            if (dt.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
+            {
                 //if (! (h < HAdmin.SeasonDateTime.Hour))
                 if (h > HAdmin.SeasonDateTime.Hour)
                     iRes = 1;
                 else
                     ;
-            } else {
+            }
+            else
+            {
             }
 
             return iRes;
             //return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
         }
 
-        protected void GetSeasonHours(ref int prev_h, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
+        public int GetSeasonHourOffset(int h)
         {
-            int offset = 0;
-            
+            return GetSeasonHourOffset(m_curDate, h);
+        }
+
+        protected void GetSeasonHourIndex(int ssn, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
+        {
             //Проверка перехода сезонов
             if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
-            {
-                //Необходимо искать одинаковые часы
-                if (prev_h < 0)
-                    ; //Не было ни одного предыдущего часа                                
-                else
-                {
-                    if (prev_h == h)
-                    {
-                        //Найден одинаковый
-                        offset++;
-                    }
+                if (h == HAdmin.SeasonDateTime.Hour)
+                    //Проверить сезон
+                    if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.WinterToSummer)
+                        h++;
                     else
-                    {
-                        if (prev_h < h)
-                            //Норма
-                            //if (HAdmin.SeasonDateTime.Hour < h)
-                            if (! (HAdmin.SeasonDateTime.Hour > h))
-                                offset ++;
+                        if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.SummerToWinter)
+                        {
+                        }
+                        else
+                            if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.None)
+                                ;
                             else
                                 ;
-                        else
-                            ; //Ошибка ???
-                    }
-                }
-            }
+                else
+                    if (h > HAdmin.SeasonDateTime.Hour)
+                        h++;
+                    else
+                        ;
             else
-            {
-                //Оставить "как есть"
-            }
-
-            prev_h = h; //Запомнить текущий
-            h += offset;
+                ;
         }
+
+        //protected void GetSeasonHours(ref int prev_h, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
+        //{
+        //    int offset = 0;
+            
+        //    //Проверка перехода сезонов
+        //    if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
+        //    {
+        //        //Необходимо искать одинаковые часы
+        //        if (prev_h < 0)
+        //            ; //Не было ни одного предыдущего часа                                
+        //        else
+        //        {
+        //            if (prev_h == h)
+        //            {
+        //                //Найден одинаковый
+        //                offset++;
+        //            }
+        //            else
+        //            {
+        //                if (prev_h < h)
+        //                    //Норма
+        //                    //if (HAdmin.SeasonDateTime.Hour < h)
+        //                    if (! (HAdmin.SeasonDateTime.Hour > h))
+        //                        offset ++;
+        //                    else
+        //                        ;
+        //                else
+        //                    ; //Ошибка ???
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //Оставить "как есть"
+        //    }
+
+        //    prev_h = h; //Запомнить текущий
+        //    h += offset;
+        //}
 
         public string GetFmtDatetime(int h)
         {

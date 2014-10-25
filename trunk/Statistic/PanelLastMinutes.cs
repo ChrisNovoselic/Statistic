@@ -184,6 +184,7 @@ namespace Statistic
         protected override void initTableHourRows()
         {
             //Перестраиваем "шкалу" времени
+            //m_panelDateTime.initTableHourRows(); ??? Панель сама инициирует изменение даты, т.к. 'календарь' принадлежит ей
         }
 
         public override void Activate(bool active)
@@ -224,7 +225,10 @@ namespace Statistic
 
         private void TimerCurrent_Tick (object obj) {
             if (m_bIsActive == true)
-                this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now);
+                if (InvokeRequired == true)
+                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now);
+                else
+                    Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
             else
                 ;
         }
@@ -290,11 +294,11 @@ namespace Statistic
             {
                 int i = -1;
 
+                //int cntHours = 
+
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
                 this.RowCount = 24 + COUNT_FIXED_ROWS;
-
-                DateTime dtSel = DateTime.Now.Date;
 
                 //Добавить дату
                 //Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
@@ -303,27 +307,116 @@ namespace Statistic
 
                 m_dictLabelTime = new Dictionary<int,Label> ();
 
-                dtSel = dtSel.AddMinutes(59);
-                for (i = 1; i < 25; i++)
-                {
-                    m_dictLabelTime[i - 1] = HLabel.createLabel(dtSel.ToString(@"HH:mm"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
-                    this.Controls.Add(m_dictLabelTime[i - 1], 0, (i - 1) + COUNT_FIXED_ROWS);
-
-                    dtSel = dtSel.AddHours(1);
-                }
-
-                for (i = 0; i < (24 + COUNT_FIXED_ROWS - 1); i++)
-                {
-                    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
-                }
+                initTableHourRows();
 
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 6F));
+
+                //m_dtprDate.Value = DateTime.Now; Иначе Парент == null ???
+            }
+
+            private void initTableHourRows()
+            {
+                DateTime dt = m_dtprDate.Value.Date;
+                bool bSeason = false
+                    , bChangedCountRows = false;
+                int h = -1
+                    , cntHours = -1;
+
+                if (dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+                {
+                    bSeason = true;
+                    cntHours = 25;
+                }
+                else
+                    cntHours = 24;
+
+                if (m_dictLabelTime.Count == 0)
+                {
+                    for (h = 0; h < cntHours; h++)
+                    {
+                        m_dictLabelTime[h] = HLabel.createLabel(@"--:--", PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
+                        this.Controls.Add(m_dictLabelTime[h], 0, (h) + COUNT_FIXED_ROWS);                        
+                    }
+
+                    for (h = 0; h < (cntHours + COUNT_FIXED_ROWS - 1); h++)
+                    {
+                        this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                    }
+
+                    bChangedCountRows = true;
+                }
+                else
+                {
+                    if (bSeason == true)
+                    {
+                        if (m_dictLabelTime.Count < cntHours)
+                        {
+                            m_dictLabelTime.Add(24, HLabel.createLabel(dt.ToString(@"--:--"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]));
+                            this.Controls.Add(m_dictLabelTime[24], 0, 24 + COUNT_FIXED_ROWS);
+
+                            this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+
+                            bChangedCountRows = true;
+                        }
+                        else
+                        {
+                        }
+                    }
+                    else
+                    {
+                        if (m_dictLabelTime.Count > cntHours)
+                        {
+                            this.Controls.Remove(m_dictLabelTime[24]);
+                            m_dictLabelTime.Remove(cntHours);
+
+                            this.RowStyles.RemoveAt(this.RowStyles.Count - 1);
+
+                            bChangedCountRows = true;
+                        }
+                        else
+                        {
+                        }
+                    }
+                }
+
+                if (bChangedCountRows == true)
+                {
+                    DateTime dtSel = m_dtprDate.Value.Date;
+                    int offset = 0;
+                    dtSel = dtSel.AddMinutes(59);
+                    for (h = 0; h < m_dictLabelTime.Count; h++)
+                    {
+                        m_dictLabelTime[h].Text = dtSel.ToString(@"HH:mm");
+                        if (bSeason == true)
+                            if (!(h == HAdmin.SeasonDateTime.Hour))
+                            {
+                                dtSel = dtSel.AddHours(1);
+
+                                offset = HAdmin.GetSeasonHourOffset(dtSel.Date, h);
+                                if ((offset > 0) && ((h - 1) == HAdmin.SeasonDateTime.Hour))
+                                {
+                                    m_dictLabelTime[h].Text += @"*";
+                                }
+                                else
+                                    ;
+                            }
+                            else
+                                ;
+                        else
+                            dtSel = dtSel.AddHours(1);
+                    }
+                }
+                else
+                {
+                }
             }
 
             private void OnDateTimeValueChanged(object obj, EventArgs ev)
             {
                 DateTime dt = m_dtprDate.Value;
                 ((PanelLastMinutes)Parent).EventChangeDateTime(dt);
+
+                initTableHourRows();
             }
         }
 
@@ -368,8 +461,9 @@ namespace Statistic
             List<TECComponentBase> m_list_TECComponents;
             public int CountTECComponent { get { return m_list_TECComponents.Count; } }
 
-            private Dictionary<int, Label[]> m_dictLabelVal;
-            private Dictionary<int, ToolTip[]> m_dictToolTip;
+            //Для отображения значений
+            private List <Dictionary<int, Label>> m_listDictLabelVal;
+            private List <Dictionary<int, ToolTip>> m_listDictToolTip;
 
             //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
             TecView m_tecView;
@@ -380,6 +474,7 @@ namespace Statistic
 
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.LAST_MINUTES, -1, -1);
 
+                //Признаки для регистрации соединения с необходимыми источниками данных
                 HMark markQueries = new HMark();
                 markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
                 markQueries.Marked((int)CONN_SETT_TYPE.PBR);
@@ -403,50 +498,33 @@ namespace Statistic
             {
                 int i = -1;
                 m_list_TECComponents = new List<TECComponentBase> ();
-                m_dictLabelVal = new Dictionary<int, Label[]>();
-                m_dictToolTip = new Dictionary<int, ToolTip[]>();
-
+               
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-                this.RowCount = 24 + COUNT_FIXED_ROWS;
+                this.RowCount = (DateTime.Now.Date.Equals (HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
+
+                for (i = 0; i < this.RowCount; i++)
+                {
+                    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                }
 
                 //Добавить наименование станции
                 Label lblNameTEC = HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
                 this.Controls.Add(lblNameTEC, 0, 0);
 
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                {
                     if ((g.m_id > 100) && (g.m_id < 500))
                     {
                         //Добавить наименование ГТП
-                        this.Controls.Add(HLabel.createLabel(g.name_shr.Split (' ')[1], PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]), CountTECComponent, COUNT_FIXED_ROWS - 1);
-
-                        //Память под ячейки со значениями
-                        m_dictLabelVal.Add(g.m_id, new Label[24]);
-                        m_dictToolTip.Add(g.m_id, new ToolTip[24]);
-
-                        for (i = 0; i < 24; i ++)
-                        {
-                            m_dictLabelVal[g.m_id][i] = HLabel.createLabel (0.ToString (@"F2"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT]);
-                            m_dictToolTip[g.m_id][i] = new ToolTip();
-                            m_dictToolTip[g.m_id][i].IsBalloon = true;
-                            m_dictToolTip[g.m_id][i].ShowAlways = true;
-                            m_dictToolTip[g.m_id][i].SetToolTip(m_dictLabelVal[g.m_id][i], Hd2PercentControl.StringToolTipEmpty);
-
-                            this.Controls.Add(m_dictLabelVal[g.m_id][i], CountTECComponent, i + COUNT_FIXED_ROWS);
-                        }
+                        this.Controls.Add(HLabel.createLabel(g.name_shr.Split(' ')[1], PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]), CountTECComponent, COUNT_FIXED_ROWS - 1);
 
                         //Добавить компонент ТЭЦ (ГТП)
                         m_list_TECComponents.Add(g);
                     }
                     else
                         ;
-                }
 
-                for (i = 0; i < (24 + COUNT_FIXED_ROWS - 1); i++)
-                {
-                    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
-                }
+                initTableHourRows();
 
                 for (i = 0; i < CountTECComponent; i++)
                 {
@@ -506,12 +584,119 @@ namespace Statistic
             public void OnEventChangeDateTime (object obj) {
                 m_tecView.m_curDate = (DateTime)obj;
 
+                initTableHourRows();
+
                 ChangeState ();
+            }
+
+            private void addRow(int indx)
+            {
+                //Память под ячейки со значениями
+                m_listDictLabelVal.Add(new Dictionary<int, Label>());
+                m_listDictToolTip.Add(new Dictionary<int, ToolTip>());
+
+                int col = 0;
+                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                {
+                    if ((g.m_id > 100) && (g.m_id < 500))
+                    {
+                        m_listDictLabelVal[indx].Add(g.m_id, HLabel.createLabel(0.ToString(@"F2"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT]));
+
+                        m_listDictToolTip[indx].Add(g.m_id, new ToolTip());
+                        m_listDictToolTip[indx][g.m_id].IsBalloon = true;
+                        m_listDictToolTip[indx][g.m_id].ShowAlways = true;
+                        m_listDictToolTip[indx][g.m_id].SetToolTip(m_listDictLabelVal[indx][g.m_id], Hd2PercentControl.StringToolTipEmpty);
+
+                        this.Controls.Add(m_listDictLabelVal[indx][g.m_id], col++, indx + COUNT_FIXED_ROWS);
+
+                        this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                    }
+                    else
+                        ;
+                }
+            }
+
+            private void initTableHourRows()
+            {
+                bool bSeason = false
+                    , bChangedCountRows = false;
+                int hour = -1
+                    , cntHours = -1;
+
+                if (! (m_tecView.m_curDate.Year == 1))
+                {
+                    if (m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+                    {
+                        bSeason = true;
+                        cntHours = 25;
+                    }
+                    else
+                        cntHours = 24;
+
+                    if ((m_listDictLabelVal == null) || (m_listDictToolTip == null))
+                    {
+                        m_listDictLabelVal = new List<Dictionary<int, Label>>();
+                        m_listDictToolTip = new List<Dictionary<int, ToolTip>>();
+                    }
+                    else
+                        ;
+
+                    if (m_listDictLabelVal.Count == 0)
+                    {
+                        for (hour = 0; hour < cntHours; hour++)
+                        {
+                            addRow(hour);
+                        }
+
+                        //for (hour = 0; hour < COUNT_FIXED_ROWS; hour++)
+                        //{
+                        //    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                        //}
+                    }
+                    else
+                    {
+                        if (!(m_listDictLabelVal.Count == cntHours))
+                        {
+                            if (m_listDictLabelVal.Count > cntHours)
+                            {
+                                foreach (Label lbl in m_listDictLabelVal[cntHours].Values)
+                                {
+                                    this.Controls.Remove(lbl);
+                                }
+
+                                m_listDictLabelVal.RemoveAt(cntHours);
+                                m_listDictToolTip.RemoveAt(cntHours);
+
+                                this.RowStyles.RemoveAt(this.RowStyles.Count - 1);
+                            }
+                            else
+                            {
+                                if (m_listDictLabelVal.Count < cntHours)
+                                {
+                                    addRow(24);
+
+                                    this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                                }
+                                else
+                                {
+                                }
+                            }
+                        }
+                        else
+                        {
+                        }
+                    }
+                }
+                else
+                    ; //Дата/время не известны
             }
 
             private void showLastMinutesTM()
             {
-                this.BeginInvoke(new DelegateFunc(ShowLastMinutesTM));
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateFunc(ShowLastMinutesTM));
+                else
+                    Logging.Logg().Error(@"PanelTecLastMinutes::showLastMinutesTM () - ... BeginInvoke (ShowLastMinutesTM) - ...");
             }
 
             private void ShowLastMinutesTM()
@@ -527,7 +712,7 @@ namespace Statistic
                 foreach (TECComponent g in m_list_TECComponents)
                 {
                     cntWarn = 0;
-                    for (int hour = 1; hour < 25; hour++) //Если значение за 00:00 пред./сут. запис. в [24]
+                    for (int hour = 1; hour < m_listDictLabelVal.Count + 1; hour++) //Если значение за 00:00 пред./сут. запис. в [24]
                     {
                         clrBackColor = s_clrBakColorLabelVal;
                         strToolTip = string.Empty;
@@ -536,7 +721,7 @@ namespace Statistic
                         if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
                         strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id], bPmin, out warn);
 
-                        m_dictToolTip[g.m_id][hour - 1].SetToolTip(m_dictLabelVal[g.m_id][hour - 1], strToolTip);
+                        m_listDictToolTip[hour - 1][g.m_id].SetToolTip(m_listDictLabelVal[hour - 1][g.m_id], strToolTip);
 
                         if (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1)
                         {
@@ -555,12 +740,12 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_dictLabelVal[g.m_id][hour - 1].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM.ToString(@"F2");
+                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM.ToString(@"F2");
                         }
                         else
-                            m_dictLabelVal[g.m_id][hour - 1].Text = 0.ToString (@"F0");
+                            m_listDictLabelVal[hour - 1][g.m_id].Text = 0.ToString(@"F0");
 
-                        m_dictLabelVal[g.m_id][hour - 1].BackColor = clrBackColor;
+                        m_listDictLabelVal[hour - 1][g.m_id].BackColor = clrBackColor;
                     }
                 }
             }

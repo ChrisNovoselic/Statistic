@@ -355,11 +355,16 @@ namespace Statistic
         }
 
         private void OnAdminAlarm_EventAdd (TecView.EventRegEventArgs ev) {
-            this.BeginInvoke (new DelegateIntIntFunc (EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
+            if (InvokeRequired == true)
+            {
+                this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
 
-            this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
+                this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
 
-            toEventGUIReg(ev);
+                toEventGUIReg(ev);
+            }
+            else
+                Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...");
         }
 
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
@@ -425,9 +430,14 @@ namespace Statistic
             string strFmtDatetime = string.Empty;
 
             //??? не очень изящное решение
-            m_evtAdminTableRowCount.Reset ();
-            this.BeginInvoke (new DelegateFunc (normalizedTableHourRows));
-            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+            if (InvokeRequired == true)
+            {
+                m_evtAdminTableRowCount.Reset();
+                this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
+                m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+            }
+            else
+                Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...");
 
             for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
             {

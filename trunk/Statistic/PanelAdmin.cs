@@ -40,14 +40,6 @@ namespace Statistic
 
         public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
-        //public string last_error { get { return m_admin.last_error; } }
-        //public DateTime last_time_error { get { return m_admin.last_time_error; } }
-        //public bool errored_state { get { return m_admin.errored_state; } }
-
-        //public string last_action { get { return m_admin.last_action; } }
-        //public DateTime last_time_action { get { return m_admin.last_time_action; } }
-        //public bool actioned_state { get { return m_admin.actioned_state; } }
-
         protected virtual void InitializeComponents()
         {
             this.m_panelManagement = new Panel ();
@@ -256,6 +248,8 @@ namespace Statistic
 
         public override void Stop()
         {
+            CalendarSetDate(DateTime.Now.Date);
+
             if (! (m_admin.threadIsWorking < 0)) m_admin.Stop(); else ;
         }
 
@@ -282,7 +276,10 @@ namespace Statistic
         /// <param name="date"></param>
         public void CalendarSetDate(DateTime date)
         {
-            BeginInvoke(new DelegateDateFunc(setDate), date);
+            if (InvokeRequired == true)
+                BeginInvoke(new DelegateDateFunc(setDate), date);
+            else
+                ;
         }
 
         /// <summary>

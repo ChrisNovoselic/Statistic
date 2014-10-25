@@ -470,11 +470,13 @@ namespace Statistic
         public void ChangeState_SobstvNyzhdy () {
             ClearStates();
 
+            ClearValues();
+
             if (m_tec.m_bSensorsStrings == false)
                 states.Add((int)StatesMachine.InitSensors);
             else ;
 
-            states.Add((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
+            //states.Add((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             states.Add((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
             states.Add((int)TecView.StatesMachine.Current_TM_SN);
         }
@@ -526,19 +528,38 @@ namespace Statistic
             ClearValuesMins();
             //ClearValuesHours(cnt);
             ClearValuesHours();
+
+            ClearValuesLastMinutesTM();
         }
 
         public void ClearValuesLastMinutesTM()
         {
-            for (int i = 0; i < 25; i++) {
-                if (i < 24)
+            if (!(m_dictValuesTECComponent.Length - m_valuesHours.Length == 1))
+            {
+                m_dictValuesTECComponent = null;
+                m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[m_valuesHours.Length + 1];
+            }
+            else
+                ;
+
+            for (int i = 0; i < (m_valuesHours.Length + 1); i++)
+            {
+                if (i < m_valuesHours.Length)
                     m_valuesHours[i].valuesLastMinutesTM = 0.0;
                 else
                     ;
 
                 foreach (TECComponent g in m_localTECComponents)
                 {
+                    if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int, valuesTECComponent>(); else ;
+
+                    if (m_dictValuesTECComponent[i].ContainsKey(g.m_id) == false)
+                        m_dictValuesTECComponent[i].Add(g.m_id, new valuesTECComponent());
+                    else
+                        ;
+
                     if (m_dictValuesTECComponent[i][g.m_id] == null) m_dictValuesTECComponent[g.m_id][i] = new valuesTECComponent(); else ;
+
                     m_dictValuesTECComponent[i][g.m_id].valuesLastMinutesTM = 0.0;
                 }
             }
@@ -1072,7 +1093,7 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
-                    ClearValuesLastMinutesTM ();
+                    //ClearValuesLastMinutesTM ();
                     bRes = GetLastMinutesTMResponse(table, m_curDate);
                     if (bRes == true)
                     {
@@ -1165,6 +1186,8 @@ namespace Statistic
 
         private void ChangeState_LastMinutes () {
             ClearStates ();
+
+            ClearValues();
 
             if (m_tec.m_bSensorsStrings == false)
                 states.Add((int)StatesMachine.InitSensors);
@@ -1467,7 +1490,7 @@ namespace Statistic
 
             lastLayout = "---";
 
-            //Определить признак даты переходы сезонов (заранее, не при итерации в цикле) - копия 'AdminTS'
+            //Определить признак даты переходы сезонов (заранее, не при итерации в цикле)
             if (HAdmin.SeasonDateTime.Date.CompareTo (m_curDate.Date) == 0)
                 bSeason = true;
             else
@@ -1479,13 +1502,6 @@ namespace Statistic
 
             if ((indxTECComponents < 0) || ((!(indxTECComponents < 0)) && (m_tec.list_TECComponents[indxTECComponents].m_id > 500)))
             {
-                //double[,] valuesPBR = new double[/*tec.list_TECComponents.Count*/m_localTECComponents.Count, 25];
-                //double[,] valuesPmin = new double[m_localTECComponents.Count, 25];
-                //double[,] valuesPmax = new double[m_localTECComponents.Count, 25];
-                //double[,] valuesREC = new double[m_localTECComponents.Count, 25];
-                //int[,] valuesISPER = new int[m_localTECComponents.Count, 25];
-                //double[,] valuesDIV = new double[m_localTECComponents.Count, 25];
-
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
@@ -1493,18 +1509,12 @@ namespace Statistic
                 m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indxTECComponents);
                 offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
 
+                DataTable tableAdminValuesResponse = null;
+                if (bSeason == true)
+                    tableAdminValuesResponse = table_in.Copy();
+                else
+                    ;
                 table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, indxTECComponents);
-
-                //if (!(table_in.Columns.IndexOf("ID_COMPONENT") < 0))
-                //    try { table_in.Columns.Remove("ID_COMPONENT"); }
-                //    catch (Exception excpt)
-                //    {
-                //        /*
-                //        Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...");
-                //        */
-                //    }
-                //else
-                //    ;
 
                 // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count && offsetPrev < 0; i++)
@@ -1565,7 +1575,6 @@ namespace Statistic
                     }
                 }
 
-                int prev_hour = -1; //Для поиска одинаковых часов
                 // разбор остальных значений
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
                 {
@@ -1589,7 +1598,8 @@ namespace Statistic
                                 else
                                     ;
 
-                            GetSeasonHours(ref prev_hour, ref hour);
+                            //GetSeasonHours(ref prev_hour, ref hour);
+                            hour += GetSeasonHourOffset(hour);
 
                             //foreach (TECComponent g in tec.list_TECComponents)
                             for (j = 0; j < m_localTECComponents.Count; j++)
@@ -1616,47 +1626,92 @@ namespace Statistic
                                         //m_dictValuesTECComponent[id].valuesPmax[hour - 1] = 0.0;
                                     }
 
+                                    DataRow[] row_in;
                                     //Копия снизу по разбору ТЭЦ в целом + копии 'AdminTS'
                                     if (bSeason == true) {
-                                        if (hour == HAdmin.SeasonDateTime.Hour + 1) {
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPBR = m_dictValuesTECComponent[hour - 0][id].valuesPBR;
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPmin = m_dictValuesTECComponent[hour - 0][id].valuesPmin;
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPmax = m_dictValuesTECComponent[hour - 0][id].valuesPmax;
+                                        if ((hour - 1) == (HAdmin.SeasonDateTime.Hour + 1)) {
+                                            m_dictValuesTECComponent[hour - 1][id].valuesPBR = m_dictValuesTECComponent[hour - 2][id].valuesPBR;
+                                            m_dictValuesTECComponent[hour - 1][id].valuesPmin = m_dictValuesTECComponent[hour - 2][id].valuesPmin;
+                                            m_dictValuesTECComponent[hour - 1][id].valuesPmax = m_dictValuesTECComponent[hour - 2][id].valuesPmax;
                                         } else {
+                                        }
+
+                                        if (hour == HAdmin.SeasonDateTime.Hour)
+                                        {
+                                            //row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString(@"yyyy-MM-dd HH:mm:ss") + @"'");
+                                            row_in = tableAdminValuesResponse.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "' AND ID_COMPONENT = " + id.ToString ());
+                                            //Копия в 'AdminRS'
+                                            if (row_in.Length > 0)
+                                            {
+                                                int h = -1;
+                                                foreach (DataRow r in row_in)
+                                                {
+                                                    h = dtPBR.Hour;
+                                                    //GetSeasonHourIndex(Int32.Parse(r[@"SEASON_" + id.ToString ()].ToString()), ref h);
+                                                    GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref h);
+
+                                                    //m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC_" + id.ToString()];
+                                                    m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC"];
+                                                    //m_dictValuesTECComponent[h - 0][id].valuesISPER = (int)r[@"IS_PER_" + id.ToString()];
+                                                    m_dictValuesTECComponent[h - 0][id].valuesISPER = (int)r[@"IS_PER"];
+                                                    //m_dictValuesTECComponent[h - 0][id].valuesDIV = (double)r[@"DIVIAT_" + id.ToString()];
+                                                    m_dictValuesTECComponent[h - 0][id].valuesDIV = (double)r[@"DIVIAT"];
+                                                }
+                                            }
+                                            else
+                                            {//Ошибка ... ???
+                                                Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                            }
+                                        }
+                                        else
+                                        {
                                         }
                                     } else {
                                     }
 
-                                    DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
-                                    //if (i < table_in.Rows.Count)
-                                    if (row_in.Length > 0)
-                                    {
-                                        if (row_in.Length > 1)
-                                            ; //Ошибка....
-                                        else
-                                            ;
+                                    if (((!(hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)) ||
+                                        (bSeason == false))
+                                    {                                    
+                                        row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                        //if (i < table_in.Rows.Count)
+                                        if (row_in.Length > 0)
+                                        {
+                                            if (row_in.Length > 1)
+                                                ; //Ошибка....
+                                            else
+                                                ;
 
-                                        if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            //valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
-                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0][offsetUDG + j * 3];
+                                            //if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
+                                            if (!(row_in[0]["REC_" + id.ToString ()] is System.DBNull))
+                                                //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
+                                                //valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
+                                                //m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0][offsetUDG + j * 3];
+                                                m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0]["REC_" + id.ToString()];
+                                            else
+                                                //valuesREC[j, hour - 1] = 0;
+                                                m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
+
+                                            //if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
+                                            if (!(row_in[0]["IS_PER_" + id.ToString ()] is System.DBNull))
+                                                //m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0][offsetUDG + 1 + j * 3];
+                                                m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0]["IS_PER_" + id.ToString()];
+                                            else
+                                                ;
+
+                                            //if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
+                                            if (!(row_in[0]["DIVIAT_" + id.ToString ()] is System.DBNull))
+                                                //m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0][offsetUDG + 2 + j * 3];
+                                                m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0]["DIVIAT_" + id.ToString()];
+                                            else
+                                                ;
+                                        }
                                         else
-                                            //valuesREC[j, hour - 1] = 0;
+                                        {
                                             m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
-
-                                        if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0][offsetUDG + 1 + j * 3];
-                                        else
-                                            ;
-
-                                        if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0][offsetUDG + 2 + j * 3];
-                                        else
-                                            ;
+                                        }
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
                                     }
                                 }
                                 catch (Exception e)
@@ -1886,7 +1941,8 @@ namespace Statistic
                                 else
                                     ;
 
-                            GetSeasonHours (ref prev_hour, ref hour);
+                            //GetSeasonHours (ref prev_hour, ref hour);
+                            hour += GetSeasonHourOffset(hour);
 
                             if ((offsetPlan < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan] is System.DBNull)))
                             {
@@ -1897,14 +1953,40 @@ namespace Statistic
                             else
                                 ;
 
+                            DataRow[] row_in;
                             //Копия сверху по разбору компонента ТЭЦ + копии 'AdminTS'
                             if (bSeason == true)
                             {
-                                if (hour == HAdmin.SeasonDateTime.Hour + 1)
+                                if ((hour - 1) == (HAdmin.SeasonDateTime.Hour + 1))
                                 {
-                                    valuesPBR[hour - 1] = valuesPBR[hour - 0];
-                                    valuesPmin[hour - 1] = valuesPmin[hour - 0];
-                                    valuesPmax[hour - 1] = valuesPmax[hour - 0];
+                                    valuesPBR[hour - 1] = valuesPBR[hour - 2];
+                                    valuesPmin[hour - 1] = valuesPmin[hour - 2];
+                                    valuesPmax[hour - 1] = valuesPmax[hour - 2];
+                                }
+                                else
+                                {
+                                }
+
+                                if (hour == HAdmin.SeasonDateTime.Hour)
+                                {
+                                    row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                    //Копия в 'AdminRS'
+                                    if (row_in.Length > 0)
+                                    {
+                                        foreach (DataRow r in row_in)
+                                        {
+                                            hour = dtPBR.Hour;
+                                            GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref hour);
+
+                                            valuesREC [hour - 1] = (double)r[@"REC"];
+                                            valuesISPER [hour - 1] = (int)r[@"IS_PER"];
+                                            valuesDIV[hour - 1] = (double)r[@"DIVIAT"];
+                                        }
+                                    }
+                                    else
+                                    {//Ошибка ... ???
+                                        Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                    }
                                 }
                                 else
                                 {
@@ -1914,36 +1996,43 @@ namespace Statistic
                             {
                             }
 
-                            DataRow[] row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
-                            //if (i < table_in.Rows.Count)
-                            if (row_in.Length > 0)
+                            if (((!(hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)) ||
+                                        (bSeason == false))
                             {
-                                if (row_in.Length > 1)
-                                    ; //Ошибка....
-                                else
-                                    ;
+                                row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                                //if (i < table_in.Rows.Count)
+                                if (row_in.Length > 0)
+                                {
+                                    if (row_in.Length > 1)
+                                        ; //Ошибка....
+                                    else
+                                        ;
 
-                                if (!(row_in[0][offsetUDG] is System.DBNull))
-                                    //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
-                                    valuesREC[hour - 0] = (double)row_in[0][offsetUDG + 0];
+                                    if (!(row_in[0][offsetUDG] is System.DBNull))
+                                        //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
+                                        valuesREC[hour - 0] = (double)row_in[0][offsetUDG + 0];
+                                    else
+                                        valuesREC[hour - 0] = 0;
+
+                                    if (!(row_in[0][offsetUDG + 1] is System.DBNull))
+                                        valuesISPER[hour - 0] = (int)row_in[0][offsetUDG + 1];
+                                    else
+                                        ;
+
+                                    if (!(row_in[0][offsetUDG + 2] is System.DBNull))
+                                        valuesDIV[hour - 0] = (double)row_in[0][offsetUDG + 2];
+                                    else
+                                        ;
+                                }
                                 else
+                                {
                                     valuesREC[hour - 0] = 0;
-
-                                if (!(row_in[0][offsetUDG + 1] is System.DBNull))
-                                    valuesISPER[hour - 0] = (int)row_in[0][offsetUDG + 1];
-                                else
-                                    ;
-
-                                if (!(row_in[0][offsetUDG + 2] is System.DBNull))
-                                    valuesDIV[hour - 0] = (double)row_in[0][offsetUDG + 2];
-                                else
-                                    ;
+                                    //valuesISPER[hour - 1] = 0;
+                                    //valuesDIV[hour - 1] = 0;
+                                }
                             }
                             else
                             {
-                                valuesREC[hour - 0] = 0;
-                                //valuesISPER[hour - 1] = 0;
-                                //valuesDIV[hour - 1] = 0;
                             }
 
                             string tmp = "";
@@ -1975,7 +2064,9 @@ namespace Statistic
                                 else
                                     ;
 
-                            GetSeasonHours (ref prev_hour, ref hour);
+                            //GetSeasonHours (ref prev_hour, ref hour);
+                            //hour += GetSeasonHourOffset(hour);
+                            GetSeasonHourIndex(Int32.Parse(table_in.Rows[i]["SEASON"].ToString()), ref hour);
 
                             valuesPBR[hour - 0] = 0;
 
@@ -2483,24 +2574,24 @@ namespace Statistic
                         else
                             ;
 
-                        //Отладка ???
-                        //if ((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && (! (dt.Hour < HAdmin.SeasonDateTime.Hour)))
-                        if (((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && ((dt.Hour + dt.Minute / 30) > HAdmin.SeasonDateTime.Hour)) ||
-                            ((dt.Hour == 0) && (dt.Minute == 0) && (dt.AddDays(-1).CompareTo(HAdmin.SeasonDateTime.Date) == 0)))
-                        {
-                            if (HAdmin.SeasonAction < 0)
-                                season = (int)HAdmin.seasonJumpE.SummerToWinter;
-                            else
-                                if (HAdmin.SeasonAction > 0)
-                                    season = (int)HAdmin.seasonJumpE.WinterToSummer;
-                                else
-                                    season = (int)HAdmin.seasonJumpE.None;
+                        ////Отладка ???
+                        ////if ((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && (! (dt.Hour < HAdmin.SeasonDateTime.Hour)))
+                        //if (((dt.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0) && ((dt.Hour + dt.Minute / 30) > HAdmin.SeasonDateTime.Hour)) ||
+                        //    ((dt.Hour == 0) && (dt.Minute == 0) && (dt.AddDays(-1).CompareTo(HAdmin.SeasonDateTime.Date) == 0)))
+                        //{
+                        //    if (HAdmin.SeasonAction < 0)
+                        //        season = (int)HAdmin.seasonJumpE.SummerToWinter;
+                        //    else
+                        //        if (HAdmin.SeasonAction > 0)
+                        //            season = (int)HAdmin.seasonJumpE.WinterToSummer;
+                        //        else
+                        //            season = (int)HAdmin.seasonJumpE.None;
 
-                            season += DateTime.Now.Year * 2;
-                        }
-                        else
-                        {
-                        }
+                        //    season += DateTime.Now.Year * 2;
+                        //}
+                        //else
+                        //{
+                        //}
                     }
                     catch (Exception e)
                     {
@@ -2835,21 +2926,23 @@ namespace Statistic
                                 else
                                     value = 0.0;
 
-                                if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
+                                //if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
+                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
                                     return false;
                                 else
                                     ;
 
-                                hour = dtVal.Hour + offsetUTC + 1; //Т.к. мин.59 из прошедшего часа
+                                dtVal = dtVal.AddHours(offsetUTC);
+                                hour = dtVal.Hour + 1; //Т.к. мин.59 из прошедшего часа
                                 //if (!(hour < 24)) hour -= 24; else ;
                                 if (hour > 24) hour -= 24; else ;
 
-                                tg.power_LastMinutesTM[hour] = value;
+                                tg.power_LastMinutesTM[i] = value;
 
                                 //Запрос с учетом значения перехода через сутки
-                                if (hour > 0 && value > 1) {
-                                    m_valuesHours[hour - 1].valuesLastMinutesTM += value;
-                                    m_dictValuesTECComponent[hour - 1][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
+                                if (value > 1) {
+                                    m_valuesHours[i].valuesLastMinutesTM += value;
+                                    m_dictValuesTECComponent[i][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
                                 }
                                 else
                                     ;
@@ -2894,17 +2987,18 @@ namespace Statistic
                                 dtVal = DateTime.Now.Date;
                             }
 
-                            hour = dtVal.Hour + offsetUTC + 1;
+                            dtVal = dtVal.AddHours(offsetUTC);
+                            hour = dtVal.Hour + 1;
                             //if (!(hour < 24))
-                            if (hour > 24)
-                                hour -= 24;
+                            if (hour == 24)
+                                hour = 0;
                             else ;
 
                             //if (dtReq.Date.Equals (dtVal.Date) == true) {
-                            comp.m_listTG[0].power_LastMinutesTM[hour] = value;
+                            comp.m_listTG[0].power_LastMinutesTM[i] = value;
 
-                            if (hour > 0 && value > 1)
-                                m_valuesHours[hour - 1].valuesLastMinutesTM += value;
+                            if (value > 1)
+                                m_valuesHours[i].valuesLastMinutesTM += value;
                             else
                                 ;
                             //} else ;
@@ -3246,14 +3340,26 @@ namespace Statistic
 
         private void GetHoursTMSNPsumRequest(DateTime dt)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
+            int hours = -1;
+            if (m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+                hours = 25;
+            else
+                hours = 24;
+
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate, hours));
         }
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
+            int cnt = 24;
+            if (m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+                cnt = 25;
+            else
+                ;
+
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
         private void GetPPBRValuesRequest()

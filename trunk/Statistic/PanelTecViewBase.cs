@@ -581,6 +581,7 @@ namespace Statistic
 
             this.m_dgwHours.Rows.Add(count + 1);
 
+            int offset = 0;
             bool bSeasobDate = false;
             if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0)
                 bSeasobDate = true;
@@ -591,9 +592,10 @@ namespace Statistic
             {
                 hour = i + 1;                
                 if (bSeasobDate == true) {
-                    hour -= m_tecView.GetSeasonHourOffset (hour);
-                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
-                    if ((hour) == HAdmin.SeasonDateTime.Hour)
+                    offset = m_tecView.GetSeasonHourOffset (hour);
+                    
+                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour - offset).ToString();
+                    if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
                         this.m_dgwHours.Rows[i].Cells[0].Value += @"*";
                     else
                         ;
@@ -676,7 +678,10 @@ namespace Statistic
 
         private void updateGUI_TM_Gen()
         {
-            this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
+            if (InvokeRequired == true)
+                this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
+            else
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ...");
         }
 
         private void UpdateGUI_TM_Gen()
@@ -689,7 +694,10 @@ namespace Statistic
 
         private void updateGUI_Fact(int hour, int min)
         {
-            this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
+            if (InvokeRequired == true)
+                this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
+            else
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ...");
         }
 
         protected virtual void UpdateGUI_Fact(int hour, int min)
@@ -1034,7 +1042,10 @@ namespace Statistic
         private void setNowDate()
         {
             //true, т.к. всегда вызов при result=true
-            this.BeginInvoke (new DelegateBoolFunc (SetNowDate), true);
+            if (InvokeRequired == true)
+                this.BeginInvoke (new DelegateBoolFunc (SetNowDate), true);
+            else
+                Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...");
         }
 
         private void SetNowDate(bool received)
@@ -1100,7 +1111,11 @@ namespace Statistic
 
         private void TimerCurrent_Tick(Object stateInfo)
         {
-            Invoke(delegateTickTime);
+            if (InvokeRequired == true)
+                Invoke(delegateTickTime);
+            else
+                return;
+
             if ((m_tecView.currHour == true) && (isActive == true))
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
                 if (!(currValuesPeriod++ < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
@@ -1302,7 +1317,7 @@ namespace Statistic
             pane.YAxis.Title.Text = "";
 
             if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
-                int offset = m_tecView.GetSeasonHourOffset(hour);
+                int offset = m_tecView.GetSeasonHourOffset(hour + 1);
                 pane.Title.Text = //"—редн€€ мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1 - offset).ToString();
                 if (HAdmin.SeasonDateTime.Hour == hour)

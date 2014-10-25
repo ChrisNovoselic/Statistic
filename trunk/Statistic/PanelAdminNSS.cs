@@ -156,7 +156,10 @@ namespace Statistic
         public override void setDataGridViewAdmin(DateTime date)
         {
             //if (this.dgwAdminTable.Columns.Count < ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.Count)
-                this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+                else
+                    Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...");
             //else
             //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
         }

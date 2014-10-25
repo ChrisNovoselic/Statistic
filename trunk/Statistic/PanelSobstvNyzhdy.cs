@@ -389,7 +389,10 @@ namespace Statistic
 
             private void showTMSNPower()
             {
-                this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                else
+                    Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");
             }
 
             private void ShowTMSNPower()
@@ -486,7 +489,18 @@ namespace Statistic
                 bool noValues = true;
                 for (int i = 0; i < itemscount; i++)
                 {
-                    names[i] = i.ToString();
+                    
+                    if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
+                        int offset = m_tecView.GetSeasonHourOffset(i + 1);
+                        names[i] = (i + 1 - offset).ToString();
+                        if (HAdmin.SeasonDateTime.Hour == i)
+                            names[i] += "*";
+                        else
+                            ;
+                    }
+                    else
+                        names[i] = (i + 1).ToString();
+                    
                     valuesTMSNPsum[i] = m_tecView.m_valuesHours[i].valuesTMSNPsum;
 
                     if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))

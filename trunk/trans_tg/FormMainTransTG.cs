@@ -382,7 +382,10 @@ namespace trans_tg
 
         protected override void updateDataGridViewAdmin(DateTime date)
         {
-            this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+            if (InvokeRequired == true)
+                this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+            else
+                Logging.Logg().Error(@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...");
         }
 
         protected override void buttonClear_Click(object sender, EventArgs e)
@@ -430,7 +433,10 @@ namespace trans_tg
                 {
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
 
-                    this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                    if (InvokeRequired == true)
+                        this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                    else
+                        Logging.Logg().Error(@"FormMainTransTG::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...");
 
                     //this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 }

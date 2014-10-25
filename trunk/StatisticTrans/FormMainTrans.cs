@@ -838,8 +838,11 @@ namespace StatisticTrans
                 m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
                 //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
 
-                this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
                 //SaveRDGValues (false);
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                else
+                    Logging.Logg().Error(@"FormMainTrans::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...");
 
                 //this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }
@@ -856,7 +859,11 @@ namespace StatisticTrans
         {
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                IAsyncResult asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                IAsyncResult asyncRes;
+                if (InvokeRequired == true)
+                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                else
+                    Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...");
             }
             else
                 ;
@@ -886,7 +893,11 @@ namespace StatisticTrans
             
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                IAsyncResult asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                IAsyncResult asyncRes;
+                if (InvokeRequired == true)
+                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                else
+                    Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
                 //this.EndInvoke (asynchRes);
                 //trans_auto_next ();
             }
@@ -903,7 +914,10 @@ namespace StatisticTrans
 
         protected void setDatetimePicker(DateTime date)
         {
-            this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
+            if (InvokeRequired == true)
+                this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
+            else
+                Logging.Logg().Error(@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...");
         }
 
         protected override void Stop()

@@ -102,7 +102,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                for (int i = e.RowIndex + 1; i < 24; i++)
+                for (int i = e.RowIndex + 1; i < Rows.Count; i++)
                 {
                     //m_curRDGValues[i].plan = m_curRDGValues[e.RowIndex].plan;
                     //m_curRDGValues[i].recomendation = m_curRDGValues[e.RowIndex].recomendation;

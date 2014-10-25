@@ -514,6 +514,9 @@ namespace StatisticCommon
             DataTable table = null;
             int i = -1, j = -1, k = -1,
                 hour = -1, day = -1;
+            //Массив индексов таблиц, 1-ый эл-т таблицы - индекс таблицы с БОЛЬШИМ кол-м строк
+            //1-ый эл-т таблицы - индекс таблицы с МЕНЬШИМ кол-м строк
+            //если кол-во строк РАВНЫ, то 1-ый эл-т индекс ППБР, 2-ой АДМИН_ВАЛ
             int [] arIndexTables = {0, 1},
                 arFieldsCount = {-1, -1};
             bool bSeason = false;
@@ -536,7 +539,7 @@ namespace StatisticCommon
             if (offsetPBR > 0) offsetPBR = 0; else ;
 
             //Определить признак даты переходы сезонов (заранее, не при итерации в цикле) - копия 'TecView'
-            if (HAdmin.SeasonDateTime.Date.CompareTo (m_curDate.Date) == 0)
+            if (HAdmin.SeasonDateTime.Date.CompareTo (date.Date) == 0)
                 bSeason = true;
             else
                 ;
@@ -581,6 +584,7 @@ namespace StatisticCommon
             {
                 for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
                 {
+                    //Сравниваем дату/время 0 = [DATE_PBR], [DATE_ADMIN]
                     if (arTable[arIndexTables[0]].Rows[i][0].Equals (arTable[arIndexTables[1]].Rows[j][0])) {
                         for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
                         {
@@ -667,18 +671,22 @@ namespace StatisticCommon
                 }
                 else
                 {
+                    DateTime iDate;
                     try
                     {
-                        if (!(offsetDATE_ADMIN < 0)) {
-                            hour = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Hour;
-                            day = ((DateTime)table.Rows[i]["DATE_ADMIN"]).Day;
+                        if (!(offsetDATE_ADMIN < 0))
+                        {
+                            iDate = ((DateTime)table.Rows[i]["DATE_ADMIN"]);
                         }
-                        else {
-                            hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                            day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+                        else
+                        {
+                            iDate = ((DateTime)table.Rows[i]["DATE_PBR"]);
                         }
 
-                        if ((hour == 0) && (! (day == date.Day)))
+                        hour = iDate.Hour;
+                        day = iDate.Day;
+
+                        if ((hour == 0) && (!(day == date.Day)))
                             hour = 24;
                         else
                             if (hour == 0)
@@ -686,28 +694,71 @@ namespace StatisticCommon
                             else
                                 ;
 
-                        //GetSeasonHours (ref prev_hour, ref hour);
-                        offset = GetSeasonHourOffset (hour);
-                        hour += offset;
+                        if (bSeason == true)
+                        {
+                            if (hour == HAdmin.SeasonDateTime.Hour)
+                            {
+                                DataRow[] arSeasonRows;
+                                //Копия в 'TecView'
+                                //arSeasonRows = tableAdminValuesResponse.Select(@"DATE_ADMIN='" + iDate.ToString(@"yyyyMMdd HH:00") + @"' AND SEASON=" + (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter));
+                                arSeasonRows = tableAdminValuesResponse.Select(@"DATE_ADMIN='" + iDate.ToString(@"yyyy-MM-dd HH:00") + @"'");
+                                if (arSeasonRows.Length > 0)
+                                {
+                                    int h = -1;
+                                    foreach (DataRow r in arSeasonRows) {
+                                        h = iDate.Hour;
+                                        GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString ()), ref h);
 
-                        if (!(offsetDATE_ADMIN < 0)) {
-                            m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount [0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
-                            m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
-                            m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
+                                        m_curRDGValues[h - 1].recomendation = (double)r[@"REC"];
+                                        m_curRDGValues[h - 1].deviationPercent = (int)r[@"IS_PER"] == 1;
+                                        m_curRDGValues[h - 1].deviation = (double)r[@"DIVIAT"];
+                                    }
+                                }
+                                else
+                                {//Ошибка ... ???
+                                    Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                }
+
+                                //continue; ???
+                                //Необходимо получить ППБР ???
+                            }
+                            else
+                            {
+                                //GetSeasonHours (ref prev_hour, ref hour);
+                                offset = GetSeasonHourOffset(hour);
+                                hour += offset;
+                            }
                         }
-                        else {
-                            m_curRDGValues[hour - 1].recomendation = 0.0;
-                            m_curRDGValues[hour - 1].deviationPercent = false;
-                            m_curRDGValues[hour - 1].deviation = 0F;
+                        else
+                        {
                         }
-                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0)) {
+
+                        if ((bSeason == false) ||
+                            ((! (hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)))
+                            if (!(offsetDATE_ADMIN < 0))
+                            {
+                                m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
+                                m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
+                                m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
+                            }
+                            else
+                            {
+                                m_curRDGValues[hour - 1].recomendation = 0.0;
+                                m_curRDGValues[hour - 1].deviationPercent = false;
+                                m_curRDGValues[hour - 1].deviation = 0F;
+                            }
+                        else
+                            ;
+
+                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0))
+                        {
                             //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                             //{
-                                j = 0;
-                                if (! (table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*//*"PBR"*/] is DBNull))
-                                    m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*/ /*"PBR"*/];
-                                else
-                                    m_curRDGValues[hour - 1].pbr = 0.0;
+                            j = 0;
+                            if (!(table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*//*"PBR"*/] is DBNull))
+                                m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + (j + 1)/* + offsetPBR_NUMBER*/ /*"PBR"*/];
+                            else
+                                m_curRDGValues[hour - 1].pbr = 0.0;
                             //}
 
                             j = 1;
@@ -722,13 +773,17 @@ namespace StatisticCommon
                             else
                                 m_curRDGValues[hour - 1].pmax = 0.0;
                         }
-                        else {
+                        else
+                        {
                             m_curRDGValues[hour - 1].pbr =
-                            m_curRDGValues[hour - 1].pmin = m_curRDGValues[hour - 1].pmax = 
+                            m_curRDGValues[hour - 1].pmin = m_curRDGValues[hour - 1].pmax =
                             0.0;
                         }
                     }
-                    catch { }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, @"AdminRS::GetAdminValuesResponse () - ... hour = " + hour);
+                    }
                 }
 
                 if (hour > 0)
@@ -849,7 +904,7 @@ namespace StatisticCommon
 
         protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
-            int prev_hour = -1;
+            int season = (int)HAdmin.seasonJumpE.None;
 
             for (int i = 0, hour; i < table.Rows.Count; i++)
             {
@@ -861,7 +916,8 @@ namespace StatisticCommon
                     else
                         ;
 
-                    GetSeasonHours (ref prev_hour, ref hour);
+                    season = Int32.Parse(table.Rows[i][@"SEASON"].ToString ());
+                    GetSeasonHourIndex (season, ref hour);
 
                     m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
                 }
@@ -908,7 +964,7 @@ namespace StatisticCommon
 
             for (int i = currentHour; i < m_curRDGValues.Length; i++)
             {
-                offset = GetSeasonHourOffset(i);
+                offset = GetSeasonHourOffset(i + 1);
 
                 // запись для этого часа имеется, модифицируем её
                 if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
@@ -938,10 +994,10 @@ namespace StatisticCommon
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                         @" WHERE " +
-                                        @"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id +
-                                        @" AND " +
+                                        //@"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
+                                        //@"'" +
+                                        //@" AND ID_COMPONENT = " + comp.m_id +
+                                        //@" AND " +
                                         @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] +
                                         @"; ";
                             break;

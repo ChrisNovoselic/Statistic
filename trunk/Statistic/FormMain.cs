@@ -100,103 +100,119 @@ namespace Statistic
                 DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
             }
             catch (Exception e) {
+                Logging.Logg().Exception(e, @"FormMain::Initialize () ... загрузка предустановленных параметров ...");
+
                 msgError = e.Message;
                 iRes = -5;
             }
 
-            m_user = null;
-            try {
-                m_user = new HStatisticUsers(idListenerConfigDB);
-            }
-            catch (Exception e)
-            {
-                if (e is HException) {
-                    iRes = ((HException)e).m_code; //-2, -3, -4
-                } else {
-                    iRes = -1;
-                }                
-
-                msgError = e.Message;
-            }
-
             if (iRes == 0)
             {
-                s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-
-                if (HStatisticUsers.RoleIsAdmin == false) //Администратор
+                m_user = null;
+                try
                 {
-                    параметрыToolStripMenuItem.Enabled =
-                    администрированиеToolStripMenuItem.Enabled =
-                    false;
+                    m_user = new HStatisticUsers(idListenerConfigDB);
                 }
-                else;
-
-                if (!(HStatisticUsers.allTEC == 0))
-                    PanelAdminKomDisp.ALARM_USE = false;
-                else ;
-
-                //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
-                ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
-
-                //Если ранее тип логирования не был назанчен...
-                if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN) {
-                    //назначить тип логирования - БД
-                    Logging.s_mode = Logging.LOG_MODE.DB;
-                } else { }
-
-                if (Logging.s_mode == Logging.LOG_MODE.DB) {
-                    //Инициализация БД-логирования
-                    int err = -1;
-                    HClassLibrary.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
-                } else { }
-
-                //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
-                m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
-
-                HMark markQueries = new HMark ();
-                markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
-                markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-
-                for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++) {
-                    switch (i)
+                catch (Exception e)
+                {
+                    if (e is HException)
                     {
-                        case (int)FormChangeMode.MANAGER.DISP:
-                            m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
-                            //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
-                            ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc (OnPanelAdminKomDispEventGUIReg);
-                            break;
-                        case (int)FormChangeMode.MANAGER.NSS:
-                            m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
-                            break;
-                        default:
-                            break;
+                        iRes = ((HException)e).m_code; //-2, -3, -4
+                    }
+                    else
+                    {
+                        iRes = -1;
                     }
 
-                    m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                    m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+                    msgError = e.Message;
                 }
-
-                int [] arIDs = null;
-                //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
-                if ((HStatisticUsers.RoleIsKomDisp == true) && (PanelAdminKomDisp.ALARM_USE == true))
-                {
-                    prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
-                    arIDs = new int[] { 0 };
-                }
-                else
-                    arIDs = new int[] { };
-
-                formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, arIDs, this.ContextMenuStrip);
-                formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
-                if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
-
-                m_passwords = new Passwords ();
-                formPassword = new FormPassword(m_passwords);
-                formSetPassword = new FormSetPassword(m_passwords);
-                formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
                 if (iRes == 0)
-                    Start (); //Старт 1-сек-го таймера для строки стостояния
+                {
+                    s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
+                    if (HStatisticUsers.RoleIsAdmin == false) //Администратор
+                    {
+                        параметрыToolStripMenuItem.Enabled =
+                        администрированиеToolStripMenuItem.Enabled =
+                        false;
+                    }
+                    else ;
+
+                    if (!(HStatisticUsers.allTEC == 0))
+                        PanelAdminKomDisp.ALARM_USE = false;
+                    else ;
+
+                    //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
+                    ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
+
+                    //Если ранее тип логирования не был назанчен...
+                    if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN)
+                    {
+                        //назначить тип логирования - БД
+                        Logging.s_mode = Logging.LOG_MODE.DB;
+                    }
+                    else { }
+
+                    if (Logging.s_mode == Logging.LOG_MODE.DB)
+                    {
+                        //Инициализация БД-логирования
+                        int err = -1;
+                        HClassLibrary.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0]);
+                    }
+                    else { }
+
+                    //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+                    m_arPanelAdmin = new PanelAdmin[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
+
+                    HMark markQueries = new HMark();
+                    markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+                    markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+
+                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
+                    {
+                        switch (i)
+                        {
+                            case (int)FormChangeMode.MANAGER.DISP:
+                                m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
+                                //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
+                                ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
+                                break;
+                            case (int)FormChangeMode.MANAGER.NSS:
+                                m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+                    }
+
+                    int[] arIDs = null;
+                    //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
+                    if ((HStatisticUsers.RoleIsKomDisp == true) && (PanelAdminKomDisp.ALARM_USE == true))
+                    {
+                        prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
+                        arIDs = new int[] { 0 };
+                    }
+                    else
+                        arIDs = new int[] { };
+
+                    formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, arIDs, this.ContextMenuStrip);
+                    formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
+                    if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
+
+                    m_passwords = new Passwords();
+                    formPassword = new FormPassword(m_passwords);
+                    formSetPassword = new FormSetPassword(m_passwords);
+                    formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
+
+                    if (iRes == 0)
+                        Start(); //Старт 1-сек-го таймера для строки стостояния
+                    else
+                        ;
+                }
                 else
                     ;
             }
@@ -231,8 +247,11 @@ namespace Statistic
         {
             try
             {
-                this.BeginInvoke(new DelegateStringFunc(panelAdminKomDispEventGUIReg), text);
                 //panelAdminKomDispEventGUIReg(text);
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateStringFunc(panelAdminKomDispEventGUIReg), text);
+                else
+                    Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...");                
             }
             catch (Exception e)
             {

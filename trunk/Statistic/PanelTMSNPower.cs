@@ -367,12 +367,18 @@ namespace Statistic
 
             private void showTMGenPower()
             {
-                this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
+                else
+                    Logging.Logg().Error(@"PanelTecTMSNPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...");
             }
 
             private void showTMSNPower()
             {
-                this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                if (InvokeRequired == true)
+                    this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                else
+                    Logging.Logg().Error(@"PanelTecTMSNPower::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");
             }
 
             private void ShowTMGenPower()

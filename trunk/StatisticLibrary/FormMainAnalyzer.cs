@@ -224,16 +224,26 @@ namespace StatisticCommon
                             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
                             //Очистить элементы управления с данными от пред. лог-файла
-                            BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
-                            BeginInvoke(new DelegateFunc(TabLoggingClearText));
+                            if (InvokeRequired == true)
+                            {
+                                BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
+                                BeginInvoke(new DelegateFunc(TabLoggingClearText));
+                            }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...");
                             
                             //Если активна 0-я вкладка (лог-файл)
                             m_tcpClient.delegateConnect = ConnectToLogRead;
                             break;
                         case 1:
                             //Очистить элементы управления с данными от пред. пользователя
-                            BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
-                            BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
+                            if (InvokeRequired == true)
+                            {
+                                BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
+                                BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
+                            }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...");
 
                             //Если активна 1-я вкладка (вкладки)
                             m_tcpClient.delegateConnect = ConnectToTab;
