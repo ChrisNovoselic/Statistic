@@ -466,7 +466,7 @@ namespace Statistic
 
         public override void ClearTables()
         {
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
             {
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = "";
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = "";

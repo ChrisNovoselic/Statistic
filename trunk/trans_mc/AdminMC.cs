@@ -110,6 +110,7 @@ namespace trans_mc
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
 
+                        //Копирование при переходе лето-зима (-1)                        
                         if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
                         {
                             m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;

@@ -138,6 +138,11 @@ namespace StatisticTrans
             m_fileINI.Add(@"ОпросСохранениеППБР", false.ToString ());
             m_fileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString());
 
+            keyPar = @"Season DateTime";
+            m_fileINI.Add (keyPar, @"26.10.2014 02:00");
+            keyPar = @"Season Action";
+            m_fileINI.Add(keyPar, @"-1");
+
             this.Text =
             this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
 
@@ -1148,7 +1153,7 @@ namespace StatisticTrans
             string keyPar = @"Season DateTime";
             HAdmin.SeasonDateTime = DateTime.Parse (m_fileINI.GetValueOfKey (keyPar));
             keyPar = @"Season Action";
-            HAdmin.SeasonDateTime = DateTime.Parse(m_fileINI.GetValueOfKey(keyPar));
+            HAdmin.SeasonAction = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
 
             if (m_modeMashine == MODE_MASHINE.AUTO)
             {
