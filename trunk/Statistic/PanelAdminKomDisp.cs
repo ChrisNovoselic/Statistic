@@ -224,13 +224,9 @@ namespace Statistic
             //if (((HStatisticUsers.RoleIsKomDisp == true) || (HStatisticUsers.RoleIsAdmin == true)) && ALARM_USE == true)
             if ((HStatisticUsers.RoleIsKomDisp == true) && ALARM_USE == true)
             {
-                m_adminAlarm = new AdminAlarm();
-                m_adminAlarm.InitTEC(m_admin.m_list_tec);
+                initAdminAlarm();
 
-                m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
-                m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
-
-                this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
+                m_adminAlarm.Start();
             } else ;
 
             this.m_nudnKoeffAlarmCurPower.ReadOnly = true;
@@ -242,6 +238,17 @@ namespace Statistic
             //m_adminAlarm.DestGUIActivated = activate;
 
             base.Activate (activate);
+        }
+
+        private void initAdminAlarm()
+        {
+            m_adminAlarm = new AdminAlarm();
+            m_adminAlarm.InitTEC(m_admin.m_list_tec);
+
+            m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
+            m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
+
+            this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
         }
 
         private void EnabledButtonAlarm(int id_comp)
@@ -549,7 +556,16 @@ namespace Statistic
             this.m_btnAlarmCurPower.Enabled = 
             this.m_btnAlarmTGTurnOnOff.Enabled = false;
 
-            if (PanelAdminKomDisp.ALARM_USE == true) m_adminAlarm.Activate(((CheckBox)sender).Checked); else ;
+            if (PanelAdminKomDisp.ALARM_USE == true)
+            {
+                if (m_adminAlarm == null)
+                    initAdminAlarm();
+                else
+                    ;
+
+                m_adminAlarm.Activate(((CheckBox)sender).Checked);
+            }
+            else ;
 
             EnabledButtonAlarm(m_admin.allTECComponents[m_admin.indxTECComponents].m_id);
         }

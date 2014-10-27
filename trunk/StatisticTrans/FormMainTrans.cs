@@ -98,10 +98,10 @@ namespace StatisticTrans
             m_fileINI.Add(keyPar, valDefPar);
             s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
 
-            keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
-            m_fileINI.Add(keyPar, valDefPar);
-            keyPar = @"Season Action"; valDefPar = @"-1";
-            m_fileINI.Add(keyPar, valDefPar);
+            //keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
+            //m_fileINI.Add(keyPar, valDefPar);
+            //keyPar = @"Season Action"; valDefPar = @"-1";
+            //m_fileINI.Add(keyPar, valDefPar);
 
             //Ошибка для отладки
             //System.Threading.Timer tm = null;

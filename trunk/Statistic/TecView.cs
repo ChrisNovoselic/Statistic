@@ -1195,6 +1195,7 @@ namespace Statistic
 
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);
+            //states.Add((int)StatesMachine.CurrentTimeView);
             states.Add((int)StatesMachine.LastMinutes_TM);
         }
 
@@ -2566,7 +2567,10 @@ namespace Statistic
 
                         if (hour < 0)
                         {
-                            GetSeason(dt, season, out season);
+                            if (season > DateTime.Now.Year)
+                                GetSeason(dt, season, out season);
+                            else
+                                ;
                             prev_season = season;
                             hour = 0;
                             dtNeeded = dt;
@@ -2671,7 +2675,7 @@ namespace Statistic
 
                     prev_season = season;
 
-                    powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, hour - 1 + offset_season] = (value / 2000);
+                    powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, hour - 1/* + offset_season*/] = (value / 2000);
                 }
 
                 //??? €кобы дл€ перехода через границу суток
@@ -2935,14 +2939,18 @@ namespace Statistic
                                 dtVal = dtVal.AddHours(offsetUTC);
                                 hour = dtVal.Hour + 1; //“.к. мин.59 из прошедшего часа
                                 //if (!(hour < 24)) hour -= 24; else ;
-                                if (hour > 24) hour -= 24; else ;
+                                if ((hour > 0) && (hour < m_valuesHours.Length))
+                                {
+                                    tg.power_LastMinutesTM[hour - 1] = value;
 
-                                tg.power_LastMinutesTM[i] = value;
-
-                                //«апрос с учетом значени€ перехода через сутки
-                                if (value > 1) {
-                                    m_valuesHours[i].valuesLastMinutesTM += value;
-                                    m_dictValuesTECComponent[i][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
+                                    //«апрос с учетом значени€ перехода через сутки
+                                    if (value > 1)
+                                    {
+                                        m_valuesHours[hour - 1].valuesLastMinutesTM += value;
+                                        m_dictValuesTECComponent[i][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
+                                    }
+                                    else
+                                        ;
                                 }
                                 else
                                     ;
@@ -2989,19 +2997,15 @@ namespace Statistic
 
                             dtVal = dtVal.AddHours(offsetUTC);
                             hour = dtVal.Hour + 1;
-                            //if (!(hour < 24))
-                            if (hour == 24)
-                                hour = 0;
-                            else ;
+                            if ((hour > 0) && (hour < m_valuesHours.Length))
+                            {
+                                comp.m_listTG[0].power_LastMinutesTM[i] = value;
 
-                            //if (dtReq.Date.Equals (dtVal.Date) == true) {
-                            comp.m_listTG[0].power_LastMinutesTM[i] = value;
-
-                            if (value > 1)
-                                m_valuesHours[i].valuesLastMinutesTM += value;
-                            else
+                                if (value > 1)
+                                    m_valuesHours[i].valuesLastMinutesTM += value;
+                                else
                                 ;
-                            //} else ;
+                            } else ;
                         }
                     }
                 }
@@ -3352,7 +3356,9 @@ namespace Statistic
         private void GetLastMinutesTMRequest(DateTime dtReq)
         {
             int cnt = 24;
-            if (m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+            m_curDate = dtReq;
+
+            if (dtReq.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
                 cnt = 25;
             else
                 ;

@@ -94,11 +94,6 @@ namespace Statistic
         {
             int i = -1;
 
-            m_msecPeriodUpdate =
-                //30 //Для отладки
-                60 * 60
-                * 1000;
-
             InitializeComponent();
 
             this.Dock = DockStyle.Fill;
@@ -152,12 +147,18 @@ namespace Statistic
             }
 
             //Милисекунды до первого запуска функции таймера
-            double msecUpdate = (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour + 1, 6, 0) - DateTime.Now).TotalMilliseconds;
+            Int32 msecUpdate = -1;
+            //Милисекунды от начала часа
+            msecUpdate = DateTime.Now.Minute * 60 * 1000 + DateTime.Now.Second * 1000;
+            msecUpdate = 60 * 60 * 1000 - msecUpdate;
+            msecUpdate += 666666;
 
             m_evTimerCurrent = new ManualResetEvent(true);
             m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64)msecUpdate, m_msecPeriodUpdate - 1);
             //Для отладки
             //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, m_msecPeriodUpdate - 1);
+
+            //setDatetimePicker(m_panelDateTime.m_dtprDate.Value - HAdmin.GetOffsetOfCurrentTimeZone());
         }
 
         public override void Stop()
@@ -226,7 +227,7 @@ namespace Statistic
         private void TimerCurrent_Tick (object obj) {
             if (m_bIsActive == true)
                 if (InvokeRequired == true)
-                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now);
+                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone ());
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
             else
@@ -266,6 +267,7 @@ namespace Statistic
                 this.m_dtprDate = new DateTimePicker();
                 this.m_dtprDate.Dock = DockStyle.Fill;
                 //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
+                m_dtprDate.Value = DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone();
                 this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
             }
 
@@ -501,7 +503,7 @@ namespace Statistic
                
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-                this.RowCount = (DateTime.Now.Date.Equals (HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
+                this.RowCount = ((DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone()).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
 
                 for (i = 0; i < this.RowCount; i++)
                 {
@@ -524,7 +526,7 @@ namespace Statistic
                     else
                         ;
 
-                initTableHourRows();
+                //initTableHourRows();
 
                 for (i = 0; i < CountTECComponent; i++)
                 {
