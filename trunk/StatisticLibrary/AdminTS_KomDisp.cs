@@ -19,7 +19,7 @@ namespace StatisticCommon
             //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
         }
 
-        public void ImpPPBRCSVValues(int indx, DateTime date, string dir)
+        public void ImpPPBRCSVValues(DateTime date, string dir)
         {
             //Разрешить запись ПБР-значений
             if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = true; else ;
@@ -143,6 +143,11 @@ namespace StatisticCommon
             }
 
             return bRes;
+        }
+
+        public int GetPPBRNumserOfNameFilePPBRCSVValues(string nameFile)
+        {
+            return Int32.Parse(nameFile.Substring(nameFile.IndexOf(@"ГТП(генерация) Сессия(", 0), nameFile.IndexOf(@")", nameFile.IndexOf(@"ГТП(генерация) Сессия(", 0)))) - 2;
         }
 
         private string getNameFileSessionPPBRCSVValues(int num_pbr)
