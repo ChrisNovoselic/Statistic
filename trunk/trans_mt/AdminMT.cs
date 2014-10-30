@@ -28,11 +28,12 @@ namespace trans_mt
         {
             string query = string.Empty;
             int i = -1;
+            TimeSpan ts = GetUTCOffsetOfCurrentTimeZone();
 
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime], [Value_MBT] as VALUE FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
                 @" WHERE [ID_Type_Data] = 3" +
                 @" AND [objName] = '" + comp.m_listMTermId [0] + @"'" +
-                @" AND [Datetime] > " + @"'" + date.Date.Add(- GetUTCOffsetOfCurrentTimeZone()).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
+                @" AND [Datetime] > " + @"'" + date.Date.Add(- ts).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
                 + @" AND [PBR_NUMBER] > 0"
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
@@ -76,7 +77,7 @@ namespace trans_mt
                                         Console.Write(@"[" + hourRows[i].Table.Columns[j].ColumnName + @"] = " + hourRows[i][hourRows[i].Table.Columns[j].ColumnName] + @"; ");
                                     }
                                     Console.WriteLine(@"");
-                                
+
                                     switch (Int32.Parse(hourRows[i][@"idFactor"].ToString()))
                                     {
                                         case 0:
@@ -118,9 +119,14 @@ namespace trans_mt
                         }
 
                         if (PBRNumber > 0) {
-                            m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
-
                             if (hour > 1) {
+                                m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
+
+                                if (m_curRDGValues[hour - 1].pbr < 0)
+                                    m_curRDGValues[hour - 1].pbr = m_curRDGValues[hour - 2].pbr;
+                                else
+                                    ;
+
                                 if (m_curRDGValues[hour - 1].pmin < 0)
                                     m_curRDGValues[hour - 1].pmin = m_curRDGValues[hour - 2].pmin;
                                 else
@@ -133,6 +139,26 @@ namespace trans_mt
                             }
                             else
                                 ;
+
+                            int hh = -1;
+                            for (hh = hour; hh > 0; hh --) {
+                                if (m_curRDGValues[hh - 1].pbr_number.Equals (string.Empty) == false)
+                                    if (PBRNumber < Int32.Parse(m_curRDGValues[hh - 1].pbr_number.Substring (3)))
+                                    {
+                                        PBRNumber = Int32.Parse(m_curRDGValues[hh - 1].pbr_number.Substring (3));
+
+                                        m_curRDGValues[hour - 1].pbr = m_curRDGValues[hh - 1].pbr;
+                                        m_curRDGValues[hour - 1].pmin = m_curRDGValues[hh - 1].pmin;
+                                        m_curRDGValues[hour - 1].pmax = m_curRDGValues[hh - 1].pmax;
+
+                                        m_curRDGValues[hour - 1].pbr_number = m_curRDGValues[hh - 1].pbr_number;
+
+                                        //break;
+                                    } else {
+                                    }
+                                else
+                                    ;
+                            }
                         }
                         else
                             ; //m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour);

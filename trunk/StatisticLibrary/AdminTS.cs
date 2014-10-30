@@ -916,8 +916,12 @@ namespace StatisticCommon
                     else
                         ;
 
-                    season = Int32.Parse(table.Rows[i][@"SEASON"].ToString ());
-                    GetSeasonHourIndex (season, ref hour);
+                    if (type == CONN_SETT_TYPE.ADMIN) {
+                        season = Int32.Parse(table.Rows[i][@"SEASON"].ToString ());
+                        GetSeasonHourIndex (season, ref hour);
+                    }
+                    else
+                        ;
 
                     m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
                 }

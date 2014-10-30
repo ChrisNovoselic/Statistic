@@ -28,7 +28,8 @@ namespace StatisticCommon
             {
                 ClearStates ();
                 
-                indxTECComponents = indx;
+                //???
+                //indxTECComponents = indx;
                 m_PPBRCSVDirectory = dir;
 
                 m_tablePPBRValuesResponse.Clear();
@@ -145,9 +146,23 @@ namespace StatisticCommon
             return bRes;
         }
 
-        public int GetPPBRNumserOfNameFilePPBRCSVValues(string nameFile)
+        public object[] GetPropertiesOfNameFilePPBRCSVValues(string nameFile)
         {
-            return Int32.Parse(nameFile.Substring(nameFile.IndexOf(@"ГТП(генерация) Сессия(", 0), nameFile.IndexOf(@")", nameFile.IndexOf(@"ГТП(генерация) Сессия(", 0)))) - 2;
+            object [] arObjRes = new object [2]; //0 - DateTime, 1 - int (номер ПБР)
+            string strMarkSession = @"ГТП(генерация) Сессия(";
+
+            int indxStartDateTime = nameFile.Length - @".csv".Length;
+            while (Char.IsWhiteSpace (nameFile, indxStartDateTime) == false) {
+                indxStartDateTime --;
+            }
+
+            arObjRes[0] = DateTime.Parse(nameFile.Substring(indxStartDateTime + 1, nameFile.Length - @".csv".Length - indxStartDateTime - 1));
+
+            int indxStartSession = nameFile.IndexOf(strMarkSession, 0) + strMarkSession.Length
+                , indxEndSession = nameFile.IndexOf(@")", indxStartSession);
+            arObjRes[1] = Int32.Parse(nameFile.Substring(indxStartSession, indxEndSession - indxStartSession)) - 2;
+
+            return arObjRes;
         }
 
         private string getNameFileSessionPPBRCSVValues(int num_pbr)

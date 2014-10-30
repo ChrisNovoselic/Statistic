@@ -114,6 +114,7 @@ namespace Statistic
             this.btnImportCSV.Text = "Импорт из формата CSV";
             this.btnImportCSV.UseVisualStyleBackColor = true;
             this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
+            this.btnImportCSV.Enabled = true;
             // 
             // dgwAdminTable
             //
@@ -512,22 +513,33 @@ namespace Statistic
             //Вариант №2 (файл)
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
-            files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+            //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+            files.InitialDirectory = @"D:\Temp";
             files.DefaultExt = @"csv";
             files.Filter = @"csv файлы (*.csv)|*.csv";
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
-                //Номер ПБР из наименования файла
-                int filePBRNumber = ((AdminTS_KomDisp)m_admin).GetPPBRNumserOfNameFilePPBRCSVValues(files.FileName);                ;
+                //Дата ПБР, номер ПБР из наименования файла
+                object [] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
                 //Текущий номер ПБР
-                int curPBRNumber = Int32.Parse (m_admin.m_curRDGValues [0].pbr_number.Substring (3));
-                //Сравнить с текущим номером ПБР
-                if (! (curPBRNumber < filePBRNumber))
-                    if (MessageBox.Show (this, @"Загружаемый набор ПБР не выше, чем текущий. Продолжить?", @"Подьверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes) {
-                        ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
-                    } else {
+                int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
+                string strMsg = string.Empty;
+                if (! ((DateTime)prop[0] == DateTime.Now.Date)) {
+                    strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует тек./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
+                    MessageBox.Show (this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                } else {
+                    //Сравнить с текущим номером ПБР
+                    if (!((int)prop [1] > curPBRNumber)) {
+                        strMsg = string.Format (@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}]. Продолжить?", (int)prop [1], curPBRNumber);
+                        if (MessageBox.Show (this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes) {
+                            ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
+                        } else {
+                        }
                     }
+                    else
+                        ;
+                }
             }
             else
                 ;
