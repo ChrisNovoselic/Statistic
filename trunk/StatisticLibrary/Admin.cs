@@ -1044,7 +1044,7 @@ namespace StatisticCommon
         }
 
         public static string s_Name_Current_TimeZone = @"Russian Standard Time";
-        public static DateTime ToCurrentTimeZone(DateTime dt)
+        public static DateTime ToCurrentTimeZone(DateTime dt, int offset_msc)
         {
             DateTime dtRes;
             if (! (dt.Kind == DateTimeKind.Local))
@@ -1055,18 +1055,18 @@ namespace StatisticCommon
                     dtRes = dtRes.AddHours(-1);
                 } else { }
 
-                dtRes = dtRes.Add (GetUTCOffsetOfCurrentTimeZone ());
+                dtRes = dtRes.Add(GetUTCOffsetOfCurrentTimeZone(offset_msc));
             }
 
             return dtRes;
         }
 
-        public static TimeSpan GetOffsetOfCurrentTimeZone()
-        {
-            return DateTime.Now - HAdmin.ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
-        }
+        //public static TimeSpan GetOffsetOfCurrentTimeZone()
+        //{
+        //    return DateTime.Now - HAdmin.ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
+        //}
 
-        public static TimeSpan GetUTCOffsetOfCurrentTimeZone()
+        public static TimeSpan GetUTCOffsetOfCurrentTimeZone(int offset_msc)
         {
             //System.Collections.ObjectModel.ReadOnlyCollection <TimeZoneInfo> tzi = TimeZoneInfo.GetSystemTimeZones ();
             //foreach (TimeZoneInfo tz in tzi) {
@@ -1076,7 +1076,8 @@ namespace StatisticCommon
             DateTime dtNow = DateTime.Now;
 
             //return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
-            return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Current_TimeZone).GetUtcOffset(dtNow);
+            //return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Current_TimeZone).GetUtcOffset(dtNow);
+            return DateTime.UtcNow - DateTime.Now - TimeSpan.FromHours(offset_msc);
         }
 
         public void ErrorReport (string msg) {

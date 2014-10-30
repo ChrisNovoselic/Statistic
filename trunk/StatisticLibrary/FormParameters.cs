@@ -13,16 +13,19 @@ namespace StatisticCommon
                                     ALARM_USE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
                                     USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
                                     , SEASON_DATETIME, SEASON_ACTION
+                                    //, GRINVICH_OFFSET_DATETIME
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"udn", @"itec", @"irole"
                                                     , @"Season DateTime", @"Season Action"
+                                                    //, @"Grinvich OffsetDateTime"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     @"лог", "сек", "сек",
                                                     @"стр", @"ном", @"ном"
                                                     , @"дата/время", @"ном"
+                                                    //, "час"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -49,6 +52,9 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.SEASON_DATETIME, @"26.10.2014 02:00");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.SEASON_ACTION, @"-1");
+
+            ////Из БД не считывается пока 30.10.2014
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.GRINVICH_OFFSET_DATETIME, @"3"); 
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
 

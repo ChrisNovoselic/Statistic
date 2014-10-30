@@ -114,7 +114,7 @@ namespace Statistic
             this.btnImportCSV.Text = "Импорт из формата CSV";
             this.btnImportCSV.UseVisualStyleBackColor = true;
             this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
-            this.btnImportCSV.Enabled = true;
+            this.btnImportCSV.Enabled = false;
             // 
             // dgwAdminTable
             //

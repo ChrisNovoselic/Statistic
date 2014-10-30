@@ -32,7 +32,10 @@ namespace StatisticCommon
                 //indxTECComponents = indx;
                 m_PPBRCSVDirectory = dir;
 
-                m_tablePPBRValuesResponse.Clear();
+                if (!(m_tablePPBRValuesResponse == null))
+                    m_tablePPBRValuesResponse.Clear();
+                else
+                    ;
                 m_tablePPBRValuesResponse = null;
 
                 for (int i = 0; i < 24; i++)

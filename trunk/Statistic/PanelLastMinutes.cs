@@ -227,7 +227,7 @@ namespace Statistic
         private void TimerCurrent_Tick (object obj) {
             if (m_bIsActive == true)
                 if (InvokeRequired == true)
-                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone ());
+                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone (3));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
             else
@@ -267,7 +267,7 @@ namespace Statistic
                 this.m_dtprDate = new DateTimePicker();
                 this.m_dtprDate.Dock = DockStyle.Fill;
                 //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
-                m_dtprDate.Value = DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone();
+                m_dtprDate.Value = DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone(3);
                 this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
             }
 
@@ -503,7 +503,7 @@ namespace Statistic
                
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-                this.RowCount = ((DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone()).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
+                this.RowCount = ((DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone(3)).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
 
                 for (i = 0; i < this.RowCount; i++)
                 {
@@ -721,14 +721,14 @@ namespace Statistic
 
                         bool bPmin = false;
                         if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                        strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id], bPmin, out warn);
+                        strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id], bPmin, out warn);
 
                         m_listDictToolTip[hour - 1][g.m_id].SetToolTip(m_listDictLabelVal[hour - 1][g.m_id], strToolTip);
 
-                        if (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1)
+                        if (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1)
                         {
                             if ((! (warn == 0)) &&
-                                (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1))
+                                (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1))
                             {
                                 clrBackColor = Color.Red;
                                 cntWarn ++;
@@ -742,7 +742,7 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM.ToString(@"F2");
+                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM.ToString(@"F2");
                         }
                         else
                             m_listDictLabelVal[hour - 1][g.m_id].Text = 0.ToString(@"F0");

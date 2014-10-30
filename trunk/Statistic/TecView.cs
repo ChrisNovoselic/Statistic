@@ -709,7 +709,7 @@ namespace Statistic
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
-                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen); }
+                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen, m_tec.m_timezone_offset_msc); }
                 catch (Exception e)
                 {
                     Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
@@ -2131,6 +2131,8 @@ namespace Statistic
                         m_valuesHours[i].valuesPBRe = currPBRe;
                     }
 
+                    m_valuesHours[i].valuesREC = valuesREC[i + 1];
+
                     m_valuesHours[i].valuesUDGe = currPBRe + valuesREC[i + 1];
 
                     if (valuesISPER[i + 1] == 1)
@@ -2897,7 +2899,7 @@ namespace Statistic
             int i = -1,
                 hour = -1
                 //26.10.2014 u/ ???
-                , offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone().TotalHours; //= 0
+                , offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone(m_tec.m_timezone_offset_msc).TotalHours; //= 0
             double value = -1;
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
@@ -2947,7 +2949,7 @@ namespace Statistic
                                     if (value > 1)
                                     {
                                         m_valuesHours[hour - 1].valuesLastMinutesTM += value;
-                                        m_dictValuesTECComponent[i][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
+                                        m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
                                     }
                                     else
                                         ;
