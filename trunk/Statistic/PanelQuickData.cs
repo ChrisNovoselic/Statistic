@@ -832,10 +832,10 @@ namespace Statistic
                             {
                                 if (tg.id_tm > 0)
                                 {
-                                    if (tg.power_TM > 1)
+                                    if (tg.m_powerMinute_TM > 1)
                                     {
-                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
-                                        value_TM += tg.power_TM;
+                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.m_powerMinute_TM.ToString("F2");
+                                        value_TM += tg.m_powerMinute_TM;
                                     }
                                     else
                                         m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
@@ -857,10 +857,10 @@ namespace Statistic
                     {
                         if (tg.id_tm > 0)
                         {
-                            if (tg.power_TM > 1)
+                            if (tg.m_powerMinute_TM > 1)
                             {
-                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.power_TM.ToString("F2");
-                                value_TM += tg.power_TM;
+                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.m_powerMinute_TM.ToString("F2");
+                                value_TM += tg.m_powerMinute_TM;
                             }
                             else
                                 m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
@@ -940,8 +940,8 @@ namespace Statistic
                 bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    if (! (m_parent.m_tecView.listTG[i].power[min] < 0))
-                        if (m_parent.m_tecView.listTG[i].power[min] > 1) value += m_parent.m_tecView.listTG[i].power[min]; else ;
+                    if (! (m_parent.m_tecView.listTG[i].m_powerMinutes[min] < 0))
+                        if (m_parent.m_tecView.listTG[i].m_powerMinutes[min] > 1) value += m_parent.m_tecView.listTG[i].m_powerMinutes[min]; else ;
                     else {
                         bMinValuesReceived = false;
 
@@ -959,7 +959,7 @@ namespace Statistic
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
                     for (j = 0; j < min; j++)
-                        valueEBefore += m_parent.m_tecView.listTG[i].power[j] / 20;
+                        valueEBefore += m_parent.m_tecView.listTG[i].m_powerMinutes[j] / 20;
 
                 showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value, true, string.Empty);
                 //if (this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM_FUTURE_EE] = false)
@@ -1101,9 +1101,9 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                if (! (tg.power[min] < 0))
+                                if (!(tg.m_powerMinutes[min] < 0))
                                 {
-                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.power[min]);
+                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.m_powerMinutes[min]);
                                     if (m_parent.m_tecView.currHour == true)
                                         m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                                     else
@@ -1124,9 +1124,9 @@ namespace Statistic
                 {
                     foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
                     {
-                        if (! (comp.m_listTG[0].power[min] < 0))
+                        if (!(comp.m_listTG[0].m_powerMinutes[min] < 0))
                         {
-                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].power[min]);
+                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].m_powerMinutes[min]);
                             if (m_parent.m_tecView.currHour == true)
                                 m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                             else

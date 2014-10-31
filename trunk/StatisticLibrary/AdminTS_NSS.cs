@@ -206,7 +206,7 @@ namespace StatisticCommon
             //delegateStopWait ();
         }
 
-        private void threadGetRDGExcelValues (object date) {
+        private void threadImpRDGExcelValues (object date) {
             int indxEv = -1;
 
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
@@ -239,7 +239,7 @@ namespace StatisticCommon
 
             m_listCurRDGValues.Clear();
 
-            new Thread(new ParameterizedThreadStart(threadGetRDGExcelValues)).Start (date);
+            new Thread(new ParameterizedThreadStart(threadImpRDGExcelValues)).Start (date);
             //threadGetRDGExcelValues (date);
 
             //delegateStopWait();
@@ -367,9 +367,9 @@ namespace StatisticCommon
             Errors errRes = Errors.NoError,
                     bErr = Errors.NoError;
             int indxEv = -1;
-            
+
             m_evSaveChangesComplete.Reset ();
-            
+
             lock (m_lockResSaveChanges)
             {
                 m_listResSaveChanges.Clear ();

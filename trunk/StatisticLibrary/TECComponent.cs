@@ -28,9 +28,9 @@ namespace StatisticCommon
         public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
         public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
-        public double[] power; //для мин./значений
-        public double power_TM; //для мин./значений
-        public double[] power_LastMinutesTM;
+        public double[] m_powerMinutes; //для мин./значений
+        public double m_powerMinute_TM; //для мин./значений
+        public double [] m_power_LastMinutesTM;
         //public bool[] receivedMin;
         //public bool[,] receivedHourHalf;
         //public bool receivedHourHalf1Addon;
@@ -47,8 +47,7 @@ namespace StatisticCommon
         public TG()
         {
             //this.m_owner = comp;
-            power = new double[21];
-            power_LastMinutesTM = new double[25];
+            m_powerMinutes = new double[21];
             //receivedMin = new bool[21];
             //receivedHourHalf = new bool[2, 24];
 

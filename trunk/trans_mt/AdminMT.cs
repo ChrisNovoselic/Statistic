@@ -28,7 +28,7 @@ namespace trans_mt
         {
             string query = string.Empty;
             int i = -1;
-            TimeSpan ts = GetUTCOffsetOfCurrentTimeZone();
+            TimeSpan ts = GetUTCOffsetOfMoscowTimeZone();
 
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime], [Value_MBT] as VALUE FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
                 @" WHERE [ID_Type_Data] = 3" +
@@ -49,7 +49,7 @@ namespace trans_mt
             int i = -1, j = -1,
                 hour = -1,
                 PBRNumber = -1;
-            TimeSpan ts = GetUTCOffsetOfCurrentTimeZone();
+            TimeSpan ts = GetUTCOffsetOfMoscowTimeZone();
             DataRow []hourRows;
 
             for (hour = 1; hour < 25; hour++)

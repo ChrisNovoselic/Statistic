@@ -227,7 +227,7 @@ namespace Statistic
         private void TimerCurrent_Tick (object obj) {
             if (m_bIsActive == true)
                 if (InvokeRequired == true)
-                    this.BeginInvoke (new DelegateDateFunc (setDatetimePicker), DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone (3));
+                    this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
             else
@@ -267,7 +267,7 @@ namespace Statistic
                 this.m_dtprDate = new DateTimePicker();
                 this.m_dtprDate.Dock = DockStyle.Fill;
                 //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
-                m_dtprDate.Value = DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone(3);
+                m_dtprDate.Value = HAdmin.ToMoscowTimeZone (DateTime.Now);
                 this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
             }
 
@@ -503,7 +503,7 @@ namespace Statistic
                
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-                this.RowCount = ((DateTime.Now - HAdmin.GetOffsetOfCurrentTimeZone(3)).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
+                this.RowCount = ((HAdmin.ToMoscowTimeZone(DateTime.Now)).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
 
                 for (i = 0; i < this.RowCount; i++)
                 {
@@ -714,7 +714,7 @@ namespace Statistic
                 foreach (TECComponent g in m_list_TECComponents)
                 {
                     cntWarn = 0;
-                    for (int hour = 1; hour < m_listDictLabelVal.Count + 1; hour++) //Если значение за 00:00 пред./сут. запис. в [24]
+                    for (int hour = 1; hour < m_listDictLabelVal.Count + 1; hour++)
                     {
                         clrBackColor = s_clrBakColorLabelVal;
                         strToolTip = string.Empty;

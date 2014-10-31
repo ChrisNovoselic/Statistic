@@ -800,6 +800,7 @@ namespace StatisticCommon
                     }
                 }
 
+                //Законсена обработка всех событий
                 try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
                 catch (Exception e) {
                     Logging.Logg().Exception(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
@@ -1043,19 +1044,23 @@ namespace StatisticCommon
             return strRes;
         }
 
-        public static string s_Name_Current_TimeZone = @"Russian Standard Time";
-        public static DateTime ToCurrentTimeZone(DateTime dt, int offset_msc)
+        private static string s_Name_Moscow_TimeZone = @"Russian Standard Time";
+        public static DateTime ToMoscowTimeZone(DateTime dt)
+        //public static DateTime ToCurrentTimeZone(DateTime dt, int offset_msc)
         {
             DateTime dtRes;
-            if (! (dt.Kind == DateTimeKind.Local))
-                dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Current_TimeZone));
-            else {
+
+            if (! (dt.Kind == DateTimeKind.Local)) {
+            //    dtRes = TimeZoneInfo.ConvertTimeFromUtc(dt, TimeZoneInfo.FindSystemTimeZoneById(s_Name_Moscow_TimeZone));
+                dtRes = dt.Add(GetUTCOffsetOfMoscowTimeZone ());
+            } else {
                 dtRes = dt - TimeZoneInfo.Local.GetUtcOffset (dt);
                 if (dtRes.IsDaylightSavingTime () == true) {
                     dtRes = dtRes.AddHours(-1);
                 } else { }
 
-                dtRes = dtRes.Add(GetUTCOffsetOfCurrentTimeZone(offset_msc));
+                dtRes = dtRes.Add(GetUTCOffsetOfMoscowTimeZone());
+            //    //dtRes = dtRes.Add(GetUTCOffsetOfCurrentTimeZone(offset_msc));
             }
 
             return dtRes;
@@ -1066,18 +1071,22 @@ namespace StatisticCommon
         //    return DateTime.Now - HAdmin.ToCurrentTimeZone(TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now));
         //}
 
-        public static TimeSpan GetUTCOffsetOfCurrentTimeZone(int offset_msc)
+        public static TimeSpan GetUTCOffsetOfMoscowTimeZone()
         {
+            ////Перечисление всех зо ОС
             //System.Collections.ObjectModel.ReadOnlyCollection <TimeZoneInfo> tzi = TimeZoneInfo.GetSystemTimeZones ();
             //foreach (TimeZoneInfo tz in tzi) {
             //    Console.WriteLine (tz.DisplayName + @", " +  tz.StandardName + @", " + tz.Id);
             //}
 
-            DateTime dtNow = DateTime.Now;
-
-            //return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(dtNow, HAdmin.s_Name_Current_TimeZone) - dtNow.ToUniversalTime();
-            //return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Current_TimeZone).GetUtcOffset(dtNow);
-            return DateTime.UtcNow - DateTime.Now - TimeSpan.FromHours(offset_msc);
+            ////Вариант №1 - работает, если у пользователя установлено обновление (сезонный переход 26.10.2014)
+            //return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, HAdmin.s_Name_Moscow_TimeZone) - DateTime.UtcNow;
+            ////Вариант №2 - работает, если у пользователя установлено обновление (сезонный переход 26.10.2014)
+            //return TimeZoneInfo.FindSystemTimeZoneById(HAdmin.s_Name_Moscow_TimeZone).GetUtcOffset(DateTime.Now);
+            ////Вариант №3 - работает, если у пользователя установлено обновление (сезонный переход 26.10.2014) + известно смещение зоны пользователя от МСК
+            //return DateTime.UtcNow - DateTime.Now - TimeSpan.FromHours(offset_msc);
+            //Вариант №4
+            return TimeSpan.FromHours (3);
         }
 
         public void ErrorReport (string msg) {

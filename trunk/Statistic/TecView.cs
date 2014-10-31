@@ -358,15 +358,15 @@ namespace Statistic
             else {            
                 foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
                 {
-                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM);
+                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.m_powerMinute_TM);
 
-                    if (tg.power_TM < 1)
+                    if (tg.m_powerMinute_TM < 1)
                         curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
                     else
                     {
                         curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
-                        power_TM += tg.power_TM;
+                        power_TM += tg.m_powerMinute_TM;
                     }
 
                     ////Отладка - изменяем состояние
@@ -551,6 +551,22 @@ namespace Statistic
 
                 foreach (TECComponent g in m_localTECComponents)
                 {
+                    foreach (TG tg in g.m_listTG)
+                    {
+                        if (tg.m_power_LastMinutesTM == null)
+                            tg.m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                        else {
+                            if (!(tg.m_power_LastMinutesTM.Length == m_dictValuesTECComponent.Length)) {
+                                tg.m_power_LastMinutesTM = null;
+
+                                tg.m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                            } else
+                                ;
+                        }
+
+                        tg.m_power_LastMinutesTM [i] = 0F;
+                    }
+                    
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int, valuesTECComponent>(); else ;
 
                     if (m_dictValuesTECComponent[i].ContainsKey(g.m_id) == false)
@@ -655,7 +671,7 @@ namespace Statistic
             {
                 foreach (TG t in g.m_listTG)
                 {
-                    t.power_TM = 0;
+                    t.m_powerMinute_TM = 0;
                 }
             }
 
@@ -705,11 +721,11 @@ namespace Statistic
                             break;
                     }
 
-                    tgTmp.power_TM = value;
+                    tgTmp.m_powerMinute_TM = value;
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
-                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_dtLastChangedAt_TM_Gen, m_tec.m_timezone_offset_msc); }
+                try { m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
                 catch (Exception e)
                 {
                     Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
@@ -1501,8 +1517,9 @@ namespace Statistic
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-            if ((indxTECComponents < 0) || ((!(indxTECComponents < 0)) && (m_tec.list_TECComponents[indxTECComponents].m_id > 500)))
-            {
+            if ((indxTECComponents < 0) || //ТЭЦ
+                ((!(indxTECComponents < 0)) && (m_tec.list_TECComponents[indxTECComponents].m_id > 500))) //компоненты ЩУ, ТГ
+            {//Для ТЭЦ, и комопнентов ЩУ, ТГ
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
@@ -1512,6 +1529,7 @@ namespace Statistic
 
                 DataTable tableAdminValuesResponse = null;
                 if (bSeason == true)
+                    //Сохранить таблицу с админ./знач.
                     tableAdminValuesResponse = table_in.Copy();
                 else
                     ;
@@ -1585,7 +1603,7 @@ namespace Statistic
                         ;
 
                     if (!(m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] is System.DBNull))
-                    {
+                    {//значение ПБР даты/времени в этой записи ЕСТЬ
                         try
                         {
                             dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
@@ -1740,7 +1758,7 @@ namespace Statistic
                         }
                     }
                     else
-                    {
+                    {//значение ПБР даты/времени в этой записи НЕТ - использовать админ. дату/время
                         try
                         {
                             hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
@@ -1864,7 +1882,7 @@ namespace Statistic
                 //    ;
             }
             else
-            {
+            {//Для ГТП
                 int lValues = m_valuesHours.Length + 1;
 
                 double[] valuesPBR = new double[lValues];
@@ -1918,7 +1936,6 @@ namespace Statistic
                     }
                 }
 
-                int prev_hour = -1; //Для определения одинаковых часов
                 // разбор остальных значений
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
                 {
@@ -2899,7 +2916,7 @@ namespace Statistic
             int i = -1,
                 hour = -1
                 //26.10.2014 u/ ???
-                , offsetUTC = (int)HAdmin.GetUTCOffsetOfCurrentTimeZone(m_tec.m_timezone_offset_msc).TotalHours; //= 0
+                , offsetUTC = (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours; //= 0
             double value = -1;
             DateTime dtVal = DateTime.Now;
             DataRow[] tgRows = null;
@@ -2908,17 +2925,17 @@ namespace Statistic
 
             if (bRes == false)
                 ;
-            else
+            else {
                 if (indxTECComponents < 0)
                 {
                     foreach (TECComponent g in m_localTECComponents)
                     {
                         foreach (TG tg in g.m_listTG)
                         {
-                            for (i = 0; i < tg.power_LastMinutesTM.Length; i++)
-                            {
-                                tg.power_LastMinutesTM[i] = 0;
-                            }
+                            //for (i = 0; i < tg.m_power_LastMinutesTM.Length; i++)
+                            //{
+                            //    tg.m_power_LastMinutesTM[i] = 0;
+                            //}
 
                             tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
 
@@ -2941,9 +2958,9 @@ namespace Statistic
                                 dtVal = dtVal.AddHours(offsetUTC);
                                 hour = dtVal.Hour + 1; //Т.к. мин.59 из прошедшего часа
                                 //if (!(hour < 24)) hour -= 24; else ;
-                                if ((hour > 0) && (hour < m_valuesHours.Length))
+                                if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                                 {
-                                    tg.power_LastMinutesTM[hour - 1] = value;
+                                    tg.m_power_LastMinutesTM[hour - 0] = value;
 
                                     //Запрос с учетом значения перехода через сутки
                                     if (value > 1)
@@ -2964,10 +2981,10 @@ namespace Statistic
                 {
                     foreach (TECComponent comp in m_localTECComponents)
                     {
-                        for (i = 0; i < comp.m_listTG [0].power_LastMinutesTM.Length; i++)
-                        {
-                            comp.m_listTG[0].power_LastMinutesTM[i] = 0;
-                        }
+                        //for (i = 0; i < comp.m_listTG [0].m_power_LastMinutesTM.Length; i++)
+                        //{
+                        //    comp.m_listTG[0].m_power_LastMinutesTM[i] = 0;
+                        //}
 
                         tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
 
@@ -2999,18 +3016,19 @@ namespace Statistic
 
                             dtVal = dtVal.AddHours(offsetUTC);
                             hour = dtVal.Hour + 1;
-                            if ((hour > 0) && (hour < m_valuesHours.Length))
+                            if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                             {
-                                comp.m_listTG[0].power_LastMinutesTM[i] = value;
+                                comp.m_listTG[0].m_power_LastMinutesTM[hour - 0] = value;
 
                                 if (value > 1)
-                                    m_valuesHours[i].valuesLastMinutesTM += value;
+                                    m_valuesHours[hour - 1].valuesLastMinutesTM += value;
                                 else
                                 ;
                             } else ;
                         }
                     }
                 }
+            }
 
             return bRes;
         }
@@ -3040,9 +3058,9 @@ namespace Statistic
             {
                 foreach (TG t in g.m_listTG)
                 {
-                    for (i = 0; i < t.power.Length; i++)
+                    for (i = 0; i < t.m_powerMinutes.Length; i++)
                     {
-                        t.power[i] = -1; //Признак НЕполучения данных
+                        t.m_powerMinutes[i] = -1; //Признак НЕполучения данных
                         //t.receivedMin[i] = false;
                     }
                 }
@@ -3203,7 +3221,7 @@ namespace Statistic
                     }
 
                     minVal += value;
-                    tgTmp.power[min] = value / 1000;
+                    tgTmp.m_powerMinutes[min] = value / 1000;
                     //tgTmp.receivedMin[min] = true;
                 }
 

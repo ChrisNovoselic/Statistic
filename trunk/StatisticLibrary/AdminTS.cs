@@ -107,7 +107,7 @@ namespace StatisticCommon
                 lock (m_lockState)
                 {
                     ClearStates ();
-                    
+
                     saveResult = Errors.NoAccess;
                     saving = true;
                     using_date = false;
@@ -2135,7 +2135,7 @@ namespace StatisticCommon
                 indxTECComponents = indx;
                 m_prevDate = date.Date;
             }
-            
+
             Errors resultSaving = SaveChanges();
             if (resultSaving == Errors.NoError)
             {

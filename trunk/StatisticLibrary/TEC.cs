@@ -1005,7 +1005,7 @@ namespace StatisticCommon
                     //Вар. №2
                     //Если данные в БД по ГринвичУ, в аргументе мск;
                     //dt = dt.AddHours(-1 * (((dt - (TimeZone.CurrentTimeZone.ToUniversalTime(dt))).TotalHours) + 0));
-                    dt -= HAdmin.GetUTCOffsetOfCurrentTimeZone(m_timezone_offset_msc);
+                    dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
                     query = @"SELECT * FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
                             @" WHERE [ID_TEC]=" + m_id +
                             @" AND DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyyMMdd HH:mm:ss") +
@@ -1021,7 +1021,7 @@ namespace StatisticCommon
                     //Если данные в БД по мск
                     //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
                     //Если данные в БД по ГринвичУ
-                    dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfCurrentTimeZone(m_timezone_offset_msc)).TotalMinutes);
+                    dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfMoscowTimeZone()).TotalMinutes);
 
                     //Источник для каждой ТЭЦ свой - вариант №1
                     //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +

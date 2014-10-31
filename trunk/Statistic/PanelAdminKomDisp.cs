@@ -520,8 +520,9 @@ namespace Statistic
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
+                ((AdminTS_KomDisp)m_admin)
                 //Дата ПБР, номер ПБР из наименования файла
-                object [] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
+                object [] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues();
                 //Текущий номер ПБР
                 int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
                 string strMsg = string.Empty;
