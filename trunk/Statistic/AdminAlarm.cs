@@ -185,14 +185,15 @@ namespace Statistic
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
+            int DEBUG_ID_TEC = 5;
             foreach (StatisticCommon.TEC t in listTEC) {
-                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
+                if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
                     EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
-                //} else ;
+                } else ;
             }
         }
 
@@ -228,6 +229,7 @@ namespace Statistic
 
             Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)
+                //Немедленный запуск ТОЛЬКО при 1-ой активации
                 if (m_iActiveCounter == 0)
                     m_timerAlarm.Change(0, msecTimerUpdate);
                 else
@@ -235,6 +237,12 @@ namespace Statistic
                         m_timerAlarm.Change(msecTimerUpdate, msecTimerUpdate);
                     else
                         ;
+
+                ////Немедленный запуск ВСЕГДА
+                //if (! (m_iActiveCounter < 0))
+                //    m_timerAlarm.Change(0, msecTimerUpdate);
+                //else
+                //    ;
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
 
@@ -242,6 +250,11 @@ namespace Statistic
             {
                 tv.Activate(active);
             }
+        }
+
+        public bool IsStarted
+        {
+            get { return ! (m_timerAlarm == null); }
         }
 
         public void Start()

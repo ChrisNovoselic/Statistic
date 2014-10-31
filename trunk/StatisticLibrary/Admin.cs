@@ -330,7 +330,7 @@ namespace StatisticCommon
 
         private void register(int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)
         {
-            m_dictIdListeners[id][(int)type] = DbSources.Sources().Register(connSett, true, @"ÒÝÖ=" + name + @"; DESC=" + type.ToString());
+            m_dictIdListeners[id][(int)type] = DbSources.Sources().Register(connSett, true, @"ÒÝÖ=" + name + @", DESC=" + type.ToString());
         }
 
         public void StartDbInterfaces()

@@ -23,42 +23,76 @@ namespace StatisticCommon
         }
 
         //Вызов из панели ком./дисп.
-        public void ImpPPBRCSVValues(DateTime date, string fullPath)
+        public int ImpPPBRCSVValues(DateTime date, string fullPath, bool bCheckedPPBRNumber = true)
         {
-            lock (m_lockState)
+            int iRes = 0; //Нет ошибки
+
+            m_fullPathPPBRCSVValue = fullPath;
+
+            //Дата ПБР, номер ПБР из наименования файла
+            object[] prop = GetPropertiesOfNameFilePPBRCSVValues();
+            //Текущий номер ПБР
+            int curPBRNumber = Int32.Parse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(3));
+            string strMsg = string.Empty;
+            if (!((DateTime)prop[0] == DateTime.Now.Date))
             {
-                ClearStates();
-
-                ////НЕТ необходимости, т.к. импортируются значения для всех ГТП из списка 'PanelAdmin::m_listTECComponentIndex'
-                //indxTECComponents = indx;
-
-                m_fullPathPPBRCSVValue = fullPath;
-
-                ClearValues();
-
-                using_date = false;
-                //comboBoxTecComponent.SelectedIndex = indxTECComponents;
-
-                m_prevDate = date.Date;
-                m_curDate = m_prevDate;
-
-                states.Add((int)StatesMachine.PPBRCSVValues);
-
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
-                }
+                iRes = -1;
             }
+            else
+            {
+                //Сравнить с текущим номером ПБР
+                if ((!((int)prop[1] > curPBRNumber)) && (bCheckedPPBRNumber == true))
+                {
+                    iRes = -2;
+                }
+                else
+                    ;
+            }
+
+            if (iRes == 0)
+                lock (m_lockState)
+                {
+                    ClearStates();
+
+                    ////НЕТ необходимости, т.к. импортируются значения для всех ГТП из списка 'PanelAdmin::m_listTECComponentIndex'
+                    //indxTECComponents = indx;
+
+                    ClearValues();
+
+                    using_date = false;
+                    //comboBoxTecComponent.SelectedIndex = indxTECComponents;
+
+                    m_prevDate = date.Date;
+                    m_curDate = m_prevDate;
+
+                    states.Add((int)StatesMachine.PPBRCSVValues);
+
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
+                    }
+                }
+            else
+                ; //Ошибка
+
+            if (!(iRes == 0))
+                m_fullPathPPBRCSVValue = string.Empty;
+            else ;
+
+            return iRes;
         }
 
         private void ImpPPBRCSVValuesRequest()
         {
+            //Противоположные операции при завершении потока 'threadPPBRCSVValues'
             //Разрешить запись ПБР-значений
-            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = true; else ;
+            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+            //Запретить запись Админ-значений
+            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
 
             int err = -1
                 , num_pbr = (int)GetPropertiesOfNameFilePPBRCSVValues()[1];
@@ -175,7 +209,8 @@ namespace StatisticCommon
                         //Копировать полученные значения в "текущий массив"
                         curRDGValues.CopyTo (m_curRDGValues, 0);
 
-                        errRes = SaveChanges();
+                        //errRes = SaveChanges();
+                        errRes = Errors.NoSet;
                     }
                     else
                         //Ошибка ???
@@ -188,6 +223,12 @@ namespace StatisticCommon
             //Очистить таблицу, полученную из CSV-файла
             m_tablePPBRValuesResponse.Clear ();
             m_tablePPBRValuesResponse = null;
+
+            //Противоположные операции в 'ImpPPBRCSVValuesRequest'
+            //Запретить запись ПБР-значений
+            //Запрет устанавливается автоматически 
+            //Разрешить запись Админ-значений
+            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
 
             //Обновить значения на вкладке
             GetRDGValues (m_typeFields, prevIndxTECComponents);

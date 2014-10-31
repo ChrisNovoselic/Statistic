@@ -94,7 +94,7 @@ namespace update_pbr
                             break;
                     }
 
-                    idListenerDB = DbSources.Sources().Register(t.connSetts[(int)CONN_SETT_TYPE.PBR], false, @"ТЭЦ=" + t.name_shr + @"; DESC=" + i.ToString());
+                    idListenerDB = DbSources.Sources().Register(t.connSetts[(int)CONN_SETT_TYPE.PBR], false, @"ТЭЦ=" + t.name_shr + @", DESC=" + i.ToString());
                     dbConn = DbSources.Sources().GetConnection(idListenerDB, out err);
 
                     switch (t.type())

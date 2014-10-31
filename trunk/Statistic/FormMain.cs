@@ -327,10 +327,10 @@ namespace Statistic
                                 else
                                     ;
                             else {
+                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm(); else ;
+
                                 m_arPanelAdmin[i].Stop ();
                                 m_arPanelAdmin[i] = null;
-
-                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm (); else ;                                
                             }
                         else
                             ;

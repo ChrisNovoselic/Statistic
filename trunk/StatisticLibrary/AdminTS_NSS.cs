@@ -424,7 +424,7 @@ namespace StatisticCommon
 
         private string nameFileRDGExcel (DateTime dt) {
             //return dt.GetDateTimeFormats()[4];
-            return dt.ToString (@"yyyyMMdd");
+            return dt.ToString (@"yyyy-MM-dd");
         }
 
         protected void /*bool*/ ExpRDGExcelValuesRequest()

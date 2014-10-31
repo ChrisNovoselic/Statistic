@@ -1117,6 +1117,7 @@ namespace Statistic
                 return;
 
             if ((m_tecView.currHour == true) && (isActive == true))
+            {
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
                 if (!(currValuesPeriod++ < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
                 {
@@ -1125,18 +1126,19 @@ namespace Statistic
                 }
                 else
                     ;
+
+                ((ManualResetEvent)stateInfo).WaitOne();
+                try
+                {
+                    timerCurrent.Change(1000, Timeout.Infinite);
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
+                }
+            }
             else
                 ;
-
-            ((ManualResetEvent)stateInfo).WaitOne();
-            try
-            {
-                timerCurrent.Change(1000, Timeout.Infinite);
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
-            }
         }
 
         private void DrawGraphMins(int hour)

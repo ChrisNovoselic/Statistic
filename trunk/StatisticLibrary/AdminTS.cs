@@ -75,16 +75,29 @@ namespace StatisticCommon
             Data,
         }
 
-        public enum INDEX_MARK_PPBRVALUES { ENABLED, MARK };
-        protected bool [] m_arMarkSavePPBRValues = new bool [] { false, false};
+        public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_AVALIABLE, ADMIN_ENABLED, ADMIN_AVALIABLE };
+        protected HMark m_MarkSavedValues;
 
         public AdminTS(bool[] arMarkSavePPBRValues)
             : base()
         {
-            if (! (arMarkSavePPBRValues == null))
-                arMarkSavePPBRValues.CopyTo(m_arMarkSavePPBRValues, 0);
+            m_MarkSavedValues = new HMark();
+
+            if (!(arMarkSavePPBRValues == null))
+            {
+                if ((arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) && (arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_ENABLED] == true))
+                    m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED);
+                else ;
+
+                if ((arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) && (arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE] == true))
+                    m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE);
+                else ;
+            }
             else
                 ;
+
+            m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED);
+            m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE);
         }
 
         protected override void Initialize () {
@@ -116,12 +129,20 @@ namespace StatisticCommon
                     Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear()");
 
                     states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.AdminDates);
-                    //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                    states.Add((int)StatesMachine.PPBRDates);
-                    states.Add((int)StatesMachine.SaveAdminValues);
-                    if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] == true) states.Add((int)StatesMachine.SavePPBRValues); else ;
-                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
+
+                    if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    {
+                        states.Add((int)StatesMachine.AdminDates);
+                        states.Add((int)StatesMachine.SaveAdminValues);
+                    }
+                    else ;
+
+                    if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    {
+                        states.Add((int)StatesMachine.PPBRDates);
+                        states.Add((int)StatesMachine.SavePPBRValues);
+                    }
+                    else ;
 
                     try
                     {
@@ -330,10 +351,18 @@ namespace StatisticCommon
                 }
             }
         }
+
+        /// <summary>
+        /// Запретить запись ПБР-значений
+        /// </summary>
+        private void protectSavedPPBRValues()
+        {
+            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_MarkSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+        }
         
         public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
             //Запретить запись ПБР-значений
-            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
+            protectSavedPPBRValues();
 
             lock (m_lockState)
             {
@@ -366,7 +395,7 @@ namespace StatisticCommon
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
         {
             //Запретить запись ПБР-значений
-            if (m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.ENABLED] == true) m_arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.MARK] = false; else ;
+            protectSavedPPBRValues();
 
             lock (m_lockState)
             {
@@ -716,7 +745,7 @@ namespace StatisticCommon
                                 }
                                 else
                                 {//Ошибка ... ???
-                                    Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                    Logging.Logg().Error(@"AdminTS::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
                                 }
 
                                 //continue; ???

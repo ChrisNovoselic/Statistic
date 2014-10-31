@@ -236,7 +236,10 @@ namespace Statistic
 
         public override void Activate(bool activate)
         {
-            //m_adminAlarm.DestGUIActivated = activate;
+            //Значит пользователь администратор
+            if (m_adminAlarm == null) initAdminAlarm(); else ;
+
+            if (m_adminAlarm.IsStarted == false) m_adminAlarm.Start(); else ;
 
             base.Activate (activate);
         }
@@ -514,33 +517,47 @@ namespace Statistic
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
             //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            files.InitialDirectory = @"D:\Temp";
+            files.InitialDirectory = @"V:\Statistic\ПБР-csv";
             files.DefaultExt = @"csv";
             files.Filter = @"csv файлы (*.csv)|*.csv";
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
-                ((AdminTS_KomDisp)m_admin)
-                //Дата ПБР, номер ПБР из наименования файла
-                object [] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues();
-                //Текущий номер ПБР
-                int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
-                string strMsg = string.Empty;
-                if (! ((DateTime)prop[0] == DateTime.Now.Date)) {
-                    strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует тек./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
-                    MessageBox.Show (this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                } else {
-                    //Сравнить с текущим номером ПБР
-                    if (!((int)prop [1] > curPBRNumber)) {
-                        strMsg = string.Format (@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}]. Продолжить?", (int)prop [1], curPBRNumber);
-                        if (MessageBox.Show (this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes) {
-                            ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
-                        } else {
-                        }
+                int iRes = ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
+
+                if (!(iRes == 0))
+                {
+                    //Дата ПБР, номер ПБР из наименования файла
+                    object[] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues();
+                    //Текущий номер ПБР
+                    int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
+                    string strMsg = string.Empty;
+
+                    if (iRes == -1)
+                    {
+                        strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует тек./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
+                        MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
-                        ;
+                    {
+                        //Сравнить с текущим номером ПБР
+                        if (iRes == -2)
+                        {
+                            strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}]. Продолжить?", (int)prop[1], curPBRNumber);
+                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                            {
+                                ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName, false);
+                            }
+                            else
+                            {
+                            }
+                        }
+                        else
+                            ;
+                    }
                 }
+                else
+                    ;
             }
             else
                 ;
@@ -596,11 +613,34 @@ namespace Statistic
             if (PanelAdminKomDisp.ALARM_USE == true)
             {
                 if (m_adminAlarm == null)
-                    initAdminAlarm();
-                else
-                    ;
+                {
+                    if (((CheckBox)sender).Checked == true)
+                    {
+                        initAdminAlarm();
 
-                m_adminAlarm.Activate(((CheckBox)sender).Checked);
+                        m_adminAlarm.Start();
+
+                        m_adminAlarm.Activate(true);
+                    }
+                    else
+                    {
+                        if (m_adminAlarm.IsStarted == false)
+                            m_adminAlarm.Start();
+                        else
+                            ;
+
+                        m_adminAlarm.Activate(false);
+                    }
+                }
+                else
+                {
+                    if (m_adminAlarm.IsStarted == false)
+                        m_adminAlarm.Start();
+                    else
+                        ;
+
+                    m_adminAlarm.Activate(((CheckBox)sender).Checked);
+                }
             }
             else ;
 

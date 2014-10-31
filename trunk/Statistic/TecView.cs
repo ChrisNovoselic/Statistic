@@ -302,6 +302,10 @@ namespace Statistic
             }
             else ;
 
+            if (currHour == true)
+                states.Add((int)StatesMachine.CurrentTimeView);
+            else
+                ;
             states.Add((int)StatesMachine.Current_TM_Gen);
             states.Add((int)StatesMachine.CurrentHours_Fact);
             states.Add((int)StatesMachine.CurrentMins_Fact);
@@ -1058,7 +1062,7 @@ namespace Statistic
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         m_curDate = m_curDate.AddSeconds(-1 * Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
                         //this.BeginInvoke(delegateSetNowDate, true);
-                        setDatetimeView ();
+                        if (!(setDatetimeView == null)) setDatetimeView(); else ;
                     }
                     else
                         ;
@@ -1679,7 +1683,7 @@ namespace Statistic
                                             }
                                             else
                                             {//Ошибка ... ???
-                                                Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                                Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
                                             }
                                         }
                                         else
@@ -2003,7 +2007,7 @@ namespace Statistic
                                     }
                                     else
                                     {//Ошибка ... ???
-                                        Logging.Logg().Error(@"GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                        Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
                                     }
                                 }
                                 else
@@ -2544,9 +2548,9 @@ namespace Statistic
             {//Ошибка - завершаем выполнение функции
                 if (currHour == true)
                 {//Отображается текущий час
-                    if (! (m_curDate.Hour == 0))
+                    if (! (serverTime.Hour == 0))
                     {//Не начало суток
-                        lastHour = lastReceivedHour = m_curDate.Hour;
+                        lastHour = lastReceivedHour = serverTime.Hour;
                         //Признак частичной ошибки
                         lastHourError = true;
                     }
@@ -2642,7 +2646,7 @@ namespace Statistic
 
                     hour = (dt.Hour + dt.Minute / 30);
                     if (hour == 0)
-                        if (! (dt.Date == m_curDate))
+                        if (!(dt.Date == serverTime.Date))
                             //hour = m_valuesHours.Length;
                             hour = 24;
                         else
@@ -2742,7 +2746,7 @@ namespace Statistic
 
                 if (j < 2)
                 {//Нет данных за один из получасов
-                    if (!(hour > m_curDate.Hour))
+                    if (!(hour > serverTime.Hour))
                     {
                         break;
                     }
@@ -2777,14 +2781,14 @@ namespace Statistic
 
             if (currHour == true)
             {//Отображение тек./часа
-                if (lastHour < m_curDate.Hour)
+                if (lastHour < serverTime.Hour)
                 {//Ошибка получения часовых значений
                     lastHourError = true;
-                    lastHour = m_curDate.Hour;
+                    lastHour = serverTime.Hour;
                 }
                 else
                 {
-                    if ((m_curDate.Hour == 0) && (! (lastHour == 24)) && (! (dtNeeded.Date == m_curDate.Date)))
+                    if ((serverTime.Hour == 0) && (!(lastHour == 24)) && (!(dtNeeded.Date == serverTime.Date)))
                     {//Переход через границу суток
                         lastHourError = true;
                         lastHour = 24;
