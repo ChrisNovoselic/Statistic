@@ -45,6 +45,9 @@ namespace StatisticCommon
             return iRes;
         }
         
+        /// <summary>
+        /// структура дл яхранения данных элемента (час) расписания диспетчерского графика (РДГ)
+        /// </summary>
         public struct /*class*/ RDGStruct
         {
             //public double [] ppbr;
@@ -74,30 +77,40 @@ namespace StatisticCommon
 
         protected DelegateDateFunc setDatetime;
 
+        /// <summary>
+        /// Список объектов 'TEC'
+        /// </summary>
         public volatile List<StatisticCommon.TEC> m_list_tec;
+        /// <summary>
+        /// Список 
+        /// </summary>
         public volatile List<TECComponent> allTECComponents;
+        /// <summary>
+        /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
+        /// </summary>
         public int indxTECComponents;
-
-        //public int m_idListenerConfigDB;
-        //protected List<DbInterface> m_listDbInterfaces;
-        //protected List<int> m_listListenerIdCurrent;
-        //protected int m_indxDbInterfaceCurrent; //Индекс в списке 'm_listDbInterfaces'
-
+        /// <summary>
+        /// Текущий идентификатор соединения с БД (для сохранения между вызовами функций)
+        /// </summary>
         protected int m_IdListenerCurrent;
-
-        protected bool is_connection_error;
-        protected bool is_data_error;
-
+        /// <summary>
+        /// Хранения значений дыты/времени
+        /// </summary>
         public DateTime m_prevDate
             , serverTime
             , m_curDate;
 
         protected volatile bool using_date;
         public bool m_ignore_date;
-        //protected bool m_ignore_connsett_data;
-
+        /// <summary>
+        /// Массив меток дат/времени, имеющихся в БД
+        /// элементу, соответствующему часу, устанавливается значение идентификатора записи в таблице БД
+        /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
+        /// </summary>
         protected int[,] m_arHaveDates;
-
+        /// <summary>
+        /// Объект для синхронизации изменения списка состояний
+        /// </summary>
         protected Object m_lockState;
 
         protected Thread taskThread;
@@ -111,43 +124,8 @@ namespace StatisticCommon
 
         protected Dictionary <int, int []> m_dictIdListeners;
 
-        private enum StateActions
-        {
-            Request,
-            Data,
-        }
-
-        //Для особкнной ТЭЦ (Бийск)
-        //private volatile DbDataInterface dataInterface;
-        
-        //private Thread dbThread;
-        //private Semaphore sema;
-        //private volatile bool workTread;
-        //-------------------------
-
         private bool actived;
         public bool m_bIsActive { get { return actived; } }
-
-        //private int m_iSeasonHour;
-        //protected int SeasonHour
-        //{
-        //    get { return m_iSeasonHour; }
-        //    set
-        //    {
-        //        if (!(m_iSeasonHour == value))
-        //        {
-        //            if (value < 0) {
-                        
-        //            } else {
-        //            }
-
-        //            m_iSeasonHour = value;
-        //        }
-        //        else
-        //        {
-        //        }
-        //    }
-        //}
 
         private static int m_iSeasonAction;
         public static int SeasonAction {
@@ -179,8 +157,6 @@ namespace StatisticCommon
         protected virtual void Initialize () {
             actived = false;
             threadIsWorking = -1;
-
-            is_data_error = is_connection_error = false;
 
             using_date = false;
             m_ignore_date = false;
@@ -537,6 +513,18 @@ namespace StatisticCommon
             ClearDates(CONN_SETT_TYPE.PBR);
         }
 
+        public TECComponent FindTECComponent(int id)
+        {
+            foreach (TECComponent tc in allTECComponents)
+            {
+                if (tc.m_id == id)
+                    return tc;
+                else ;
+            }
+
+            return null;
+        }
+
         protected string GetPBRNumber (int hour = -1) {
             return @"ПБР" + getPBRNumber (hour);
         }
@@ -800,10 +788,10 @@ namespace StatisticCommon
                     }
                 }
 
-                //Законсена обработка всех событий
+                //Закончена обработка всех событий
                 try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
                 catch (Exception e) {
-                    Logging.Logg().Exception(e, "TecView_ThreadFunction () - evStateEnd.Set ()");
+                    Logging.Logg().Exception(e, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
                 }
             }
             try

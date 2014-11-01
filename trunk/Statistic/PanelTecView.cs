@@ -462,6 +462,11 @@ namespace Statistic
                     m_pnlQuickData.ShowFactValues();
                     //m_tecView.recalcAver = true;
                     m_tecView.lastMin = prevLastMin;
+
+                    if (m_tecView.currHour == false)
+                        setRetroTickTime(m_tecView.lastHour, (index + 1) * 3);
+                    else
+                        ;
                 }
             }
             else
@@ -490,6 +495,8 @@ namespace Statistic
                 if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
                 m_tecView.zedGraphHours_MouseUpEvent(index);
+
+                setRetroTickTime(m_tecView.lastHour, 60);
 
                 if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }

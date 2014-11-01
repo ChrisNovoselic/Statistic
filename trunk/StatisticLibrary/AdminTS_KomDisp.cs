@@ -27,6 +27,14 @@ namespace StatisticCommon
         {
             int iRes = 0; //Нет ошибки
 
+            if (!(m_tablePPBRValuesResponse == null))
+            {
+                m_tablePPBRValuesResponse.Clear();
+                m_tablePPBRValuesResponse = null;
+            }
+            else
+                ;
+
             m_fullPathPPBRCSVValue = fullPath;
 
             //Дата ПБР, номер ПБР из наименования файла
@@ -114,12 +122,13 @@ namespace StatisticCommon
             if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
             {
                 //strPPBRCSVNameFileTemp = strPPBRCSVNameFile;
-                strPPBRCSVNameFileTemp = m_fullPathPPBRCSVValue;
+                strPPBRCSVNameFileTemp = Path.GetFileNameWithoutExtension (m_fullPathPPBRCSVValue);
 
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace("(", string.Empty);
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(")", string.Empty);
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(".", string.Empty);
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(" ", string.Empty);
+                strPPBRCSVNameFileTemp += Path.GetExtension (m_fullPathPPBRCSVValue);
 
                 ////при аргументе = каталог размещения наборов
                 //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
@@ -131,10 +140,11 @@ namespace StatisticCommon
                 if (!(m_tablePPBRValuesResponse == null)) m_tablePPBRValuesResponse.Clear(); else ;
 
                 if ((IsCanUseTECComponents() == true) && (strPPBRCSVNameFileTemp.Length > 0))
-                    m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_PATH" + System.IO.Path.GetDirectoryName(strPPBRCSVNameFileTemp),
-                                                                            @"SELECT * FROM [" +
-                                                                            System.IO.Path.GetFileName(strPPBRCSVNameFileTemp) +
-                                                                            @"]"
+                    m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(m_fullPathPPBRCSVValue),
+                                                                            @"SELECT * FROM ["
+                                                                            //+ @"Sheet1$"
+                                                                            + strPPBRCSVNameFileTemp
+                                                                            + @"]"
                                                                             //+ @" WHERE GTP_ID='" +
                                                                             //allTECComponents[indxTECComponents].name_future +
                                                                             //@"'"
@@ -182,9 +192,6 @@ namespace StatisticCommon
             RDGStruct [] curRDGValues = new RDGStruct [m_curRDGValues.Length];
             DataRow [] rowsTECComponent;
 
-            //Ожидать окончание обработки события 'PPBRCSVValues'
-            m_waitHandleState[0].WaitOne();
-
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                 ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
@@ -197,20 +204,38 @@ namespace StatisticCommon
                         //Запомнить текущий индекс компонента
                         curIndxTECComponents = allTECComponents.IndexOf (comp);
                         //Получить значения для сохранения
-                        rowsTECComponent = m_tablePPBRValuesResponse.Select(@"ID=" + allTECComponents[curIndxTECComponents].name_future);
-                        foreach (DataRow r in rowsTECComponent) {
-                            hour = int.Parse (r [@"SESSION_INTERVAL"].ToString ());
-                            
-                            curRDGValues [hour].pbr = double.Parse (r [@"TotalBR"].ToString ());
-                            curRDGValues [hour].pmin = double.Parse(r[@"PminBR"].ToString());
-                            curRDGValues [hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+                        rowsTECComponent = m_tablePPBRValuesResponse.Select(@"GTP_ID='" + allTECComponents[curIndxTECComponents].name_future + @"'");
+                        //Проверить наличие записей для ГТП
+                        if (rowsTECComponent.Length > 0)
+                        {
+                            foreach (DataRow r in rowsTECComponent)
+                            {
+                                hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
+
+                                curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
+                                curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
+                                curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+                            }
+
+                            //Очистить тек./массив с данными
+                            ClearValues();
+
+                            //Копировать полученные значения в "текущий массив"
+                            curRDGValues.CopyTo(m_curRDGValues, 0);
+
+                            errRes =
+                                SaveChanges()
+                                //Errors.NoSet
+                                ;
                         }
-
-                        //Копировать полученные значения в "текущий массив"
-                        curRDGValues.CopyTo (m_curRDGValues, 0);
-
-                        //errRes = SaveChanges();
-                        errRes = Errors.NoSet;
+                        else
+                            //Пропустить запись ГТП, разрешить переход к следующей
+                            //Псевдо-закончена обработка всех событий
+                            try { ((AutoResetEvent)m_waitHandleState[0]).Set(); }
+                            catch (Exception e)
+                            {
+                                Logging.Logg().Exception(e, "AdminTS_KomDisp::threadPPBRCSVValues () - m_waitHandleState[0]).Set()");
+                            }
                     }
                     else
                         //Ошибка ???
@@ -252,23 +277,28 @@ namespace StatisticCommon
             }
         }
 
-        public object[] GetPropertiesOfNameFilePPBRCSVValues()
+        public static object[] GetPropertiesOfNameFilePPBRCSVValues(string nameFile)
         {
-            object [] arObjRes = new object [2]; //0 - DateTime, 1 - int (номер ПБР)
+            object[] arObjRes = new object[2]; //0 - DateTime, 1 - int (номер ПБР)
 
-            int indxStartDateTime = m_fullPathPPBRCSVValue.Length - @".csv".Length;
-            while (Char.IsWhiteSpace(m_fullPathPPBRCSVValue, indxStartDateTime) == false)
+            int indxStartDateTime = nameFile.Length - @".csv".Length;
+            while (Char.IsWhiteSpace(nameFile, indxStartDateTime) == false)
             {
-                indxStartDateTime --;
+                indxStartDateTime--;
             }
 
-            arObjRes[0] = DateTime.Parse(m_fullPathPPBRCSVValue.Substring(indxStartDateTime + 1, m_fullPathPPBRCSVValue.Length - @".csv".Length - indxStartDateTime - 1));
+            arObjRes[0] = DateTime.Parse(nameFile.Substring(indxStartDateTime + 1, nameFile.Length - @".csv".Length - indxStartDateTime - 1));
 
-            int indxStartSession = m_fullPathPPBRCSVValue.IndexOf(s_strMarkSession, 0) + s_strMarkSession.Length
-                , indxEndSession = m_fullPathPPBRCSVValue.IndexOf(@")", indxStartSession);
-            arObjRes[1] = Int32.Parse(m_fullPathPPBRCSVValue.Substring(indxStartSession, indxEndSession - indxStartSession)) - 2;
+            int indxStartSession = nameFile.IndexOf(s_strMarkSession, 0) + s_strMarkSession.Length
+                , indxEndSession = nameFile.IndexOf(@")", indxStartSession);
+            arObjRes[1] = Int32.Parse(nameFile.Substring(indxStartSession, indxEndSession - indxStartSession)) - 2;
 
             return arObjRes;
+        }
+
+        public object[] GetPropertiesOfNameFilePPBRCSVValues()
+        {
+            return GetPropertiesOfNameFilePPBRCSVValues(m_fullPathPPBRCSVValue);
         }
 
         private string getNameFileSessionPPBRCSVValues(int num_pbr)

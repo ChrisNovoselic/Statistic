@@ -114,7 +114,7 @@ namespace Statistic
             this.btnImportCSV.Text = "Импорт из формата CSV";
             this.btnImportCSV.UseVisualStyleBackColor = true;
             this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
-            this.btnImportCSV.Enabled = false;
+            this.btnImportCSV.Enabled = true;
             // 
             // dgwAdminTable
             //
@@ -255,6 +255,10 @@ namespace Statistic
             this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
         }
 
+        /// <summary>
+        /// Вкл./выкл "доступности" в зависимости наличия события сигнализации для тек. ГТП
+        /// </summary>
+        /// <param name="id_comp">идентификатор ГТП</param>
         private void EnabledButtonAlarm(int id_comp)
         {
             if (m_cbxAlarm.Checked == true)
@@ -275,6 +279,11 @@ namespace Statistic
                 ;
         }
 
+        /// <summary>
+        /// Вкл./выкл "доступности" в зависимости наличия события сигнализации для тек. ГТП
+        /// </summary>
+        /// <param name="id_comp">идентификатор ГТП</param>
+        /// <param name="id_tg">идентификатор ТГ из состава ГТП</param>
         private void EnabledButtonAlarm(int id_comp, int id_tg)
         {
             if ((m_cbxAlarm.Checked == true) && (id_comp == m_admin.allTECComponents [m_admin.indxTECComponents].m_id)) {
@@ -288,18 +297,13 @@ namespace Statistic
                 ;
         }
 
-        private TECComponent findTECComponent(int id)
-        {
-            foreach (TECComponent tc in m_admin.allTECComponents)
-            {
-                if (tc.m_id == id)
-                    return tc;
-                else ;
-            }
+        private TECComponent findTECComponent(int id) { return m_admin.FindTECComponent(id); }
 
-            return null;
-        }
-
+        /// <summary>
+        /// Добавить "напоминание" на панели о событии для ГТП (ТГ)
+        /// </summary>
+        /// <param name="id">идентификатор ГТП</param>
+        /// <param name="id_tg">идентификатор ТГ</param>
         private void AddLabelAlarm(int id, int id_tg)
         {
             TECComponent tc = null;
@@ -517,7 +521,7 @@ namespace Statistic
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
             //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            files.InitialDirectory = @"V:\Statistic\ПБР-csv";
+            files.InitialDirectory = @"V:\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
             files.DefaultExt = @"csv";
             files.Filter = @"csv файлы (*.csv)|*.csv";
             files.Title = "Выберите файл с ПБР...";
@@ -528,7 +532,7 @@ namespace Statistic
                 if (!(iRes == 0))
                 {
                     //Дата ПБР, номер ПБР из наименования файла
-                    object[] prop = ((AdminTS_KomDisp)m_admin).GetPropertiesOfNameFilePPBRCSVValues();
+                    object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
                     //Текущий номер ПБР
                     int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
                     string strMsg = string.Empty;
@@ -543,7 +547,7 @@ namespace Statistic
                         //Сравнить с текущим номером ПБР
                         if (iRes == -2)
                         {
-                            strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}]. Продолжить?", (int)prop[1], curPBRNumber);
+                            strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}].{2}Продолжить?", (int)prop[1], curPBRNumber, Environment.NewLine);
                             if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                             {
                                 ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName, false);

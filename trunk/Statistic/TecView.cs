@@ -3317,39 +3317,6 @@ namespace Statistic
             return bRes;
         }
 
-        /*private void GetCurrentTimeRequest()
-        {
-            string query = string.Empty;
-            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbTSQLInterface.getTypeDB(m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].port);
-
-            switch (typeDB)
-            {
-                case DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL:
-                    query = @"SELECT now()";
-                    break;
-                case DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL:
-                    query = @"SELECT GETDATE()";
-                    break;
-                default:
-                    break;
-            }
-
-            if (query.Equals(string.Empty) == false)
-                m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, query);
-            else
-                ;
-        }*/
-
-        //private void GetSensorsFactRequest()
-        //{
-        //    tec.Request(CONN_SETT_TYPE.CONFIG_DB, tec.sensorsFactRequest());
-        //}
-
-        //private void GetSensorsTMRequest()
-        //{
-        //    tec.Request(CONN_SETT_TYPE.CONFIG_DB, tec.sensorsTMRequest());
-        //}
-
         private void GetHoursRequest(DateTime date)
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));

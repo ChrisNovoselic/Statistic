@@ -395,7 +395,7 @@ namespace Statistic
         private ManualResetEvent evTimerCurrent;
         private System.Threading.Timer timerCurrent;
         //private System.Windows.Forms.Timer timerCurrent;
-        private DelegateFunc delegateTickTime;
+        private DelegateObjectFunc delegateTickTime;
 
         //private AdminTS m_admin;
         //protected FormGraphicsSettings graphSettings;
@@ -548,7 +548,7 @@ namespace Statistic
 
             update = false;
 
-            delegateTickTime = new DelegateFunc(TickTime);
+            delegateTickTime = new DelegateObjectFunc(TickTime);
         }
 
         private void FillDefaultMins()
@@ -639,7 +639,8 @@ namespace Statistic
             m_tecView.Start();
 
             evTimerCurrent = new ManualResetEvent(true);
-            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
+            //timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
+            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, 1000);
 
             //timerCurrent = new System.Windows.Forms.Timer ();
             //timerCurrent.Tick += TimerCurrent_Tick;
@@ -1034,6 +1035,8 @@ namespace Statistic
                 initTableHourRows ();
 
                 NewDateRefresh();
+
+                setRetroTickTime(m_tecView.lastHour, (m_tecView.lastMin - 1) * 3);
             }
             else
                 update = true;
@@ -1082,14 +1085,18 @@ namespace Statistic
             if (isActive == true)
             {
                 currValuesPeriod = 0;
-                
+
                 ChangeState ();
 
                 //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
+
+                timerCurrent.Change(0, 1000);
             }
             else
             {
                 m_tecView.ClearStates ();
+
+                timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             }
         }
 
@@ -1103,21 +1110,39 @@ namespace Statistic
             MessageBox.Show(this, "", caption, MessageBoxButtons.OK);
         }
 
-        private void TickTime()
+        protected void setRetroTickTime(int hour, int min)
         {
-            m_tecView.serverTime = m_tecView.serverTime.AddSeconds(1);
-            m_pnlQuickData.lblServerTime.Text = m_tecView.serverTime.ToString("HH:mm:ss");
+            DateTime dt = m_pnlQuickData.dtprDate.Value.Date;
+            dt = dt.AddHours(hour);
+            dt = dt.AddMinutes(min);
+
+            TickTime(dt);
         }
 
+        /// <summary>
+        /// Делегат обновления поля 'время сервера'
+        /// </summary>
+        /// <param name="dt">дата/время для отображения</param>
+        private void TickTime(object dt)
+        {
+            m_pnlQuickData.lblServerTime.Text = ((DateTime)dt).ToString("HH:mm:ss");
+        }
+
+        /// <summary>
+        /// Метод обратного вызова объекта 'timerCurrent'
+        /// </summary>
+        /// <param name="stateInfo">объкт синхронизации</param>
         private void TimerCurrent_Tick(Object stateInfo)
         {
-            if (InvokeRequired == true)
-                Invoke(delegateTickTime);
-            else
-                return;
-
             if ((m_tecView.currHour == true) && (isActive == true))
             {
+                m_tecView.serverTime = m_tecView.serverTime.AddSeconds(1);
+
+                if (InvokeRequired == true)
+                    Invoke(delegateTickTime, m_tecView.serverTime);
+                else
+                    return;
+
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
                 if (!(currValuesPeriod++ < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
                 {
@@ -1126,19 +1151,19 @@ namespace Statistic
                 }
                 else
                     ;
-
-                ((ManualResetEvent)stateInfo).WaitOne();
-                try
-                {
-                    timerCurrent.Change(1000, Timeout.Infinite);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
-                }
             }
             else
                 ;
+
+            //((ManualResetEvent)stateInfo).WaitOne();
+            //try
+            //{
+            //    timerCurrent.Change(1000, Timeout.Infinite);
+            //}
+            //catch (Exception e)
+            //{
+            //    Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
+            //}
         }
 
         private void DrawGraphMins(int hour)
