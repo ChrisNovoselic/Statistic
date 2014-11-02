@@ -181,7 +181,7 @@ namespace trans_tg
                             @"' ORDER BY DATE_TIME ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
@@ -299,7 +299,7 @@ namespace trans_tg
                             case AdminTS.TYPE_FIELDS.STATIC:
                                 break;
                             case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + @"[" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
                                             " SET " +
                                             @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +

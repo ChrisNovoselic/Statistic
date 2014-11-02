@@ -1213,7 +1213,7 @@ namespace StatisticCommon
                                 ;
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
                                         " SET " +
                                         @"PBR_NUMBER='";
                             if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
@@ -1286,7 +1286,7 @@ namespace StatisticCommon
                         query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, IS_COMDISP, " + name + @"_PBR," + name + "_Pmin," + name + "_Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     case AdminTS.TYPE_FIELDS.DYNAMIC:
-                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
+                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + "] (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     default:
                         break;
@@ -1352,7 +1352,7 @@ namespace StatisticCommon
                                         @"'; ";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] +
+                            query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
                                         @" WHERE " +
                                         @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                         @"'" +

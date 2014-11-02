@@ -174,8 +174,11 @@ namespace StatisticCommon
         {
             bool bRes = m_tablePPBRValuesResponse.Rows.Count > 0 ? true : false;
 
-            //'indxTECComponents' необходимо сохранить ???
-            new Thread(new ParameterizedThreadStart(threadPPBRCSVValues)).Start(null); //можно установить значение аргумента = 'm_curDate'
+            if (bRes == true)
+                //'indxTECComponents' необходимо сохранить ??? - сохраняется в потоке !!!
+                new Thread(new ParameterizedThreadStart(threadPPBRCSVValues)).Start(null); //можно установить значение аргумента = 'm_curDate'
+            else
+                ;
 
             return bRes;
         }
@@ -183,67 +186,32 @@ namespace StatisticCommon
         private void threadPPBRCSVValues(object date)
         {
             Errors errRes = Errors.NoError;
-            
+
             int indxEv = -1
-                , prevIndxTECComponents = indxTECComponents
-                , curIndxTECComponents = -1
-                , hour = -1;
+                , prevIndxTECComponents = indxTECComponents;
 
-            RDGStruct [] curRDGValues = new RDGStruct [m_curRDGValues.Length];
-            DataRow [] rowsTECComponent;
+            string strPBRNumber = GetPBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues ()[1]);
 
+            //Снять все признаки причин прекращения выполнения обработки событий
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                 ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
             foreach (TECComponent comp in allTECComponents)
-            {
                 if ((comp.m_id > 100) && (comp.m_id < 500))
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0) {
-                        //Запомнить текущий индекс компонента
-                        curIndxTECComponents = allTECComponents.IndexOf (comp);
-                        //Получить значения для сохранения
-                        rowsTECComponent = m_tablePPBRValuesResponse.Select(@"GTP_ID='" + allTECComponents[curIndxTECComponents].name_future + @"'");
-                        //Проверить наличие записей для ГТП
-                        if (rowsTECComponent.Length > 0)
-                        {
-                            foreach (DataRow r in rowsTECComponent)
-                            {
-                                hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
-
-                                curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
-                                curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
-                                curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
-                            }
-
-                            //Очистить тек./массив с данными
-                            ClearValues();
-
-                            //Копировать полученные значения в "текущий массив"
-                            curRDGValues.CopyTo(m_curRDGValues, 0);
-
-                            errRes =
-                                SaveChanges()
-                                //Errors.NoSet
-                                ;
-                        }
-                        else
-                            //Пропустить запись ГТП, разрешить переход к следующей
-                            //Псевдо-закончена обработка всех событий
-                            try { ((AutoResetEvent)m_waitHandleState[0]).Set(); }
-                            catch (Exception e)
-                            {
-                                Logging.Logg().Exception(e, "AdminTS_KomDisp::threadPPBRCSVValues () - m_waitHandleState[0]).Set()");
-                            }
+                    if (indxEv == 0)
+                    {
+                        errRes = savePPBRCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
                     }
                     else
                         //Ошибка ???
-                        break;
+                        //break;
+                        //completeHandleStates();
+                        ;
                 }
                 else
                     ;
-            }
 
             //Очистить таблицу, полученную из CSV-файла
             m_tablePPBRValuesResponse.Clear ();
@@ -251,18 +219,53 @@ namespace StatisticCommon
 
             //Противоположные операции в 'ImpPPBRCSVValuesRequest'
             //Запретить запись ПБР-значений
-            //Запрет устанавливается автоматически 
+            // , запрет устанавливается автоматически 
             //Разрешить запись Админ-значений
             if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
 
             //Обновить значения на вкладке
             GetRDGValues (m_typeFields, prevIndxTECComponents);
-
-            //m_bSavePPBRValues = true;
         }
 
-        private Errors savePPBRCSVValues (int indx) {
-            Errors errRes = Errors.NoError;
+        private Errors savePPBRCSVValues (int indx, string pbr_number) {
+            Errors errRes = Errors.NoSet;
+
+            RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
+            int hour = -1;
+
+            //Получить значения для сохранения
+            DataRow [] rowsTECComponent = m_tablePPBRValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
+            //Проверить наличие записей для ГТП
+            if (rowsTECComponent.Length > 0)
+            {
+                foreach (DataRow r in rowsTECComponent)
+                {
+                    hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
+
+                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
+                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
+                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+
+                    curRDGValues[hour].pbr_number = pbr_number;
+                }
+
+                //Очистить тек./массив с данными
+                ClearValues();
+
+                //Копировать полученные значения в "текущий массив"
+                curRDGValues.CopyTo(m_curRDGValues, 0);
+
+                indxTECComponents = indx;
+
+                errRes =
+                    SaveChanges()
+                    //Errors.NoSet
+                    ;
+            }
+            else
+                //Пропустить запись ГТП, разрешить переход к следующей
+                //Псевдо-закончена обработка всех событий
+                completeHandleStates();
 
             return errRes;
         }

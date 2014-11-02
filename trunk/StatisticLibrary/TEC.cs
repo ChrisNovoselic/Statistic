@@ -104,10 +104,22 @@ namespace StatisticCommon
 
             this.m_id = id;
             this.name_shr = name_shr;
+
+            //Выделение  памяти под наименования таблиц с Админ, -ПБР значениями
             this.m_arNameTableAdminValues = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS]; this.m_arNameTableUsedPPBRvsPBR = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS];
-            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_pbr;
-            //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "AdminValuesOfID"; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = "PPBRvsPBROfID";
-            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin; this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
+
+            //Сохранить наименования таблиц с Админ, -ПБР значениями со СТАТИЧЕСКИМИ наименованиями полей
+            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_admin;
+            this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_pbr;
+            //Сохранить наименования таблиц с Админ, -ПБР значениями со ДИНАМИЧЕСКИМИ наименованиями полей
+            //Вариант №1 (в т.ч. и для для тестирования загрузки макета из CSV-файла)
+            this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = @"AdminValuesOfID"; //@"AdminValuesOfID_20141026";
+            this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = @"PPBRvsPBROfID"; // @"PPBRvsPBROfID-Test";
+            ////Вариант №2 (наименования таблиц из БД конфигурации, обратить внимание Бийская ТЭЦ!!! )
+            //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin;
+            //this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
+
+            //Сохранить составные части наимнований полей
             this.prefix_admin = prefix_admin; this.prefix_pbr = prefix_pbr;
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
@@ -387,13 +399,13 @@ namespace StatisticCommon
                     strRes = @"SELECT " +
                         //m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                         //@", " + selectPBR.Split (';')[0] + " AS PBR";
-                        m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + " AS DATE_PBR" +
+                        @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "]." + "DATE_TIME" + " AS DATE_PBR" +
                         //@", " + "PBR" + " AS PBR";
                         @", " + selectPBR.Split(';')[0];
 
                     //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
                         //strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
-                        strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + @"PBR_NUMBER";
+                    strRes += @", " + @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "]." + @"PBR_NUMBER";
                     //else
                     //    ;
 
@@ -401,17 +413,17 @@ namespace StatisticCommon
                     strRes += @", " + "ID_COMPONENT";
 
                     strRes += @" " + @"FROM " +
-                        m_arNameTableUsedPPBRvsPBR[(int)mode] +
+                        @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" + 
                         //@" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                         //@" AND " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                        @" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                        @" AND " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                        @" WHERE " + @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "]." + "DATE_TIME" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                        @" AND " + @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "]." + "DATE_TIME" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
 
                         @" AND ID_COMPONENT IN (" + selectPBR.Split (';')[1] + ")" +
 
                         //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
                         //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
-                        @" AND DATEPART(n," + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
+                        @" AND DATEPART(n," + @"[" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "]." + "DATE_TIME" + ") = 0";
                     /*
                     if (selectPBR.Split(';')[1].Split (',').Length > 1)
                         strRes += @" GROUP BY DATE_PBR";
@@ -1192,7 +1204,7 @@ namespace StatisticCommon
                             @"' ORDER BY " + strNameFieldDateTime + @" ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT " + @"DATE_TIME" + @", ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
+                    strRes = @"SELECT " + @"DATE_TIME" + @", ID FROM [" + m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND " + @"DATE_TIME" + @" > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyyMMdd HH:mm:ss") +

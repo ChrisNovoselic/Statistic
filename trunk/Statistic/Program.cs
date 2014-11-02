@@ -18,8 +18,8 @@ namespace Statistic
             int iRes = 0;
 
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            //Logging.s_mode = Logging.LOG_MODE.DB;
-            Logging.s_mode = Logging.LOG_MODE.FILE;
+            Logging.s_mode = Logging.LOG_MODE.DB;
+            //Logging.s_mode = Logging.LOG_MODE.FILE;
 
             try { ProgramBase.Start (); }
             catch (Exception e) {

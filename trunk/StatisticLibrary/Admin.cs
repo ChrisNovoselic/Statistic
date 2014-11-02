@@ -789,10 +789,7 @@ namespace StatisticCommon
                 }
 
                 //«акончена обработка всех событий
-                try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
-                catch (Exception e) {
-                    Logging.Logg().Exception(e, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
-                }
+                completeHandleStates();
             }
             try
             {
@@ -801,6 +798,16 @@ namespace StatisticCommon
             catch (System.Threading.SemaphoreFullException e) //(Exception e)
             {
                 Logging.Logg().Exception(e, "HAdmin::TecView_ThreadFunction () - semaState.Release(1)");
+            }
+        }
+
+        /// <summary>
+        /// ”становить признак окончани€ обработки всех событий
+        /// </summary>
+        protected void completeHandleStates () {
+            try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
+            catch (Exception e) {
+                Logging.Logg().Exception(e, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
             }
         }
 
