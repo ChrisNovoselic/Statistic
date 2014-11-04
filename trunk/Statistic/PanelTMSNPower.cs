@@ -410,20 +410,35 @@ namespace Statistic
                 //???
                 //setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_Gen], dblTotalPower_TM);
-                //try { m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToCurrentTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen); }
-                //catch (Exception e)
-                //{
-                //    Logging.Logg().Exception(e, @"PanelTecCurPower::ShowTMPower () - HAdmin.ToCurrentTimeZone () - ...");
-                //}
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+
+                m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
+
+                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_Gen).TotalMinutes < 3)
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].ForeColor = Color.Black;
+                }
+                else
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].ForeColor = Color.Red;
+                }
             }
 
             private void ShowTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
-                //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
-                //catch (Exception e) { Logging.Logg ().Exception (e, @"PanelTMSNPower::ShowTMSNPower () - ..."); }
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+
+                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_SN).TotalMinutes < 3)
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Black;
+                }
+                else
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"dd.MM.yyyy HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Red;
+                }
             }
 
             private double setTextToLabelVal(Label lblVal, double val)

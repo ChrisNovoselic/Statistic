@@ -392,8 +392,8 @@ namespace Statistic
         //protected volatile bool m_newState;
         //protected volatile List<StatesMachine> m_states;
         //private int currValuesPeriod = 0;
-        private ManualResetEvent evTimerCurrent;
-        private System.Threading.Timer timerCurrent;
+        private ManualResetEvent m_evTimerCurrent;
+        private System.Threading.Timer m_timerCurrent;
         //private System.Windows.Forms.Timer timerCurrent;
         private DelegateObjectFunc delegateTickTime;
 
@@ -638,9 +638,9 @@ namespace Statistic
 
             m_tecView.Start();
 
-            evTimerCurrent = new ManualResetEvent(true);
+            m_evTimerCurrent = new ManualResetEvent(true);
             //timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
-            timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, 1000);
+            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000);
 
             //timerCurrent = new System.Windows.Forms.Timer ();
             //timerCurrent.Tick += TimerCurrent_Tick;
@@ -656,8 +656,8 @@ namespace Statistic
         {
             m_tecView.Stop ();
 
-            if (! (evTimerCurrent == null)) evTimerCurrent.Reset(); else ;
-            if (!(timerCurrent == null)) timerCurrent.Dispose(); else ;
+            if (! (m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
+            if (!(m_timerCurrent == null)) { m_timerCurrent.Dispose(); m_timerCurrent = null; } else ;
 
             FormMainBaseWithStatusStrip.m_report.ClearStates ();
         }
@@ -1078,26 +1078,41 @@ namespace Statistic
             m_tecView.ChangeState ();
         }
 
+        protected bool Started
+        {
+            get { return ! (m_timerCurrent == null); }
+        }
+
         public override void Activate(bool active)
         {
-            isActive = active;
-
-            if (isActive == true)
+            int err = 0;
+            
+            if (Started == true)
             {
-                currValuesPeriod = 0;
+                isActive = active;
 
-                ChangeState ();
+                if (isActive == true)
+                {
+                    currValuesPeriod = 0;
 
-                //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
+                    ChangeState();
 
-                timerCurrent.Change(0, 1000);
+                    //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
+
+                    m_timerCurrent.Change(0, 1000);
+                }
+                else
+                {
+                    m_tecView.ClearStates();
+
+                    if (!(m_timerCurrent == null))
+                        m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    else
+                        ;
+                }
             }
             else
-            {
-                m_tecView.ClearStates ();
-
-                timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-            }
+                err = -1; //Œ¯Ë·Í‡
         }
 
         private void ShowValues(string caption)

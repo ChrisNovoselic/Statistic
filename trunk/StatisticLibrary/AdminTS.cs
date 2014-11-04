@@ -588,7 +588,8 @@ namespace StatisticCommon
                 */
                 if (!(arTable[i].Columns.IndexOf("ID_COMPONENT") < 0))
                     try { arTable[i].Columns.Remove("ID_COMPONENT"); }
-                    catch (ArgumentException e) {
+                    catch (Exception e)
+                    { //ArgumentException
                         Logging.Logg().Exception(e, "Remove(\"ID_COMPONENT\")");
                     }
                 else

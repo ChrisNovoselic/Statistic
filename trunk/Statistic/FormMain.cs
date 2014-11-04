@@ -410,7 +410,9 @@ namespace Statistic
         private void ClearTabPages()
         {
             Logging.Logg().Debug(@"FormMain::ClearTabPages () - вХод...");
-            
+
+            activateTabPage(tclTecViews.SelectedIndex, false);
+
             List<int> indxRemove = new List<int>();
 
             foreach (TabPage tab in tclTecViews.TabPages)
@@ -422,8 +424,6 @@ namespace Statistic
                 else
                     ;
             }
-
-            activateTabPage(tclTecViews.SelectedIndex, false);
 
             tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
 

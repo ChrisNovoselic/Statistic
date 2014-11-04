@@ -813,6 +813,37 @@ namespace Statistic
             InitializeComponent();
         }
 
+        private void showTMValue(ref Label lbl, int tg_id, double tg_val, ref double val)
+        {
+            string text = string.Empty
+                , textNotValue = @"---";
+
+            if (tg_id > 0)
+            {
+                if (tg_val > 1)
+                {
+                    text = tg_val.ToString("F2");
+                    val += tg_val;
+                }
+                else
+                    if (!(tg_val < 0))
+                        text = 0.ToString("F0");
+                    else
+                        text = textNotValue;
+            }
+            else
+            {
+                text = textNotValue;
+            }
+
+            if (text.Equals (textNotValue) == true)
+                lbl.ForeColor = Color.Orange;
+            else
+                lbl.ForeColor = Color.Green;
+
+            lbl.Text = text;
+        }
+
         /// <summary>
         /// Отобразить текущие значения
         /// </summary>
@@ -822,6 +853,19 @@ namespace Statistic
             int i = 0;
 
             if (!(m_parent == null))
+            {
+                if (m_parent.m_tecView.currHour == true)
+                {
+                    if (m_parent.m_tecView.currentMinuteTM_GenError == true)
+                    {
+                        m_parent.m_tecView.ErrorReport("Значение телемеханики для одного из ТГ не найдено!");
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+
                 if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                 {
                     foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
@@ -830,21 +874,8 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                if (tg.id_tm > 0)
-                                {
-                                    if (tg.m_powerMinute_TM > 1)
-                                    {
-                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.m_powerMinute_TM.ToString("F2");
-                                        value_TM += tg.m_powerMinute_TM;
-                                    }
-                                    else
-                                        m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
+                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerMinute_TM, ref value_TM);
 
-                                }
-                                else
-                                {
-                                    m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = "---";
-                                }
                                 i++;
                             }
                         else
@@ -855,23 +886,12 @@ namespace Statistic
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                     {
-                        if (tg.id_tm > 0)
-                        {
-                            if (tg.m_powerMinute_TM > 1)
-                            {
-                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = tg.m_powerMinute_TM.ToString("F2");
-                                value_TM += tg.m_powerMinute_TM;
-                            }
-                            else
-                                m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = 0.ToString("F0");
-                        }
-                        else
-                        {
-                            m_tgLabels[i][(int)TG.INDEX_VALUE.TM].Text = "---";
-                        }
+                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerMinute_TM, ref value_TM);
+
                         i++;
                     }
                 }
+            }
             else
                 ;
 

@@ -41,7 +41,7 @@ namespace Statistic
             Current_TM_Gen,
             Current_TM_SN,
             LastMinutes_TM,
-            RetroHours,
+            //RetroHours,
             RetroMins,
             AdminDates, //Получение списка сохранённых часовых значений
             AdminValues, //Получение административных данных
@@ -110,6 +110,7 @@ namespace Statistic
         public volatile bool lastMinError;
         public volatile bool lastHourError;
         public volatile bool lastHourHalfError;
+        public volatile bool currentMinuteTM_GenError;
 
         public volatile string lastLayout;
 
@@ -349,7 +350,8 @@ namespace Statistic
 
         public void SuccessThreadRDGValues(int curHour, int curMinute)
         {
-            double power_TM = 0.0;
+            double TGTURNONOFF_VALUE = -1F, NOT_VALUE = -2F
+                , power_TM = NOT_VALUE;
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
             Console.WriteLine (@"curHour=" + curHour.ToString () + @"; curMinute=" + curMinute.ToString ());
@@ -362,14 +364,20 @@ namespace Statistic
             else {            
                 foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
                 {
+                    curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
+
                     Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.m_powerMinute_TM);
 
                     if (tg.m_powerMinute_TM < 1)
-                        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                        if (!(tg.m_powerMinute_TM < 0))
+                            curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                        else
+                            ;
                     else
-                    {
+                    {//Больше ИЛИ равно 1.0
                         curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
+                        if (power_TM == NOT_VALUE) power_TM = 0F; else ;
                         power_TM += tg.m_powerMinute_TM;
                     }
 
@@ -411,7 +419,7 @@ namespace Statistic
 
                             //Прекращаем текущий цикл...
                             //Признак досрочного прерывания цикла для сигн. "Текущая P"
-                            power_TM = -1F;
+                            power_TM = TGTURNONOFF_VALUE;
 
                             break;
                         }
@@ -428,15 +436,18 @@ namespace Statistic
                 //Для отладки
                 //EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
 
-                if (!(power_TM < 0))
-                    if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                        //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                        if (power_TM < m_valuesHours[curHour].valuesUDGe)
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                if (!(power_TM == TGTURNONOFF_VALUE))
+                    if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
+                        if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
+                            //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                            if (power_TM < m_valuesHours[curHour].valuesUDGe)
+                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                            else
+                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
                         else
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
+                            ; //EventUnReg...
                     else
-                        ; //EventUnReg...
+                        ; //Нет значений ИЛИ значения ограничены 1 МВт
                 else
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.BREAK);
 
@@ -668,14 +679,18 @@ namespace Statistic
                 id = -1;
             double value = -1;
             DateTime dtLastChangedAt =
-                m_dtLastChangedAt_TM_Gen = DateTime.Now;
+                m_dtLastChangedAt_TM_Gen = DateTime.Now
+                , dtServer = serverTime;
             TG tgTmp;
+
+            dtServer = dtServer.ToUniversalTime();
+            currentMinuteTM_GenError = false;
 
             foreach (TECComponent g in m_tec.list_TECComponents)
             {
                 foreach (TG t in g.m_listTG)
                 {
-                    t.m_powerMinute_TM = 0;
+                    t.m_powerMinute_TM = -1F;
                 }
             }
 
@@ -702,15 +717,26 @@ namespace Statistic
                         else
                             ;
                     else
-                        value = 0.0;
+                        value = -1F;
 
+                    //Опрделить дата/время для "нормальных" (>= 1) значений
                     if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+                        //Нельзя определить дата/время для "нормальных" (>= 1) значений
                         return false;
                     else
                         ;
 
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt)
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
+                    else
+                        ;
+
+                    if ((!(value < 1)) && ((dtServer - m_dtLastChangedAt_TM_Gen).TotalMinutes > 3) && (currentMinuteTM_GenError == false))
+                    {
+                        currentMinuteTM_GenError = true;
+
+                        return true;
+                    }
                     else
                         ;
 
@@ -725,7 +751,7 @@ namespace Statistic
                             break;
                     }
 
-                    tgTmp.m_powerMinute_TM = value;
+                    if (!(tgTmp.m_powerMinute_TM == value)) tgTmp.m_powerMinute_TM = value; else ;
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
@@ -804,7 +830,7 @@ namespace Statistic
                 case (int)StatesMachine.Current_TM_Gen:
                 case (int)StatesMachine.Current_TM_SN:
                 case (int)StatesMachine.LastMinutes_TM:
-                case (int)StatesMachine.RetroHours:
+                //case (int)StatesMachine.RetroHours:
                 case (int)StatesMachine.RetroMins:
                 case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
@@ -878,10 +904,10 @@ namespace Statistic
                     reason = @"текущих значений 59 мин.";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
-                case (int)StatesMachine.RetroHours:
-                    reason = @"получасовых значений";
-                    waiting = @"Переход в ожидание";
-                    break;
+                //case (int)StatesMachine.RetroHours:
+                //    reason = @"получасовых значений";
+                //    waiting = @"Переход в ожидание";
+                //    break;
                 case (int)StatesMachine.RetroMins:
                     reason = @"3-х минутных значений";
                     waiting = @"Переход в ожидание";
@@ -977,11 +1003,11 @@ namespace Statistic
                     msg = @"текущих значений 59 мин";
                     GetLastMinutesTMRequest(m_curDate);
                     break;
-                case (int)StatesMachine.RetroHours:
-                    msg = @"получасовых значений";
-                    adminValuesReceived = false;
-                    GetHoursRequest(m_curDate.Date);
-                    break;
+                //case (int)StatesMachine.RetroHours:
+                //    msg = @"получасовых значений";
+                //    adminValuesReceived = false;
+                //    GetHoursRequest(m_curDate.Date);
+                //    break;
                 case (int)StatesMachine.RetroMins:
                     msg = @"трёхминутных значений";
                     adminValuesReceived = false;
@@ -1125,15 +1151,15 @@ namespace Statistic
                     else
                         ;
                     break;
-                case (int)StatesMachine.RetroHours:
-                    ClearValues();
-                    bRes = GetHoursResponse(table);
-                    if (bRes == true)
-                    {
-                    }
-                    else
-                        ;
-                    break;
+                //case (int)StatesMachine.RetroHours:
+                //    ClearValues();
+                //    bRes = GetHoursResponse(table);
+                //    if (bRes == true)
+                //    {
+                //    }
+                //    else
+                //        ;
+                //    break;
                 case (int)StatesMachine.RetroMins:
                     bRes = GetMinsResponse(table);
                     if (bRes == true)
@@ -1200,6 +1226,7 @@ namespace Statistic
                 states.Add((int)StatesMachine.InitSensors);
             else ;
 
+            states.Add((int)TecView.StatesMachine.CurrentTimeView);
             states.Add((int)TecView.StatesMachine.Current_TM_Gen);
             states.Add((int)TecView.StatesMachine.Current_TM_SN);
         }
@@ -2507,8 +2534,14 @@ namespace Statistic
             int i, j, half = 0, hour = 0
                 , prev_season = 0, season = 0, offset_season = 0;
             double hourVal = 0, halfVal = 0, value;
-            DateTime dt , dtNeeded;
+            DateTime dt , dtNeeded, dtServer;
             dt = dtNeeded = DateTime.Now;
+
+            dtServer = serverTime;
+            if ((currHour == true) && (dtServer.Minute < 2))
+                dtServer = dtServer.AddMinutes(-1 * (dtServer.Minute + 1));
+            else
+                ;
 
             double[, ,] powerHourHalf = new double[listTG.Count, 2, m_valuesHours.Length];
 
@@ -2548,9 +2581,9 @@ namespace Statistic
             {//Ошибка - завершаем выполнение функции
                 if (currHour == true)
                 {//Отображается текущий час
-                    if (! (serverTime.Hour == 0))
+                    if (! (dtServer.Hour == 0))
                     {//Не начало суток
-                        lastHour = lastReceivedHour = serverTime.Hour;
+                        lastHour = lastReceivedHour = dtServer.Hour;
                         //Признак частичной ошибки
                         lastHourError = true;
                     }
@@ -2646,7 +2679,7 @@ namespace Statistic
 
                     hour = (dt.Hour + dt.Minute / 30);
                     if (hour == 0)
-                        if (!(dt.Date == serverTime.Date))
+                        if (!(dt.Date == dtServer.Date))
                             //hour = m_valuesHours.Length;
                             hour = 24;
                         else
@@ -2746,7 +2779,7 @@ namespace Statistic
 
                 if (j < 2)
                 {//Нет данных за один из получасов
-                    if (!(hour > serverTime.Hour))
+                    if (!(hour > dtServer.Hour))
                     {
                         break;
                     }
@@ -2781,14 +2814,14 @@ namespace Statistic
 
             if (currHour == true)
             {//Отображение тек./часа
-                if (lastHour < serverTime.Hour)
+                if (lastHour < dtServer.Hour)
                 {//Ошибка получения часовых значений
                     lastHourError = true;
-                    lastHour = serverTime.Hour;
+                    lastHour = dtServer.Hour;
                 }
                 else
                 {
-                    if ((serverTime.Hour == 0) && (!(lastHour == 24)) && (!(dtNeeded.Date == serverTime.Date)))
+                    if ((dtServer.Hour == 0) && (!(lastHour == 24)) && (!(dtNeeded.Date == dtServer.Date)))
                     {//Переход через границу суток
                         lastHourError = true;
                         lastHour = 24;

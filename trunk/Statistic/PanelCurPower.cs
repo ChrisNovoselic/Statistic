@@ -461,17 +461,42 @@ namespace Statistic
                 switch (m_tecView.m_dtLastChangedAt_TM_Gen.Kind) {
                 }
 
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+                m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
+
+                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_Gen).TotalMinutes < 3)
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM].ForeColor = Color.Black;
+                }
+                else
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM].ForeColor = Color.Red;
+                }
             }
 
             private void ShowTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
-                //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
-                //catch (Exception e) { Logging.Logg ().Exception (e, @"PanelTMSNPower::ShowTMSNPower () - ..."); }
-                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+
+                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_SN).TotalMinutes < 3)
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Black;
+                }
+                else
+                {
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"dd.MM.yyyy HH:mm:ss");
+                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Red;
+                }
             }
 
+            /// <summary>
+            /// Отобразить значение аналог 'PanelQuickData::showTMValue'
+            /// </summary>
+            /// <param name="lblVal">элемент управления для отображения значения</param>
+            /// <param name="val">значение для отображения</param>
+            /// <returns>значение с ограничением в 1 МВт</returns>
             private double setTextToLabelVal (Label lblVal, double val) {
                 if (val > 1)
                 {
@@ -479,7 +504,10 @@ namespace Statistic
                     return val;
                 }
                 else
-                    lblVal.Text = 0.ToString(@"F0");
+                    if (! (val < 0))
+                        lblVal.Text = 0.ToString(@"F0");
+                    else
+                        lblVal.Text = @"---";
 
                 return 0;
             }

@@ -795,8 +795,8 @@ namespace StatisticCommon
             {
                 semaState.Release(1);
             }
-            catch (System.Threading.SemaphoreFullException e) //(Exception e)
-            {
+            catch (Exception e)
+            { //System.Threading.SemaphoreFullException
                 Logging.Logg().Exception(e, "HAdmin::TecView_ThreadFunction () - semaState.Release(1)");
             }
         }
