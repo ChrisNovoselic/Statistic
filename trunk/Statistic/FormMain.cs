@@ -37,7 +37,7 @@ namespace Statistic
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
-        private PanelTecViewBase tecView;
+        //private PanelTecViewBase tecView;
         private int m_prevSelectedIndex;
         private FormChangeMode.MANAGER prevStateIsAdmin;
         public static FormGraphicsSettings formGraphicsSettings;
@@ -199,6 +199,13 @@ namespace Statistic
                     else
                         arIDs = new int[] { };
 
+                    if (!(formChangeMode == null))
+                    {
+                        formChangeMode.Dispose();
+                        formChangeMode = null;
+                    }
+                    else
+                        ;
                     formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, arIDs, this.ContextMenuStrip);
                     formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
                     if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
@@ -745,44 +752,49 @@ namespace Statistic
                 ;
         }
 
+        private void addPanelTecView(TEC tec, int ti, int ci)
+        {
+            if (tec.m_bSensorsStrings == false)
+                tec.InitSensorsTEC ();
+            else
+                ;
+
+            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, ActionReport);
+            panelTecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+            tecViews.Add(panelTecView);
+        }
+
         private void сменитьРежимToolStripMenuItem_Click()
         {
             StartWait();
 
-            if (tecViews.Count == 0)
-            {
-                // создаём все tecview
-                int tec_indx = 0,
-                    comp_indx;
-                foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
-                {
-                    if (t.m_bSensorsStrings == false)
-                        t.InitSensorsTEC ();
-                    else
-                        ;
+            //if (tecViews.Count == 0)
+            //{
+            //    // создаём все tecview
+            //    int tec_indx = 0,
+            //        comp_indx;
+            //    foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
+            //    {
+            //        addPanelTecView(t, tec_indx, -1);
 
-                    tecView = new PanelTecView(t, tec_indx, -1, null, ErrorReport, ActionReport);
-                    tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                    tecViews.Add(tecView);
-                    if (t.list_TECComponents.Count > 0)
-                    {
-                        comp_indx = 0;
-                        foreach (TECComponent g in t.list_TECComponents)
-                        {
-                            tecView = new PanelTecView(t, tec_indx, comp_indx, null, ErrorReport, ActionReport);
-                            tecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-                            tecViews.Add(tecView);
-                            comp_indx++;
-                        }
-                    }
-                    else
-                        ;
+            //        if (t.list_TECComponents.Count > 0)
+            //        {
+            //            comp_indx = 0;
+            //            foreach (TECComponent g in t.list_TECComponents)
+            //            {
+            //                addPanelTecView(t, tec_indx, comp_indx);
 
-                    tec_indx++;
-                }
-            }
-            else
-                ;
+            //                comp_indx++;
+            //            }
+            //        }
+            //        else
+            //            ;
+
+            //        tec_indx++;
+            //    }
+            //}
+            //else
+            //    ;
 
             //StartWait();
             ClearTabPages ();
@@ -791,7 +803,7 @@ namespace Statistic
             int tecView_index = -1
                 , i = -1;
             //List<int> list_tecView_index_visible = new List<int>();
-            List<int> list_tecView_index_checked = new List<int>();
+            //List<int> list_tecView_index_checked = new List<int>();
             // отображаем вкладки ТЭЦ - аналог PanelCustomTecView::MenuItem_OnClick
             for (i = 0; i < formChangeMode.m_list_tec_index.Count; i++) //или TECComponent_index.Count
             {
@@ -808,9 +820,63 @@ namespace Statistic
                             ;
                     }
 
-                    if ((tecView_index < tecViews.Count))
+                    if (! (tecView_index < tecViews.Count))
+                    {//Не найден элемент - создаем, добавляем
+                        int ti = 0
+                            , ci = -1;
+
+                        foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
+                        {
+                            ci = -1;
+
+                            if ((ti == tec_index) && (ci == TECComponent_index))
+                            {
+                                addPanelTecView (t, ti, ci);
+
+                                tecView_index = tecViews.Count - 1;
+
+                                break;
+                            }
+                            else
+                                ;
+
+                            if (t.list_TECComponents.Count > 0)
+                            {
+                                ci = 0;
+                                foreach (TECComponent g in t.list_TECComponents)
+                                {
+                                    if ((ti == tec_index) && (ci == TECComponent_index))
+                                    {
+                                        addPanelTecView (t, ti, ci);
+
+                                        tecView_index = tecViews.Count - 1;
+
+                                        ti = formChangeMode.m_list_tec.Count; //Признак прерывания внешнего цикла тоже
+                                        break;
+                                    }
+                                    else
+                                        ;
+
+                                    ci++;
+                                }
+                            }
+                            else
+                                ;
+
+                            if (ti == formChangeMode.m_list_tec.Count)
+                                break;
+                            else
+                                ;
+
+                            ti++;
+                        }
+                    }
+                    else
+                        ;
+
+                    if (tecView_index < tecViews.Count)
                     {
-                        list_tecView_index_checked.Add(tecView_index);
+                        //list_tecView_index_checked.Add(tecView_index);
 
                         if ((tecViews[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;

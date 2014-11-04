@@ -153,12 +153,12 @@ namespace Statistic
 
                 public System.Windows.Forms.ToolStripMenuItem показыватьЗначенияToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem копироватьToolStripMenuItem;
-                private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
                 public System.Windows.Forms.ToolStripMenuItem параметрыПечатиToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem распечататьToolStripMenuItem;
-                private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
                 public System.Windows.Forms.ToolStripMenuItem сохранитьToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem эксельToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem источникАСКУЭToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem источникСОТИАССОToolStripMenuItem;
 
                 public HContextMenuStripZedGraph()
                 {
@@ -168,26 +168,29 @@ namespace Statistic
                 private void InitializeComponent()
                 {
                     this.показыватьЗначенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-                    this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
                     this.копироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.сохранитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.эксельToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-                    this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
                     this.параметрыПечатиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.распечататьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.источникАСКУЭToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.источникСОТИАССОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
                     // 
                     // contextMenuStrip
                     // 
                     this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
                     this.показыватьЗначенияToolStripMenuItem,
-                    this.toolStripSeparator1,
+                    new System.Windows.Forms.ToolStripSeparator(),
                     this.копироватьToolStripMenuItem,
                     this.сохранитьToolStripMenuItem,
                     this.эксельToolStripMenuItem,
-                    this.toolStripSeparator2,
+                    new System.Windows.Forms.ToolStripSeparator(),
                     this.параметрыПечатиToolStripMenuItem,
-                    this.распечататьToolStripMenuItem});
+                    this.распечататьToolStripMenuItem
+                    , new System.Windows.Forms.ToolStripSeparator()
+                    , источникАСКУЭToolStripMenuItem
+                    , источникСОТИАССОToolStripMenuItem});
                     this.Name = "contextMenuStripMins";
                     this.Size = new System.Drawing.Size(198, 148);
                     // 
@@ -198,11 +201,11 @@ namespace Statistic
                     this.показыватьЗначенияToolStripMenuItem.Text = "Показывать значения";
                     this.показыватьЗначенияToolStripMenuItem.Checked = true;
 
-                    // 
-                    // toolStripSeparator1Mins
-                    // 
-                    this.toolStripSeparator1.Name = "toolStripSeparator1Mins";
-                    this.toolStripSeparator1.Size = new System.Drawing.Size(194, 6);
+                    //// 
+                    //// toolStripSeparator1Mins
+                    //// 
+                    //this.toolStripSeparator1.Name = "toolStripSeparator1Mins";
+                    //this.toolStripSeparator1.Size = new System.Drawing.Size(194, 6);
                     // 
                     // копироватьToolStripMenuItemMins
                     // 
@@ -224,11 +227,11 @@ namespace Statistic
                     this.эксельToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.эксельToolStripMenuItem.Text = "Сохранить в MS Excel";
 
-                    // 
-                    // toolStripSeparator2Mins
-                    // 
-                    this.toolStripSeparator2.Name = "toolStripSeparator2";
-                    this.toolStripSeparator2.Size = new System.Drawing.Size(194, 6);
+                    //// 
+                    //// toolStripSeparator2Mins
+                    //// 
+                    //this.toolStripSeparator2.Name = "toolStripSeparator2";
+                    //this.toolStripSeparator2.Size = new System.Drawing.Size(194, 6);
                     // 
                     // параметрыПечатиToolStripMenuItemMins
                     // 
@@ -241,6 +244,23 @@ namespace Statistic
                     this.распечататьToolStripMenuItem.Name = "распечататьToolStripMenuItem";
                     this.распечататьToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.распечататьToolStripMenuItem.Text = "Распечатать";
+
+                    // 
+                    // источникАСКУЭToolStripMenuItem
+                    // 
+                    this.источникАСКУЭToolStripMenuItem.Name = "источникАСКУЭToolStripMenuItem";
+                    this.источникАСКУЭToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ (3 мин)";
+                    this.источникАСКУЭToolStripMenuItem.Checked = true;
+                    this.источникАСКУЭToolStripMenuItem.Enabled = false;
+                    // 
+                    // источникСОТИАССОToolStripMenuItem
+                    // 
+                    this.источникСОТИАССОToolStripMenuItem.Name = "источникСОТИАССОToolStripMenuItem";
+                    this.источникСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.источникСОТИАССОToolStripMenuItem.Text = "Источник: БД СОТИАССО (1 мин)";
+                    this.источникСОТИАССОToolStripMenuItem.Checked = false;
+                    this.источникСОТИАССОToolStripMenuItem.Enabled = false;
                 }
             }
 
@@ -291,9 +311,11 @@ namespace Statistic
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
             }
 
-            public void InitializeEventHandler(EventHandler fToExcel)
+            public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).эксельToolStripMenuItem.Click += new System.EventHandler(fToExcel);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Click += new System.EventHandler(fSourceData);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникСОТИАССОToolStripMenuItem.Click += new System.EventHandler(fSourceData);
             }
 
             private void показыватьЗначенияToolStripMenuItem_Click(object sender, EventArgs e)
@@ -530,6 +552,11 @@ namespace Statistic
             m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
 
             this.m_pnlQuickData = new PanelQuickData(); //Предвосхищая вызов 'InitializeComponent'
+            if (m_tecView.listTG == null) //m_tecView.m_tec.m_bSensorsStrings == false
+                m_tecView.m_tec.InitSensorsTEC();
+            else
+                ;
+
             foreach (TG tg in m_tecView.listTG)
             {
                 m_pnlQuickData.addTGView(ref tg.name_shr);
@@ -632,9 +659,16 @@ namespace Statistic
             else
                 ;
 
+            //Время д.б. МСК ???
             m_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
 
             initTableHourRows ();
+
+            //В зависимости от установленных признаков в контекстном меню
+            // , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
+            // , если установлен один, то обязательно снят другой
+            setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+            setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.Start();
 
@@ -1610,6 +1644,50 @@ namespace Statistic
 
         private void stctrViewPanel2_SplitterMoved(object sender, SplitterEventArgs e)
         {
+        }
+
+        private void setTypeSourceData(TG.ID_TIME indx_time, CONN_SETT_TYPE type)
+        {
+            m_tecView.m_arTypeSourceData[(int)indx_time] = type;
+        }
+
+        private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
+        {
+            if (sender.Checked == false)
+            {
+                ToolStripMenuItem itemASKUE = (ToolStripMenuItem)cms.Items[cms.Items.Count - 2] //Постоянно размещение пункта меню (2-ой снизу)
+                    , itemSOTIASSO = (ToolStripMenuItem)cms.Items[cms.Items.Count - 1]; ////Постоянно размещение пункта меню (1-ый снизу)
+
+                if (sender.Equals(itemASKUE) == true)
+                {
+                    setTypeSourceData(indx_time, CONN_SETT_TYPE.DATA_ASKUE);
+
+                    itemASKUE.Checked = true;
+                }
+                else
+                    if (sender.Equals(itemSOTIASSO) == true)
+                    {
+                        setTypeSourceData(indx_time, CONN_SETT_TYPE.DATA_SOTIASSO);
+
+                        itemASKUE.Checked = false;
+                    }
+                    else
+                        ;
+
+                itemSOTIASSO.Checked = !itemASKUE.Checked;
+            }
+            else
+                ;
+        }
+
+        protected void sourceDataMins_Click(object sender, EventArgs e)
+        {
+            sourceData_Click(m_ZedGraphMins.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.MINUTES);
+        }
+
+        protected void sourceDataHours_Click(object sender, EventArgs e)
+        {
+            sourceData_Click(m_ZedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.HOURS);
         }
     }
 }

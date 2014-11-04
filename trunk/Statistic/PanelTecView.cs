@@ -72,8 +72,8 @@ namespace Statistic
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
             this.m_ZedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
 
-            this.m_ZedGraphMins.InitializeEventHandler(this.ıêñåëüToolStripMenuItemMins_Click);
-            this.m_ZedGraphHours.InitializeEventHandler(this.ıêñåëüToolStripMenuItemHours_Click);
+            this.m_ZedGraphMins.InitializeEventHandler(this.ıêñåëüToolStripMenuItemMins_Click, this.sourceDataMins_Click);
+            this.m_ZedGraphHours.InitializeEventHandler(this.ıêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
         private void OnEventRestruct () {

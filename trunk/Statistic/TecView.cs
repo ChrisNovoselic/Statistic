@@ -32,20 +32,23 @@ namespace Statistic
         
         protected enum StatesMachine
         {
-            InitSensors,
-            CurrentTimeAdmin,
-            CurrentTimeView,
-            CurrentHours_Fact,
-            CurrentMins_Fact,
-            CurrentHours_TM_SN_PSUM,
-            Current_TM_Gen,
-            Current_TM_SN,
-            LastMinutes_TM,
+            InitSensors, //Инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
+            CurrentTimeAdmin, //время сервера, источник данных: сервер с административными значениями
+            CurrentTimeView, //время сервера, источник данных: ...
+            Hours_Fact, //указанные сутки, АСКУЭ
+            CurrentMins_Fact, //текущие сутки/час, АСКУЭ
+            Hours_TM, //указанные сутки, СОТИАССО
+            CurrentMins_TM, //текущие сутки/час, СОТИАССО
+            CurrentHours_TM_SN_PSUM, //текущие сутки для Собственные Нужды, СОТИАССО
+            LastValue_TM_Gen, //крайние значения для ГЕНЕРАЦИЯ, СОТИАССО
+            LastValue_TM_SN, //крайние значения для Собственные Нужды, СОТИАССО
+            LastMinutes_TM, //значения крайних минут часа за указанные сутки, СОТИАССО
             //RetroHours,
-            RetroMins,
+            RetroMins_Fact, //указанные сутки/час, АСКУЭ
+            RetroMins_TM, //указанные сутки/час, СОТИАССО
             AdminDates, //Получение списка сохранённых часовых значений
-            AdminValues, //Получение административных данных
             PPBRDates,
+            AdminValues, //Получение административных/ПБР значений
             PPBRValues,
         }
 
@@ -125,6 +128,7 @@ namespace Statistic
         public List <TECComponentBase> m_localTECComponents;
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
 
+        public CONN_SETT_TYPE[] m_arTypeSourceData;
         public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к
 
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
@@ -180,6 +184,8 @@ namespace Statistic
 
             m_localTECComponents = new List<TECComponentBase>();
             //tgsName = new List<System.Windows.Forms.Label>();
+
+            m_arTypeSourceData = new CONN_SETT_TYPE [(int)TG.ID_TIME.COUNT_ID_TIME];
 
             ClearStates();
         }
@@ -307,9 +313,20 @@ namespace Statistic
                 states.Add((int)StatesMachine.CurrentTimeView);
             else
                 ;
-            states.Add((int)StatesMachine.Current_TM_Gen);
-            states.Add((int)StatesMachine.CurrentHours_Fact);
-            states.Add((int)StatesMachine.CurrentMins_Fact);
+            states.Add((int)StatesMachine.LastValue_TM_Gen);
+            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+            {
+                states.Add((int)StatesMachine.Hours_Fact);
+                states.Add((int)StatesMachine.CurrentMins_Fact);
+            }
+            else
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                {
+                    states.Add((int)StatesMachine.Hours_TM);
+                    states.Add((int)StatesMachine.CurrentMins_TM);
+                }
+                else
+                    ;
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);
         }
@@ -493,7 +510,7 @@ namespace Statistic
 
             //states.Add((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             states.Add((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-            states.Add((int)TecView.StatesMachine.Current_TM_SN);
+            states.Add((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
         private void ChangeState_AdminAlarm () {
@@ -824,14 +841,16 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
                 case (int)StatesMachine.CurrentTimeView:
-                case (int)StatesMachine.CurrentHours_Fact:
+                case (int)StatesMachine.Hours_Fact:
+                case (int)StatesMachine.Hours_TM:
                 case (int)StatesMachine.CurrentMins_Fact:
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                case (int)StatesMachine.Current_TM_Gen:
-                case (int)StatesMachine.Current_TM_SN:
+                case (int)StatesMachine.LastValue_TM_Gen:
+                case (int)StatesMachine.LastValue_TM_SN:
                 case (int)StatesMachine.LastMinutes_TM:
                 //case (int)StatesMachine.RetroHours:
-                case (int)StatesMachine.RetroMins:
+                case (int)StatesMachine.RetroMins_Fact:
+                case (int)StatesMachine.RetroMins_TM:
                 case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.AdminDates:
@@ -877,8 +896,13 @@ namespace Statistic
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.CurrentHours_Fact:
+                case (int)StatesMachine.Hours_Fact:
                     reason = @"получасовых значений";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    break;
+                case (int)StatesMachine.Hours_TM:
+                    reason = @"часовых значений";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
@@ -887,16 +911,21 @@ namespace Statistic
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
+                case (int)StatesMachine.CurrentMins_TM:
+                    reason = @"1-минутных значений";
+                    waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
-                case (int)StatesMachine.Current_TM_Gen:
+                case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
-                case (int)StatesMachine.Current_TM_SN:
+                case (int)StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
                     waiting = @"Ожидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
                     break;
@@ -908,8 +937,12 @@ namespace Statistic
                 //    reason = @"получасовых значений";
                 //    waiting = @"Переход в ожидание";
                 //    break;
-                case (int)StatesMachine.RetroMins:
+                case (int)StatesMachine.RetroMins_Fact:
                     reason = @"3-х минутных значений";
+                    waiting = @"Переход в ожидание";
+                    break;
+                case (int)StatesMachine.RetroMins_TM:
+                    reason = @"1-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.PPBRDates:
@@ -977,25 +1010,35 @@ namespace Statistic
                     msg = @"текущего времени сервера";
                     GetCurrentTimeRequest();
                     break;
-                case (int)StatesMachine.CurrentHours_Fact:
+                case (int)StatesMachine.Hours_Fact:
                     msg = @"получасовых значений";
                     adminValuesReceived = false;
-                    GetHoursRequest(m_curDate.Date);
+                    GetHoursFactRequest(m_curDate.Date);
+                    break;
+                case (int)StatesMachine.Hours_TM:
+                    msg = @"часовых значений";
+                    adminValuesReceived = false;
+                    GetHoursTMRequest(m_curDate.Date);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     msg = @"трёхминутных значений";
                     adminValuesReceived = false;
-                    GetMinsRequest(lastHour);
+                    GetMinsFactRequest(lastHour);
+                    break;
+                case (int)StatesMachine.CurrentMins_TM:
+                    msg = @"1-минутных значений";
+                    adminValuesReceived = false;
+                    GetMinsTMRequest(lastHour);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     msg = @"часовых значений (собств. нужды)";
                     GetHoursTMSNPsumRequest(m_curDate.Date);
                     break;
-                case (int)StatesMachine.Current_TM_Gen:
+                case (int)StatesMachine.LastValue_TM_Gen:
                     msg = @"текущих значений (генерация)";
                     GetCurrentTMGenRequest ();
                     break;
-                case (int)StatesMachine.Current_TM_SN:
+                case (int)StatesMachine.LastValue_TM_SN:
                     msg = @"текущих значений (собств. нужды)";
                     GetCurrentTMSNRequest();
                     break;
@@ -1008,10 +1051,15 @@ namespace Statistic
                 //    adminValuesReceived = false;
                 //    GetHoursRequest(m_curDate.Date);
                 //    break;
-                case (int)StatesMachine.RetroMins:
+                case (int)StatesMachine.RetroMins_Fact:
                     msg = @"трёхминутных значений";
                     adminValuesReceived = false;
-                    GetMinsRequest(lastHour);
+                    GetMinsFactRequest(lastHour);
+                    break;
+                case (int)StatesMachine.RetroMins_TM:
+                    msg = @"1-минутных значений";
+                    adminValuesReceived = false;
+                    GetMinsTMRequest(lastHour);
                     break;
                 case (int)StatesMachine.PPBRDates:
                     msg = @"списка сохранённых часовых значений";
@@ -1093,24 +1141,31 @@ namespace Statistic
                     else
                         ;
                     break;
-                case (int)StatesMachine.CurrentHours_Fact:
+                case (int)StatesMachine.Hours_Fact:
                     ClearValues();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    bRes = GetHoursResponse(table);
+                    bRes = GetHoursFactResponse(table);
                     if (bRes == true)
                     {
                     }
                     else
                         ;
                     break;
+                case (int)StatesMachine.Hours_TM:
+                    ClearValues();
+                    bRes = GetHoursTMResponse(table);
+                    break;
                 case (int)StatesMachine.CurrentMins_Fact:
-                    bRes = GetMinsResponse(table);
+                    bRes = GetMinsFactResponse(table);
                     if (bRes == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
                     else
                         ;
+                    break;
+                case (int)StatesMachine.CurrentMins_TM:
+                    bRes = GetMinsTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     bRes = GetHoursTMSNPsumResponse(table);
@@ -1120,7 +1175,7 @@ namespace Statistic
                     else
                         ;
                     break;
-                case (int)StatesMachine.Current_TM_Gen:
+                case (int)StatesMachine.LastValue_TM_Gen:
                     bRes = GetCurrentTMGenResponse(table);
                     if (bRes == true)
                     {
@@ -1129,7 +1184,7 @@ namespace Statistic
                     else
                         ;
                     break;
-                case (int)StatesMachine.Current_TM_SN:
+                case (int)StatesMachine.LastValue_TM_SN:
                     bRes = GetCurrentTMSNResponse(table);
                     if (bRes == true)
                     {
@@ -1160,8 +1215,15 @@ namespace Statistic
                 //    else
                 //        ;
                 //    break;
-                case (int)StatesMachine.RetroMins:
-                    bRes = GetMinsResponse(table);
+                case (int)StatesMachine.RetroMins_Fact:
+                case (int)StatesMachine.RetroMins_TM:
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                        bRes = GetMinsFactResponse(table);
+                    else
+                        if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                            bRes = GetMinsTMResponse(table);
+                        else
+                            ;
                     if (bRes == true)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
@@ -1227,8 +1289,8 @@ namespace Statistic
             else ;
 
             states.Add((int)TecView.StatesMachine.CurrentTimeView);
-            states.Add((int)TecView.StatesMachine.Current_TM_Gen);
-            states.Add((int)TecView.StatesMachine.Current_TM_SN);
+            states.Add((int)TecView.StatesMachine.LastValue_TM_Gen);
+            states.Add((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
         private void ChangeState_LastMinutes () {
@@ -1266,9 +1328,21 @@ namespace Statistic
                 states.Add((int)StatesMachine.CurrentTimeView);
             }
 
-            states.Add((int)StatesMachine.CurrentHours_Fact);
-            states.Add((int)StatesMachine.CurrentMins_Fact);
-            states.Add((int)StatesMachine.Current_TM_Gen);
+            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                states.Add((int)StatesMachine.Hours_Fact);
+            else
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    states.Add((int)StatesMachine.Hours_TM);
+                else
+                    ;
+            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                states.Add((int)StatesMachine.CurrentMins_Fact);
+            else
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    states.Add((int)StatesMachine.CurrentMins_TM);
+                else
+                    ;
+            states.Add((int)StatesMachine.LastValue_TM_Gen);
             states.Add((int)StatesMachine.LastMinutes_TM);
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);
@@ -1281,8 +1355,8 @@ namespace Statistic
                 states.Add((int)StatesMachine.InitSensors);
             else ;
 
-            states.Add((int)StatesMachine.Current_TM_Gen);
-            states.Add((int)StatesMachine.Current_TM_SN);
+            states.Add((int)StatesMachine.LastValue_TM_Gen);
+            states.Add((int)StatesMachine.LastValue_TM_SN);
         }
 
         public void ChangeState()
@@ -1382,7 +1456,13 @@ namespace Statistic
 
                 ClearStates();
 
-                states.Add((int)StatesMachine.RetroMins);
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.RetroMins_Fact);
+                else
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.RetroMins_TM);
+                    else
+                        ;
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
 
@@ -2529,7 +2609,7 @@ namespace Statistic
             return table_in_restruct;
         }
 
-        private bool GetHoursResponse(DataTable table)
+        private bool GetHoursFactResponse(DataTable table)
         {
             int i, j, half = 0, hour = 0
                 , prev_season = 0, season = 0, offset_season = 0;
@@ -2870,63 +2950,12 @@ namespace Statistic
             return true;
         }
 
-        //private bool GetCurrentTMResponse(DataTable table)
-        //{
-        //    bool bRes = true;
-        //    int i = -1,
-        //        id = -1;
-        //    double value = -1;
-        //    TG tgTmp;
+        private bool GetHoursTMResponse(DataTable table)
+        {
+            bool bRes = false;
 
-        //    foreach (TECComponent g in m_tec.list_TECComponents)
-        //    {
-        //        foreach (TG t in g.m_listTG)
-        //        {
-        //            for (i = 0; i < t.power.Length; i++)
-        //            {
-        //                t.power_TM = 0;
-        //            }
-        //        }
-        //    }
-
-        //    for (i = 0; i < table.Rows.Count; i++)
-        //    {
-        //        if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-        //            return false;
-        //        else
-        //            ;
-
-        //        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
-
-        //        if (tgTmp == null)
-        //            return false;
-        //        else
-        //            ;
-
-        //        if (!(table.Rows[i]["value"] is DBNull))
-        //            if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-        //                return false;
-        //            else
-        //                ;
-        //        else
-        //            value = 0.0;
-
-        //        switch (m_tec.type())
-        //        {
-        //            case TEC.TEC_TYPE.COMMON:
-        //                break;
-        //            case TEC.TEC_TYPE.BIYSK:
-        //                //value *= 20;
-        //                break;
-        //            default:
-        //                break;
-        //        }
-
-        //        tgTmp.power_TM = value;
-        //    }
-
-        //    return bRes;
-        //}
+            return bRes;
+        }
 
         private bool GetHoursTMSNPsumResponse(DataTable table)
         {
@@ -3070,7 +3099,7 @@ namespace Statistic
             return bRes;
         }
 
-        private bool GetMinsResponse(DataTable table)
+        private bool GetMinsFactResponse(DataTable table)
         {
             int i, j = 0, min = 0;
             double minVal = 0, value;
@@ -3288,6 +3317,13 @@ namespace Statistic
             return true;
         }
 
+        private bool GetMinsTMResponse(DataTable table)
+        {
+            bool bRes = false;
+
+            return bRes;
+        }
+
         private int LayotByName(string l)
         {
             int iRes = -1;
@@ -3350,20 +3386,30 @@ namespace Statistic
             return bRes;
         }
 
-        private void GetHoursRequest(DateTime date)
+        private void GetHoursFactRequest(DateTime date)
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
         }
 
-        private void GetMinsRequest(int hour)
+        private void GetHoursTMRequest(DateTime date)
+        {
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+        }
+
+        private void GetMinsFactRequest(int hour)
         {
             //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //26.10.2014 г.
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+        }
+
+        private void GetMinsTMRequest(int hour)
+        {
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
         }
 
         private void GetHoursTMSNPsumRequest(DateTime dt)

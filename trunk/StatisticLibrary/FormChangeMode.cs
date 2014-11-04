@@ -53,6 +53,14 @@ namespace StatisticCommon
             else
                 ;
 
+            if (!(m_MainFormContextMenuStripListTecViews == null))
+            {
+                m_MainFormContextMenuStripListTecViews.ItemClicked -= new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
+                m_MainFormContextMenuStripListTecViews = null;
+            }
+            else
+                ;
+
             m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
             m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
 
@@ -351,9 +359,18 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            //Для случая с переназначением БД конфигурации
+            // ??? в этом случае текущее событие возникает ДВАЖДы
+            // во 2-м случае изменяем состояние "переключателя" на требуемое
+            if (bChecked == clbMode.GetItemChecked(indx))
+                bChecked = !bChecked;
+            else
+                ;
+
             clbMode.SetItemChecked(indx, bChecked);
 
-            btnOk_Click (null, EventArgs.Empty);
+            btnOk_Click(null, EventArgs.Empty);
         }
 
         public void SetItemChecked(int indxCheckedIndicies, bool bChecked)

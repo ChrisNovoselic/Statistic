@@ -502,7 +502,7 @@ namespace StatisticCommon
         //    return query;
         //}
 
-        private string minsCommonRequest (DateTime dt, string sen) {
+        private string minsFactCommonRequest (DateTime dt, string sen) {
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 2 + @"," +
                 //usingDate.ToString("yyyy.MM.dd") + @"," +
@@ -515,7 +515,7 @@ namespace StatisticCommon
                                 @" ORDER BY DATA_DATE";
         }
         
-        public string minsRequest(DateTime usingDate, int hour, string sensors)
+        public string minsFactRequest(DateTime usingDate, int hour, string sensors)
         {
             if (hour == 24)
                 hour = 23;
@@ -531,7 +531,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = minsCommonRequest (usingDate, sensors);
+                            request = minsFactCommonRequest (usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
@@ -558,7 +558,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = minsCommonRequest(usingDate, sensors);
+                            request = minsFactCommonRequest(usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
@@ -588,7 +588,20 @@ namespace StatisticCommon
             return request;
         }
 
-        private string hoursCommonRequest (DateTime dt, string sen) {
+        public string minsTMRequest(DateTime usingDate, int hour, string sensors)
+        {
+            if (hour == 24)
+                hour = 23;
+            else
+                ;
+
+            usingDate = usingDate.Date.AddHours(hour);
+            string request = string.Empty;
+            
+            return request;
+        }
+
+        private string hoursFactCommonRequest (DateTime dt, string sen) {
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 12 + @"," +
                                 @"'" + dt.ToString("yyyyMMdd") + @"'" + @"," +
@@ -599,7 +612,7 @@ namespace StatisticCommon
                                 @" ORDER BY DATA_DATE";
         }
         
-        public string hoursRequest(DateTime usingDate, string sensors)
+        public string hoursFactRequest(DateTime usingDate, string sensors)
         {
             string request = string.Empty;
 
@@ -609,7 +622,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = hoursCommonRequest(usingDate, sensors);
+                            request = hoursFactCommonRequest(usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
@@ -636,7 +649,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = hoursCommonRequest(usingDate, sensors);
+                            request = hoursFactCommonRequest(usingDate, sensors);
                             break;
                         case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                             //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
@@ -663,6 +676,13 @@ namespace StatisticCommon
                     request = string.Empty;
                     break;
             }
+
+            return request;
+        }
+
+        public string hoursTMRequest(DateTime usingDate, string sensors)
+        {
+            string request = string.Empty;
 
             return request;
         }
