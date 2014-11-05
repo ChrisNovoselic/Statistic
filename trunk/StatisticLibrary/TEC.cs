@@ -681,14 +681,44 @@ namespace StatisticCommon
         }
 
         public string hoursTMRequest(DateTime usingDate, string sensors)
-        {
+        {//usingDate - московское время
             string request = string.Empty;
+            DateTime dtReq;
 
-            request = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
-                            @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
-                            @"WHERE [ID_TEC] = " + m_id +
-                            @" AND [LAST_UPDATE] BETWEEN '" + usingDate.Date.ToString(@"yyyyMMdd") + @"' AND '" + usingDate.AddHours(cntHours).ToString(@"yyyyMMdd HH:00:01") + @"'" +
-                            @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
+            ////Запрос №1 по UTC, ответ по UTC
+            //dtReq = usingDate.Date.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone ());
+            //request = @"SELECT [ID], AVG ([value]) as VALUE, (DATEPART(HOUR, [last_changed_at])) as [HOUR]" +
+            //            @" FROM (" +
+            //                @"SELECT * FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
+            //                @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+            //                @" AND [last_changed_at] BETWEEN '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"' AND '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date)).ToString(@"yyyyMMdd HH:00:01") + @"'" + 
+            //            @") as S0" +
+            //            @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])" +
+            //            @" ORDER BY [HOUR]";
+
+            ////Запрос №2 по UTC, ответ по МСК
+            //dtReq = usingDate.Date.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
+            //request = @"SELECT [ID], AVG ([value]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]" +
+            //            @" FROM (" +
+            //                @"SELECT [ID], [Value], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+            //                    @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
+            //                    @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+            //                    @" AND [last_changed_at] BETWEEN '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"' AND '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date)).ToString(@"yyyyMMdd HH:00:01") + @"'" +
+            //            @") as S0" +
+            //            @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])" +
+            //            @" ORDER BY [HOUR]";
+
+            //Запрос №3 по МСК, ответ по МСК
+            dtReq = usingDate.Date;
+            request = @"SELECT [ID], AVG ([value]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]" +
+                        @" FROM (" +
+                            @"SELECT [ID], [Value],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+                                @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
+                                @" WHERE  [ID_TEC] = 5 AND [ID] IN (6262, 6325)" +
+                                @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date)).ToString(@"yyyyMMdd HH:00:01") + @"')" +
+                        @") as S0" +
+                        @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])" +
+                        @" ORDER BY [HOUR]";
 
             return request;
         }
@@ -977,19 +1007,18 @@ namespace StatisticCommon
             return query;
         }
 
-        public string hoursTMSNPsumRequest(DateTime dtReq, int cntHours)
+        public string hoursTMSNPsumRequest(DateTime dtReq)
         {
             string query = string.Empty;
-            int cntHours = HAdmin.CountHoursOfDate(dtReq);
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
                             @" FROM [dbo].[P_SUMM_TSN]" +
-                            @"WHERE [ID_TEC] = " + m_id +
-                            @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddHours(cntHours).ToString(@"yyyyMMdd HH:00:01") + @"'" +
-                            @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
+                            @" WHERE [ID_TEC] = " + m_id +
+                            @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"' AND '" + dtReq.AddHours(HAdmin.CountHoursOfDate(dtReq)).ToString(@"yyyyMMdd HH:00:01") + @"'" +
+                            @" GROUP BY DATEPART(hour,[LAST_UPDATE])";
                     break;
                 default:
                     break;

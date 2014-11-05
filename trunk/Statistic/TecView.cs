@@ -2952,7 +2952,28 @@ namespace Statistic
 
         private bool GetHoursTMResponse(DataTable table)
         {
-            bool bRes = false;
+            bool bRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"HOUR"});
+
+            int hour = -1;
+            double val = -1F;
+
+            if (bRes == true)
+                foreach (DataRow r in table.Rows)
+                {
+                    if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false)
+                        return false;
+                    else
+                        ;
+
+                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                        return false;
+                    else
+                        ;
+
+                    m_valuesHours[hour].valuesFact += val;
+                }
+            else
+                ;
 
             return bRes;
         }
