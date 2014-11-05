@@ -252,7 +252,7 @@ namespace Statistic
                     this.èñòî÷íèêÀÑÊÓİToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.èñòî÷íèêÀÑÊÓİToolStripMenuItem.Text = "Èñòî÷íèê: ÁÄ ÀÑÊÓİ (3 ìèí)";
                     this.èñòî÷íèêÀÑÊÓİToolStripMenuItem.Checked = true;
-                    this.èñòî÷íèêÀÑÊÓİToolStripMenuItem.Enabled = false;
+                    //this.èñòî÷íèêÀÑÊÓİToolStripMenuItem.Enabled = false;
                     // 
                     // èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem
                     // 
@@ -260,7 +260,7 @@ namespace Statistic
                     this.èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem.Text = "Èñòî÷íèê: ÁÄ ÑÎÒÈÀÑÑÎ (1 ìèí)";
                     this.èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem.Checked = false;
-                    this.èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem.Enabled = false;
+                    //this.èñòî÷íèêÑÎÒÈÀÑÑÎToolStripMenuItem.Enabled = false;
                 }
             }
 

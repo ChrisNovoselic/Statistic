@@ -684,6 +684,12 @@ namespace StatisticCommon
         {
             string request = string.Empty;
 
+            request = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR" +
+                            @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
+                            @"WHERE [ID_TEC] = " + m_id +
+                            @" AND [LAST_UPDATE] BETWEEN '" + usingDate.Date.ToString(@"yyyyMMdd") + @"' AND '" + usingDate.AddHours(cntHours).ToString(@"yyyyMMdd HH:00:01") + @"'" +
+                            @"GROUP BY DATEPART(hour,[LAST_UPDATE])";
+
             return request;
         }
 
@@ -974,6 +980,7 @@ namespace StatisticCommon
         public string hoursTMSNPsumRequest(DateTime dtReq, int cntHours)
         {
             string query = string.Empty;
+            int cntHours = HAdmin.CountHoursOfDate(dtReq);
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
             {

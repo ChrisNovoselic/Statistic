@@ -1104,5 +1104,16 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        public static int CountHoursOfDate (DateTime dtReq) {
+            int iRes = -1;
+
+            if (dtReq.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
+                iRes = 25;
+            else
+                iRes = 24;
+
+            return iRes;
+        }
     }
 }

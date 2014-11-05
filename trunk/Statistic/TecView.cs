@@ -3414,13 +3414,7 @@ namespace Statistic
 
         private void GetHoursTMSNPsumRequest(DateTime dt)
         {
-            int hours = -1;
-            if (m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
-                hours = 25;
-            else
-                hours = 24;
-
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate, hours));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
 
         private void GetLastMinutesTMRequest(DateTime dtReq)
