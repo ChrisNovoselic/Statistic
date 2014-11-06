@@ -348,13 +348,13 @@ namespace Statistic
         protected void Clear () {
         }
 
-        public void UpdateGraphicsCurrent()
+        public void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is PanelTecView)
                 {
-                    ((PanelTecView)ctrl).UpdateGraphicsCurrent ();
+                    ((PanelTecView)ctrl).UpdateGraphicsCurrent (type);
                 }
                 else
                     ;

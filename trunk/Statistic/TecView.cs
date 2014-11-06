@@ -844,6 +844,7 @@ namespace Statistic
                 case (int)StatesMachine.Hours_Fact:
                 case (int)StatesMachine.Hours_TM:
                 case (int)StatesMachine.CurrentMins_Fact:
+                case (int)StatesMachine.CurrentMins_TM:
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                 case (int)StatesMachine.LastValue_TM_Gen:
                 case (int)StatesMachine.LastValue_TM_SN:
@@ -1474,9 +1475,52 @@ namespace Statistic
             }
         }
 
+        private void initValuesMinLength()
+        {
+            if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE) && (! (m_valuesMins.Length == 21))) {
+                m_valuesMins = null;
+            }
+            else
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO) && (! (m_valuesMins.Length == 61))) {
+                    m_valuesMins = null;
+                }
+                else
+                    ;
+
+            if (m_valuesMins == null) {
+                int cnt = -1;
+                
+                switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES]) {
+                    case CONN_SETT_TYPE.DATA_SOTIASSO:
+                        cnt = 61;
+                        break;
+                    case CONN_SETT_TYPE.DATA_ASKUE:
+                    default:
+                        cnt = 21;
+                        break;
+                }
+
+                m_valuesMins = new valuesTEC[cnt];
+
+                //Следовательно и для ТГ требуется изменить размер массива
+                foreach (TECComponent g in m_tec.list_TECComponents)
+                {
+                    foreach (TG tg in g.m_listTG)
+                    {
+                        tg.m_powerMinutes = null;
+                        tg.m_powerMinutes = new double [cnt];
+                    }
+                }
+            }
+            else
+                ;
+        }
+
         protected void ClearValuesMins()
         {
-            for (int i = 0; i < 21; i++)
+            initValuesMinLength ();
+
+            for (int i = 0; i < m_valuesMins.Length; i++)
             {
                 if (m_valuesMins[i] == null) m_valuesMins[i] = new valuesTEC(); else ;
 
@@ -1485,6 +1529,18 @@ namespace Statistic
                 m_valuesMins[i].valuesPBR =
                 m_valuesMins[i].valuesPBRe =
                 m_valuesMins[i].valuesUDGe = 0;
+            }
+
+            //foreach (TECComponent g in m_tec.list_TECComponents)
+            foreach (TECComponent g in m_localTECComponents)
+            {
+                foreach (TG t in g.m_listTG)
+                {
+                    for (int i = 0; i < t.m_powerMinutes.Length; i++)
+                    {
+                        t.m_powerMinutes[i] = -1; //Признак НЕполучения данных
+                    }
+                }
             }
         }
 
@@ -1596,7 +1652,9 @@ namespace Statistic
 
             ClearAdminTECComponentValues(i);
 
-            for (i = 0; i < 21; i++)
+            initValuesMinLength ();
+
+            for (i = 0; i < m_valuesMins.Length; i++)
                 m_valuesMins[i].valuesDiviation =
                 m_valuesMins[i].valuesPBR =
                 m_valuesMins[i].valuesPBRe =
@@ -2243,7 +2301,6 @@ namespace Statistic
 
                 for (i = 0; i < m_valuesHours.Length; i++)
                 {
-
                     m_valuesHours[i].valuesPBR = valuesPBR[i + 1];
                     m_valuesHours[i].valuesPmin = valuesPmin[i + 1];
                     m_valuesHours[i].valuesPmax = valuesPmax[i + 1];
@@ -2293,7 +2350,7 @@ namespace Statistic
             else
                 ;
 
-            for (i = 0; i < 21; i++)
+            for (i = 0; i < m_valuesMins.Length; i++)
             {
                 //??? [hour - 1] vs [hour - 0] 26.10.2014 с учетом того, что перенесена запись '00:00' из [24] -> [0]
                 m_valuesMins[i].valuesPBR = m_valuesHours[hour - 0].valuesPBR;
@@ -2323,6 +2380,7 @@ namespace Statistic
             {
                 recomendation = m_valuesHours[hour].valuesUDGe;
                 return;
+            } else {
             }
 
             if (lastMin < 2)
@@ -2330,18 +2388,22 @@ namespace Statistic
                 recomendation = m_valuesHours[hour].valuesUDGe;
                 return;
             }
+            else {
+            }
 
             double factSum = 0;
             for (int i = 1; i < lastMin; i++)
                 factSum += m_valuesMins[i].valuesFact;
 
-            if (lastMin == 21)
+            if (lastMin == m_valuesMins.Length)
                 recomendation = 0;
             else
-                recomendation = (m_valuesHours[hour].valuesUDGe * 20 - factSum) / (20 - (lastMin - 1));
+                recomendation = (m_valuesHours[hour].valuesUDGe * (m_valuesMins.Length - 1) - factSum) / ((m_valuesMins.Length - 1) - (lastMin - 1));
 
             if (recomendation < 0)
                 recomendation = 0;
+            else
+                ;
         }
 
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
@@ -2957,23 +3019,35 @@ namespace Statistic
             int hour = -1;
             double val = -1F;
 
-            if (bRes == true)
+            if (bRes == true) {
+                bRes = table.Rows.Count > 0;
+
                 foreach (DataRow r in table.Rows)
                 {
-                    if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false)
-                        return false;
+                    if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
+                        bRes = false;
+                        break;
+                    }
                     else
                         ;
 
-                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
-                        return false;
+                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
+                        bRes = false;
+                        break;
+                    }
                     else
                         ;
 
                     m_valuesHours[hour].valuesFact += val;
                 }
+            }
             else
                 ;
+
+            if (bRes == false) {
+                lastHour = 24;
+            } else
+                lastHour = hour;
 
             return bRes;
         }
@@ -3123,7 +3197,7 @@ namespace Statistic
         private bool GetMinsFactResponse(DataTable table)
         {
             int i, j = 0, min = 0;
-            double minVal = 0, value;
+            double minuteVal = 0, value;
             TG tgTmp;
             int id;
             bool end = false;
@@ -3140,18 +3214,6 @@ namespace Statistic
                 return false;
             else
                 ;
-
-            foreach (TECComponent g in m_tec.list_TECComponents)
-            {
-                foreach (TG t in g.m_listTG)
-                {
-                    for (i = 0; i < t.m_powerMinutes.Length; i++)
-                    {
-                        t.m_powerMinutes[i] = -1; //Признак НЕполучения данных
-                        //t.receivedMin[i] = false;
-                    }
-                }
-            }
 
             lastMin = 0;
 
@@ -3231,7 +3293,7 @@ namespace Statistic
                 //else ;
             }
 
-            for (i = 0; (end == false) && (min < 21); min++)
+            for (i = 0; (end == false) && (min < m_valuesMins.Length); min++)
             {
                 //При 1-м проходе всегда == false
                 if (jump == true)
@@ -3241,12 +3303,12 @@ namespace Statistic
                 else
                 {//Всегда выполняется при 1-ом проходе
                     m_valuesMins[min].valuesFact = 0;
-                    minVal = 0;
+                    minuteVal = 0;
                 }
 
                 /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
                                  ", table.Rows.Count " + table.Rows.Count.ToString());*/
-                
+
                 //
                 jump = false;
                 for (j = 0; j < CountTG; j++, i++)
@@ -3261,8 +3323,13 @@ namespace Statistic
                     {
                         if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
                             return false;
+                        else
+                            ;
+
                         if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
                             return false;
+                        else
+                            ;
                     }
                     catch (Exception e)
                     {
@@ -3282,14 +3349,20 @@ namespace Statistic
                     {
                         break;
                     }
+                    else
+                        ;
 
                     if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
                         return false;
+                    else
+                        ;
 
                     tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
                         return false;
+                    else
+                        ;
 
                     if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value))
                         return false;
@@ -3307,7 +3380,7 @@ namespace Statistic
                             break;
                     }
 
-                    minVal += value;
+                    minuteVal += value;
                     tgTmp.m_powerMinutes[min] = value / 1000;
                     //tgTmp.receivedMin[min] = true;
                 }
@@ -3320,7 +3393,7 @@ namespace Statistic
 
                     if (end == false)
                     {
-                        m_valuesMins[min].valuesFact = minVal / 1000;
+                        m_valuesMins[min].valuesFact = minuteVal / 1000;
                         lastMin = min + 1;
                     }
                 }
@@ -3333,6 +3406,7 @@ namespace Statistic
             {
                 lastMinError = true;
                 //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
+            } else {
             }
 
             return true;
@@ -3340,7 +3414,77 @@ namespace Statistic
 
         private bool GetMinsTMResponse(DataTable table)
         {
-            bool bRes = false;
+            bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"MINUTE" });
+
+            int min = -1
+                , id = -1;
+            double val = -1F;
+            TG tgTmp = null;
+            Dictionary <int, TG> dictTG = new Dictionary<int,TG> ();
+
+            if (bRes == true)
+            {
+                bRes = table.Rows.Count > 0;
+
+                foreach (DataRow r in table.Rows)
+                {
+                    if (Int32.TryParse(r[@"MINUTE"].ToString(), out min) == false)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    tgTmp = null;
+                    if (dictTG.ContainsKey (id) == false) {
+                        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+
+                        if (! (tgTmp == null))
+                            dictTG.Add (id, tgTmp);
+                        else
+                            ;
+                    }
+                    else
+                        tgTmp = dictTG [id];
+
+                    if (tgTmp == null)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    tgTmp.m_powerMinutes [min] = val;
+                    m_valuesMins [min].valuesFact += val;
+                }
+            }
+            else
+                ;
+
+            if (bRes == false)
+            {
+                lastMin = 60;
+            }
+            else
+                lastMin = min + 1;
 
             return bRes;
         }
@@ -3416,7 +3560,7 @@ namespace Statistic
 
         private void GetHoursTMRequest(DateTime date)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS)));
         }
 
         private void GetMinsFactRequest(int hour)
@@ -3430,7 +3574,7 @@ namespace Statistic
 
         private void GetMinsTMRequest(int hour)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
         }
 
         private void GetHoursTMSNPsumRequest(DateTime dt)

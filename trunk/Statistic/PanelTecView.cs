@@ -267,7 +267,7 @@ namespace Statistic
                     double res_double;
                     int res_int;
 
-                    for (int i = 0; i < 21; i++)
+                    for (int i = 0; i < m_dgwMins.Rows.Count; i++)
                     {
                         valid = int.TryParse((string)m_dgwMins.Rows[i].Cells[0].Value, out res_int);
                         if (valid)

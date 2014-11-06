@@ -171,7 +171,7 @@ namespace Statistic
             }
         }
 
-        public void UpdateGraphicsCurrent()
+        public void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ctrl in this.Controls)
             {
@@ -545,13 +545,13 @@ namespace Statistic
 
                 pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
 
-                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
                     BarItem curve1 = pane.AddBar("Мощность", null, valuesTMSNPsum, FormMain.formGraphicsSettings.pColor);
                 }
                 else
                 {
-                    if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                    if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                     {
                         int valuescount;
 

@@ -150,7 +150,6 @@ namespace Statistic
             // контекстные меню
             private class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
             {
-
                 public System.Windows.Forms.ToolStripMenuItem показыватьЗначенияToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem копироватьToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem параметрыПечатиToolStripMenuItem;
@@ -250,7 +249,7 @@ namespace Statistic
                     // 
                     this.источникАСКУЭToolStripMenuItem.Name = "источникАСКУЭToolStripMenuItem";
                     this.источникАСКУЭToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-                    this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ (3 мин)";
+                    this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3 мин";
                     this.источникАСКУЭToolStripMenuItem.Checked = true;
                     //this.источникАСКУЭToolStripMenuItem.Enabled = false;
                     // 
@@ -258,13 +257,17 @@ namespace Statistic
                     // 
                     this.источникСОТИАССОToolStripMenuItem.Name = "источникСОТИАССОToolStripMenuItem";
                     this.источникСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-                    this.источникСОТИАССОToolStripMenuItem.Text = "Источник: БД СОТИАССО (1 мин)";
+                    this.источникСОТИАССОToolStripMenuItem.Text = "Источник: БД СОТИАССО - 1 мин";
                     this.источникСОТИАССОToolStripMenuItem.Checked = false;
                     //this.источникСОТИАССОToolStripMenuItem.Enabled = false;
                 }
             }
 
             private object m_lockValue;
+
+            public string SourceDataText {
+                get { return ((((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Checked == true) ? ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Text : ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 1]).Text); }
+            }
 
             public HZedGraphControl(object lockVal)
             {
@@ -384,7 +387,13 @@ namespace Statistic
 
             public string XScaleFormatEvent(GraphPane pane, Axis axis, double val, int index)
             {
-                return ((val) * 3).ToString();
+                int diskretnost = -1;
+                if (pane.CurveList.Count > 0)
+                    diskretnost = 60 / pane.CurveList[0].Points.Count;
+                else
+                    diskretnost = 60 / 20;
+
+                return ((val) * diskretnost).ToString();
             }
         }
 
@@ -571,6 +580,17 @@ namespace Statistic
             else
                 ;
 
+            //??? Алгоритм д.б. следующим:
+            // 1) FormMain.formGraphicsSettings.m_connSettType_SourceData = 
+            // 2) в соответствии с п. 1 присвоить значения пунктам меню
+            // 3) в соответствии с п. 2 присвоить значения m_tecView.m_arTypeSourceData[...
+            if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE)
+                m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = 
+                    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_ASKUE;
+            else
+                m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] =
+                    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+
             isActive = false;
 
             update = false;
@@ -580,21 +600,24 @@ namespace Statistic
 
         private void FillDefaultMins()
         {
-            for (int i = 0; i < 20; i++)
+            int cnt = m_dgwMins.Rows.Count - 1
+                , diskretnost = 60 / cnt;
+
+            for (int i = 0; i < cnt; i++)
             {
-                this.m_dgwMins.Rows[i].Cells[0].Value = ((i + 1) * 3).ToString();
+                this.m_dgwMins.Rows[i].Cells[0].Value = ((i + 1) * diskretnost).ToString();
                 this.m_dgwMins.Rows[i].Cells[1].Value = 0.ToString("F2");
                 this.m_dgwMins.Rows[i].Cells[2].Value = 0.ToString("F2");
                 this.m_dgwMins.Rows[i].Cells[3].Value = 0.ToString("F2");
                 this.m_dgwMins.Rows[i].Cells[4].Value = 0.ToString("F2");
                 this.m_dgwMins.Rows[i].Cells[5].Value = 0.ToString("F2");
             }
-            this.m_dgwMins.Rows[20].Cells[0].Value = "Итог";
-            this.m_dgwMins.Rows[20].Cells[1].Value = 0.ToString("F2");
-            this.m_dgwMins.Rows[20].Cells[2].Value = "-";
-            this.m_dgwMins.Rows[20].Cells[3].Value = "-";
-            this.m_dgwMins.Rows[20].Cells[4].Value = 0.ToString("F2");
-            this.m_dgwMins.Rows[20].Cells[5].Value = 0.ToString("F2");
+            this.m_dgwMins.Rows[cnt].Cells[0].Value = "Итог";
+            this.m_dgwMins.Rows[cnt].Cells[1].Value = 0.ToString("F2");
+            this.m_dgwMins.Rows[cnt].Cells[2].Value = "-";
+            this.m_dgwMins.Rows[cnt].Cells[3].Value = "-";
+            this.m_dgwMins.Rows[cnt].Cells[4].Value = 0.ToString("F2");
+            this.m_dgwMins.Rows[cnt].Cells[5].Value = 0.ToString("F2");
         }
 
         private void FillDefaultHours()
@@ -663,12 +686,14 @@ namespace Statistic
             m_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
 
             initTableHourRows ();
+            //initTableMinRows ();
 
-            //В зависимости от установленных признаков в контекстном меню
-            // , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
-            // , если установлен один, то обязательно снят другой
-            setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
-            setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+            ////??? Перенос в 'Activate'
+            ////В зависимости от установленных признаков в контекстном меню
+            //// , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
+            //// , если установлен один, то обязательно снят другой
+            //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+            //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.Start();
 
@@ -682,8 +707,9 @@ namespace Statistic
             update = false;
             SetNowDate(true);
 
-            DrawGraphMins(0);
-            DrawGraphHours();
+            //??? Отображение графиков по 'Activate (true)'
+            //DrawGraphMins(0);
+            //DrawGraphHours();
         }
 
         public override void Stop()
@@ -709,6 +735,19 @@ namespace Statistic
             {
                 m_dgwHours.InitRows(25, true);
             }
+        }
+
+        protected void initTableMinRows()
+        {
+            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                m_dgwMins.InitRows (21, false);
+            else
+                if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    m_dgwMins.InitRows (61, true);
+                else
+                    ;
+
+            FillDefaultMins ();
         }
 
         private void updateGUI_TM_Gen()
@@ -807,22 +846,24 @@ namespace Statistic
                     m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleCommon;
                 }
             }
+
+            int cnt = m_dgwMins.Rows.Count - 1;
             if (min <= 0)
             {
-                m_dgwMins.Rows[20].Cells[1].Value = 0.ToString("F2");
-                m_dgwMins.Rows[20].Cells[4].Value = 0.ToString("F2");
-                m_dgwMins.Rows[20].Cells[5].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[1].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[4].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[5].Value = 0.ToString("F2");
             }
             else
             {
-                if (min > 20)
-                    min = 20;
+                if (min > cnt)
+                    min = cnt;
                 else
                     ;
 
-                m_dgwMins.Rows[20].Cells[1].Value = (sumFact / min).ToString("F2");
-                m_dgwMins.Rows[20].Cells[4].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
-                m_dgwMins.Rows[20].Cells[5].Value = (sumDiviation / min).ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[1].Value = (sumFact / min).ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[4].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[5].Value = (sumDiviation / min).ToString("F2");
             }
 
             setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
@@ -1129,7 +1170,17 @@ namespace Statistic
                 {
                     currValuesPeriod = 0;
 
-                    ChangeState();
+                    ////??? Перенос в 'Activate'
+                    ////??? Перенос в 'enabledDataSource_...'
+                    ////В зависимости от установленных признаков в контекстном меню
+                    //// , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
+                    //// , если установлен один, то обязательно снят другой
+                    //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+                    //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+                    if (enabledSourceData_ToolStripMenuItems() == false)
+                        ChangeState();
+                    else
+                        ;
 
                     //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
 
@@ -1226,7 +1277,8 @@ namespace Statistic
 
             pane.CurveList.Clear();
 
-            int itemscount = 20;
+            int itemscount = m_tecView.m_valuesMins.Length - 1
+                , diskretnost = 60 / itemscount;
 
             string[] names = new string[itemscount];
 
@@ -1249,10 +1301,15 @@ namespace Statistic
             double minimum = double.MaxValue, minimum_scale;
             double maximum = 0, maximum_scale;
             bool noValues = true;
+            int iName = -1;
 
             for (int i = 0; i < itemscount; i++)
             {
-                names[i] = ((i + 1) * 3).ToString();
+                iName = ((i + 1) * diskretnost);
+                if (iName % 3 == 0)
+                    names[i] = iName.ToString();
+                else
+                    names[i] = string.Empty;
                 //valuesPDiviation[i] = m_valuesMins.valuesUDGe[i] + m_valuesMins.valuesDiviation[i];
                 //valuesODiviation[i] = m_valuesMins.valuesUDGe[i] - m_valuesMins.valuesDiviation[i];
 
@@ -1352,7 +1409,7 @@ namespace Statistic
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
             //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
-            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
                 BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
 
@@ -1360,7 +1417,7 @@ namespace Statistic
             }
             else
             {
-                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     if (m_tecView.lastMin > 1)
                     {
@@ -1407,10 +1464,12 @@ namespace Statistic
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + " час";
 
+            pane.Title.Text += @" (" + m_ZedGraphMins.SourceDataText + @")";
+
             pane.XAxis.Scale.Min = 0.5;
-            pane.XAxis.Scale.Max = 20.5;
+            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
             pane.XAxis.Scale.MinorStep = 1;
-            pane.XAxis.Scale.MajorStep = 1;
+            pane.XAxis.Scale.MajorStep = itemscount / 20;
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1443,7 +1502,6 @@ namespace Statistic
             // толщина линий
             pane.YAxis.MinorGrid.PenWidth = 0.1F;
             pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
-
 
             // Устанавливаем интересующий нас интервал по оси Y
             pane.YAxis.Scale.Min = minimum_scale;
@@ -1516,19 +1574,29 @@ namespace Statistic
 
                 if (maximum < valuesPDiviation[i])
                     maximum = valuesPDiviation[i];
+                else
+                    ;
 
                 if (maximum < valuesODiviation[i])
                     maximum = valuesODiviation[i];
+                else
+                    ;
 
                 if (maximum < valuesUDGe[i])
                     maximum = valuesUDGe[i];
+                else
+                    ;
 
                 if (maximum < valuesFact[i])
                     maximum = valuesFact[i];
+                else
+                    ;
             }
 
             if (!(FormMain.formGraphicsSettings.scale == true))
                 minimum = 0;
+            else
+                ;
 
             if (noValues)
             {
@@ -1557,13 +1625,13 @@ namespace Statistic
             LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
             LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
 
-            if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
                 BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
             }
             else
             {
-                if (FormMain.formGraphicsSettings.graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     int valuescount;
 
@@ -1586,7 +1654,9 @@ namespace Statistic
             pane.XAxis.Type = AxisType.Text;
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
-            pane.Title.Text = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+            pane.Title.Text = "Мощность (" +
+            m_ZedGraphHours.SourceDataText  +
+            @") на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1629,12 +1699,79 @@ namespace Statistic
             m_ZedGraphHours.Invalidate();
         }
 
-        public void UpdateGraphicsCurrent()
+        private bool enabledSourceData_ToolStripMenuItems () {
+            bool [] arRes = new bool [] {false, false};
+
+            if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
+                //Пункты меню доступны для выбора
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled = 
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = true;
+
+                //оставить "как есть", но изменить источник данных при найденном НЕсоответствии
+            } else {
+                //Пункты меню НЕдоступны для выбора
+                //Принудительно установить источник данных
+                if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == FormMain.formGraphicsSettings.m_connSettType_SourceData)) {
+                    m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+
+                    arRes [(int)TG.ID_TIME.MINUTES] = true;
+                } else {
+                }
+
+                if (!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
+                {
+                    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+
+                    arRes[(int)TG.ID_TIME.HOURS] = true;
+                }
+                else
+                {
+                }
+
+                if (arRes[(int)TG.ID_TIME.MINUTES] == true) {
+                    initTableMinRows ();
+                    
+                    if (((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
+                        ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).PerformClick ();
+                    else
+                        if (((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Checked == true)
+                            ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).PerformClick ();
+                        else
+                            ;
+                }
+                else ;
+
+                if (arRes[(int)TG.ID_TIME.HOURS] == true)
+                    if (((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
+                        ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).PerformClick();
+                    else
+                        if (((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Checked == true)
+                            ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).PerformClick();
+                        else
+                            ;
+                else ;
+
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = false;
+            }
+
+            return arRes[(int)TG.ID_TIME.MINUTES] || arRes[(int)TG.ID_TIME.HOURS];
+        }
+
+        public void UpdateGraphicsCurrent(int type)
         {
             lock (m_tecView.m_lockValue)
             {
-                DrawGraphMins(m_tecView.lastHour);
-                DrawGraphHours();
+                if (enabledSourceData_ToolStripMenuItems () == false) {
+                    DrawGraphMins(m_tecView.lastHour);
+                    DrawGraphHours();
+                } else {
+                    NewDateRefresh ();
+                }
             }
         }
 
@@ -1646,11 +1783,6 @@ namespace Statistic
         {
         }
 
-        private void setTypeSourceData(TG.ID_TIME indx_time, CONN_SETT_TYPE type)
-        {
-            m_tecView.m_arTypeSourceData[(int)indx_time] = type;
-        }
-
         private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
         {
             if (sender.Checked == false)
@@ -1660,14 +1792,14 @@ namespace Statistic
 
                 if (sender.Equals(itemASKUE) == true)
                 {
-                    setTypeSourceData(indx_time, CONN_SETT_TYPE.DATA_ASKUE);
+                    m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE;
 
                     itemASKUE.Checked = true;
                 }
                 else
                     if (sender.Equals(itemSOTIASSO) == true)
                     {
-                        setTypeSourceData(indx_time, CONN_SETT_TYPE.DATA_SOTIASSO);
+                        m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_SOTIASSO;
 
                         itemASKUE.Checked = false;
                     }
@@ -1678,6 +1810,19 @@ namespace Statistic
             }
             else
                 ;
+
+            if (indx_time == TG.ID_TIME.MINUTES)
+                initTableMinRows ();
+            else
+                ;
+
+            NewDateRefresh();
+
+            //if (enabledSourceData_ToolStripMenuItems () == true) {
+            //    NewDateRefresh ();
+            //}
+            //else
+            //    ;
         }
 
         protected void sourceDataMins_Click(object sender, EventArgs e)

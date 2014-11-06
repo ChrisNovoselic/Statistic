@@ -13,6 +13,11 @@ namespace Statistic
 {
     public partial class FormGraphicsSettings : Form
     {
+        public enum TYPE_UPDATEGUI
+        {
+            SCALE, LINEAR, COLOR, SOURCE_DATA
+        , COUNT_TYPE_UPDATEGUI };
+
         public Color udgColor;
         public Color divColor;
         public Color pColor;
@@ -20,8 +25,9 @@ namespace Statistic
         public Color bgColor;
         public Color gridColor;
         public bool scale;
-        public GraphTypes graphTypes;
-        private DelegateFunc delegateUpdateActiveGui;
+        public GraphTypes m_graphTypes;
+        public CONN_SETT_TYPE m_connSettType_SourceData;
+        private DelegateIntFunc delegateUpdateActiveGui;
         private DelegateFunc delegateHideGraphicsSettings;
         private FormMain mainForm;
 
@@ -31,7 +37,7 @@ namespace Statistic
             Bar,
         }
 
-        public FormGraphicsSettings(FormMain mf, DelegateFunc delUp, DelegateFunc Hide)
+        public FormGraphicsSettings(FormMain mf, DelegateIntFunc delUp, DelegateFunc Hide)
         {
             InitializeComponent();
 
@@ -65,13 +71,14 @@ namespace Statistic
             lblGRIDcolor.BackColor = gridColor;
             lblGRIDcolor.ForeColor = Color.FromArgb((gridColor.R + 128) % 256, (gridColor.G + 128) % 256, (gridColor.B + 128) % 256);
 
-            graphTypes = GraphTypes.Bar;
+            m_graphTypes = GraphTypes.Bar; //Гистограмма
+            m_connSettType_SourceData = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; //Выборочно
         }
 
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
         {
             scale = cbxScale.Checked;
-            delegateUpdateActiveGui();
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SCALE);
         }
 
         private void lblUDGcolor_Click(object sender, EventArgs e)
@@ -83,7 +90,7 @@ namespace Statistic
                 udgColor = cd.Color;
                 lblUDGcolor.BackColor = udgColor;
                 lblUDGcolor.ForeColor = Color.FromArgb((udgColor.R + 128) % 256, (udgColor.G + 128) % 256, (udgColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -96,7 +103,7 @@ namespace Statistic
                 divColor = cd.Color;
                 lblDIVcolor.BackColor = divColor;
                 lblDIVcolor.ForeColor = Color.FromArgb((divColor.R + 128) % 256, (divColor.G + 128) % 256, (divColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -109,7 +116,7 @@ namespace Statistic
                 pColor = cd.Color;
                 lblPcolor.BackColor = pColor;
                 lblPcolor.ForeColor = Color.FromArgb((pColor.R + 128) % 256, (pColor.G + 128) % 256, (pColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -122,7 +129,7 @@ namespace Statistic
                 recColor = cd.Color;
                 lblRECcolor.BackColor = recColor;
                 lblRECcolor.ForeColor = Color.FromArgb((recColor.R + 128) % 256, (recColor.G + 128) % 256, (recColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -135,7 +142,7 @@ namespace Statistic
                 bgColor = cd.Color;
                 lblBGcolor.BackColor = bgColor;
                 lblBGcolor.ForeColor = Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -148,7 +155,7 @@ namespace Statistic
                 gridColor = cd.Color;
                 lblGRIDcolor.BackColor = gridColor;
                 lblGRIDcolor.ForeColor = Color.FromArgb((gridColor.R + 128) % 256, (gridColor.G + 128) % 256, (gridColor.B + 128) % 256);
-                delegateUpdateActiveGui();
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
 
@@ -165,12 +172,31 @@ namespace Statistic
 
         private void rbtnLine_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbtnBar.Checked)
-                graphTypes = GraphTypes.Bar;
-            if (rbtnLine.Checked)
-                graphTypes = GraphTypes.Linear;
+            if (rbtnBar.Checked == true)
+                m_graphTypes = GraphTypes.Bar;
+            else
+                if (rbtnLine.Checked == true)
+                    m_graphTypes = GraphTypes.Linear;
+                else
+                    ;
 
-            delegateUpdateActiveGui();
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);
+        }
+
+        private void rbtnSourceData_COSTUMIZE_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbtnSourceData_ASKUE.Checked == true)
+                m_connSettType_SourceData = CONN_SETT_TYPE.DATA_ASKUE;
+            else
+                if (rbtnSourceData_SOTIASSO.Checked == true)
+                    m_connSettType_SourceData = CONN_SETT_TYPE.DATA_SOTIASSO;
+                else
+                    if (rbtnSourceData_COSTUMIZE.Checked == true)
+                        m_connSettType_SourceData = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                    else
+                        ;
+
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA);
         }
     }
 }

@@ -574,7 +574,7 @@ namespace StatisticTrans
 
         protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
 
-        protected override void UpdateActiveGui() {}
+        protected override void UpdateActiveGui(int type) {}
         protected override void HideGraphicsSettings() { }
 
         protected void InitializeComponentTransSrc(string text)

@@ -595,9 +595,24 @@ namespace StatisticCommon
             else
                 ;
 
-            usingDate = usingDate.Date.AddHours(hour);
+            DateTime dtReq = usingDate.Date.AddHours(hour);
             string request = string.Empty;
-            
+
+            request = @"SELECT [ID]," +
+	            //--AVG ([value]) as VALUE
+	            @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
+	            @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]" +
+	            @" FROM (" +
+		            //--Привести дату/время к МСК (добавить разность с UTC)
+		            @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+                        @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
+                        @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                        @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).ToString(@"yyyyMMdd HH:00:01") + @"')" +
+	            @") as S0" +
+	            @" GROUP BY S0.[ID], DATEPART(MINUTE, S0.[last_changed_at])" +
+	            @" ORDER BY [MINUTE]";
+
             return request;
         }
 
@@ -714,7 +729,7 @@ namespace StatisticCommon
                         @" FROM (" +
                             @"SELECT [ID], [Value],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
                                 @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
-                                @" WHERE  [ID_TEC] = 5 AND [ID] IN (6262, 6325)" +
+                                @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
                                 @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date)).ToString(@"yyyyMMdd HH:00:01") + @"')" +
                         @") as S0" +
                         @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])" +
