@@ -3472,8 +3472,14 @@ namespace Statistic
                     else
                         ;
 
-                    tgTmp.m_powerMinutes [min] = val;
-                    m_valuesMins [min].valuesFact += val;
+                    //Отладка ???
+                    if (!(val > 0))
+                        val = 0F;
+                    else
+                        ;
+
+                    tgTmp.m_powerMinutes [min + 1] = val;
+                    m_valuesMins [min + 1].valuesFact += val;
                 }
             }
             else
@@ -3481,10 +3487,67 @@ namespace Statistic
 
             if (bRes == false)
             {
-                lastMin = 60;
+                lastMin = 61;
             }
             else
-                lastMin = min + 1;
+            {
+                lastMin = ++min + 1;
+
+                int m = -1
+                    , c = -1
+                    , t = -1;
+                for (m = min; !(m < 0); m--)
+                {
+                    c = 0;
+                    foreach (TECComponent comp in m_localTECComponents)
+                    {
+                        t = 0;
+                        foreach (TG tg in comp.m_listTG) {
+                            if (tg.m_powerMinutes[m] < 0)
+                            {
+                                lastMin--;
+                                break;
+                            }
+                            else ;
+
+                            t ++;
+                        }
+
+                        //Проверка досрочного прерывания цикла
+                        if (t < comp.m_listTG.Count)
+                        {//Внешний цикл тоже прерываем
+                            break;
+                        }
+                        else ;
+
+                        c++;
+                    }
+
+                    //Проверка досрочного прерывания цикла
+                    if (c < m_localTECComponents.Count)
+                    {//Уменьшено значение 'lastMin'
+                        m_valuesMins[m].valuesFact = 0F;
+                        
+                        //Установить для всех ТГ для этой мин признак отсутствия данных
+                        c = 0;
+                        foreach (TECComponent comp in m_localTECComponents)
+                        {
+                            t = 0;
+                            foreach (TG tg in comp.m_listTG) {
+                                tg.m_powerMinutes[m] = -1;
+
+                                t ++;
+                            }
+
+                            c++;
+                        }
+
+                        continue; //Перейти к предыдущему набору значений
+                    }
+                    else
+                        break; //За эту мин. ПОЛНые данные, прекратить цикл
+                }
+            }
 
             return bRes;
         }
