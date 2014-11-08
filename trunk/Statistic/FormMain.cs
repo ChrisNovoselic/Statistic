@@ -221,7 +221,7 @@ namespace Statistic
                         ;
                 }
                 else
-                    ;
+                    сменитьРежимToolStripMenuItem.Enabled = false;
             }
             else
             {

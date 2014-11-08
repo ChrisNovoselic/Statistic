@@ -18,6 +18,12 @@ namespace Statistic
             SCALE, LINEAR, COLOR, SOURCE_DATA
         , COUNT_TYPE_UPDATEGUI };
 
+        private enum CONN_SETT_TYPE {
+            ASKUE, SOTIASSO, COSTUMIZE
+            , COUNT_CONN_SETT_TYPE
+        };
+        HMark m_markSourceData;
+
         public Color udgColor;
         public Color divColor;
         public Color pColor;
@@ -26,7 +32,7 @@ namespace Statistic
         public Color gridColor;
         public bool scale;
         public GraphTypes m_graphTypes;
-        public CONN_SETT_TYPE m_connSettType_SourceData;
+        public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
         private DelegateIntFunc delegateUpdateActiveGui;
         private DelegateFunc delegateHideGraphicsSettings;
         private FormMain mainForm;
@@ -46,6 +52,10 @@ namespace Statistic
             mainForm = mf;
 
             scale = false;
+            m_markSourceData = new HMark();
+            m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
+
+            checkedSourceData();
 
             udgColor = Color.FromArgb(0, 0, 0);
             lblUDGcolor.BackColor = udgColor;
@@ -72,7 +82,14 @@ namespace Statistic
             lblGRIDcolor.ForeColor = Color.FromArgb((gridColor.R + 128) % 256, (gridColor.G + 128) % 256, (gridColor.B + 128) % 256);
 
             m_graphTypes = GraphTypes.Bar; //Гистограмма
-            m_connSettType_SourceData = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; //Выборочно
+            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; //Выборочно
+        }
+
+        private void checkedSourceData()
+        {
+            rbtnSourceData_ASKUE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
+            rbtnSourceData_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO);
+            rbtnSourceData_COSTUMIZE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
         }
 
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
@@ -183,20 +200,61 @@ namespace Statistic
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);
         }
 
-        private void rbtnSourceData_COSTUMIZE_CheckedChanged(object sender, EventArgs e)
+        private void rbtnSourceData_Click()
         {
+            checkedSourceData();
+
             if (rbtnSourceData_ASKUE.Checked == true)
-                m_connSettType_SourceData = CONN_SETT_TYPE.DATA_ASKUE;
+                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
             else
                 if (rbtnSourceData_SOTIASSO.Checked == true)
-                    m_connSettType_SourceData = CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
                 else
                     if (rbtnSourceData_COSTUMIZE.Checked == true)
-                        m_connSettType_SourceData = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
                     else
                         ;
 
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA);
+        }
+
+        private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)
+        {
+            if (rbtnSourceData_ASKUE.Checked == false)
+            {
+                m_markSourceData.UnMarked();
+                m_markSourceData.Marked((int)CONN_SETT_TYPE.ASKUE);
+
+                rbtnSourceData_Click();
+            }
+            else
+                ;
+        }
+
+        private void rbtnSourceData_SOTIASSO_Click(object sender, EventArgs e)
+        {
+            if (rbtnSourceData_SOTIASSO.Checked == false)
+            {
+                m_markSourceData.UnMarked();
+                m_markSourceData.Marked((int)CONN_SETT_TYPE.SOTIASSO);
+
+                rbtnSourceData_Click();
+            }
+            else
+                ;
+        }
+
+        private void rbtnSourceData_COSTUMIZE_Click(object sender, EventArgs e)
+        {
+            if (rbtnSourceData_COSTUMIZE.Checked == false)
+            {
+                m_markSourceData.UnMarked();
+                m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
+
+                rbtnSourceData_Click();
+            }
+            else
+                ;
         }
     }
 }

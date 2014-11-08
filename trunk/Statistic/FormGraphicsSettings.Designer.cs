@@ -39,9 +39,9 @@ namespace Statistic
             this.lblBGcolor = new System.Windows.Forms.Label();
             this.lblGRIDcolor = new System.Windows.Forms.Label();
             this.groupBoxSourceData = new System.Windows.Forms.GroupBox();
+            this.rbtnSourceData_COSTUMIZE = new System.Windows.Forms.RadioButton();
             this.rbtnSourceData_ASKUE = new System.Windows.Forms.RadioButton();
             this.rbtnSourceData_SOTIASSO = new System.Windows.Forms.RadioButton();
-            this.rbtnSourceData_COSTUMIZE = new System.Windows.Forms.RadioButton();
             this.gbxType.SuspendLayout();
             this.groupBoxSourceData.SuspendLayout();
             this.SuspendLayout();
@@ -175,28 +175,9 @@ namespace Statistic
             this.groupBoxSourceData.TabStop = false;
             this.groupBoxSourceData.Text = "»ÒÚÓ˜ÌËÍË ‰‡ÌÌ˚ı „‡ÙËÍÓ‚";
             // 
-            // rbtnSourceData_ASKUE
-            // 
-            this.rbtnSourceData_ASKUE.AutoSize = true;
-            this.rbtnSourceData_ASKUE.Location = new System.Drawing.Point(6, 19);
-            this.rbtnSourceData_ASKUE.Name = "rbtnSourceData_ASKUE";
-            this.rbtnSourceData_ASKUE.Size = new System.Drawing.Size(61, 17);
-            this.rbtnSourceData_ASKUE.TabIndex = 1;
-            this.rbtnSourceData_ASKUE.Text = "¿— ”›";
-            this.rbtnSourceData_ASKUE.UseVisualStyleBackColor = true;
-            // 
-            // rbtnSourceData_SOTIASSO
-            // 
-            this.rbtnSourceData_SOTIASSO.AutoSize = true;
-            this.rbtnSourceData_SOTIASSO.Location = new System.Drawing.Point(6, 46);
-            this.rbtnSourceData_SOTIASSO.Name = "rbtnSourceData_SOTIASSO";
-            this.rbtnSourceData_SOTIASSO.Size = new System.Drawing.Size(84, 17);
-            this.rbtnSourceData_SOTIASSO.TabIndex = 0;
-            this.rbtnSourceData_SOTIASSO.Text = "—Œ“»¿——Œ";
-            this.rbtnSourceData_SOTIASSO.UseVisualStyleBackColor = true;
-            // 
             // rbtnSourceData_COSTUMIZE
             // 
+            this.rbtnSourceData_COSTUMIZE.AutoCheck = false;
             this.rbtnSourceData_COSTUMIZE.AutoSize = true;
             this.rbtnSourceData_COSTUMIZE.Checked = true;
             this.rbtnSourceData_COSTUMIZE.Location = new System.Drawing.Point(6, 74);
@@ -206,7 +187,31 @@ namespace Statistic
             this.rbtnSourceData_COSTUMIZE.TabStop = true;
             this.rbtnSourceData_COSTUMIZE.Text = "‚˚·ÓÓ˜ÌÓ";
             this.rbtnSourceData_COSTUMIZE.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_COSTUMIZE.CheckedChanged += new System.EventHandler(this.rbtnSourceData_COSTUMIZE_CheckedChanged);
+            this.rbtnSourceData_COSTUMIZE.Click += new System.EventHandler(this.rbtnSourceData_COSTUMIZE_Click);
+            // 
+            // rbtnSourceData_ASKUE
+            // 
+            this.rbtnSourceData_ASKUE.AutoCheck = false;
+            this.rbtnSourceData_ASKUE.AutoSize = true;
+            this.rbtnSourceData_ASKUE.Location = new System.Drawing.Point(6, 19);
+            this.rbtnSourceData_ASKUE.Name = "rbtnSourceData_ASKUE";
+            this.rbtnSourceData_ASKUE.Size = new System.Drawing.Size(61, 17);
+            this.rbtnSourceData_ASKUE.TabIndex = 1;
+            this.rbtnSourceData_ASKUE.Text = "¿— ”›";
+            this.rbtnSourceData_ASKUE.UseVisualStyleBackColor = true;
+            this.rbtnSourceData_ASKUE.Click += new System.EventHandler(this.rbtnSourceData_ASKUE_Click);
+            // 
+            // rbtnSourceData_SOTIASSO
+            // 
+            this.rbtnSourceData_SOTIASSO.AutoCheck = false;
+            this.rbtnSourceData_SOTIASSO.AutoSize = true;
+            this.rbtnSourceData_SOTIASSO.Location = new System.Drawing.Point(6, 46);
+            this.rbtnSourceData_SOTIASSO.Name = "rbtnSourceData_SOTIASSO";
+            this.rbtnSourceData_SOTIASSO.Size = new System.Drawing.Size(84, 17);
+            this.rbtnSourceData_SOTIASSO.TabIndex = 0;
+            this.rbtnSourceData_SOTIASSO.Text = "—Œ“»¿——Œ";
+            this.rbtnSourceData_SOTIASSO.UseVisualStyleBackColor = true;
+            this.rbtnSourceData_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO_Click);
             // 
             // FormGraphicsSettings
             // 

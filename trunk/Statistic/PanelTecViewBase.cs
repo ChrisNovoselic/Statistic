@@ -1177,10 +1177,11 @@ namespace Statistic
                     //// , если установлен один, то обязательно снят другой
                     //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
                     //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
-                    if (enabledSourceData_ToolStripMenuItems() == false)
-                        ChangeState();
-                    else
-                        ;
+                    if (m_tecView.currHour == true)
+                        NewDateRefresh();
+                    else {
+                        updateGraphicsRetro(enabledSourceData_ToolStripMenuItems());
+                    }
 
                     //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
 
@@ -1699,8 +1700,12 @@ namespace Statistic
             m_ZedGraphHours.Invalidate();
         }
 
-        private bool enabledSourceData_ToolStripMenuItems () {
-            bool [] arRes = new bool [] {false, false};
+        //private bool enabledSourceData_ToolStripMenuItems () {
+        //private bool[] enabledSourceData_ToolStripMenuItems()
+        private HMark enabledSourceData_ToolStripMenuItems()
+        {
+            //bool [] arRes = new bool [] {false, false};
+            HMark markRes = new HMark ();
 
             if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
                 //Пункты меню доступны для выбора
@@ -1716,7 +1721,8 @@ namespace Statistic
                 if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == FormMain.formGraphicsSettings.m_connSettType_SourceData)) {
                     m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
-                    arRes [(int)TG.ID_TIME.MINUTES] = true;
+                    //arRes [(int)TG.ID_TIME.MINUTES] = true;
+                    markRes.Marked ((int)TG.ID_TIME.MINUTES);
                 } else {
                 }
 
@@ -1724,13 +1730,16 @@ namespace Statistic
                 {
                     m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
-                    arRes[(int)TG.ID_TIME.HOURS] = true;
+                    //arRes[(int)TG.ID_TIME.HOURS] = true;
+                    markRes.Marked((int)TG.ID_TIME.HOURS);
                 }
                 else
                 {
                 }
 
-                if (arRes[(int)TG.ID_TIME.MINUTES] == true) {
+                //if (arRes[(int)TG.ID_TIME.MINUTES] == true) {
+                if (markRes.IsMarked ((int)TG.ID_TIME.MINUTES) == true)
+                {
                     initTableMinRows ();
                     
                     if (((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
@@ -1743,7 +1752,8 @@ namespace Statistic
                 }
                 else ;
 
-                if (arRes[(int)TG.ID_TIME.HOURS] == true)
+                //if (arRes[(int)TG.ID_TIME.HOURS] == true)
+                if (markRes.IsMarked ((int)TG.ID_TIME.HOURS) == true)
                     if (((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
                         ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).PerformClick();
                     else
@@ -1759,18 +1769,51 @@ namespace Statistic
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = false;
             }
 
-            return arRes[(int)TG.ID_TIME.MINUTES] || arRes[(int)TG.ID_TIME.HOURS];
+            //return arRes[(int)TG.ID_TIME.MINUTES] || arRes[(int)TG.ID_TIME.HOURS];
+            //return arRes;
+            return markRes;
+        }
+
+        /// <summary>
+        /// Обновление компонентов вкладки с проверкой изменения источника данных
+        /// </summary>
+        /// <param name="markUpdate">указывает на изменившиеся источники данных</param>
+        private void updateGraphicsRetro (HMark markUpdate)
+        {
+            //if (markUpdate.IsMarked() == false)
+            //    return;
+            //else
+            if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == true) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == false))
+                //Изменение источника данных МИНУТЫ
+                m_tecView.GetRetroMins();
+            else
+                if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == false) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == true))
+                    //Изменение источника данных ЧАС
+                    m_tecView.GetRetroHours();
+                else
+                    if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == true) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == true))
+                        //Изменение источника данных ЧАС, МИНУТЫ
+                        m_tecView.GetRetroValues();
+                    else
+                        ;
         }
 
         public void UpdateGraphicsCurrent(int type)
         {
             lock (m_tecView.m_lockValue)
             {
-                if (enabledSourceData_ToolStripMenuItems () == false) {
+                //??? Проверка 'type' TYPE_UPDATEGUI
+                HMark markChanged = enabledSourceData_ToolStripMenuItems ();
+                if (markChanged.IsMarked () == false) {
                     DrawGraphMins(m_tecView.lastHour);
                     DrawGraphHours();
                 } else {
-                    NewDateRefresh ();
+                    if (m_tecView.currHour == true)
+                        NewDateRefresh();
+                    else
+                    {//m_tecView.currHour == false
+                        updateGraphicsRetro(markChanged);
+                    }
                 }
             }
         }
@@ -1785,6 +1828,8 @@ namespace Statistic
 
         private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
         {
+            bool[] arChanged = new bool[] { false, false };
+
             if (sender.Checked == false)
             {
                 ToolStripMenuItem itemASKUE = (ToolStripMenuItem)cms.Items[cms.Items.Count - 2] //Постоянно размещение пункта меню (2-ой снизу)
@@ -1807,16 +1852,24 @@ namespace Statistic
                         ;
 
                 itemSOTIASSO.Checked = !itemASKUE.Checked;
+
+                if (indx_time == TG.ID_TIME.MINUTES)
+                    initTableMinRows ();
+                else
+                    ;
+
+                if (m_tecView.currHour == true)
+                    NewDateRefresh();
+                else
+                {//m_tecView.currHour == false
+                    if (indx_time == TG.ID_TIME.MINUTES)
+                        m_tecView.GetRetroMins();
+                    else
+                        m_tecView.GetRetroHours();
+                }
             }
             else
-                ;
-
-            if (indx_time == TG.ID_TIME.MINUTES)
-                initTableMinRows ();
-            else
-                ;
-
-            NewDateRefresh();
+                ; //Изменений нет
 
             //if (enabledSourceData_ToolStripMenuItems () == true) {
             //    NewDateRefresh ();

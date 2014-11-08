@@ -1143,7 +1143,7 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.Hours_Fact:
-                    ClearValues();
+                    ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     bRes = GetHoursFactResponse(table);
                     if (bRes == true)
@@ -1153,10 +1153,11 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.Hours_TM:
-                    ClearValues();
+                    ClearValuesHours();
                     bRes = GetHoursTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
+                    ClearValuesMins();
                     bRes = GetMinsFactResponse(table);
                     if (bRes == true)
                     {
@@ -1166,6 +1167,7 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
+                    ClearValuesMins();
                     bRes = GetMinsTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
@@ -1195,7 +1197,7 @@ namespace Statistic
                         ;
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
-                    //ClearValuesLastMinutesTM ();
+                    ClearValuesLastMinutesTM ();
                     bRes = GetLastMinutesTMResponse(table, m_curDate);
                     if (bRes == true)
                     {
@@ -1218,6 +1220,7 @@ namespace Statistic
                 //    break;
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMins_TM:
+                    ClearValuesMins();
                     if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
                         bRes = GetMinsFactResponse(table);
                     else
@@ -1442,7 +1445,70 @@ namespace Statistic
             return true;
         }
 
-        public void zedGraphHours_MouseUpEvent (int indx) {
+        public void GetRetroHours()
+        {
+            lock (m_lockValue)
+            {
+                ClearValuesHours();
+
+                ClearStates();
+
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.Hours_Fact);
+                else
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.Hours_TM);
+                    else
+                        ;
+
+                states.Add((int)StatesMachine.PPBRValues);
+                states.Add((int)StatesMachine.AdminValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+            }
+        }
+
+        public void GetRetroValues()
+        {
+            lock (m_lockValue)
+            {
+                ClearValues();
+
+                ClearStates();
+
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.RetroMins_Fact);
+                else
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.RetroMins_TM);
+                    else
+                        ;
+
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.Hours_Fact);
+                else
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.Hours_TM);
+                    else
+                        ;
+
+                states.Add((int)StatesMachine.PPBRValues);
+                states.Add((int)StatesMachine.AdminValues);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+            }
+        }
+
+        private void getRetroMins(int indxHour)
+        {
             lock (m_lockValue)
             {
                 currHour = false;
@@ -1451,7 +1517,7 @@ namespace Statistic
                 //if (indx == 0)
                 //    lastHour = 1;
                 //else
-                    lastHour = indx;
+                lastHour = indxHour;
 
                 ClearValuesMins();
 
@@ -1471,8 +1537,17 @@ namespace Statistic
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - zedGraphHours_MouseUpEvent () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::getRetroMins () - sem.Release(1)"); }
             }
+        }
+
+        public void GetRetroMins()
+        {
+            getRetroMins(lastHour);
+        }
+
+        public void zedGraphHours_MouseUpEvent (int indx) {
+            getRetroMins(indx);
         }
 
         private void initValuesMinLength()
@@ -2673,9 +2748,11 @@ namespace Statistic
 
         private bool GetHoursFactResponse(DataTable table)
         {
-            int i, j, half = 0, hour = 0
+            int i, j
+                , half = 0 //Индекс получаса
+                , hour = 0
                 , prev_season = 0, season = 0, offset_season = 0;
-            double hourVal = 0, halfVal = 0, value;
+            double hourVal = 0, halfVal = 0, value; //Значения за период времени
             DateTime dt , dtNeeded, dtServer;
             dt = dtNeeded = DateTime.Now;
 
@@ -2687,8 +2764,10 @@ namespace Statistic
 
             double[, ,] powerHourHalf = new double[listTG.Count, 2, m_valuesHours.Length];
 
-            lastHour = lastReceivedHour = 0;
-            half = 0; //Индекс получаса
+            if (currHour == true)
+                lastHour = lastReceivedHour = 0;
+            else
+                ;
 
             /*Form2 f2 = new Form2();
             f2.FillHourTable(table);*/
@@ -2952,10 +3031,10 @@ namespace Statistic
                 else
                     ;
 
-            lastHour = hour;
-
             if (currHour == true)
             {//Отображение тек./часа
+                lastHour = hour;
+
                 if (lastHour < dtServer.Hour)
                 {//Ошибка получения часовых значений
                     lastHourError = true;
@@ -3044,10 +3123,24 @@ namespace Statistic
             else
                 ;
 
-            if (bRes == false) {
+            if (bRes == false)
+            {
                 lastHour = 24;
-            } else
-                lastHour = hour;
+            }
+            else
+            {
+                if (currHour == true)
+                {
+                    lastHour = hour;
+
+                    if (lastHour < (m_valuesHours.Length - 1))
+                        m_valuesHours[lastHour].valuesFact = 0F;
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
 
             return bRes;
         }
