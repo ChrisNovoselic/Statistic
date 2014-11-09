@@ -37,6 +37,8 @@ namespace StatisticCommon
         //private volatile Errors loadLayoutResult;
         //private LayoutData layoutForLoading;
 
+        public double m_curRDGValues_PBR_0;
+
         protected DelegateFunc delegateImportForeignValuesRequuest,
                                 delegateExportForeignValuesRequuest;
         protected delegate bool DelegateFuncBool();
@@ -664,7 +666,11 @@ namespace StatisticCommon
                             hour = 24;
                         else
                             if (hour == 0)
+                            {
+                                m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (0 + 1)];
+
                                 continue;
+                            }
                             else
                                 ;
 
@@ -693,6 +699,8 @@ namespace StatisticCommon
                         else
                             m_curRDGValues[hour - 1].pmax = 0;
 
+                        m_curRDGValues[hour - 1].fc = false;
+
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;
@@ -720,7 +728,11 @@ namespace StatisticCommon
                             hour = 24;
                         else
                             if (hour == 0)
+                            {
+                                m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
+
                                 continue;
+                            }
                             else
                                 ;
 
@@ -738,6 +750,8 @@ namespace StatisticCommon
                                     foreach (DataRow r in arSeasonRows) {
                                         h = iDate.Hour;
                                         GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString ()), ref h);
+
+                                        m_curRDGValues[h - 1].recomendation = (byte)r[@"FC"];
 
                                         m_curRDGValues[h - 1].recomendation = (double)r[@"REC"];
                                         m_curRDGValues[h - 1].deviationPercent = (int)r[@"IS_PER"] == 1;
@@ -767,12 +781,16 @@ namespace StatisticCommon
                             ((! (hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)))
                             if (!(offsetDATE_ADMIN < 0))
                             {
+                                m_curRDGValues[hour - 1].fc = (byte)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 5] == 1;
+
                                 m_curRDGValues[hour - 1].recomendation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 1 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"REC"*/];
                                 m_curRDGValues[hour - 1].deviationPercent = (int)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 2 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"IS_PER"*/] == 1;
                                 m_curRDGValues[hour - 1].deviation = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 3 /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"DIVIAT"*/];
                             }
                             else
                             {
+                                m_curRDGValues[hour - 1].fc = false;
+
                                 m_curRDGValues[hour - 1].recomendation = 0.0;
                                 m_curRDGValues[hour - 1].deviationPercent = false;
                                 m_curRDGValues[hour - 1].deviation = 0F;
@@ -1027,6 +1045,7 @@ namespace StatisticCommon
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                        @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
                                         @" WHERE " +
                                         //@"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
                                         //@"'" +
@@ -1058,6 +1077,7 @@ namespace StatisticCommon
                                         @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                         @"', " + (comp.m_id) +
                                         @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                        @", " + (m_curRDGValues[i].fc ? 1 : 0) +
                                         @"),";
                             break;
                         default:
@@ -1111,6 +1131,7 @@ namespace StatisticCommon
                                 @", " + "DIVIAT" +
                                 @", " + "ID_COMPONENT" +
                                 @", " + "SEASON" +
+                                @", " + "FC" +
                                 @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                         break;
                     default:
@@ -2431,6 +2452,8 @@ namespace StatisticCommon
         {
             //base.ClearValues (cnt);
             base.ClearValues();
+
+            m_curRDGValues_PBR_0 = 0F;
             
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {

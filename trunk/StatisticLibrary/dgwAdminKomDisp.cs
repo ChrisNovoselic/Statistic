@@ -10,14 +10,18 @@ namespace StatisticCommon
 {
     public class DataGridViewAdminKomDisp : DataGridViewAdmin
     {
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
-        private static string[] arDescStringIndex = { "DateHour", "Plan", "Recomendation", "DeviationType", "Deviation", "ToAll" };
-        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, UDGe, RECOMENDATION, FOREIGN_CMD, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
+        private static string[] arDescStringIndex = { "DateHour", "Plan", @"UDGe", @"ForeignCmd", "Recomendation", "DeviationType", "Deviation", "ToAll" };
+        private static string[] arDescRusStringIndex = { "Дата, час", "План", @"УДГэ", "Рекомендация", @"Внешн. ком-да", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+        private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, string.Empty, false.ToString(), false.ToString(), string.Empty };
+
+        public double m_PBR_0;
 
         public DataGridViewAdminKomDisp()
         {
+            this.CellMouseMove += new DataGridViewCellMouseEventHandler (dgwAdminTable_CellMouseMove);
         }
-        
+
         protected override void InitializeComponents()
         {
             base.InitializeComponents();
@@ -25,9 +29,12 @@ namespace StatisticCommon
             Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
                                                                                     new DataGridViewTextBoxColumn (),
                                                                                     new DataGridViewTextBoxColumn (),
+                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                    new DataGridViewCheckBoxColumn (),
                                                                                     new DataGridViewCheckBoxColumn (),
                                                                                     new DataGridViewTextBoxColumn (),
                                                                                     new DataGridViewButtonColumn ()});
+            int i = -1;
             // 
             // DateHour
             // 
@@ -38,19 +45,36 @@ namespace StatisticCommon
             Columns[(int)DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // Plan
-            // 
+            //
+            i = (int)DESC_INDEX.PLAN;
             //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
-            Columns[(int)DESC_INDEX.PLAN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].Name = arDescStringIndex[(int)DESC_INDEX.PLAN];
-            Columns[(int)DESC_INDEX.PLAN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[(int)DESC_INDEX.PLAN].Width = 70;
-            Columns[(int)DESC_INDEX.PLAN].ReadOnly = true;
+            Columns[i].HeaderText = arDescRusStringIndex[i];
+            Columns[i].Name = arDescStringIndex[i];
+            Columns[i].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[i].Width = 56;
+            Columns[i].ReadOnly = true;
+            // 
+            // UDGe
+            // 
+            i = (int)DESC_INDEX.UDGe;
+            //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
+            Columns[i].HeaderText = arDescRusStringIndex[i];
+            Columns[i].Name = arDescStringIndex[i];
+            Columns[i].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[i].Width = 56;
+            Columns[i].ReadOnly = true;
             // 
             // Recommendation
             // 
             Columns[(int)DESC_INDEX.RECOMENDATION].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.RECOMENDATION];
             Columns[(int)DESC_INDEX.RECOMENDATION].Name = arDescStringIndex[(int)DESC_INDEX.RECOMENDATION];
             Columns[(int)DESC_INDEX.RECOMENDATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ForeignCmd
+            // 
+            Columns[(int)DESC_INDEX.FOREIGN_CMD].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.FOREIGN_CMD];
+            Columns[(int)DESC_INDEX.FOREIGN_CMD].Name = arDescStringIndex[(int)DESC_INDEX.FOREIGN_CMD];
+            Columns[(int)DESC_INDEX.FOREIGN_CMD].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // DeviationType
             // 
@@ -93,6 +117,8 @@ namespace StatisticCommon
                         Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = value.ToString("F2");
                     }
                     break;
+                case (int)DESC_INDEX.UDGe: //Не редактируется
+                    break;
                 case (int)DESC_INDEX.RECOMENDATION: // Рекомендация
                     {
                         //cellValidated(e.RowIndex, (int)DESC_INDEX.RECOMENDATION);
@@ -107,9 +133,30 @@ namespace StatisticCommon
                         {
                             //m_curRDGValues[e.RowIndex].recomendation = value;
                             Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
+
+                            double prevPbr
+                                , Pbr = double.Parse(Rows[e.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString ());
+                            if (e.RowIndex > 1)
+                                prevPbr = double.Parse(Rows[e.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
+                            else
+                                prevPbr = m_PBR_0;
+
+                            Rows[e.RowIndex].Cells[(int)DESC_INDEX.UDGe].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
                         }
                         break;
                     }
+                case (int)DESC_INDEX.FOREIGN_CMD:
+                    bool fCmd = bool.Parse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value);
+                    valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
+                    if ((valid == false) || (value == 0F) || (value > maxRecomendationValue))
+                    {
+                        Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = false.ToString();
+                    }
+                    else
+                    {
+                        Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = fCmd;
+                    }
+                    break;
                 case (int)DESC_INDEX.DEVIATION_TYPE:
                     {
                         //m_curRDGValues[e.RowIndex].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[e.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
@@ -146,11 +193,34 @@ namespace StatisticCommon
         {
             for (int i = 0; i < Rows.Count; i++)
             {
-                Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = "";
-                Rows[i].Cells[(int)DESC_INDEX.PLAN].Value = "";
-                Rows[i].Cells[(int)DESC_INDEX.RECOMENDATION].Value = "";
-                Rows[i].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value = "false";
-                Rows[i].Cells[(int)DESC_INDEX.DEVIATION].Value = "";
+                for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
+                {
+                    Rows[i].Cells[j].Value = arDefaultValueIndex[j];
+                }
+            }
+        }
+
+        private void dgwAdminTable_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            switch (e.ColumnIndex)
+            {
+                case (int)DESC_INDEX.DATE_HOUR:
+                case (int)DESC_INDEX.PLAN:
+                case (int)DESC_INDEX.UDGe:
+                    Cursor = Cursors.Help;
+                    break;
+                case (int)DESC_INDEX.RECOMENDATION:
+                case (int)DESC_INDEX.DEVIATION:
+                    Cursor = Cursors.IBeam;
+                    break;
+                case (int)DESC_INDEX.FOREIGN_CMD:
+                case (int)DESC_INDEX.DEVIATION_TYPE:
+                case (int)DESC_INDEX.TO_ALL:
+                    Cursor = Cursors.Hand;
+                    break;
+                default:
+                    Cursor = Cursors.Default;
+                    break;
             }
         }
     }

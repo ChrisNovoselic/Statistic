@@ -49,10 +49,11 @@ namespace Statistic
                 //Вычисление "ВК"
                 //if (values.valuesUDGe[hour] == values.valuesPBR[hour])
                 //if (!(values.valuesREC[hour] == 0))
-                if (values.valuesREC == 0)
-                    values.valuesForeignCommand = false;
-                else
-                    ;
+                //10.11.2014 ВК редактируется ком./дисп.
+                //if (values.valuesREC == 0)
+                //    values.valuesForeignCommand = false;
+                //else
+                //    ;
 
                 if (values.valuesForeignCommand == true)
                 {

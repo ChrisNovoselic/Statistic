@@ -939,11 +939,6 @@ namespace StatisticCommon
                         m_arNameTableAdminValues[(int)mode] + "." + "DATE" + " AS DATE_ADMIN" +
                         ", " + selectAdmin.Split(';')[0] +
 
-                        //Такого столбца для ГТП нет
-                        @", " + "ID_COMPONENT" +
-
-                        @", " + "SEASON" +
-
                         @" " + @"FROM " + m_arNameTableAdminValues[(int)mode] +
 
                         @" " + @"WHERE" +
@@ -996,8 +991,12 @@ namespace StatisticCommon
                     selectAdmin = selectAdminValueQuery(comp);
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT]
-                                //+ ", " + @"[SEASON]"
+                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] +
+                                    ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] +
+                                    ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT]
+                                    + ", " + @"[ID_COMPONENT]"
+                                    + ", " + @"[SEASON]"
+                                    + ", " + @"[FC]"
                                 ;
 
                     selectAdmin += ";";
@@ -1172,7 +1171,14 @@ namespace StatisticCommon
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectAdmin = idComponentValueQuery (num_comp);
 
-                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] + ";" + selectAdmin;
+                    selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC]
+                                + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER]
+                                + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT]
+                                + ", " + @"[ID_COMPONENT]"
+                                + ", " + @"[SEASON]"
+                                + ", " + @"[FC]"
+                                + ";"
+                                + selectAdmin;
                     break;
                 default:
                     break;

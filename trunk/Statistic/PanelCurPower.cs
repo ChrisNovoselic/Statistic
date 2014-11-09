@@ -461,7 +461,7 @@ namespace Statistic
                 switch (m_tecView.m_dtLastChangedAt_TM_Gen.Kind) {
                 }
 
-                m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
+                //m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
                 if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_Gen).TotalMinutes < 3)
                 {

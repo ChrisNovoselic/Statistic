@@ -58,13 +58,13 @@ namespace trans_mt
             int idListener = -1;
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.MTERM);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.MTERM);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
+                idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
 
                 if (! (idListener < 0))
                 {

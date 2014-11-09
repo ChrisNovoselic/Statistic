@@ -119,7 +119,7 @@ namespace Statistic
             // dgwAdminTable
             //
             this.dgwAdminTable.Location = new System.Drawing.Point(9, 9);
-            this.dgwAdminTable.Size = new System.Drawing.Size(574, 591);
+            this.dgwAdminTable.Size = new System.Drawing.Size(714, 591);
             this.dgwAdminTable.TabIndex = 1;
             //this.dgwAdminTable.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);
             //this.dgwAdminTable.CellValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellValidated);
@@ -407,6 +407,10 @@ namespace Statistic
                             //m_admin.m_curRDGValues[i].pmin = 0.0;
                             //m_admin.m_curRDGValues[i].pmax = 0.0;
                             break;
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe: // УДГэ
+                            //valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value, out value);
+                            //m_admin.m_curRDGValues[i]. = value;
+                            break;
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
                             {
                                 //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
@@ -416,6 +420,13 @@ namespace Statistic
 
                                 break;
                             }
+                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD:
+                            if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value == null))
+                                m_admin.m_curRDGValues[i].fc = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value.ToString());
+                            else
+                                m_admin.m_curRDGValues[i].fc = false;
+
+                            break;
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
                             {
                                 if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value == null))
@@ -454,6 +465,8 @@ namespace Statistic
             else
                 Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...");
 
+            ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
+
             for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
             {
                 strFmtDatetime = m_admin.GetFmtDatetime (i);
@@ -462,7 +475,12 @@ namespace Statistic
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
 
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
+                if (i > 0)
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                else
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
             }
@@ -474,14 +492,7 @@ namespace Statistic
 
         public override void ClearTables()
         {
-            for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
-            {
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = "";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = "false";
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = "";
-            }
+            this.dgwAdminTable.ClearTables();
         }
 
         public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)

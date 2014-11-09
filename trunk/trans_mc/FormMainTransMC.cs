@@ -48,11 +48,11 @@ namespace trans_mc
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
-            int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             HMark markQueries = new HMark();
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)HClassLibrary.CONN_SETT_TYPE.PBR);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

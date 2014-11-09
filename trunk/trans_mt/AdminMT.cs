@@ -180,7 +180,7 @@ namespace trans_mt
             int i = -1;
 
             if (m_list_tec.Count > 0) {
-                m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec[0].connSetts[(int)HClassLibrary.CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
+                m_IdListenerCurrent = DbMCSources.Sources().Register(m_list_tec[0].connSetts[(int)StatisticCommon.CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
 
                 bRes = false;
             }

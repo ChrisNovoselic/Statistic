@@ -173,11 +173,11 @@ namespace StatisticTrans
             else
                 опросСохранАдминЗначенияToolStripMenuItem.Checked = false;
 
-            m_markQueries.Set((int)HClassLibrary.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
-            m_markQueries.Set((int)HClassLibrary.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
+            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
+            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
 
-            if ((m_markQueries.IsMarked((int)HClassLibrary.CONN_SETT_TYPE.PBR) == false) &&
-                (m_markQueries.IsMarked((int)HClassLibrary.CONN_SETT_TYPE.ADMIN) == false))
+            if ((m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.PBR) == false) &&
+                (m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN) == false))
             {
                 throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
             }
@@ -705,7 +705,7 @@ namespace StatisticTrans
             if (!(comboBoxTECComponent.SelectedIndex < 0) &&
                 (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < m_arAdmin[i].allTECComponents.Count))
             {
-                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)HClassLibrary.CONN_SETT_TYPE.PBR];
+                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
                 for (int j = 0; j < (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; j++)
                 {
                     switch (j)
@@ -757,17 +757,17 @@ namespace StatisticTrans
             s_listFormConnectionSettings = new List <FormConnectionSettings> ();
             s_listFormConnectionSettings.Add (new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
 
-            if (s_listFormConnectionSettings [(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            if (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 ;
             else
                 bShowFormConnSett = true;
 
             if (bCheckAdminLength == true)
             {
-                if (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
+                if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
                 {
-                    while (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
-                        s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].addConnSett(new ConnectionSettings());
+                    while (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Count < m_arAdmin.Length)
+                        s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].addConnSett(new ConnectionSettings());
 
                     if (bShowFormConnSett == false) bShowFormConnSett = true; else ;
                 }
@@ -979,8 +979,8 @@ namespace StatisticTrans
             if (bBackColorChange) {
                 groupBoxOther.BackColor = SystemColors.Control;
 
-                if (s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].Count > 1)
-                    s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].SelectedIndex = m_IndexDB;
+                if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Count > 1)
+                    s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].SelectedIndex = m_IndexDB;
                 else
                     ;
 
@@ -1009,14 +1009,14 @@ namespace StatisticTrans
         private void конфигурацияБДToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //m_formConnectionSettings.StartPosition = FormStartPosition.CenterParent;
-            s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].ShowDialog(this);
+            s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].ShowDialog(this);
 
             //Эмуляция нажатия кнопки "Ок"
             /*
             m_formConnectionSettings.btnOk_Click(null, null);
             */
 
-            DialogResult dlgRes = s_listFormConnectionSettings[(int)HClassLibrary.CONN_SETT_TYPE.CONFIG_DB].DialogResult;
+            DialogResult dlgRes = s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].DialogResult;
             if (dlgRes == System.Windows.Forms.DialogResult.Yes)
             {
                 Stop();

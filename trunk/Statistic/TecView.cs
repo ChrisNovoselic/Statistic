@@ -1913,6 +1913,8 @@ namespace Statistic
                                                     //GetSeasonHourIndex(Int32.Parse(r[@"SEASON_" + id.ToString ()].ToString()), ref h);
                                                     GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref h);
 
+                                                    m_dictValuesTECComponent[h - 0][id].valuesForeignCommand = (byte)r[@"FC"] == 1;
+
                                                     //m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC_" + id.ToString()];
                                                     m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC"];
                                                     //m_dictValuesTECComponent[h - 0][id].valuesISPER = (int)r[@"IS_PER_" + id.ToString()];
@@ -1944,6 +1946,11 @@ namespace Statistic
                                             else
                                                 ;
 
+                                            if (!(row_in[0]["FC_" + id.ToString()] is System.DBNull))
+                                                m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = (byte)row_in[0]["FC_" + id.ToString()] == 1;
+                                            else
+                                                m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+
                                             //if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             if (!(row_in[0]["REC_" + id.ToString ()] is System.DBNull))
                                                 //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
@@ -1970,6 +1977,8 @@ namespace Statistic
                                         }
                                         else
                                         {
+                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+
                                             m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
                                         }
                                     }
@@ -2003,6 +2012,8 @@ namespace Statistic
                     }
                     else
                     {//значение ПБР даты/времени в этой записи НЕТ - использовать админ. дату/время
+                        int cntFields = 5; //REC, IS_PER, DIV, SEASON, FC
+
                         try
                         {
                             hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
@@ -2027,19 +2038,24 @@ namespace Statistic
 
                                     if (i < table_in.Rows.Count)
                                     {
-                                        if (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull))
-                                            //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)table_in.Rows[i][offsetUDG + j * 3];
+                                        if (!(table_in.Rows[i][offsetUDG + 4 + j * cntFields] is System.DBNull))
+                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = (byte)table_in.Rows[i][offsetUDG + 4 + j * cntFields] == 1;
+                                        else
+                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+                                        
+                                        if (!(table_in.Rows[i][offsetUDG + j * cntFields] is System.DBNull))
+                                            //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * cntFields] is System.DBNull)))
+                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)table_in.Rows[i][offsetUDG + j * cntFields];
                                         else
                                             m_dictValuesTECComponent[hour - 0][id].valuesREC = 0;
 
-                                        if (!(table_in.Rows[i][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * 3];
+                                        if (!(table_in.Rows[i][offsetUDG + 1 + j * cntFields] is System.DBNull))
+                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * cntFields];
                                         else
                                             ;
 
-                                        if (!(table_in.Rows[i][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * 3];
+                                        if (!(table_in.Rows[i][offsetUDG + 2 + j * cntFields] is System.DBNull))
+                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * cntFields];
                                         else
                                             ;
                                     }
@@ -2095,6 +2111,8 @@ namespace Statistic
                         m_dictValuesTECComponent[i + 1][id].valuesPBRe = currPBRe;
                         m_valuesHours[i].valuesPBRe += currPBRe;
 
+                        m_valuesHours[i].valuesForeignCommand |= m_dictValuesTECComponent[i + 1][id].valuesForeignCommand;
+
                         m_valuesHours[i].valuesREC += m_dictValuesTECComponent[i + 1][id].valuesREC;
 
                         m_dictValuesTECComponent[i + 1][id].valuesUDGe = currPBRe + m_dictValuesTECComponent[i + 1][id].valuesREC;
@@ -2132,7 +2150,8 @@ namespace Statistic
                 double[] valuesPBR = new double[lValues];
                 double[] valuesPmin = new double[lValues];
                 double[] valuesPmax = new double[lValues];
-                double[] valuesREC = new double[lValues];
+                bool[] valuesForeignCmd = new bool[lValues];
+                double[] valuesREC = new double[lValues];                
                 int[] valuesISPER = new int[lValues];
                 double[] valuesDIV = new double[lValues];
 
@@ -2240,6 +2259,8 @@ namespace Statistic
                                             hour = dtPBR.Hour;
                                             GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref hour);
 
+                                            valuesForeignCmd[hour - 1] = (byte)r[@"FC"] == 1;
+
                                             valuesREC [hour - 1] = (double)r[@"REC"];
                                             valuesISPER [hour - 1] = (int)r[@"IS_PER"];
                                             valuesDIV[hour - 1] = (double)r[@"DIVIAT"];
@@ -2270,6 +2291,11 @@ namespace Statistic
                                     else
                                         ;
 
+                                    if (!(row_in[0][offsetUDG + 5] is System.DBNull))
+                                        valuesForeignCmd[hour - 0] = (byte)row_in[0][offsetUDG + 5] == 1;
+                                    else
+                                        valuesForeignCmd[hour - 0] = false;
+
                                     if (!(row_in[0][offsetUDG] is System.DBNull))
                                         //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG] is System.DBNull)))
                                         valuesREC[hour - 0] = (double)row_in[0][offsetUDG + 0];
@@ -2288,6 +2314,8 @@ namespace Statistic
                                 }
                                 else
                                 {
+                                    valuesForeignCmd[hour - 0] = false;
+
                                     valuesREC[hour - 0] = 0;
                                     //valuesISPER[hour - 1] = 0;
                                     //valuesDIV[hour - 1] = 0;
@@ -2334,6 +2362,12 @@ namespace Statistic
 
                             if (i < table_in.Rows.Count)
                             {
+                                if (!(table_in.Rows[i][@"FC"] is System.DBNull))
+                                    //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
+                                    valuesForeignCmd[hour - 0] = (byte)table_in.Rows[i][@"FC"] == 1;
+                                else
+                                    valuesREC[hour - 0] = 0;
+
                                 if (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull))
                                     //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + 0] is System.DBNull)))
                                     valuesREC[hour - 0] = (double)table_in.Rows[i][offsetUDG + 0];
@@ -2352,6 +2386,8 @@ namespace Statistic
                             }
                             else
                             {
+                                valuesForeignCmd [hour - 0] = false;
+
                                 valuesREC[hour - 0] = 0;
                                 //valuesISPER[hour - 1] = 0;
                                 //valuesDIV[hour - 1] = 0;
@@ -2390,6 +2426,8 @@ namespace Statistic
                         currPBRe = (valuesPBR[i + 1] + valuesPBR[i - 0]) / 2;
                         m_valuesHours[i].valuesPBRe = currPBRe;
                     }
+
+                    m_valuesHours[i].valuesForeignCommand = valuesForeignCmd [i + 1];
 
                     m_valuesHours[i].valuesREC = valuesREC[i + 1];
 

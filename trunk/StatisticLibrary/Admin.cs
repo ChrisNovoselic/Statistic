@@ -57,6 +57,7 @@ namespace StatisticCommon
             public double recomendation;
             public bool deviationPercent;
             public double deviation;
+            public bool fc;
 
             public string pbr_number;
         }

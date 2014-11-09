@@ -103,16 +103,11 @@ namespace StatisticCommon
                     ;
 
                 for (int i = e.RowIndex + 1; i < Rows.Count; i++)
-                {
-                    //m_curRDGValues[i].plan = m_curRDGValues[e.RowIndex].plan;
-                    //m_curRDGValues[i].recomendation = m_curRDGValues[e.RowIndex].recomendation;
-                    //m_curRDGValues[i].deviationPercent = m_curRDGValues[e.RowIndex].deviationPercent;
-                    //m_curRDGValues[i].deviation = m_curRDGValues[e.RowIndex].deviation;
-
-                    for (int j = colStart; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++) {
-                        Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
-                    }
-                }
+                    for (int j = colStart; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++)
+                        if (Columns[j].ReadOnly == false)
+                            Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
+                        else
+                            ;
             }
             else
                 ;
