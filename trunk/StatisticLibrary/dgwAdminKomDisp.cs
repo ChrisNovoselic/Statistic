@@ -146,11 +146,13 @@ namespace StatisticCommon
                         break;
                     }
                 case (int)DESC_INDEX.FOREIGN_CMD:
-                    bool fCmd = bool.Parse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value);
+                    bool fCmd = false;
+                    //fCmd = bool.Parse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value);
+                    fCmd = (bool)Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value;
                     valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
                     if ((valid == false) || (value == 0F) || (value > maxRecomendationValue))
                     {
-                        Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = false.ToString();
+                        Rows[e.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = false;
                     }
                     else
                     {

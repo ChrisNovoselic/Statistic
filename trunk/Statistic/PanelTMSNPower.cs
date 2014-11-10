@@ -411,7 +411,7 @@ namespace Statistic
                 //setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_Gen], dblTotalPower_TM);
 
-                m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
+                //m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
                 if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_Gen).TotalMinutes < 3)
                 {

@@ -531,8 +531,8 @@ namespace Statistic
             //Âאנטאםע ¹2 (פאיכ)
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
-            //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            files.InitialDirectory = @"V:\Statistic\ÏÁÐ-csv"; //@"E:\Temp\ÏÁÐ-csv";
+            files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+            //files.InitialDirectory = @"V:\Statistic\ÏÁÐ-csv"; //@"E:\Temp\ÏÁÐ-csv";
             files.DefaultExt = @"csv";
             files.Filter = @"csv פאיכû (*.csv)|*.csv";
             files.Title = "Âûבונטעו פאיכ ס ÏÁÐ...";
