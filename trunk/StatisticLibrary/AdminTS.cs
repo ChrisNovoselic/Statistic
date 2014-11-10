@@ -37,6 +37,8 @@ namespace StatisticCommon
         //private volatile Errors loadLayoutResult;
         //private LayoutData layoutForLoading;
 
+        public static int m_sOwner_PBR = 0;
+
         public double m_curRDGValues_PBR_0;
 
         protected DelegateFunc delegateImportForeignValuesRequuest,
@@ -937,6 +939,8 @@ namespace StatisticCommon
             else
                 ;
 
+            m_iHavePBR_Number = -1;
+
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
@@ -952,8 +956,17 @@ namespace StatisticCommon
 
         protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
-            int season = (int)HAdmin.seasonJumpE.None;
+            int addingVal = -1;
 
+            if (type == CONN_SETT_TYPE.ADMIN)
+                addingVal = (int)HAdmin.seasonJumpE.None;
+            else
+                if (type == CONN_SETT_TYPE.PBR)
+                    addingVal = -1;
+                else
+                    ;
+
+            //0 - [DATE_TIME]([DATE]), 1 - [ID]
             for (int i = 0, hour; i < table.Rows.Count; i++)
             {
                 try
@@ -964,9 +977,21 @@ namespace StatisticCommon
                     else
                         ;
 
+                    //if (!(table.Columns.IndexOf(@"SEASON") < 0))
                     if (type == CONN_SETT_TYPE.ADMIN) {
-                        season = Int32.Parse(table.Rows[i][@"SEASON"].ToString ());
-                        GetSeasonHourIndex (season, ref hour);
+                        addingVal = Int32.Parse(table.Rows[i][@"SEASON"].ToString ());
+                        GetSeasonHourIndex (addingVal, ref hour);
+                    }
+                    else
+                        ;
+
+                    //if (!(table.Columns.IndexOf(@"PBR_NUMBER") < 0))
+                    if (type == CONN_SETT_TYPE.PBR) {
+                        addingVal = Int32.Parse(table.Rows[i][@"PBR_NUMBER"].ToString ().Substring (@"ПБР".Length));
+                        if (m_iHavePBR_Number < addingVal)
+                            m_iHavePBR_Number = addingVal;
+                        else
+                            ;
                     }
                     else
                         ;
@@ -1235,24 +1260,52 @@ namespace StatisticCommon
                                 ;
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
-                                        " SET " +
-                                        @"PBR_NUMBER='";
-                            if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
+                            bool bUpdate = false;
+                            int pbr_number = -1;
+
+                            if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                                pbr_number = Int32.Parse (m_curRDGValues[i].pbr_number.Substring (@"ПБР".Length));
                             else
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
-                                        @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @", Pmax='" + m_curRDGValues[i].pmax.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                        @" WHERE " +
-                                        @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id +
-                                        @" AND " +
-                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
-                                        @"; ";
+                                pbr_number = getPBRNumber();
+
+                            if (m_iHavePBR_Number < pbr_number)
+                                //Обновляемый старше
+                                bUpdate = true;
+                            else
+                                if (m_iHavePBR_Number == pbr_number)
+                                    if (m_sOwner_PBR == 1)
+                                        //ПБР одинаков - требование пользователя
+                                        bUpdate = true;
+                                    else
+                                        //ПБР одинаков - работает программа
+                                        ;
+                                else
+                                    //Обновляемый новый
+                                    ;
+                                
+
+                            if (bUpdate == true) {
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
+                                            " SET " +
+                                            @"PBR_NUMBER='";
+                                if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
+                                else
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
+                                            @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmax='" + m_curRDGValues[i].pmax.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @" WHERE " +
+                                            @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                            @"'" +
+                                            @" AND ID_COMPONENT = " + comp.m_id +
+                                            @" AND " +
+                                            @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
+                                            @"; ";
+                            }
+                            else
+                                ;
                             break;
                         default:
                             break;
@@ -1294,12 +1347,12 @@ namespace StatisticCommon
             return resQuery;
         }
 
-        protected virtual void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
+        protected /*virtual*/ void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = setPPBRQuery(t, comp, date);
 
             // добавляем все записи, не найденные в базе
-            if (!(query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] == ""))
+            if (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals (string.Empty) == false)
             {
                 switch (m_typeFields)
                 {
@@ -1342,8 +1395,12 @@ namespace StatisticCommon
 
             Logging.Logg().Debug("AdminTS::SetPPBRRequest ()");
 
-            //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            if ((query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Equals(string.Empty) == false) ||
+                (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals(string.Empty) == false))
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
+                Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            else
+                Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty"); //Запрос пуст
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)

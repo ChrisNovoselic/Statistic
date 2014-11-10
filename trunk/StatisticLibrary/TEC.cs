@@ -1288,7 +1288,7 @@ namespace StatisticCommon
                             @"' ORDER BY " + strNameFieldDateTime + @" ASC";
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT " + @"DATE_TIME" + @", ID FROM [" + m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
+                    strRes = @"SELECT " + @"[DATE_TIME]" + @", [ID], [PBR_NUMBER] FROM [" + m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND " + @"DATE_TIME" + @" > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyyMMdd HH:mm:ss") +

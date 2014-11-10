@@ -109,6 +109,7 @@ namespace StatisticCommon
         /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
         /// </summary>
         protected int[,] m_arHaveDates;
+        protected int m_iHavePBR_Number;
         /// <summary>
         /// Объект для синхронизации изменения списка состояний
         /// </summary>
@@ -149,6 +150,8 @@ namespace StatisticCommon
             m_IdListenerCurrent = -1;
 
             m_dictIdListeners = new Dictionary<int,int[]> ();
+
+            m_iHavePBR_Number = -1;
 
             //m_iSeasonHour = -1;
 
@@ -530,7 +533,7 @@ namespace StatisticCommon
             return @"ПБР" + getPBRNumber (hour);
         }
 
-        private int getPBRNumber(int hour = -1)
+        protected int getPBRNumber(int hour = -1)
         {
             int iNum = -1;
 
