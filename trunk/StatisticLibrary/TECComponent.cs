@@ -28,9 +28,10 @@ namespace StatisticCommon
         public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
         public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
-        public double[] m_powerMinutes; //для мин./значений
-        public double m_powerMinute_TM; //для мин./значений
-        public double [] m_power_LastMinutesTM;
+        public double[] m_powerMinutes; //для мин./значений в течении часа
+        public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
+        public double m_powerCurrent_TM; //для текущего значения ТМ
+        public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
         //public bool[] receivedMin;
         //public bool[,] receivedHourHalf;
         //public bool receivedHourHalf1Addon;

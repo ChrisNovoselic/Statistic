@@ -80,7 +80,6 @@ namespace Statistic
                         szLabelOfMinSizes[i].Height *= 0.86f;
                         szLabelOfMinSizes[i].Width *= 0.86f;
 
-
                         //ctrl.Height * 0.29F
                         //for (fSz = fSzMin; fSz < fSzMax; fSz += fSzStep)
                         for (fSz = fSzMax; fSz > fSzMin; fSz -= fSzStep)
@@ -874,7 +873,7 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerMinute_TM, ref value_TM);
+                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerCurrent_TM, ref value_TM);
 
                                 i++;
                             }
@@ -886,7 +885,7 @@ namespace Statistic
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                     {
-                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerMinute_TM, ref value_TM);
+                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerCurrent_TM, ref value_TM);
 
                         i++;
                     }
@@ -960,6 +959,13 @@ namespace Statistic
                 bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
+                {
+                    if (m_parent.m_tecView.listTG[i].m_bPowerMinutesRecieved == false)
+                        //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
+                        continue;
+                    else
+                        ;
+
                     if (! (m_parent.m_tecView.listTG[i].m_powerMinutes[min] < 0))
                         if (m_parent.m_tecView.listTG[i].m_powerMinutes[min] > 1) value += m_parent.m_tecView.listTG[i].m_powerMinutes[min]; else ;
                     else {
@@ -967,6 +973,7 @@ namespace Statistic
 
                         break;
                     }
+                }
 
                 if ((bMinValuesReceived == true) && (value < 1) && (bPrevValueValidate == true) && (!(prevValue < 1)))
                 {

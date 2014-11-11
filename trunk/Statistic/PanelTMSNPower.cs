@@ -395,7 +395,7 @@ namespace Statistic
                         {
                             if (tg.id_tm > 0)
                             {
-                                dblTECComponentPower_TM += setTextToLabelVal(null, tg.m_powerMinute_TM);
+                                dblTECComponentPower_TM += setTextToLabelVal(null, tg.m_powerCurrent_TM);
                             }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";

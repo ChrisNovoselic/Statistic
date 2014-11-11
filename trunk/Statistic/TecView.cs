@@ -383,10 +383,10 @@ namespace Statistic
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.m_powerMinute_TM);
+                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.m_powerCurrent_TM);
 
-                    if (tg.m_powerMinute_TM < 1)
-                        if (!(tg.m_powerMinute_TM < 0))
+                    if (tg.m_powerCurrent_TM < 1)
+                        if (!(tg.m_powerCurrent_TM < 0))
                             curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
                         else
                             ;
@@ -395,7 +395,7 @@ namespace Statistic
                         curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
-                        power_TM += tg.m_powerMinute_TM;
+                        power_TM += tg.m_powerCurrent_TM;
                     }
 
                     ////Отладка - изменяем состояние
@@ -707,7 +707,7 @@ namespace Statistic
             {
                 foreach (TG t in g.m_listTG)
                 {
-                    t.m_powerMinute_TM = -1F;
+                    t.m_powerCurrent_TM = -1F;
                 }
             }
 
@@ -768,7 +768,7 @@ namespace Statistic
                             break;
                     }
 
-                    if (!(tgTmp.m_powerMinute_TM == value)) tgTmp.m_powerMinute_TM = value; else ;
+                    if (!(tgTmp.m_powerCurrent_TM == value)) tgTmp.m_powerCurrent_TM = value; else ;
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
@@ -3514,6 +3514,9 @@ namespace Statistic
                     minuteVal += value;
                     tgTmp.m_powerMinutes[min] = value / 1000;
                     //tgTmp.receivedMin[min] = true;
+
+                    //Признак получения значения хотя бы за один интервал
+                    if (tgTmp.m_bPowerMinutesRecieved == false) tgTmp.m_bPowerMinutesRecieved = true; else ;
                 }
 
                 if (jump == false)
@@ -3635,7 +3638,13 @@ namespace Statistic
                     {
                         t = 0;
                         foreach (TG tg in comp.m_listTG) {
-                            if ((tg.m_powerMinutes[m] < 0) && (dictTGRecievedValues.ContainsKey (tg.id_tm) == true))
+                            if ((tg.m_bPowerMinutesRecieved = dictTGRecievedValues.ContainsKey(tg.id_tm)) == false)
+                                //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
+                                continue;
+                            else
+                                ;
+
+                            if (tg.m_powerMinutes[m] < 0)
                             {
                                 lastMin--;
                                 break;
