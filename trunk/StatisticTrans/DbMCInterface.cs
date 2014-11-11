@@ -101,9 +101,15 @@ namespace StatisticCommon
 
         protected override bool Disconnect()
         {
-            bool result = true, bRes = false;
+            bool result = true
+                , bRes = false;
 
             return result;
+        }
+
+        public override void Disconnect(out int err)
+        {
+            err = 0;
         }
 
         Modes.BusinessLogic.IGenObject addIGO (int idInnner)

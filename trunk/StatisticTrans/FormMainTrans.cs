@@ -1112,7 +1112,7 @@ namespace StatisticTrans
 
         protected void trans_auto_next () {
             Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex);
-            
+
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
                 comboBoxTECComponent.SelectedIndex ++;

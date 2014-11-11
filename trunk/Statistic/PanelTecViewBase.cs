@@ -250,7 +250,8 @@ namespace Statistic
                     // 
                     this.источникАСКУЭToolStripMenuItem.Name = "источникАСКУЭToolStripMenuItem";
                     this.источникАСКУЭToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-                    this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3 мин";
+                    //Установлено в конструкторе "родителя"
+                    //this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3 мин";
                     this.источникАСКУЭToolStripMenuItem.Checked = true;
                     //this.источникАСКУЭToolStripMenuItem.Enabled = false;
                     // 
@@ -281,8 +282,15 @@ namespace Statistic
             {
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
 
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3";
+                if (this is HZedGraphControlHours)
+                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @"0";
+                else
+                    ;
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @" мин";
+
                 // 
-                // zedGraphMin
+                // zedGraph
                 // 
                 this.Dock = System.Windows.Forms.DockStyle.Fill;
                 //this.Location = arPlacement[(int)CONTROLS.zedGraphMins].pt;

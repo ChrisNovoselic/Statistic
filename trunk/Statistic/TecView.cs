@@ -3551,7 +3551,7 @@ namespace Statistic
                 , id = -1;
             double val = -1F;
             TG tgTmp = null;
-            Dictionary <int, TG> dictTG = new Dictionary<int,TG> ();
+            Dictionary <int, TG> dictTGRecievedValues = new Dictionary<int,TG> ();
 
             if (bRes == true)
             {
@@ -3584,16 +3584,17 @@ namespace Statistic
                         ;
 
                     tgTmp = null;
-                    if (dictTG.ContainsKey (id) == false) {
+                    if (dictTGRecievedValues.ContainsKey(id) == false)
+                    {
                         tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
 
                         if (! (tgTmp == null))
-                            dictTG.Add (id, tgTmp);
+                            dictTGRecievedValues.Add(id, tgTmp);
                         else
                             ;
                     }
                     else
-                        tgTmp = dictTG [id];
+                        tgTmp = dictTGRecievedValues[id];
 
                     if (tgTmp == null)
                     {
@@ -3634,7 +3635,7 @@ namespace Statistic
                     {
                         t = 0;
                         foreach (TG tg in comp.m_listTG) {
-                            if (tg.m_powerMinutes[m] < 0)
+                            if ((tg.m_powerMinutes[m] < 0) && (dictTGRecievedValues.ContainsKey (tg.id_tm) == true))
                             {
                                 lastMin--;
                                 break;

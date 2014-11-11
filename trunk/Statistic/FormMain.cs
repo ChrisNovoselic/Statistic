@@ -59,6 +59,8 @@ namespace Statistic
 
             if (!(m_TCPServer.Start() == 0)) Abort(@"Запуск дублирующего экземпляра приложения", true); else ;
 
+            AdminTS.m_sOwner_PBR = 1; //Признак владельца ПБР - пользователь
+
             tclTecViews.OnClose += delegateOnCloseTab;
         }
 

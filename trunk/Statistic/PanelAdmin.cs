@@ -207,7 +207,6 @@ namespace Statistic
                 case FormChangeMode.MANAGER.DISP:
                     //Возможность редактирования значений ПБР: изменяема, НЕ разрешена
                     m_admin = new AdminTS_KomDisp(new bool[] { true, false });
-                    AdminTS.m_sOwner_PBR = 1; //Признак владельца ПБР - пользователь
                     break;
                 case FormChangeMode.MANAGER.NSS:
                     //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
