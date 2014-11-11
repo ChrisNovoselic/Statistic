@@ -985,8 +985,11 @@ namespace Statistic
                     ;
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    for (j = 0; j < min; j++)
-                        valueEBefore += m_parent.m_tecView.listTG[i].m_powerMinutes[j] / 20;
+                    if (m_parent.m_tecView.listTG[i].m_bPowerMinutesRecieved == true)
+                        for (j = 0; j < min; j++)
+                            valueEBefore += m_parent.m_tecView.listTG[i].m_powerMinutes[j] / 20;
+                    else
+                        ;
 
                 showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value, true, string.Empty);
                 //if (this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM_FUTURE_EE] = false)

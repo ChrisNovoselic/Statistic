@@ -3634,13 +3634,17 @@ namespace Statistic
                 for (m = min; !(m < 0); m--)
                 {
                     c = 0;
-                    foreach (TECComponent comp in m_localTECComponents)
+                    foreach (TECComponent comp in m_localTECComponents) //listTG ???
                     {
                         t = 0;
                         foreach (TG tg in comp.m_listTG) {
                             if ((tg.m_bPowerMinutesRecieved = dictTGRecievedValues.ContainsKey(tg.id_tm)) == false)
+                            {
+                                t++;
+
                                 //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
                                 continue;
+                            }
                             else
                                 ;
 
@@ -3651,7 +3655,7 @@ namespace Statistic
                             }
                             else ;
 
-                            t ++;
+                            t++;
                         }
 
                         //Проверка досрочного прерывания цикла

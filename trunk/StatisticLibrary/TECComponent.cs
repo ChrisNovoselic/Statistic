@@ -28,29 +28,28 @@ namespace StatisticCommon
         public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
         public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
 
-        public double[] m_powerMinutes; //для мин./значений в течении часа
-        public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
-        public double m_powerCurrent_TM; //для текущего значения ТМ
-        public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
+        //public double[] m_powerMinutes; //для мин./значений в течении часа
+        //public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
+        //public double m_powerCurrent_TM; //для текущего значения ТМ
+        //public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
+        
         //public bool[] receivedMin;
         //public bool[,] receivedHourHalf;
         //public bool receivedHourHalf1Addon;
         //public bool receivedHourHalf2Addon;
+
         //public int id;
         public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
         public int id_tm;
         //public TECComponent m_owner;
         public int m_id_owner_gtp,
                     m_id_owner_pc;
-        public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл.
+        public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
 
         //public TG(TECComponent comp)
         public TG()
         {
-            //this.m_owner = comp;
-            m_powerMinutes = new double[21];
-            //receivedMin = new bool[21];
-            //receivedHourHalf = new bool[2, 24];
+            //m_powerMinutes = new double[21];
 
             ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
 
