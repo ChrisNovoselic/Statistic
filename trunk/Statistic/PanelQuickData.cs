@@ -873,7 +873,7 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerCurrent_TM, ref value_TM);
+                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
 
                                 i++;
                             }
@@ -885,7 +885,7 @@ namespace Statistic
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                     {
-                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, tg.m_powerCurrent_TM, ref value_TM);
+                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
 
                         i++;
                     }
@@ -960,14 +960,16 @@ namespace Statistic
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
                 {
-                    if (m_parent.m_tecView.listTG[i].m_bPowerMinutesRecieved == false)
+                    if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == false)
                         //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
                         continue;
                     else
                         ;
 
-                    if (! (m_parent.m_tecView.listTG[i].m_powerMinutes[min] < 0))
-                        if (m_parent.m_tecView.listTG[i].m_powerMinutes[min] > 1) value += m_parent.m_tecView.listTG[i].m_powerMinutes[min]; else ;
+                    if (! (m_parent.m_tecView.m_dictValuesTG [m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min] < 0))
+                        if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min] > 1)
+                            value += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min];
+                        else ;
                     else {
                         bMinValuesReceived = false;
 
@@ -985,9 +987,9 @@ namespace Statistic
                     ;
 
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    if (m_parent.m_tecView.listTG[i].m_bPowerMinutesRecieved == true)
+                    if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == true)
                         for (j = 0; j < min; j++)
-                            valueEBefore += m_parent.m_tecView.listTG[i].m_powerMinutes[j] / 20;
+                            valueEBefore += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] / 20;
                     else
                         ;
 
@@ -1131,9 +1133,9 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                if (!(tg.m_powerMinutes[min] < 0))
+                                if (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0))
                                 {
-                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], tg.m_powerMinutes[min]);
+                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
                                     if (m_parent.m_tecView.currHour == true)
                                         m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                                     else
@@ -1154,9 +1156,9 @@ namespace Statistic
                 {
                     foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
                     {
-                        if (!(comp.m_listTG[0].m_powerMinutes[min] < 0))
+                        if (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0))
                         {
-                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], comp.m_listTG[0].m_powerMinutes[min]);
+                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]);
                             if (m_parent.m_tecView.currHour == true)
                                 m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                             else

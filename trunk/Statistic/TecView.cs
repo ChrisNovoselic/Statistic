@@ -87,6 +87,13 @@ namespace Statistic
             public double valuesREC;
         }
 
+        public class valuesTG : Object {
+            public double[] m_powerMinutes; //для мин./значений в течении часа
+            public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
+            public double m_powerCurrent_TM; //для текущего значения ТМ
+            public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
+        }
+
         public class valuesTECComponent : values
         {
             //public volatile double[] valuesREC;
@@ -127,6 +134,7 @@ namespace Statistic
         //public volatile int m_indx_TECComponent;
         public List <TECComponentBase> m_localTECComponents;
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
+        public volatile Dictionary<int, TecView.valuesTG>m_dictValuesTG;
 
         public CONN_SETT_TYPE[] m_arTypeSourceData;
         public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к
@@ -182,6 +190,8 @@ namespace Statistic
             m_valuesMins = new valuesTEC [21];
             m_valuesHours = new valuesTEC [24];
 
+            m_dictValuesTG = new Dictionary<int,valuesTG> ();
+
             m_localTECComponents = new List<TECComponentBase>();
             //tgsName = new List<System.Windows.Forms.Label>();
 
@@ -220,6 +230,8 @@ namespace Statistic
                     //    else
                     //        ;
                     //}
+
+                    initDictValuesTG (c);
                 }
             }
             else
@@ -234,8 +246,11 @@ namespace Statistic
 
                     foreach (TECComponent c in m_tec.list_TECComponents)
                     {
-                        if (tg.m_id == c.m_id)
+                        if (tg.m_id == c.m_id) {
                             m_localTECComponents.Add(c);
+
+                            initDictValuesTG(c);
+                        }
                         else
                             ;
                     }
@@ -254,6 +269,15 @@ namespace Statistic
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int,valuesTECComponent> (); else ;
                     m_dictValuesTECComponent[i].Add(c.m_id, new TecView.valuesTECComponent ());
                 }
+        }
+
+        private void initDictValuesTG(TECComponent comp)
+        {
+            foreach (TG tg in comp.m_listTG)
+                if (m_dictValuesTG.ContainsKey(tg.m_id) == false)
+                    m_dictValuesTG.Add(tg.m_id, new valuesTG());
+                else
+                    ;
         }
 
         public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
@@ -383,10 +407,10 @@ namespace Statistic
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.m_powerCurrent_TM);
+                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
 
-                    if (tg.m_powerCurrent_TM < 1)
-                        if (!(tg.m_powerCurrent_TM < 0))
+                    if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
+                        if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
                             curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
                         else
                             ;
@@ -395,7 +419,7 @@ namespace Statistic
                         curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
-                        power_TM += tg.m_powerCurrent_TM;
+                        power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
                     }
 
                     ////Отладка - изменяем состояние
@@ -585,18 +609,19 @@ namespace Statistic
                 {
                     foreach (TG tg in g.m_listTG)
                     {
-                        if (tg.m_power_LastMinutesTM == null)
-                            tg.m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                        if (m_dictValuesTG[tg.m_id].m_power_LastMinutesTM == null)
+                            m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
                         else {
-                            if (!(tg.m_power_LastMinutesTM.Length == m_dictValuesTECComponent.Length)) {
-                                tg.m_power_LastMinutesTM = null;
+                            if (!(m_dictValuesTG[tg.m_id].m_power_LastMinutesTM.Length == m_dictValuesTECComponent.Length))
+                            {
+                                m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = null;
 
-                                tg.m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                                m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
                             } else
                                 ;
                         }
 
-                        tg.m_power_LastMinutesTM [i] = 0F;
+                        m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[i] = 0F;
                     }
                     
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int, valuesTECComponent>(); else ;
@@ -669,7 +694,7 @@ namespace Statistic
         private void GetCurrentTMGenRequest()
         {
             //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(-1, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields) {
@@ -703,11 +728,11 @@ namespace Statistic
             dtServer = dtServer.ToUniversalTime();
             currentMinuteTM_GenError = false;
 
-            foreach (TECComponent g in m_tec.list_TECComponents)
+            foreach (TECComponent g in m_localTECComponents)
             {
-                foreach (TG t in g.m_listTG)
+                foreach (TG tg in g.m_listTG)
                 {
-                    t.m_powerCurrent_TM = -1F;
+                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
                 }
             }
 
@@ -768,7 +793,7 @@ namespace Statistic
                             break;
                     }
 
-                    if (!(tgTmp.m_powerCurrent_TM == value)) tgTmp.m_powerCurrent_TM = value; else ;
+                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value)) m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value; else ;
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
@@ -1578,12 +1603,12 @@ namespace Statistic
                 m_valuesMins = new valuesTEC[cnt];
 
                 //Следовательно и для ТГ требуется изменить размер массива
-                foreach (TECComponent g in m_tec.list_TECComponents)
+                foreach (TECComponent g in m_localTECComponents)
                 {
                     foreach (TG tg in g.m_listTG)
                     {
-                        tg.m_powerMinutes = null;
-                        tg.m_powerMinutes = new double [cnt];
+                        this.m_dictValuesTG[tg.m_id].m_powerMinutes = null;
+                        this.m_dictValuesTG[tg.m_id].m_powerMinutes = new double[cnt];
                     }
                 }
             }
@@ -1607,13 +1632,23 @@ namespace Statistic
             }
 
             //foreach (TECComponent g in m_tec.list_TECComponents)
-            foreach (TECComponent g in m_localTECComponents)
+            foreach (TECComponent comp in m_localTECComponents)
             {
-                foreach (TG t in g.m_listTG)
+                foreach (TG tg in comp.m_listTG)
                 {
-                    for (int i = 0; i < t.m_powerMinutes.Length; i++)
+                    if ((! (m_dictValuesTG[tg.m_id].m_powerMinutes == null)) && (!(m_dictValuesTG[tg.m_id].m_powerMinutes.Length == m_valuesMins.Length)))
+                        m_dictValuesTG[tg.m_id].m_powerMinutes = null;
+                    else
+                        ;
+
+                    if (m_dictValuesTG[tg.m_id].m_powerMinutes == null)
+                        m_dictValuesTG[tg.m_id].m_powerMinutes = new double[m_valuesMins.Length];
+                    else
+                        ;
+
+                    for (int i = 0; i < m_dictValuesTG[tg.m_id].m_powerMinutes.Length; i++)
                     {
-                        t.m_powerMinutes[i] = -1; //Признак НЕполучения данных
+                        m_dictValuesTG[tg.m_id].m_powerMinutes[i] = -1; //Признак НЕполучения данных
                     }
                 }
             }
@@ -3252,7 +3287,7 @@ namespace Statistic
                                 //if (!(hour < 24)) hour -= 24; else ;
                                 if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                                 {
-                                    tg.m_power_LastMinutesTM[hour - 0] = value;
+                                    m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = value;
 
                                     //Запрос с учетом значения перехода через сутки
                                     if (value > 1)
@@ -3310,7 +3345,7 @@ namespace Statistic
                             hour = dtVal.Hour + 1;
                             if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                             {
-                                comp.m_listTG[0].m_power_LastMinutesTM[hour - 0] = value;
+                                m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = value;
 
                                 if (value > 1)
                                     m_valuesHours[hour - 1].valuesLastMinutesTM += value;
@@ -3512,11 +3547,11 @@ namespace Statistic
                     }
 
                     minuteVal += value;
-                    tgTmp.m_powerMinutes[min] = value / 1000;
+                    m_dictValuesTG[tgTmp.m_id].m_powerMinutes [min] = value / 1000;
                     //tgTmp.receivedMin[min] = true;
 
                     //Признак получения значения хотя бы за один интервал
-                    if (tgTmp.m_bPowerMinutesRecieved == false) tgTmp.m_bPowerMinutesRecieved = true; else ;
+                    if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
                 }
 
                 if (jump == false)
@@ -3613,7 +3648,7 @@ namespace Statistic
                     else
                         ;
 
-                    tgTmp.m_powerMinutes [min + 1] = val;
+                    m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min + 1] = val;
                     m_valuesMins [min + 1].valuesFact += val;
                 }
             }
@@ -3638,7 +3673,7 @@ namespace Statistic
                     {
                         t = 0;
                         foreach (TG tg in comp.m_listTG) {
-                            if ((tg.m_bPowerMinutesRecieved = dictTGRecievedValues.ContainsKey(tg.id_tm)) == false)
+                            if ((m_dictValuesTG [tg.m_id].m_bPowerMinutesRecieved = dictTGRecievedValues.ContainsKey(tg.id_tm)) == false)
                             {
                                 t++;
 
@@ -3648,7 +3683,7 @@ namespace Statistic
                             else
                                 ;
 
-                            if (tg.m_powerMinutes[m] < 0)
+                            if (m_dictValuesTG[tg.m_id].m_powerMinutes[m] < 0)
                             {
                                 lastMin--;
                                 break;
@@ -3679,7 +3714,7 @@ namespace Statistic
                         {
                             t = 0;
                             foreach (TG tg in comp.m_listTG) {
-                                tg.m_powerMinutes[m] = -1;
+                                m_dictValuesTG[tg.m_id].m_powerMinutes[m] = -1;
 
                                 t ++;
                             }

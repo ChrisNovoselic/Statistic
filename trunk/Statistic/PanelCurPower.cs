@@ -442,7 +442,7 @@ namespace Statistic
                         foreach (TG tg in g.m_listTG)
                         {
                             if (tg.id_tm > 0) {
-                                dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], tg.m_powerCurrent_TM);
+                                dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
                             }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";
