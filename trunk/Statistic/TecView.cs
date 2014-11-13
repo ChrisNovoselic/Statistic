@@ -339,18 +339,21 @@ namespace Statistic
                 ;
             states.Add((int)StatesMachine.LastValue_TM_Gen);
             if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
-            {
                 states.Add((int)StatesMachine.Hours_Fact);
-                states.Add((int)StatesMachine.CurrentMins_Fact);
-            }
             else
                 if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                {
                     states.Add((int)StatesMachine.Hours_TM);
-                    states.Add((int)StatesMachine.CurrentMins_TM);
-                }
                 else
                     ;
+
+            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                states.Add((int)StatesMachine.CurrentMins_Fact);
+            else
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    states.Add((int)StatesMachine.CurrentMins_TM);
+                else
+                    ;
+
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);
         }
@@ -721,11 +724,10 @@ namespace Statistic
                 id = -1;
             double value = -1;
             DateTime dtLastChangedAt =
-                m_dtLastChangedAt_TM_Gen = DateTime.Now
-                , dtServer = serverTime;
+                m_dtLastChangedAt_TM_Gen = DateTime.UtcNow
+                , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
 
-            dtServer = dtServer.ToUniversalTime();
             currentMinuteTM_GenError = false;
 
             foreach (TECComponent g in m_localTECComponents)
@@ -777,7 +779,10 @@ namespace Statistic
                     {
                         currentMinuteTM_GenError = true;
 
-                        return true;
+                        Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
+
+                        //return true;
+                        break; //bRes по-прежнему == true ???
                     }
                     else
                         ;

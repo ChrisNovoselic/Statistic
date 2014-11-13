@@ -185,6 +185,7 @@ namespace Statistic
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
+            //Отладка ???!!!
             int DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
@@ -192,6 +193,10 @@ namespace Statistic
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
+
+                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
+
                     EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
                 } else ;
             }
