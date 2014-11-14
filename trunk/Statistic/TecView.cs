@@ -108,7 +108,7 @@ namespace Statistic
         }
 
         public object m_lockValue;
-        
+
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public volatile bool currHour;
         //private bool m_bCurrHour; public volatile bool CurrHour { }
@@ -779,7 +779,7 @@ namespace Statistic
                     {
                         currentMinuteTM_GenError = true;
 
-                        Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
+                        Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
 
                         //return true;
                         break; //bRes по-прежнему == true ???

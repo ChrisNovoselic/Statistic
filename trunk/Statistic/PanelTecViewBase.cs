@@ -1474,7 +1474,8 @@ namespace Statistic
                 pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + " час";
 
-            pane.Title.Text += @" (" + m_ZedGraphMins.SourceDataText + @")";
+            //По просьбе пользователей УБРАТЬ - источник данных
+            //pane.Title.Text += @" (" + m_ZedGraphMins.SourceDataText + @")";
 
             pane.XAxis.Scale.Min = 0.5;
             pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
@@ -1664,9 +1665,10 @@ namespace Statistic
             pane.XAxis.Type = AxisType.Text;
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
-            pane.Title.Text = "Мощность (" +
-            m_ZedGraphHours.SourceDataText  +
-            @") на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+            pane.Title.Text = "Мощность " +
+            //По просьбе пользователей УБРАТЬ - источник данных
+            //@"(" + m_ZedGraphHours.SourceDataText  + @") " +
+            @"на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
