@@ -2494,7 +2494,7 @@ namespace Statistic
 
             //Отладка ???
             if (hour == 0)
-                hour = 1;
+                ; //hour = 1;
             else
                 ;
 
@@ -3105,7 +3105,7 @@ namespace Statistic
                 hour = 24;
             else
                 if (hour == 0)
-                    hour = 1;
+                    ; //hour = 1;
                 else
                     ;
 
