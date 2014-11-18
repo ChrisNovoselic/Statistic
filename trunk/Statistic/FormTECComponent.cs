@@ -82,6 +82,7 @@ namespace Statistic
             m_list_data_original = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
             m_list_data = new DataTable[(int)(FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)];
             
+            m_idListener = DbSources.Sources ().Register (connSett, false, @"Изменение состава ТЭЦ(ГТП, ЩУ)");
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
             
             int i = -1;
@@ -93,6 +94,8 @@ namespace Statistic
                 else ;
 
                 m_list_data[i] = m_list_data_original[i].Copy ();
+
+                Logging.Logg().Debug(@"FormTECComponent::FormTECComponent () - m_list_data[" + ((FormChangeMode.MODE_TECCOMPONENT)i).ToString () + @"].Columns.Count = " + m_list_data[i].Columns.Count);
             }
 
             m_list_dataRow = new List <DataRow[]> (); //[(int)(INDEX_UICONTROL.DATAGRIDVIEW_TG - INDEX_UICONTROL.DATAGRIDVIEW_TEC + 1)];
@@ -320,6 +323,8 @@ namespace Statistic
         {
             int id_tec = getIdSelectedDataRow(INDEX_UICONTROL.DATAGRIDVIEW_TEC),
                 id_teccomp = -1;
+
+            Logging.Logg().Debug(@"FormTECComponent::getListTG () - m_list_data[" + ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.Items.Count).ToString() + @"].Columns.Count = " + m_list_data[comboBoxMode.Items.Count].Columns.Count);
 
             m_list_dataRow[(int)INDEX_UICONTROL.DATAGRIDVIEW_TG] = null;
             switch (comboBoxMode.SelectedIndex)
