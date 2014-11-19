@@ -3207,6 +3207,9 @@ namespace Statistic
             }
             else
             {
+                lastHourError = 
+                lastHourHalfError = ! bRes;
+
                 if (currHour == true)
                 {
                     lastHour = hour;
@@ -3419,7 +3422,7 @@ namespace Statistic
                     if (! ((m_curDate.Minute / 3) == 0))
                     {//Ошибка - номер 3-хмин > 1
                         lastMinError = true;
-                        lastMin = ((m_curDate.Minute) / 3) + 1;
+                        //lastMin = ((m_curDate.Minute) / 3) + 1;
                     }
                     else
                         ; //Успех
@@ -3596,6 +3599,8 @@ namespace Statistic
             TG tgTmp = null;
             Dictionary <int, TG> dictTGRecievedValues = new Dictionary<int,TG> ();
 
+            lastMinError = false;
+
             if (bRes == true)
             {
                 bRes = table.Rows.Count > 0;
@@ -3732,6 +3737,17 @@ namespace Statistic
                     else
                         break; //За эту мин. ПОЛНые данные, прекратить цикл
                 }
+            }
+
+            lastMinError = ! bRes;
+
+            if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / 1))))
+            {
+                lastMinError = true;
+                //lastMin = ((selectedTime.Minute - 1) / 1) + 1;
+            }
+            else
+            {
             }
 
             return bRes;

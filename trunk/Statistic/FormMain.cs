@@ -57,7 +57,7 @@ namespace Statistic
             m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
             m_TCPServer.delegateRead = ReadAnalyzer;
 
-            if (!(m_TCPServer.Start() == 0)) Abort(@"Запуск дублирующего экземпляра приложения", true); else ;
+            if (!(m_TCPServer.Start() == 0)) Abort(@"Запуск дублирующего экземпляра приложения", true, false); else ;
 
             AdminTS.m_sOwner_PBR = 1; //Признак владельца ПБР - пользователь
 
