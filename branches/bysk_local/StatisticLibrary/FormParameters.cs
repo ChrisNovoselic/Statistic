@@ -208,7 +208,10 @@ namespace StatisticCommon
             int err = -1;
             DataTable table = null;            
 
-            table = DbTSQLInterface.Select (ref m_dbConn, @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'", null, null, out err);
+            string query = string.Empty;
+            //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
+            query = string.Format (@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
+            table = DbTSQLInterface.Select (ref m_dbConn, query, null, null, out err);
             if (table.Rows.Count == 1)
                 strRes = table.Rows [0][@"Value"].ToString ().Trim ();
             else
@@ -220,7 +223,10 @@ namespace StatisticCommon
         private void writeString(string key, string val)
         {
             int err = -1;
-            DbTSQLInterface.ExecNonQuery (ref m_dbConn, @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'", null, null, out err);
+            string query = string.Empty;
+            //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
+            query = string.Format(@"UPDATE setup SET [VALUE] = '{0}' WHERE [KEY]='{1}'", key, val);
+            DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
         }
     }
 }
