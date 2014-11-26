@@ -232,8 +232,23 @@ namespace Statistic
                 sf.Filter = "Файл Microsoft Excel (.xls) | *.xls";
                 if (sf.ShowDialog() == DialogResult.OK)
                 {
+                    string strSheetName = "Минутные_знач";
+                    //int indxItemMenuStrip = -1;
+                    //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
+                    //else
+                    //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
+                    //    else
+                    //        ;
+
+                    //if (! (indxItemMenuStrip < 0))
+                    //    strSheetName += @"(" + m_ZedGraphHours.ContextMenuStrip.Items[indxItemMenuStrip].Text + @")";
+                    //else
+                    //    ;
+                    
                     ExcelFile ef = new ExcelFile();
-                    ef.Worksheets.Add("Трёхминутные данные");
+                    ef.Worksheets.Add(strSheetName);
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (indx_TECComponent < 0)
                     {
@@ -337,8 +352,23 @@ namespace Statistic
                 sf.Filter = "Файл Microsoft Excel (.xls) | *.xls";
                 if (sf.ShowDialog() == DialogResult.OK)
                 {
+                    string strSheetName = "Часовые_знач";
+                    //int indxItemMenuStrip = -1;
+                    //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                    //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
+                    //else
+                    //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
+                    //    else
+                    //        ;
+
+                    //if (! (indxItemMenuStrip < 0))
+                    //    strSheetName += @" (" + m_ZedGraphHours.ContextMenuStrip.Items[indxItemMenuStrip].Text + @")";
+                    //else
+                    //    ;
+
                     ExcelFile ef = new ExcelFile();
-                    ef.Worksheets.Add("Часовые данные");
+                    ef.Worksheets.Add(strSheetName);
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (indx_TECComponent < 0)
                     {
