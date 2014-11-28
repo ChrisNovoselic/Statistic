@@ -605,20 +605,38 @@ namespace StatisticCommon
             DateTime dtReq = usingDate.Date.AddHours(hour);
             string request = string.Empty;
 
-            request = @"SELECT [ID]," +
-	            //--AVG ([value]) as VALUE
-	            @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
-	            @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]" +
-	            @" FROM (" +
-		            //--Привести дату/время к МСК (добавить разность с UTC)
-		            @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
-                        @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
-                        @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
-                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                        @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).ToString(@"yyyyMMdd HH:00:01") + @"')" +
-	            @") as S0" +
-	            @" GROUP BY S0.[ID], DATEPART(MINUTE, S0.[last_changed_at])" +
-	            @" ORDER BY [MINUTE]";
+            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE])
+            {
+                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                    request = @"SELECT [ID]," +
+                        //--AVG ([value]) as VALUE
+                        @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
+                        @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]" +
+                        @" FROM (" +
+                            //--Привести дату/время к МСК (добавить разность с UTC)
+                            @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+                                @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
+                                @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+                                //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).ToString(@"yyyyMMdd HH:00:01") + @"')" +
+                        @") as S0" +
+                        @" GROUP BY S0.[ID], DATEPART(MINUTE, S0.[last_changed_at])" +
+                        @" ORDER BY [MINUTE]";
+                    break;
+                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
+                    switch (type())
+                    {
+                        case TEC.TEC_TYPE.COMMON:
+                            break;
+                        case TEC_TYPE.BIYSK:
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
             return request;
         }
@@ -633,7 +651,7 @@ namespace StatisticCommon
                                 @")" +
                                 @" ORDER BY DATA_DATE";
         }
-        
+
         public string hoursFactRequest(DateTime usingDate, string sensors)
         {
             string request = string.Empty;
