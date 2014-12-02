@@ -160,7 +160,10 @@ namespace StatisticCommon
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
-            loadParam();
+            if (err == 0)
+                loadParam();
+            else
+                ;
 
             DbSources.Sources().UnRegister(idListener);
         }
@@ -197,8 +200,11 @@ namespace StatisticCommon
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
             
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+            if (err == 0)
+                for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+            else
+                ;
 
             DbSources.Sources().UnRegister(idListener);
         }

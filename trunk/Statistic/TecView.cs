@@ -1705,7 +1705,7 @@ namespace Statistic
                 m_valuesHours[i].valuesPBRe =
                 m_valuesHours[i].valuesUDGe = 0;
 
-                m_valuesHours[i].valuesForeignCommand = true;
+                m_valuesHours[i].valuesForeignCommand = false;
             }
 
             //m_valuesHours.valuesFactAddon =
@@ -1738,7 +1738,7 @@ namespace Statistic
                 m_dictValuesTECComponent[indx][id].valuesPBRe =
                 m_dictValuesTECComponent[indx][id].valuesUDGe = 0.0;
 
-                m_dictValuesTECComponent[indx][id].valuesForeignCommand = true;
+                m_dictValuesTECComponent[indx][id].valuesForeignCommand = false;
             }
         }
 
@@ -1760,7 +1760,7 @@ namespace Statistic
                 m_valuesHours[i].valuesPBRe =
                 m_valuesHours[i].valuesUDGe = 0;
 
-                m_valuesHours[i].valuesForeignCommand = true;
+                m_valuesHours[i].valuesForeignCommand = false;
 
                 ClearAdminTECComponentValues(i);
             }
