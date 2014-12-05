@@ -14,13 +14,13 @@ namespace Statistic
     {
         protected class ColumnProperies {
             public int width;
-            public float widthRel;
+            public /*float*/ int widthPerc;
             public string headerText;
             public string name;
 
             public DataGridViewTextBoxColumn obj;
         };
-        
+
         public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
         protected ColumnProperies [] m_arColumns;
         protected int m_iWIdthDefault;
@@ -42,7 +42,7 @@ namespace Statistic
 
             for (i = 0; i < m_arColumns.Length; i++)
             {
-                m_arColumns[i].widthRel = (float)m_arColumns[i].width / m_iWIdthDefault;
+                m_arColumns[i].widthPerc = (int)Math.Ceiling ((decimal)m_arColumns[i].width / m_iWIdthDefault * 100);
             }
 
             this.ClientSizeChanged += new EventHandler(DataGridViewTables_ClientSizeChanged);
@@ -54,7 +54,8 @@ namespace Statistic
         private void DataGridViewTables_ClientSizeChanged(object obj, EventArgs ev)
         {
             bool bWidthDefault = true;
-            if (((DataGridViewTables)obj).ClientSize.Width > (m_iWIdthDefault + 19)) {
+            if (((DataGridViewTables)obj).ClientSize.Width > (m_iWIdthDefault + this.VerticalScrollBar.Width))
+            {
                 bWidthDefault = false;
             }
             else {
@@ -65,7 +66,7 @@ namespace Statistic
                     m_arColumns [i].obj.Width = m_arColumns [i].width;
                 }
                 else {
-                    m_arColumns[i].obj.Width = (int)Math.Ceiling (m_arColumns [i].widthRel * ((DataGridViewTables)obj).ClientSize.Width);
+                    m_arColumns[i].obj.Width = (int)Math.Ceiling((((double)m_arColumns[i].widthPerc / 100) * ((DataGridViewTables)obj).ClientSize.Width));
                 }
             }
         }
@@ -126,9 +127,15 @@ namespace Statistic
             //this.dgwHours.Size = arPlacement[(int)CONTROLS.dgwHours].sz;
             this.TabIndex = 7;
             this.RowTemplate.Resizable = DataGridViewTriState.False;
+
+            this.ContextMenu = new ContextMenu ();
+            this.ContextMenu.MenuItems.Add(this.m_arColumns[(int)INDEX_COLUMNS.LAST_MINUTES].headerText, this.DataGridViewHours_ContextMenu_OnCLick);
         }
 
-        public DataGridViewHours() : base (new int [] {25, 48, 48, 49, 49, 42, 49})
+        private void DataGridViewHours_ContextMenu_OnCLick (object obj, EventArgs ev) {
+        }
+
+        public DataGridViewHours() : base (new int [] {27, 47, 47, 47, 47, 42, 46})
         {
             m_arColumns[(int)INDEX_COLUMNS.PART_TIME].headerText = @"зрё"; m_arColumns[(int)INDEX_COLUMNS.PART_TIME].name = @"Hour";
             m_arColumns[(int)INDEX_COLUMNS.FACT].headerText = @"дръђ"; m_arColumns[(int)INDEX_COLUMNS.FACT].name = @"FactHour";
