@@ -1459,9 +1459,13 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
 
+            //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных 05.12.2014
+            pane.Title.Text = @" (" + m_ZedGraphMins.SourceDataText + @")";
+            pane.Title.Text += new string(' ', 19);
+
             if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
                 int offset = m_tecView.GetSeasonHourOffset(hour + 1);
-                pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                pane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1 - offset).ToString();
                 if (HAdmin.SeasonDateTime.Hour == hour)
                     pane.Title.Text += "*";
@@ -1471,7 +1475,7 @@ namespace Statistic
                 pane.Title.Text += @" час";
             }
             else
-                pane.Title.Text = //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                pane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                                     (hour + 1).ToString() + " час";
 
             //По просьбе пользователей УБРАТЬ - источник данных
@@ -1665,7 +1669,10 @@ namespace Statistic
             pane.XAxis.Type = AxisType.Text;
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
-            pane.Title.Text = "Мощность " +
+            //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
+            pane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
+            pane.Title.Text += new string(' ', 19);
+            pane.Title.Text += "Мощность " +
             //По просьбе пользователей УБРАТЬ - источник данных
             //@"(" + m_ZedGraphHours.SourceDataText  + @") " +
             @"на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
