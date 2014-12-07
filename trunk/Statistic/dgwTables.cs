@@ -13,12 +13,20 @@ namespace Statistic
     public class DataGridViewTables : DataGridViewBase
     {
         protected class ColumnProperies {
-            //public int width;
-            public /*float*/ int widthPerc;
+            public int minWidth;
+            public int widthPerc;
             public string headerText;
             public string name;
 
             public DataGridViewTextBoxColumn obj;
+
+            public ColumnProperies(int mw, int wp, string ht, string n)
+            {
+                minWidth = mw;
+                widthPerc = wp;
+                headerText = ht;
+                name = n;
+            }
         };
 
         public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
@@ -26,16 +34,16 @@ namespace Statistic
         //protected int m_iWIdthDefault;
 
         //protected DataGridViewTables (int [] arWidthColiumns) {
-        protected DataGridViewTables(int[] arWidthPercColiumns)
+        protected DataGridViewTables(ColumnProperies[] arColuumns)
         {
             //m_arColumns = new ColumnProperies[arWidthColiumns.Length];
-            m_arColumns = new ColumnProperies[arWidthPercColiumns.Length];
+            m_arColumns = new ColumnProperies[arColuumns.Length];
 
             int i = -1;
             //m_iWIdthDefault = 0;
             for (i = 0; i < m_arColumns.Length; i++)
             {
-                m_arColumns[i] = new ColumnProperies ();
+                m_arColumns[i] = arColuumns[i]; // new ColumnProperies();
 
                 m_arColumns[i].obj = new DataGridViewTextBoxColumn();
 
@@ -43,14 +51,14 @@ namespace Statistic
                 //m_arColumns[i].width = arWidthColiumns[i];
                 //m_iWIdthDefault += m_arColumns[i].width;
 
-                //Вариант №2
-                m_arColumns[i].widthPerc = arWidthPercColiumns[i];
-            }
+                ////Вариант №2
+                //m_arColumns[i].widthPerc = arWidthPercColiumns[i];
 
-            for (i = 0; i < m_arColumns.Length; i++)
-            {
-                //m_arColumns[i].widthPerc = (int)Math.Ceiling ((decimal)m_arColumns[i].width / m_iWIdthDefault * 100);
-                m_arColumns[i].widthPerc = arWidthPercColiumns [i];
+                ////Вариант №3
+                //m_arColumns[i].minWidth = arColuumns[i].minWidth;
+                //m_arColumns[i].widthPerc = arColuumns[i].widthPerc;
+                //m_arColumns[i].headerText = arColuumns[i].headerText;
+                //m_arColumns[i].name = arColuumns[i].name;
             }
 
             this.ClientSizeChanged += new EventHandler(DataGridViewTables_ClientSizeChanged);
@@ -61,14 +69,16 @@ namespace Statistic
 
         protected void DataGridViewTables_ClientSizeChanged(object obj_, EventArgs ev_)
         {
-            int csWidth = this.ClientSize.Width - this.VerticalScrollBar.Width;
+            int csWidth = this.ClientSize.Width - this.VerticalScrollBar.Width
+                , i = -1 //цикл
+                , avgPercAdding = 0 //проценты, среднее, для добавления к ширине оставшимся отображаемым столбцам
+                , width = -1;
 
             //Проверка наличия конт./меню отображения столбцов
             if (!(this.ContextMenuStrip == null))
             {
-                int freePerc = 0 //проценты, не отображаемых столбцов
-                , i = -1 //цикл
-                , avgPercAdding = 0; //проценты, среднее, для добавления к ширине оставшимся отображаемым столбцам
+                int freePerc = 0; //проценты, не отображаемых столбцов
+
                 List<int> listNumVisibleColumns = new List<int>();
 
                 for (i = 0; i < this.ContextMenuStrip.Items.Count /*m_arColumns.Length*/; i++)
@@ -80,17 +90,24 @@ namespace Statistic
                 }
 
                 if (this.ContextMenuStrip.Items.Count > listNumVisibleColumns.Count)
-                    avgPercAdding = (int)Math.Ceiling((double)freePerc / (this.ContextMenuStrip.Items.Count - listNumVisibleColumns.Count));
+                    //avgPercAdding = (int)Math.Ceiling((double)freePerc / (this.ContextMenuStrip.Items.Count - listNumVisibleColumns.Count));
+                    avgPercAdding = (int)Math.Ceiling((double)freePerc / listNumVisibleColumns.Count);
                 else
                     ;
-
-                for (i = 0; i < this.ContextMenuStrip.Items.Count /*m_arColumns.Length*/; i++)
-                {
-                    m_arColumns[i].obj.Width = (int)Math.Ceiling((double)(m_arColumns[i].widthPerc + avgPercAdding) / 100 * csWidth);
-                }
             }
             else
             {
+            }
+
+            for (i = 0; i < m_arColumns.Length; i++)
+            {
+                width = (int)Math.Ceiling((double)(m_arColumns[i].widthPerc + avgPercAdding) / 100 * csWidth);
+                if (width < m_arColumns[i].minWidth)
+                    width = m_arColumns[i].minWidth;
+                else
+                    ;
+
+                m_arColumns[i].obj.Width = width;
             }
         }
     }
@@ -180,8 +197,8 @@ namespace Statistic
 
         private void visibleColumns ()
         {
-            for (int i = 0; i < m_arColumns.Length; i ++ )
-                this.ContextMenuStrip.Items[i].Visible = ((ToolStripMenuItem)this.ContextMenuStrip.Items[(int)this.ContextMenuStrip.Items.Count - 1]).CheckState == CheckState.Checked;
+            for (int i = 0; i < this.ContextMenuStrip.Items.Count /*m_arColumns.Length*/; i++)
+                this.m_arColumns [i].obj.Visible = ((ToolStripMenuItem)this.ContextMenuStrip.Items[i]).CheckState == CheckState.Checked;
         }
 
         void DataGridViewHours_ContextMenuStrip_Click(object sender, ToolStripItemClickedEventArgs e)
@@ -205,16 +222,16 @@ namespace Statistic
 
         //public DataGridViewHours() : base (new int [] {27, 47, 47, 47, 47, 42, 46})
         public DataGridViewHours()
-            : base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
+            //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
+            : base(new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
+                                            , new ColumnProperies (47, 15, @"Факт", @"FactHour")
+                                            , new ColumnProperies (47, 15, @"ПБР", @"PBRHour")
+                                            , new ColumnProperies (47, 15, @"ПБРэ", @"PBReHour")
+                                            , new ColumnProperies (47, 15, @"УДГэ", @"UDGeHour")
+                                            , new ColumnProperies (42, 15, @"+/-", @"DeviationHour")
+                                            , new ColumnProperies (46, 15, @"59мин", @"")
+            })
         {
-            m_arColumns[(int)INDEX_COLUMNS.PART_TIME].headerText = @"Час"; m_arColumns[(int)INDEX_COLUMNS.PART_TIME].name = @"Hour";
-            m_arColumns[(int)INDEX_COLUMNS.FACT].headerText = @"Факт"; m_arColumns[(int)INDEX_COLUMNS.FACT].name = @"FactHour";
-            m_arColumns[(int)INDEX_COLUMNS.PBR].headerText = @"ПБР"; m_arColumns[(int)INDEX_COLUMNS.PBR].name = @"PBRHour";
-            m_arColumns[(int)INDEX_COLUMNS.PBRe].headerText = @"ПБРэ"; m_arColumns[(int)INDEX_COLUMNS.PBRe].name = @"PBReHour";
-            m_arColumns[(int)INDEX_COLUMNS.UDGe].headerText = @"УДГэ"; m_arColumns[(int)INDEX_COLUMNS.UDGe].name = @"UDGeHour";
-            m_arColumns[(int)INDEX_COLUMNS.DEVIATION].headerText = @"+/-"; m_arColumns[(int)INDEX_COLUMNS.DEVIATION].name = @"DeviationHour";
-            m_arColumns[(int)INDEX_COLUMNS.LAST_MINUTES].headerText = @"59мин"; m_arColumns[(int)INDEX_COLUMNS.LAST_MINUTES].name = @"";
-            
             InitializeComponents ();
 
             Name = "m_dgwTableHours";
@@ -282,15 +299,16 @@ namespace Statistic
             this.RowTemplate.Resizable = DataGridViewTriState.False;
         }
 
-        public DataGridViewMins() : base (new int [] {15, 16, 16, 16, 19, 16})
-        {
-            m_arColumns[(int)INDEX_COLUMNS.PART_TIME].headerText = @"Мин."; m_arColumns[(int)INDEX_COLUMNS.PART_TIME].name = @"Min";
-            m_arColumns[(int)INDEX_COLUMNS.FACT].headerText = @"Факт"; m_arColumns[(int)INDEX_COLUMNS.FACT].name = @"FactMin";
-            m_arColumns[(int)INDEX_COLUMNS.PBR].headerText = @"ПБР"; m_arColumns[(int)INDEX_COLUMNS.PBR].name = @"PBRMin";
-            m_arColumns[(int)INDEX_COLUMNS.PBRe].headerText = @"ПБРэ"; m_arColumns[(int)INDEX_COLUMNS.PBRe].name = @"PBReMin";
-            m_arColumns[(int)INDEX_COLUMNS.UDGe].headerText = @"УДГэ"; m_arColumns[(int)INDEX_COLUMNS.UDGe].name = @"UDGeMin";
-            m_arColumns[(int)INDEX_COLUMNS.DEVIATION].headerText = @"+/-"; m_arColumns[(int)INDEX_COLUMNS.DEVIATION].name = @"DeviationMin";
-            
+        public DataGridViewMins()
+            //: base (new int [] {15, 16, 16, 16, 19, 16})
+            : base(new ColumnProperies[] { new ColumnProperies (50, 15, @"Мин.", @"Min")
+                                            , new ColumnProperies (50, 16, @"Факт", @"FactMin")
+                                            , new ColumnProperies (50, 16, @"ПБР", @"PBRMin")
+                                            , new ColumnProperies (50, 16, @"ПБРэ", @"PBReMin")
+                                            , new ColumnProperies (50, 19, @"УДГэ", @"UDGeMin")
+                                            , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
+            })
+        {            
             InitializeComponents();
 
             Name = "m_dgwTableMins";

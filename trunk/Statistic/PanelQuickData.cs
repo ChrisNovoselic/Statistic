@@ -1091,7 +1091,16 @@ namespace Statistic
                         {
                             if (m_parent.m_tecView.lastMinError == true)
                             {
-                                m_parent.m_tecView.ErrorReport("По текущему трёхминутному отрезку значений не найдено!");
+                                string strErrMsg = @"По текущему ";
+                                if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                                    strErrMsg += @"3-минутному";
+                                else
+                                    if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                                        strErrMsg += @"1-минутному";
+                                    else
+                                        ;
+                                strErrMsg += @" отрезку значений не найдено!";
+                                m_parent.m_tecView.ErrorReport(strErrMsg);
                                 m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
                                 m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
                                 m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;

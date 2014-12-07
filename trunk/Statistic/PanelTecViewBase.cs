@@ -811,7 +811,7 @@ namespace Statistic
 
             if (lastIndx > dgv.DisplayedRowCount(true))
             {
-                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true);
+                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
             }
             else
                 iFirstDisplayedScrollingRowIndex = 0;
