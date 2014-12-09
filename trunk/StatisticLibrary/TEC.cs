@@ -1113,16 +1113,36 @@ namespace StatisticCommon
                     //Если данные в БД по ГринвичУ, в аргументе мск;
                     //dt = dt.AddHours(-1 * (((dt - (TimeZone.CurrentTimeZone.ToUniversalTime(dt))).TotalHours) + 0));
                     dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
+
+                    ////Ваоиант №3 (из усредненной таблицы)
                     query = @"SELECT * FROM [dbo].[ALL_PARAM_SOTIASSO_0]" +
                             @" WHERE [ID_TEC]=" + m_id +
                             @" AND DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dt.ToString(@"yyyyMMdd HH:mm:ss") +
                             @"' AND '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"' " +
                             @"AND [ID] IN (" + sensors + @") " +
                             @"ORDER BY [ID],[last_changed_at]";
-                    //Вар. №3 - функция
+
+                    ////Вар. №4 - функция ()
                     //query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
                     //        @" WHERE [ID] IN (" + sensors + @")" +
                     //        @" ORDER BY [ID],[last_changed_at]";
+
+                    ////Вариант №5
+                    //query = @"SELECT [ID] " +
+                    //        @", SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
+                    //        @", (DATEPART(HOUR, [last_changed_at])) as [HOUR]" +
+                    //            @" FROM (" +
+                    //                //--Привести дату/время к МСК (добавить разность с UTC)
+                    //                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+                    //                    @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
+                    //                    @" WHERE  [ID_TEC] = " + m_id + " AND [ID] IN (" + sensors + @")" +
+                    //                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                    //                        @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddDays(1).ToString(@"yyyyMMdd HH:mm:ss") + @"')" +
+                    //                        //-- только крайние минуты часа
+                    //                        @" AND DATEPART(MINUTE, [last_changed_at]) = 59" +
+                    //            @") as S0" +
+                    //        @" GROUP BY S0.[ID], DATEPART(HOUR, S0.[last_changed_at])" +
+                    //        @" ORDER BY [HOUR]";
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     //Если данные в БД по мск
