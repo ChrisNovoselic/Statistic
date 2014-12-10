@@ -24,12 +24,12 @@ namespace Statistic
         };
         HMark m_markSourceData;
 
-        public Color udgColor;
-        public Color divColor;
-        public Color pColor;
-        public Color recColor;
-        public Color bgColor;
-        public Color gridColor;
+        public Color udgColor
+            , divColor
+            , pColor
+            , recColor
+            , m_bgColor_ASKUE, m_bgColor_SOTIASSO
+            , gridColor;
         public bool scale;
         public GraphTypes m_graphTypes;
         public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
@@ -53,36 +53,45 @@ namespace Statistic
 
             scale = false;
             m_markSourceData = new HMark();
+            if (FormMain.)
             m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
+            this.groupBoxSourceData.Enabled = true;            
 
             checkedSourceData();
 
             udgColor = Color.FromArgb(0, 0, 0);
             lblUDGcolor.BackColor = udgColor;
-            lblUDGcolor.ForeColor = Color.FromArgb((udgColor.R + 128) % 256, (udgColor.G + 128) % 256, (udgColor.B + 128) % 256);
+            lblUDGcolor.ForeColor = getForeColor(lblUDGcolor.BackColor);
 
             divColor = Color.FromArgb(255, 0, 0);
             lblDIVcolor.BackColor = divColor;
-            lblDIVcolor.ForeColor = Color.FromArgb((divColor.R + 128) % 256, (divColor.G + 128) % 256, (divColor.B + 128) % 256);
+            lblDIVcolor.ForeColor = getForeColor(lblDIVcolor.BackColor);
 
             pColor = Color.FromArgb(0, 128, 0);
             lblPcolor.BackColor = pColor;
-            lblPcolor.ForeColor = Color.FromArgb((pColor.R + 128) % 256, (pColor.G + 128) % 256, (pColor.B + 128) % 256);
+            lblPcolor.ForeColor = getForeColor(lblPcolor.BackColor);
 
             recColor = Color.FromArgb(255, 255, 0);
             lblRECcolor.BackColor = recColor;
-            lblRECcolor.ForeColor = Color.FromArgb((recColor.R + 128) % 256, (recColor.G + 128) % 256, (recColor.B + 128) % 256);
+            lblRECcolor.ForeColor = getForeColor(lblRECcolor.BackColor);
 
-            bgColor = Color.FromArgb(230, 230, 230);
-            lblBGcolor.BackColor = bgColor;
-            lblBGcolor.ForeColor = Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256);
+            m_bgColor_ASKUE = Color.FromArgb(231, 231, 238 /*230, 230, 230*/);
+            lblBG_ASKUE_color.BackColor = m_bgColor_ASKUE;
+            lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
+
+            m_bgColor_SOTIASSO = Color.FromArgb (231, 238, 231);
+            lblBG_SOTIASSO_color.BackColor = m_bgColor_SOTIASSO;
+            lblBG_SOTIASSO_color.ForeColor = getForeColor(lblBG_SOTIASSO_color.BackColor);
 
             gridColor = Color.FromArgb(200, 200, 200);
             lblGRIDcolor.BackColor = gridColor;
-            lblGRIDcolor.ForeColor = Color.FromArgb((gridColor.R + 128) % 256, (gridColor.G + 128) % 256, (gridColor.B + 128) % 256);
+            lblGRIDcolor.ForeColor = getForeColor(lblGRIDcolor.BackColor);
 
             m_graphTypes = GraphTypes.Bar; //Гистограмма
-            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; //Выборочно
+        }
+
+        private Color getForeColor (Color bgColor) {
+            return Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256);
         }
 
         private void checkedSourceData()
@@ -90,6 +99,17 @@ namespace Statistic
             rbtnSourceData_ASKUE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
             rbtnSourceData_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO);
             rbtnSourceData_COSTUMIZE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
+
+            if (rbtnSourceData_ASKUE.Checked == true)
+                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
+            else
+                if (rbtnSourceData_SOTIASSO.Checked == true)
+                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                else
+                    if (rbtnSourceData_COSTUMIZE.Checked == true)
+                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                    else
+                        ;
         }
 
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
@@ -150,15 +170,28 @@ namespace Statistic
             }
         }
 
-        private void lblBGcolor_Click(object sender, EventArgs e)
+        private void lblBG_ASKUE_color_Click(object sender, EventArgs e)
         {
             ColorDialog cd = new ColorDialog();
-            cd.Color = bgColor;
+            cd.Color = m_bgColor_ASKUE;
             if (cd.ShowDialog(this) == DialogResult.OK)
             {
-                bgColor = cd.Color;
-                lblBGcolor.BackColor = bgColor;
-                lblBGcolor.ForeColor = Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256);
+                m_bgColor_ASKUE = cd.Color;
+                lblBG_ASKUE_color.BackColor = m_bgColor_ASKUE;
+                lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
+            }
+        }
+
+        private void lblBG_SOTIASSO_color_Click(object sender, EventArgs e)
+        {
+            ColorDialog cd = new ColorDialog();
+            cd.Color = m_bgColor_SOTIASSO;
+            if (cd.ShowDialog(this) == DialogResult.OK)
+            {
+                m_bgColor_SOTIASSO = cd.Color;
+                lblBG_ASKUE_color.BackColor = m_bgColor_SOTIASSO;
+                lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
                 delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
@@ -203,17 +236,6 @@ namespace Statistic
         private void rbtnSourceData_Click()
         {
             checkedSourceData();
-
-            if (rbtnSourceData_ASKUE.Checked == true)
-                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
-            else
-                if (rbtnSourceData_SOTIASSO.Checked == true)
-                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
-                else
-                    if (rbtnSourceData_COSTUMIZE.Checked == true)
-                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
-                    else
-                        ;
 
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA);
         }

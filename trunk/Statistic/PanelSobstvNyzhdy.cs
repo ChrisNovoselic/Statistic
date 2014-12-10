@@ -543,7 +543,7 @@ namespace Statistic
                     }
                 }
 
-                pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
+                pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.m_bgColor_SOTIASSO);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {

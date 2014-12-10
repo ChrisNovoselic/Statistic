@@ -259,7 +259,7 @@ namespace Statistic
                     // 
                     this.источникСОТИАССОToolStripMenuItem.Name = "источникСОТИАССОToolStripMenuItem";
                     this.источникСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-                    this.источникСОТИАССОToolStripMenuItem.Text = "Источник: БД СОТИАССО - 1 мин";
+                    this.источникСОТИАССОToolStripMenuItem.Text = @"СОТИАССО"; //"Источник: БД СОТИАССО - 1 мин";
                     this.источникСОТИАССОToolStripMenuItem.Checked = false;
                     //this.источникСОТИАССОToolStripMenuItem.Enabled = false;
                 }
@@ -281,13 +281,16 @@ namespace Statistic
             private void InitializeComponent()
             {
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
-                    
-                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3";
-                if (this is HZedGraphControlHours)
-                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @"0";
-                else
-                    ;
-                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @" мин";
+
+                ////Вариант №1
+                //((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3";
+                //if (this is HZedGraphControlHours)
+                //    ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @"0";
+                //else
+                //    ;
+                //((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text += @" мин";
+                //Вариант №2
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Text = @"АИСКУЭ";
 
                 // 
                 // zedGraph
@@ -1417,7 +1420,15 @@ namespace Statistic
                 }
             }
 
-            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
+            Color colorChart = Color.Empty;
+            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
+            else
+                if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    colorChart = FormMain.formGraphicsSettings.m_bgColor_SOTIASSO;
+                else
+                    ;
+            pane.Chart.Fill = new Fill(colorChart);
 
             LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
@@ -1464,8 +1475,9 @@ namespace Statistic
             pane.YAxis.Title.Text = "";
 
             //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных 05.12.2014
-            pane.Title.Text = @" (" + m_ZedGraphMins.SourceDataText + @")";
-            pane.Title.Text += new string(' ', 19);
+            //pane.Title.Text = @" (" + m_ZedGraphMins.SourceDataText + @")";
+            pane.Title.Text = m_ZedGraphMins.SourceDataText;
+            pane.Title.Text += new string(' ', 29);
 
             if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
                 int offset = m_tecView.GetSeasonHourOffset(hour + 1);
@@ -1638,7 +1650,15 @@ namespace Statistic
                 }
             }
 
-            pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.bgColor);
+            Color colorChart = Color.Empty;
+            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
+            else
+                if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    colorChart = FormMain.formGraphicsSettings.m_bgColor_SOTIASSO;
+                else
+                    ;
+            pane.Chart.Fill = new Fill(colorChart);
 
             LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
             LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
@@ -1674,12 +1694,15 @@ namespace Statistic
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
             //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
-            pane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
-            pane.Title.Text += new string(' ', 19);
-            pane.Title.Text += "Мощность " +
-            //По просьбе пользователей УБРАТЬ - источник данных
-            //@"(" + m_ZedGraphHours.SourceDataText  + @") " +
-            @"на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+            //pane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
+            pane.Title.Text = m_ZedGraphHours.SourceDataText;
+            pane.Title.Text += new string(' ', 29);
+            pane.Title.Text +=
+                //"Мощность " +
+                ////По просьбе пользователей УБРАТЬ - источник данных
+                ////@"(" + m_ZedGraphHours.SourceDataText  + @") " +
+                //@"на " +
+                m_pnlQuickData.dtprDate.Value.ToShortDateString();
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
