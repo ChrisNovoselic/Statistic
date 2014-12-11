@@ -53,7 +53,8 @@ namespace Statistic
 
             scale = false;
             m_markSourceData = new HMark();
-            if (FormMain.)
+            //Проверка условия прав доступа к возможности смены источника данных
+            //...
             m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
             this.groupBoxSourceData.Enabled = true;            
 

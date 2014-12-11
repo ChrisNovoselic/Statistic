@@ -17,7 +17,7 @@ namespace StatisticCommon
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
-                                                    @"udn", @"itec", @"irole"
+                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
                                                     };
@@ -97,7 +97,7 @@ namespace StatisticCommon
 
         private FileINI m_FileINI;
 
-        public FormParameters_FIleINI(string nameSetupFileINI)
+        public FormParameters_FIleINI(string nameSetupFileINI) : base ()
         {
             m_FileINI = new FileINI(nameSetupFileINI);
             //ProgramBase.s_iAppID = (int)ProgramBase.ID_APP.STATISTIC;
@@ -142,12 +142,6 @@ namespace StatisticCommon
 
     public partial class FormParameters_DB : FormParameters
     {
-        private string[] KEYDB_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
-                                                    @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
-                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
-                                                    , @"Season DateTime", @"Season Action"
-                                                    };
-
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
 
@@ -174,7 +168,7 @@ namespace StatisticCommon
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_arParametrSetup[(int)i] = readString(KEYDB_PARAMETR_SETUP[(int)i], strDefault);
+                m_arParametrSetup[(int)i] = readString(NAME_PARAMETR_SETUP[(int)i], strDefault);
                 if (m_arParametrSetup[(int)i].Equals(strDefault) == true)
                 {
                     m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
@@ -186,7 +180,7 @@ namespace StatisticCommon
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_dgvData.Rows.Insert((int)i, new object[] { KEYDB_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
+                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
 
                 m_dgvData.Rows[(int)i].Height = 19;
                 m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;

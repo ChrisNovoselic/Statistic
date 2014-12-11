@@ -9,7 +9,7 @@ using System.Data.Common;
 using HClassLibrary;
 
 namespace StatisticCommon
-{    
+{
     public class HStatisticUsers : HUsers
     {
         //Идентификаторы из БД
