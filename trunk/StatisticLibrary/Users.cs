@@ -16,6 +16,32 @@ namespace StatisticCommon
         public enum ID_ROLES { UNKNOWN, KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, SOURCE_DATA = 501,
                             COUNT_ID_ROLES = 7};
 
+        //Идентификаторы из БД
+        public enum ID_ALLOWED {
+            UNKNOWN = -1
+            , SOURCEDATA_CHANGED = 1
+            , TAB_PBR_KOMDISP
+            , AUTO_TAB_PBR_KOMDISP
+            , ALARM_KOMDISP
+            , AUTO_ALARM_KOMDISP
+            , TAB_PBR_NSS
+            , MENUITEM_SETTING_ADMIN_DB_CONGIG
+            , MENUITEM_SETTING_ADMIN_DB_SOURCEDATA
+            , MENUITEM_SETTING_ADMIN_STATEUSERS
+            , MENUITEM_SETTING_ADMIN_PSW_KOMDISP_CHANGE
+            , MENUITEM_SETTING_ADMIN_PSW_ADMIN_CHANGE
+            , MENUITEM_SETTING_ADMIN_PSW_NSS_CHANGE
+            , MENUITEM_SETTING_ADMIN_TECCOMPONENT_CHANGE
+            , MENUITEM_SETTING_ADMIN_USERS_CHANGE
+            , MENUITEM_SETTING_ADMIN_ROLES_ALLOWED_CHANGE
+            , MENUCONTEXTITEM_PANELQUICKDATA_FORECASTEE
+            , MENUCONTEXTITEM_PANELQUICKDATA_TMVALUES
+            , MENUCONTEXTITEM_TABLEHOURS_COLUMN_59MIN
+            , MENUITEM_SETTINGS_PARAMETERS_APP
+            , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
+            ,
+        };
+
         public HStatisticUsers(int iListenerId)
             : base(iListenerId)
         {

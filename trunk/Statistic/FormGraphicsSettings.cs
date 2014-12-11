@@ -35,7 +35,7 @@ namespace Statistic
         public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
         private DelegateIntFunc delegateUpdateActiveGui;
         private DelegateFunc delegateHideGraphicsSettings;
-        private FormMain mainForm;
+        private FormMain m_formMain;
 
         public enum GraphTypes
         {
@@ -43,20 +43,32 @@ namespace Statistic
             Bar,
         }
 
-        public FormGraphicsSettings(FormMain mf, DelegateIntFunc delUp, DelegateFunc Hide)
+        public FormGraphicsSettings(FormMain fm, DelegateIntFunc delUp, DelegateFunc Hide)
         {
             InitializeComponent();
 
             delegateUpdateActiveGui = delUp;
             delegateHideGraphicsSettings = Hide;
-            mainForm = mf;
+            m_formMain = fm;
 
             scale = false;
             m_markSourceData = new HMark();
+
+            bool bGroupBoxSourceData = false;
+            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.ASKUE;
             //Проверка условия прав доступа к возможности смены источника данных
-            //...
-            m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
-            this.groupBoxSourceData.Enabled = true;            
+            if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
+            //if (m_formMain.m_users.IsAllowed(HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
+            //if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true))
+            {
+                bGroupBoxSourceData = true;
+                cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;
+            }
+            else
+                ;
+
+            this.groupBoxSourceData.Enabled = bGroupBoxSourceData;
+            m_markSourceData.Marked((int)cstGroupBoxSourceData);
 
             checkedSourceData();
 

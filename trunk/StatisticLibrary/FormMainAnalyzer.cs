@@ -77,26 +77,31 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
             //DbConnection connDB = DbTSQLInterface.GetConnection(m_connSettConfigDB, out err);
 
-            HStatisticUsers.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
-            FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
-
-            HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
-            FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
-
-            //DbTSQLInterface.CloseConnection (connDB, out err);
-
-            dgvTypeMessage.Rows.Add((int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE);
-            for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
+            if ((! (m_connConfigDB == null)) && (err == 0))
             {
-                dgvTypeMessage.Rows [(int)i].Cells [0].Value = true;
-                dgvTypeMessage.Rows[(int)i].Cells[1].Value = LogParse.DESC_LOGMESSAGE[(int)i];
-                dgvTypeMessage.Rows[(int)i].Cells[2].Value = 0;
+                HStatisticUsers.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
+                FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
+
+                HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
+                FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
+
+                //DbTSQLInterface.CloseConnection (connDB, out err);
+
+                dgvTypeMessage.Rows.Add((int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE);
+                for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
+                {
+                    dgvTypeMessage.Rows [(int)i].Cells [0].Value = true;
+                    dgvTypeMessage.Rows[(int)i].Cells[1].Value = LogParse.DESC_LOGMESSAGE[(int)i];
+                    dgvTypeMessage.Rows[(int)i].Cells[2].Value = 0;
+                }
+
+                m_LogParse = new LogParse ();
+                m_LogParse.Exit = LogParseExit;
+
+                Thread_ProcCheckedStart ();
             }
-
-            m_LogParse = new LogParse ();
-            m_LogParse.Exit = LogParseExit;
-
-            Thread_ProcCheckedStart ();
+            else 
+                ;
         }
 
         private void Thread_ProcChecked (object data)
@@ -121,7 +126,10 @@ namespace StatisticCommon
         {
             Disconnect ();
 
-            m_LogParse.Stop();
+            if (!(m_LogParse == null))
+                m_LogParse.Stop();
+            else
+                ;
 
             Thread_ProcCheckedStop ();
         }
@@ -150,13 +158,21 @@ namespace StatisticCommon
         private void Thread_ProcCheckedStop ()
         {
             m_bThreadCheckedAllowed = false;
-            bool joined = m_threadChecked.Join(6666);
-            if (joined == false)
-                m_threadChecked.Abort();
-            else
+            
+            if (! (m_threadChecked == null))
+            {
+                bool joined = m_threadChecked.Join(6666);
+                if (joined == false)
+                    m_threadChecked.Abort();
+                else
+                    ;
+            } else
                 ;
 
-            m_listTCPClientUsers.Clear ();
+            if (! (m_listTCPClientUsers == null))
+                m_listTCPClientUsers.Clear ();
+            else
+                ;
         }
 
         private void buttonClose_Click(object sender, EventArgs e)

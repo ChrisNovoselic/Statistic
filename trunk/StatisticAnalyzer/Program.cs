@@ -16,6 +16,8 @@ namespace StatisticAnalyzer
         [STAThread]
         static void Main()
         {
+            Logging.s_mode = Logging.LOG_MODE.FILE;
+
             ProgramBase.Start();
 
             FIleConnSett fileConnSett = new FIleConnSett ("connsett.ini", FIleConnSett.MODE.FILE);

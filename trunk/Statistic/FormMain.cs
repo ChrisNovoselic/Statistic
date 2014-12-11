@@ -22,6 +22,10 @@ namespace Statistic
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
+        public enum ID_ERROR_INIT { UNKNOWN = -1, }
+        private enum INDEX_ERROR_INIT { UNKNOWN = 0, }
+        private static string [] MSG_ERROR_INIT = { @"Неизвестная причина" };
+
         private PanelAdmin [] m_arPanelAdmin;
         PanelCurPower m_panelCurPower;
         PanelTMSNPower m_panelSNPower;
