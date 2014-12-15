@@ -871,10 +871,15 @@ namespace StatisticCommon
         {
             int j = -1;
             item = new RDGStruct();
+            double val = -1F;
 
             for (j = 0; j < allTECComponents[indxTECComponents].m_listTG.Count; j++)
                 if (allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel > 1)
-                    item.pbr += (double)m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1];
+                    if (! (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1] is DBNull) &&
+                        (double.TryParse (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1].ToString (), out val) == true))
+                        item.pbr += val;
+                    else
+                        ;
                 else
                     return ;
 

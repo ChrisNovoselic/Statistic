@@ -10,19 +10,19 @@ namespace StatisticCommon
     public abstract partial class FormParameters : FormParametersBase
     {
         public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
-                                    ALARM_USE, ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
+                                    /*ALARM_USE, */ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
                                     USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
                                     , SEASON_DATETIME, SEASON_ACTION
                                     //, GRINVICH_OFFSET_DATETIME
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
-                                                    @"Alarm Use", @"Alarm Timer Update" , @"Alarm Event Retry",
+                                                    /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
-                                                    @"лог", "сек", "сек",
+                                                    /*@"лог", */"сек", "сек",
                                                     @"стр", @"ном", @"ном"
                                                     , @"дата/время", @"ном"
                                                     //, "час"
@@ -42,7 +42,7 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"39");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_DATASOURCE, @"671");
 
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_USE, @"True");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_USE, @"True");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_UPDATE, @"300");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_EVENT_RETRY, @"900");
 

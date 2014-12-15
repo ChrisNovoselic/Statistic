@@ -3763,7 +3763,10 @@ namespace Statistic
                     case "ооап": iRes = 0; break;
                     default:
                         {
-                            if (l.Substring(0, 3) != "оап" || int.TryParse(l.Substring(3), out iRes) == false || iRes <= 0 || iRes > 24)
+                            if ((! (l.Substring(0, 3) == "оап")) ||
+                                (int.TryParse(l.Substring(3), out iRes) == false) ||
+                                (! (iRes > 0)) ||
+                                (iRes > 24))
                                 ;
                             else
                                 ;

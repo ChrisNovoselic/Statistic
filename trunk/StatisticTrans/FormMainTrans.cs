@@ -895,16 +895,16 @@ namespace StatisticTrans
         protected virtual void saveDataGridViewAdminComplete()
         {
             Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
-            
+
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 IAsyncResult asyncRes;
-                if (InvokeRequired == true)
+                //if (InvokeRequired == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
-                else
-                    Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
-                //this.EndInvoke (asynchRes);
-                //trans_auto_next ();
+                //else
+                    //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
+                ////this.EndInvoke (asynchRes);
+                //////trans_auto_next ();
             }
             else
                 ;

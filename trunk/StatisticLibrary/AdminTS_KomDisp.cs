@@ -40,7 +40,15 @@ namespace StatisticCommon
             //Дата ПБР, номер ПБР из наименования файла
             object[] prop = GetPropertiesOfNameFilePPBRCSVValues();
             //Текущий номер ПБР
-            int curPBRNumber = Int32.Parse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(3));
+            int curPBRNumber = -1;
+            if (m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Length > @"ПБР".Length)
+                if (Int32.TryParse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
+                    curPBRNumber = getPBRNumber();
+                else
+                    ;                    
+            else
+                curPBRNumber = getPBRNumber();
+
             string strMsg = string.Empty;
             if (!((DateTime)prop[0] == DateTime.Now.Date))
             {

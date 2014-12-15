@@ -19,7 +19,7 @@ namespace Statistic
     {
         private System.Windows.Forms.Button btnImportCSV;
 
-        public System.Windows.Forms.CheckBox m_cbxAlarm;
+        private System.Windows.Forms.CheckBox m_cbxAlarm;
         private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
         private Label lblKoeffAlarmCurPower;
         private NumericUpDown m_nudnKoeffAlarmCurPower;
@@ -138,7 +138,7 @@ namespace Statistic
             // m_cbxAlarm
             // 
             this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
-            this.m_cbxAlarm.Checked = false; //PanelAdminKomDisp.ALARM_USE;
+            this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
 
             this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
             this.m_cbxAlarm.Name = "cbxAlarm";
@@ -146,7 +146,7 @@ namespace Statistic
             this.m_cbxAlarm.AutoSize = true;
             //this.m_cbxAlarm.TabIndex = 4;
             this.m_cbxAlarm.TabStop = false;
-            this.m_cbxAlarm.Text = @"Синализация вкл.";
+            this.m_cbxAlarm.Text = @"Сигнализация вкл.";
             this.m_cbxAlarm.CheckedChanged += new EventHandler(cbxAlarm_CheckedChanged);
 
             int offsetPosY = 28;
@@ -222,8 +222,11 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
-            //if (((HStatisticUsers.RoleIsKomDisp == true) || (HStatisticUsers.RoleIsAdmin == true)) && ALARM_USE == true)
-            if ((HStatisticUsers.RoleIsKomDisp == true) && ALARM_USE == true)
+            //if (((HStatisticUsers.RoleIsKomDisp == true) || (HStatisticUsers.RoleIsAdmin == true)))
+            //if ((HStatisticUsers.RoleIsKomDisp == true))
+            //if ((HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP) == true)
+            if ((m_cbxAlarm.Checked == true)
+                && (ALARM_USE == true))
             {
                 initAdminAlarm();
 
@@ -588,7 +591,7 @@ namespace Statistic
 
             EnabledButtonAlarm(id_gtp, id_tg);
         }
-        
+
         private void btnAlarmCurPower_Click(object sender, EventArgs e)
         {
             btnAlarm_Click(m_admin.allTECComponents[m_admin.indxTECComponents].m_id, -1);
