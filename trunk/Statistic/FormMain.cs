@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
+using System.Data.Common; //fTimerAppReset () - ...
 
 using System.Net;
 
@@ -51,6 +52,7 @@ namespace Statistic
         FormParametersTG m_formParametersTG;
 
         TcpServerAsync m_TCPServer;
+        System.Threading.Timer m_timerAppReset;
 
         public FormMain()
         {
@@ -221,8 +223,13 @@ namespace Statistic
                     formSetPassword = new FormSetPassword(m_passwords);
                     formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
-                    if (iRes == 0)
+                    if (iRes == 0) {
                         Start(); //Старт 1-сек-го таймера для строки стостояния
+
+                        stopTimerAppReset ();                        
+                        int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
+                        m_timerAppReset = new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset);
+                    }
                     else
                         ;
                 }
@@ -239,6 +246,53 @@ namespace Statistic
             StopWait();
 
             return iRes;
+        }
+
+        private void stopTimerAppReset () {
+            if (! (m_timerAppReset == null)) {
+                m_timerAppReset.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerAppReset.Dispose ();
+                m_timerAppReset = null;
+            } else {
+            }
+        }
+
+        private void abort () {
+            stopTimerAppReset();
+            activateTabPage(tclTecViews.SelectedIndex, false);
+            MessageBox.Show(this, @"В каталоге запуска более свежая версия..." +
+                                    Environment.NewLine + @"Приложение будет остановлено/запущено на выполнение...",
+                                    @"Внимание!",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Stop);
+        }
+
+        private void fTimerAppReset(object obj)
+        {
+            if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
+            {
+                int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
+                    , err = -1;
+                DbConnection dbConn = DbSources.Sources().GetConnection (idListenerConfigDB, out err);
+                formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = FormParameters_DB.ReadString (ref dbConn, @"App Version", string.Empty);
+
+                DbSources.Sources().UnRegister (idListenerConfigDB);
+
+                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(StatisticCommon.Properties.Resources.TradeMarkVersion) == false)
+                {
+                    if (InvokeRequired == true) {
+                        IAsyncResult iar = this.BeginInvoke (new DelegateFunc (abort));
+                        this.EndInvoke (iar);
+                    }
+                    else
+                        abort ();
+                    ProgramBase.AppRestart ();
+                } else {
+                }
+            }
+            else
+            {
+            }
         }
 
         private void panelAdminKomDispEventGUIReg(string text)
@@ -322,6 +376,11 @@ namespace Statistic
             Close();
         }
 
+        private void stop(object o)
+        {
+            Stop(o as FormClosingEventArgs);
+        }
+
         private void Stop(FormClosingEventArgs e)
         {
             int i = -1;
@@ -364,6 +423,8 @@ namespace Statistic
                 m_TCPServer = null;
             } else
                 ;
+
+            stopTimerAppReset ();
         }
 
         private void stopAdminAlarm () {
@@ -562,24 +623,38 @@ namespace Statistic
         {
             if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
                 if (e.Cancel == false)
-                    if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
-                    {
-                        //Нет, не закрываем
-                        activateTabPage(tclTecViews.SelectedIndex, true);
+                    if (e.CloseReason == CloseReason.UserClosing)
+                        if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                        {
+                            //Нет, не закрываем
+                            activateTabPage(tclTecViews.SelectedIndex, true);
 
-                        //Продолжаем и устанавливаем признак: завершить обработку события 'e'
-                        e.Cancel = true;
-                    }
+                            //Продолжаем и устанавливаем признак: завершить обработку события 'e'
+                            e.Cancel = true;
+                        }
+                        else
+                        {
+                            //Да, закрываем; признаку оставляем прежнее значение 'False': продолжить обработку события 'e'
+                            if (InvokeRequired == true)
+                                this.BeginInvoke (new DelegateObjectFunc (stop), e);
+                            else
+                                Stop (e);
+                        }
                     else
-                    {
-                        //Да, закрываем; признаку оставляем прежнее значение: продолжить обработку события 'e'
-                        Stop (e);
-                    }
+                        //Да, закрываем; признаку оставляем прежнее значение 'False': продолжить обработку события 'e'
+                        if (InvokeRequired == true)
+                            this.BeginInvoke(new DelegateObjectFunc(stop), e);
+                        else
+                            Stop(e);
                 else {
                     //Закрываем и устанавливаем признак: продолжить обработку события 'e'
                     e.Cancel = false;
 
-                    Stop(e);
+                    //Да, закрываем; признаку оставляем прежнее значение 'False': продолжить обработку события 'e'
+                    if (InvokeRequired == true)
+                        this.BeginInvoke(new DelegateObjectFunc(stop), e);
+                    else
+                        Stop(e);
                 }
             else
                 ;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Windows.Forms; //Application.ProductVersion
 
 using HClassLibrary;
 
@@ -14,18 +15,21 @@ namespace StatisticCommon
                                     USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
                                     , SEASON_DATETIME, SEASON_ACTION
                                     //, GRINVICH_OFFSET_DATETIME
+                                    , APP_VERSION, APP_VERSION_QUERY_INTERVAL
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
+                                                    , @"App Version", @"App Version Query Interval"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     /*@"лог", */"сек", "сек",
                                                     @"стр", @"ном", @"ном"
                                                     , @"дата/время", @"ном"
                                                     //, "час"
+                                                    , @"стр", @"мсек"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -57,6 +61,9 @@ namespace StatisticCommon
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.GRINVICH_OFFSET_DATETIME, @"3"); 
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION, StatisticCommon.Properties.Resources.TradeMarkVersion);
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"6666");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 
@@ -204,6 +211,11 @@ namespace StatisticCommon
         }
 
         private string readString (string key, string valDef) {
+            return ReadString (ref m_dbConn, key, valDef);
+        }
+
+        public static string ReadString(ref DbConnection dbConn, string key, string valDef)
+        {
             string strRes = valDef;
             int err = -1;
             DataTable table = null;            
@@ -211,7 +223,7 @@ namespace StatisticCommon
             string query = string.Empty;
             //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
             query = string.Format (@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
-            table = DbTSQLInterface.Select (ref m_dbConn, query, null, null, out err);
+            table = DbTSQLInterface.Select (ref dbConn, query, null, null, out err);
             if (table.Rows.Count == 1)
                 strRes = table.Rows [0][@"Value"].ToString ().Trim ();
             else

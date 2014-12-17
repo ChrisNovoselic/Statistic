@@ -39,6 +39,7 @@ namespace StatisticCommon
             , MENUCONTEXTITEM_TABLEHOURS_COLUMN_59MIN
             , MENUITEM_SETTINGS_PARAMETERS_APP
             , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
+            , APP_AUTO_RESET
             ,
         };
 

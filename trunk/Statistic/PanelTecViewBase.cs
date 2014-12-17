@@ -879,7 +879,13 @@ namespace Statistic
                 m_dgwMins.Rows[cnt].Cells[5].Value = (sumDiviation / min).ToString("F2");
             }
 
-            setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
+            ////Ќазначить крайней видимой строкой - строку с крайним полученным значением
+            //setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
+            //Ќазначить крайней видимой строкой - крайнюю строку
+            if (! (m_dgwMins.DisplayedRowCount(true) == 0))
+                m_dgwMins.FirstDisplayedScrollingRowIndex = m_dgwMins.RowCount - m_dgwMins.DisplayedRowCount(true) + 1;
+            else
+                m_dgwMins.FirstDisplayedScrollingRowIndex = 0;
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridMins () - ...");
         }
@@ -929,165 +935,55 @@ namespace Statistic
                 else
                     m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
 
-                //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                //{
-                    //if (i <= m_tecView.m_valuesHours.hourAddon)
-                    //{
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
-                        sumFact += m_tecView.m_valuesHours[i].valuesFact;
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
+                    sumFact += m_tecView.m_valuesHours[i].valuesFact;
 
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
-                        sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
+                    sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
+                    bool bDevVal = false;
+                    if (m_tecView.currHour == true)
                         if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
                         {
-                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
-                            if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
-                                && (! (m_tecView.m_valuesHours[i].valuesDiviation == 0)))
-                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
-                            else
-                                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                            sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
+                            bDevVal = true;
                         }
                         else
                         {
-                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
                         }
-                    //}
-                    //else
-                        //if (i == m_tecView.m_valuesHours.hourAddon + 1)
-                        //{
-                        //    m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFactAddon.ToString("F2");
-                        //    sumFact += m_tecView.m_valuesHours.valuesFactAddon;
+                    else
+                        if (m_tecView.serverTime.Date.Equals(HAdmin.ToMoscowTimeZone(DateTime.Now.Date)) == true)
+                            if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
+                            {
+                                bDevVal = true;
+                            }
+                            else
+                            {
+                            }
+                        else
+                            if ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
+                            {
+                                bDevVal = true;
+                            }
+                            else
+                            {
+                            }
 
-                        //    m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBRAddon.ToString("F2");
-                        //    m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBReAddon.ToString("F2");
-                        //    m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGeAddon.ToString("F2");
-                        //    sumUDGe += m_tecView.m_valuesHours.valuesUDGeAddon;
-                        //    if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGeAddon != 0)
-                        //    {
-                        //        m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon)).ToString("F2");
-                        //        if (Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon) > m_tecView.m_valuesHours.valuesDiviationAddon
-                        //            && m_tecView.m_valuesHours.valuesDiviationAddon != 0)
-                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                        //        else
-                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                        //        sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFactAddon - m_tecView.m_valuesHours.valuesUDGeAddon);
-                        //    }
-                        //    else
-                        //    {
-                        //        m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                        //        m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i - 1].ToString("F2");
-                        //    sumFact += m_tecView.m_valuesHours.valuesFact[i - 1];
-
-                        //    m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i - 1].ToString("F2");
-                        //    m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i - 1].ToString("F2");
-                        //    m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i - 1].ToString("F2");
-                        //    sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i - 1];
-                        //    if (i <= receivedHour && m_tecView.m_valuesHours.valuesUDGe[i - 1] != 0)
-                        //    {
-                        //        m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1])).ToString("F2");
-                        //        if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]) > m_tecView.m_valuesHours.valuesDiviation[i - 1]
-                        //            && m_tecView.m_valuesHours.valuesDiviation[i - 1] != 0)
-                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                        //        else
-                        //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                        //        sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i - 1] - m_tecView.m_valuesHours.valuesUDGe[i - 1]);
-                        //    }
-                        //    else
-                        //    {
-                        //        m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                        //        m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                        //    }
-                        //}
-
-                //}
-                //else
-                //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                //    {
-                //        if (i < m_tecView.m_valuesHours.hourAddon)
-                //        {
-                //            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
-                //            sumFact += m_tecView.m_valuesHours.valuesFact[i];
-
-                //            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
-                //            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
-                //            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
-                //            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
-                //            if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
-                //            {
-                //                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
-                //                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
-                //                    && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
-                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                //                else
-                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
-                //            }
-                //            else
-                //            {
-                //                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //            }
-                //        }
-                //        else
-                //        {
-                //            m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i + 1].ToString("F2");
-                //            sumFact += m_tecView.m_valuesHours.valuesFact[i + 1];
-
-                //            m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i + 1].ToString("F2");
-                //            m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i + 1].ToString("F2");
-                //            m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i + 1].ToString("F2");
-                //            sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i + 1];
-                //            if (i < receivedHour - 1 && m_tecView.m_valuesHours.valuesUDGe[i + 1] != 0)
-                //            {
-                //                m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1])).ToString("F2");
-                //                if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]) > m_tecView.m_valuesHours.valuesDiviation[i + 1]
-                //                    && m_tecView.m_valuesHours.valuesDiviation[i + 1] != 0)
-                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                //                else
-                //                    m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //                sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i + 1] - m_tecView.m_valuesHours.valuesUDGe[i + 1]);
-                //            }
-                //            else
-                //            {
-                //                m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //            }
-                //        }
-                //    }
-                //    else
-                //    {
-                //        m_dgwHours.Rows[i].Cells[1].Value = m_tecView.m_valuesHours.valuesFact[i].ToString("F2");
-                //        sumFact += m_tecView.m_valuesHours.valuesFact[i];
-
-                //        m_dgwHours.Rows[i].Cells[2].Value = m_tecView.m_valuesHours.valuesPBR[i].ToString("F2");
-                //        m_dgwHours.Rows[i].Cells[3].Value = m_tecView.m_valuesHours.valuesPBRe[i].ToString("F2");
-                //        m_dgwHours.Rows[i].Cells[4].Value = m_tecView.m_valuesHours.valuesUDGe[i].ToString("F2");
-                //        sumUDGe += m_tecView.m_valuesHours.valuesUDGe[i];
-                //        if (i < receivedHour && m_tecView.m_valuesHours.valuesUDGe[i] != 0)
-                //        {
-                //            m_dgwHours.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i])).ToString("F2");
-                //            if (Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]) > m_tecView.m_valuesHours.valuesDiviation[i]
-                //                && m_tecView.m_valuesHours.valuesDiviation[i] != 0)
-                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleError;
-                //            else
-                //                m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //            sumDiviation += Math.Abs(m_tecView.m_valuesHours.valuesFact[i] - m_tecView.m_valuesHours.valuesUDGe[i]);
-                //        }
-                //        else
-                //        {
-                //            m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                //            m_dgwHours.Rows[i].Cells[5].Style = dgvCellStyleCommon;
-                //        }
-                //    }
+                    if (bDevVal == true)
+                    {
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
+                        if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
+                            && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
+                        else
+                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
+                        sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
+                    }
+                    else
+                    {
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
+                    }
             }
             m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
             m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
