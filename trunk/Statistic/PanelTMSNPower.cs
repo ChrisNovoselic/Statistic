@@ -367,7 +367,7 @@ namespace Statistic
 
             private void showTMGenPower()
             {
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
                 else
                     Logging.Logg().Error(@"PanelTecTMSNPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...");
@@ -375,7 +375,7 @@ namespace Statistic
 
             private void showTMSNPower()
             {
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
                 else
                     Logging.Logg().Error(@"PanelTecTMSNPower::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");

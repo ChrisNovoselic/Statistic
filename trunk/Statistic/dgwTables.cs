@@ -182,9 +182,7 @@ namespace Statistic
             this.ContextMenuStrip.Items.Add(this.m_arColumns[i].headerText);
             this.ContextMenuStrip.Items[(int)this.ContextMenuStrip.Items.Count - 1].Enabled = true;
             CheckState chState = CheckState.Unchecked;
-            if ((!(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.NSS)) &&
-                (!(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.MAJOR_MASHINIST)) &&
-                (!(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.MASHINIST)))
+            if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_TABLEHOURS_COLUMN_59MIN) == true)
                 chState = CheckState.Checked;
             else
                 ;

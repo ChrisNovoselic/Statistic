@@ -765,7 +765,7 @@ namespace Statistic
 
         private void updateGUI_TM_Gen()
         {
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ...");
@@ -781,7 +781,7 @@ namespace Statistic
 
         private void updateGUI_Fact(int hour, int min)
         {
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ...");
@@ -1029,7 +1029,7 @@ namespace Statistic
         private void setNowDate()
         {
             //true, ע.ך. גסודהא גûחמג ןנט result=true
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke (new DelegateBoolFunc (SetNowDate), true);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...");
@@ -1151,7 +1151,7 @@ namespace Statistic
             {
                 m_tecView.serverTime = m_tecView.serverTime.AddSeconds(1);
 
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     Invoke(delegateTickTime, m_tecView.serverTime);
                 else
                     return;

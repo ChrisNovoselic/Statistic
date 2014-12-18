@@ -416,7 +416,7 @@ namespace Statistic
 
             private void showTMGenPower()
             {
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
                 else
                     Logging.Logg().Error(@"PanelTecCurPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...");

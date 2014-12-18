@@ -844,7 +844,7 @@ namespace StatisticTrans
                 //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
 
                 //SaveRDGValues (false);
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
                 else
                     Logging.Logg().Error(@"FormMainTrans::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...");
@@ -865,7 +865,7 @@ namespace StatisticTrans
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 IAsyncResult asyncRes;
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 else
                     Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...");
@@ -899,7 +899,7 @@ namespace StatisticTrans
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 IAsyncResult asyncRes;
-                //if (InvokeRequired == true)
+                //if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 //else
                     //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
@@ -919,7 +919,7 @@ namespace StatisticTrans
 
         protected void setDatetimePicker(DateTime date)
         {
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
             else
                 Logging.Logg().Error(@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...");

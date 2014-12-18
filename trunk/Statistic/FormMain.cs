@@ -280,7 +280,7 @@ namespace Statistic
 
                 if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(StatisticCommon.Properties.Resources.TradeMarkVersion) == false)
                 {
-                    if (InvokeRequired == true) {
+                    if (IsHandleCreated/*InvokeRequired*/ == true) {
                         IAsyncResult iar = this.BeginInvoke (new DelegateFunc (abort));
                         this.EndInvoke (iar);
                     }
@@ -315,7 +315,7 @@ namespace Statistic
             try
             {
                 //panelAdminKomDispEventGUIReg(text);
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateStringFunc(panelAdminKomDispEventGUIReg), text);
                 else
                     Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...");                

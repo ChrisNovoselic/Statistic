@@ -389,7 +389,7 @@ namespace Statistic
 
             private void showTMSNPower()
             {
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
                 else
                     Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");

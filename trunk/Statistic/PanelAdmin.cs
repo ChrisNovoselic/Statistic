@@ -276,7 +276,7 @@ namespace Statistic
         /// <param name="date"></param>
         public void CalendarSetDate(DateTime date)
         {
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
                 BeginInvoke(new DelegateDateFunc(setDate), date);
             else
                 ;

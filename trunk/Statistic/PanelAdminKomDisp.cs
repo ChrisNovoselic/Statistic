@@ -373,7 +373,7 @@ namespace Statistic
         }
 
         private void OnAdminAlarm_EventAdd (TecView.EventRegEventArgs ev) {
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
             {
                 this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
 
@@ -459,7 +459,7 @@ namespace Statistic
             string strFmtDatetime = string.Empty;
 
             //??? не очень изящное решение
-            if (InvokeRequired == true)
+            if (IsHandleCreated/*InvokeRequired*/ == true)
             {
                 m_evtAdminTableRowCount.Reset();
                 this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));

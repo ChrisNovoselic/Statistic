@@ -226,7 +226,7 @@ namespace Statistic
 
         private void TimerCurrent_Tick (object obj) {
             if (m_bIsActive == true)
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
@@ -695,7 +695,7 @@ namespace Statistic
 
             private void showLastMinutesTM()
             {
-                if (InvokeRequired == true)
+                if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowLastMinutesTM));
                 else
                     Logging.Logg().Error(@"PanelTecLastMinutes::showLastMinutesTM () - ... BeginInvoke (ShowLastMinutesTM) - ...");

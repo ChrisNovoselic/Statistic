@@ -240,7 +240,7 @@ namespace StatisticCommon
                             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
                             //Очистить элементы управления с данными от пред. лог-файла
-                            if (InvokeRequired == true)
+                            if (IsHandleCreated/*InvokeRequired*/ == true)
                             {
                                 BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
                                 BeginInvoke(new DelegateFunc(TabLoggingClearText));
@@ -253,7 +253,7 @@ namespace StatisticCommon
                             break;
                         case 1:
                             //Очистить элементы управления с данными от пред. пользователя
-                            if (InvokeRequired == true)
+                            if (IsHandleCreated/*InvokeRequired*/ == true)
                             {
                                 BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
                                 BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
