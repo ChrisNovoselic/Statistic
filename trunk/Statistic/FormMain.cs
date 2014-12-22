@@ -1613,18 +1613,20 @@ namespace Statistic
 
         protected override void UpdateActiveGui(int type)
         {
-            //if (tclTecViews.SelectedIndex >= 0 && tclTecViews.SelectedIndex < selectedTecViews.Count)
-            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
-                //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
-                ((PanelTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
-            else
-                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
-                    ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+            if ((!(tclTecViews.SelectedIndex < 0)) && (tclTecViews.SelectedIndex < tclTecViews.TabPages.Count))
+                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
+                    //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
+                    ((PanelTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
                 else
-                    if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelCustomTecView)
-                        ((PanelCustomTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+                    if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
+                        ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
                     else
-                        ;
+                        if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelCustomTecView)
+                            ((PanelCustomTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+                        else
+                            ;
+            else
+                ;
         }
 
         private const int SW_SHOWNOACTIVATE = 4;

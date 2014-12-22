@@ -19,7 +19,8 @@ namespace Statistic
         , COUNT_TYPE_UPDATEGUI };
 
         private enum CONN_SETT_TYPE {
-            ASKUE, SOTIASSO, COSTUMIZE
+            ASKUE_PLUS_SOTIASSO, ASKUE, SOTIASSO,
+            COSTUMIZE
             , COUNT_CONN_SETT_TYPE
         };
         HMark m_markSourceData;
@@ -109,20 +110,24 @@ namespace Statistic
 
         private void checkedSourceData()
         {
+            rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
             rbtnSourceData_ASKUE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
             rbtnSourceData_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO);
             rbtnSourceData_COSTUMIZE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
 
-            if (rbtnSourceData_ASKUE.Checked == true)
-                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
+            if (rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked == true)
+                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO;
             else
-                if (rbtnSourceData_SOTIASSO.Checked == true)
-                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                if (rbtnSourceData_ASKUE.Checked == true)
+                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
                 else
-                    if (rbtnSourceData_COSTUMIZE.Checked == true)
-                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                    if (rbtnSourceData_SOTIASSO.Checked == true)
+                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
                     else
-                        ;
+                        if (rbtnSourceData_COSTUMIZE.Checked == true)
+                            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                        else
+                            ;
         }
 
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
@@ -251,6 +256,19 @@ namespace Statistic
             checkedSourceData();
 
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA);
+        }
+
+        private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
+        {
+            if (rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked == false)
+            {
+                m_markSourceData.UnMarked();
+                m_markSourceData.Marked((int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
+
+                rbtnSourceData_Click();
+            }
+            else
+                ;
         }
 
         private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)

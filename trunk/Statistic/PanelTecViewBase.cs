@@ -157,6 +157,7 @@ namespace Statistic
                 public System.Windows.Forms.ToolStripMenuItem распечататьToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem сохранитьToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem эксельToolStripMenuItem;
+                public System.Windows.Forms.ToolStripMenuItem источникАСКУЭиСОТИАССОToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem источникАСКУЭToolStripMenuItem;
                 public System.Windows.Forms.ToolStripMenuItem источникСОТИАССОToolStripMenuItem;
 
@@ -173,6 +174,7 @@ namespace Statistic
                     this.эксельToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.параметрыПечатиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.распечататьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.источникАСКУЭToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
                     this.источникСОТИАССОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
@@ -189,6 +191,7 @@ namespace Statistic
                     this.параметрыПечатиToolStripMenuItem,
                     this.распечататьToolStripMenuItem
                     , new System.Windows.Forms.ToolStripSeparator()
+                    , источникАСКУЭиСОТИАССОToolStripMenuItem
                     , источникАСКУЭToolStripMenuItem
                     , источникСОТИАССОToolStripMenuItem});
                     this.Name = "contextMenuStripMins";
@@ -246,6 +249,14 @@ namespace Statistic
                     this.распечататьToolStripMenuItem.Text = "Распечатать";
 
                     // 
+                    // источникАСКУЭиСОТИАССОToolStripMenuItem
+                    // 
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem.Name = "источникАСКУЭиСОТИАССОToolStripMenuItem";
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem.Text = @"АИСКУЭ+СОТИАССО"; //"Источник: БД АИСКУЭ+СОТИАССО - 3 мин";
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem.Checked = false;
+                    //this.источникАСКУЭиСОТИАССОToolStripMenuItem.Enabled = false;
+                    // 
                     // источникАСКУЭToolStripMenuItem
                     // 
                     this.источникАСКУЭToolStripMenuItem.Name = "источникАСКУЭToolStripMenuItem";
@@ -268,7 +279,14 @@ namespace Statistic
             private object m_lockValue;
 
             public string SourceDataText {
-                get { return ((((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Checked == true) ? ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Text : ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 1]).Text); }
+                get
+                {
+                    return (((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 3]).Checked == true) ?
+                                ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 3]).Text :
+                                    (((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Checked == true) ?
+                                        ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 2]).Text :
+                                            ((ToolStripMenuItem)ContextMenuStrip.Items[ContextMenuStrip.Items.Count - 1]).Text;
+                }
             }
 
             public HZedGraphControl(object lockVal)
@@ -329,6 +347,7 @@ namespace Statistic
             public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).эксельToolStripMenuItem.Click += new System.EventHandler(fToExcel);
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭиСОТИАССОToolStripMenuItem.Click += new System.EventHandler(fSourceData);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникАСКУЭToolStripMenuItem.Click += new System.EventHandler(fSourceData);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).источникСОТИАССОToolStripMenuItem.Click += new System.EventHandler(fSourceData);
             }
@@ -1317,7 +1336,8 @@ namespace Statistic
             }
 
             Color colorChart = Color.Empty;
-            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
                 colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
             else
                 if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1547,7 +1567,8 @@ namespace Statistic
             }
 
             Color colorChart = Color.Empty;
-            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
                 colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
             else
                 if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1650,8 +1671,10 @@ namespace Statistic
 
             if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
                 //Пункты меню доступны для выбора
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 3]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled = 
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 3]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = true;
 
@@ -1684,43 +1707,54 @@ namespace Statistic
                 {
                     initTableMinRows ();
 
-                    ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
-                    ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = true;
-
-                    if (((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
-                        ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).PerformClick ();
-                    else
-                        if (((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Checked == true)
-                            ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).PerformClick ();
-                        else
-                            ;
+                    enabledSourceData_ToolStripMenuItems (m_ZedGraphMins.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES]);
                 }
                 else ;
 
                 //if (arRes[(int)TG.ID_TIME.HOURS] == true)
                 if (markRes.IsMarked ((int)TG.ID_TIME.HOURS) == true) {
-                    ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
-                    ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = true;
-
-                    if (((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true)
-                        ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).PerformClick();
-                    else
-                        if (((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Checked == true)
-                            ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).PerformClick();
-                        else
-                            ;
+                    enabledSourceData_ToolStripMenuItems(m_ZedGraphHours.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS]);
                 }
                 else ;
-
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = false;
             }
 
             //return arRes[(int)TG.ID_TIME.MINUTES] || arRes[(int)TG.ID_TIME.HOURS];
             //return arRes;
             return markRes;
+        }
+
+        private void enabledSourceData_ToolStripMenuItems (ContextMenuStrip menu, CONN_SETT_TYPE type)
+        {
+            //Временно активируем пункты контекстного меню
+            // для возможности изменить источник данных
+            // (пользователь его изменил принудительно)
+            menu.Items[menu.Items.Count - 3].Enabled =
+            menu.Items[menu.Items.Count - 2].Enabled =
+            menu.Items[menu.Items.Count - 1].Enabled = true;
+
+            int shiftMenuItem = 2;
+            switch (type)
+            {
+                case CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO:
+                    shiftMenuItem = 3;
+                    break;
+                case CONN_SETT_TYPE.DATA_ASKUE:
+                    shiftMenuItem = 2;
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO:
+                    shiftMenuItem = 1;
+                    break;
+                default:
+                    break;
+            }
+
+            //Изменить источник данных
+            ((ToolStripMenuItem)menu.Items[menu.Items.Count - shiftMenuItem]).PerformClick();
+
+            //Восстанавливаем "недоступность" пунктов контекстного меню
+            menu.Items[menu.Items.Count - 3].Enabled =
+            menu.Items[menu.Items.Count - 2].Enabled =
+            menu.Items[menu.Items.Count - 1].Enabled = false;
         }
 
         /// <summary>
@@ -1781,26 +1815,38 @@ namespace Statistic
 
             if (sender.Checked == false)
             {
-                ToolStripMenuItem itemASKUE = (ToolStripMenuItem)cms.Items[cms.Items.Count - 2] //Постоянно размещение пункта меню (2-ой снизу)
+                ToolStripMenuItem itemASKUE_PLUS_SOTIASSO = (ToolStripMenuItem)cms.Items[cms.Items.Count - 3] //Постоянно размещение пункта меню (3-ий снизу)
+                    , itemASKUE = (ToolStripMenuItem)cms.Items[cms.Items.Count - 2] //Постоянно размещение пункта меню (2-ой снизу)
                     , itemSOTIASSO = (ToolStripMenuItem)cms.Items[cms.Items.Count - 1]; ////Постоянно размещение пункта меню (1-ый снизу)
 
-                if (sender.Equals(itemASKUE) == true)
+                if (sender.Equals(itemASKUE_PLUS_SOTIASSO) == true)
                 {
-                    m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE;
+                    m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO;
 
-                    itemASKUE.Checked = true;
+                    itemASKUE_PLUS_SOTIASSO.Checked = true;
+                    itemASKUE.Checked = false;
+                    itemSOTIASSO.Checked = false;
                 }
                 else
-                    if (sender.Equals(itemSOTIASSO) == true)
+                    if (sender.Equals(itemASKUE) == true)
                     {
-                        m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_SOTIASSO;
+                        m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE;
 
-                        itemASKUE.Checked = false;
+                        itemASKUE_PLUS_SOTIASSO.Checked = false;
+                        itemASKUE.Checked = true;
+                        itemSOTIASSO.Checked = false;
                     }
                     else
-                        ;
+                        if (sender.Equals(itemSOTIASSO) == true)
+                        {
+                            m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_SOTIASSO;
 
-                itemSOTIASSO.Checked = !itemASKUE.Checked;
+                            itemASKUE_PLUS_SOTIASSO.Checked = false;
+                            itemASKUE.Checked = false;
+                            itemSOTIASSO.Checked = true;
+                        }
+                        else
+                            ;
 
                 if (indx_time == TG.ID_TIME.MINUTES)
                     initTableMinRows ();

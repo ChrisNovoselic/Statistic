@@ -35,7 +35,9 @@ namespace Statistic
             InitSensors, //Инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
             CurrentTimeAdmin, //время сервера, источник данных: сервер с административными значениями
             CurrentTimeView, //время сервера, источник данных: ...
+            Hour_TM, //текущий час, СОТИАССО
             Hours_Fact, //указанные сутки, АСКУЭ
+            CurrentMin_TM, //текущий интервальный отрезок (3 или 1мин), СОТИАССО
             CurrentMins_Fact, //текущие сутки/час, АСКУЭ
             Hours_TM, //указанные сутки, СОТИАССО
             CurrentMins_TM, //текущие сутки/час, СОТИАССО
@@ -1362,20 +1364,34 @@ namespace Statistic
                 states.Add((int)StatesMachine.CurrentTimeView);
             }
 
-            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+            //Часы...
+            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO)
+            {
                 states.Add((int)StatesMachine.Hours_Fact);
+                states.Add((int)StatesMachine.);
+            }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    states.Add((int)StatesMachine.Hours_TM);
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.Hours_Fact);
                 else
-                    ;
-            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.Hours_TM);
+                    else
+                        ;
+            //Минуты...
+            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO)
+            {
                 states.Add((int)StatesMachine.CurrentMins_Fact);
+                states.Add((int)StatesMachine.);
+            }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    states.Add((int)StatesMachine.CurrentMins_TM);
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    states.Add((int)StatesMachine.CurrentMins_Fact);
                 else
-                    ;
+                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        states.Add((int)StatesMachine.CurrentMins_TM);
+                    else
+                        ;
             states.Add((int)StatesMachine.LastValue_TM_Gen);
             states.Add((int)StatesMachine.LastMinutes_TM);
             states.Add((int)StatesMachine.PPBRValues);
@@ -3579,7 +3595,7 @@ namespace Statistic
             /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
             f2.ShowDialog();*/
 
-            if (lastMin <= ((m_curDate.Minute - 1) / 3))
+            if (! (lastMin > ((m_curDate.Minute - 1) / 3)))
             {
                 lastMinError = true;
                 //lastMin = ((selectedTime.Minute - 1) / 3) + 1;

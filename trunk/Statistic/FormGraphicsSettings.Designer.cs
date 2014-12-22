@@ -43,6 +43,7 @@ namespace Statistic
             this.rbtnSourceData_ASKUE = new System.Windows.Forms.RadioButton();
             this.rbtnSourceData_SOTIASSO = new System.Windows.Forms.RadioButton();
             this.lblBG_SOTIASSO_color = new System.Windows.Forms.Label();
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO = new System.Windows.Forms.RadioButton();
             this.gbxType.SuspendLayout();
             this.groupBoxSourceData.SuspendLayout();
             this.SuspendLayout();
@@ -110,9 +111,9 @@ namespace Statistic
             // 
             this.gbxType.Controls.Add(this.rbtnBar);
             this.gbxType.Controls.Add(this.rbtnLine);
-            this.gbxType.Location = new System.Drawing.Point(167, 34);
+            this.gbxType.Location = new System.Drawing.Point(167, 32);
             this.gbxType.Name = "gbxType";
-            this.gbxType.Size = new System.Drawing.Size(173, 70);
+            this.gbxType.Size = new System.Drawing.Size(173, 58);
             this.gbxType.TabIndex = 5;
             this.gbxType.TabStop = false;
             this.gbxType.Text = "“ËÔ „‡ÙËÍÓ‚";
@@ -121,7 +122,7 @@ namespace Statistic
             // 
             this.rbtnBar.AutoSize = true;
             this.rbtnBar.Checked = true;
-            this.rbtnBar.Location = new System.Drawing.Point(6, 19);
+            this.rbtnBar.Location = new System.Drawing.Point(6, 16);
             this.rbtnBar.Name = "rbtnBar";
             this.rbtnBar.Size = new System.Drawing.Size(92, 17);
             this.rbtnBar.TabIndex = 1;
@@ -132,7 +133,7 @@ namespace Statistic
             // rbtnLine
             // 
             this.rbtnLine.AutoSize = true;
-            this.rbtnLine.Location = new System.Drawing.Point(6, 42);
+            this.rbtnLine.Location = new System.Drawing.Point(6, 37);
             this.rbtnLine.Name = "rbtnLine";
             this.rbtnLine.Size = new System.Drawing.Size(75, 17);
             this.rbtnLine.TabIndex = 0;
@@ -152,18 +153,6 @@ namespace Statistic
             this.lblBG_ASKUE_color.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblBG_ASKUE_color.Click += new System.EventHandler(this.lblBG_ASKUE_color_Click);
             // 
-            // lblBG_SOTIASSO_color
-            // 
-            this.lblBG_SOTIASSO_color.BackColor = System.Drawing.SystemColors.Control;
-            this.lblBG_SOTIASSO_color.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblBG_SOTIASSO_color.Location = new System.Drawing.Point(12, 153);
-            this.lblBG_SOTIASSO_color.Name = "lblBG_SOTIASSO_color";
-            this.lblBG_SOTIASSO_color.Size = new System.Drawing.Size(140, 29);
-            this.lblBG_SOTIASSO_color.TabIndex = 9;
-            this.lblBG_SOTIASSO_color.Text = "÷‚ÂÚ ÙÓÌ‡ (—Œ“»¿——Œ)";
-            this.lblBG_SOTIASSO_color.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblBG_SOTIASSO_color.Click += new System.EventHandler(this.lblBG_SOTIASSO_color_Click);
-            // 
             // lblGRIDcolor
             // 
             this.lblGRIDcolor.BackColor = System.Drawing.SystemColors.Control;
@@ -178,12 +167,13 @@ namespace Statistic
             // 
             // groupBoxSourceData
             // 
+            this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_ASKUE_PLUS_SOTIASSO);
             this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_COSTUMIZE);
             this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_ASKUE);
             this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_SOTIASSO);
-            this.groupBoxSourceData.Location = new System.Drawing.Point(167, 110);
+            this.groupBoxSourceData.Location = new System.Drawing.Point(167, 96);
             this.groupBoxSourceData.Name = "groupBoxSourceData";
-            this.groupBoxSourceData.Size = new System.Drawing.Size(173, 100);
+            this.groupBoxSourceData.Size = new System.Drawing.Size(173, 114);
             this.groupBoxSourceData.TabIndex = 8;
             this.groupBoxSourceData.TabStop = false;
             this.groupBoxSourceData.Text = "»ÒÚÓ˜ÌËÍË ‰‡ÌÌ˚ı „‡ÙËÍÓ‚";
@@ -192,8 +182,7 @@ namespace Statistic
             // 
             this.rbtnSourceData_COSTUMIZE.AutoCheck = false;
             this.rbtnSourceData_COSTUMIZE.AutoSize = true;
-            //this.rbtnSourceData_COSTUMIZE.Checked = true;
-            this.rbtnSourceData_COSTUMIZE.Location = new System.Drawing.Point(6, 74);
+            this.rbtnSourceData_COSTUMIZE.Location = new System.Drawing.Point(6, 87);
             this.rbtnSourceData_COSTUMIZE.Name = "rbtnSourceData_COSTUMIZE";
             this.rbtnSourceData_COSTUMIZE.Size = new System.Drawing.Size(80, 17);
             this.rbtnSourceData_COSTUMIZE.TabIndex = 2;
@@ -207,9 +196,9 @@ namespace Statistic
             this.rbtnSourceData_ASKUE.AutoCheck = false;
             this.rbtnSourceData_ASKUE.AutoSize = true;
             this.rbtnSourceData_ASKUE.Checked = true;
-            this.rbtnSourceData_ASKUE.Location = new System.Drawing.Point(6, 19);
+            this.rbtnSourceData_ASKUE.Location = new System.Drawing.Point(6, 40);
             this.rbtnSourceData_ASKUE.Name = "rbtnSourceData_ASKUE";
-            this.rbtnSourceData_ASKUE.Size = new System.Drawing.Size(61, 17);
+            this.rbtnSourceData_ASKUE.Size = new System.Drawing.Size(69, 17);
             this.rbtnSourceData_ASKUE.TabIndex = 1;
             this.rbtnSourceData_ASKUE.Text = "¿»— ”›";
             this.rbtnSourceData_ASKUE.UseVisualStyleBackColor = true;
@@ -219,14 +208,37 @@ namespace Statistic
             // 
             this.rbtnSourceData_SOTIASSO.AutoCheck = false;
             this.rbtnSourceData_SOTIASSO.AutoSize = true;
-            //this.rbtnSourceData_SOTIASSO.Checked = true;
-            this.rbtnSourceData_SOTIASSO.Location = new System.Drawing.Point(6, 46);
+            this.rbtnSourceData_SOTIASSO.Location = new System.Drawing.Point(6, 64);
             this.rbtnSourceData_SOTIASSO.Name = "rbtnSourceData_SOTIASSO";
             this.rbtnSourceData_SOTIASSO.Size = new System.Drawing.Size(84, 17);
             this.rbtnSourceData_SOTIASSO.TabIndex = 0;
             this.rbtnSourceData_SOTIASSO.Text = "—Œ“»¿——Œ";
             this.rbtnSourceData_SOTIASSO.UseVisualStyleBackColor = true;
             this.rbtnSourceData_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO_Click);
+            // 
+            // lblBG_SOTIASSO_color
+            // 
+            this.lblBG_SOTIASSO_color.BackColor = System.Drawing.SystemColors.Control;
+            this.lblBG_SOTIASSO_color.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblBG_SOTIASSO_color.Location = new System.Drawing.Point(12, 153);
+            this.lblBG_SOTIASSO_color.Name = "lblBG_SOTIASSO_color";
+            this.lblBG_SOTIASSO_color.Size = new System.Drawing.Size(140, 29);
+            this.lblBG_SOTIASSO_color.TabIndex = 9;
+            this.lblBG_SOTIASSO_color.Text = "÷‚ÂÚ ÙÓÌ‡ (—Œ“»¿——Œ)";
+            this.lblBG_SOTIASSO_color.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblBG_SOTIASSO_color.Click += new System.EventHandler(this.lblBG_SOTIASSO_color_Click);
+            // 
+            // rbtnSourceData_ASKUE_PLUS_SOTIASSO
+            // 
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoCheck = false;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoSize = true;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Location = new System.Drawing.Point(6, 17);
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Size = new System.Drawing.Size(134, 17);
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.TabIndex = 3;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Text = "¿»— ”›+—Œ“»¿——Œ";
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.UseVisualStyleBackColor = true;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
             // 
             // FormGraphicsSettings
             // 
@@ -279,5 +291,6 @@ namespace Statistic
         private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE;
         private System.Windows.Forms.RadioButton rbtnSourceData_SOTIASSO;
         private System.Windows.Forms.Label lblBG_SOTIASSO_color;
+        private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE_PLUS_SOTIASSO;
     }
 }

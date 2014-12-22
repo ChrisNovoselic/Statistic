@@ -14,7 +14,7 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        ADMIN = 0, PBR = 1, DATA_ASKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3 /*ТелеМеханика - СОТИАССО*/, MTERM = 4 /*Модес-Терминал*/,
+        DATA_ASKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_ASKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3 /*ТелеМеханика - СОТИАССО*/, MTERM = 4 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 5
     };
 

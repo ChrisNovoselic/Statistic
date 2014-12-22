@@ -1093,7 +1093,8 @@ namespace Statistic
                             if (m_parent.m_tecView.lastMinError == true)
                             {
                                 string strErrMsg = @"По текущему ";
-                                if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                                if ((m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                                    || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
                                     strErrMsg += @"3-минутному";
                                 else
                                     if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
