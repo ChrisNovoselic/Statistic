@@ -195,8 +195,8 @@ namespace StatisticCommon
                 {
                     //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
 
-                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"])) ||
-                         (HStatisticUsers.RoleIsDisp == true))
+                    if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[i]["ID"]))
+                        /*|| (HStatisticUsers.RoleIsDisp == true)*/)
                     {
                         //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
 

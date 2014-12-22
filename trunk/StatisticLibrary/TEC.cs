@@ -150,7 +150,7 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        public static string AddSensor(string prevSensors, int sensor, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
+        public static string AddSensor(string prevSensors, int sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
         {
             string strRes = prevSensors;
 
@@ -179,7 +179,16 @@ namespace StatisticCommon
                     break;
                 case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     //Источник для каждой ТЭЦ свой
-                    strRes += @"[dbo].[NAME_TABLE].[ID] = " + sensor.ToString();
+                    switch (typeTEC)
+                    {
+                        case TEC.TEC_TYPE.BIYSK:
+                            strRes += @"[dbo].[IZM_TII].[IDCHANNEL] = " + sensor.ToString();
+                            break;
+                        case TEC.TEC_TYPE.COMMON:
+                        default:
+                            strRes += @"[dbo].[SENSORS].[ID] = " + sensor.ToString();
+                            break;
+                    }
                     break;
                 default:
                     break;
@@ -239,20 +248,20 @@ namespace StatisticCommon
                 if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
                     m_listTG.Add(list_TECComponents[i].m_listTG[0]);
 
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
 
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
                 }
                 else
                 {
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]);
+                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE]);
                     }
                 }
             }
@@ -703,7 +712,8 @@ namespace StatisticCommon
                                      @"' AND " +
                                      @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
                                      @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                                     @"IZM_TII.IDCHANNEL IN(" + sensors +
+                                     //@"IZM_TII.IDCHANNEL IN(" + sensors +
+                                     @"(" + sensors +
                                      @") " +
                                 //@"ORDER BY IZM_TII.TIME";
                                      @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";

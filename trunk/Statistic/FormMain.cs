@@ -139,8 +139,8 @@ namespace Statistic
 
                     PanelAdminKomDisp.ALARM_USE = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP); //True;
 
-                    if (HStatisticUsers.RoleIsAdmin == false) //Администратор
-                    {
+                    if (HStatisticUsers.RoleIsAdmin == false)
+                    {//Администратор
                         параметрыToolStripMenuItem.Enabled =
                         администрированиеToolStripMenuItem.Enabled =
                         false;
@@ -199,7 +199,7 @@ namespace Statistic
 
                     int[] arIDs = null;
                     //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
-                    if ((HStatisticUsers.RoleIsKomDisp == true) && (PanelAdminKomDisp.ALARM_USE == true))
+                    if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
                     {
                         prevStateIsAdmin = FormChangeMode.MANAGER.DISP;
                         arIDs = new int[] { 0 };
@@ -260,8 +260,9 @@ namespace Statistic
         private void abort () {
             stopTimerAppReset();
             activateTabPage(tclTecViews.SelectedIndex, false);
-            MessageBox.Show(this, @"В каталоге запуска более свежая версия..." +
-                                    Environment.NewLine + @"Приложение будет остановлено/запущено на выполнение...",
+            MessageBox.Show(this, @"Доступно обновление для приложения..." + Environment.NewLine +
+                                    @"Для применения обновления " + Environment.NewLine +
+                                    @"будет произведен останов и повторный запуск на выполнение...",
                                     @"Внимание!",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Stop);
@@ -278,7 +279,7 @@ namespace Statistic
 
                 DbSources.Sources().UnRegister (idListenerConfigDB);
 
-                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(StatisticCommon.Properties.Resources.TradeMarkVersion) == false)
+                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                 {
                     if (IsHandleCreated/*InvokeRequired*/ == true) {
                         IAsyncResult iar = this.BeginInvoke (new DelegateFunc (abort));
@@ -381,7 +382,7 @@ namespace Statistic
             Stop(o as FormClosingEventArgs);
         }
 
-        private void Stop(FormClosingEventArgs e)
+        private void Stop(FormClosingEventArgs ev)
         {
             int i = -1;
 
@@ -392,8 +393,8 @@ namespace Statistic
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i ++)
                         if (!(m_arPanelAdmin[i] == null))
                             if (m_arPanelAdmin[i].MayToClose() == false)
-                                if (!(e == null)) {
-                                    e.Cancel = true;
+                                if (!(ev == null)) {
+                                    ev.Cancel = true;
                                     break;
                                 }
                                 else
@@ -419,8 +420,12 @@ namespace Statistic
             StopTabPages ();
 
             if (! (m_TCPServer == null)) {
-                m_TCPServer.Stop ();
-                m_TCPServer = null;
+                try {
+                    m_TCPServer.Stop ();
+                    m_TCPServer = null;
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
+                }
             } else
                 ;
 
@@ -463,7 +468,6 @@ namespace Statistic
             else
                 ;
 
-            
             значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Checked = false;
             ////В работе постоянно
             //m_panelCurPower.Activate(false);
@@ -1092,7 +1096,7 @@ namespace Statistic
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 int i = -1;
-                if ((!(formChangeMode == null)) && (formChangeMode.ShowDialog() == System.Windows.Forms.DialogResult.OK))
+                if ((!(formChangeMode == null)) && (formChangeMode.ShowDialog(this) == System.Windows.Forms.DialogResult.OK))
                 {
                     // выбираем список отображаемых вкладок
                     сменитьРежимToolStripMenuItem_Click ();
@@ -1320,7 +1324,8 @@ namespace Statistic
             StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //FormChangeMode.MODE_TECCOMPONENT.TG;
             StatisticCommon.FormChangeMode.MANAGER modeAdmin = FormChangeMode.MANAGER.NSS;
 
-            if (HStatisticUsers.RoleIsDisp == true) {
+            if (HStatisticUsers.RoleIsDisp == true)
+            {
                 switch (HStatisticUsers.Role) {
                     case HStatisticUsers.ID_ROLES.ADMIN:
                         if (formChangeMode.IsModeTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP) == true)

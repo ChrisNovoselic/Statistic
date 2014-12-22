@@ -81,20 +81,20 @@ namespace StatisticCommon
             }
         }
 
-        public static bool RoleIsNSS
-        {
-            get
-            {
-                return Role == ID_ROLES.NSS;
-            }
-        }
+        //public static bool RoleIsNSS
+        //{
+        //    get
+        //    {
+        //        return Role == ID_ROLES.NSS;
+        //    }
+        //}
 
-        public static bool RoleIsOperationPersonal
-        {
-            get
-            {
-                return (Role == ID_ROLES.NSS) || (Role == ID_ROLES.MAJOR_MASHINIST) || (Role == ID_ROLES.MASHINIST);
-            }
-        }
+        //public static bool RoleIsOperationPersonal
+        //{
+        //    get
+        //    {
+        //        return (Role == ID_ROLES.NSS) || (Role == ID_ROLES.MAJOR_MASHINIST) || (Role == ID_ROLES.MASHINIST);
+        //    }
+        //}
     }
 }

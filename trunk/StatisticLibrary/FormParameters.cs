@@ -62,7 +62,7 @@ namespace StatisticCommon
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
 
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION, StatisticCommon.Properties.Resources.TradeMarkVersion);
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION, Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/);
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"6666");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);

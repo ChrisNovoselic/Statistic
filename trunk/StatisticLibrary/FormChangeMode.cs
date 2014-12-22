@@ -272,7 +272,9 @@ namespace StatisticCommon
                     //} else ;
                 }
 
-                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && HStatisticUsers.RoleIsDisp == true) {
+                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) &&
+                    HStatisticUsers.RoleIsDisp == true) {
+                    //(HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP) == true)) {
                     if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true)))
                     {
                         clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
@@ -287,7 +289,8 @@ namespace StatisticCommon
                         } else ;
                     }
                     else
-                        if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsNSS == true))
+                        //if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsNSS == true))
+                        if (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS) == true)
                             clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
                         else
                             ;
@@ -314,7 +317,9 @@ namespace StatisticCommon
             for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
                 //(IsModeTECComponent (MODE_TECCOMPONENT.GTP) == true)) || (IsModeTECComponent (MODE_TECCOMPONENT.TG) == true)
                 //if (((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true)) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
-                if ((getModeTECComponent() > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1) && (HStatisticUsers.RoleIsDisp == true))
+                if ((getModeTECComponent() > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1)
+                    && (HStatisticUsers.RoleIsDisp == true))
+                    //&& ((HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP) == true) || (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS) == true)))
                     admin_was_checked = true;
                 else
                     was_checked.Add(clbMode.CheckedIndices[i]);

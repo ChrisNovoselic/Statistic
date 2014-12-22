@@ -255,15 +255,16 @@ namespace Statistic
             components = new System.ComponentModel.Container();
 
             bool bEnabled = true
-                , bChecked = ! HStatisticUsers.RoleIsOperationPersonal;
+                //, bChecked = ! HStatisticUsers.RoleIsOperationPersonal
+                ;
 
             this.ContextMenuStrip = new ContextMenuStrip ();
             this.ContextMenuStrip.Items.AddRange (new ToolStripMenuItem [] {
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
                 new ToolStripMenuItem (@"Знач. телеметрии") });
             //Checked = bChecked;
-            this.ContextMenuStrip.Items[0].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = bChecked; this.ContextMenuStrip.Items[0].Click += OnItemClick;
-            this.ContextMenuStrip.Items[1].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = bChecked; this.ContextMenuStrip.Items[1].Click += OnItemClick;
+            this.ContextMenuStrip.Items[0].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_FORECASTEE); this.ContextMenuStrip.Items[0].Click += OnItemClick;
+            this.ContextMenuStrip.Items[1].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_TMVALUES); this.ContextMenuStrip.Items[1].Click += OnItemClick;
 
             this.RowCount = COUNT_ROWS;
 
