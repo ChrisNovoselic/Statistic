@@ -64,6 +64,8 @@ namespace Statistic
             {
                 bGroupBoxSourceData = true;
                 cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;
+
+                rbtnSourceData_ASKUE_PLUS_SOTIASSO.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
             }
             else
                 ;

@@ -255,7 +255,7 @@ namespace Statistic
                     this.èñòî÷íèêÀÑÊÓİèÑÎÒÈÀÑÑÎToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.èñòî÷íèêÀÑÊÓİèÑÎÒÈÀÑÑÎToolStripMenuItem.Text = @"ÀÈÑÊÓİ+ÑÎÒÈÀÑÑÎ"; //"Èñòî÷íèê: ÁÄ ÀÈÑÊÓİ+ÑÎÒÈÀÑÑÎ - 3 ìèí";
                     this.èñòî÷íèêÀÑÊÓİèÑÎÒÈÀÑÑÎToolStripMenuItem.Checked = false;
-                    //this.èñòî÷íèêÀÑÊÓİèÑÎÒÈÀÑÑÎToolStripMenuItem.Enabled = false;
+                    //this.èñòî÷íèêÀÑÊÓİèÑÎÒÈÀÑÑÎToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO) == true;
                     // 
                     // èñòî÷íèêÀÑÊÓİToolStripMenuItem
                     // 
@@ -1672,9 +1672,10 @@ namespace Statistic
             if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
                 //Ïóíêòû ìåíş äîñòóïíû äëÿ âûáîğà
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 3]).Enabled =
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 3]).Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled = 
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 3]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 1]).Enabled = true;
 

@@ -730,6 +730,13 @@ namespace StatisticCommon
             return request;
         }
 
+        public string hourTMRequest(DateTime usingDate, int lastHour, string sensors)
+        {
+            string req = string.Empty;
+
+            return req;
+        }
+
         public string hoursTMRequest(DateTime usingDate, string sensors)
         {//usingDate - московское время
             string request = string.Empty;

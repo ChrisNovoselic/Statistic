@@ -40,6 +40,7 @@ namespace StatisticCommon
             , MENUITEM_SETTINGS_PARAMETERS_APP
             , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
             , APP_AUTO_RESET
+            , SOURCEDATA_ASKUE_PLUS_SOTIASSO
             ,
         };
 
