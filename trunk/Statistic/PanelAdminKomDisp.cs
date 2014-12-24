@@ -548,7 +548,11 @@ namespace Statistic
                     //Дата ПБР, номер ПБР из наименования файла
                     object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
                     //Текущий номер ПБР
-                    int curPBRNumber = Int32.Parse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3));
+                    int curPBRNumber = -1;
+                    if (Int32.TryParse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
+                        curPBRNumber = m_admin.getPBRNumber();
+                    else
+                        ;
                     string strMsg = string.Empty;
 
                     if (iRes == -1)

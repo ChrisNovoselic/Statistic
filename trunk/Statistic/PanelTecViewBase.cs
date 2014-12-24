@@ -832,12 +832,12 @@ namespace Statistic
         {
             int iFirstDisplayedScrollingRowIndex = -1;
 
-            if (lastIndx > dgv.DisplayedRowCount(true))
+            if (lastIndx < dgv.DisplayedRowCount(true))
             {
-                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
+                iFirstDisplayedScrollingRowIndex = 0; 
             }
             else
-                iFirstDisplayedScrollingRowIndex = 0;
+                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
 
             dgv.FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
         }

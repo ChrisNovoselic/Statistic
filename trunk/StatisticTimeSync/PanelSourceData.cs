@@ -11,15 +11,21 @@ using System.Threading;
 using HClassLibrary;
 
 namespace StatisticTimeSync
-{
+{    
     public partial class PanelSourceData : TableLayoutPanel
     {
+        public enum ID_ASKED_DATAHOST { CONN_SETT }
+        
         System.Threading.Timer m_timerGetDate;
-        public event DelegateFunc EvtQueryConnSett;
+        public event DelegateObjectFunc EvtAskedData;
+
+        private HGetDate m_getDate;
 
         public PanelSourceData()
         {
             InitializeComponent();
+
+            //m_getDate = new HGetDate ();
         }
 
         public PanelSourceData(IContainer container)
@@ -35,13 +41,8 @@ namespace StatisticTimeSync
             if (m_checkBoxTurnOn.Checked == true) {
                 //Start
                 //Спросить параметры соединения
-                IAsyncResult iar = BeginInvoke (new DelegateStringFunc (queryConnSett));
-
-                //Установить соедиение
-
-                //Запустить поток
-                m_timerGetDate = new System.Threading.Timer(fThreadGetDate);
-                m_timerGetDate.Change (0, System.Threading.Timeout.Infinite);
+                IAsyncResult iar = BeginInvoke (new DelegateFunc (queryConnSett));
+                //Установить соедиение, запустить поток
             } else {
                 //Stop
                 //Разорвать соедиенние
@@ -57,8 +58,8 @@ namespace StatisticTimeSync
             }
         }
 
-        private void queryConnSett (string desc) {
-            EvtQueryConnSett ();
+        private void queryConnSett () {
+            EvtAskedData(new EventArgsDataHost (0, this));
         }
 
         private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
@@ -75,6 +76,26 @@ namespace StatisticTimeSync
 
         public void AddSourceData (string desc) {
             m_comboBoxSourceData.Items.Add (desc);
+        }
+
+        public string GetSelectedSourceData()
+        {
+            return m_comboBoxSourceData.SelectedItem.ToString ();
+        }
+
+        public void OnEvtDataRecievedHost (EventArgsDataHost ev) {
+            switch (ev.id) {
+                case (int)ID_ASKED_DATAHOST.CONN_SETT:
+                    //Установить соедиение
+                    
+
+                    //Запустить поток
+                    m_timerGetDate = new System.Threading.Timer(fThreadGetDate);
+                    m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

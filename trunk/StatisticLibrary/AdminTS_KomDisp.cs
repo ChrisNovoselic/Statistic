@@ -45,7 +45,7 @@ namespace StatisticCommon
                 if (Int32.TryParse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
                     curPBRNumber = getPBRNumber();
                 else
-                    ;                    
+                    ;
             else
                 curPBRNumber = getPBRNumber();
 
@@ -127,7 +127,8 @@ namespace StatisticCommon
             //    strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr);
             //}
 
-            if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
+            //if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
+            if ((num_pbr > 0) && (! (num_pbr < getPBRNumber())))
             {
                 //strPPBRCSVNameFileTemp = strPPBRCSVNameFile;
                 strPPBRCSVNameFileTemp = Path.GetFileNameWithoutExtension (m_fullPathPPBRCSVValue);
@@ -136,7 +137,9 @@ namespace StatisticCommon
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(")", string.Empty);
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(".", string.Empty);
                 strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(" ", string.Empty);
-                strPPBRCSVNameFileTemp += Path.GetExtension (m_fullPathPPBRCSVValue);
+                strPPBRCSVNameFileTemp = Path.GetDirectoryName(m_fullPathPPBRCSVValue) + @"\" +
+                                        strPPBRCSVNameFileTemp +
+                                        Path.GetExtension(m_fullPathPPBRCSVValue);
 
                 ////при аргументе = каталог размещения наборов
                 //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
@@ -145,13 +148,19 @@ namespace StatisticCommon
                 //File.Copy(strPPBRCSVNameFile, strPPBRCSVNameFileTemp, true);
                 File.Copy(m_fullPathPPBRCSVValue, strPPBRCSVNameFileTemp, true);
 
+                StreamReader sr = new StreamReader(strPPBRCSVNameFileTemp);
+                string cont = sr.ReadToEnd ().Replace (',', '.');
+                sr.Close (); sr.Dispose ();
+                StreamWriter sw = new StreamWriter(strPPBRCSVNameFileTemp);
+                sw.Write(cont); sw.Flush (); sw.Close (); sw.Dispose ();
+
                 if (!(m_tablePPBRValuesResponse == null)) m_tablePPBRValuesResponse.Clear(); else ;
 
                 if ((IsCanUseTECComponents() == true) && (strPPBRCSVNameFileTemp.Length > 0))
-                    m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(m_fullPathPPBRCSVValue),
+                    m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strPPBRCSVNameFileTemp),
                                                                             @"SELECT * FROM ["
                                                                             //+ @"Sheet1$"
-                                                                            + strPPBRCSVNameFileTemp
+                                                                            + Path.GetFileName (strPPBRCSVNameFileTemp)
                                                                             + @"]"
                                                                             //+ @" WHERE GTP_ID='" +
                                                                             //allTECComponents[indxTECComponents].name_future +
@@ -240,6 +249,7 @@ namespace StatisticCommon
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
             int hour = -1;
+            double val = -1F;
 
             //Получить значения для сохранения
             DataRow [] rowsTECComponent = m_tablePPBRValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
@@ -250,7 +260,14 @@ namespace StatisticCommon
                 {
                     hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
 
-                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
+                    if (double.TryParse(r[@"TotalBR"].ToString(), out val) == false)
+                        if (hour > 0)
+                            curRDGValues[hour].pbr = curRDGValues[hour - 1].pbr;
+                        else
+                            ;
+                    else
+                        curRDGValues[hour].pbr = val;
+
                     curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
                     curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
 
@@ -268,6 +285,7 @@ namespace StatisticCommon
                 errRes =
                     SaveChanges()
                     //Errors.NoSet
+                    //Errors.NoError
                     ;
             }
             else

@@ -453,7 +453,7 @@ namespace StatisticCommon
             return @"œ¡–" + getPBRNumber (hour);
         }
 
-        protected int getPBRNumber(int hour = -1)
+        public int getPBRNumber(int hour = -1)
         {
             int iNum = -1;
 
