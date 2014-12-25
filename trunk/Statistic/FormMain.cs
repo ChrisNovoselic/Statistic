@@ -257,11 +257,12 @@ namespace Statistic
             }
         }
 
-        private void abort () {
+        private void update()
+        {
             stopTimerAppReset();
             activateTabPage(tclTecViews.SelectedIndex, false);
             MessageBox.Show(this, @"Доступно обновление для приложения..." + Environment.NewLine +
-                                    @"Для применения обновления " + Environment.NewLine +
+                                    @"Для применения обновления" + Environment.NewLine +
                                     @"будет произведен останов и повторный запуск на выполнение...",
                                     @"Внимание!",
                                     MessageBoxButtons.OK,
@@ -282,11 +283,11 @@ namespace Statistic
                 if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                 {
                     if (IsHandleCreated/*InvokeRequired*/ == true) {
-                        IAsyncResult iar = this.BeginInvoke (new DelegateFunc (abort));
+                        IAsyncResult iar = this.BeginInvoke (new DelegateFunc (update));
                         this.EndInvoke (iar);
                     }
                     else
-                        abort ();
+                        update();
                     ProgramBase.AppRestart ();
                 } else {
                 }

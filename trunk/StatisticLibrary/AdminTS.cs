@@ -1265,7 +1265,7 @@ namespace StatisticCommon
                                 ;
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            bool bUpdate = false;
+                            bool bUpdate = m_ignore_date;
                             int pbr_number = -1;
 
                             if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
@@ -1273,21 +1273,23 @@ namespace StatisticCommon
                             else
                                 pbr_number = getPBRNumber();
 
-                            if (m_iHavePBR_Number < pbr_number)
-                                //Обновляемый старше
-                                bUpdate = true;
-                            else
-                                if (m_iHavePBR_Number == pbr_number)
-                                    if (m_sOwner_PBR == 1)
-                                        //ПБР одинаков - требование пользователя
-                                        bUpdate = true;
-                                    else
-                                        //ПБР одинаков - работает программа
-                                        ;
+                            if (bUpdate == false)
+                                if (m_iHavePBR_Number < pbr_number)
+                                    //Обновляемый старше
+                                    bUpdate = true;
                                 else
-                                    //Обновляемый новый
-                                    ;
-                                
+                                    if (m_iHavePBR_Number == pbr_number)
+                                        if (m_sOwner_PBR == 1)
+                                            //ПБР одинаков - требование пользователя
+                                            bUpdate = true;
+                                        else
+                                            //ПБР одинаков - работает программа
+                                            ;
+                                    else
+                                        //Обновляемый новый
+                                        ;
+                            else
+                                ;                                
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
