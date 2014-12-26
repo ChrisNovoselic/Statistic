@@ -598,7 +598,9 @@ namespace StatisticCommon
                 else
                     ;
 
-                serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                //serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                //serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+                serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
 
                 ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
             }
