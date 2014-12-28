@@ -162,7 +162,7 @@ namespace trans_mc_cmd
 
         private static string GetNameHostModesCentre()
         {
-            return m_fileINI.ReadString("Параметры соединения с Modes-Centre (" + "trans_mc_cmd.exe" + ")", "ИмяСервер", string.Empty);
+            return m_fileINI.ReadString("Параметры соединения с Modes-Centre (" + Logging.AppName + ".exe" + ")", "ИмяСервер", string.Empty);
         }
 
         public static ConnectionSettings ReadConnSettFromFileINI(out int typeConfigDB)

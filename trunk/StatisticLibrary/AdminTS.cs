@@ -1328,22 +1328,25 @@ namespace StatisticCommon
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + serverTime.Date.ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + strPBRNumber +
-                                        @"', '" + "0" +
+                                        @"', '" + m_sOwner_PBR +
                                         @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"', '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"', '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + strPBRNumber +
-                                        @"', " + comp.m_id +
-                                        @", '" + "0" + "'" +
-                                        @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @", '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @", '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                        @"),";
+                            if (!(m_curRDGValues[i].pbr < 0))
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
+                                            @"', '" + strPBRNumber +
+                                            @"', " + comp.m_id +
+                                            @", '" + m_sOwner_PBR + "'" +
+                                            @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @"),";
+                            else
+                                ; //Нельзя записывать значения "-1"
                             break;
                         default:
                             break;

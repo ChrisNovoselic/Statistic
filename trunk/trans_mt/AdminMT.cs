@@ -119,9 +119,9 @@ namespace trans_mt
                         }
 
                         if (PBRNumber > 0) {
-                            if (hour > 1) {
-                                m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
+                            m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
 
+                            if (hour > 1) {
                                 if (m_curRDGValues[hour - 1].pbr < 0)
                                     m_curRDGValues[hour - 1].pbr = m_curRDGValues[hour - 2].pbr;
                                 else
