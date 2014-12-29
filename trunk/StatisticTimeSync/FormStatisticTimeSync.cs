@@ -7,9 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
+
 namespace StatisticTimeSync
 {
-    public partial class FormStatisticTimeSync : Form
+    public partial class FormStatisticTimeSync : Form //FormMainBaseWithStatusStrip
     {
         public FormStatisticTimeSync()
         {
@@ -18,6 +20,16 @@ namespace StatisticTimeSync
 
         private void FormStatisticTimeSync_Load (object obj, EventArgs ev) {
             m_panelMain.OnLoad ();
+        }
+
+        private void FormStatisticTimeSync_Activate(object obj, EventArgs ev)
+        {
+            m_panelMain.Activate(true);
+        }
+
+        private void FormStatisticTimeSync_Deactivate(object obj, EventArgs ev)
+        {
+            m_panelMain.Activate(false);
         }
     }
 }

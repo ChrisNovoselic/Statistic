@@ -48,6 +48,8 @@
             this.ResumeLayout(false);
 
             this.Load += new System.EventHandler(FormStatisticTimeSync_Load);
+            this.Activated += new System.EventHandler(FormStatisticTimeSync_Activate);
+            this.Deactivate += new System.EventHandler(FormStatisticTimeSync_Deactivate);
         }
 
         #endregion

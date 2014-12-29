@@ -16,15 +16,18 @@ namespace StatisticTimeSync
         ConnectionSettings m_ConnSett;
         DateTime m_serverTime;
         DelegateDateFunc delegateGetDate;
+        DelegateFunc delegateError;
 
         protected enum StatesMachine
         {
             CurrentTime,
         }
 
-        public HGetDate (ConnectionSettings connSett, DelegateDateFunc fGetDate) {
+        public HGetDate(ConnectionSettings connSett, DelegateDateFunc fGetDate, DelegateFunc fError)
+        {
             m_ConnSett = connSett;
             delegateGetDate = fGetDate;
+            delegateError = fError;
         }
 
         public override void StartDbInterfaces()

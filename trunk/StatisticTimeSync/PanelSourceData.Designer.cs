@@ -35,6 +35,7 @@ namespace StatisticTimeSync
             components = new System.ComponentModel.Container();
 
             m_arPanels = new PanelGetDate[] { new PanelGetDate() };
+            EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[0].OnEvtGetDate);
 
             this.SuspendLayout();
 

@@ -20,18 +20,20 @@ namespace StatisticTimeSync
     {
         private partial class PanelGetDate : TableLayoutPanel
         {
-            public enum ID_ASKED_DATAHOST { CONN_SETT }
+            public enum ID_ASKED_DATAHOST { CONN_SETT
+                                            , ETALON_DATETIME }
 
-            System.Threading.Timer m_timerGetDate;
             public event DelegateObjectFunc EvtAskedData;
 
+            private object m_lockGetDate;
             private HGetDate m_getDate;
+            private DateTime m_dtMetkaGetDate;
 
             public PanelGetDate()
             {
                 InitializeComponent();
 
-                //m_getDate = new HGetDate ();
+                m_lockGetDate = new object ();
             }
 
             public PanelGetDate(IContainer container)
@@ -50,30 +52,21 @@ namespace StatisticTimeSync
                     //Start
                     //Спросить параметры соединения
                     IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
-                    //Установить соедиение, запустить поток
                 }
                 else
                 {
-                    //Stop
-                    //Разорвать соедиенние
-                    m_getDate.Stop();
-                    m_getDate = null;
-
-                    //Остановить поток
-                    if (!(m_timerGetDate == null))
-                    {
-                        m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                        m_timerGetDate.Dispose();
-                        m_timerGetDate = null;
-                    }
-                    else
-                        ;
+                    Activate (false);
                 }
             }
 
             private void queryConnSett()
             {
-                EvtAskedData(new EventArgsDataHost(0, this));
+                EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object [] { this } ));
+            }
+
+            private void queryEtalonDateTime()
+            {
+                EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.ETALON_DATETIME, new object[] { this, m_dtMetkaGetDate }));
             }
 
             private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
@@ -82,13 +75,6 @@ namespace StatisticTimeSync
                     m_checkBoxTurnOn.Enabled = true;
                 else
                     m_checkBoxTurnOn.Enabled = false;
-            }
-
-            private void fThreadGetDate(object obj)
-            {
-                m_getDate.GetDate();
-
-                m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
             }
 
             public void AddSourceData(string desc)
@@ -107,28 +93,75 @@ namespace StatisticTimeSync
                 {
                     case (int)ID_ASKED_DATAHOST.CONN_SETT:
                         //Установить соедиение
-                        m_getDate = new HGetDate((ConnectionSettings)ev.par, recievedGetDate);
+                        m_getDate = new HGetDate((ConnectionSettings)ev.par [0], recievedGetDate, errorGetDate);
+                        //Запустить поток
                         m_getDate.StartDbInterfaces();
                         m_getDate.Start();
-
-                        //Запустить поток
-                        m_timerGetDate = new System.Threading.Timer(fThreadGetDate);
-                        m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
                         break;
                     default:
                         break;
                 }
             }
 
-            protected void recievedGetDate(DateTime date)
+            private void recievedGetDate(DateTime date)
             {
                 this.BeginInvoke(new DelegateDateFunc(updateGetDate), date);
             }
 
+            private void errorGetDate()
+            {
+                //throw new NotImplementedException ();
+            }
+
             private void updateGetDate(DateTime date)
             {
-                m_labelTime.Text = date.ToString(@"HH:mm:ss.fff");
+                string textTime = string.Empty;
+
+                if (date.Equals (DateTime.MinValue) == false)
+                    textTime = date.ToString(@"HH:mm:ss.fff");
+                else
+                    //Признак останова (деактивации)
+                    textTime = @"--:--:--.---";
+
+                m_labelTime.Text = textTime;
                 m_labelTime.Refresh();
+            }
+
+            public void OnEvtGetDate(object obj)
+            {
+                if (! (obj == null))
+                    m_dtMetkaGetDate = (DateTime)obj;
+                else
+                    ;
+                
+                lock (m_lockGetDate) {
+                    if (! (m_getDate == null))
+                        m_getDate.GetDate ();
+                    else ;
+                }
+            }
+
+            public void Activate (bool activated) {
+                if (activated == true) {
+                    if (m_checkBoxTurnOn.Checked == true) {
+                        //Start
+                        //Спросить параметры соединения
+                        IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
+                    } else {
+                    }
+                } else {
+                    //Stop
+                    //Разорвать соедиенние
+                    lock (m_lockGetDate) {
+                        if (! (m_getDate == null)) {
+                            m_getDate.Stop();
+                            m_getDate = null;
+                        } else {
+                        }
+                    }
+
+                    recievedGetDate (DateTime.MinValue);
+                }
             }
         }
 
@@ -244,12 +277,18 @@ namespace StatisticTimeSync
             private System.Windows.Forms.Label m_labelDiff;
         }
 
+        private object m_lockTimerGetDate;
+        private System.Threading.Timer m_timerGetDate;
+        private event DelegateObjectFunc EvtGetDate;
+
         private ConnectionSettings m_connSett;
         private DataTable m_tableSourceData;
 
         public PanelSourceData()
         {
             InitializeComponent();
+
+            m_lockTimerGetDate = new object ();
         }
 
         public PanelSourceData(IContainer container)
@@ -327,15 +366,58 @@ namespace StatisticTimeSync
             {
                 case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
                     int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
-                        , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
+                        , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par [0]).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
                         , err = -1;
                     DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
                     ConnectionSettings connSett = new ConnectionSettings(rowConnSett, false);
-                    ((PanelGetDate)((EventArgsDataHost)ev).par).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, connSett));
+                    ((PanelGetDate)((EventArgsDataHost)ev).par [0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object [] { connSett } ));
                     DbSources.Sources().UnRegister(iListenerId);
+                    break;
+                case (int)PanelGetDate.ID_ASKED_DATAHOST.ETALON_DATETIME:
                     break;
                 default:
                     break;
+            }
+        }
+
+        private void fThreadGetDate(object obj)
+        {
+            EvtGetDate (DateTime.UtcNow);
+
+            lock (m_lockTimerGetDate)
+            {
+                if (! (m_timerGetDate == null))
+                    m_timerGetDate.Change(15000, System.Threading.Timeout.Infinite);
+                else ;
+            }
+        }
+
+        public void Activate (bool activated) {
+            //Выбрать действие
+            lock (m_lockTimerGetDate) {
+                if (activated == true)
+                {//Запустить поток
+                    if (m_timerGetDate == null)
+                        m_timerGetDate = new System.Threading.Timer(fThreadGetDate);
+                    else
+                        ;
+
+                    m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
+                } else {
+                    //Остановить поток
+                        if (!(m_timerGetDate == null))
+                        {
+                            m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                            m_timerGetDate.Dispose();
+                            m_timerGetDate = null;
+                        }
+                        else
+                            ;
+                }
+            }
+
+            for (int i = 0; i < m_arPanels.Length; i ++) {
+                m_arPanels[i].Activate(activated);
             }
         }
     }

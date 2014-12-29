@@ -377,7 +377,7 @@ namespace StatisticCommon
         }
 
         private string pbrValueQuery(string selectPBR, DateTime dt, AdminTS.TYPE_FIELDS mode)
-        {
+        {//??? проблема с форматом строки дата/время. MS SQL: 'yyyyMMdd HH:mm:ss', MySql: 'yyyy-MM-dd HH:mm:ss'
             string strRes = string.Empty;
 
             switch (mode)
@@ -926,7 +926,7 @@ namespace StatisticCommon
         }
 
         private string adminValueQuery(string selectAdmin, DateTime dt, AdminTS.TYPE_FIELDS mode)
-        {
+        {//??? проблема с форматом строки дата/время. MS SQL: 'yyyyMMdd HH:mm:ss', MySql: 'yyyy-MM-dd HH:mm:ss'
             string strRes = string.Empty;
             
             switch (mode) {
