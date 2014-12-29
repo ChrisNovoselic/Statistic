@@ -35,7 +35,11 @@ namespace StatisticTimeSync
             components = new System.ComponentModel.Container();
 
             m_arPanels = new PanelGetDate[] { new PanelGetDate() };
+            //Только для панели с эталонным серверои БД
+            m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+            //Для панелей с любыми серверами БД
             EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[0].OnEvtGetDate);
+            EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[0].OnEvtEtalonDate);
 
             this.SuspendLayout();
 

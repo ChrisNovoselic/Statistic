@@ -21,26 +21,36 @@ namespace StatisticTimeSync
         private partial class PanelGetDate : TableLayoutPanel
         {
             public enum ID_ASKED_DATAHOST { CONN_SETT
-                                            , ETALON_DATETIME }
+                                            ,  }
+            private enum INDEX_DATETME { METKA, ETALON, SERVER
+                                        , INDEX_DATETME_COUNT }
 
             public event DelegateObjectFunc EvtAskedData;
+            public DelegateDateFunc DelegateEtalonGetDate;
 
             private object m_lockGetDate;
             private HGetDate m_getDate;
-            private DateTime m_dtMetkaGetDate;
+            private DateTime [] m_arDateTime;
 
             public PanelGetDate()
             {
-                InitializeComponent();
-
-                m_lockGetDate = new object ();
+                initialize();                
             }
 
             public PanelGetDate(IContainer container)
             {
                 container.Add(this);
 
+                initialize();
+            }
+
+            private void initialize()
+            {
                 InitializeComponent();
+
+                m_lockGetDate = new object();
+
+                m_arDateTime = new DateTime[(int)INDEX_DATETME.INDEX_DATETME_COUNT] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
             }
 
             private void checkBoxTurnOn_CheckedChanged(object obj, EventArgs ev)
@@ -62,11 +72,6 @@ namespace StatisticTimeSync
             private void queryConnSett()
             {
                 EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object [] { this } ));
-            }
-
-            private void queryEtalonDateTime()
-            {
-                EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.ETALON_DATETIME, new object[] { this, m_dtMetkaGetDate }));
             }
 
             private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
@@ -105,7 +110,24 @@ namespace StatisticTimeSync
 
             private void recievedGetDate(DateTime date)
             {
-                this.BeginInvoke(new DelegateDateFunc(updateGetDate), date);
+                m_arDateTime[(int)INDEX_DATETME.SERVER] = date;
+                //Обновить время сервера БД
+                this.BeginInvoke(new DelegateFunc(updateGetDate));
+                //Если панель с ЭТАЛОНным сервером БД
+                if ((m_arDateTime[(int)INDEX_DATETME.SERVER].Equals (DateTime.MinValue) == false)
+                    && (!(DelegateEtalonGetDate == null)))
+                {
+                    DelegateEtalonGetDate(date);
+                }
+                else
+                    ;
+            }
+
+            private void recievedEtalonDate(DateTime date)
+            {
+                m_arDateTime[(int)INDEX_DATETME.ETALON] = date;
+                //Обновить разницу сервера БД с эталонным сервером БД
+                this.BeginInvoke(new DelegateFunc(updateDiffDate));
             }
 
             private void errorGetDate()
@@ -113,32 +135,72 @@ namespace StatisticTimeSync
                 //throw new NotImplementedException ();
             }
 
-            private void updateGetDate(DateTime date)
+            private void updateGetDate()
             {
                 string textTime = string.Empty;
 
-                if (date.Equals (DateTime.MinValue) == false)
-                    textTime = date.ToString(@"HH:mm:ss.fff");
+                if (m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
+                {
+                    textTime = m_arDateTime[(int)INDEX_DATETME.SERVER].ToString(@"HH:mm:ss.fff");
+                }
                 else
+                {
                     //Признак останова (деактивации)
                     textTime = @"--:--:--.---";
+
+                    m_arDateTime[(int)INDEX_DATETME.METKA] =
+                    m_arDateTime[(int)INDEX_DATETME.ETALON] = DateTime.MinValue;
+                    updateDiffDate();
+                }
 
                 m_labelTime.Text = textTime;
                 m_labelTime.Refresh();
             }
 
+            private void updateDiffDate()
+            {
+                string textDiff = string.Empty;
+
+                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals(DateTime.MinValue) == false)
+                    && (m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false))
+                    textDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).ToString();
+                else
+                    //Признак останова (деактивации)
+                    textDiff = @"--:--:--.---";
+
+                m_labelDiff.Text = textDiff;
+                m_labelDiff.Refresh();
+            }
+
+            /// <summary>
+            /// Принимает сигнал, инициирующий посылку запроса даты/времени серверу БД
+            /// </summary>
+            /// <param name="obj">метка дата/время - начало запроса</param>
             public void OnEvtGetDate(object obj)
             {
-                if (! (obj == null))
-                    m_dtMetkaGetDate = (DateTime)obj;
+                if (!(obj == null))
+                {
+                    m_arDateTime[(int)INDEX_DATETME.METKA] = (DateTime)obj;
+                    m_arDateTime[(int)INDEX_DATETME.ETALON] =
+                    m_arDateTime[(int)INDEX_DATETME.ETALON] = DateTime.MinValue;
+                }
                 else
                     ;
-                
+
                 lock (m_lockGetDate) {
                     if (! (m_getDate == null))
                         m_getDate.GetDate ();
                     else ;
                 }
+            }
+
+            /// <summary>
+            /// Получает сигнал с эталонной датой/временем
+            /// </summary>
+            /// <param name="date">эталонная дата/время</param>
+            public void OnEvtEtalonDate(DateTime date)
+            {
+                recievedEtalonDate(date);
             }
 
             public void Activate (bool activated) {
@@ -160,7 +222,9 @@ namespace StatisticTimeSync
                         }
                     }
 
+                    //Признак деактивации
                     recievedGetDate (DateTime.MinValue);
+                    recievedEtalonDate(DateTime.MinValue);
                 }
             }
         }
@@ -280,22 +344,28 @@ namespace StatisticTimeSync
         private object m_lockTimerGetDate;
         private System.Threading.Timer m_timerGetDate;
         private event DelegateObjectFunc EvtGetDate;
+        private event DelegateDateFunc EvtEtalonDate;
 
         private ConnectionSettings m_connSett;
         private DataTable m_tableSourceData;
 
         public PanelSourceData()
         {
-            InitializeComponent();
-
-            m_lockTimerGetDate = new object ();
+            initialize();
         }
 
         public PanelSourceData(IContainer container)
         {
             container.Add(this);
 
+            initialize();
+        }
+
+        private void initialize()
+        {
             InitializeComponent();
+
+            m_lockTimerGetDate = new object();
         }
 
         public void OnLoad()
@@ -373,11 +443,14 @@ namespace StatisticTimeSync
                     ((PanelGetDate)((EventArgsDataHost)ev).par [0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object [] { connSett } ));
                     DbSources.Sources().UnRegister(iListenerId);
                     break;
-                case (int)PanelGetDate.ID_ASKED_DATAHOST.ETALON_DATETIME:
-                    break;
                 default:
                     break;
             }
+        }
+
+        private void recievedEtalonDate(DateTime date)
+        {
+            EvtEtalonDate(date);
         }
 
         private void fThreadGetDate(object obj)
@@ -387,7 +460,7 @@ namespace StatisticTimeSync
             lock (m_lockTimerGetDate)
             {
                 if (! (m_timerGetDate == null))
-                    m_timerGetDate.Change(15000, System.Threading.Timeout.Infinite);
+                    m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
                 else ;
             }
         }
