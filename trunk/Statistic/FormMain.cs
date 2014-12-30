@@ -44,7 +44,7 @@ namespace Statistic
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
-        //private PanelTecViewBase tecView;
+        private static PanelSourceData m_panelSourceData;
         private int m_prevSelectedIndex;
         private FormChangeMode.MANAGER prevStateIsAdmin;
         public static FormGraphicsSettings formGraphicsSettings;
@@ -382,7 +382,14 @@ namespace Statistic
                                                 ;
                                     }
                                     else
-                                        ;
+                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
+                                        {
+                                            activateTabPage(e.TabIndex, false);
+                                            tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
+                                        }
+                                        else
+                                        {
+                                        }
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -560,7 +567,12 @@ namespace Statistic
                                         if (tclTecViews.TabPages[indx].Controls[0] is PanelAdmin)
                                             ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
                                         else
-                                            ;
+                                            if (tclTecViews.TabPages[indx].Controls[0] is PanelSourceData)
+                                            {
+                                                ((PanelSourceData)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                                            }
+                                            else
+                                                ;
             }
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
@@ -1733,10 +1745,39 @@ namespace Statistic
 
         private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            tclTecViews.AddTabPage(@"");
+            string nameTab = @"Дата/время серверов БД";
 
-            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(new PanelSourceData ());
-            ((PanelSourceData)tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls [0]).OnLoad ();
+            int indxTab = -1;
+            //indxTab = tclTecViews.IndexOfItemControl(m_panelSourceData);
+            indxTab = tclTecViews.TabPages.IndexOfKey(HTabCtrlEx.GetNameTab(nameTab));
+
+            //if (m_panelSourceData == null)
+            if (indxTab < 0)
+            {
+                tclTecViews.AddTabPage(nameTab);
+
+                bool bCreateNow = false;
+                if (m_panelSourceData == null)
+                {
+                    m_panelSourceData = new PanelSourceData();
+
+                    bCreateNow = true;
+                }
+                else
+                    ;
+
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelSourceData);
+                if (bCreateNow == true)
+                    m_panelSourceData.OnLoad();
+                else
+                    ;
+
+                ActivateTabPage();
+            }
+            else
+            {
+                tclTecViews.SelectedIndex = indxTab;
+            }
         }
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)

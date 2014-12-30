@@ -18,10 +18,16 @@ namespace StatisticTimeSync
 {
     public partial class PanelSourceData : TableLayoutPanel
     {
-        private static int [] INDEX_SOURCE_GETDATE = { 26
-                                            , 1, 4, 7, 10, 13, /*16*/-1
-                                            , 2, 5, 8, 11, 14, 17
-                                            , 3, 6, 9, 12, 15, -1 };
+        private static int [] INDEX_SOURCE_GETDATE = {
+            //26
+            //, 1, 4, 7, 10, 13, /*16*/-1
+            //, 2, 5, 8, 11, 14, 17
+            //, 3, 6, 9, 12, 15, -1
+            26
+            , -1, -1, -1, -1, -1, /*16*/-1
+            , -1, -1, -1, -1, -1, 17
+            , -1, -1, -1, -1, -1, -1
+        };
         
         private partial class PanelGetDate : TableLayoutPanel
         {
@@ -472,7 +478,7 @@ namespace StatisticTimeSync
             else
                 throw new Exception(@"Нет соединения с БД");
 
-            DbSources.Sources().UnRegister();
+            DbSources.Sources().UnRegister(iListenerId);
 
             for (int i = 0; i < m_arPanels.Length; i ++)
                 m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
