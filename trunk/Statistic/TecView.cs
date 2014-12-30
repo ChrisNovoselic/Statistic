@@ -2609,6 +2609,8 @@ namespace Statistic
                 recomendation = 0;
             else
                 ;
+
+            Logging.Logg().Debug(@"recomendation=" + recomendation + @" [" + hour + @", " + lastMin + @"]");
         }
 
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)

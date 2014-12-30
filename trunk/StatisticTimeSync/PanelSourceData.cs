@@ -18,6 +18,11 @@ namespace StatisticTimeSync
 {
     public partial class PanelSourceData : TableLayoutPanel
     {
+        private static int [] INDEX_SOURCE_GETDATE = { 26
+                                            , 1, 4, 7, 10, 13, /*16*/-1
+                                            , 2, 5, 8, 11, 14, 17
+                                            , 3, 6, 9, 12, 15, -1 };
+        
         private partial class PanelGetDate : TableLayoutPanel
         {
             public enum ID_ASKED_DATAHOST { CONN_SETT
@@ -110,7 +115,8 @@ namespace StatisticTimeSync
 
             private void recievedGetDate(DateTime date)
             {
-                m_arDateTime[(int)INDEX_DATETME.SERVER] = date;
+                //Console.WriteLine (date.Kind.ToString ());
+                m_arDateTime[(int)INDEX_DATETME.SERVER] = date/*.ToUniversalTime ()*/;
                 //Обновить время сервера БД
                 this.BeginInvoke(new DelegateFunc(updateGetDate));
                 //Если панель с ЭТАЛОНным сервером БД
@@ -161,12 +167,19 @@ namespace StatisticTimeSync
             {
                 string textDiff = string.Empty;
 
-                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals(DateTime.MinValue) == false)
-                    && (m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false))
-                    textDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).ToString();
-                else
+                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals (DateTime.MinValue) == false)
+                    && m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false) {
+                    double msecDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds;
+                    if (Math.Abs(msecDiff) < (1 * 60 * 60 * 1000))
+                        ;
+                    else
+                        m_arDateTime[(int)INDEX_DATETME.SERVER] = m_arDateTime[(int)INDEX_DATETME.SERVER].AddHours (-3);
+
+                    textDiff = ((m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds / 1000).ToString ();
+                   
+                } else
                     //Признак останова (деактивации)
-                    textDiff = @"--:--:--.---";
+                    textDiff = @"--.---";
 
                 m_labelDiff.Text = textDiff;
                 m_labelDiff.Refresh();
@@ -225,6 +238,38 @@ namespace StatisticTimeSync
                     //Признак деактивации
                     recievedGetDate (DateTime.MinValue);
                     recievedEtalonDate(DateTime.MinValue);
+                }
+            }
+
+            public void TurnOn (int indx) {
+                if (m_checkBoxTurnOn.Checked == false) {
+                    if (indx > 0) {
+                        m_comboBoxSourceData.SelectedIndex = indx;
+                        m_checkBoxTurnOn.Checked = true;
+                    } else {
+                    }
+                } else {
+                    //Ничего не делаем...
+                }
+            }
+
+            public void TurnOff(int indx = -1)
+            {
+                if (m_checkBoxTurnOn.Checked == true)
+                {
+                    m_checkBoxTurnOn.Checked = false;
+
+                    switch (indx) {
+                        case -1:
+                            break;
+                        default:
+                            m_comboBoxSourceData.SelectedIndex = indx;
+                            break;
+                    }
+                }
+                else
+                {
+                    //Ничего не делаем...
                 }
             }
         }
@@ -428,6 +473,9 @@ namespace StatisticTimeSync
                 throw new Exception(@"Нет соединения с БД");
 
             DbSources.Sources().UnRegister();
+
+            for (int i = 0; i < m_arPanels.Length; i ++)
+                m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
         }
 
         private void onEvtQueryAskedData(object ev)

@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms; //TableLayoutPanel
+using System;
 
 namespace StatisticTimeSync
 {
@@ -34,12 +35,19 @@ namespace StatisticTimeSync
         {
             components = new System.ComponentModel.Container();
 
-            m_arPanels = new PanelGetDate[] { new PanelGetDate() };
+            int i = -1;
+
+            m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
+            for (i = 0; i < m_arPanels.Length; i++)
+                m_arPanels [i] = new PanelGetDate ();
+
             //Только для панели с эталонным серверои БД
             m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
             //Для панелей с любыми серверами БД
-            EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[0].OnEvtGetDate);
-            EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[0].OnEvtEtalonDate);
+            for (i = 0; i < m_arPanels.Length; i++) {
+                EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[i].OnEvtGetDate);
+                EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[i].OnEvtEtalonDate);
+            }
 
             this.SuspendLayout();
 
@@ -47,13 +55,27 @@ namespace StatisticTimeSync
             this.ColumnCount = 3; this.RowCount = 7;
             this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 
-            for (int i = 0; i < this.ColumnCount; i++)
+            for (i = 0; i < this.ColumnCount; i++)
                 this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100 / this.ColumnCount));
-            for (int i = 0; i < this.RowCount; i++)
+            for (i = 0; i < this.RowCount; i++)
                 this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100 / this.RowCount));
 
             this.Controls.Add(m_arPanels[0], 0, 0);
-            //m_panelMain.SetColumnSpan (m_arPanels[0], 2);
+
+            int indx = -1
+                , col = -1
+                , row = -1;
+            for (i = 1; i < m_arPanels.Length; i++) {
+                indx = i;
+                //if (! (indx < this.RowCount))
+                    indx += (int)(indx / this.RowCount);
+                //else ;
+
+                col = (int)(indx / this.RowCount);
+                row = indx % (this.RowCount - 0);
+                if (row == 0) row = 1; else ;
+                this.Controls.Add(m_arPanels[i], col, row); 
+            }
 
             this.ResumeLayout();
         }

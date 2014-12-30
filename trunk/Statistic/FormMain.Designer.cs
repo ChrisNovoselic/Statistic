@@ -55,6 +55,7 @@ namespace Statistic
             this.toolStripMenuItemИзменитьПарольНСС = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -220,7 +221,8 @@ namespace Statistic
             this.изменитьПарольАдминистратораToolStripMenuItem,
             this.toolStripMenuItemИзменитьПарольНСС,
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
-            this.изментьСоставПользовательToolStripMenuItem});
+            this.изментьСоставПользовательToolStripMenuItem,
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem});
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
@@ -259,6 +261,13 @@ namespace Statistic
             this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
             this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей";
             this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
+            // 
+            // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
+            // 
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Name = "рассинхронизацияДатаВремяСерверБДToolStripMenuItem";
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Text = "Рассинхронизация даты/времени серверов БД";
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Click += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click);
             // 
             // параметрыToolStripMenuItem
             // 
@@ -372,6 +381,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem рассинхронизацияДатаВремяСерверБДToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemИзменитьПарольНСС;
         private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
     }

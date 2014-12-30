@@ -990,7 +990,11 @@ namespace Statistic
                 for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
                     if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == true)
                         for (j = 0; j < min; j++)
-                            valueEBefore += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] / 20;
+                            if ((!(m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] < 0))
+                                && (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] > 1))
+                                valueEBefore += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] / 20;
+                            else
+                                ;
                     else
                         ;
 
@@ -1026,6 +1030,12 @@ namespace Statistic
 
                 if (m_parent.m_tecView.recalcAver == true)
                 {
+                    int hour = m_parent.m_tecView.lastHour;
+                    if (hour == 24)
+                        hour = 23;
+                    else
+                        ;
+
                     if (m_parent.m_tecView.currHour == true)
                     {
                         for (i = 1; i < m_parent.m_tecView.lastMin; i++)
@@ -1037,12 +1047,6 @@ namespace Statistic
                     }
                     else
                     {
-                        int hour = m_parent.m_tecView.lastHour;
-                        if (hour == 24)
-                            hour = 23;
-                        else
-                            ;
-
                         //if ((m_parent.m_tecView.m_valuesHours.addonValues == true) && (hour == m_parent.m_tecView.m_valuesHours.hourAddon))
                         //    summ = m_parent.m_tecView.m_valuesHours.valuesFactAddon;
                         //else
@@ -1059,7 +1063,14 @@ namespace Statistic
                     {
                         dblDevEVal = ((((valueEBefore + valueECur + valueEFuture) -
                                     m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
-                        if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;                            
+                        if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;
+
+                        Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal
+                                            + @" (valueEBefore=" + valueEBefore
+                                            + @"; valueECur=" + valueECur
+                                            + @"; valueEFuture=" + valueEFuture
+                                            + @"; valuesUDGe=" + m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe
+                                            + @" [" + hour + @", " + m_parent.m_tecView.lastMin + @"]");
                     }
                     else
                         bDevEVal = false;

@@ -19,6 +19,8 @@ using System.Net;
 using HClassLibrary;
 using StatisticCommon;
 
+using StatisticTimeSync;
+
 namespace Statistic
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
@@ -1130,6 +1132,7 @@ namespace Statistic
             toolStripMenuItemИзменитьПарольНСС.Enabled =
             изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled =
             изментьСоставПользовательToolStripMenuItem.Enabled =
+            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled =
             параметрыToolStripMenuItem.Enabled =
                 item.Enabled;
         }
@@ -1726,6 +1729,14 @@ namespace Statistic
                     ;
 
             DbSources.Sources ().UnRegister (idListener);
+        }
+
+        private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tclTecViews.AddTabPage(@"");
+
+            tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(new PanelSourceData ());
+            ((PanelSourceData)tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls [0]).OnLoad ();
         }
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
