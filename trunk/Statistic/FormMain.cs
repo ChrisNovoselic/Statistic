@@ -140,6 +140,9 @@ namespace Statistic
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                     PanelAdminKomDisp.ALARM_USE = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP); //True;
+                    if (!(HStatisticUsers.allTEC == 0))
+                        PanelAdminKomDisp.ALARM_USE = false;
+                    else ;
 
                     if (HStatisticUsers.RoleIsAdmin == false)
                     {//Администратор
@@ -149,9 +152,7 @@ namespace Statistic
                     }
                     else ;
 
-                    if (!(HStatisticUsers.allTEC == 0))
-                        PanelAdminKomDisp.ALARM_USE = false;
-                    else ;
+                    рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
@@ -500,7 +501,6 @@ namespace Statistic
             выборОбъекты23ToolStripMenuItem.Checked = false;
 
             рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
-            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
 
             if (!(m_panelCurPower == null)) m_panelCurPower.Stop(); else ;
             if (!(m_panelSNPower == null)) m_panelSNPower.Stop(); else ;
