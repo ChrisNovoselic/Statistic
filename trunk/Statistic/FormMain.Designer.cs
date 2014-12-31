@@ -44,6 +44,7 @@ namespace Statistic
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.собственныеНуждыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,7 +56,6 @@ namespace Statistic
             this.toolStripMenuItemИзменитьПарольНСС = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -111,7 +111,8 @@ namespace Statistic
             this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem,
             this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem,
             this.мониторингПоследняяМинутаЧасToolStripMenuItem,
-            this.собственныеНуждыToolStripMenuItem});
+            this.собственныеНуждыToolStripMenuItem,
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem});
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -172,6 +173,14 @@ namespace Statistic
             this.выборОбъекты23ToolStripMenuItem.Text = "Выбор объектов отображения (2X3)";
             this.выборОбъекты23ToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
             // 
+            // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
+            // 
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.CheckOnClick = true;
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Name = "рассинхронизацияДатаВремяСерверБДToolStripMenuItem";
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Text = "Рассинхронизация даты/времени серверов БД";
+            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.CheckedChanged += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged);
+            // 
             // настройкиToolStripMenuItem
             // 
             this.настройкиToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -221,8 +230,7 @@ namespace Statistic
             this.изменитьПарольАдминистратораToolStripMenuItem,
             this.toolStripMenuItemИзменитьПарольНСС,
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
-            this.изментьСоставПользовательToolStripMenuItem,
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem});
+            this.изментьСоставПользовательToolStripMenuItem});
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
@@ -261,13 +269,6 @@ namespace Statistic
             this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
             this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей";
             this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
-            // 
-            // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
-            // 
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Name = "рассинхронизацияДатаВремяСерверБДToolStripMenuItem";
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Text = "Рассинхронизация даты/времени серверов БД";
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Click += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click);
             // 
             // параметрыToolStripMenuItem
             // 
@@ -373,6 +374,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem панельГрафическихToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выборОбъекты22ToolStripMenuItem
             , выборОбъекты23ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem рассинхронизацияДатаВремяСерверБДToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;
@@ -381,7 +383,6 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem рассинхронизацияДатаВремяСерверБДToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemИзменитьПарольНСС;
         private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
     }

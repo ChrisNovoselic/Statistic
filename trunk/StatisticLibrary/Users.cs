@@ -41,7 +41,7 @@ namespace StatisticCommon
             , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
             , APP_AUTO_RESET
             , SOURCEDATA_ASKUE_PLUS_SOTIASSO
-            , MENUITEM_SETTING_ADMIN_SYNC_DATETIME_DB
+            , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
             ,
         };
 

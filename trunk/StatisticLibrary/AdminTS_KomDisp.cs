@@ -42,7 +42,7 @@ namespace StatisticCommon
             //“ÂÍÛ˘ËÈ ÌÓÏÂ œ¡–
             int curPBRNumber = -1;
             if (m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Length > @"œ¡–".Length)
-                if (Int32.TryParse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
+                if (Int32.TryParse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(@"œ¡–".Length), out curPBRNumber) == false)
                     curPBRNumber = getPBRNumber();
                 else
                     ;

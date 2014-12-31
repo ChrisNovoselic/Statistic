@@ -14,7 +14,7 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
-            m_lblTradeMarkVersion.Text = Application.ProductVersion/*Properties.Resources.TradeMarkVersion*/;
+            m_lblProductVersion.Text = Application.ProductVersion/*Properties.Resources.TradeMarkVersion*/;
         }
 
         private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

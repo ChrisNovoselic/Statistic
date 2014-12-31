@@ -34,7 +34,7 @@ namespace StatisticCommon
             this.llblMailTo = new System.Windows.Forms.LinkLabel();
             this.btnClose = new System.Windows.Forms.Button();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.m_lblTradeMarkVersion = new System.Windows.Forms.Label();
+            this.m_lblProductVersion = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -83,28 +83,28 @@ namespace StatisticCommon
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Location = new System.Drawing.Point(277, 49);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(106, 13);
+            this.linkLabel1.Size = new System.Drawing.Size(98, 13);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "ChrjapinAN@nske.ru";
+            this.linkLabel1.Text = "ChrjapinAN@itss.ru";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
-            // m_lblTradeMarkVersion
+            // m_lblProductVersion
             // 
-            this.m_lblTradeMarkVersion.AutoSize = true;
-            this.m_lblTradeMarkVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.m_lblTradeMarkVersion.Location = new System.Drawing.Point(66, 8);
-            this.m_lblTradeMarkVersion.Name = "m_lblTradeMarkVersion";
-            this.m_lblTradeMarkVersion.Size = new System.Drawing.Size(118, 13);
-            this.m_lblTradeMarkVersion.TabIndex = 4;
-            this.m_lblTradeMarkVersion.Text = "Trade-Mark-Version";
+            this.m_lblProductVersion.AutoSize = true;
+            this.m_lblProductVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.m_lblProductVersion.Location = new System.Drawing.Point(66, 8);
+            this.m_lblProductVersion.Name = "m_lblProductVersion";
+            this.m_lblProductVersion.Size = new System.Drawing.Size(97, 13);
+            this.m_lblProductVersion.TabIndex = 4;
+            this.m_lblProductVersion.Text = "Product-Version";
             // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(393, 97);
-            this.Controls.Add(this.m_lblTradeMarkVersion);
+            this.Controls.Add(this.m_lblProductVersion);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnClose);
             this.Controls.Add(this.llblMailTo);
@@ -129,6 +129,6 @@ namespace StatisticCommon
         private System.Windows.Forms.LinkLabel llblMailTo;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.LinkLabel linkLabel1;
-        private System.Windows.Forms.Label m_lblTradeMarkVersion;
+        private System.Windows.Forms.Label m_lblProductVersion;
     }
 }

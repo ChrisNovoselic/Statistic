@@ -549,10 +549,14 @@ namespace Statistic
                     object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
                     //Текущий номер ПБР
                     int curPBRNumber = -1;
-                    if (Int32.TryParse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
-                        curPBRNumber = m_admin.getPBRNumber();
+                    if (m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Length > @"ПБР".Length)
+                        if (Int32.TryParse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
+                            curPBRNumber = m_admin.getPBRNumber();
+                        else
+                            ;
                     else
-                        ;
+                        curPBRNumber = m_admin.getPBRNumber();
+
                     string strMsg = string.Empty;
 
                     if (iRes == -1)

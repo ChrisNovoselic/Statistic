@@ -384,8 +384,10 @@ namespace Statistic
                                     else
                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
                                         {
-                                            activateTabPage(e.TabIndex, false);
-                                            tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
+                                            //activateTabPage(e.TabIndex, false);
+                                            //tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
+
+                                            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
                                         }
                                         else
                                         {
@@ -497,12 +499,16 @@ namespace Statistic
             выборОбъекты22ToolStripMenuItem.Checked = false;
             выборОбъекты23ToolStripMenuItem.Checked = false;
 
+            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
+            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
+
             if (!(m_panelCurPower == null)) m_panelCurPower.Stop(); else ;
             if (!(m_panelSNPower == null)) m_panelSNPower.Stop(); else ;
             if (!(m_panelLastMinutes == null)) m_panelLastMinutes.Stop(); else ;
             if (!(m_panelSobstvNyzhdy == null)) m_panelSobstvNyzhdy.Stop(); else ;
             if (!(m_panelCustomTecView22 == null)) m_panelCustomTecView22.Stop(); else ;
             if (!(m_panelCustomTecView23 == null)) m_panelCustomTecView23.Stop(); else ;
+            if (!(m_panelSourceData == null)) m_panelSourceData.Stop(); else ;
         }
 
         private void ClearTabPages()
@@ -1144,7 +1150,6 @@ namespace Statistic
             toolStripMenuItemИзменитьПарольНСС.Enabled =
             изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled =
             изментьСоставПользовательToolStripMenuItem.Enabled =
-            рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled =
             параметрыToolStripMenuItem.Enabled =
                 item.Enabled;
         }
@@ -1590,6 +1595,7 @@ namespace Statistic
                 m_panelLastMinutes.Stop();
             }
         }
+
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             string nameTab = "Собственные нужды";
@@ -1635,6 +1641,38 @@ namespace Statistic
         private void выборОбъекты23ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             выборОбъектыToolStripMenuItem_CheckedChanged(m_panelCustomTecView23, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
+        }
+
+        private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            string nameTab = "Дата/время серверов БД";
+            if (((ToolStripMenuItem)sender).Checked == true)
+            {
+                bool bCreateNow = false;
+                if (m_panelSourceData == null)
+                {
+                    m_panelSourceData = new PanelSourceData();
+
+                    bCreateNow = true;
+                }
+                else
+                    ;
+
+                tclTecViews.AddTabPage(nameTab);
+                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelSourceData);
+                if (bCreateNow == true)
+                    m_panelSourceData.Initialize();
+                else
+                    ;
+
+                ActivateTabPage();
+            }
+            else
+            {
+                tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab(nameTab));
+                m_panelSourceData.Activate(false);
+                m_panelSourceData.Stop();
+            }
         }
 
         protected override void UpdateActiveGui(int type)
@@ -1741,43 +1779,6 @@ namespace Statistic
                     ;
 
             DbSources.Sources ().UnRegister (idListener);
-        }
-
-        private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string nameTab = @"Дата/время серверов БД";
-
-            int indxTab = -1;
-            //indxTab = tclTecViews.IndexOfItemControl(m_panelSourceData);
-            indxTab = tclTecViews.TabPages.IndexOfKey(HTabCtrlEx.GetNameTab(nameTab));
-
-            //if (m_panelSourceData == null)
-            if (indxTab < 0)
-            {
-                tclTecViews.AddTabPage(nameTab);
-
-                bool bCreateNow = false;
-                if (m_panelSourceData == null)
-                {
-                    m_panelSourceData = new PanelSourceData();
-
-                    bCreateNow = true;
-                }
-                else
-                    ;
-
-                tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelSourceData);
-                if (bCreateNow == true)
-                    m_panelSourceData.OnLoad();
-                else
-                    ;
-
-                ActivateTabPage();
-            }
-            else
-            {
-                tclTecViews.SelectedIndex = indxTab;
-            }
         }
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)

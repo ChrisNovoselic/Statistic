@@ -222,6 +222,26 @@ namespace StatisticTimeSync
                 recievedEtalonDate(date);
             }
 
+            public void Stop () {
+                stop ();
+            }
+            
+            private void stop () {
+                //Stop
+                //Разорвать соедиенние
+                lock (m_lockGetDate)
+                {
+                    if (!(m_getDate == null))
+                    {
+                        m_getDate.Stop();
+                        m_getDate = null;
+                    }
+                    else
+                    {
+                    }
+                }
+            }
+
             public void Activate (bool activated) {
                 if (activated == true) {
                     if (m_checkBoxTurnOn.Checked == true) {
@@ -232,14 +252,7 @@ namespace StatisticTimeSync
                     }
                 } else {
                     //Stop
-                    //Разорвать соедиенние
-                    lock (m_lockGetDate) {
-                        if (! (m_getDate == null)) {
-                            m_getDate.Stop();
-                            m_getDate = null;
-                        } else {
-                        }
-                    }
+                    stop ();
 
                     //Признак деактивации
                     recievedGetDate (DateTime.MinValue);
@@ -419,7 +432,7 @@ namespace StatisticTimeSync
             m_lockTimerGetDate = new object();
         }
 
-        public void OnLoad()
+        public void Initialize()
         {
             m_connSett = new ConnectionSettings()
             {
@@ -519,6 +532,27 @@ namespace StatisticTimeSync
             }
         }
 
+        public void Stop()
+        {
+            stop();
+
+            for (int i = 0; i < m_arPanels.Length; i++)
+            {
+                m_arPanels[i].Stop();
+            }
+        }
+
+        private void stop () {
+            if (!(m_timerGetDate == null))
+            {
+                m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerGetDate.Dispose();
+                m_timerGetDate = null;
+            }
+            else
+                ;
+        }
+
         public void Activate (bool activated) {
             //Выбрать действие
             lock (m_lockTimerGetDate) {
@@ -532,14 +566,7 @@ namespace StatisticTimeSync
                     m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
                 } else {
                     //Остановить поток
-                        if (!(m_timerGetDate == null))
-                        {
-                            m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                            m_timerGetDate.Dispose();
-                            m_timerGetDate = null;
-                        }
-                        else
-                            ;
+                    stop ();
                 }
             }
 
