@@ -1289,7 +1289,9 @@ namespace StatisticCommon
                                         //Обновляемый новый
                                         ;
                             else
-                                ;                                
+                                ;
+
+                            Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number);
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
@@ -1300,7 +1302,7 @@ namespace StatisticCommon
                                 else
                                     resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
-                                            @", WR_DATE_TIME=GETADTE()" +
+                                            @", WR_DATE_TIME=GETDATE()" +
                                             @", OWNER=" + m_sOwner_PBR +
                                             @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
@@ -1339,8 +1341,8 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             if (!(m_curRDGValues[i].pbr < 0))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                            //@"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', 'GETDATE()" +
+                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
+                                            //@"', 'GETDATE()" +
                                             @"', '" + strPBRNumber +
                                             @"', " + comp.m_id +
                                             @", '" + m_sOwner_PBR + "'" +
