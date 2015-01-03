@@ -50,7 +50,6 @@
     <Compile Include="FormStatisticTimeSync.Designer.cs">
       <DependentUpon>FormStatisticTimeSync.cs</DependentUpon>
     </Compile>
-    <Compile Include="HGetDate.cs" />
     <Compile Include="PanelSourceData.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -1891,12 +1891,18 @@ namespace Statistic
 
                                     if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
                                     {
-                                        //valuesPBR[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
-                                        m_dictValuesTECComponent[0][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3];
-                                        //m_dictValuesTECComponent.valuesPmin[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
-                                        m_dictValuesTECComponent[0][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1];
-                                        //valuesPmax[j, 24] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
-                                        m_dictValuesTECComponent[0][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2];
+                                        if (double.TryParse(m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 0].ToString(), out m_dictValuesTECComponent[0][id].valuesPBR) == false)
+                                            m_dictValuesTECComponent[0][id].valuesPBR = 0F;
+                                        else
+                                            ;
+                                        if (double.TryParse(m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 1].ToString(), out m_dictValuesTECComponent[0][id].valuesPmin) == false)
+                                            m_dictValuesTECComponent[0][id].valuesPmin = 0F;
+                                        else
+                                            ;
+                                        if (double.TryParse(m_tablePPBRValuesResponse.Rows[i][offsetPlan + j * 3 + 2].ToString(), out m_dictValuesTECComponent[0][id].valuesPmax) == false)
+                                            m_dictValuesTECComponent[0][id].valuesPmax = 0F;
+                                        else
+                                            ;
                                     }
                                     else
                                     {

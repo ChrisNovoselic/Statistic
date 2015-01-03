@@ -27,7 +27,7 @@ namespace StatisticTrans
 
         protected System.Windows.Forms.Control[,] m_arUIControls;
 
-        protected FileINI m_fileINI;
+        protected static FileINI m_sFileINI;
 
         protected System.Windows.Forms.Timer timerService;
 
@@ -81,7 +81,17 @@ namespace StatisticTrans
             }
         }
 
-        public FormMainTrans(string[] par, string[] val)
+        //private string GetINIParametersOfID(int param)
+        //{
+        //    return m_sFileINI.GetValueOfID(param);
+        //}
+
+        private string GetINIParametersOfKey(string keyParam)
+        {
+            return m_sFileINI.GetValueOfKey(keyParam);
+        }
+
+        public FormMainTrans(int id_app, string[] par, string[] val)
         //public FormMainTrans(int id_app, string []par, string [] val)
         {
             InitializeComponent();
@@ -89,14 +99,17 @@ namespace StatisticTrans
             m_report = new HReports();
             m_markQueries = new HMark();
 
-            m_fileINI = new FileINI (@"setup.ini", par, val);
+            //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
+            DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(GetINIParametersOfKey);
+
+            m_sFileINI = new FileINI(@"setup.ini", par, val);
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;
 
             keyPar = @"Main DataSource"; valDefPar = @"671";
-            m_fileINI.Add(keyPar, valDefPar);
-            s_iMainSourceData = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
+            m_sFileINI.Add(keyPar, valDefPar);
+            s_iMainSourceData = Int32.Parse(m_sFileINI.GetValueOfKey(keyPar));
 
             //keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
             //m_fileINI.Add(keyPar, valDefPar);
@@ -108,9 +121,9 @@ namespace StatisticTrans
             //tm.Dispose ();
             
             //Вариант №1
-            keyPar = @"iapp"; valDefPar = ((int)ProgramBase.ID_APP.TRANS_GTP).ToString ();
-            m_fileINI.Add(keyPar, valDefPar);
-            ProgramBase.s_iAppID = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
+            keyPar = @"iapp"; valDefPar = id_app.ToString ();
+            m_sFileINI.Add(keyPar, valDefPar);
+            ProgramBase.s_iAppID = Int32.Parse(m_sFileINI.GetValueOfKey(keyPar));
             //Вариант №2
             //ProgramBase.s_iAppID = id_app;
 
@@ -132,22 +145,25 @@ namespace StatisticTrans
 
             Logging.ReLogg (Logging.LOG_MODE.FILE);
 
-            m_fileINI.Add(@"ОкноНазначение", @"Конвертер (...)" );
-            m_fileINI.Add (@"ID_TECNotUse", string.Empty);
+            m_sFileINI.Add(@"ОкноНазначение", @"Конвертер (...)");
+            m_sFileINI.Add(@"ID_TECNotUse", string.Empty);
 
-            m_fileINI.Add(@"ОпросСохранениеППБР", false.ToString ());
-            m_fileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString());
+            m_sFileINI.Add(@"ОпросСохранениеППБР", false.ToString());
+            m_sFileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString());
 
             keyPar = @"Season DateTime";
-            m_fileINI.Add (keyPar, @"26.10.2014 02:00");
+            m_sFileINI.Add(keyPar, @"26.10.2014 02:00");
             keyPar = @"Season Action";
-            m_fileINI.Add(keyPar, @"-1");
+            m_sFileINI.Add(keyPar, @"-1");
+
+            keyPar = @"SetPBRQuery LogPBRNumber";
+            m_sFileINI.Add(keyPar, false.ToString ());
 
             this.Text =
-            this.notifyIconMain.Text = @"Статистика: " + m_fileINI.GetValueOfKey(@"ОкноНазначение");
+            this.notifyIconMain.Text = @"Статистика: " + m_sFileINI.GetValueOfKey(@"ОкноНазначение");
 
             m_listID_TECNotUse = new List<int>();
-            string[] arStrID_TECNotUse = m_fileINI.GetValueOfKey (@"ID_TECNotUse").Split(',');
+            string[] arStrID_TECNotUse = m_sFileINI.GetValueOfKey(@"ID_TECNotUse").Split(',');
             foreach (string str in arStrID_TECNotUse)
             {
                 if (str.Equals (string.Empty) == false)
@@ -159,7 +175,7 @@ namespace StatisticTrans
             string strChecked = string.Empty;
             bool bRes = false
                 , bChecked = false;
-            strChecked = m_fileINI.GetValueOfKey(@"ОпросСохранениеППБР");
+            strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеППБР");
             if (bool.TryParse(strChecked, out bChecked) == true)
                 опросСохранППБРToolStripMenuItem.Checked = bChecked;
             else
@@ -167,7 +183,7 @@ namespace StatisticTrans
 
             bRes = 
             bChecked = false;
-            strChecked = m_fileINI.GetValueOfKey(@"ОпросСохранениеАдминЗнач");
+            strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеАдминЗнач");
             if (bool.TryParse(strChecked, out bChecked) == true)
                 опросСохранАдминЗначенияToolStripMenuItem.Checked = bChecked;
             else
@@ -1151,9 +1167,9 @@ namespace StatisticTrans
             m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
 
             string keyPar = @"Season DateTime";
-            HAdmin.SeasonDateTime = DateTime.Parse (m_fileINI.GetValueOfKey (keyPar));
+            HAdmin.SeasonDateTime = DateTime.Parse (m_sFileINI.GetValueOfKey (keyPar));
             keyPar = @"Season Action";
-            HAdmin.SeasonAction = Int32.Parse(m_fileINI.GetValueOfKey(keyPar));
+            HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetValueOfKey(keyPar));
 
             if (m_modeMashine == MODE_MASHINE.AUTO)
             {

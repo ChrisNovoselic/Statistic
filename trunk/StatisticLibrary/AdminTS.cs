@@ -1230,6 +1230,15 @@ namespace StatisticCommon
             date = date.Date;
             int currentHour = getCurrentHour (date);
 
+            bool bLogPBRNmber = false;
+            if (!(FormMainBase.DelegateGetINIParametersOfKEY == null))
+                bLogPBRNmber = bool.Parse(FormMainBase.DelegateGetINIParametersOfKEY(@"SetPBRQuery LogPBRNumber"));
+            else
+                if (!(FormMainBase.DelegateGetINIParametersOfID == null))
+                    ; //bLogPBRNmber = bool.Parse(FormMainBase.DelegateGetINIParametersOfID(...));
+                else
+                    ;
+
             for (int i = currentHour; i < 24; i++)
             {
                 // запись для этого часа имеется, модифицируем её
@@ -1291,7 +1300,10 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number);
+                            if (bLogPBRNmber == true)
+                                Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number);
+                            else
+                                ;
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
@@ -1302,7 +1314,7 @@ namespace StatisticCommon
                                 else
                                     resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
-                                            @", WR_DATE_TIME=GETDATE()" +
+                                            @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             @", OWNER=" + m_sOwner_PBR +
                                             @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
@@ -1341,9 +1353,9 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             if (!(m_curRDGValues[i].pbr < 0))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
-                                            //@"', 'GETDATE()" +
-                                            @"', '" + strPBRNumber +
+                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                                            //@", 'GETDATE()" +
+                                            @", '" + strPBRNumber +
                                             @"', " + comp.m_id +
                                             @", '" + m_sOwner_PBR + "'" +
                                             @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +

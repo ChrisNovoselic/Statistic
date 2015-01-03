@@ -16,6 +16,7 @@ namespace StatisticCommon
                                     , SEASON_DATETIME, SEASON_ACTION
                                     //, GRINVICH_OFFSET_DATETIME
                                     , APP_VERSION, APP_VERSION_QUERY_INTERVAL
+                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER
                                     , COUNT_PARAMETR_SETUP };
         protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
@@ -23,6 +24,7 @@ namespace StatisticCommon
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
                                                     , @"App Version", @"App Version Query Interval"
+                                                    , @"SetPBRQuery LogPBRNumber"
                                                     };
         protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     /*@"лог", */"сек", "сек",
@@ -30,6 +32,7 @@ namespace StatisticCommon
                                                     , @"дата/время", @"ном"
                                                     //, "час"
                                                     , @"стр", @"мсек"
+                                                    , @"стр-лог"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -64,6 +67,8 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION, Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/);
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"6666");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 

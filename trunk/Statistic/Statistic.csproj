@@ -225,6 +225,10 @@
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StatisticTimeSync\StatisticTimeSync.csproj">
+      <Project>{8A0AA5BC-3486-466C-A9F9-ED438A096E41}</Project>
+      <Name>StatisticTimeSync</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="Statistic.pdb">

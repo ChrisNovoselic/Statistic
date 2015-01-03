@@ -252,6 +252,8 @@ namespace Statistic
         /// </summary>
         private void InitializeComponent()
         {
+            m_tgLabels = new Dictionary <int, System.Windows.Forms.Label[]>();
+
             components = new System.ComponentModel.Container();
 
             bool bEnabled = true
@@ -564,7 +566,7 @@ namespace Statistic
         public System.Windows.Forms.Label[] m_arLabelCommon;
 
         //private List<System.Windows.Forms.Label> tgsName;
-        private List<System.Windows.Forms.Label[]> m_tgLabels = new List<System.Windows.Forms.Label[]>();
+        private Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
 
         public System.Windows.Forms.Button btnSetNow;
         public DateTimePicker dtprDate;
@@ -602,10 +604,10 @@ namespace Statistic
 
             //Удаление ТГ
             if (m_tgLabels.Count > 0)
-                for (int i = 1; i < m_tgLabels.Count + 1; i++)
+                foreach (int key in m_tgLabels.Keys)
                     for (int j = 0; j < (int)TG.INDEX_VALUE.COUNT_INDEX_VALUE; j++)
-                        if ((!(m_tgLabels[i - 1][j] == null)) && (!(this.Controls.IndexOf(m_tgLabels[i - 1][j]) < 0)))
-                            this.Controls.Remove(m_tgLabels[i - 1][j]);
+                        if ((!(m_tgLabels[key][j] == null)) && (!(this.Controls.IndexOf(m_tgLabels[key][j]) < 0)))
+                            this.Controls.Remove(m_tgLabels[key][j]);
                         else
                             ;
             else
@@ -704,25 +706,28 @@ namespace Statistic
 
             if (m_tgLabels.Count > 0)
             {
-                int r = -1, c = -1;
-                for (int i = 1; i < m_tgLabels.Count + 1; i++)
+                int r = -1, c = -1
+                    , i = 0;
+                foreach (int key in m_tgLabels.Keys)
                 {
-                    this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC]);
-                    c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
-                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition(c, r));
-                    this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.LABEL_DESC], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+                    i++;
 
-                    this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT]);
+                    this.Controls.Add(m_tgLabels[key][(int)TG.INDEX_VALUE.LABEL_DESC]);
+                    c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                    this.SetCellPosition(m_tgLabels[key][(int)TG.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition(c, r));
+                    this.SetRowSpan(m_tgLabels[key][(int)TG.INDEX_VALUE.LABEL_DESC], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+
+                    this.Controls.Add(m_tgLabels[key][(int)TG.INDEX_VALUE.FACT]);
                     c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
-                    this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition(c, r));
-                    this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+                    this.SetCellPosition(m_tgLabels[key][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition(c, r));
+                    this.SetRowSpan(m_tgLabels[key][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
                     if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
                     {
-                        this.Controls.Add(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM]);
+                        this.Controls.Add(m_tgLabels[key][(int)TG.INDEX_VALUE.TM]);
                         c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
-                        this.SetCellPosition(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition(c, r));
-                        this.SetRowSpan(m_tgLabels[i - 1][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+                        this.SetCellPosition(m_tgLabels[key][(int)TG.INDEX_VALUE.TM], new TableLayoutPanelCellPosition(c, r));
+                        this.SetRowSpan(m_tgLabels[key][(int)TG.INDEX_VALUE.TM], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
                     }
                     else
                         ;
@@ -749,13 +754,13 @@ namespace Statistic
         }
 
         //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
-        public void addTGView(ref string name_shr)
+        public void addTGView(TG tg)
         {
             int cnt = -1;
-            m_tgLabels.Add(new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+            m_tgLabels.Add(tg.m_id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
             cnt = m_tgLabels.Count;
 
-            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(name_shr,
+            m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(tg.name_shr,
                                                                     new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                     Color.Black, Color.Empty,
                                                                     8F, ContentAlignment.MiddleRight))
@@ -770,7 +775,7 @@ namespace Statistic
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
             hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
+            m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
 
             //positionYValue += 29;
 
@@ -781,7 +786,7 @@ namespace Statistic
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
             hlblValue.Text = @"---.--"; //name_shr + @"_TM";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-            m_tgLabels[m_tgLabels.Count - 1][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
+            m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
             //positionXName += 69; positionXValue += 69;
         }
@@ -874,7 +879,7 @@ namespace Statistic
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
                             {
-                                showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
+                                showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
 
                                 i++;
                             }
@@ -886,7 +891,7 @@ namespace Statistic
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
                     {
-                        showTMValue(ref m_tgLabels[i][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
+                        showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
 
                         i++;
                     }
@@ -1157,16 +1162,16 @@ namespace Statistic
                             {
                                 if (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0))
                                 {
-                                    showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
+                                    showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
                                     if (m_parent.m_tecView.currHour == true)
-                                        m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                                        m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                                     else
-                                        m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                        m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                                 }
                                 else
                                 {
-                                    m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                                    m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                                 }
                                 i++;
                             }
@@ -1180,16 +1185,16 @@ namespace Statistic
                     {
                         if (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0))
                         {
-                            showValue(m_tgLabels[i][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]);
+                            showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]);
                             if (m_parent.m_tecView.currHour == true)
-                                m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
+                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
                             else
-                                m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         else
                         {
-                            m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                            m_tgLabels[i][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
+                            m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                            m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
                         }
                         i++;
                     }

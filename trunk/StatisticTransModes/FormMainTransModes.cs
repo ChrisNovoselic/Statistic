@@ -15,9 +15,10 @@ namespace StatisticTransModes
 {
     public abstract class FormMainTransModes : FormMainTrans
     {
-        public FormMainTransModes()
-            : base(new string[] { @"ИгнорДатаВремя-techsite", @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение" },
-                                    new string[] { false.ToString(), AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200" })
+        public FormMainTransModes(int id_app)
+            : base(id_app
+                    , new string[] { @"ИгнорДатаВремя-techsite", @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение" }
+                    , new string[] { false.ToString(), AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200" })
         {
             InitializeComponentTransModes();
 
@@ -75,21 +76,28 @@ namespace StatisticTransModes
 
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDateHour);
 
-                switch (indxDB)
-                {
-                    case (int)CONN_SETT_TYPE.SOURCE:
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
-                        break;
-                    case (int)CONN_SETT_TYPE.DEST:
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
-                        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
-                        break;
-                    default:
-                        break;
-                }
+                ////Вариант №1 - Разве это не одно и то же???
+                //switch (indxDB)
+                //{
+                //    case (int)CONN_SETT_TYPE.SOURCE:
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
+                //        break;
+                //    case (int)CONN_SETT_TYPE.DEST:
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
+                //        this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
+                //        break;
+                //    default:
+                //        break;
+                //}
+
+                //Вариант №2
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].ToolTipText = m_arAdmin[indxDB].m_curRDGValues[i].pbr_number;
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
             }
 
             //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();

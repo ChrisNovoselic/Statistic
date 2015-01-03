@@ -599,7 +599,7 @@ namespace Statistic
 
             foreach (TG tg in m_tecView.listTG)
             {
-                m_pnlQuickData.addTGView(ref tg.name_shr);
+                m_pnlQuickData.addTGView(tg);
             }
 
             dgvCellStyleError = new DataGridViewCellStyle();

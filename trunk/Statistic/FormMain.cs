@@ -69,6 +69,8 @@ namespace Statistic
 
             AdminTS.m_sOwner_PBR = 1; //Признак владельца ПБР - пользователь
 
+            //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
+
             tclTecViews.OnClose += delegateOnCloseTab;
         }
 
