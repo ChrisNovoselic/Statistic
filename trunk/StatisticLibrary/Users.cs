@@ -42,6 +42,7 @@ namespace StatisticCommon
             , APP_AUTO_RESET
             , SOURCEDATA_ASKUE_PLUS_SOTIASSO
             , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
+            , PROFILE_SETTINGS_CHANGEMODE
             ,
         };
 

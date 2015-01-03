@@ -36,6 +36,7 @@ namespace Statistic
         PanelSobstvNyzhdy m_panelSobstvNyzhdy;
         PanelCustomTecView m_panelCustomTecView22
             , m_panelCustomTecView23;
+        private static PanelSourceData m_panelSourceData;
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
@@ -44,7 +45,6 @@ namespace Statistic
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
-        private static PanelSourceData m_panelSourceData;
         private int m_prevSelectedIndex;
         private FormChangeMode.MANAGER prevStateIsAdmin;
         public static FormGraphicsSettings formGraphicsSettings;
@@ -154,6 +154,13 @@ namespace Statistic
                     }
                     else ;
 
+                    //панельГрафическихToolStripMenuItem.Enabled =
+                    //выборОбъекты22ToolStripMenuItem.Enabled = 
+                    //выборОбъекты23ToolStripMenuItem.Enabled = 
+                    //значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Enabled = 
+                    //значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Enabled = 
+                    //мониторингПоследняяМинутаЧасToolStripMenuItem.Enabled =
+                    //собственныеНуждыToolStripMenuItem.Enabled =
                     рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
@@ -395,6 +402,16 @@ namespace Statistic
                                         else
                                         {
                                         }
+        }
+
+        private void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new NotImplementedException ();
+        }
+
+        private void сохранитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new NotImplementedException();
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1512,6 +1529,15 @@ namespace Statistic
             m_panelCustomTecView23 = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
             //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
             //m_panelCustomTecView.Start();
+
+            if (рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled == true)
+            //if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB) == true)
+            {
+                m_panelSourceData = new PanelSourceData();
+                m_panelSourceData.Initialize();
+            }
+            else
+                ;
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1650,22 +1676,8 @@ namespace Statistic
             string nameTab = "Дата/время серверов БД";
             if (((ToolStripMenuItem)sender).Checked == true)
             {
-                bool bCreateNow = false;
-                if (m_panelSourceData == null)
-                {
-                    m_panelSourceData = new PanelSourceData();
-
-                    bCreateNow = true;
-                }
-                else
-                    ;
-
                 tclTecViews.AddTabPage(nameTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_panelSourceData);
-                if (bCreateNow == true)
-                    m_panelSourceData.Initialize();
-                else
-                    ;
 
                 ActivateTabPage();
             }
@@ -1763,7 +1775,7 @@ namespace Statistic
             {
                 FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                 if (tecComponent.ShowDialog (this) == DialogResult.Yes) {
-                    MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                    MessageBox.Show (this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     выходToolStripMenuItem.PerformClick ();
                     //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
                     //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
@@ -1862,20 +1874,24 @@ namespace Statistic
         }
 
         private ToolStripMenuItem getSelectedMenuItem (ToolStripMenuItem owner) {
-            foreach (ToolStripMenuItem item in owner.DropDownItems)
+            foreach (ToolStripItem item in owner.DropDownItems)
             {
-                if (item.DropDownItems.Count > 0 && item.Enabled == true)
-                {
-                    return getSelectedMenuItem (item);
-                }
-                else
-                {
-                    if (item.Selected == true) {
-                        return item;
+                if (item is ToolStripMenuItem)
+                    if ((item as ToolStripMenuItem).DropDownItems.Count > 0 && item.Enabled == true)
+                    {
+                        return getSelectedMenuItem(item as ToolStripMenuItem);
                     }
                     else
-                        ;
-                }
+                    {
+                        if (item.Selected == true)
+                        {
+                            return item as ToolStripMenuItem;
+                        }
+                        else
+                            ;
+                    }
+                else
+                    ;
             }
 
             return null;
@@ -1886,7 +1902,6 @@ namespace Statistic
            bool bExit = false;
            ToolStripMenuItem selItem = null;
 
-           
            foreach (ToolStripMenuItem item in ((MenuStrip)sender).Items)
            {
                 if (item.DropDownItems.Count > 0 && item.Enabled == true)
@@ -1904,6 +1919,14 @@ namespace Statistic
                 ;
 
             if (bExit == false)
+                activateTabPage(tclTecViews.SelectedIndex, true);
+            else
+                ;
+        }
+
+        private void contextMenuStrip_Closed(object sender, System.Windows.Forms.ToolStripDropDownClosedEventArgs e)
+        {
+            if (!(e.CloseReason == ToolStripDropDownCloseReason.ItemClicked))
                 activateTabPage(tclTecViews.SelectedIndex, true);
             else
                 ;

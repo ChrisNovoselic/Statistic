@@ -35,6 +35,8 @@ namespace Statistic
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -90,10 +92,27 @@ namespace Statistic
             // файлToolStripMenuItem
             // 
             this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.выходToolStripMenuItem});
+                this.загрузитьПрофильToolStripMenuItem
+                , this.сохранитьПрофильToolStripMenuItem
+                , new System.Windows.Forms.ToolStripSeparator()
+                , this.выходToolStripMenuItem});
             this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
             this.файлToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
             this.файлToolStripMenuItem.Text = "Файл";
+            // 
+            // загрузитьПрофильToolStripMenuItem
+            // 
+            this.загрузитьПрофильToolStripMenuItem.Name = "загрузитьПрофильToolStripMenuItem";
+            this.загрузитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.загрузитьПрофильToolStripMenuItem.Text = "Загрузить профиль";
+            this.загрузитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.загрузитьПрофильToolStripMenuItem_Click);
+            // 
+            // сохранитьПрофильToolStripMenuItem
+            // 
+            this.сохранитьПрофильToolStripMenuItem.Name = "сохранитьПрофильToolStripMenuItem";
+            this.сохранитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.сохранитьПрофильToolStripMenuItem.Text = "Сохранить профиль";
+            this.сохранитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.сохранитьПрофильToolStripMenuItem_Click);
             // 
             // выходToolStripMenuItem
             // 
@@ -345,6 +364,8 @@ namespace Statistic
             this.Activated += new System.EventHandler(this.MainForm_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(MainForm_FormLoad);
+            this.ContextMenuStrip.Opened += new System.EventHandler(menuStrip_MenuActivate);
+            this.ContextMenuStrip.Closed += new System.Windows.Forms.ToolStripDropDownClosedEventHandler(contextMenuStrip_Closed);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ContextMenuStrip.ResumeLayout(false);
@@ -358,6 +379,8 @@ namespace Statistic
         private System.Windows.Forms.MenuStrip menuStrip;
         //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem загрузитьПрофильToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem сохранитьПрофильToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сменитьРежимToolStripMenuItem;

@@ -291,6 +291,25 @@ namespace StatisticTimeSync
                     //Ничего не делаем...
                 }
             }
+
+            public void Select(int indx)
+            {
+                if (m_checkBoxTurnOn.Checked == false)
+                {
+                    if (indx > 0)
+                    {
+                        m_comboBoxSourceData.SelectedIndex = indx;
+                        //m_checkBoxTurnOn.Checked = true;
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                    //Ничего не делаем...
+                }
+            }
         }
 
         partial class PanelGetDate
@@ -494,7 +513,8 @@ namespace StatisticTimeSync
             DbSources.Sources().UnRegister(iListenerId);
 
             for (int i = 0; i < m_arPanels.Length; i ++)
-                m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
+                //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
+                m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
         }
 
         private void onEvtQueryAskedData(object ev)
