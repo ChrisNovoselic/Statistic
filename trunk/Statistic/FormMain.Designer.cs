@@ -216,6 +216,7 @@ namespace Statistic
             this.сменитьРежимToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.сменитьРежимToolStripMenuItem.Text = "Сменить режим";
             this.сменитьРежимToolStripMenuItem.Click += new System.EventHandler(this.сменитьРежимToolStripMenuItem_Click);
+            this.сменитьРежимToolStripMenuItem.Enabled = false;
             this.сменитьРежимToolStripMenuItem.EnabledChanged += new System.EventHandler(сменитьРежимToolStripMenuItem_EnabledChanged);
             // 
             // настройкиСоединенияБДКонфToolStripMenuItem

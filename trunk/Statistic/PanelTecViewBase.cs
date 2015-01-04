@@ -471,6 +471,7 @@ namespace Statistic
 
         public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
         public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+        public int m_ID { get { return m_tecView.m_ID; } }
 
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         //public TG[] sensorId2TG;        

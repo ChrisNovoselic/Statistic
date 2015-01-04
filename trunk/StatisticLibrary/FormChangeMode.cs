@@ -14,44 +14,47 @@ namespace StatisticCommon
     {
         public event DelegateFunc OnMenuItemsClear;
         public event DelegateStringFunc OnMenuItemAdd;
-        
+
         public event DelegateFunc ev_сменитьРежим;
 
+        public class Item
+        {
+            public int id;
+            public string name_shr;
+            public bool bChecked
+                , bVisibled;
+
+            public Item(int id, string name_shr, bool bChecked)
+            {
+                this.id = id;
+                this.name_shr = name_shr;
+                this.bChecked = bChecked;
+                bVisibled = false;
+            }
+        }
+
         public List<TEC> m_list_tec;
-        public List<int> m_list_tec_index,
-                        m_list_TECComponent_index
-                        , m_list_across_index
-                        , m_listAcrossIndexCheckedIndices
-                        , m_list_IdItem
-                        ;
+        public List<Item> m_listItems;
         private List <CheckBox> m_listCheckBoxTECComponent;
-        public List<int> was_checked;
-        public bool /*[]*/ admin_was_checked;
-        private List <int> m_listIDsProfileCheckedIndices;
+
         public bool closing;
 
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
 
         //private ConnectionSettings m_connSet;
 
+        public static int [] ID_SPECIAL_TAB = { 10001, 10002 };
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
         public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER, UNKNOWN };
 
         private HMark m_modeTECComponent;
 
-        public FormChangeMode(List <TEC> tec, int [] arIDsCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
+        public HMark m_markTabAdminChecked;
+
+        public FormChangeMode(List<TEC> tec, List<int> listIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
             this.Text = @"Выбор режима";
-
-            m_listIDsProfileCheckedIndices = new List<int>();
-            if (arIDsCheckedIndices.Length > 0) {
-                foreach (int val in arIDsCheckedIndices) {
-                    m_listIDsProfileCheckedIndices.Add(val);
-                }
-            }
-            else
-                ;
 
             if (!(m_MainFormContextMenuStripListTecViews == null))
             {
@@ -78,14 +81,55 @@ namespace StatisticCommon
                                                                     checkBoxPC,
                                                                     checkBoxTG };
 
-            admin_was_checked = false; //new bool [2] {false, false};
+            m_markTabAdminChecked = new HMark ();
+            m_listItems = new List<Item>();
 
-            m_list_tec_index = new List<int>();
-            m_list_TECComponent_index = new List<int>();
-            m_list_across_index = new List<int>();
-            m_listAcrossIndexCheckedIndices = new List <int> ();
-            m_list_IdItem = new List<int>();
-            was_checked = new List<int>();
+            if (! (m_list_tec == null))
+            {
+                bool bChecked = false;
+                foreach (TEC t in m_list_tec)
+                {
+                    bChecked = false;
+                    if (listIDsProfileCheckedIndices.IndexOf(t.m_id) > -1)
+                        bChecked = true;
+                    else
+                        ;
+                    m_listItems.Add(new Item(t.m_id, t.name_shr, bChecked));
+
+                    if (t.list_TECComponents.Count > 0)
+                    {
+                        foreach (TECComponent g in t.list_TECComponents)
+                        {
+                            bChecked = false;
+                            if (listIDsProfileCheckedIndices.IndexOf(g.m_id) > -1)
+                                bChecked = true;
+                            else
+                                ;
+                            m_listItems.Add(new Item(g.m_id, t.name_shr + " - " + g.name_shr, bChecked));                         
+                        }
+                    }
+                    else
+                        ;
+                }
+
+                bChecked = false;
+                if (listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.DISP]) > -1)
+                    bChecked = true;
+                else
+                    ;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.DISP], getNameAdminValues(MODE_TECCOMPONENT.GTP), bChecked));
+                m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
+
+                bChecked = false;
+                if (listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1)
+                    bChecked = true;
+                else
+                    ;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MODE_TECCOMPONENT.TG), bChecked));
+                m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
+            }
+            else {
+            }
 
             m_listCheckBoxTECComponent[(int)MODE_TECCOMPONENT.TEC].Checked = true;
             m_listCheckBoxTECComponent[(int)MODE_TECCOMPONENT.GTP].Checked = true;
@@ -161,21 +205,78 @@ namespace StatisticCommon
             return @"ПБР - " + arNameAdminValues[(int)mode];
         }
 
-        private void FillListAcrossIndexCheckedIndicies ()
+        private void itemSetStates(Item item)
         {
-            foreach (int indx in m_list_across_index)
+            //ТЭЦ
+            if (itemSetState(item, 0, 100, MODE_TECCOMPONENT.TEC) == false)
+                //ГТП
+                if (itemSetState(item, 100, 500, MODE_TECCOMPONENT.GTP) == false)
+                    //ЩУ
+                    if (itemSetState(item, 500, 1000, MODE_TECCOMPONENT.PC) == false)
+                        //ТГ
+                        if (itemSetState(item, 1000, 10000, MODE_TECCOMPONENT.TG) == false)
+                            //Специальные вкладки...
+                            itemSetState(item);
+                        else
+                            ;
+                    else
+                        ;
+                else
+                    ;
+            else
+                ;
+        }
+
+        private bool itemSetState(Item item, int idMinVal = -1, int idMaxVal = -1, MODE_TECCOMPONENT mode = MODE_TECCOMPONENT.UNKNOWN)
+        {
+            bool bRes = false;
+
+            if ((idMinVal == -1) || (idMaxVal == -1))
             {
-                if (clbMode.CheckedIndices.IndexOf(m_list_across_index.IndexOf(indx)) < 0)
-                    if (!(m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0))
-                        m_listAcrossIndexCheckedIndices.RemoveAt(m_listAcrossIndexCheckedIndices.IndexOf(indx));
+                int idAllowed = -1;
+                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.DISP])
+                    idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP;
+                else
+                    if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
+                        idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS;
                     else
                         ;
-                else                    
-                    if (m_listAcrossIndexCheckedIndices.IndexOf(indx) < 0)
-                        m_listAcrossIndexCheckedIndices.Add(indx);
+
+                bRes = !(idAllowed < 0);
+                if (bRes == true)
+                    if (HStatisticUsers.IsAllowed(idAllowed) == true)
+                    {
+                        clbMode.Items.Add(item.name_shr);
+
+                        clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
+                        item.bVisibled = true;
+                    }
                     else
-                        ;
+                        item.bVisibled = false;
+                else
+                    ;
             }
+            else
+            {
+                bRes = (item.id > idMinVal) && (item.id < idMaxVal);
+                if (bRes == true)
+                    if (IsModeTECComponent(mode) == true)
+                    {
+                        clbMode.Items.Add(item.name_shr);
+                        //Контекстное меню - главная форма
+                        if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr); else ;
+                        if (!(OnMenuItemAdd == null)) OnMenuItemAdd(item.id + @";" + item.name_shr);
+
+                        clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
+                        item.bVisibled = true;
+                    }
+                    else
+                        item.bVisibled = false;
+                else
+                    ;
+            }
+
+            return bRes;
         }
 
         private void FillListBoxTab()
@@ -185,149 +286,78 @@ namespace StatisticCommon
             //Контекстное меню - главная форма
             if (!(OnMenuItemsClear == null)) OnMenuItemsClear(); else ;
             
-            if (!(m_list_tec == null))
+            if (!(m_listItems == null))
             {
-                int tec_indx = 0, comp_indx = 0, across_indx = -1;
-
-                FillListAcrossIndexCheckedIndicies ();
-
                 clbMode.Items.Clear();
 
-                m_list_IdItem.Clear ();
-
-                m_list_tec_index.Clear();
-                m_list_TECComponent_index.Clear();
-
-                m_list_across_index.Clear();
-
-                //was_checked.Clear ();
-
-                foreach (TEC t in m_list_tec)
-                {
-                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id)) {
-                        across_indx++;
-
-                        if (IsModeTECComponent(MODE_TECCOMPONENT.TEC) == true)
-                        {
-                            clbMode.Items.Add(t.name_shr);
-                            //Контекстное меню - главная форма
-                            if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr); else ;
-                            if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr);
-
-                            m_list_IdItem.Add(t.m_id);
-
-                            m_list_tec_index.Add(tec_indx);
-                            m_list_TECComponent_index.Add(-1);
-
-                            m_list_across_index.Add(across_indx);
-
-                            if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
-                                clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
-                            }
-                            else
-                                ;
-                        }
-                        else
-                            ;
-
-                        if (t.list_TECComponents.Count > 0)
-                        {
-                            comp_indx = 0;
-                            foreach (TECComponent g in t.list_TECComponents)
-                            {
-                                across_indx++;
-
-                                if ((((g.m_id > 100) && (g.m_id < 500)) && (IsModeTECComponent (MODE_TECCOMPONENT.GTP))) ||
-                                    (((g.m_id > 500) && (g.m_id < 1000)) && (IsModeTECComponent (MODE_TECCOMPONENT.PC))) ||
-                                    (((g.m_id > 1000) && (g.m_id < 10000)) && (IsModeTECComponent (MODE_TECCOMPONENT.TG))))
-                                {
-                                    clbMode.Items.Add(t.name_shr + " - " + g.name_shr);
-                                    //Контекстное меню - главная форма
-                                    if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(t.name_shr + " - " + g.name_shr); else ;
-                                    if (!(OnMenuItemAdd == null)) OnMenuItemAdd(t.name_shr + " - " + g.name_shr);
-
-                                    m_list_IdItem.Add(g.m_id);
-
-                                    m_list_tec_index.Add(tec_indx);
-                                    m_list_TECComponent_index.Add(comp_indx);
-
-                                    m_list_across_index.Add(across_indx);
-
-                                    if (!(m_listAcrossIndexCheckedIndices.IndexOf(across_indx) < 0)) {
-                                        clbMode.SetItemChecked(clbMode.Items.Count - 1, true);
-                                    }
-                                    else
-                                        ;
-                                }
-                                else
-                                    ;
-
-                                comp_indx++;
-                            }
-                        }
-                        else
-                            ;
-
-                        tec_indx++;
-                    //} else ;
-                }
-
-                if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) &&
-                    HStatisticUsers.RoleIsDisp == true) {
-                    //(HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP) == true)) {
-                    if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true)))
-                    {
-                        clbMode.Items.Add(getNameAdminValues(MODE_TECCOMPONENT.GTP));
-                        if (m_listIDsProfileCheckedIndices.IndexOf (0) > -1) {
-                            CheckState csAdmin = CheckState.Indeterminate;
-                            if (HStatisticUsers.RoleIsKomDisp == true)
-                                admin_was_checked = true;
-                            else
-                                ;
-                            csAdmin = admin_was_checked == true ? CheckState.Checked : CheckState.Unchecked;
-                            clbMode.SetItemCheckState (clbMode.Items.Count - 1, csAdmin);
-                        } else ;
-                    }
-                    else
-                        //if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsNSS == true))
-                        if (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS) == true)
-                            clbMode.Items.Add(getNameAdminValues((short)MODE_TECCOMPONENT.TEC)); //PC, TG - не важно
-                        else
-                            ;
-                }
-                else
-                    ;
+                foreach (Item item in m_listItems)
+                    itemSetStates(item);
             }
             else
                 ;
         }
 
+        private Item findItemOfId(int id)
+        {
+            Item itemRes = null;
+
+            foreach (Item item in m_listItems)
+            {
+                if (item.id == id)
+                {
+                    itemRes = item;
+                    break;
+                }
+                else
+                    ;
+            }
+
+            return itemRes;
+        }
+
+        private Item findItemOfText(string text)
+        {
+            Item itemRes = null;
+
+            foreach (Item item in m_listItems) {
+                if (item.name_shr.Equals(text) == true)
+                {
+                    itemRes = item;
+                    break;
+                }
+                else
+                    ;
+            }
+
+            return itemRes;
+        }
+
         private void btnOk_Click(object sender, EventArgs ev)
         {
             int i;
-            //if (clbMode.CheckedIndices.Count == 0)
-            //{
-            //    MessageBox.Show("Вы не выбрали отображаемые объекты, выберите хотя бы один", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            //    return;
-            //}
+            Item item = null;
 
-            was_checked.Clear();
-            admin_was_checked = false;
+            for (i = 0; i < clbMode.Items.Count; i++) {
+                item = findItemOfText(clbMode.GetItemText(clbMode.Items[i]));
+                item.bChecked = ! (clbMode.CheckedIndices.IndexOf(i) < 0);
 
-            for (i = 0; i < clbMode.CheckedIndices.Count; i++) {
-                //(IsModeTECComponent (MODE_TECCOMPONENT.GTP) == true)) || (IsModeTECComponent (MODE_TECCOMPONENT.TG) == true)
-                //if (((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true)) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1))
-                if ((getModeTECComponent() > 0) && (clbMode.CheckedIndices[i] == clbMode.Items.Count - 1)
-                    && (HStatisticUsers.RoleIsDisp == true))
-                    //&& ((HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP) == true) || (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS) == true)))
-                    admin_was_checked = true;
+                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.DISP])
+                {
+                    m_markTabAdminChecked.Set((int)MANAGER.DISP, item.bChecked);
+                }
                 else
-                    was_checked.Add(clbMode.CheckedIndices[i]);
+                {
+                    if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
+                    {
+                        m_markTabAdminChecked.Set((int)MANAGER.NSS, item.bChecked);
+                    }
+                    else
+                    {
+                    }
+                }
             }
 
             try {
-                FillListAcrossIndexCheckedIndicies ();
-
                 //Проверить фиктивность вызова метода
                 if (! (ev == EventArgs.Empty)) {
                     this.DialogResult = DialogResult.OK;
@@ -340,6 +370,49 @@ namespace StatisticCommon
             catch (Exception e) {
                 Logging.Logg().Exception(e, @"FormChangeMode::btnOk_Click () - ...");
             }
+        }
+
+        public void LoadProfile(string ids)
+        {
+            Logging.Logg().Action(@"Загрузка профайла: ids=" + ids);
+            
+            if (ids.Equals(string.Empty) == false)
+            {
+                string[] arId = ids.Split(';');
+                Item item;
+                foreach (string id in arId)
+                {
+                    item = findItemOfId(Int32.Parse(id));
+
+                    if (item.bVisibled == true)
+                        clbMode.SetItemChecked(clbMode.Items.IndexOf(item.name_shr), true);
+                    else
+                        item.bChecked = true;
+                }
+            }
+            else
+                ;
+
+            //btnOk.PerformClick();
+            btnOk_Click(null, EventArgs.Empty);
+        }
+
+        public string SaveProfile()
+        {
+            string ids = string.Empty;
+
+            foreach (Item item in m_listItems)
+                if (item.bChecked == true)
+                    ids += item.id + @";";
+                else
+                    ;
+
+            if (ids.Length > 0)
+                ids = ids.Substring(0, ids.Length - 1);
+            else
+                ;
+
+            return ids;
         }
 
         private void clbMode_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -398,12 +471,84 @@ namespace StatisticCommon
             SetItemChecked (clbMode.CheckedItems.IndexOf (textItem), bChecked);
         }
 
+        public int GetTECIndex(int id)
+        {
+            int indxRes = -1;
+
+            foreach (TEC t in m_list_tec)
+            {
+                if (id > 100)
+                {
+                    foreach (TECComponent c in t.list_TECComponents)
+                    {
+                        if (id == c.m_id)
+                        {
+                            indxRes = m_list_tec.IndexOf(t);
+                            break;
+                        }
+                        else
+                            ;
+                    }
+                }
+                else
+                {
+                    if (id == t.m_id)
+                    {
+                        indxRes = m_list_tec.IndexOf(t);
+                        break;
+                    }
+                    else
+                        ;
+                }
+            }
+
+            return indxRes;
+        }
+
+        public int GetTECComponentIndex(int id, int TECIndex = -1)
+        {
+            int indxRes = -1;
+
+            if (id > 100)
+            {
+                foreach (TEC t in m_list_tec)
+                {
+                    foreach (TECComponent c in t.list_TECComponents)
+                    {
+                        if (id == c.m_id)
+                        {
+                            indxRes = t.list_TECComponents.IndexOf(c);
+                            break;
+                        }
+                        else
+                            ;
+                    }
+                }
+            }
+            else
+                ;
+
+            return indxRes;
+        }
+
         private void btnCancel_Click(object sender, EventArgs e)
         {
             btnOk.Focus();
             this.DialogResult = DialogResult.Cancel;
             closing = true;
             Close();
+        }
+
+        private void ChangeMode_HandleCreated(object sender, EventArgs e)
+        {
+        }
+
+        private void ChangeMode_Load(object sender, EventArgs e)
+        {
+        }
+
+        private void ChangeMode_Shown(object sender, EventArgs e)
+        {
         }
 
         private void ChangeMode_FormClosing(object sender, FormClosingEventArgs e)
@@ -434,15 +579,6 @@ namespace StatisticCommon
             btnOk.Focus();
         }
 
-        private void ChangeMode_Shown(object sender, EventArgs e)
-        {
-            //if ((IsModeTECComponent(MODE_TECCOMPONENT.GTP) == true) || (IsModeTECComponent(MODE_TECCOMPONENT.TG) == true))
-            if ((getModeTECComponent() > 0) && (m_list_tec.Count > 0) && (clbMode.Items.Count > 0) && (HStatisticUsers.RoleIsDisp == true))
-                clbMode.SetItemChecked(clbMode.Items.Count - 1, admin_was_checked);
-            else
-                ;
-        }
-
         private void checkBox_CheckedChanged(object sender, EventArgs e)
         {
             //m_modeTECComponent.Marked (m_listCheckBoxTECComponent.IndexOf ((CheckBox)sender));
@@ -451,19 +587,26 @@ namespace StatisticCommon
             FillListBoxTab();
         }
 
-        public string getIdItemsCheckedIndicies ()
+        public string getIdsOfCheckedIndicies ()
         {
             string strRes = string.Empty;
             int i = -1;
 
-            for (i = 0; i < was_checked.Count; i ++)
+            for (i = 0; i < m_listItems.Count; i ++)
             {
-                strRes += m_list_IdItem[was_checked[i]];
-                if ((i + 1) < was_checked.Count)
+                if (m_listItems[i].bChecked == true)
+                {
+                    strRes += m_listItems[i].name_shr;
                     strRes += ",";
+                }
                 else
                     ;
             }
+
+            if (strRes.Length > 1)
+                strRes = strRes.Substring(0, strRes.Length - 1);
+            else
+                ;
 
             return strRes;
         }

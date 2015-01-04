@@ -18,6 +18,7 @@ namespace Statistic
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
             public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
             public int [] m_propView;
+            public List<int> m_listIdContextMenuItems;
             private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
 
             public event DelegateFunc EventRestruct;
@@ -52,6 +53,8 @@ namespace Statistic
                 this.Text = s_msg;
                 this.BorderStyle = BorderStyle.Fixed3D;
                 this.TextAlign = ContentAlignment.MiddleCenter;
+
+                m_listIdContextMenuItems = new List<int>();
 
                 m_propView = new int[(int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW] {0, 0, 0, 1, -1, 0, -1};
 
@@ -251,10 +254,16 @@ namespace Statistic
                 m_arLabelEmpty[i] = new HLabelCustomTecView();
 
                 m_arLabelEmpty [i].ContextMenu = new ContextMenu ();
-                foreach (ToolStripItem tsi in m_formChangeMode.m_MainFormContextMenuStripListTecViews.Items)
+                //foreach (ToolStripItem tsi in m_formChangeMode.m_MainFormContextMenuStripListTecViews.Items)
+                foreach (FormChangeMode.Item item in m_formChangeMode.m_listItems)
                 {
-                    m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem (tsi.Text));
-                    //m_arLabelEmpty[i].ContextMenu.MenuItems [m_arLabelEmpty[i].ContextMenu.MenuItems.Count - 1].Click += MenuItem_OnClick;
+                    if ((item.bVisibled == true) && (item.id < FormChangeMode.ID_SPECIAL_TAB [(int)FormChangeMode.MANAGER.DISP]))
+                    {
+                        m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem(item.name_shr));
+                        m_arLabelEmpty[i].m_listIdContextMenuItems.Add(item.id);
+                    }
+                    else
+                        ;
                 }
 
                 m_arLabelEmpty[i].AddContextMenuFixedMenuItems(m_indxContentMenuItem, MenuItem_OnClick);
@@ -265,7 +274,7 @@ namespace Statistic
             }
 
             m_formChangeMode.OnMenuItemsClear += new DelegateFunc(OnMenuItemsClear);
-            m_formChangeMode.OnMenuItemAdd += new DelegateStringFunc(OnMenuItemAdd);
+            m_formChangeMode.OnMenuItemAdd += new DelegateStringFunc (OnMenuItemAdd);
 
             for (int i = 0; i < RowCount; i++)
             {
@@ -375,18 +384,23 @@ namespace Statistic
                 while (le.ContextMenu.MenuItems.Count > COUNT_FIXED_CONTEXT_MENUITEM) {
                     le.ContextMenu.MenuItems.RemoveAt (0);
                 }
+
+                le.m_listIdContextMenuItems.Clear();
             }
 
             m_indxContentMenuItem = INDEX_START_CONTEXT_MENUITEM;
         }
 
-        private void OnMenuItemAdd (string nameItem) {
-            int indx = -1;
+        private void OnMenuItemAdd (string item) {
+            int indx = -1
+                , id = Int32.Parse (item.Split (';')[0]);
+            string nameItem = item.Split(';')[1];
             foreach (HLabelCustomTecView le in m_arLabelEmpty)
             {
                 indx = le.ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM;
                 if (indx < 0) indx = 0; else ;
                 le.ContextMenu.MenuItems.Add(indx, createMenuItem(nameItem));
+                le.m_listIdContextMenuItems.Add(id);
             }
 
             m_indxContentMenuItem ++;
@@ -395,7 +409,8 @@ namespace Statistic
         private void MenuItem_OnClick(object obj, EventArgs ev)
         {
             int indxLabel = -1
-                , indx = ((MenuItem)obj).Index;
+                , indx = ((MenuItem)obj).Index
+                , id_comp = -1;
 
             foreach (HLabelCustomTecView le in m_arLabelEmpty)
                 if (le.ContextMenu == ((ContextMenu)((MenuItem)obj).Parent)) {
@@ -449,8 +464,8 @@ namespace Statistic
                     //Вызвать на отображение
                     ((MenuItem)obj).Checked = true;
                     // отображаем вкладки ТЭЦ - аналог FormMain::сменитьРежим...
-                    int tec_index = m_formChangeMode.m_list_tec_index[indx],
-                        TECComponent_index = m_formChangeMode.m_list_TECComponent_index[indx];
+                    int tec_index = m_formChangeMode.GetTECIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)])
+                        , TECComponent_index = m_formChangeMode.GetTECComponentIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]);
                     Point ptAddress = getAddress(indxLabel);
 
                     PanelTecView panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel], m_fErrorReport, m_fActionReport);

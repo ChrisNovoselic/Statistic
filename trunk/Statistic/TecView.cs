@@ -136,6 +136,7 @@ namespace Statistic
         public volatile int m_indx_TEC;
         //public volatile int m_indx_TECComponent;
         public List <TECComponentBase> m_localTECComponents;
+        public int m_ID { get { return indxTECComponents < 0 ? m_tec.m_id : m_tec.list_TECComponents[indxTECComponents].m_id; } }
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
         public volatile Dictionary<int, TecView.valuesTG>m_dictValuesTG;
 
