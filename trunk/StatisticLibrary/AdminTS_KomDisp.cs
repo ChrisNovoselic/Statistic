@@ -157,15 +157,19 @@ namespace StatisticCommon
                 if (!(m_tablePPBRValuesResponse == null)) m_tablePPBRValuesResponse.Clear(); else ;
 
                 if ((IsCanUseTECComponents() == true) && (strPPBRCSVNameFileTemp.Length > 0))
-                    m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strPPBRCSVNameFileTemp),
-                                                                            @"SELECT * FROM ["
-                                                                            //+ @"Sheet1$"
-                                                                            + Path.GetFileName (strPPBRCSVNameFileTemp)
-                                                                            + @"]"
-                                                                            //+ @" WHERE GTP_ID='" +
-                                                                            //allTECComponents[indxTECComponents].name_future +
-                                                                            //@"'"
-                                                                            , out err);
+                    //m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strPPBRCSVNameFileTemp),
+                    //                                                        @"SELECT * FROM ["
+                    //                                                        //+ @"Sheet1$"
+                    //                                                        + Path.GetFileName (strPPBRCSVNameFileTemp)
+                    //                                                        + @"]"
+                    //                                                        //+ @" WHERE GTP_ID='" +
+                    //                                                        //allTECComponents[indxTECComponents].name_future +
+                    //                                                        //@"'"
+                    //                                                        , out err);
+                    m_tablePPBRValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strPPBRCSVNameFileTemp)
+                                                                        + @"\" + Path.GetFileName(strPPBRCSVNameFileTemp)
+                                                                        , @"*"
+                                                                        , out err);
                 else
                     ;
 
@@ -189,13 +193,17 @@ namespace StatisticCommon
 
         protected bool ImpPPBRCSVValuesResponse()
         {
-            bool bRes = m_tablePPBRValuesResponse.Rows.Count > 0 ? true : false;
+            bool bRes = (((m_tablePPBRValuesResponse.Columns.Contains (@"GTP_ID") == true)
+                            && (m_tablePPBRValuesResponse.Columns.Contains (@"TotalBR") == true)
+                            && (m_tablePPBRValuesResponse.Columns.Contains(@"PminBR") == true)
+                            && (m_tablePPBRValuesResponse.Columns.Contains(@"PmaxBR") == true))
+                        && (m_tablePPBRValuesResponse.Rows.Count > 0)) ? true : false;
 
             if (bRes == true)
                 //'indxTECComponents' необходимо сохранить ??? - сохраняется в потоке !!!
                 new Thread(new ParameterizedThreadStart(threadPPBRCSVValues)).Start(null); //можно установить значение аргумента = 'm_curDate'
             else
-                ;
+                Logging.Logg().Error(@"AdminTS_KomDisp::ImpPPBRCSVValuesResponse () - входная таблица не соответствует требованиям...");
 
             return bRes;
         }
