@@ -374,7 +374,7 @@ namespace StatisticCommon
 
         public void LoadProfile(string ids)
         {
-            Logging.Logg().Action(@"Загрузка профайла: ids=" + ids);
+            Logging.Logg().Action(@"Загрузка профайла (FormChangeMode): ids=" + ids);
             
             if (ids.Equals(string.Empty) == false)
             {
@@ -459,11 +459,27 @@ namespace StatisticCommon
                 indx = clbMode.CheckedIndices[indxCheckedIndicies];
             }
             else {
-                indx = clbMode.CheckedIndices[clbMode.CheckedIndices.Count - 1];    
+                //indx = clbMode.CheckedIndices[clbMode.CheckedIndices.Count - 1];
+                switch (indxCheckedIndicies)
+                {
+                    case -1: //KOM_DISP
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MODE_TECCOMPONENT.GTP));
+                        break;
+                    case -2: //NSS
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MODE_TECCOMPONENT.TEC)); //TG, PC - не имеет значения...
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            clbMode.SetItemChecked(indx, bChecked);
-            btnOk_Click(null, EventArgs.Empty);
+            if ((!(indx < 0)) && (indx < clbMode.Items.Count))
+            {
+                clbMode.SetItemChecked(indx, bChecked);
+                btnOk_Click(null, EventArgs.Empty);
+            }
+            else
+                ;
         }
 
         public void SetItemChecked(string textItem, bool bChecked)

@@ -14,7 +14,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelAdmin : PanelStatistic
+    public class PanelAdmin : PanelStatisticWithTableHourRows
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 

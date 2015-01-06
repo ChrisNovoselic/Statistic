@@ -1,4 +1,6 @@
-﻿using HClassLibrary;
+﻿using System.Collections.Generic; //Dictionary
+
+using HClassLibrary;
 
 namespace Statistic
 {
@@ -30,6 +32,8 @@ namespace Statistic
         /// </summary>
         private void InitializeComponent()
         {
+            m_dictAddingTabs = new Dictionary<int, ADDING_TAB>();
+
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
@@ -38,15 +42,17 @@ namespace Statistic
             this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.выборОбъекты22ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.выборОбъекты23ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.собственныеНуждыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();            
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.CUSTOM_2X2, new ADDING_TAB("выборОбъектывыборОбъекты22ToolStripMenuItem", "Выбор объектов отображения (2X2)"));
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.CUSTOM_2X3, new ADDING_TAB("выборОбъектывыборОбъекты23ToolStripMenuItem", "Выбор объектов отображения (2X3)"));
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн"));
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текукщей мощности ТЭЦг, ТЭЦсн"));
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
+            m_dictAddingTabs.Add((int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));
+
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,7 +61,7 @@ namespace Statistic
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemИзменитьПарольНСС = new System.Windows.Forms.ToolStripMenuItem();
+            this.изменитьПарольНССToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -125,13 +131,13 @@ namespace Statistic
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.панельГрафическихToolStripMenuItem,
-            this.выборОбъекты22ToolStripMenuItem,
-            this.выборОбъекты23ToolStripMenuItem,
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem,
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem,
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem,
-            this.собственныеНуждыToolStripMenuItem,
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem});
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X2].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X3].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].menuItem,
+            m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].menuItem});
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -144,61 +150,33 @@ namespace Statistic
             this.панельГрафическихToolStripMenuItem.Text = "Панель графических параметров";
             this.панельГрафическихToolStripMenuItem.CheckedChanged += new System.EventHandler(this.панельГрафическихToolStripMenuItem_CheckedChanged);
             // 
-            // значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem
-            // 
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.CheckOnClick = true;
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Name = "значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem";
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Text = "Значения текущей мощности ГТПг, ТЭЦсн";
-            this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem_CheckedChanged);
-            // 
-            // значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem
-            // 
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.CheckOnClick = true;
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Name = "значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem";
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Text = "Значения текукщей мощности ТЭЦг, ТЭЦсн";
-            this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem_CheckedChanged);
-            // 
-            // мониторингПоследняяМинутаЧасToolStripMenuItem
-            // 
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem.CheckOnClick = true;
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Name = "мониторингПоследняяМинутаЧасToolStripMenuItem";
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem.Text = "Мониторинг - последняя минута часа";
-            this.мониторингПоследняяМинутаЧасToolStripMenuItem.CheckedChanged += new System.EventHandler(this.мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged);
-            // 
-            // собственныеНуждыToolStripMenuItem
-            // 
-            this.собственныеНуждыToolStripMenuItem.CheckOnClick = true;
-            this.собственныеНуждыToolStripMenuItem.Name = "собственныеНуждыToolStripMenuItem";
-            this.собственныеНуждыToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.собственныеНуждыToolStripMenuItem.Text = "Собственные нужды";
-            this.собственныеНуждыToolStripMenuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыToolStripMenuItem_CheckedChanged);
-            // 
             // выборОбъекты22ToolStripMenuItem
             // 
-            this.выборОбъекты22ToolStripMenuItem.CheckOnClick = true;
-            this.выборОбъекты22ToolStripMenuItem.Name = "выборОбъектывыборОбъекты22ToolStripMenuItem";
-            this.выборОбъекты22ToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.выборОбъекты22ToolStripMenuItem.Text = "Выбор объектов отображения (2X2)";
-            this.выборОбъекты22ToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X2].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
             // 
             // выборОбъекты23ToolStripMenuItem
             // 
-            this.выборОбъекты23ToolStripMenuItem.CheckOnClick = true;
-            this.выборОбъекты23ToolStripMenuItem.Name = "выборОбъектывыборОбъекты23ToolStripMenuItem";
-            this.выборОбъекты23ToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.выборОбъекты23ToolStripMenuItem.Text = "Выбор объектов отображения (2X3)";
-            this.выборОбъекты23ToolStripMenuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X3].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].menuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].menuItem.CheckedChanged += new System.EventHandler(this.значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem_CheckedChanged);
+            // 
+            // мониторингПоследняяМинутаЧасToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].menuItem.CheckedChanged += new System.EventHandler(this.мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged);
+            // 
+            // собственныеНуждыToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].menuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыToolStripMenuItem_CheckedChanged);
             // 
             // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
             // 
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.CheckOnClick = true;
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Name = "рассинхронизацияДатаВремяСерверБДToolStripMenuItem";
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Text = "Рассинхронизация даты/времени серверов БД";
-            this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem.CheckedChanged += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.CheckedChanged += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged);
             // 
             // настройкиToolStripMenuItem
             // 
@@ -248,7 +226,7 @@ namespace Statistic
             this.текущееСостояниеПользовательToolStripMenuItem,
             this.изменитьПарольДиспетчераToolStripMenuItem,
             this.изменитьПарольАдминистратораToolStripMenuItem,
-            this.toolStripMenuItemИзменитьПарольНСС,
+            this.изменитьПарольНССToolStripMenuItem,
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
             this.изментьСоставПользовательToolStripMenuItem});
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
@@ -271,10 +249,10 @@ namespace Statistic
             // 
             // toolStripMenuItemИзменитьПарольНСС
             // 
-            this.toolStripMenuItemИзменитьПарольНСС.Name = "toolStripMenuItemИзменитьПарольНСС";
-            this.toolStripMenuItemИзменитьПарольНСС.Size = new System.Drawing.Size(303, 22);
-            this.toolStripMenuItemИзменитьПарольНСС.Text = "Изменить пароль начальника смены станции";
-            this.toolStripMenuItemИзменитьПарольНСС.Click += new System.EventHandler(this.изменитьПарольНСС_Click);
+            this.изменитьПарольНССToolStripMenuItem.Name = "изменитьПарольНССToolStripMenuItem";
+            this.изменитьПарольНССToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            this.изменитьПарольНССToolStripMenuItem.Text = "Изменить пароль начальника смены станции";
+            this.изменитьПарольНССToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольНССToolStripMenuItem_Click);
             // 
             // изментьСоставТЭЦГТПЩУToolStripMenuItem
             // 
@@ -392,23 +370,16 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem изменитьПарольНССToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;        
+        private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.Label lblLabel;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem панельГрафическихToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem выборОбъекты22ToolStripMenuItem
-            , выборОбъекты23ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem рассинхронизацияДатаВремяСерверБДToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem мониторингПоследняяМинутаЧасToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem собственныеНуждыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыПриложенияToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem параметрыТГБийскToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemИзменитьПарольНСС;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
     }
 }
 

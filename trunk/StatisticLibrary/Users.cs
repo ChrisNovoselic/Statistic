@@ -19,7 +19,7 @@ namespace StatisticCommon
         //Идентификаторы из БД
         public enum ID_ALLOWED {
             UNKNOWN = -1
-            , SOURCEDATA_CHANGED = 1
+            , SOURCEDATA_CHANGED = 1 //Вкл\выкл группу пунктов меню
             , TAB_PBR_KOMDISP
             , AUTO_TAB_PBR_KOMDISP
             , ALARM_KOMDISP
@@ -40,11 +40,14 @@ namespace StatisticCommon
             , MENUITEM_SETTINGS_PARAMETERS_APP
             , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
             , APP_AUTO_RESET
-            , SOURCEDATA_ASKUE_PLUS_SOTIASSO
+            , SOURCEDATA_ASKUE_PLUS_SOTIASSO //Вкл\выкл пункт меню
             , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
             , PROFILE_SETTINGS_CHANGEMODE
+            , PROFILE_VIEW_ADDINGTABS
             ,
         };
+
+
 
         public HStatisticUsers(int iListenerId)
             : base(iListenerId)

@@ -13,10 +13,11 @@ using System.Data; //DataTable
 using System.Data.Common; //DbConnection
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticTimeSync
 {
-    public partial class PanelSourceData : TableLayoutPanel
+    public partial class PanelSourceData : PanelStatistic
     {
         private static int [] INDEX_SOURCE_GETDATE = {
             //26
@@ -451,27 +452,30 @@ namespace StatisticTimeSync
             m_lockTimerGetDate = new object();
         }
 
-        public void Initialize()
+        public void Start(ConnectionSettings connSett)
         {
-            m_connSett = new ConnectionSettings()
+            m_connSett = connSett;
+
+            start();
+        }
+
+        public override void Start()
+        {
+            Start (new ConnectionSettings()
             {
                 id = -1
-                ,
-                name = @"DB_CONFIG"
-                ,
-                server = @"10.100.104.18"
-                ,
-                port = 1433
-                ,
-                dbName = @"techsite_cfg-2.X.X"
-                ,
-                userName = @"client"
-                ,
-                password = @"client"
-                ,
-                ignore = false
-            };
+                , name = @"DB_CONFIG"
+                , server = @"10.100.104.18"
+                , port = 1433
+                , dbName = @"techsite_cfg-2.X.X"
+                , userName = @"client"
+                , password = @"client"
+                , ignore = false
+            });
+        }
 
+        private void start()
+        {
             int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
                 , err = -1;
 
@@ -512,7 +516,7 @@ namespace StatisticTimeSync
 
             DbSources.Sources().UnRegister(iListenerId);
 
-            for (int i = 0; i < m_arPanels.Length; i ++)
+            for (int i = 0; i < m_arPanels.Length; i++)
                 //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
                 m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
         }
@@ -552,7 +556,7 @@ namespace StatisticTimeSync
             }
         }
 
-        public void Stop()
+        public override void Stop()
         {
             stop();
 
@@ -573,7 +577,7 @@ namespace StatisticTimeSync
                 ;
         }
 
-        public void Activate (bool activated) {
+        public override void Activate (bool activated) {
             //Выбрать действие
             lock (m_lockTimerGetDate) {
                 if (activated == true)

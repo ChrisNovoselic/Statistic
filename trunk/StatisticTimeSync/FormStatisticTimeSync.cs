@@ -19,7 +19,7 @@ namespace StatisticTimeSync
         }
 
         private void FormStatisticTimeSync_Load (object obj, EventArgs ev) {
-            m_panelMain.Initialize ();
+            m_panelMain.Start ();
         }
 
         private void FormStatisticTimeSync_Activate(object obj, EventArgs ev)

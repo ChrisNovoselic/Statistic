@@ -12,12 +12,15 @@ namespace StatisticCommon
         public abstract void Start();
         public abstract void Stop();
 
-        protected abstract void initTableHourRows ();
-
         public abstract void Activate(bool active);
     }
 
-    public abstract class PanelStatisticView : PanelStatistic
+    public abstract class PanelStatisticWithTableHourRows : PanelStatistic
+    {
+        protected abstract void initTableHourRows();
+    }
+
+    public abstract class PanelStatisticView : PanelStatisticWithTableHourRows
     {
         //Копия для 'class TECComponentBase' - из 'PanelStatisticView' класса требуется исключть???
         //protected volatile string sensorsString_TM = string.Empty;

@@ -88,6 +88,10 @@
       <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
       <Name>HClassLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
+      <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
+      <Name>StatisticCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

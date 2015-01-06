@@ -17,8 +17,9 @@ namespace trans_tg
     public partial class FormMainTransTG : FormMainTrans
     {
         public FormMainTransTG()
-            : base(new string[] { @"ТипБДКфгНазначение" },
-                new string[] { @"200" })
+            : base((int)ProgramBase.ID_APP.TRANS_TG
+            , new string[] { @"ТипБДКфгНазначение" }
+            , new string[] { @"200" })
         {
             InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 
@@ -74,7 +75,7 @@ namespace trans_tg
             string keyTypeConfigDB = @"ТипБДКфгНазначение";
             //FileINI fileINI = new FileINI(@"setup.ini");
             //string sec = "Main (" + ProgramBase.AppName + ")";
-            iConfigDB = Int32.Parse (m_fileINI.GetValueOfKey (keyTypeConfigDB));
+            iConfigDB = Int32.Parse(m_sFileINI.GetValueOfKey(keyTypeConfigDB));
 
             TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
 

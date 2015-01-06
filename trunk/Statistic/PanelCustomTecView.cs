@@ -292,7 +292,7 @@ namespace Statistic
         #endregion
     }
     
-    public partial class PanelCustomTecView : PanelStatistic
+    public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
     {
         private HLabelCustomTecView[] m_arLabelEmpty;
         //private Control[] m_arControls;

@@ -16,8 +16,9 @@ namespace trans_gtp
     public partial class FormMainTransGTP : FormMainTrans
     {
         public FormMainTransGTP()
-            : base(new string[] { @"ИгнорДатаВремя-techsite", @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение" },
-                    new string[] { @"False", @"200", @"DYNAMIC" })
+            : base((int)ProgramBase.ID_APP.TRANS_GTP
+                    , new string[] { @"ИгнорДатаВремя-techsite", @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение" }
+                    , new string[] { @"False", @"200", @"DYNAMIC" })
         {
             InitializeComponentTransDB();
 
@@ -71,8 +72,8 @@ namespace trans_gtp
             //else
             //    ;
 
-            m_fileINI.Add (@"ТипБДКфгИсточник", @"190");
-            m_fileINI.Add (@"РДГФорматТаблицаИсточник", @"STATIC");
+            m_sFileINI.Add(@"ТипБДКфгИсточник", @"190");
+            m_sFileINI.Add(@"РДГФорматТаблицаИсточник", @"STATIC");
 
             ////Для переназначения идентификаторов источников данных БийскТЭЦ
             //m_fileINI.Add(@"ID_БДНазначение_ASKUE", @"6,");
@@ -86,7 +87,7 @@ namespace trans_gtp
             TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                arConfigDB[i] = Int32.Parse (m_fileINI.GetValueOfKey (arKeyTypeConfigDB[i]));
+                arConfigDB[i] = Int32.Parse(m_sFileINI.GetValueOfKey(arKeyTypeConfigDB[i]));
                 for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
@@ -100,16 +101,16 @@ namespace trans_gtp
             }
 
             string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_fileINI.GetValueOfKey (@"РДГФорматТаблицаИсточник");
-            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_fileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
+            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetValueOfKey(@"РДГФорматТаблицаИсточник");
+            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
 
             bool bIgnoreDateTime = false;
-            if (Boolean.TryParse(m_fileINI.GetValueOfKey (@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
+            if (Boolean.TryParse(m_sFileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
                 bIgnoreDateTime = false;
             else
                 ;
 
-            m_fileINI.Add(@"ТЭЦПараметрыНазначение", @"{}");
+            m_sFileINI.Add(@"ТЭЦПараметрыНазначение", @"{}");
 
             int idListener = -1;
             //Инициализация объектов получения данных
@@ -147,7 +148,7 @@ namespace trans_gtp
                 //}
 
                 if (i == (int)CONN_SETT_TYPE.DEST) {
-                    string strTECParametersDest = m_fileINI.GetValueOfKey(@"ТЭЦПараметрыНазначение");
+                    string strTECParametersDest = m_sFileINI.GetValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         string prefix_admin = @""
