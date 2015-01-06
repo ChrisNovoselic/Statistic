@@ -1339,23 +1339,23 @@ namespace Statistic
             Color colorChart = Color.Empty;
             if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
                 || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
-                colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
+                colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
             else
                 if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    colorChart = FormMain.formGraphicsSettings.m_bgColor_SOTIASSO;
+                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
                 else
                     ;
             pane.Chart.Fill = new Fill(colorChart);
 
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
             //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
             if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
 
-                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
+                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
             }
             else
             {
@@ -1367,19 +1367,19 @@ namespace Statistic
                         for (int i = 0; i < m_tecView.lastMin - 1; i++)
                             valuesFactLast[i] = valuesFact[i];
 
-                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, FormMain.formGraphicsSettings.pColor);
+                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
 
                         PointPairList valuesRecList = new PointPairList();
                         if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
                             for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
                                 valuesRecList.Add((double)(i + 1), valuesRecommend[i]);
 
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, FormMain.formGraphicsSettings.recColor);
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
                     }
                     else
                     {
-                        LineItem curve1 = pane.AddCurve("Мощность", null, null, FormMain.formGraphicsSettings.pColor);
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.recColor);
+                        LineItem curve1 = pane.AddCurve("Мощность", null, null, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
+                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
                     }
                 }
             }
@@ -1431,7 +1431,7 @@ namespace Statistic
             pane.XAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Включаем отображение сетки напротив крупных рисок по оси Y
             pane.YAxis.MajorGrid.IsVisible = true;
@@ -1440,7 +1440,7 @@ namespace Statistic
             pane.YAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Включаем отображение сетки напротив мелких рисок по оси Y
             pane.YAxis.MinorGrid.IsVisible = true;
@@ -1449,7 +1449,7 @@ namespace Statistic
             pane.YAxis.MinorGrid.DashOff = 2;
             // толщина линий
             pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Устанавливаем интересующий нас интервал по оси Y
             pane.YAxis.Scale.Min = minimum_scale;
@@ -1570,21 +1570,21 @@ namespace Statistic
             Color colorChart = Color.Empty;
             if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
                 || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
-                colorChart = FormMain.formGraphicsSettings.m_bgColor_ASKUE;
+                colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
             else
                 if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    colorChart = FormMain.formGraphicsSettings.m_bgColor_SOTIASSO;
+                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
                 else
                     ;
             pane.Chart.Fill = new Fill(colorChart);
 
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.udgColor);
-            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.divColor);
-            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.divColor);
+            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
 
             if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.pColor);
+                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
             }
             else
             {
@@ -1604,7 +1604,7 @@ namespace Statistic
                     for (int i = 0; i < valuescount; i++)
                         valuesFactNew[i] = valuesFact[i];
 
-                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, FormMain.formGraphicsSettings.pColor);
+                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
                 }
             }
 
@@ -1634,7 +1634,7 @@ namespace Statistic
             pane.XAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Включаем отображение сетки напротив крупных рисок по оси Y
             pane.YAxis.MajorGrid.IsVisible = true;
@@ -1643,7 +1643,7 @@ namespace Statistic
             pane.YAxis.MajorGrid.DashOff = 5;
             // толщина линий
             pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Включаем отображение сетки напротив мелких рисок по оси Y
             pane.YAxis.MinorGrid.IsVisible = true;
@@ -1652,7 +1652,7 @@ namespace Statistic
             pane.YAxis.MinorGrid.DashOff = 2;
             // толщина линий
             pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
             // Устанавливаем интересующий нас интервал по оси Y
             pane.YAxis.Scale.Min = minimum_scale;

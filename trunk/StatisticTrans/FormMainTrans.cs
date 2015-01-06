@@ -21,7 +21,7 @@ namespace StatisticTrans
 
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
 
-        protected enum MODE_MASHINE : ushort { INTERACTIVE, AUTO, SERVICE, UNKNOWN };
+        protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE, UNKNOWN };
         public enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
@@ -57,7 +57,7 @@ namespace StatisticTrans
 
                 //return !timerMain.Enabled;
 
-                return m_modeMashine == MODE_MASHINE.AUTO ? true : false;
+                return m_modeMashine == MODE_MASHINE.TO_DATE ? true : false;
             }
         }
         protected bool m_bEnabledUIControl = true;
@@ -242,7 +242,7 @@ namespace StatisticTrans
                 {
                     if ((!(args[1].IndexOf("date") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
                     {
-                        m_modeMashine = MODE_MASHINE.AUTO;
+                        m_modeMashine = MODE_MASHINE.TO_DATE;
 
                         string date = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
                         if (date == "default")
@@ -298,7 +298,7 @@ namespace StatisticTrans
             if (m_modeMashine == MODE_MASHINE.UNKNOWN)
                 throw new Exception(msg_throw);
             else
-                if (m_modeMashine == MODE_MASHINE.AUTO)
+                if (m_modeMashine == MODE_MASHINE.TO_DATE)
                     enabledUIControl(false);
                 else
                     enabledUIControl(true);
@@ -1171,7 +1171,7 @@ namespace StatisticTrans
             keyPar = @"Season Action";
             HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetValueOfKey(keyPar));
 
-            if (m_modeMashine == MODE_MASHINE.AUTO)
+            if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
                 FillComboBoxTECComponent();
 
@@ -1188,22 +1188,37 @@ namespace StatisticTrans
 
         private void timerService_Tick(object sender, EventArgs e)
         {
-            enabledUIControl(false);
+            if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
+            switch (m_modeMashine) {
+                case MODE_MASHINE.SERVICE:
+                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    {
+                        //Первый запуск
+                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                        timerService.Interval = m_arg_interval;
 
-            if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-            {
-                //Первый запуск
-                if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //случайное совпадение
-                timerService.Interval = m_arg_interval;
+                        FillComboBoxTECComponent();
+                    }
+                    else
+                        ;
 
-                FillComboBoxTECComponent();
+                    dateTimePickerMain.Value = DateTime.Now;
+
+                    trans_auto_start();
+                    break;
+                case MODE_MASHINE.TO_DATE:
+                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    {
+                        //Первый запуск
+                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                        timerService.Interval = m_arg_interval;
+                    }
+                    else
+                        выходToolStripMenuItem.PerformClick ();
+                    break;
+                default:
+                    break;
             }
-            else
-                ;
-
-            dateTimePickerMain.Value = DateTime.Now;
-
-            trans_auto_start();
         }
 
         //private void FormMain_Activated(object sender, EventArgs e)
@@ -1291,31 +1306,33 @@ namespace StatisticTrans
 
         private void m_checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
         {
-            if (!(m_modeMashine == MODE_MASHINE.AUTO))
+            if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
                 if (m_checkboxModeMashine.Checked == true)
                 {
                     //if (m_modeMashine == MODE_MASHINE.INTERACTIVE) m_modeMashine = MODE_MASHINE.SERVICE; else ;
                     //То же самое
                     if (!(m_modeMashine == MODE_MASHINE.SERVICE)) m_modeMashine = MODE_MASHINE.SERVICE; else ;
 
+                    enabledUIControl(false);
                     m_dgwAdminTable.Enabled = false;
 
-                    InitializeTimerService ();
-                    
+                    InitializeTimerService();
                     SendMessage(this.Handle, 0x112, 0xF020, 0);
                     timerService.Start();
                 }
                 else
                 {
                     if (!(m_modeMashine == MODE_MASHINE.INTERACTIVE)) m_modeMashine = MODE_MASHINE.INTERACTIVE; else ;
-                    
+
                     timerService.Stop();
                     //timerService.Interval = TIMER_START_INTERVAL;
-
                     timerService = null;
                 }
             else
-                ;
+            {
+                InitializeTimerService();
+                timerService.Start();
+            }
         }
 
         private void InitializeTimerService () {

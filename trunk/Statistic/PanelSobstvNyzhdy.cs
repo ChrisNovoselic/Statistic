@@ -543,11 +543,11 @@ namespace Statistic
                     }
                 }
 
-                pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.m_bgColor_SOTIASSO);
+                pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO));
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
-                    BarItem curve1 = pane.AddBar("Мощность", null, valuesTMSNPsum, FormMain.formGraphicsSettings.pColor);
+                    BarItem curve1 = pane.AddBar("Мощность", null, valuesTMSNPsum, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
                 }
                 else
                 {
@@ -567,7 +567,7 @@ namespace Statistic
                         for (int i = 0; i < valuescount; i++)
                             valuesTMSNPsum1[i] = valuesTMSNPsum[i];
 
-                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesTMSNPsum1, FormMain.formGraphicsSettings.pColor);
+                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesTMSNPsum1, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
                     }
                     else
                         ;
@@ -591,7 +591,7 @@ namespace Statistic
                 pane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.XAxis.MajorGrid.PenWidth = 0.1F;
-                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 pane.YAxis.MajorGrid.IsVisible = true;
@@ -600,7 +600,7 @@ namespace Statistic
                 pane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.YAxis.MajorGrid.PenWidth = 0.1F;
-                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 pane.YAxis.MinorGrid.IsVisible = true;
@@ -609,7 +609,7 @@ namespace Statistic
                 pane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 pane.YAxis.MinorGrid.PenWidth = 0.1F;
-                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.gridColor;
+                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 pane.YAxis.Scale.Min = minimum_scale;

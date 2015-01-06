@@ -1,7 +1,21 @@
+using System.Drawing;
+
 namespace Statistic
 {
     partial class FormGraphicsSettings
     {
+        struct LABEL_COLOR
+        {
+            public Color color;
+            public string name, text;
+            public System.Drawing.Point pos;
+
+            public LABEL_COLOR(Color col, string name, string text, System.Drawing.Point pt)
+            {
+                this.color = col;  this.name = name; this.text = text; this.pos = pt;
+            }
+        }
+
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -29,21 +43,15 @@ namespace Statistic
         private void InitializeComponent()
         {
             this.cbxScale = new System.Windows.Forms.CheckBox();
-            this.lblUDGcolor = new System.Windows.Forms.Label();
-            this.lblDIVcolor = new System.Windows.Forms.Label();
-            this.lblPcolor = new System.Windows.Forms.Label();
-            this.lblRECcolor = new System.Windows.Forms.Label();
+            this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];            
             this.gbxType = new System.Windows.Forms.GroupBox();
             this.rbtnBar = new System.Windows.Forms.RadioButton();
             this.rbtnLine = new System.Windows.Forms.RadioButton();
-            this.lblBG_ASKUE_color = new System.Windows.Forms.Label();
-            this.lblGRIDcolor = new System.Windows.Forms.Label();
             this.groupBoxSourceData = new System.Windows.Forms.GroupBox();
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO = new System.Windows.Forms.RadioButton();
             this.rbtnSourceData_COSTUMIZE = new System.Windows.Forms.RadioButton();
             this.rbtnSourceData_ASKUE = new System.Windows.Forms.RadioButton();
-            this.rbtnSourceData_SOTIASSO = new System.Windows.Forms.RadioButton();
-            this.lblBG_SOTIASSO_color = new System.Windows.Forms.Label();
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO = new System.Windows.Forms.RadioButton();
+            this.rbtnSourceData_SOTIASSO = new System.Windows.Forms.RadioButton();            
             this.gbxType.SuspendLayout();
             this.groupBoxSourceData.SuspendLayout();
             this.SuspendLayout();
@@ -58,54 +66,31 @@ namespace Statistic
             this.cbxScale.Text = "Масштабировать графики";
             this.cbxScale.UseVisualStyleBackColor = true;
             this.cbxScale.CheckedChanged += new System.EventHandler(this.cbxScale_CheckedChanged);
-            // 
-            // lblUDGcolor
-            // 
-            this.lblUDGcolor.BackColor = System.Drawing.SystemColors.Control;
-            this.lblUDGcolor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblUDGcolor.Location = new System.Drawing.Point(12, 13);
-            this.lblUDGcolor.Name = "lblUDGcolor";
-            this.lblUDGcolor.Size = new System.Drawing.Size(140, 29);
-            this.lblUDGcolor.TabIndex = 1;
-            this.lblUDGcolor.Text = "Цвет УДГэ";
-            this.lblUDGcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblUDGcolor.Click += new System.EventHandler(this.lblUDGcolor_Click);
-            // 
-            // lblDIVcolor
-            // 
-            this.lblDIVcolor.BackColor = System.Drawing.SystemColors.Control;
-            this.lblDIVcolor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblDIVcolor.Location = new System.Drawing.Point(12, 41);
-            this.lblDIVcolor.Name = "lblDIVcolor";
-            this.lblDIVcolor.Size = new System.Drawing.Size(140, 29);
-            this.lblDIVcolor.TabIndex = 2;
-            this.lblDIVcolor.Text = "Цвет отклонения";
-            this.lblDIVcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblDIVcolor.Click += new System.EventHandler(this.lblDIVcolor_Click);
-            // 
-            // lblPcolor
-            // 
-            this.lblPcolor.BackColor = System.Drawing.SystemColors.Control;
-            this.lblPcolor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblPcolor.Location = new System.Drawing.Point(12, 69);
-            this.lblPcolor.Name = "lblPcolor";
-            this.lblPcolor.Size = new System.Drawing.Size(140, 29);
-            this.lblPcolor.TabIndex = 3;
-            this.lblPcolor.Text = "Цвет значения мощности";
-            this.lblPcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblPcolor.Click += new System.EventHandler(this.lblPcolor_Click);
-            // 
-            // lblRECcolor
-            // 
-            this.lblRECcolor.BackColor = System.Drawing.SystemColors.Control;
-            this.lblRECcolor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblRECcolor.Location = new System.Drawing.Point(12, 97);
-            this.lblRECcolor.Name = "lblRECcolor";
-            this.lblRECcolor.Size = new System.Drawing.Size(140, 29);
-            this.lblRECcolor.TabIndex = 4;
-            this.lblRECcolor.Text = "Цвет рекомендации";
-            this.lblRECcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblRECcolor.Click += new System.EventHandler(this.lblRECcolor_Click);
+
+            LABEL_COLOR [] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR.COUNT_INDEX_COLOR] {
+                new LABEL_COLOR (Color.FromArgb(0, 0, 0), "lblUDGcolor", "УДГэ", new System.Drawing.Point(12, 11))
+                , new LABEL_COLOR (Color.FromArgb(255, 0, 0), "lblDIVcolor", "Отклонение", new System.Drawing.Point(12, 36))
+                , new LABEL_COLOR (Color.FromArgb(0, 128, 0), "lblP_ASKUEcolor", "Мощность (АИСКУЭ)", new System.Drawing.Point(12, 61))
+                , new LABEL_COLOR (Color.FromArgb(0, 128, 192), "lblP_SOTIASSOcolor", "Мощность (СОТИАССО)", new System.Drawing.Point(12, 86))
+                , new LABEL_COLOR (Color.FromArgb(255, 255, 0), "lblRECcolor", "Рекомендация", new System.Drawing.Point(12, 111))
+                , new LABEL_COLOR (Color.FromArgb(231, 231, 238 /*230, 230, 230*/), "lblBG_ASKUE_color", "Фон (АИСКУЭ)", new System.Drawing.Point(12, 136))
+                , new LABEL_COLOR (Color.FromArgb(231, 238, 231), "lblBG_SOTIASSO_color", "Фон (СОТИАССО)", new System.Drawing.Point(12, 161))                
+                , new LABEL_COLOR (Color.FromArgb(200, 200, 200), "lblGRIDcolor", "Сетка", new System.Drawing.Point(12, 186))
+            };
+
+            for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
+            {
+                this.m_arlblColor[i] = new System.Windows.Forms.Label();
+                this.m_arlblColor[i].BackColor = arLabelColor[i].color;
+                this.m_arlblColor[i].ForeColor = getForeColor(arLabelColor[i].color);
+                this.m_arlblColor[i].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+                this.m_arlblColor[i].Location = arLabelColor[i].pos;
+                this.m_arlblColor[i].Name = arLabelColor[i].name;
+                this.m_arlblColor[i].Size = new System.Drawing.Size(140, 26);
+                this.m_arlblColor[i].Text = arLabelColor [i].text;
+                this.m_arlblColor[i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                this.m_arlblColor[i].Click += new System.EventHandler(this.lbl_color_Click);
+            }
             // 
             // gbxType
             // 
@@ -141,30 +126,6 @@ namespace Statistic
             this.rbtnLine.UseVisualStyleBackColor = true;
             this.rbtnLine.CheckedChanged += new System.EventHandler(this.rbtnLine_CheckedChanged);
             // 
-            // lblBG_ASKUE_color
-            // 
-            this.lblBG_ASKUE_color.BackColor = System.Drawing.SystemColors.Control;
-            this.lblBG_ASKUE_color.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblBG_ASKUE_color.Location = new System.Drawing.Point(12, 125);
-            this.lblBG_ASKUE_color.Name = "lblBG_ASKUE_color";
-            this.lblBG_ASKUE_color.Size = new System.Drawing.Size(140, 29);
-            this.lblBG_ASKUE_color.TabIndex = 6;
-            this.lblBG_ASKUE_color.Text = "Цвет фона (АСКУЭ)";
-            this.lblBG_ASKUE_color.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblBG_ASKUE_color.Click += new System.EventHandler(this.lblBG_ASKUE_color_Click);
-            // 
-            // lblGRIDcolor
-            // 
-            this.lblGRIDcolor.BackColor = System.Drawing.SystemColors.Control;
-            this.lblGRIDcolor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblGRIDcolor.Location = new System.Drawing.Point(12, 181);
-            this.lblGRIDcolor.Name = "lblGRIDcolor";
-            this.lblGRIDcolor.Size = new System.Drawing.Size(140, 29);
-            this.lblGRIDcolor.TabIndex = 7;
-            this.lblGRIDcolor.Text = "Цвет сетки";
-            this.lblGRIDcolor.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblGRIDcolor.Click += new System.EventHandler(this.lblGRIDcolor_Click);
-            // 
             // groupBoxSourceData
             // 
             this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_ASKUE_PLUS_SOTIASSO);
@@ -177,6 +138,18 @@ namespace Statistic
             this.groupBoxSourceData.TabIndex = 8;
             this.groupBoxSourceData.TabStop = false;
             this.groupBoxSourceData.Text = "Источники данных графиков";
+            // 
+            // rbtnSourceData_ASKUE_PLUS_SOTIASSO
+            // 
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoCheck = false;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoSize = true;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Location = new System.Drawing.Point(6, 17);
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Size = new System.Drawing.Size(134, 17);
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.TabIndex = 3;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Text = "АИСКУЭ+СОТИАССО";
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.UseVisualStyleBackColor = true;
+            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
             // 
             // rbtnSourceData_COSTUMIZE
             // 
@@ -216,44 +189,15 @@ namespace Statistic
             this.rbtnSourceData_SOTIASSO.UseVisualStyleBackColor = true;
             this.rbtnSourceData_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO_Click);
             // 
-            // lblBG_SOTIASSO_color
-            // 
-            this.lblBG_SOTIASSO_color.BackColor = System.Drawing.SystemColors.Control;
-            this.lblBG_SOTIASSO_color.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblBG_SOTIASSO_color.Location = new System.Drawing.Point(12, 153);
-            this.lblBG_SOTIASSO_color.Name = "lblBG_SOTIASSO_color";
-            this.lblBG_SOTIASSO_color.Size = new System.Drawing.Size(140, 29);
-            this.lblBG_SOTIASSO_color.TabIndex = 9;
-            this.lblBG_SOTIASSO_color.Text = "Цвет фона (СОТИАССО)";
-            this.lblBG_SOTIASSO_color.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblBG_SOTIASSO_color.Click += new System.EventHandler(this.lblBG_SOTIASSO_color_Click);
-            // 
-            // rbtnSourceData_ASKUE_PLUS_SOTIASSO
-            // 
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoCheck = false;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoSize = true;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Location = new System.Drawing.Point(6, 17);
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Size = new System.Drawing.Size(134, 17);
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.TabIndex = 3;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Text = "АИСКУЭ+СОТИАССО";
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
-            // 
             // FormGraphicsSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(352, 217);
-            this.Controls.Add(this.lblBG_SOTIASSO_color);
-            this.Controls.Add(this.groupBoxSourceData);
-            this.Controls.Add(this.lblGRIDcolor);
-            this.Controls.Add(this.lblBG_ASKUE_color);
+            for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
+                this.Controls.Add(this.m_arlblColor [i]);
+            this.Controls.Add(this.groupBoxSourceData);            
             this.Controls.Add(this.gbxType);
-            this.Controls.Add(this.lblRECcolor);
-            this.Controls.Add(this.lblPcolor);
-            this.Controls.Add(this.lblDIVcolor);
-            this.Controls.Add(this.lblUDGcolor);
             this.Controls.Add(this.cbxScale);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -276,21 +220,16 @@ namespace Statistic
 
         #endregion
 
+        private System.Windows.Forms.Label [] m_arlblColor;
         private System.Windows.Forms.CheckBox cbxScale;
-        private System.Windows.Forms.Label lblUDGcolor;
-        private System.Windows.Forms.Label lblDIVcolor;
-        private System.Windows.Forms.Label lblPcolor;
-        private System.Windows.Forms.Label lblRECcolor;
         private System.Windows.Forms.GroupBox gbxType;
         private System.Windows.Forms.RadioButton rbtnBar;
-        private System.Windows.Forms.RadioButton rbtnLine;
-        private System.Windows.Forms.Label lblBG_ASKUE_color;
-        private System.Windows.Forms.Label lblGRIDcolor;
+        private System.Windows.Forms.RadioButton rbtnLine;        
         private System.Windows.Forms.GroupBox groupBoxSourceData;
         private System.Windows.Forms.RadioButton rbtnSourceData_COSTUMIZE;
         private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE;
-        private System.Windows.Forms.RadioButton rbtnSourceData_SOTIASSO;
-        private System.Windows.Forms.Label lblBG_SOTIASSO_color;
+        private System.Windows.Forms.RadioButton rbtnSourceData_SOTIASSO;        
         private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE_PLUS_SOTIASSO;
+        
     }
 }

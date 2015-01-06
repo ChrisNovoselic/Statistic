@@ -2617,7 +2617,10 @@ namespace Statistic
             else
                 ;
 
-            Logging.Logg().Debug(@"recomendation=" + recomendation + @" [" + hour + @", " + lastMin + @"]");
+            Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
+                                + @" (factSum=" + factSum.ToString(@"F3")
+                                + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
+                                + @") [" + hour + @", " + lastMin + @"]");
         }
 
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
@@ -3103,7 +3106,7 @@ namespace Statistic
             i = 0;
             for (hour = 0; hour < m_valuesHours.Length; hour ++) {
                 hourVal = -1F;
-                
+
                 for (j = 0; j < 2; j ++) {
                     halfVal = -1F;
                     i = 0; //Индекс ТГ
@@ -3123,6 +3126,7 @@ namespace Statistic
                         //Нет данных для одного из ТГ
                         //break;
                     } else {
+                        //Для всех ТГ есть данные
                         if (! (halfVal < 0))
                         {
                             if (hourVal < 0) hourVal = 0F; else ;
@@ -3139,8 +3143,7 @@ namespace Statistic
 
                 if (j < 2)
                 {//Нет данных за один из получасов
-                    if (!(hour > dtServer.Hour))
-                    {
+                    if (! (hour > serverTime.Hour)) {
                         break;
                     }
                     else

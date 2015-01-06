@@ -13,24 +13,30 @@ namespace Statistic
 {
     public partial class FormGraphicsSettings : Form
     {
+        public enum INDEX_COLOR
+        {
+            UDG, DIVIATION, ASKUE, SOTIASSO, REC, BG_ASKUE, BG_SOTIASSO, GRID
+                , COUNT_INDEX_COLOR
+        }
+
         public enum TYPE_UPDATEGUI
         {
             SCALE, LINEAR, COLOR, SOURCE_DATA
-        , COUNT_TYPE_UPDATEGUI };
+                , COUNT_TYPE_UPDATEGUI };
 
         private enum CONN_SETT_TYPE {
             ASKUE_PLUS_SOTIASSO, ASKUE, SOTIASSO,
             COSTUMIZE
-            , COUNT_CONN_SETT_TYPE
+                , COUNT_CONN_SETT_TYPE
         };
         HMark m_markSourceData;
 
-        public Color udgColor
-            , divColor
-            , pColor
-            , recColor
-            , m_bgColor_ASKUE, m_bgColor_SOTIASSO
-            , gridColor;
+        //public Color udgColor
+        //    , divColor
+        //    , pColor_ASKUE, pColor_SOTIASSO
+        //    , recColor
+        //    , m_bgColor_ASKUE, m_bgColor_SOTIASSO
+        //    , gridColor;
         public bool scale;
         public GraphTypes m_graphTypes;
         public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
@@ -75,39 +81,16 @@ namespace Statistic
 
             checkedSourceData();
 
-            udgColor = Color.FromArgb(0, 0, 0);
-            lblUDGcolor.BackColor = udgColor;
-            lblUDGcolor.ForeColor = getForeColor(lblUDGcolor.BackColor);
-
-            divColor = Color.FromArgb(255, 0, 0);
-            lblDIVcolor.BackColor = divColor;
-            lblDIVcolor.ForeColor = getForeColor(lblDIVcolor.BackColor);
-
-            pColor = Color.FromArgb(0, 128, 0);
-            lblPcolor.BackColor = pColor;
-            lblPcolor.ForeColor = getForeColor(lblPcolor.BackColor);
-
-            recColor = Color.FromArgb(255, 255, 0);
-            lblRECcolor.BackColor = recColor;
-            lblRECcolor.ForeColor = getForeColor(lblRECcolor.BackColor);
-
-            m_bgColor_ASKUE = Color.FromArgb(231, 231, 238 /*230, 230, 230*/);
-            lblBG_ASKUE_color.BackColor = m_bgColor_ASKUE;
-            lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
-
-            m_bgColor_SOTIASSO = Color.FromArgb (231, 238, 231);
-            lblBG_SOTIASSO_color.BackColor = m_bgColor_SOTIASSO;
-            lblBG_SOTIASSO_color.ForeColor = getForeColor(lblBG_SOTIASSO_color.BackColor);
-
-            gridColor = Color.FromArgb(200, 200, 200);
-            lblGRIDcolor.BackColor = gridColor;
-            lblGRIDcolor.ForeColor = getForeColor(lblGRIDcolor.BackColor);
-
             m_graphTypes = GraphTypes.Bar; //Ãטסעמדנאללא
         }
 
         private Color getForeColor (Color bgColor) {
             return Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256);
+        }
+
+        public Color COLOR(INDEX_COLOR indx)
+        {
+            return m_arlblColor [(int)indx].BackColor;
         }
 
         private void checkedSourceData()
@@ -138,93 +121,14 @@ namespace Statistic
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SCALE);
         }
 
-        private void lblUDGcolor_Click(object sender, EventArgs e)
+        private void lbl_color_Click(object sender, EventArgs e)
         {
             ColorDialog cd = new ColorDialog();
-            cd.Color = udgColor;
+            cd.Color = ((Label)sender).BackColor;
             if (cd.ShowDialog(this) == DialogResult.OK)
             {
-                udgColor = cd.Color;
-                lblUDGcolor.BackColor = udgColor;
-                lblUDGcolor.ForeColor = Color.FromArgb((udgColor.R + 128) % 256, (udgColor.G + 128) % 256, (udgColor.B + 128) % 256);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblDIVcolor_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = divColor;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                divColor = cd.Color;
-                lblDIVcolor.BackColor = divColor;
-                lblDIVcolor.ForeColor = Color.FromArgb((divColor.R + 128) % 256, (divColor.G + 128) % 256, (divColor.B + 128) % 256);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblPcolor_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = pColor;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                pColor = cd.Color;
-                lblPcolor.BackColor = pColor;
-                lblPcolor.ForeColor = Color.FromArgb((pColor.R + 128) % 256, (pColor.G + 128) % 256, (pColor.B + 128) % 256);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblRECcolor_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = recColor;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                recColor = cd.Color;
-                lblRECcolor.BackColor = recColor;
-                lblRECcolor.ForeColor = Color.FromArgb((recColor.R + 128) % 256, (recColor.G + 128) % 256, (recColor.B + 128) % 256);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblBG_ASKUE_color_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = m_bgColor_ASKUE;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                m_bgColor_ASKUE = cd.Color;
-                lblBG_ASKUE_color.BackColor = m_bgColor_ASKUE;
-                lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblBG_SOTIASSO_color_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = m_bgColor_SOTIASSO;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                m_bgColor_SOTIASSO = cd.Color;
-                lblBG_ASKUE_color.BackColor = m_bgColor_SOTIASSO;
-                lblBG_ASKUE_color.ForeColor = getForeColor(lblBG_ASKUE_color.BackColor);
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
-            }
-        }
-
-        private void lblGRIDcolor_Click(object sender, EventArgs e)
-        {
-            ColorDialog cd = new ColorDialog();
-            cd.Color = gridColor;
-            if (cd.ShowDialog(this) == DialogResult.OK)
-            {
-                gridColor = cd.Color;
-                lblGRIDcolor.BackColor = gridColor;
-                lblGRIDcolor.ForeColor = Color.FromArgb((gridColor.R + 128) % 256, (gridColor.G + 128) % 256, (gridColor.B + 128) % 256);
+                ((Label)sender).BackColor = cd.Color;
+                ((Label)sender).ForeColor = Color.FromArgb((((Label)sender).BackColor.R + 128) % 256, (((Label)sender).BackColor.G + 128) % 256, (((Label)sender).BackColor.B + 128) % 256);
                 delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             }
         }
