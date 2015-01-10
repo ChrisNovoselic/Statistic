@@ -289,7 +289,7 @@ namespace StatisticCommon
                                 ;
                         }
 
-                        if (((t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_ASKUE) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.MTERM) == true)) &&
+                        if (((t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_AISKUE) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.MTERM) == true)) &&
                             (t.m_bSensorsStrings == false))
                             t.InitSensorsTEC();
                         else

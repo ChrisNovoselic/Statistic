@@ -581,7 +581,7 @@ namespace Statistic
             HMark markQueries = new HMark();
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
@@ -619,7 +619,7 @@ namespace Statistic
             //if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE)
                 //08.12.2014 - значения по умолчанию - как и пункты меню
                 m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = 
-                    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_ASKUE;
+                m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_AISKUE;
             //else
             //    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] =
             //        m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
@@ -772,7 +772,8 @@ namespace Statistic
 
         protected void initTableMinRows()
         {
-            if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                 m_dgwMins.InitRows (21, false);
             else
                 if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -848,44 +849,51 @@ namespace Statistic
             double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
             int min = m_tecView.lastMin;
 
-            if (min != 0)
+            if (! (min == 0))
                 min--;
             else
                 ;
 
             for (int i = 0; i < m_tecView.m_valuesMins.Length - 1; i++)
             {
-                m_dgwMins.Rows[i].Cells[1].Value = m_tecView.m_valuesMins[i + 1].valuesFact.ToString("F2");
-                sumFact += m_tecView.m_valuesMins[i + 1].valuesFact;
+                //Ограничить отображение (для режима АИСКУЭ+СОТИАССО)
+                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesMins[i + 1].valuesFact.ToString("F2");
+                if (i < min)
+                {                    
+                    sumFact += m_tecView.m_valuesMins[i + 1].valuesFact;
+                }
+                else
+                    ;
 
-                m_dgwMins.Rows[i].Cells[2].Value = m_tecView.m_valuesMins[i].valuesPBR.ToString("F2");
-                m_dgwMins.Rows[i].Cells[3].Value = m_tecView.m_valuesMins[i].valuesPBRe.ToString("F2");
-                m_dgwMins.Rows[i].Cells[4].Value = m_tecView.m_valuesMins[i].valuesUDGe.ToString("F2");
+                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesMins[i].valuesPBR.ToString("F2");
+                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesMins[i].valuesPBRe.ToString("F2");
+                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[i].valuesUDGe.ToString("F2");
                 sumUDGe += m_tecView.m_valuesMins[i].valuesUDGe;
-                if (i < min && m_tecView.m_valuesMins[i].valuesUDGe != 0)
+                if ((i < min) && (! (m_tecView.m_valuesMins[i].valuesUDGe == 0)))
                 {
-                    m_dgwMins.Rows[i].Cells[5].Value = ((double)(m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe)).ToString("F2");
+                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value =
+                        ((double)(m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe)).ToString("F2");
                     //if (Math.Abs(m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i]) > m_tecView.m_valuesMins.valuesDiviation[i]
                     //    && m_tecView.m_valuesMins.valuesDiviation[i] != 0)
                     //    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleError;
                     //else
-                    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
 
                     sumDiviation += m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe;
                 }
                 else
                 {
-                    m_dgwMins.Rows[i].Cells[5].Value = 0.ToString("F2");
-                    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleCommon;
+                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
                 }
             }
 
             int cnt = m_dgwMins.Rows.Count - 1;
-            if (min <= 0)
+            if (! (min > 0))
             {
-                m_dgwMins.Rows[cnt].Cells[1].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[4].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[5].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = 0.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
             }
             else
             {
@@ -894,9 +902,9 @@ namespace Statistic
                 else
                     ;
 
-                m_dgwMins.Rows[cnt].Cells[1].Value = (sumFact / min).ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[4].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[5].Value = (sumDiviation / min).ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
+                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
             }
 
             ////Назначить крайней видимой строкой - строку с крайним полученным значением
@@ -955,16 +963,22 @@ namespace Statistic
                 else
                     m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
 
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
-                    sumFact += m_tecView.m_valuesHours[i].valuesFact;
-
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
-                    sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
-                    bool bDevVal = false;
-                    if (m_tecView.currHour == true)
-                        if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
+                bool bDevVal = false;
+                if (m_tecView.currHour == true)
+                    if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
+                    {
+                        if ((!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                            && (i < receivedHour))
+                            bDevVal = true;
+                        else
+                            ;
+                    }
+                    else
+                    {
+                    }
+                else
+                    if (m_tecView.serverTime.Date.Equals(HAdmin.ToMoscowTimeZone(DateTime.Now.Date)) == true)
+                        if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
                         {
                             bDevVal = true;
                         }
@@ -972,38 +986,40 @@ namespace Statistic
                         {
                         }
                     else
-                        if (m_tecView.serverTime.Date.Equals(HAdmin.ToMoscowTimeZone(DateTime.Now.Date)) == true)
-                            if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                            {
-                                bDevVal = true;
-                            }
-                            else
-                            {
-                            }
+                        if ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
+                        {
+                            bDevVal = true;
+                        }
                         else
-                            if ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                            {
-                                bDevVal = true;
-                            }
-                            else
-                            {
-                            }
+                        {
+                        }    
+                
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
+                if (bDevVal == true)
+                    sumFact += m_tecView.m_valuesHours[i].valuesFact;
+                else
+                    ;
 
-                    if (bDevVal == true)
-                    {
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
-                        if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
-                            && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
-                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
-                        else
-                            m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                        sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
-                    }
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
+                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
+                sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
+
+                if (bDevVal == true)
+                {
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
+                    if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
+                        && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
+                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
                     else
-                    {
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
                         m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                    }
+                    sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
+                }
+                else
+                {
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
+                }
             }
             m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
             m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
@@ -1336,52 +1352,176 @@ namespace Statistic
                 }
             }
 
-            Color colorChart = Color.Empty;
-            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
-                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
-                colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
-            else
-                if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                else
-                    ;
+            Color colorChart = Color.Empty
+                , colorPCurve = Color.Empty;
+            m_tecView.GetColorZEDGraph(TG.ID_TIME.MINUTES, out colorChart, out colorPCurve);
             pane.Chart.Fill = new Fill(colorChart);
 
             LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
             //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
             //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
-            if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            switch (FormMain.formGraphicsSettings.m_graphTypes)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
-
-                BarItem curve0 = pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-            }
-            else
-            {
-                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
-                {
-                    if (m_tecView.lastMin > 1)
+                case FormGraphicsSettings.GraphTypes.Bar:
+                    if ((! (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                        || (m_tecView.currHour == false))
                     {
-                        double[] valuesFactLast = new double[m_tecView.lastMin - 1];
-                        for (int i = 0; i < m_tecView.lastMin - 1; i++)
-                            valuesFactLast[i] = valuesFact[i];
-
-                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactLast, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
-
-                        PointPairList valuesRecList = new PointPairList();
-                        if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                            for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
-                                valuesRecList.Add((double)(i + 1), valuesRecommend[i]);
-
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", valuesRecList, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                        //BarItem
+                        pane.AddBar("Мощность", null, valuesFact, colorPCurve);
+                        //BarItem
+                        pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
                     }
                     else
                     {
-                        LineItem curve1 = pane.AddCurve("Мощность", null, null, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
-                        LineItem curve0 = pane.AddCurve("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                        bool order = false; //Порядок "накладывания" значений...
+                        double[] valuesSOTIASSO = null;
+                        switch (m_tecView.lastMin)
+                        {
+                            case 0:
+                                valuesSOTIASSO = new double[valuesFact.Length];
+                                valuesSOTIASSO[m_tecView.lastMin] = valuesFact[m_tecView.lastMin];
+                                valuesFact[m_tecView.lastMin] = 0F;
+                                //Порядок "накладывания" значений
+                                if (valuesRecommend[m_tecView.lastMin] > valuesSOTIASSO[m_tecView.lastMin])
+                                    order = true;
+                                else
+                                    ;
+                                break;
+                            case 21:
+                                //valuesFact - заполнен,
+                                //valuesRecommend = 0
+                                break;
+                            default:
+                                try
+                                {
+                                    valuesSOTIASSO = new double[valuesFact.Length];
+                                    valuesSOTIASSO[m_tecView.lastMin - 1] = valuesFact[m_tecView.lastMin - 1];
+                                    valuesFact[m_tecView.lastMin - 1] = 0F;
+                                    //Порядок "накладывания" значений
+                                    if (valuesRecommend[m_tecView.lastMin - 1] > valuesSOTIASSO[m_tecView.lastMin - 1])
+                                        order = true;
+                                    else
+                                        ;
+                                }
+                                catch (Exception e) {
+                                    Logging.Logg().Exception(e, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin);
+                                }
+                                break;
+                        }
+
+                        //BarItem
+                        pane.AddBar("Мощность(АСКУЭ)", null, valuesFact, colorPCurve);
+                        if (order == true)
+                        {
+                            //BarItem
+                            pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                            //BarItem
+                            pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                        }
+                        else
+                        {
+                            //BarItem
+                            pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                            //BarItem                        
+                            pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));                        
+                        }
                     }
-                }
+                    break;
+                case FormGraphicsSettings.GraphTypes.Linear:
+                    PointPairList listValuesSOTIASSO = null
+                        , listValuesAISKUE = null
+                        , listValuesRec = null;
+                    if ((!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                        || (m_tecView.currHour == false))
+                    {
+                        switch (m_tecView.lastMin)
+                        {
+                            case 0:
+                                //LineItem
+                                listValuesRec = new PointPairList();
+                                if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                                    for (int i = 0; i < itemscount; i++)
+                                        listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
+                                else
+                                    ;
+                                break;
+                            default:
+                                listValuesAISKUE = new PointPairList();
+                                for (int i = 0; i < m_tecView.lastMin - 1; i++)
+                                    listValuesAISKUE.Add((double)(i + 1), valuesFact[i]);
+
+                                listValuesRec = new PointPairList();
+                                if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                                    for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
+                                        listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
+                                else
+                                    ;
+                                break;
+                        }
+
+                        //LineItem
+                        pane.AddCurve("Мощность", listValuesAISKUE, colorPCurve);
+                        //LineItem
+                        pane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                    }
+                    else
+                    {
+                        switch (m_tecView.lastMin)
+                        {
+                            case 0:
+                                if (valuesFact[m_tecView.lastMin] > 0)
+                                {
+                                    listValuesSOTIASSO = new PointPairList();
+                                    listValuesSOTIASSO.Add(1F, valuesFact[m_tecView.lastMin]);
+                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                                        for (int i = 1; i < itemscount; i++)
+                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
+                                    else
+                                        ;
+                                }
+                                else
+                                    ;
+                                break;
+                            default:
+                                listValuesAISKUE = new PointPairList();
+                                for (int i = 0; i < m_tecView.lastMin - 1; i++)
+                                    listValuesAISKUE.Add((double)(i + 1), valuesFact[i]);
+                                if (valuesFact[m_tecView.lastMin - 1] > 0)
+                                {
+                                    listValuesSOTIASSO = new PointPairList();
+                                    listValuesSOTIASSO.Add((double)m_tecView.lastMin - 0, valuesFact[m_tecView.lastMin - 1]);
+
+                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                                    {
+                                        listValuesRec = new PointPairList();
+                                        for (int i = m_tecView.lastMin - 0; i < itemscount; i++)
+                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
+                                    }
+                                    else
+                                        ;
+                                }
+                                else
+                                {
+                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
+                                    {
+                                        listValuesRec = new PointPairList();
+                                        for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
+                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
+                                    }
+                                    else
+                                        ;
+                                }
+                                break;
+                        }
+
+                        pane.AddCurve("Мощность(АСКУЭ)", listValuesAISKUE, colorPCurve);
+                        pane.AddCurve("Мощность(СОТИАССО)", listValuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                        pane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                    }
+                    break;
+                default:
+                    break;
             }
 
             pane.BarSettings.Type = BarType.Overlay;
@@ -1567,48 +1707,92 @@ namespace Statistic
                 }
             }
 
-            Color colorChart = Color.Empty;
-            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
-                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO))
-                colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
-            else
-                if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                else
-                    ;
+            Color colorChart = Color.Empty
+                , colorPCurve = Color.Empty;
+            m_tecView.GetColorZEDGraph(TG.ID_TIME.HOURS, out colorChart, out colorPCurve);
+
             pane.Chart.Fill = new Fill(colorChart);
 
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
-            LineItem curve4 = pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
-            LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            //LineItem
+            pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+            //LineItem
+            pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            //LineItem
+            pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
 
             if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                BarItem curve1 = pane.AddBar("Мощность", null, valuesFact, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
+                if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    //BarItem
+                    pane.AddBar("Мощность", null, valuesFact, colorPCurve);
+                else {
+                    double [] valuesASKUE = new double [m_tecView.lastHour]
+                        , valuesSOTIASSO = new double[m_tecView.lastHour + 1];
+                    for (int i = 0; i < m_tecView.lastHour + 1; i ++)
+                    {
+                        if (i < m_tecView.lastHour - 0)
+                        {
+                            valuesASKUE[i] = valuesFact[i];
+                            valuesSOTIASSO [i] = 0;
+                        }
+                        else
+                        {
+                            valuesSOTIASSO[i] = valuesFact[i];
+                        }
+                    }
+
+                    pane.AddBar("Мощность(АИСКУЭ)", null, valuesASKUE, colorPCurve);
+                    pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                }
             }
             else
             {
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
-                    int valuescount;
+                    if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    {
+                        double[] valuesFactLinear = new double[m_tecView.lastHour];
+                        for (int i = 0; i < m_tecView.lastHour; i++)
+                            valuesFactLinear[i] = valuesFact[i];
 
-                    //if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.SummerToWinter)
-                    //    valuescount = m_tecView.lastHour + 1;
-                    //else
-                    //    if (m_tecView.m_valuesHours.season == TecView.seasonJumpE.WinterToSummer)
-                    //        valuescount = m_tecView.lastHour - 1;
-                    //    else
-                            valuescount = m_tecView.lastHour;
+                        //LineItem
+                        pane.AddCurve("Мощность", null, valuesFactLinear, colorPCurve);
+                    }
+                    else {
+                        PointPairList valuesASKUE = new PointPairList()
+                            , valuesSOTIASSO = new PointPairList();
 
-                    double[] valuesFactNew = new double[valuescount];
-                    for (int i = 0; i < valuescount; i++)
-                        valuesFactNew[i] = valuesFact[i];
+                        for (int i = 0; i < m_tecView.lastHour + 1; i++)
+                        {
+                            if (i < m_tecView.lastHour - 0)
+                            {
+                                valuesASKUE.Add((double)(i + 1), valuesFact[i]);
+                            }
+                            else
+                            {
+                                valuesSOTIASSO.Add((double)(i + 1), valuesFact[i]);
+                            }
+                        }
 
-                    LineItem curve1 = pane.AddCurve("Мощность", null, valuesFactNew, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
+                        //LineItem
+                        pane.AddCurve("Мощность(АИСКУЭ)", valuesASKUE, colorPCurve);
+                        //LineItem
+                        pane.AddCurve("Мощность(СОТИАССО)", valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                    }
                 }
             }
 
-            pane.XAxis.Type = AxisType.Text;
+            //Для размещения в одной позиции ОДНого значения
+            pane.BarSettings.Type = BarType.Overlay;
+
+            //...из minutes
+            pane.XAxis.Scale.Min = 0.5;
+            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
+            pane.XAxis.Scale.MinorStep = 1;
+            pane.XAxis.Scale.MajorStep = 1; //itemscount / 20;
+
+            pane.XAxis.Type = AxisType.Linear; //...из minutes
+            //pane.XAxis.Type = AxisType.Text;
             pane.XAxis.Title.Text = "";
             pane.YAxis.Title.Text = "";
             //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
@@ -1737,10 +1921,10 @@ namespace Statistic
             int shiftMenuItem = 2;
             switch (type)
             {
-                case CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO:
+                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
                     shiftMenuItem = 3;
                     break;
-                case CONN_SETT_TYPE.DATA_ASKUE:
+                case CONN_SETT_TYPE.DATA_AISKUE:
                     shiftMenuItem = 2;
                     break;
                 case CONN_SETT_TYPE.DATA_SOTIASSO:
@@ -1813,7 +1997,7 @@ namespace Statistic
 
         private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
         {
-            bool[] arChanged = new bool[] { false, false };
+            CONN_SETT_TYPE prevTypeSourceData = m_tecView.m_arTypeSourceData[(int)indx_time];
 
             if (sender.Checked == false)
             {
@@ -1823,7 +2007,7 @@ namespace Statistic
 
                 if (sender.Equals(itemASKUE_PLUS_SOTIASSO) == true)
                 {
-                    m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO;
+                    m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
 
                     itemASKUE_PLUS_SOTIASSO.Checked = true;
                     itemASKUE.Checked = false;
@@ -1832,7 +2016,7 @@ namespace Statistic
                 else
                     if (sender.Equals(itemASKUE) == true)
                     {
-                        m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_ASKUE;
+                        m_tecView.m_arTypeSourceData[(int)indx_time] = CONN_SETT_TYPE.DATA_AISKUE;
 
                         itemASKUE_PLUS_SOTIASSO.Checked = false;
                         itemASKUE.Checked = true;
@@ -1851,7 +2035,50 @@ namespace Statistic
                             ;
 
                 if (indx_time == TG.ID_TIME.MINUTES)
-                    initTableMinRows ();
+                {
+                    bool bInitTableMinRows = true;
+
+                    switch (prevTypeSourceData)
+                    {
+                        case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                            switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                            {
+                                //case CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO:
+                                //    break;
+                                case CONN_SETT_TYPE.DATA_AISKUE:
+                                    bInitTableMinRows = false;
+                                    break;
+                                case CONN_SETT_TYPE.DATA_SOTIASSO:
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case CONN_SETT_TYPE.DATA_AISKUE:
+                            switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                            {
+                                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                    bInitTableMinRows = false;
+                                    break;
+                                //case CONN_SETT_TYPE.DATA_ASKUE:
+                                //    break;
+                                case CONN_SETT_TYPE.DATA_SOTIASSO:
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        //case CONN_SETT_TYPE.DATA_SOTIASSO:
+                        //    break;
+                        default:
+                            break;
+                    }                    
+
+                    if (bInitTableMinRows == true)
+                        initTableMinRows();
+                    else
+                        ;
+                }
                 else
                     ;
 

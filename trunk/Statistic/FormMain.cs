@@ -26,7 +26,7 @@ namespace Statistic
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
-        private enum ID_SPECIAL_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2, CUSTOM_2X3, DATETIMESYNC_SOURCE_DATA, };
+        private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2, CUSTOM_2X3, DATETIMESYNC_SOURCE_DATA, };
         private class ADDING_TAB
         {
             public ToolStripMenuItem menuItem;
@@ -159,14 +159,11 @@ namespace Statistic
                     if (!(HStatisticUsers.allTEC == 0))
                         PanelAdminKomDisp.ALARM_USE = false;
                     else ;
-
-                    if (HStatisticUsers.RoleIsAdmin == false)
-                    {//Администратор
-                        параметрыToolStripMenuItem.Enabled =
-                        администрированиеToolStripMenuItem.Enabled =
-                        false;
-                    }
-                    else ;
+                    
+                    //ИМгструмент администратора
+                    параметрыToolStripMenuItem.Enabled =
+                    администрированиеToolStripMenuItem.Enabled =
+                        HStatisticUsers.RoleIsAdmin;
 
                     //панельГрафическихToolStripMenuItem.Enabled =
                     //выборОбъекты22ToolStripMenuItem.Enabled = 
@@ -175,7 +172,7 @@ namespace Statistic
                     //значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Enabled = 
                     //мониторингПоследняяМинутаЧасToolStripMenuItem.Enabled =
                     //собственныеНуждыToolStripMenuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
@@ -235,7 +232,7 @@ namespace Statistic
                         ;
 
                     //Добавить закладки автоматически...
-                    //listIDs.Add(5);
+                    //listIDs.Add(5); listIDs.Add(111);
 
                     if (!(formChangeMode == null))
                     {
@@ -259,6 +256,10 @@ namespace Statistic
                         stopTimerAppReset ();                        
                         int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
                         m_timerAppReset = new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset);
+
+                        //сменитьРежимToolStripMenuItem_Click();
+                        //formChangeMode.LoadProfile(@"116");
+                        formChangeMode.LoadProfile(string.Empty);
                     }
                     else
                         ;
@@ -309,27 +310,40 @@ namespace Statistic
                 int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
                     , err = -1;
                 DbConnection dbConn = DbSources.Sources().GetConnection (idListenerConfigDB, out err);
+                //Сохранить значение для возможности восстановления...
+                string strPrevAppVersion = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION];
                 formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = FormParameters_DB.ReadString (ref dbConn, @"App Version", string.Empty);
 
                 DbSources.Sources().UnRegister (idListenerConfigDB);
 
-                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
-                {
-                    if (IsHandleCreated/**/ == true) {
-                        if (InvokeRequired == true) {
-                            /*IAsyncResult iar = */this.BeginInvoke (new DelegateFunc (update));
-                            //this.EndInvoke (iar);
-                        } else {
-                            update();
+                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
+                    if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
+                    {
+                        if (IsHandleCreated/**/ == true)
+                        {
+                            if (InvokeRequired == true)
+                            {
+                                /*IAsyncResult iar = */
+                                this.BeginInvoke(new DelegateFunc(update));
+                                //this.EndInvoke (iar);
+                            }
+                            else
+                            {
+                                update();
+                            }
                         }
+                        else
+                            ;
+
+                        //ProgramBase.AppRestart();
+
                     }
                     else
-                        ;
-
-                    //ProgramBase.AppRestart();
-                    
-                } else {
-                }
+                    {
+                    }
+                else
+                    //При ошибке - восстанавливаем значение...
+                    formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
             }
             else
             {
@@ -386,23 +400,23 @@ namespace Statistic
                         formChangeMode.SetItemChecked(-2, false);
                     else
                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
-                            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].menuItem.Checked = false;
+                            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
                         else
                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
-                                m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].menuItem.Checked = false;
+                                m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
                             else
                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
-                                    m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
+                                    m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
                                 else
                                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
-                                        m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
+                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
                                     else
                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
                                         {
                                             if (e.TabHeaderText.Contains(@"2X2") == true)
-                                                m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X2].menuItem.Checked = false;
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].menuItem.Checked = false;
                                             else if (e.TabHeaderText.Contains(@"2X3") == true)
-                                                m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X3].menuItem.Checked = false;
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].menuItem.Checked = false;
                                             else
                                                 ;
                                         }
@@ -412,7 +426,7 @@ namespace Statistic
                                                 //activateTabPage(e.TabIndex, false);
                                                 //tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
 
-                                                m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                             }
                                             else
                                                 ;
@@ -428,9 +442,27 @@ namespace Statistic
 
             if (ids.Equals(string.Empty) == false)
             {
-                string[] arId = ids.Split(';');
-                foreach (string id in arId)
-                    m_dictAddingTabs[Int32.Parse(id)].menuItem.Checked = true;
+                string[] arProfie = ids.Split(';');
+                foreach (string profile in arProfie)
+                {
+                    int id = -1;
+                    if (profile.IndexOf ('=') < 0)
+                        id = Int32.Parse(profile);
+                    else
+                        id = Int32.Parse(profile.Substring (0, profile.IndexOf ('=')));
+
+                    m_dictAddingTabs[id].menuItem.Checked = true;
+
+                    switch (id)
+                    {
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3:
+                            ((PanelCustomTecView)m_dictAddingTabs[id].panel).LoadProfile(profile.Substring(profile.IndexOf('=') + 1));
+                            break;
+                        default: //CUR_POWER, TM_SN_POWER...
+                            break;
+                    }
+                }
             }
             else
                 ;
@@ -448,8 +480,21 @@ namespace Statistic
             ids = string.Empty;
             //Сохранить список "дополнительных" вкладок...
             foreach (int key in m_dictAddingTabs.Keys)
-                if (m_dictAddingTabs [key].menuItem.Checked == true)
-                    ids += key + @";";
+                if (m_dictAddingTabs[key].menuItem.Checked == true)
+                {
+                    string recTab = string.Empty;
+                    switch (key)
+                    {
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3:
+                            recTab = key.ToString() + @"=" + ((PanelCustomTecView)m_dictAddingTabs[key].panel).SaveProfile();
+                            break;
+                        default: //CUR_POWER, TM_SN_POWER...
+                            recTab = key.ToString();
+                            break;
+                    }
+                    ids += recTab + @";";
+                }
                 else
                     ;
 
@@ -703,10 +748,6 @@ namespace Statistic
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
                 Abort(@"Необходимо изменить параметры соединения с БД конфигурации", false);
             }
-
-            //сменитьРежимToolStripMenuItem_Click();
-            //formChangeMode.LoadProfile(@"116");
-            formChangeMode.LoadProfile(string.Empty);
 
             this.Activate();            
         }
@@ -1113,9 +1154,9 @@ namespace Statistic
                 {
                     selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
-                    if (!(selTecView == null) && ((!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE] == null)) && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
+                    if (!(selTecView == null) && ((!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE] == null)) && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
                     {
-                        if ((m_report.actioned_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                        if ((m_report.actioned_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false) &&
                                                                             (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             if (selTecView.isActive == true)
@@ -1129,7 +1170,7 @@ namespace Statistic
                         else
                             ;
 
-                        if ((m_report.errored_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_ASKUE].ignore == false) &&
+                        if ((m_report.errored_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false) &&
                                                                             (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_eror = true;
@@ -1423,31 +1464,31 @@ namespace Statistic
         {
  	        int i = -1;
 
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-            ((PanelStatisticView)m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
             //m_panelCurPower.Start();
             ////В работе постоянно
             //m_panelCurPower.Activate (true);
 
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-            ((PanelStatisticView)m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-            ((PanelStatisticView)m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
             //m_panelLastMinutes.Start();
 
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
-            ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].panel).SetDelegate(null, null, delegateEvent);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X2].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, ActionReport);
-            m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
             //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
             //m_panelCustomTecView.Start();
 
-            if (m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled == true)
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled == true)
             //if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB) == true)
             {
-                m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
                 //m_panelSourceData.Start();
             }
             else
@@ -1479,37 +1520,37 @@ namespace Statistic
 
         private void значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUR_POWER].panel, @"P тек ГТПг, ТЭЦсн", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel, @"P тек ГТПг, ТЭЦсн", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.TM_SN_POWER].panel, @"P тек ТЭЦг, ТЭЦсн", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel, @"P тек ТЭЦг, ТЭЦсн", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void мониторингПоследняяМинутаЧасToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.MONITOR_LAST_MINUTES].panel, @"Монитор P-d4%", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel, @"Монитор P-d4%", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.SOBSTV_NYZHDY].panel, @"Собственные нужды", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel, @"Собственные нужды", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void выборОбъекты22ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X2].panel, @"Объекты по выбору 2X2", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel, @"Объекты по выбору 2X2", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void выборОбъекты23ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.CUSTOM_2X3].panel, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_SPECIAL_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД", ((ToolStripMenuItem)sender).Checked);
         }
 
         private void видSubToolStripMenuItem_CheckedChanged(PanelStatistic obj, string nameTab, bool bChecked)

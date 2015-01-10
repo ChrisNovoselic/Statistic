@@ -101,10 +101,10 @@ namespace Statistic
             rbtnSourceData_COSTUMIZE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
 
             if (rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked == true)
-                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO;
+                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
             else
                 if (rbtnSourceData_ASKUE.Checked == true)
-                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_ASKUE;
+                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE;
                 else
                     if (rbtnSourceData_SOTIASSO.Checked == true)
                         m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;

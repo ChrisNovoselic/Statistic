@@ -14,6 +14,10 @@ namespace Statistic
 {
     partial class PanelCustomTecView
     {
+        const Char CHAR_DELIM_PROP = '+'
+                , CHAR_DELIM_LABEL = '&'
+                , CHAR_DELIM_ARRAYITEM = ',';
+        
         public class HLabelCustomTecView : Label {
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
             public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
@@ -58,7 +62,7 @@ namespace Statistic
 
                 m_propView = new int[(int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW] {0, 0, 0, 1, -1, 0, -1};
 
-                m_prevViewOrientation = -1;
+                m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
             }
 
             private void OnMenuItem_Content(object obj, EventArgs ev)
@@ -208,6 +212,74 @@ namespace Statistic
                 this.ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].Click += fClear;
 
                 ContentMenuStateChange ();
+            }
+
+            private int getIdMenuItemChecked()
+            {
+                int iRes = -1;
+
+                foreach (MenuItem mi in ContextMenu.MenuItems)
+                {
+                    iRes = ContextMenu.MenuItems.IndexOf(mi);
+                    if ((!(iRes < INDEX_START_CONTEXT_MENUITEM))
+                        && (iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)))
+                        if (mi.Checked == true)
+                        {
+                            break;
+                        }
+                        else
+                            ;
+                    else
+                        ;
+                }
+
+                if (!(iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)))
+                    iRes = -1;
+                else
+                    iRes = m_listIdContextMenuItems [iRes];
+
+                return iRes;
+            }
+
+            public void LoadProfile(string []arProp)
+            {
+                //Очистить
+                ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].PerformClick();
+                //Установить параметры содержания отображения
+                string[] arPropVal = arProp[2].Split(CHAR_DELIM_ARRAYITEM);
+                if (arPropVal.Length == m_propView.Length)
+                    for (int i = 0; i < m_propView.Length; i ++)
+                        m_propView [i] = Int32.Parse (arPropVal [i]);
+                else
+                    ; //Ошибка ...
+
+                //Назначить объект
+                int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]));
+                if ((!(indx < 0)) && (indx < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
+                    ContextMenu.MenuItems[m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))].PerformClick();
+                else
+                    ; //??? Ошибка: не найден
+            }
+
+            public string SaveProfile()
+            {
+                string strRes = string.Empty;
+
+                int idComp = getIdMenuItemChecked();
+                if (!(idComp < 0))
+                {
+                    //Идентификатор объекта...
+                    strRes += idComp.ToString(); strRes += CHAR_DELIM_PROP;
+                    //Параметры объекта...
+                    foreach (int prop in m_propView)
+                        strRes += prop.ToString() + CHAR_DELIM_ARRAYITEM;
+                    //Обрезать лишний символ-разделитель 'CHAR_DELIM_ARRAYITEM'
+                    strRes = strRes.Substring(0, strRes.Length - 1);
+                }
+                else
+                    ;
+
+                return strRes;
             }
         }
 
@@ -508,6 +580,48 @@ namespace Statistic
             m_arLabelEmpty[indx].Text = HLabelCustomTecView.s_msg;
             this.Controls.Add (m_arLabelEmpty [indx], ptAddress.Y, ptAddress.X);
             this.Controls.SetChildIndex(m_arLabelEmpty[indx], indx);
+        }
+
+        public void LoadProfile(string profile)
+        {
+            string[] arLabel = profile.Split(CHAR_DELIM_LABEL);
+            foreach (string label in arLabel)
+            {
+                string[] arProp = label.Split(CHAR_DELIM_PROP);
+
+                if (arProp.Length == 0)
+                    ; //Ошибка...
+                else
+                    if (arProp.Length == 1)
+                        ; //"Пустая"...
+                    else
+                        if (arProp.Length > 1)
+                            if (! (arProp.Length == 3))
+                                ; //Ошибка...
+                            else
+                                m_arLabelEmpty[Int32.Parse(arProp [0])].LoadProfile (arProp);
+            }
+        }
+
+        public string SaveProfile()
+        {
+            string strRes = string.Empty;
+            int i = -1;
+
+            for (i = 0; i < m_arLabelEmpty.Length; i ++)
+            {
+                //Координаты...
+                strRes += i.ToString(); strRes += CHAR_DELIM_PROP;
+                //Содержание
+                strRes += m_arLabelEmpty[i].SaveProfile();
+                //Разделитель
+                strRes += CHAR_DELIM_LABEL;
+            }
+
+            //Обрезать лишний символ-разделитель 'CHAR_DELIM_LABEL'
+            strRes = strRes.Substring(0, strRes.Length - 1);
+
+            return strRes;
         }
     }
 }

@@ -264,7 +264,7 @@ namespace Statistic
                 m_tecView = new TecView (null, TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
 
                 HMark markQueries = new HMark();
-                markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE); //Только для определения сезона ???
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE); //Только для определения сезона ???
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
@@ -547,7 +547,7 @@ namespace Statistic
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
-                    BarItem curve1 = pane.AddBar("Мощность", null, valuesTMSNPsum, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
+                    BarItem curve1 = pane.AddBar("Мощность", null, valuesTMSNPsum, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
                 }
                 else
                 {
@@ -567,7 +567,7 @@ namespace Statistic
                         for (int i = 0; i < valuescount; i++)
                             valuesTMSNPsum1[i] = valuesTMSNPsum[i];
 
-                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesTMSNPsum1, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE));
+                        LineItem curve1 = pane.AddCurve("Мощность", null, valuesTMSNPsum1, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
                     }
                     else
                         ;

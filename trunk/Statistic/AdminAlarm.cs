@@ -182,7 +182,7 @@ namespace Statistic
             HMark markQueries = new HMark ();
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_ASKUE);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             //Отладка ???!!!

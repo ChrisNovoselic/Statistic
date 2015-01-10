@@ -4,6 +4,7 @@ using System.IO;
 using System.Data;
 using System.Collections.Generic;
 using System.Threading;
+using System.Drawing; //Color
 
 using HClassLibrary;
 using StatisticCommon;
@@ -346,7 +347,9 @@ namespace Statistic
             else
                 ;
             states.Add((int)StatesMachine.LastValue_TM_Gen);
-            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+
+            //??? а где AISKUE+SOTIASSO
+            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                 states.Add((int)StatesMachine.Hours_Fact);
             else
                 if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -354,7 +357,7 @@ namespace Statistic
                 else
                     ;
 
-            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                 states.Add((int)StatesMachine.CurrentMins_Fact);
             else
                 if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1081,7 +1084,7 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
                     msg = @"усредн. за интервал телемеханики";
-                    GetMinTMRequest(m_curDate.Date, lastMin);
+                    GetMinTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     msg = @"часовых значений (собств. нужды)";
@@ -1276,7 +1279,8 @@ namespace Statistic
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMins_TM:
                     ClearValuesMins();
-                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         bRes = GetMinsFactResponse(table);
                     else
                         if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1392,13 +1396,16 @@ namespace Statistic
             }
 
             //Часы...
-            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO)
+            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
                 states.Add((int)StatesMachine.Hours_Fact);
-                states.Add((int)StatesMachine.Hour_TM);
+                if (currHour == true)
+                    states.Add((int)StatesMachine.Hour_TM);
+                else
+                    ;
             }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     states.Add((int)StatesMachine.Hours_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1406,13 +1413,16 @@ namespace Statistic
                     else
                         ;
             //Минуты...
-            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO)
+            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
                 states.Add((int)StatesMachine.CurrentMins_Fact);
-                states.Add((int)StatesMachine.CurrentMin_TM);
+                if (currHour == true)
+                    states.Add((int)StatesMachine.CurrentMin_TM);
+                else
+                    ;
             }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                     states.Add((int)StatesMachine.CurrentMins_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1528,7 +1538,8 @@ namespace Statistic
 
                 adminValuesReceived = false;
 
-                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1557,7 +1568,8 @@ namespace Statistic
 
                 adminValuesReceived = false;
 
-                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.RetroMins_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1565,7 +1577,8 @@ namespace Statistic
                     else
                         ;
 
-                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1591,9 +1604,14 @@ namespace Statistic
                 currHour = false;
 
                 //Отладка ???
-                //if (indx == 0)
-                //    lastHour = 1;
-                //else
+                if (indxHour < 0)
+                {
+                    //lastHour = 1;
+                    string strMes = @"TecView::getRetroMins (indxHour = " + indxHour + @") - ...";
+                    Logging.Logg().Error(strMes);
+                    //throw new Exception(strMes);
+                }
+                else ;
                 lastHour = indxHour;
 
                 ClearValuesMins();
@@ -1602,7 +1620,8 @@ namespace Statistic
 
                 adminValuesReceived = false;
 
-                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.RetroMins_Fact);
                 else
                     if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
@@ -1631,7 +1650,8 @@ namespace Statistic
 
         private void initValuesMinLength()
         {
-            if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE) && (! (m_valuesMins.Length == 21))) {
+            if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE) && (! (m_valuesMins.Length == 21))
+                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO) && (! (m_valuesMins.Length == 21))) {
                 m_valuesMins = null;
             }
             else
@@ -1648,7 +1668,8 @@ namespace Statistic
                     case CONN_SETT_TYPE.DATA_SOTIASSO:
                         cnt = 61;
                         break;
-                    case CONN_SETT_TYPE.DATA_ASKUE:
+                    case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                    case CONN_SETT_TYPE.DATA_AISKUE:
                     default:
                         cnt = 21;
                         break;
@@ -3175,6 +3196,14 @@ namespace Statistic
 
             if (currHour == true)
             {//Отображение тек./часа
+                if (hour < 0)
+                {
+                    string strMes = @"TecView::GetHoursFactResponse (hour = " + hour + @") - ...";
+                    Logging.Logg().Error(strMes);
+                    //throw new Exception(strMes);
+                }
+                else ;
+
                 lastHour = hour;
 
                 if (lastHour < dtServer.Hour)
@@ -3235,32 +3264,38 @@ namespace Statistic
 
         private bool GetHourTMResponse(DataTable table)
         {
-            bool bRes = true;
-
-            return bRes;
+            return GetHoursTMResponse (table, false);
         }
 
-        private bool GetHoursTMResponse(DataTable table)
+        private bool GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
         {
-            bool bRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"HOUR"});
+            int iRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"HOUR"}) == true ? 0 : -1;
 
             int hour = -1;
             double val = -1F;
 
-            if (bRes == true) {
-                bRes = table.Rows.Count > 0;
+            if (iRes == 0) {
+                if (table.Rows.Count == 0)
+                    if (serverTime.Minute < 3)
+                    {
+                        //...в начале часа значений может не быть ???
+                        iRes = 1;
+                    }
+                    else
+                        iRes = -1;
+                else ;
 
                 foreach (DataRow r in table.Rows)
                 {
                     if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
-                        bRes = false;
+                        iRes = -1;
                         break;
                     }
                     else
                         ;
 
                     if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
-                        bRes = false;
+                        iRes = -1;
                         break;
                     }
                     else
@@ -3272,29 +3307,49 @@ namespace Statistic
             else
                 ;
 
-            if (bRes == false)
+            if (iRes < 0)
             {
                 lastHour = 24;
             }
             else
             {
-                lastHourError = 
-                lastHourHalfError = ! bRes;
+                if (bErrorCritical == true)
+                    lastHourError =
+                    lastHourHalfError = false;
+                else
+                    ;
 
                 if (currHour == true)
                 {
-                    lastHour = hour;
+                    if (hour < 0)
+                    {
+                        string strMes = @"TecView::GetHoursTMResponse () - hour = " + hour + @" ...";
+                        Logging.Logg().Error(strMes);
+                        //throw new Exception(strMes);
+                    }
+                    else ;
 
-                    if (lastHour < (m_valuesHours.Length - 1))
-                        m_valuesHours[lastHour].valuesFact = 0F;
+                    if (bErrorCritical == true)
+                        if (iRes == 0)
+                            lastHour = hour;
+                        else
+                            if (iRes == 1)
+                                lastHour = serverTime.AddHours (-1).Hour + 1;
+                            else
+                                ;
                     else
                         ;
+
+                    ////НЕ отображать значения за текущий час ???
+                    //if (lastHour < (m_valuesHours.Length - 1))
+                    //    m_valuesHours[lastHour].valuesFact = 0F;
+                    //else ;
                 }
                 else
                     ;
             }
 
-            return bRes;
+            return (! (iRes < 0)) || (bErrorCritical == false);
         }
 
         private bool GetHoursTMSNPsumResponse(DataTable table)
@@ -3490,7 +3545,7 @@ namespace Statistic
                 //Ошибка - нет ни одной строки
                 if (currHour == true)
                 {
-                    if (! ((m_curDate.Minute / 3) == 0))
+                    if (!((m_curDate.Minute / 3) == 0))
                     {//Ошибка - номер 3-хмин > 1
                         lastMinError = true;
                         //lastMin = ((m_curDate.Minute) / 3) + 1;
@@ -3498,8 +3553,12 @@ namespace Statistic
                     else
                         ; //Успех
                 }
+                else
+                    ;
+
                 /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
                 f2.ShowDialog();*/
+
                 return true;
             }
 
@@ -3563,6 +3622,8 @@ namespace Statistic
                         end = true; //Установка признака выхода из цикла 'i'
                         break; //Выход из цикла 'j'
                     }
+                    else
+                        ;
 
                     try
                     {
@@ -3583,12 +3644,14 @@ namespace Statistic
                         dt = DateTime.Now.Date;
                     }
 
-                    if (! (season == need_season))
+                    if (!(season == need_season))
                     {
                         jump = true;
                         i++;
                         break;
                     }
+                    else
+                        ;
 
                     if (dt.CompareTo(dtNeeded) != 0)
                     {
@@ -3644,7 +3707,11 @@ namespace Statistic
                         m_valuesMins[min].valuesFact = minuteVal / 1000;
                         lastMin = min + 1;
                     }
+                    else
+                        ;
                 }
+                else
+                    ;
             }
 
             /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
@@ -3657,14 +3724,80 @@ namespace Statistic
             } else {
             }
 
+            if (lastMin < 0)
+            {
+                string strMes = @"TecView::GetMinsFactResponse () - lastMin = " + lastMin;
+                //Logging.Logg().Error(strMes);
+                throw new Exception(strMes);
+            }
+            else
+                ;
+
             return true;
         }
 
         private bool GetMinTMResponse(DataTable table)
         {
-            bool bRes = true;
+            if (lastMin == 21)
+                return true;
+            else
+                ;
 
-            return bRes;
+            bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE" });
+
+            int id = -1
+                , lm = -1;
+            double val = -1F;
+
+            if (bRes == true)
+            {
+                bRes = table.Rows.Count > 0;
+
+                //???
+                if (lastMin == 21) lm = 0; else lm = lastMin;
+
+                foreach (DataRow r in table.Rows)
+                {
+                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
+                    {
+                        bRes = false;
+                        break;
+                    }
+                    else
+                        ;
+
+                    //Отладка ???
+                    if (!(val > 0))
+                        val = 0F;
+                    else
+                        ;
+
+                    m_valuesMins[lm].valuesFact += val;
+                }
+            }
+            else
+                ;
+
+            ////???
+            //if (bRes == false)
+            //{
+            //}
+            //else
+            //{
+            //}
+
+            return
+                true
+                //bRes
+                ;
         }
 
         private bool GetMinsTMResponse(DataTable table)
@@ -3900,7 +4033,7 @@ namespace Statistic
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, TG.ID_TIME.HOURS)));
         }
 
         private void GetHourTMRequest(DateTime date, int lh)
@@ -3919,15 +4052,17 @@ namespace Statistic
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
             //26.10.2014 г.
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_ASKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, TG.ID_TIME.MINUTES)));
+        }
+
+        private void GetMinTMRequest(DateTime date, int lh, int lm)
+        {
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
         }
 
         private void GetMinsTMRequest(int hour)
         {
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
-        }
-
-        private void GetMinTMRequest(DateTime date, int lm) {
         }
 
         private void GetHoursTMSNPsumRequest(DateTime dt)
@@ -3973,6 +4108,25 @@ namespace Statistic
             for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++ ) {
                 m_waitHandleState [i] = new ManualResetEvent(false);
             }
+        }
+
+        public void GetColorZEDGraph(TG.ID_TIME id_time, out Color colChart, out Color colP)
+        {
+            //Значения по умолчанию
+            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
+            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
+
+            if ((m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE)
+                || (m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                ; // ...по умолчанию 
+            else
+                if (m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                {
+                    colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
+                    colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+                }
+                else
+                    ;
         }
     }
 }
