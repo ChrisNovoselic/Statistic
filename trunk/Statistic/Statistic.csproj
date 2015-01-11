@@ -97,7 +97,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminAlarm.cs" />
     <Compile Include="dgwTables.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -162,7 +161,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="TecView.cs" />
     <Compile Include="PanelSobstvNyzhdy.cs">
       <SubType>Component</SubType>
     </Compile>

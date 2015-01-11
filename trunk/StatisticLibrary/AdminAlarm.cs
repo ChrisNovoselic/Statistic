@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Threading;
 
 using HClassLibrary;
-using StatisticCommon;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public class AdminAlarm
     {
@@ -175,7 +174,7 @@ namespace Statistic
             return bRes;
         }
 
-        public void InitTEC(List<StatisticCommon.TEC> listTEC)
+        public void InitTEC(List<StatisticCommon.TEC> listTEC, int pool_time, int error_delay)
         {
             m_listTecView = new List<TecView> ();
 
@@ -189,7 +188,7 @@ namespace Statistic
             int DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
-                    m_listTecView.Add(new TecView(null, TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
+                    m_listTecView.Add(new TecView(TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1, pool_time, error_delay));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
@@ -202,7 +201,7 @@ namespace Statistic
             }
         }
 
-        public AdminAlarm()
+        public AdminAlarm(int msecTimerUpdate, int msecEventRetry)
         {
             m_dictAlarmObject = new Dictionary<KeyValuePair <int, int>,ALARM_OBJECT> ();
             
@@ -211,8 +210,8 @@ namespace Statistic
             m_iActiveCounter = -1; //ƒл€ отслеживани€ 1-й по счету "активации"
             //m_bDestGUIActivated = false; //јктивна ли вкладка (родитель) дл€ отображени€ событий сигнализации
 
-            m_msecTimerUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000; //5 * 60 * 1000;
-            m_msecEventRetry = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000; 
+            m_msecTimerUpdate = msecTimerUpdate;
+            m_msecEventRetry = msecEventRetry; 
         }
 
         public void Activate(bool active)

@@ -52,6 +52,7 @@
     <Compile Include="Admin.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AdminAlarm.cs" />
     <Compile Include="AdminTS.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -118,6 +119,7 @@
     <Compile Include="TECComponent.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TecView.cs" />
     <Compile Include="Users.cs" />
   </ItemGroup>
   <ItemGroup>

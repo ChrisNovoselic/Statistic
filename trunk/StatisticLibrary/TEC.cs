@@ -650,6 +650,8 @@ namespace StatisticCommon
                     break;
             }
 
+            //Logging.Logg().Debug(@"TEC::minTMRequest (hour=" + hour + @", min=" + min + @") - dtReq=" + dtReq.ToString(@"yyyyMMdd HH:mm:00"));
+
             return request;
         }
 

@@ -237,7 +237,9 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecView (null, TecView.TYPE_PANEL.CUR_POWER, -1, -1);
+                m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1
+                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
+                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
 
                 HMark markQueries = new HMark();
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);

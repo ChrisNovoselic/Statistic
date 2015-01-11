@@ -249,8 +249,11 @@ namespace Statistic
 
         private void initAdminAlarm()
         {
-            m_adminAlarm = new AdminAlarm();
-            m_adminAlarm.InitTEC(m_admin.m_list_tec);
+            m_adminAlarm = new AdminAlarm(Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000 /*5 * 60 * 1000*/
+                                        , Int32.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000);
+            m_adminAlarm.InitTEC(m_admin.m_list_tec
+                                , Int32.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
+                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
 
             m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
             m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
@@ -372,7 +375,8 @@ namespace Statistic
             EventGUIReg(msg);
         }
 
-        private void OnAdminAlarm_EventAdd (TecView.EventRegEventArgs ev) {
+        private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
+        {
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {
                 this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);

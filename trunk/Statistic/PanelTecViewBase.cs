@@ -576,7 +576,9 @@ namespace Statistic
         {
             //InitializeComponent();
 
-            m_tecView = new TecView(null, TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp);
+            m_tecView = new TecView(TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp
+                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
+                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
 
             HMark markQueries = new HMark();
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
@@ -968,7 +970,7 @@ namespace Statistic
                     if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
                     {
                         if ((!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                            && (i < receivedHour))
+                            || (i < receivedHour))
                             bDevVal = true;
                         else
                             ;
@@ -1269,18 +1271,24 @@ namespace Statistic
                     else
                         valuesRecommend[i] = m_tecView.recomendation;
                 }
+                else
+                    ;
 
                 //if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
                 //{
                 //    minimum = valuesPDiviation[i];
                 //    noValues = false;
                 //}
+                //else
+                //    ;
 
                 //if (minimum > valuesODiviation[i] && valuesODiviation[i] != 0)
                 //{
                 //    minimum = valuesODiviation[i];
                 //    noValues = false;
                 //}
+                //else
+                //    ;
 
                 if (m_tecView.currHour == true)
                 {
@@ -1290,24 +1298,34 @@ namespace Statistic
                         noValues = false;
                     }
                 }
+                else
+                    ;
 
                 if (minimum > valuesUDGe[i] && valuesUDGe[i] != 0)
                 {
                     minimum = valuesUDGe[i];
                     noValues = false;
                 }
+                else
+                    ;
 
                 if (minimum > valuesFact[i] && valuesFact[i] != 0)
                 {
                     minimum = valuesFact[i];
                     noValues = false;
                 }
+                else
+                    ;
 
                 //if (maximum < valuesPDiviation[i])
                 //    maximum = valuesPDiviation[i];
+                //else
+                //    ;
 
                 //if (maximum < valuesODiviation[i])
                 //    maximum = valuesODiviation[i];
+                //else
+                //    ;
 
                 if (m_tecView.currHour == true)
                 {
@@ -1316,6 +1334,8 @@ namespace Statistic
                     else
                         ;
                 }
+                else
+                    ;
 
                 if (maximum < valuesUDGe[i])
                     maximum = valuesUDGe[i];
@@ -1330,6 +1350,8 @@ namespace Statistic
 
             if (!(FormMain.formGraphicsSettings.scale == true))
                 minimum = 0;
+            else
+                    ;
 
             if (noValues)
             {
@@ -1343,6 +1365,8 @@ namespace Statistic
                     minimum_scale = minimum - (maximum - minimum) * 0.2;
                     if (minimum_scale < 0)
                         minimum_scale = 0;
+                    else
+                        ;
                     maximum_scale = maximum + (maximum - minimum) * 0.2;
                 }
                 else
@@ -1354,7 +1378,7 @@ namespace Statistic
 
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
-            m_tecView.GetColorZEDGraph(TG.ID_TIME.MINUTES, out colorChart, out colorPCurve);
+            getColorZEDGraph(TG.ID_TIME.MINUTES, out colorChart, out colorPCurve);
             pane.Chart.Fill = new Fill(colorChart);
 
             LineItem curve2 = pane.AddCurve("”ƒ√э", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
@@ -1709,7 +1733,7 @@ namespace Statistic
 
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
-            m_tecView.GetColorZEDGraph(TG.ID_TIME.HOURS, out colorChart, out colorPCurve);
+            getColorZEDGraph(TG.ID_TIME.HOURS, out colorChart, out colorPCurve);
 
             pane.Chart.Fill = new Fill(colorChart);
 
@@ -1737,7 +1761,10 @@ namespace Statistic
                         }
                         else
                         {
-                            valuesSOTIASSO[i] = valuesFact[i];
+                            if (i < valuesFact.Length)
+                                valuesSOTIASSO[i] = valuesFact[i];
+                            else
+                                ;
                         }
                     }
 
@@ -2110,6 +2137,25 @@ namespace Statistic
         protected void sourceDataHours_Click(object sender, EventArgs e)
         {
             sourceData_Click(m_ZedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.HOURS);
+        }
+
+        private void getColorZEDGraph(TG.ID_TIME id_time, out Color colChart, out Color colP)
+        {
+            //«начени€ по умолчанию
+            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
+            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
+
+            if ((m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE)
+                || (m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                ; // ...по умолчанию 
+            else
+                if (m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                {
+                    colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
+                    colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+                }
+                else
+                    ;
         }
     }
 }

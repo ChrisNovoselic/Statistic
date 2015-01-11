@@ -7,9 +7,8 @@ using System.Threading;
 using System.Drawing; //Color
 
 using HClassLibrary;
-using StatisticCommon;
 
-namespace Statistic
+namespace StatisticCommon
 {
     public class TecView : HAdmin
     {
@@ -148,6 +147,9 @@ namespace Statistic
         public double recomendation;
 
         //private bool started;
+        private int m_pool_time
+            , m_error_delay
+            ;
 
         //'public' дл€ доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public volatile bool adminValuesReceived;
@@ -287,13 +289,17 @@ namespace Statistic
                     ;
         }
 
-        public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
+        //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
+        public TecView(TYPE_PANEL type, int indx_tec, int indx_comp, int pool_time, int error_delay)
             : base()
         {            
             m_typePanel = type;
 
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
+
+            m_pool_time = pool_time;
+            m_error_delay = m_error_delay;
 
             m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
@@ -942,48 +948,48 @@ namespace Statistic
                     break;
                 case (int)StatesMachine.Hours_Fact:
                     reason = @"получасовых значений";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.Hour_TM:
                     reason = @"усредн. за час телемеханики";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.Hours_TM:
                     reason = @"часовых значений";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
                     reason = @"усредн. за интервал телемеханики";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     reason = @"1-минутных значений";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генераци€)";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     reason = @"текущих значений 59 мин.";
-                    waiting = @"ќжидание " + FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME].ToString() + " секунд";
+                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
                     break;
                 //case (int)StatesMachine.RetroHours:
                 //    reason = @"получасовых значений";
@@ -1187,7 +1193,7 @@ namespace Statistic
                     if (bRes == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
-                        m_curDate = m_curDate.AddSeconds(-1 * Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
+                        m_curDate = m_curDate.AddSeconds(-1 * m_error_delay);
                         //this.BeginInvoke(delegateSetNowDate, true);
                         if (!(setDatetimeView == null)) setDatetimeView(); else ;
                     }
@@ -1606,9 +1612,8 @@ namespace Statistic
                 //ќтладка ???
                 if (indxHour < 0)
                 {
-                    //lastHour = 1;
                     string strMes = @"TecView::getRetroMins (indxHour = " + indxHour + @") - ...";
-                    Logging.Logg().Error(strMes);
+                    //Logging.Logg().Error(strMes);
                     //throw new Exception(strMes);
                 }
                 else ;
@@ -3162,6 +3167,8 @@ namespace Statistic
                     }
                 }
 
+                //Logging.Logg().Debug(@"TecView::GetHoursFactReuest () - hour=" + hour + @"; indxHalf=" + j + @"; halfVal=" + halfVal + @"; hourVal=" + hourVal);
+
                 if (j < 2)
                 {//Ќет данных за один из получасов
                     if (! (hour > serverTime.Hour)) {
@@ -3194,12 +3201,14 @@ namespace Statistic
                 else
                     ;
 
+            //Logging.Logg().Debug(@"TecView::GetHoursFactReuest () - hour=" + hour);
+
             if (currHour == true)
             {//ќтображение тек./часа
                 if (hour < 0)
                 {
                     string strMes = @"TecView::GetHoursFactResponse (hour = " + hour + @") - ...";
-                    Logging.Logg().Error(strMes);
+                    //Logging.Logg().Error(strMes);
                     //throw new Exception(strMes);
                 }
                 else ;
@@ -3257,6 +3266,8 @@ namespace Statistic
             else
                 ; //ќтображение ретроспективы
 
+            //Logging.Logg().Debug(@"TecView::GetHoursFactReuest () - lastHour=" + lastHour);
+
             lastReceivedHour = lastHour;
 
             return true;
@@ -3275,6 +3286,8 @@ namespace Statistic
             double val = -1F;
 
             if (iRes == 0) {
+                Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
+
                 if (table.Rows.Count == 0)
                     if (serverTime.Minute < 3)
                     {
@@ -3309,7 +3322,10 @@ namespace Statistic
 
             if (iRes < 0)
             {
-                lastHour = 24;
+                if (bErrorCritical == true)
+                    lastHour = serverTime.Hour; //24
+                else
+                    ;
             }
             else
             {
@@ -3324,7 +3340,7 @@ namespace Statistic
                     if (hour < 0)
                     {
                         string strMes = @"TecView::GetHoursTMResponse () - hour = " + hour + @" ...";
-                        Logging.Logg().Error(strMes);
+                        //Logging.Logg().Error(strMes);
                         //throw new Exception(strMes);
                     }
                     else ;
@@ -3738,6 +3754,8 @@ namespace Statistic
 
         private bool GetMinTMResponse(DataTable table)
         {
+            Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
+
             if (lastMin == 21)
                 return true;
             else
@@ -3746,7 +3764,8 @@ namespace Statistic
             bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE" });
 
             int id = -1
-                , lm = -1;
+                , lm = -1
+                ;
             double val = -1F;
 
             if (bRes == true)
@@ -3754,7 +3773,7 @@ namespace Statistic
                 bRes = table.Rows.Count > 0;
 
                 //???
-                if (lastMin == 21) lm = 0; else lm = lastMin;
+                if (lastMin == 0) lm = lastMin + 1; else lm = lastMin;
 
                 foreach (DataRow r in table.Rows)
                 {
@@ -4108,25 +4127,6 @@ namespace Statistic
             for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++ ) {
                 m_waitHandleState [i] = new ManualResetEvent(false);
             }
-        }
-
-        public void GetColorZEDGraph(TG.ID_TIME id_time, out Color colChart, out Color colP)
-        {
-            //«начени€ по умолчанию
-            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
-            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
-
-            if ((m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE)
-                || (m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                ; // ...по умолчанию 
-            else
-                if (m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                {
-                    colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                    colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
-                }
-                else
-                    ;
         }
     }
 }
