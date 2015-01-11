@@ -20,14 +20,15 @@ namespace StatisticTimeSync
     public partial class PanelSourceData : PanelStatistic
     {
         private static int [] INDEX_SOURCE_GETDATE = {
-            //26
-            //, 1, 4, 7, 10, 13, /*16*/-1
-            //, 2, 5, 8, 11, 14, 17
-            //, 3, 6, 9, 12, 15, -1
-            26
-            , -1, -1, -1, -1, -1, /*16*/-1
-            , -1, -1, -1, -1, -1, 17
-            , -1, -1, -1, -1, -1, -1
+            26 //Эталон - ne2844
+            //Вариант №1
+            , 1, 4, 7, 10, 13, /*16*/-1
+            , 2, 5, 8, 11, 14, 17
+            , 3, 6, 9, 12, 15, -1
+            ////Вариант №2
+            //, -1, -1, -1, -1, -1, /*16*/-1
+            //, -1, -1, -1, -1, -1, 17
+            //, -1, -1, -1, -1, -1, -1
         };
         
         private partial class PanelGetDate : TableLayoutPanel

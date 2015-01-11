@@ -242,7 +242,10 @@ namespace Statistic
             //Значит пользователь администратор
             if (m_adminAlarm == null) initAdminAlarm(); else ;
 
-            if (m_adminAlarm.IsStarted == false) m_adminAlarm.Start(); else ;
+            if ((activate == true)
+                && (m_adminAlarm.IsStarted == false))
+                m_adminAlarm.Start();
+            else ;
 
             base.Activate (activate);
         }
