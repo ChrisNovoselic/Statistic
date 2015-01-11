@@ -1750,11 +1750,20 @@ namespace Statistic
                     //BarItem
                     pane.AddBar("Мощность", null, valuesFact, colorPCurve);
                 else {
-                    double [] valuesASKUE = new double [m_tecView.lastHour]
-                        , valuesSOTIASSO = new double[m_tecView.lastHour + 1];
-                    for (int i = 0; i < m_tecView.lastHour + 1; i ++)
+                    int lm = -1;
+                    if (m_tecView.currHour == true)
+                        lm = m_tecView.lastHour;
+                    else
+                        if (HAdmin.ToMoscowTimeZone(DateTime.Now).Date.Equals(m_tecView.serverTime.Date) == true)
+                            lm = m_tecView.serverTime.Hour;
+                        else
+                            lm = 24;
+
+                    double [] valuesASKUE = new double [lm]
+                        , valuesSOTIASSO = new double[lm + 1];
+                    for (int i = 0; i < lm + 1; i ++)
                     {
-                        if (i < m_tecView.lastHour - 0)
+                        if (i < lm - 0)
                         {
                             valuesASKUE[i] = valuesFact[i];
                             valuesSOTIASSO [i] = 0;
