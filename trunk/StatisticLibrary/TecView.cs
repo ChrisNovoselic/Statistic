@@ -3286,7 +3286,7 @@ namespace StatisticCommon
             double val = -1F;
 
             if (iRes == 0) {
-                Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
+                //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
 
                 if (table.Rows.Count == 0)
                     if (serverTime.Minute < 3)
@@ -3754,7 +3754,7 @@ namespace StatisticCommon
 
         private bool GetMinTMResponse(DataTable table)
         {
-            Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
+            //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
             if (lastMin == 21)
                 return true;
