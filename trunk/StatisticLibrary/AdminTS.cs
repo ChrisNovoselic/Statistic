@@ -1042,7 +1042,18 @@ namespace StatisticCommon
 
             date = date.Date;
             int offset = -1
-                , currentHour = getCurrentHour (date);
+                , currentHour = -1
+                , offset_days = (date.Date - serverTime.Date).Days;
+
+            currentHour = getCurrentHour(date);
+            if (offset_days == 0)
+                ; //Норма
+            else {
+                if ((offset_days == -1) && (currentHour < 1)) //Исключительная ситуация
+                    currentHour = m_curRDGValues.Length - 1;
+                else //Недопустимая ситуация
+                    return resQuery;
+            }
 
             for (int i = currentHour; i < m_curRDGValues.Length; i++)
             {
@@ -1675,7 +1686,9 @@ namespace StatisticCommon
                     GetPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.AdminDates:
-                    if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
+                int offset_days = (serverTime.Date - m_curDate.Date).Days;
+                    if (((offset_days > 0) && (m_ignore_date == false))
+                        || (((offset_days > 1) && (serverTime.Hour > 0)) && (m_ignore_date == false)))
                     {
                         //Останавливаем сохранение
                         saveResult = Errors.InvalidValue;

@@ -30,8 +30,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>5</ApplicationRevision>
-    <ApplicationVersion>1.9.5.5</ApplicationVersion>
+    <ApplicationRevision>7</ApplicationRevision>
+    <ApplicationVersion>1.9.5.7</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
