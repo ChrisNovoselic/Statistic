@@ -1022,10 +1022,24 @@ namespace StatisticCommon
         private int getCurrentHour (DateTime dt) {
             int iRes = -1;
 
-            if ((serverTime.Date < dt) || (m_ignore_date == true))
-                iRes = 0;
+            if (dt < serverTime.Date)
+                if (m_ignore_date == true)
+                    iRes = 0;
+                else {
+                    int offset_days = (dt - serverTime.Date).Days;
+                    if ((offset_days == -1) && (serverTime.Hour < 1)) //Исключительная ситуация
+                        iRes = m_curRDGValues.Length;
+                    else
+                        iRes = -1; //Недопустимая ситуация
+                }
             else
-                iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1; //Возможность изменять рекомендации за тек./час
+                if (dt == serverTime.Date)
+                    iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1; //Возможность изменять рекомендации за тек./час
+                else
+                    if (dt > serverTime.Date)
+                        iRes = 0;
+                    else
+                        ;
 
             //Возможность изменять рекомендации за пред./час
             if (iRes > 0)
@@ -1042,18 +1056,14 @@ namespace StatisticCommon
 
             date = date.Date;
             int offset = -1
-                , currentHour = -1
-                , offset_days = (date.Date - serverTime.Date).Days;
+                , currentHour = -1;
 
             currentHour = getCurrentHour(date);
-            if (offset_days == 0)
-                ; //Норма
-            else {
-                if ((offset_days == -1) && (currentHour < 1)) //Исключительная ситуация
-                    currentHour = m_curRDGValues.Length - 1;
-                else //Недопустимая ситуация
-                    return resQuery;
-            }
+            if (currentHour < 0)
+                //Недопустимая ситуация
+                return resQuery;
+            else
+                ;
 
             for (int i = currentHour; i < m_curRDGValues.Length; i++)
             {

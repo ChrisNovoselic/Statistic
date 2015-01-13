@@ -214,7 +214,8 @@ namespace trans_tg
         {
             string [] resQuery = base.setAdminValuesQuery(t, comp, date);
 
-            int currentHour = -1;
+            int currentHour = -1
+                , offset = -1;
 
             date = date.Date;
 
@@ -226,6 +227,8 @@ namespace trans_tg
             {
                 for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)StatisticCommon.CONN_SETT_TYPE.ADMIN].Count; i++)
                 {
+                    offset = GetSeasonHourOffset(i + 1);
+
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
                     {
@@ -238,8 +241,10 @@ namespace trans_tg
                                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"' WHERE " +
-                                            @"DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                            @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                            @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
+                                            @" WHERE" +
+                                            @" DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                                 break;
@@ -260,6 +265,8 @@ namespace trans_tg
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (comp.m_id) +
+                                            @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                            @", " + (m_curRDGValues[i].fc ? 1 : 0) +
                                             @"),";
                                 break;
                             default:
