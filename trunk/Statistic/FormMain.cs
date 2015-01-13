@@ -435,10 +435,11 @@ namespace Statistic
         private void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
         {            
             string ids = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString () + @"): ids=" + ids);
             formChangeMode.LoadProfile(ids);
 
             ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
-            Logging.Logg().Action(@"Загрузка профайла (ADDING_TABS): ids=" + ids);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString () + @"): ids=" + ids);
 
             if (ids.Equals(string.Empty) == false)
             {
