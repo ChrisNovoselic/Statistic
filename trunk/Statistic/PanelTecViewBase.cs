@@ -969,7 +969,7 @@ namespace Statistic
                 if (m_tecView.currHour == true)
                     if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
                     {
-                        if ((!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                        if ((m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                             || (i < receivedHour))
                             bDevVal = true;
                         else
@@ -995,7 +995,7 @@ namespace Statistic
                         else
                         {
                         }    
-                
+
                 m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
                 if (bDevVal == true)
                     sumFact += m_tecView.m_valuesHours[i].valuesFact;
