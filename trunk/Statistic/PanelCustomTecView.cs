@@ -221,8 +221,7 @@ namespace Statistic
                 foreach (MenuItem mi in ContextMenu.MenuItems)
                 {
                     iRes = ContextMenu.MenuItems.IndexOf(mi);
-                    if ((!(iRes < INDEX_START_CONTEXT_MENUITEM))
-                        && (iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)))
+                    if (iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
                         if (mi.Checked == true)
                         {
                             break;
