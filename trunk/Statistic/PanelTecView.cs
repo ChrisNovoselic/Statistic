@@ -524,9 +524,12 @@ namespace Statistic
             {
                 if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
-                m_tecView.zedGraphHours_MouseUpEvent(index);
+                bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                setRetroTickTime(m_tecView.lastHour, 60);
+                if (bRetroHour == true)
+                    setRetroTickTime(m_tecView.lastHour, 60);
+                else
+                    setNowDate(false);
 
                 if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }

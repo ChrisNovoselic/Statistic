@@ -1649,8 +1649,15 @@ namespace StatisticCommon
             getRetroMins(lastHour);
         }
 
-        public void zedGraphHours_MouseUpEvent (int indx) {
-            getRetroMins(indx);
+        public bool zedGraphHours_MouseUpEvent (int indx) {
+            bool bRes = true;
+
+            if ((indx == serverTime.Hour) && (m_curDate.Date.Equals (serverTime.Date) == true) && (serverTime.Minute > 2))
+                bRes = false;
+            else
+                getRetroMins(indx);
+
+            return bRes;
         }
 
         private void initValuesMinLength()

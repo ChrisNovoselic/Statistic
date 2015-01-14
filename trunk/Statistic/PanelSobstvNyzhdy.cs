@@ -432,27 +432,31 @@ namespace Statistic
 
             private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
-                if (e.Button != MouseButtons.Left)
-                    return true;
+                //if (e.Button != MouseButtons.Left)
+                //    return true;
+                //else
+                //    ;
 
-                object obj;
-                PointF p = new PointF(e.X, e.Y);
-                bool found;
-                int index;
+                //object obj;
+                //PointF p = new PointF(e.X, e.Y);
+                //bool found;
+                //int index;
 
-                found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+                //found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
 
-                if (!(obj is BarItem) && !(obj is LineItem))
-                    return true;
+                //if (!(obj is BarItem) && !(obj is LineItem))
+                //    return true;
+                //else
+                //    ;
 
-                if (found == true)
-                {
-                    //delegateStartWait();
+                //if (found == true)
+                //{
+                //    //delegateStartWait();
 
-                    m_tecView.zedGraphHours_MouseUpEvent(index);
+                //    bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                    //delegateStopWait();
-                }
+                //    //delegateStopWait();
+                //}
 
                 return true;
             }

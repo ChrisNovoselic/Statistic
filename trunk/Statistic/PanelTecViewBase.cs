@@ -740,7 +740,7 @@ namespace Statistic
             //timerCurrent.Tick += TimerCurrent_Tick;
 
             update = false;
-            SetNowDate(true);
+            setNowDate(true);
 
             //??? Отображение графиков по 'Activate (true)'
             //DrawGraphMins(0);
@@ -1068,12 +1068,12 @@ namespace Statistic
         {
             //true, т.к. всегда вызов при result=true
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke (new DelegateBoolFunc (SetNowDate), true);
+                this.BeginInvoke (new DelegateBoolFunc (setNowDate), true);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...");
         }
 
-        private void SetNowDate(bool received)
+        protected void setNowDate(bool received)
         {
             m_tecView.currHour = true;
 
@@ -1090,7 +1090,7 @@ namespace Statistic
 
         private void btnSetNow_Click(object sender, EventArgs e)
         {
-            SetNowDate(false);
+            setNowDate(false);
         }
 
         private void ChangeState()
