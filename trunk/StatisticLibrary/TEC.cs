@@ -623,17 +623,13 @@ namespace StatisticCommon
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
-	                        + @" FROM ("
-                                //--Привести дату/время к МСК (добавить разность с UTC)
-                                + @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                    request =  //--Привести дату/время к МСК (добавить разность с UTC)
+                                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
                                     + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
 			                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString (@"yyyyMMdd HH:mm:00.000") + @"')"
-                                    + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (2).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
-                                + @" ) as S0"
-                            + @" GROUP BY S0.[ID]";
+                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-3).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-1).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')";
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     switch (type())

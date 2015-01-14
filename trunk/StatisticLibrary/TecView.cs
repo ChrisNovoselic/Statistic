@@ -3759,6 +3759,234 @@ namespace StatisticCommon
             return true;
         }
 
+        private double avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, out int iRes) {
+            iRes = 0;
+            double dblRes = 0F;
+
+            int i = -1, indx = -1
+                , id = -1
+                ;
+            int tmDelta = -1;
+            double val = -1F;
+            string strId = string.Empty;
+
+            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
+            double [,] tgValues = new double [2, listSensors.Count];
+            for (i = 0; i < listSensors.Count; i++) { listSensors[i] = listSensors [i].Trim (); tgValues[0, i] = tgValues[1, i] = -1; }
+
+            DateTime dtReqEnd = dtReqBegin.AddSeconds(secInterval);
+
+            DataRow[] rowsPrevInterval = table.Select(@"last_changed_at<'" + dtReqBegin.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'" +
+                    @" AND last_changed_at>='" + dtReqBegin.AddSeconds(-1 * secInterval).ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'")
+                , rowsCurInterval = table.Select(@"last_changed_at>='" + dtReqBegin.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'" +
+                    @" AND last_changed_at<'" + dtReqEnd.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'");
+
+            DateTime lastChangedAt = DateTime.MaxValue;
+            DateTime[] arBeginInterval
+                , arEndInterval = new DateTime[listSensors.Count];
+
+            if (rowsPrevInterval.Length < listSensors.Count)
+                iRes = -2;
+            else {
+                for (i = 0; i < arEndInterval.Length; i++) arEndInterval[i] = DateTime.MinValue;
+                foreach (DataRow r in rowsPrevInterval) {
+                    strId = r[@"ID"].ToString();
+                    if (Int32.TryParse(strId, out id) == false)
+                    {
+                        iRes = -3;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                    {
+                        iRes = -4;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (Int32.TryParse(r[@"tmdelta"].ToString(), out tmDelta) == false)
+                    {
+                        iRes = -5;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (DateTime.TryParse(r[@"last_changed_at"].ToString(), out lastChangedAt) == false)
+                    {
+                        iRes = -6;
+                        break;
+                    }
+                    else
+                        lastChangedAt = (DateTime)r[@"last_changed_at"];
+
+                    indx = listSensors.IndexOf (strId);
+                    if (arEndInterval[indx] < lastChangedAt)
+                    {
+                        arEndInterval[indx] = lastChangedAt;
+                        tgValues [0, indx] = val;
+                    }
+                    else
+                        ;                            
+                }
+            }
+
+            if (iRes == 0)
+            {
+                for (indx = 0; indx < listSensors.Count; indx ++)                                
+                    if (tgValues [0, indx] < 0)
+                    {
+                        iRes = -7;
+                    }
+                    else
+                        ;
+                        
+                if (iRes == 0)
+                {
+                    int [] sumDelta = new int [listSensors.Count];
+                    double [] tgValuesEnd = new double [listSensors.Count];
+                    int [] arDeltaEnd =  new int [listSensors.Count];
+
+                    lastChangedAt = DateTime.MaxValue;
+                    arBeginInterval = new DateTime [listSensors.Count];
+                    for (i = 0; i < arBeginInterval.Length; i++) arBeginInterval [i] = DateTime.MaxValue;
+                    for (i = 0; i < arEndInterval.Length; i++) { arEndInterval[i] = DateTime.MinValue; tgValuesEnd[i] = -1F; arDeltaEnd [i] = -1; }
+
+                    foreach (DataRow r in rowsCurInterval)
+                    {
+                        strId = r[@"ID"].ToString();
+                        if (Int32.TryParse(strId, out id) == false)
+                        {
+                            iRes = -3;
+                            break;
+                        }
+                        else
+                            ;
+
+                        if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                        {
+                            iRes = -4;
+                            break;
+                        }
+                        else
+                            ;
+
+                        if (Int32.TryParse(r[@"tmdelta"].ToString(), out tmDelta) == false)
+                        {
+                            iRes = -5;
+                            break;
+                        }
+                        else
+                            ;
+
+                        if (DateTime.TryParse(r[@"last_changed_at"].ToString(), out lastChangedAt) == false)
+                        {
+                            iRes = -6;
+                            break;
+                        }
+                        else
+                            lastChangedAt = (DateTime)r[@"last_changed_at"];
+
+                        //Индекс ТГ
+                        indx = listSensors.IndexOf (strId);
+                        //"Левое" время интервала для ТГ
+                        if (arBeginInterval [indx] > lastChangedAt)
+                            arBeginInterval [indx] = lastChangedAt;
+                        else
+                            ;
+                        //"Правое" время интервала для ТГ
+                        if (arEndInterval [indx] < lastChangedAt)
+                        {
+                            arEndInterval[indx] = lastChangedAt;
+                            tgValuesEnd [indx] = val;
+                            arDeltaEnd [indx] = tmDelta;
+                        }
+                        else
+                            ;
+
+                        //Значения за текущ./интервал
+                        if ((val > 1) && (tmDelta > 0)) {
+                            tgValues [1, indx] += val * tmDelta;
+                            sumDelta [indx] += tmDelta;
+                        }
+                        else
+                            ;
+                    }
+
+                    int msecInterval = -1;
+                    if (iRes == 0) {                        
+                        for (indx = 0; indx < listSensors.Count; indx ++) {
+                            //Проверить дата/вр. 1-го знач. за тек./интервал
+                            if (! (arBeginInterval[indx] == DateTime.MaxValue))
+                            {
+                                msecInterval = (int)(arBeginInterval[indx] - dtReqBegin).TotalMilliseconds;
+                                if (! (msecInterval < 0))
+                                {
+                                    tgValues[1, indx] += tgValues[0, indx] * msecInterval;
+                                    sumDelta [indx] += msecInterval;
+                                }
+                                else {
+                                    iRes = -9;
+                                    break;
+                                }
+                            }
+                            else {
+                                iRes = -12;
+                                break;
+                            }
+
+                            //Проверить найдена ли дата/вр. кр./знач. за тек./интервал
+                            if (!(arEndInterval[indx] == DateTime.MinValue))
+                            {
+                                //Вычитание НЕ актуального кра./знач. за тек./интервал
+                                tgValues[1, indx] -= tgValuesEnd[indx] * arDeltaEnd[indx];
+                                sumDelta[indx] -= arDeltaEnd[indx];
+
+                                //msecInterval = (int)(arEndInterval[indx].AddMilliseconds(arDeltaEnd[indx]) - dtReqEnd).TotalMilliseconds;
+                                //if (! (msecInterval < 0)) {
+                                    //Переход через границу интервала - вычислить актуальную дельту
+                                    msecInterval = (int)(dtReqEnd - arEndInterval[indx]).TotalMilliseconds;
+                                //} else {
+                                    ////НЕТ перехода через границу интервала -
+                                    //// - увеличить дельта до конца интервала
+                                    //msecInterval = (int)(dtReqEnd - arEndInterval[indx]).TotalMilliseconds;
+                                //}
+
+                                tgValues[1, indx] += tgValuesEnd[indx] * msecInterval;
+                                sumDelta [indx] += msecInterval;
+                            } else {
+                                iRes = -13;
+                                break;
+                            }
+
+                            if (sumDelta[indx] > 0) // == (dtReqEnd - dtReqBegin).TotalMilliseconds
+                                dblRes += tgValues[1, indx] / sumDelta [indx];
+                            else {
+                                iRes = -8;
+                                break;
+                            }
+                        }
+
+                        if (! (iRes == 0))
+                            dblRes = 0F;
+                        else
+                            ;
+                    }
+                    else
+                        ; //Ошибка при заполнении значений тек./интервала
+                }
+                else
+                    ; //iRes == -7 (нет значений по предыдущ./интервалу для, как миним. одного из ТГ)
+            }
+            else
+                ; //Ошибка при заполнении значений предыдущ./интервала
+
+            return dblRes;
+        }
+
         private bool GetMinTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
@@ -3768,49 +3996,28 @@ namespace StatisticCommon
             else
                 ;
 
-            bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE" });
+            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
 
-            int id = -1
-                , lm = -1
-                ;
-            double val = -1F;
-
-            if (bRes == true)
+            if (iRes == 0)
             {
-                bRes = table.Rows.Count > 0;
+                iRes = table.Rows.Count > 0 ? 0 : -10;
 
-                //???
-                if (lastMin == 0) lm = lastMin + 1; else lm = lastMin;
-
-                foreach (DataRow r in table.Rows)
+                if (iRes == 0)
                 {
-                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
-                    {
-                        bRes = false;
-                        break;
-                    }
-                    else
+                    int min = -1
+                        , hour = lastHour - GetSeasonHourOffset(lastHour)
                         ;
+                    
+                    //???
+                    if (lastMin == 0) min = lastMin + 1; else min = lastMin;
 
-                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
-                    {
-                        bRes = false;
-                        break;
-                    }
-                    else
-                        ;
-
-                    //Отладка ???
-                    if (!(val > 0))
-                        val = 0F;
-                    else
-                        ;
-
-                    m_valuesMins[lm].valuesFact += val;
+                    m_valuesMins[min].valuesFact = avgInterval(table, m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1)), 180, out iRes);
                 }
+                else
+                    ; //Нет строк во вХодной таблице
             }
             else
-                ;
+                ; //-1 Нет требуемых полей во входной таблице
 
             ////???
             //if (bRes == false)
@@ -3820,9 +4027,17 @@ namespace StatisticCommon
             //{
             //}
 
+            // -3 - ошибка интерпретации значения поля записи "ID"
+            // -4 - ... "VALUE"
+            // -5 - "tmdelta"
+            // -6 - "last_changed_at"
+            // -8 - sumDelta [indx] == 0
+            // -12 - Нет дата/вр. 1-го знач. за тек./интервал
+            // -13 - Нет дата/вр. кр./знач. за тек./интервал
+            
             return
                 true
-                //bRes
+                //iRes == 0
                 ;
         }
 
