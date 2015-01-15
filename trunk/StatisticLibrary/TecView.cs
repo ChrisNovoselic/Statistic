@@ -3301,7 +3301,18 @@ namespace StatisticCommon
                         iRes = -1;
                 else ;
 
-                m_valuesHours[lastHour].valuesFact += avgInterval(table, m_curDate.Date.AddHours(lastHour), 60 * 60, out iRes);
+                List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
+                double[] valHours = new double[listSensors.Count + 1];
+                //60 мин * 60 сек = 1 час
+                valHours = avgInterval(table
+                                        , m_curDate.Date.AddHours(lastHour)
+                                        , 60 * 60
+                                        , listSensors
+                                        , out iRes);
+                if (iRes == 0)
+                    m_valuesHours[lastHour].valuesFact = valHours[listSensors.Count];
+                else
+                    ;
             }
             else
                 ;
@@ -3332,7 +3343,7 @@ namespace StatisticCommon
 
         private bool GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
         {
-            int iRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"HOUR"}) == true ? 0 : -1;
+            int iRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
 
             int hour = -1;
             double val = -1F;
@@ -3350,27 +3361,40 @@ namespace StatisticCommon
                         iRes = -1;
                 else ;
 
-                foreach (DataRow r in table.Rows)
+                List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
+                double[] valHours = new double[listSensors.Count];
+                for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
                 {
-                    if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
-                        iRes = -1;
-                        break;
-                    }
+                    valHours = avgInterval (table
+                                            , m_curDate.Date.AddHours(hour - 0)
+                                            , 60 * 60
+                                            , listSensors
+                                            , out iRes);
+                    if (iRes == 0)
+                        m_valuesHours[hour - 0].valuesFact = valHours[listSensors.Count];
                     else
                         ;
 
-                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
-                        iRes = -1;
-                        break;
-                    }
-                    else
-                        ;
-
-                    m_valuesHours[hour].valuesFact += val;
+                    //Console.WriteLine (@"TecView::GetHoursTMResponse () - hour=" + hour + @", iRes=" + iRes);
                 }
             }
             else
                 ;
+
+            switch (iRes)
+            {
+                case -12:
+                    iRes = 0;
+                    break;
+                case -2:
+                    if (! (hour < serverTime.Hour))
+                        iRes = 0;
+                    else
+                        ;
+                    break;
+                default:
+                    break;
+            }
 
             if (iRes < 0)
             {
@@ -3399,7 +3423,21 @@ namespace StatisticCommon
 
                     if (bErrorCritical == true)
                         if (iRes == 0)
-                            lastHour = hour;
+                            switch (hour)
+                            {
+                                case 0:
+                                    lastHour = 0;
+                                    break;
+                                case 1:
+                                    lastHour = 0;
+                                    m_valuesHours[lastHour + 1].valuesFact = 0F;
+                                    break;
+                                default:                                    
+                                    lastHour = hour - 2;
+                                    m_valuesHours[lastHour + 1].valuesFact =
+                                    m_valuesHours[lastHour + 2].valuesFact = 0F;
+                                    break;
+                            }
                         else
                             if (iRes == 1)
                                 lastHour = serverTime.AddHours (-1).Hour + 1;
@@ -3441,125 +3479,77 @@ namespace StatisticCommon
 
         private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
-            bool bRes = true;
+            int iRes = -1;
             int i = -1,
                 hour = -1
                 //26.10.2014 u/ ???
-                , offsetUTC = (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours; //= 0
-            double value = -1;
+                , offsetUTC = (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours;
             DateTime dtVal = DateTime.Now;
-            DataRow[] tgRows = null;
 
-            bRes = CheckNameFieldsOfTable(table_in, new string[] { @"ID", @"value", @"last_changed_at" });
+            iRes = CheckNameFieldsOfTable(table_in, new string[] { @"ID", @"value", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
 
-            if (bRes == false)
+            if (iRes == -1)
                 ;
             else {
-                if (indxTECComponents < 0)
+                dtVal = dtReq.Date.AddMinutes(59);
+                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                int[] arIds = new int[listSensors.Count]
+                    , arOwnerGTPIds = new int[listSensors.Count];
+                double[] valLastMins = new double[listSensors.Count + 1];
+                foreach (string strId in listSensors)
                 {
-                    foreach (TECComponent g in m_localTECComponents)
-                    {
-                        foreach (TG tg in g.m_listTG)
-                        {
-                            //for (i = 0; i < tg.m_power_LastMinutesTM.Length; i++)
-                            //{
-                            //    tg.m_power_LastMinutesTM[i] = 0;
-                            //}
+                    TG tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                    if (tg == null)
+                        return false;
+                    else
+                        ;
 
-                            tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
-
-                            for (i = 0; i < tgRows.Length; i++)
-                            {
-                                if (!(tgRows[i]["value"] is DBNull))
-                                    if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                        return false;
-                                    else
-                                        ;
-                                else
-                                    value = 0.0;
-
-                                //if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
-                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                    return false;
-                                else
-                                    ;
-
-                                dtVal = dtVal.AddHours(offsetUTC);
-                                hour = dtVal.Hour + 1; //Т.к. мин.59 из прошедшего часа
-                                //if (!(hour < 24)) hour -= 24; else ;
-                                if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
-                                {
-                                    m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = value;
-
-                                    //Запрос с учетом значения перехода через сутки
-                                    if (value > 1)
-                                    {
-                                        m_valuesHours[hour - 1].valuesLastMinutesTM += value;
-                                        m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
-                                    }
-                                    else
-                                        ;
-                                }
-                                else
-                                    ;
-                            }
-                        }
-                    }
+                    arIds[listSensors.IndexOf(strId)] = tg.m_id;
+                    arOwnerGTPIds[listSensors.IndexOf(strId)] = tg.m_id_owner_gtp;
                 }
-                else
+                
+                for (hour = 0; (hour < m_valuesHours.Length) && (iRes == 0); hour++, dtVal = dtVal.AddHours(1))
                 {
-                    foreach (TECComponent comp in m_localTECComponents)
+                    valLastMins = avgInterval(table_in
+                                    , dtVal
+                                    , 60
+                                    , listSensors
+                                    , out iRes);
+
+                    if (iRes == 0)
                     {
-                        //for (i = 0; i < comp.m_listTG [0].m_power_LastMinutesTM.Length; i++)
-                        //{
-                        //    comp.m_listTG[0].m_power_LastMinutesTM[i] = 0;
-                        //}
-
-                        tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
-
-                        for (i = 0; i < tgRows.Length; i++)
-                        {
-                            if (tgRows[i] == null)
-                                continue;
+                        foreach (string strId in listSensors)
+                        {                            
+                            int indx = listSensors.IndexOf (strId);
+                            m_dictValuesTG[arIds[indx]].m_power_LastMinutesTM[hour] = valLastMins[indx];
+                            if (indxTECComponents < 0)
+                                m_dictValuesTECComponent[hour][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
                             else
-                                ;
-
-                            try
-                            {
-                                if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
-                                    return false;
-                                else
-                                    ;
-
-                                if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                    return false;
-                                else
-                                    ;
-                            }
-                            catch (Exception e)
-                            {
-                                Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
-
-                                dtVal = DateTime.Now.Date;
-                            }
-
-                            dtVal = dtVal.AddHours(offsetUTC);
-                            hour = dtVal.Hour + 1;
-                            if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
-                            {
-                                m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = value;
-
-                                if (value > 1)
-                                    m_valuesHours[hour - 1].valuesLastMinutesTM += value;
-                                else
-                                ;
-                            } else ;
+                                ;                            
                         }
+
+                        m_valuesHours[hour].valuesLastMinutesTM = valLastMins[listSensors.Count];
                     }
+                    else
+                        ;
+                }
+
+                switch (iRes) {
+                    case -12:
+                        iRes = 0;
+                        break;
+                    case -2:
+                        if (! (hour < dtReq.Hour))
+                            iRes = 0;
+                        else
+                            ;
+                        break;
+                    default:
+                        break;
                 }
             }
 
-            return bRes;
+            return iRes == 0;
         }
 
         private bool GetMinsFactResponse(DataTable table)
@@ -3804,25 +3794,26 @@ namespace StatisticCommon
             return true;
         }
 
-        private double avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, out int iRes) {
+        private double [] avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, List <string> listSensors, out int iRes) {
             iRes = 0;
-            double dblRes = 0F;
+            //double dblRes = 0F;
 
             int i = -1, indx = -1
                 , id = -1
+                , tmDelta = -1
                 ;
-            int tmDelta = -1;
             double val = -1F;
             string strId = string.Empty;
 
-            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
-            double [,] tgValues = new double [2, listSensors.Count];
-            for (i = 0; i < listSensors.Count; i++) { listSensors[i] = listSensors [i].Trim (); tgValues[0, i] = tgValues[1, i] = -1; }
+            double [] tgPrevValues = new double [listSensors.Count]
+                , tgCurValues = new double[listSensors.Count + 1];
+            for (i = 0; i < listSensors.Count; i++) { listSensors[i] = listSensors [i].Trim (); tgPrevValues[i] = tgCurValues[i] = 0F; }
+            tgCurValues [listSensors.Count] = 0F;
 
             DateTime dtReqEnd = dtReqBegin.AddSeconds(secInterval);
 
             DataRow[] rowsPrevInterval = table.Select(@"last_changed_at<'" + dtReqBegin.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'" +
-                    @" AND last_changed_at>='" + dtReqBegin.AddSeconds(-1 * secInterval).ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'")
+                    @" AND last_changed_at>='" + dtReqBegin.AddSeconds(-1 * 60).ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'")
                 , rowsCurInterval = table.Select(@"last_changed_at>='" + dtReqBegin.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'" +
                     @" AND last_changed_at<'" + dtReqEnd.ToString(@"yyyy-MM-dd HH:mm:ss.fff") + @"'");
 
@@ -3872,7 +3863,7 @@ namespace StatisticCommon
                     if (arEndInterval[indx] < lastChangedAt)
                     {
                         arEndInterval[indx] = lastChangedAt;
-                        tgValues [0, indx] = val;
+                        tgPrevValues [indx] = val;
                     }
                     else
                         ;                            
@@ -3882,7 +3873,7 @@ namespace StatisticCommon
             if (iRes == 0)
             {
                 for (indx = 0; indx < listSensors.Count; indx ++)                                
-                    if (tgValues [0, indx] < 0)
+                    if (tgPrevValues [indx] < 0)
                     {
                         iRes = -7;
                     }
@@ -3898,7 +3889,7 @@ namespace StatisticCommon
                     lastChangedAt = DateTime.MaxValue;
                     arBeginInterval = new DateTime [listSensors.Count];
                     for (i = 0; i < arBeginInterval.Length; i++) arBeginInterval [i] = DateTime.MaxValue;
-                    for (i = 0; i < arEndInterval.Length; i++) { arEndInterval[i] = DateTime.MinValue; tgValuesEnd[i] = -1F; arDeltaEnd [i] = -1; }
+                    for (i = 0; i < arEndInterval.Length; i++) { arEndInterval[i] = DateTime.MinValue; tgValuesEnd[i] = 0F; arDeltaEnd [i] = -1; }
 
                     foreach (DataRow r in rowsCurInterval)
                     {
@@ -3953,8 +3944,14 @@ namespace StatisticCommon
                             ;
 
                         //Значения за текущ./интервал
-                        if ((val > 1) && (tmDelta > 0)) {
-                            tgValues [1, indx] += val * tmDelta;
+                        //if ((val > 1) && (tmDelta > 0))
+                        if (tmDelta > 0)
+                        {
+                            if (val > 0F)
+                                tgCurValues [indx] += val * tmDelta;
+                            else
+                                ;
+
                             sumDelta [indx] += tmDelta;
                         }
                         else
@@ -3970,7 +3967,7 @@ namespace StatisticCommon
                                 msecInterval = (int)(arBeginInterval[indx] - dtReqBegin).TotalMilliseconds;
                                 if (! (msecInterval < 0))
                                 {
-                                    tgValues[1, indx] += tgValues[0, indx] * msecInterval;
+                                    tgCurValues[indx] += tgPrevValues[indx] * msecInterval;
                                     sumDelta [indx] += msecInterval;
                                 }
                                 else {
@@ -3987,7 +3984,7 @@ namespace StatisticCommon
                             if (!(arEndInterval[indx] == DateTime.MinValue))
                             {
                                 //Вычитание НЕ актуального кра./знач. за тек./интервал
-                                tgValues[1, indx] -= tgValuesEnd[indx] * arDeltaEnd[indx];
+                                tgCurValues[indx] -= tgValuesEnd[indx] * arDeltaEnd[indx];
                                 sumDelta[indx] -= arDeltaEnd[indx];
 
                                 //msecInterval = (int)(arEndInterval[indx].AddMilliseconds(arDeltaEnd[indx]) - dtReqEnd).TotalMilliseconds;
@@ -4000,7 +3997,11 @@ namespace StatisticCommon
                                     //msecInterval = (int)(dtReqEnd - arEndInterval[indx]).TotalMilliseconds;
                                 //}
 
-                                tgValues[1, indx] += tgValuesEnd[indx] * msecInterval;
+                                if (tgCurValues[indx] == -1F)
+                                    tgCurValues[indx] = 0F;
+                                else
+                                    ;
+                                tgCurValues[indx] += tgValuesEnd[indx] * msecInterval;
                                 sumDelta [indx] += msecInterval;
                             } else {
                                 iRes = -13;
@@ -4008,7 +4009,14 @@ namespace StatisticCommon
                             }
 
                             if (sumDelta[indx] > 0) // == (dtReqEnd - dtReqBegin).TotalMilliseconds
-                                dblRes += tgValues[1, indx] / sumDelta [indx];
+                            {
+                                tgCurValues[indx] = tgCurValues[indx] / sumDelta[indx];
+                                if (tgCurValues[listSensors.Count] == -1F)
+                                    tgCurValues[listSensors.Count] = 0F;
+                                else
+                                    ;
+                                tgCurValues[listSensors.Count] += tgCurValues[indx];
+                            }
                             else {
                                 iRes = -8;
                                 break;
@@ -4016,7 +4024,7 @@ namespace StatisticCommon
                         }
 
                         if (! (iRes == 0))
-                            dblRes = 0F;
+                            tgCurValues[listSensors.Count] = 0F;
                         else
                             ;
                     }
@@ -4029,7 +4037,7 @@ namespace StatisticCommon
             else
                 ; //Ошибка при заполнении значений предыдущ./интервала
 
-            return dblRes;
+            return tgCurValues;
         }
 
         private bool GetMinTMResponse(DataTable table)
@@ -4056,7 +4064,12 @@ namespace StatisticCommon
                     //???
                     if (lastMin == 0) min = lastMin + 1; else min = lastMin;
 
-                    m_valuesMins[min].valuesFact = avgInterval(table, m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1)), 180, out iRes);
+                    List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                    m_valuesMins[min].valuesFact = avgInterval(table
+                                                        , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
+                                                        , 180
+                                                        , listSensors
+                                                        , out iRes) [listSensors.Count];
                 }
                 else
                     ; //Нет строк во вХодной таблице
@@ -4088,155 +4101,84 @@ namespace StatisticCommon
 
         private bool GetMinsTMResponse(DataTable table)
         {
-            bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"MINUTE" });
+            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
 
             int min = -1
-                , id = -1;
+                //, id = -1
+                , indx = -1;
+            int [] arIds = null;
             double val = -1F;
-            TG tgTmp = null;
-            Dictionary <int, TG> dictTGRecievedValues = new Dictionary<int,TG> ();
 
             lastMinError = false;
 
-            if (bRes == true)
+            if (iRes == 0)
             {
-                bRes = table.Rows.Count > 0;
+                iRes = table.Rows.Count > 0 ? 0 : -1; //??? почему -1, ведь это другой тип ошибки, чем выше
 
-                foreach (DataRow r in table.Rows)
+                DateTime dtReq = m_curDate.Date.AddHours(lastHour);
+                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                arIds = new int[listSensors.Count];
+                double[] valMins = new double[listSensors.Count + 1];
+
+                foreach (string strId in listSensors)
                 {
-                    if (Int32.TryParse(r[@"MINUTE"].ToString(), out min) == false)
-                    {
-                        bRes = false;
-                        break;
-                    }
+                    TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                    if (tg == null)
+                        return false;
                     else
                         ;
 
-                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                    arIds[listSensors.IndexOf(strId)] = tg.m_id;
+                }
+
+                for (min = 0; (min < 60) && (iRes == 0); min ++, dtReq = dtReq.AddMinutes (1))
+                {
+                    valMins = avgInterval (table
+                                    , dtReq
+                                    , 60
+                                    , listSensors
+                                    , out iRes);
+
+                    if (iRes == 0)
                     {
-                        bRes = false;
-                        break;
+                        foreach (string strId in listSensors)
+                        {                            
+                            indx = listSensors.IndexOf (strId);
+                            m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
+                        }
+
+                        m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
                     }
                     else
                         ;
-
-                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
-                    {
-                        bRes = false;
-                        break;
-                    }
-                    else
-                        ;
-
-                    tgTmp = null;
-                    if (dictTGRecievedValues.ContainsKey(id) == false)
-                    {
-                        tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
-
-                        if (! (tgTmp == null))
-                            dictTGRecievedValues.Add(id, tgTmp);
-                        else
-                            ;
-                    }
-                    else
-                        tgTmp = dictTGRecievedValues[id];
-
-                    if (tgTmp == null)
-                    {
-                        bRes = false;
-                        break;
-                    }
-                    else
-                        ;
-
-                    //Отладка ???
-                    if (!(val > 0))
-                        val = 0F;
-                    else
-                        ;
-
-                    m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min + 1] = val;
-                    m_valuesMins [min + 1].valuesFact += val;
                 }
             }
             else
                 ;
 
-            if (bRes == false)
+            switch (iRes) {
+                case -12:
+                    iRes = 0;
+                    break;
+                case -2:
+                    break;
+                default:
+                    break;
+            }
+
+            if (! (iRes == 0))
             {
                 lastMin = 61;
             }
             else
             {
-                lastMin = ++min + 1;
-
-                int m = -1
-                    , c = -1
-                    , t = -1;
-                for (m = min; !(m < 0); m--)
-                {
-                    c = 0;
-                    foreach (TECComponent comp in m_localTECComponents) //listTG ???
-                    {
-                        t = 0;
-                        foreach (TG tg in comp.m_listTG) {
-                            if ((m_dictValuesTG [tg.m_id].m_bPowerMinutesRecieved = dictTGRecievedValues.ContainsKey(tg.id_tm)) == false)
-                            {
-                                t++;
-
-                                //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
-                                continue;
-                            }
-                            else
-                                ;
-
-                            if (m_dictValuesTG[tg.m_id].m_powerMinutes[m] < 0)
-                            {
-                                lastMin--;
-                                break;
-                            }
-                            else ;
-
-                            t++;
-                        }
-
-                        //Проверка досрочного прерывания цикла
-                        if (t < comp.m_listTG.Count)
-                        {//Внешний цикл тоже прерываем
-                            break;
-                        }
-                        else ;
-
-                        c++;
-                    }
-
-                    //Проверка досрочного прерывания цикла
-                    if (c < m_localTECComponents.Count)
-                    {//Уменьшено значение 'lastMin'
-                        m_valuesMins[m].valuesFact = 0F;
-                        
-                        //Установить для всех ТГ для этой мин признак отсутствия данных
-                        c = 0;
-                        foreach (TECComponent comp in m_localTECComponents)
-                        {
-                            t = 0;
-                            foreach (TG tg in comp.m_listTG) {
-                                m_dictValuesTG[tg.m_id].m_powerMinutes[m] = -1;
-
-                                t ++;
-                            }
-
-                            c++;
-                        }
-
-                        continue; //Перейти к предыдущему набору значений
-                    }
-                    else
-                        break; //За эту мин. ПОЛНые данные, прекратить цикл
-                }
+                if (min > 0)
+                    lastMin = min - 0;
+                else
+                    lastMin = 0;
             }
 
-            lastMinError = ! bRes;
+            lastMinError = ! (iRes == 0);
 
             if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / 1))))
             {
@@ -4247,7 +4189,7 @@ namespace StatisticCommon
             {
             }
 
-            return bRes;
+            return iRes == 0;
         }
 
         private int LayotByName(string l)
