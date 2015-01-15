@@ -1106,7 +1106,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     msg = @"текущих значений 59 мин";
-                    GetLastMinutesTMRequest(m_curDate);
+                    GetLastMinutesTMRequest();
                     break;
                 //case (int)StatesMachine.RetroHours:
                 //    msg = @"получасовых значений";
@@ -4298,15 +4298,14 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
 
-        private void GetLastMinutesTMRequest(DateTime dtReq)
+        private void GetLastMinutesTMRequest()
         {
-            int cnt = 24;
-            m_curDate = dtReq;
-
-            if (dtReq.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0)
-                cnt = 25;
-            else
-                ;
+            DateTime dtReq = m_curDate.Date;
+            //if (dtReq.Kind == DateTimeKind.Unspecified)
+            //    dtReq = dtReq.ToLocalTime();
+            //else
+            //    ;
+            int cnt = HAdmin.CountHoursOfDate (dtReq);
 
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO)));
