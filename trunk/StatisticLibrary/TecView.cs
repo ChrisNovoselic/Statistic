@@ -1094,7 +1094,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     msg = @"часовых значений (собств. нужды)";
-                    GetHoursTMSNPsumRequest(m_curDate.Date);
+                    GetHoursTMSNPsumRequest();
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     msg = @"текущих значений (генерация)";
@@ -4293,7 +4293,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
         }
 
-        private void GetHoursTMSNPsumRequest(DateTime dt)
+        private void GetHoursTMSNPsumRequest()
         {
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
