@@ -3282,7 +3282,52 @@ namespace StatisticCommon
 
         private bool GetHourTMResponse(DataTable table)
         {
-            return GetHoursTMResponse (table, false);
+            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
+
+            int hour = -1;
+            double val = -1F;
+
+            if (iRes == 0)
+            {
+                //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
+
+                if (table.Rows.Count == 0)
+                    if (serverTime.Minute < 3)
+                    {
+                        //...в начале часа значений может не быть ???
+                        iRes = 1;
+                    }
+                    else
+                        iRes = -1;
+                else ;
+
+                m_valuesHours[lastHour].valuesFact += avgInterval(table, m_curDate.Date.AddHours(lastHour), 60 * 60, out iRes);
+            }
+            else
+                ;
+
+            if (iRes < 0)
+            {
+            }
+            else
+            {
+                if (currHour == true)
+                {
+                    if (hour < 0)
+                    {
+                        string strMes = @"TecView::GetHourTMResponse () - hour = " + hour + @" ...";
+                        //Logging.Logg().Error(strMes);
+                        //throw new Exception(strMes);
+                    }
+                    else ;
+                }
+                else
+                    ;
+            }
+
+            return
+                true
+                ;
         }
 
         private bool GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
