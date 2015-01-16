@@ -46,6 +46,9 @@ namespace StatisticCommon
         protected volatile string m_SensorsString_SOTIASSO = string.Empty;
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
+        public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_SERVER };
+        public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.AVERAGE;
+        
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
         public ConnectionSettings [] connSetts;
@@ -623,13 +626,32 @@ namespace StatisticCommon
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    request =  //--Привести дату/время к МСК (добавить разность с UTC)
-                                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-			                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
-                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-3).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-1).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')";
+                    if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
+                        ???
+                    else
+                        if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
+                            request =   //--Привести дату/время к МСК (добавить разность с UTC)
+                                        @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+			                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
+                                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-3).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-1).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')";
+                        else
+                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_SERVER)
+                                request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
+	                                    + @" FROM ("
+                                            //--Привести дату/время к МСК (добавить разность с UTC)
+                                            + @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+			                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
+                                                //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                                + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString (@"yyyyMMdd HH:mm:00.000") + @"')"
+                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (2).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
+                                            + @" ) as S0"
+                                        + @" GROUP BY S0.[ID]";
+                            else
+                                ;
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     switch (type())
@@ -664,14 +686,37 @@ namespace StatisticCommon
             switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    request =   //--Привести дату/время к МСК (добавить разность с UTC)
-                                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
-                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
-                            ;
+                    if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
+                        ???
+                    else
+                        if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
+                            request = //--Привести дату/время к МСК (добавить разность с UTC)
+                                      @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                      + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+                                      + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
+                                    ;
+                        else
+                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_SERVER)
+                                request = @"SELECT [ID]," +
+                                            //--AVG ([value]) as VALUE
+                                            @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
+                                            @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]" +
+                                            @" FROM (" +
+                                                    //--Привести дату/время к МСК (добавить разность с UTC)
+                                                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
+                                                    @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
+                                                    @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+                                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                                    @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"')" +
+                                                        @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.999") + @"')" +
+                                            @") as S0" +
+                                            @" GROUP BY S0.[ID], DATEPART(MINUTE, S0.[last_changed_at])" +
+                                            @" ORDER BY [MINUTE]";
+                            else
+                                ;
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     switch (type())
@@ -1201,56 +1246,36 @@ namespace StatisticCommon
             switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    //Вар. №1 Общий источник для всех ТЭЦ
-                    //Если данные в БД по мск
-                    //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
-                    //Вар. №2
-                    //Если данные в БД по ГринвичУ, в аргументе мск;
-                    //dt = dt.AddHours(-1 * (((dt - (TimeZone.CurrentTimeZone.ToUniversalTime(dt))).TotalHours) + 0));
                     dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
 
-                    ////Ваоиант №3 (из усредненной таблицы)
-                    //query = @"SELECT * FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                    //        + @" WHERE [ID_TEC]=" + m_id
-                    //            + @" AND DATEPART(n, [last_changed_at]) = 59"
-                    //                + @" AND [last_changed_at] between '" + dt.ToString(@"yyyyMMdd HH:mm:ss")
-                    //                + @"' AND '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"' "
-                    //            + @"AND [ID] IN (" + sensors + @") "
-                    //        + @"ORDER BY [ID],[last_changed_at]";
-
-                    ////Вар. №4 - функция ()
-                    //query = @"SELECT * FROM [dbo].[ft_get_day_value_SOTIASSO_0] (" + m_id + @", '" + dt.ToString(@"yyyyMMdd") + @"')" +
-                    //        @" WHERE [ID] IN (" + sensors + @")" +
-                    //        @" ORDER BY [ID],[last_changed_at]";
-
-                    ////Вариант №5
-                    //query = @"SELECT [ID] " +
-                    //        @", SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
-                    //        @", (DATEPART(HOUR, [last_changed_at])) as [HOUR]" +
-                    //            @" FROM (" +
-                    //                //--Привести дату/время к МСК (добавить разность с UTC)
-                    //                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
-                    //                    @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
-                    //                    @" WHERE  [ID_TEC] = " + m_id + " AND [ID] IN (" + sensors + @")" +
-                    //                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                    //                        @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"') AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddDays(1).ToString(@"yyyyMMdd HH:mm:ss") + @"')" +
-                    //                        //-- только крайние минуты часа
-                    //                        @" AND DATEPART(MINUTE, [last_changed_at]) = 59" +
-                    //            @") as S0" +
-                    //        @" GROUP BY S0.[ID], DATEPART(HOUR, S0.[last_changed_at])" +
-                    //        @" ORDER BY [HOUR]";
-
-                    //Вариант №6
-                    query = //--Привести дату/время к МСК (добавить разность с UTC)
-                            @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-                                + @" WHERE  [ID_TEC] = " + m_id + " AND [ID] IN (" + sensors + @")"
+                    if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
+                        //Ваоиант №3 (из усредненной таблицы)
+                        query = @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                                + @" WHERE [ID_TEC]=" + m_id + @" AND [ID] IN (" + sensors + @") "
+                                    + @" AND DATEPART(n, [last_changed_at]) = 59"
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
-                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddDays(1).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                     //-- только крайние минуты часа
-                                    + @" AND DATEPART(MINUTE, [last_changed_at]) IN (58, 59)"
-                                ;
+                                    + @" AND DATEPART(MINUTE, [last_changed_at]) = 59"
+                                + @"ORDER BY [ID],[last_changed_at]"
+                            ;
+                    else
+                        if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
+                            //Вариант №6 - программное усреднение
+                            query = //--Привести дату/время к МСК (добавить разность с UTC)
+                                    @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+                                        + @" WHERE  [ID_TEC] = " + m_id + " AND [ID] IN (" + sensors + @")"
+                                            //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                            + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
+                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddDays(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
+                                            //-- только крайние минуты часа
+                                            + @" AND DATEPART(MINUTE, [last_changed_at]) IN (58, 59)"
+                                        ;
+                        else
+                            ;
                     break;
                 case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     //Если данные в БД по мск
