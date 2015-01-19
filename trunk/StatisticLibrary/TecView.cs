@@ -3482,17 +3482,34 @@ namespace StatisticCommon
             int iRes = -1;
             int i = -1,
                 hour = -1
-                //26.10.2014 u/ ???
-                , offsetUTC = (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours;
+                ////26.10.2014 u/ ???
+                //, offsetUTC = (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours
+                ;
+            double val = -1F;
             DateTime dtVal = DateTime.Now;
+            string [] checkFields = null;
 
-            iRes = CheckNameFieldsOfTable(table_in, new string[] { @"ID", @"value", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
+            switch (TEC.s_SourceSOTIASSO) {
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                    checkFields = new string[] { @"ID", @"value", @"tmdelta", @"last_changed_at" };
+                    break;
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                    break;
+                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                    break;
+                default:
+                    break;
+            }
+
+            iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table_in, checkFields) == true ? 0 : -1 : -1;
 
             if (iRes == -1)
                 ;
             else {
                 if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
                 {
+                    DataRow []tgRows = null;
+
                     if (indxTECComponents < 0)
                     {
                         foreach (TECComponent g in m_localTECComponents)
@@ -3509,12 +3526,12 @@ namespace StatisticCommon
                                 for (i = 0; i < tgRows.Length; i++)
                                 {
                                     if (!(tgRows[i]["value"] is DBNull))
-                                        if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                        if (double.TryParse(tgRows[i]["value"].ToString(), out val) == false)
                                             return false;
                                         else
                                             ;
                                     else
-                                        value = 0.0;
+                                        val = 0F;
 
                                     //if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
                                     if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
@@ -3522,18 +3539,19 @@ namespace StatisticCommon
                                     else
                                         ;
 
-                                    dtVal = dtVal.AddHours(offsetUTC);
+                                    ////26.10.2014 u/ ???
+                                    //dtVal = dtVal.AddHours(offsetUTC);
                                     hour = dtVal.Hour + 1; //Т.к. мин.59 из прошедшего часа
                                     //if (!(hour < 24)) hour -= 24; else ;
                                     if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                                     {
-                                        m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = value;
+                                        m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = val;
 
                                         //Запрос с учетом значения перехода через сутки
-                                        if (value > 1)
+                                        if (val > 1)
                                         {
-                                            m_valuesHours[hour - 1].valuesLastMinutesTM += value;
-                                            m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += value;
+                                            m_valuesHours[hour - 1].valuesLastMinutesTM += val;
+                                            m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
                                         }
                                         else
                                             ;
@@ -3564,7 +3582,7 @@ namespace StatisticCommon
 
                                 try
                                 {
-                                    if (double.TryParse(tgRows[i]["value"].ToString(), out value) == false)
+                                    if (double.TryParse(tgRows[i]["value"].ToString(), out val) == false)
                                         return false;
                                     else
                                         ;
@@ -3581,14 +3599,15 @@ namespace StatisticCommon
                                     dtVal = DateTime.Now.Date;
                                 }
 
-                                dtVal = dtVal.AddHours(offsetUTC);
+                                ////26.10.2014 u/ ???
+                                //dtVal = dtVal.AddHours(offsetUTC);
                                 hour = dtVal.Hour + 1;
                                 if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
                                 {
-                                    m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = value;
+                                    m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
 
-                                    if (value > 1)
-                                        m_valuesHours[hour - 1].valuesLastMinutesTM += value;
+                                    if (val > 1)
+                                        m_valuesHours[hour - 1].valuesLastMinutesTM += val;
                                     else
                                     ;
                                 } else ;
@@ -3908,6 +3927,23 @@ namespace StatisticCommon
         }
 
         private double [] avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, List <string> listSensors, out int iRes) {
+            // -1 - 
+            // -2 - за пред./интервал кол-во строк < кол-ва ТГ
+            // -31 - интерпретация значения поля [ID]
+            // -32 - ... [VALUE]
+            // -33 - ... [tmdelt]a
+            // -34 - ... [last_changed_at]
+            // -35 - ... [MINUTE]
+            // -4 - не найден объект ТГ по идентификатору [ID]
+            // -5 - 
+            // -6 -  
+            // -7 - нет значений по предыдущ./интервалу для, как миним., одного из ТГ
+            // -8 - сумма подинтервалов = 0 для, как миним., одного из ТГ
+            // -9 - дата/вр. 1-го знач. за тек/интервал принадлежит интервалу
+            // -10 - кол-во записей во входной таблице = 0
+            // -11 -
+            // -12 - нет дата/время 1-го значения за тек./интервал
+            // -13 - нет дата/вр. кр./знач. за тек./интервал
             iRes = 0;
             //double dblRes = 0F;
 
@@ -3942,7 +3978,7 @@ namespace StatisticCommon
                     strId = r[@"ID"].ToString();
                     if (Int32.TryParse(strId, out id) == false)
                     {
-                        iRes = -3;
+                        iRes = -31;
                         break;
                     }
                     else
@@ -3950,7 +3986,7 @@ namespace StatisticCommon
 
                     if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
                     {
-                        iRes = -4;
+                        iRes = -32;
                         break;
                     }
                     else
@@ -3958,7 +3994,7 @@ namespace StatisticCommon
 
                     if (Int32.TryParse(r[@"tmdelta"].ToString(), out tmDelta) == false)
                     {
-                        iRes = -5;
+                        iRes = -33;
                         break;
                     }
                     else
@@ -3966,7 +4002,7 @@ namespace StatisticCommon
 
                     if (DateTime.TryParse(r[@"last_changed_at"].ToString(), out lastChangedAt) == false)
                     {
-                        iRes = -6;
+                        iRes = -34;
                         break;
                     }
                     else
@@ -3992,7 +4028,7 @@ namespace StatisticCommon
                     }
                     else
                         ;
-                        
+
                 if (iRes == 0)
                 {
                     int [] sumDelta = new int [listSensors.Count];
@@ -4009,7 +4045,7 @@ namespace StatisticCommon
                         strId = r[@"ID"].ToString();
                         if (Int32.TryParse(strId, out id) == false)
                         {
-                            iRes = -3;
+                            iRes = -31;
                             break;
                         }
                         else
@@ -4017,7 +4053,7 @@ namespace StatisticCommon
 
                         if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
                         {
-                            iRes = -4;
+                            iRes = -32;
                             break;
                         }
                         else
@@ -4025,7 +4061,7 @@ namespace StatisticCommon
 
                         if (Int32.TryParse(r[@"tmdelta"].ToString(), out tmDelta) == false)
                         {
-                            iRes = -5;
+                            iRes = -33;
                             break;
                         }
                         else
@@ -4033,10 +4069,11 @@ namespace StatisticCommon
 
                         if (DateTime.TryParse(r[@"last_changed_at"].ToString(), out lastChangedAt) == false)
                         {
-                            iRes = -6;
+                            iRes = -34;
                             break;
                         }
                         else
+                            //Получить 'fff' (милисекнды)
                             lastChangedAt = (DateTime)r[@"last_changed_at"];
 
                         //Индекс ТГ
@@ -4162,7 +4199,20 @@ namespace StatisticCommon
             else
                 ;
 
-            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
+            string  [] checkFields = null;
+
+            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
+                ;
+            else
+                if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
+                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                else
+                    if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
+                        checkFields = new string[] { @"ID", @"VALUE" };
+                    else
+                        ;
+
+            int iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1;
 
             if (iRes == 0)
             {
@@ -4170,85 +4220,67 @@ namespace StatisticCommon
 
                 if (iRes == 0)
                 {
+                    int min = -1;
+                    //???
+                    if (lastMin == 0) min = lastMin + 1; else min = lastMin;
+
+                    double val = -1F;
+
                     if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
                     {
+                        if (double.TryParse (table.Rows [0][@"VALUE"].ToString (), out val) == true)
+                            m_valuesMins[min].valuesFact = val;
+                        else
+                            iRes = -32;
                     }
                     else
-                    {
                         if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                         {
-                            int min = -1
-                            , hour = lastHour - GetSeasonHourOffset(lastHour)
-                            ;
+                            int hour = lastHour - GetSeasonHourOffset(lastHour)
+                                ;                                
 
-                                //???
-                                if (lastMin == 0) min = lastMin + 1; else min = lastMin;
-
-                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
-                                m_valuesMins[min].valuesFact = avgInterval(table
-                                                                    , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
-                                                                    , 180
-                                                                    , listSensors
-                                                                    , out iRes)[listSensors.Count];
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                            m_valuesMins[min].valuesFact = avgInterval(table
+                                                                , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
+                                                                , 180
+                                                                , listSensors
+                                                                , out iRes)[listSensors.Count];
                         }
                         else
-                        {
-                            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_SERVER)
+                            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
                             {
-                                if (lastMin == 21)
-                                    return true;
-                                else
-                                    ;
-
-                                bool bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE" });
-
                                 int id = -1
-                                    , lm = -1
                                     ;
-                                double val = -1F;
 
-                                if (bRes == true)
+                                foreach (DataRow r in table.Rows)
                                 {
-                                    bRes = table.Rows.Count > 0;
-
-                                    //???
-                                    if (lastMin == 0) lm = lastMin + 1; else lm = lastMin;
-
-                                    foreach (DataRow r in table.Rows)
+                                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
                                     {
-                                        if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
-                                        {
-                                            bRes = false;
-                                            break;
-                                        }
-                                        else
-                                            ;
-
-                                        if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
-                                        {
-                                            bRes = false;
-                                            break;
-                                        }
-                                        else
-                                            ;
-
-                                        //Отладка ???
-                                        if (!(val > 0))
-                                            val = 0F;
-                                        else
-                                            ;
-
-                                        m_valuesMins[lm].valuesFact += val;
+                                        iRes = -31;
+                                        break;
                                     }
+                                    else
+                                        ;
+
+                                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                                    {
+                                        iRes = -32;
+                                        break;
+                                    }
+                                    else
+                                        ;
+
+                                    //Отладка ???
+                                    if (!(val > 0))
+                                        val = 0F;
+                                    else
+                                        ;
+
+                                    m_valuesMins[min].valuesFact += val;
                                 }
-                                else
-                                    ;
                             }
                             else
-                            {
-                            }
-                        }
-                    }
+                                ;
                 }
                 else
                     ; //Нет строк во вХодной таблице
@@ -4264,14 +4296,6 @@ namespace StatisticCommon
             //{
             //}
 
-            // -3 - ошибка интерпретации значения поля записи "ID"
-            // -4 - ... "VALUE"
-            // -5 - "tmdelta"
-            // -6 - "last_changed_at"
-            // -8 - sumDelta [indx] == 0
-            // -12 - Нет дата/вр. 1-го знач. за тек./интервал
-            // -13 - Нет дата/вр. кр./знач. за тек./интервал
-            
             return
                 true
                 //iRes == 0
@@ -4280,57 +4304,146 @@ namespace StatisticCommon
 
         private bool GetMinsTMResponse(DataTable table)
         {
-            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
+            string [] checkFields = null;
 
-            int min = -1
-                //, id = -1
-                , indx = -1;
-            int [] arIds = null;
+            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
+                ;
+            else
+                if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
+                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                else
+                    if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
+                        checkFields = new string[] { @"ID", @"VALUE", @"MINUTE" };
+                    else
+                        ;
+
+            int iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1
+                , min = -1
+                ;
             double val = -1F;
 
             lastMinError = false;
 
             if (iRes == 0)
             {
-                iRes = table.Rows.Count > 0 ? 0 : -1; //??? почему -1, ведь это другой тип ошибки, чем выше
+                iRes = table.Rows.Count > 0 ? 0 : -10; //??? почему -1, ведь это другой тип ошибки, чем отсутствие необходимых полей
 
-                DateTime dtReq = m_curDate.Date.AddHours(lastHour);
-                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
-                arIds = new int[listSensors.Count];
-                double[] valMins = new double[listSensors.Count + 1];
+                if (iRes == 0)
+                    switch (TEC.s_SourceSOTIASSO) {
+                        case TEC.SOURCE_SOTIASSO.AVERAGE:
+                            break;
+                        case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                            int
+                                //, id = -1
+                                indx = -1;
+                            int [] arIds = null;
 
-                foreach (string strId in listSensors)
-                {
-                    TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
-                    if (tg == null)
-                        return false;
-                    else
-                        ;
+                            DateTime dtReq = m_curDate.Date.AddHours(lastHour);
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                            arIds = new int[listSensors.Count];
+                            double[] valMins = new double[listSensors.Count + 1];
 
-                    arIds[listSensors.IndexOf(strId)] = tg.m_id;
-                }
+                            foreach (string strId in listSensors)
+                            {
+                                TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                                if (tg == null)
+                                    //iRes = -4
+                                    return false;
+                                else
+                                    ;
 
-                for (min = 0; (min < 60) && (iRes == 0); min ++, dtReq = dtReq.AddMinutes (1))
-                {
-                    valMins = avgInterval (table
-                                    , dtReq
-                                    , 60
-                                    , listSensors
-                                    , out iRes);
+                                arIds[listSensors.IndexOf(strId)] = tg.m_id;
+                            }
 
-                    if (iRes == 0)
-                    {
-                        foreach (string strId in listSensors)
-                        {                            
-                            indx = listSensors.IndexOf (strId);
-                            m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
-                        }
+                            for (min = 0; (min < 60) && (iRes == 0); min ++, dtReq = dtReq.AddMinutes (1))
+                            {
+                                valMins = avgInterval (table
+                                                , dtReq
+                                                , 60
+                                                , listSensors
+                                                , out iRes);
 
-                        m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
+                                if (iRes == 0)
+                                {
+                                    foreach (string strId in listSensors)
+                                    {                            
+                                        indx = listSensors.IndexOf (strId);
+                                        m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
+                                    }
+
+                                    m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
+                                }
+                                else
+                                    ;
+                            }
+                            break;
+                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                            int id = -1;
+                            TG tgTmp = null;
+                            Dictionary<int, TG> dictTGRecievedValues = new Dictionary<int, TG>();
+
+                            foreach (DataRow r in table.Rows)
+                            {
+                                if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
+                                {
+                                    iRes = -31;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                                {
+                                    iRes = -32;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                if (Int32.TryParse(r[@"MINUTE"].ToString(), out min) == false)
+                                {
+                                    iRes = -35; //last_changed_at
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                tgTmp = null;
+                                if (dictTGRecievedValues.ContainsKey(id) == false)
+                                {
+                                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+
+                                    if (! (tgTmp == null))
+                                        dictTGRecievedValues.Add(id, tgTmp);
+                                    else
+                                        ;
+                                }
+                                else
+                                    tgTmp = dictTGRecievedValues[id];
+
+                                if (tgTmp == null)
+                                {
+                                    iRes = -4;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                //Отладка ???
+                                if (!(val > 0))
+                                    val = 0F;
+                                else
+                                    ;
+
+                                m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min + 1] = val;
+                                m_valuesMins [min + 1].valuesFact += val;
+                            }
+                            break;
+                        default:
+                            break;
                     }
-                    else
-                        ;
-                }
+                else
+                    ; //Кол-во строк == 0                
             }
             else
                 ;

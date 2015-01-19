@@ -46,7 +46,7 @@ namespace StatisticCommon
         protected volatile string m_SensorsString_SOTIASSO = string.Empty;
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
-        public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_SERVER };
+        public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_TSQL };
         public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.AVERAGE;
         
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
@@ -627,7 +627,17 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
-                        ???
+                        request = @"SELECT SUM ([VALUE]) as [VALUE], COUNT (*) as [cnt]"
+                                    + @" FROM ("
+                                        + @"SELECT SUM([Value]), COUNT (*)"
+                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                            //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                            + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                        + @" GROUP BY [ID]"
+                                    + @") t0"
+                                            ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
                             request =   //--Привести дату/время к МСК (добавить разность с UTC)
@@ -635,10 +645,10 @@ namespace StatisticCommon
                                         + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
 			                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
                                         //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-3).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-1).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')";
                         else
-                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_SERVER)
+                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
                                 request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
 	                                    + @" FROM ("
                                             //--Привести дату/время к МСК (добавить разность с UTC)
@@ -647,7 +657,7 @@ namespace StatisticCommon
 			                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
                                                 //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString (@"yyyyMMdd HH:mm:00.000") + @"')"
-                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (2).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
+                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-1).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                             + @" ) as S0"
                                         + @" GROUP BY S0.[ID]";
                             else
@@ -687,7 +697,14 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
-                        ???
+                        request = //--Привести дату/время к МСК (добавить разность с UTC)
+                                @"SELECT [ID], [Value], [tmdelta],  DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                        ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
                             request = //--Привести дату/время к МСК (добавить разность с UTC)
@@ -699,7 +716,7 @@ namespace StatisticCommon
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.999") + @"')"
                                     ;
                         else
-                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_SERVER)
+                            if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
                                 request = @"SELECT [ID]," +
                                             //--AVG ([value]) as VALUE
                                             @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
@@ -1249,17 +1266,27 @@ namespace StatisticCommon
                     dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
 
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
-                        //Ваоиант №3 (из усредненной таблицы)
-                        query = @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                        ////Ваоиант №3.a (из усредненной таблицы)
+                        //query = @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                        //        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                        //        + @" WHERE [ID_TEC]=" + m_id + @" AND [ID] IN (" + sensors + @") "
+                        //            //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                        //            + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
+                        //                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
+                        //            //-- только крайние минуты часа
+                        //            + @" AND DATEPART(MINUTE, [last_changed_at]) = 59"
+                        //        + @"ORDER BY [ID],[last_changed_at]"
+                        //    ;
+                        //Ваоиант №3.б (из усредненной таблицы)
+                        query = @"SELECT SUM([Value]) as [VALUE], DATEPART (HOUR, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])), COUNT (*)"
                                 + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
                                 + @" WHERE [ID_TEC]=" + m_id + @" AND [ID] IN (" + sensors + @") "
-                                    + @" AND DATEPART(n, [last_changed_at]) = 59"
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                     //-- только крайние минуты часа
                                     + @" AND DATEPART(MINUTE, [last_changed_at]) = 59"
-                                + @"ORDER BY [ID],[last_changed_at]"
+                                + @" GROUP BY DATEPART(HOUR, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
                             ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
@@ -1294,7 +1321,7 @@ namespace StatisticCommon
                     query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
                             @"FROM [dbo].[NAME_TABLE] " +
                             @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                            @"AND (" + sensors + @")";
+                                @"AND (" + sensors + @")";
                     query = query.Replace("NAME_TABLE", "states_real_his_0");
                     break;
                 default:
