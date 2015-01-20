@@ -3657,7 +3657,7 @@ namespace StatisticCommon
                                     //dtVal = dtVal.AddHours(offsetUTC);
                                     hour = dtVal.Hour + 1; //Т.к. мин.59 из прошедшего часа
                                     //if (!(hour < 24)) hour -= 24; else ;
-                                    if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
+                                    if ((hour > 0) && (! (hour > m_valuesHours.Length)))
                                     {
                                         m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = val;
 
@@ -3665,7 +3665,7 @@ namespace StatisticCommon
                                         if (val > 1)
                                         {
                                             m_valuesHours[hour - 1].valuesLastMinutesTM += val;
-                                            m_dictValuesTECComponent[hour - 1][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
+                                            m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
                                         }
                                         else
                                             ;
@@ -3716,7 +3716,7 @@ namespace StatisticCommon
                                 ////26.10.2014 u/ ???
                                 //dtVal = dtVal.AddHours(offsetUTC);
                                 hour = dtVal.Hour + 1;
-                                if ((hour > 0) && (hour < (m_valuesHours.Length + 1)))
+                                if ((hour > 0) && (! (hour > m_valuesHours.Length)))
                                 {
                                     m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
 
@@ -3764,7 +3764,7 @@ namespace StatisticCommon
                                     int indx = listSensors.IndexOf(strId);
                                     m_dictValuesTG[arIds[indx]].m_power_LastMinutesTM[hour + 1] = valLastMins[indx];
                                     if (indxTECComponents < 0)
-                                        m_dictValuesTECComponent[hour + 0][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
+                                        m_dictValuesTECComponent[hour + 1][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
                                     else
                                         ;
                                 }

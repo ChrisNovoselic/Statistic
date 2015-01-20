@@ -734,10 +734,10 @@ namespace Statistic
 
                         m_listDictToolTip[hour - 1][g.m_id].SetToolTip(m_listDictLabelVal[hour - 1][g.m_id], strToolTip);
 
-                        if (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1)
+                        if (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1)
                         {
                             if ((! (warn == 0)) &&
-                                (m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM > 1))
+                                (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1))
                             {
                                 clrBackColor = Color.Red;
                                 cntWarn ++;
@@ -751,7 +751,7 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 1][g.m_id].valuesLastMinutesTM.ToString(@"F2");
+                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM.ToString(@"F2");
                         }
                         else
                             m_listDictLabelVal[hour - 1][g.m_id].Text = 0.ToString(@"F0");

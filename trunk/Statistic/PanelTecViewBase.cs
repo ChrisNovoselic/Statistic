@@ -255,7 +255,7 @@ namespace Statistic
                     this.источникАСКУЭиСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.источникАСКУЭиСОТИАССОToolStripMenuItem.Text = @"АИСКУЭ+СОТИАССО"; //"Источник: БД АИСКУЭ+СОТИАССО - 3 мин";
                     this.источникАСКУЭиСОТИАССОToolStripMenuItem.Checked = false;
-                    //this.источникАСКУЭиСОТИАССОToolStripMenuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO) == true;
+                    this.источникАСКУЭиСОТИАССОToolStripMenuItem.Enabled = false; //HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO) == true;
                     // 
                     // источникАСКУЭToolStripMenuItem
                     // 
@@ -264,7 +264,7 @@ namespace Statistic
                     //Установлено в конструкторе "родителя"
                     //this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3 мин";
                     this.источникАСКУЭToolStripMenuItem.Checked = true;
-                    //this.источникАСКУЭToolStripMenuItem.Enabled = false;
+                    this.источникАСКУЭToolStripMenuItem.Enabled = false;
                     // 
                     // источникСОТИАССОToolStripMenuItem
                     // 
@@ -272,7 +272,7 @@ namespace Statistic
                     this.источникСОТИАССОToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
                     this.источникСОТИАССОToolStripMenuItem.Text = @"СОТИАССО"; //"Источник: БД СОТИАССО - 1 мин";
                     this.источникСОТИАССОToolStripMenuItem.Checked = false;
-                    //this.источникСОТИАССОToolStripMenuItem.Enabled = false;
+                    this.источникСОТИАССОToolStripMenuItem.Enabled = false;
                 }
             }
 
