@@ -3282,15 +3282,30 @@ namespace StatisticCommon
 
         private bool GetHourTMResponse(DataTable table)
         {
-            int iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
+            //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
 
-            int hour = -1;
-            double val = -1F;
+            int iRes = -1
+                , hour = -1;
 
-            if (iRes == 0)
-            {
-                //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
+            string [] checkFields = null;
 
+            switch (TEC.s_SourceSOTIASSO) {
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    break;
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                    checkFields = new string[] { @"VALUE", @"HOUR" };
+                    break;
+                default:
+                    break;
+            }
+
+            iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1;
+
+            if (iRes == -1)
+                ;
+            else {
                 if (table.Rows.Count == 0)
                     if (serverTime.Minute < 3)
                     {
@@ -3301,29 +3316,73 @@ namespace StatisticCommon
                         iRes = -1;
                 else ;
 
-                List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
-                double[] valHours = new double[listSensors.Count + 1];
-                //60 мин * 60 сек = 1 час
-                valHours = avgInterval(table
-                                        , m_curDate.Date.AddHours(lastHour)
-                                        , 60 * 60
-                                        , listSensors
-                                        , out iRes);
                 if (iRes == 0)
-                    m_valuesHours[lastHour].valuesFact = valHours[listSensors.Count];
+                    switch (TEC.s_SourceSOTIASSO)
+                    {
+                        case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                            hour = lastHour;
+
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                            double[] valHours = new double[listSensors.Count + 1];
+                            //60 мин * 60 сек = 1 час
+                            valHours = avgInterval(table
+                                                    , m_curDate.Date.AddHours(hour)
+                                                    , 60 * 60
+                                                    , listSensors
+                                                    , out iRes);
+                            //if (iRes == 0)
+                                m_valuesHours[hour].valuesFact = valHours[listSensors.Count];
+                            //else ;
+                            break;
+                        case TEC.SOURCE_SOTIASSO.AVERAGE:
+                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                            double val = -1F;
+
+                            foreach (DataRow r in table.Rows)
+                            {
+                                if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
+                                    iRes = -1;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
+                                    iRes = -1;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                m_valuesHours[hour].valuesFact += val;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 else
-                    ;
+                    ; //Нет строк во вХодной таблице для обработки
             }
-            else
-                ;
+
+            switch (iRes)
+            {
+                case -12:
+                    iRes = 0;
+                    break;
+                case -2:
+                    if (! (hour < serverTime.Hour))
+                        iRes = 0;
+                    else
+                        ;
+                    break;
+                default:
+                    break;
+            }
 
             if (iRes < 0)
-            {
-            }
+                ;
             else
-            {
                 if (currHour == true)
-                {
                     if (hour < 0)
                     {
                         string strMes = @"TecView::GetHourTMResponse () - hour = " + hour + @" ...";
@@ -3331,10 +3390,8 @@ namespace StatisticCommon
                         //throw new Exception(strMes);
                     }
                     else ;
-                }
                 else
                     ;
-            }
 
             return
                 true
@@ -3343,10 +3400,26 @@ namespace StatisticCommon
 
         private bool GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
         {
-            int iRes = CheckNameFieldsOfTable (table, new string [] {@"ID", @"VALUE", @"tmdelta", @"last_changed_at" }) == true ? 0 : -1;
-
-            int hour = -1;
+            int iRes = -1
+                , hour = -1;
             double val = -1F;
+
+            string[] checkFields = null;
+
+            switch (TEC.s_SourceSOTIASSO)
+            {
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    break;
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                    checkFields = new string[] { @"VALUE", @"HOUR" };
+                    break;
+                default:
+                    break;
+            }
+
+            iRes = !(checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1;
 
             if (iRes == 0) {
                 //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
@@ -3361,22 +3434,53 @@ namespace StatisticCommon
                         iRes = -1;
                 else ;
 
-                List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
-                double[] valHours = new double[listSensors.Count];
-                for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
-                {
-                    valHours = avgInterval (table
-                                            , m_curDate.Date.AddHours(hour - 0)
-                                            , 60 * 60
-                                            , listSensors
-                                            , out iRes);
-                    if (iRes == 0)
-                        m_valuesHours[hour - 0].valuesFact = valHours[listSensors.Count];
-                    else
-                        ;
+                if (iRes == 0)
+                    switch (TEC.s_SourceSOTIASSO)
+                    {
+                        case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
+                            double[] valHours = new double[listSensors.Count];
+                            for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
+                            {
+                                valHours = avgInterval (table
+                                                        , m_curDate.Date.AddHours(hour)
+                                                        , 60 * 60
+                                                        , listSensors
+                                                        , out iRes);
+                                if (iRes == 0)
+                                    m_valuesHours[hour].valuesFact = valHours[listSensors.Count];
+                                else
+                                    ;
 
-                    //Console.WriteLine (@"TecView::GetHoursTMResponse () - hour=" + hour + @", iRes=" + iRes);
-                }
+                                //Console.WriteLine (@"TecView::GetHoursTMResponse () - hour=" + hour + @", iRes=" + iRes);
+                            }
+                            break;
+                        case TEC.SOURCE_SOTIASSO.AVERAGE:
+                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                            foreach (DataRow r in table.Rows)
+                            {
+                                if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
+                                    iRes = -1;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
+                                    iRes = -1;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                m_valuesHours[hour].valuesFact += val;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                else
+                    ;
             }
             else
                 ;
@@ -3423,19 +3527,29 @@ namespace StatisticCommon
 
                     if (bErrorCritical == true)
                         if (iRes == 0)
-                            switch (hour)
+                            switch (TEC.s_SourceSOTIASSO)
                             {
-                                case 0:
-                                    lastHour = 0;
+                                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                                    switch (hour)
+                                    {
+                                        case 0:
+                                            lastHour = 0;
+                                            break;
+                                        case 1:
+                                            lastHour = 0;
+                                            m_valuesHours[lastHour + 1].valuesFact = 0F;
+                                            break;
+                                        default:                                    
+                                            lastHour = hour - 2;
+                                            m_valuesHours[lastHour + 1].valuesFact =
+                                            m_valuesHours[lastHour + 2].valuesFact = 0F;
+                                            break;
+                                    }
                                     break;
-                                case 1:
-                                    lastHour = 0;
-                                    m_valuesHours[lastHour + 1].valuesFact = 0F;
+                                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
                                     break;
-                                default:                                    
-                                    lastHour = hour - 2;
-                                    m_valuesHours[lastHour + 1].valuesFact =
-                                    m_valuesHours[lastHour + 2].valuesFact = 0F;
+                                default:
                                     break;
                             }
                         else
@@ -3490,12 +3604,12 @@ namespace StatisticCommon
             string [] checkFields = null;
 
             switch (TEC.s_SourceSOTIASSO) {
-                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                     checkFields = new string[] { @"ID", @"value", @"tmdelta", @"last_changed_at" };
                     break;
-                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                    break;
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                    checkFields = new string[] { @"ID", @"VALUE", @"last_changed_at" };
                     break;
                 default:
                     break;
@@ -3551,7 +3665,7 @@ namespace StatisticCommon
                                         if (val > 1)
                                         {
                                             m_valuesHours[hour - 1].valuesLastMinutesTM += val;
-                                            m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
+                                            m_dictValuesTECComponent[hour - 1][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
                                         }
                                         else
                                             ;
@@ -3648,14 +3762,14 @@ namespace StatisticCommon
                                 foreach (string strId in listSensors)
                                 {
                                     int indx = listSensors.IndexOf(strId);
-                                    m_dictValuesTG[arIds[indx]].m_power_LastMinutesTM[hour] = valLastMins[indx];
+                                    m_dictValuesTG[arIds[indx]].m_power_LastMinutesTM[hour + 1] = valLastMins[indx];
                                     if (indxTECComponents < 0)
-                                        m_dictValuesTECComponent[hour][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
+                                        m_dictValuesTECComponent[hour + 0][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
                                     else
                                         ;
                                 }
 
-                                m_valuesHours[hour].valuesLastMinutesTM = valLastMins[listSensors.Count];
+                                m_valuesHours[hour + 0].valuesLastMinutesTM = valLastMins[listSensors.Count];
                             }
                             else
                                 ;
@@ -4202,7 +4316,7 @@ namespace StatisticCommon
             string  [] checkFields = null;
 
             if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
-                ;
+                checkFields = new string[] { @"VALUE" };
             else
                 if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                     checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
@@ -4306,16 +4420,14 @@ namespace StatisticCommon
         {
             string [] checkFields = null;
 
-            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
-                ;
+            if ((TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
+                || (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE))
+                checkFields = new string[] { @"ID", @"VALUE", @"MINUTE" };
             else
                 if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                     checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
                 else
-                    if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
-                        checkFields = new string[] { @"ID", @"VALUE", @"MINUTE" };
-                    else
-                        ;
+                    ;
 
             int iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1
                 , min = -1
@@ -4330,8 +4442,6 @@ namespace StatisticCommon
 
                 if (iRes == 0)
                     switch (TEC.s_SourceSOTIASSO) {
-                        case TEC.SOURCE_SOTIASSO.AVERAGE:
-                            break;
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                             int
                                 //, id = -1
@@ -4377,7 +4487,8 @@ namespace StatisticCommon
                                     ;
                             }
                             break;
-                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                        case TEC.SOURCE_SOTIASSO.AVERAGE:
+                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:                        
                             int id = -1;
                             TG tgTmp = null;
                             Dictionary<int, TG> dictTGRecievedValues = new Dictionary<int, TG>();
@@ -4435,8 +4546,9 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                                m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min + 1] = val;
-                                m_valuesMins [min + 1].valuesFact += val;
+                                min ++;
+                                m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min] = val;
+                                m_valuesMins [min].valuesFact += val;
                             }
                             break;
                         default:
@@ -4464,10 +4576,20 @@ namespace StatisticCommon
             }
             else
             {
-                if (min > 0)
-                    lastMin = min - 0;
-                else
-                    lastMin = 0;
+                switch (TEC.s_SourceSOTIASSO) {
+                    case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                        if (min > 0)
+                            lastMin = min - 0;
+                        else
+                            lastMin = 0;
+                        break;
+                    case TEC.SOURCE_SOTIASSO.AVERAGE:
+                    case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                        lastMin = min + 1;
+                        break;
+                    default:
+                        break;
+                }
             }
 
             lastMinError = ! (iRes == 0);

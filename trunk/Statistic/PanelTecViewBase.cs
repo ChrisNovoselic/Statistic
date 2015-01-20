@@ -942,7 +942,7 @@ namespace Statistic
                 d2PercentControl.Calculate(m_tecView.m_valuesHours[i], bPmin, out warn);
 
                 if ((!(warn == 0)) &&
-                   (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1))
+                   (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1))
                     cntWarn++;
                 else
                     cntWarn = 0;
@@ -951,19 +951,19 @@ namespace Statistic
                     curCellStyle = dgvCellStyleError;
                 else
                     curCellStyle = dgvCellStyleCommon;
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
+                m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
 
-                if (m_tecView.m_valuesHours[i].valuesLastMinutesTM > 1)
+                if (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1)
                 {
                     if (cntWarn > 0)
                         strWarn = cntWarn + @":";
                     else
                         strWarn = string.Empty;
 
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i].valuesLastMinutesTM.ToString("F2");
+                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM.ToString("F2");
                 }
                 else
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
+                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
 
                 bool bDevVal = false;
                 if (m_tecView.currHour == true)

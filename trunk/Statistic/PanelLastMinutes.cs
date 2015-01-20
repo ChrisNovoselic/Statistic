@@ -719,7 +719,7 @@ namespace Statistic
                 Hd2PercentControl d2PercentControl = new Hd2PercentControl ();
                 string strToolTip = string.Empty,
                         strWarn = string.Empty;
-                
+
                 foreach (TECComponent g in m_list_TECComponents)
                 {
                     cntWarn = 0;
