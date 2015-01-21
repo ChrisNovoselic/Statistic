@@ -23,7 +23,7 @@ namespace StatisticCommon
         }
 
         //Вызов из панели ком./дисп.
-        public int ImpPPBRCSVValues(DateTime date, string fullPath, bool bCheckedPPBRNumber = true)
+        public int ImpPPBRCSVValues(DateTime date, string fullPath)
         {
             int iRes = 0; //Нет ошибки
 
@@ -36,34 +36,6 @@ namespace StatisticCommon
                 ;
 
             m_fullPathPPBRCSVValue = fullPath;
-
-            //Дата ПБР, номер ПБР из наименования файла
-            object[] prop = GetPropertiesOfNameFilePPBRCSVValues();
-            //Текущий номер ПБР
-            int curPBRNumber = -1;
-            if (m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Length > @"ПБР".Length)
-                if (Int32.TryParse(m_curRDGValues[m_curRDGValues.Length - 1].pbr_number.Substring(@"ПБР".Length), out curPBRNumber) == false)
-                    curPBRNumber = getPBRNumber();
-                else
-                    ;
-            else
-                curPBRNumber = getPBRNumber();
-
-            string strMsg = string.Empty;
-            if (!((DateTime)prop[0] == DateTime.Now.Date))
-            {
-                iRes = -1;
-            }
-            else
-            {
-                //Сравнить с текущим номером ПБР
-                if ((!((int)prop[1] > curPBRNumber)) && (bCheckedPPBRNumber == true))
-                {
-                    iRes = -2;
-                }
-                else
-                    ;
-            }
 
             if (iRes == 0)
                 lock (m_lockState)
@@ -128,7 +100,7 @@ namespace StatisticCommon
             //}
 
             //if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
-            if ((num_pbr > 0) && (! (num_pbr < getPBRNumber())))
+            if ((num_pbr > 0) && (! (num_pbr < GetPBRNumber())))
             {
                 //strPPBRCSVNameFileTemp = strPPBRCSVNameFile;
                 strPPBRCSVNameFileTemp = Path.GetFileNameWithoutExtension (m_fullPathPPBRCSVValue);
@@ -215,7 +187,7 @@ namespace StatisticCommon
             int indxEv = -1
                 , prevIndxTECComponents = indxTECComponents;
 
-            string strPBRNumber = GetPBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues ()[1]);
+            string strPBRNumber = getNamePBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues ()[1]);
 
             //Снять все признаки причин прекращения выполнения обработки событий
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)

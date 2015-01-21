@@ -449,72 +449,31 @@ namespace StatisticCommon
             return null;
         }
 
-        protected string GetPBRNumber (int hour = -1) {
-            return @"œ¡–" + getPBRNumber (hour);
+        protected string getNamePBRNumber (int hour = -1) {
+            return @"œ¡–" + this.GetPBRNumber (hour);
         }
 
-        public int getPBRNumber(int hour = -1)
+        public virtual int GetPBRNumber(int hour = -1)
         {
-            int iNum = -1;
+            int iRes = -1
+                , iHour = hour;
 
-            if (hour < 0)
+            if (iHour < 0)
             {
                 if (m_ignore_date == true)
-                    hour = DateTime.Now.Hour;
+                    iHour = HAdmin.ToMoscowTimeZone (DateTime.Now).Hour;
                 else
-                    hour = serverTime.Hour;
+                    iHour = serverTime.Hour;
             }
             else
                 ;
 
-            switch (hour)
-            {
-                case 0:
-                case 1:
-                    iNum = 1;
-                    break;
-                case 2:
-                case 3:
-                    iNum = 3;
-                    break;
-                case 4:
-                case 5:
-                    iNum = 5;
-                    break;
-                case 6:
-                case 7:
-                    iNum = 7;
-                    break;
-                case 8:
-                case 9:
-                    iNum = 9;
-                    break;
-                case 10:
-                case 11:
-                    iNum = 11;
-                    break;
-                case 12:
-                case 13:
-                    iNum = 13;
-                    break;
-                case 14:
-                case 15:
-                    iNum = 15;
-                    break;
-                case 16:
-                case 17:
-                    iNum = 17;
-                    break;
-                case 18:
-                case 19:
-                    iNum = 19;
-                    break;
-                default:
-                    iNum = 21;
-                    break;
-            }
+            if ((iHour % 2) > 0)
+                iRes = iHour;
+            else
+                iRes = iHour + 1;
 
-            return iNum;
+            return iRes;
         }
 
         public override void ClearStates()

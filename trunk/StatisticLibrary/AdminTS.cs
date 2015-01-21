@@ -840,7 +840,7 @@ namespace StatisticCommon
                     if (!(offsetPBRNumber < 0))
                         m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString ();
                     else
-                        m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour - 1);
+                        m_curRDGValues[hour - 1].pbr_number = getNamePBRNumber (hour - 1);
                 else
                     ;
 
@@ -1279,7 +1279,7 @@ namespace StatisticCommon
                                 if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
                                     resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 else
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getNamePBRNumber();
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"'" +
                                             @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
                                             @", " + name + @"_" + @"Pmin" + "='" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
@@ -1296,12 +1296,7 @@ namespace StatisticCommon
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             bool bUpdate = m_ignore_date;
-                            int pbr_number = -1;
-
-                            if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > @"ПБР".Length))
-                                pbr_number = Int32.Parse (m_curRDGValues[i].pbr_number.Substring (@"ПБР".Length));
-                            else
-                                pbr_number = getPBRNumber();
+                            int pbr_number = GetPBRNumber (i);
 
                             if (bUpdate == false)
                                 if (m_iHavePBR_Number < pbr_number)
@@ -1333,7 +1328,7 @@ namespace StatisticCommon
                                 if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
                                     resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 else
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += GetPBRNumber();
+                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getNamePBRNumber();
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
                                             @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             @", OWNER=" + m_sOwner_PBR +
@@ -1357,7 +1352,7 @@ namespace StatisticCommon
                 }
                 else
                 {
-                    string strPBRNumber = GetPBRNumber(DateTime.Now.Hour);
+                    string strPBRNumber = getNamePBRNumber(DateTime.Now.Hour);
                     // запись отсутствует, запоминаем значения
                     switch (m_typeFields)
                     {
@@ -2477,7 +2472,7 @@ namespace StatisticCommon
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.PC, indx);
         }
-        
+
         public int GetIdGTPOwnerTECComponent(int indx = -1)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.GTP, indx);
@@ -2598,6 +2593,29 @@ namespace StatisticCommon
             }
 
             return false;
+        }
+
+        public override int GetPBRNumber(int indx = -1)
+        {
+            int iRes = -1
+                , iIndx = indx;
+
+            if (iIndx < 0)
+                iIndx = m_curRDGValues.Length - 1;
+            else
+                ;
+
+            if ((! (m_curRDGValues == null))
+                && (! (m_curRDGValues[iIndx].pbr_number == null))
+                && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
+                if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+                    iRes = base.GetPBRNumber();
+                else
+                    ;
+            else
+                iRes = base.GetPBRNumber();
+
+            return iRes;
         }
     }
 }

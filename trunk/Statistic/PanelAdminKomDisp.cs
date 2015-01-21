@@ -549,47 +549,58 @@ namespace Statistic
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
-                int iRes = ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
+                int iRes = 0
+                    , curPBRNumber = m_admin.GetPBRNumber (); //Текущий номер ПБР
+                //Дата ПБР, номер ПБР из наименования файла
+                object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
 
+                //if (!((DateTime)prop[0] == DateTime.Now.Date))
+                if (!((DateTime)prop[0] == m_admin.m_curDate.Date))
+                {
+                    iRes = -1;
+                }
+                else
+                {
+                    //Сравнить с текущим номером ПБР
+                    if (!((int)prop[1] > curPBRNumber))
+                        iRes = -2;
+                    else
+                        ; //iRes = 0
+                }
+
+                //Проверка на ошибки
                 if (!(iRes == 0))
                 {
-                    //Дата ПБР, номер ПБР из наименования файла
-                    object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
-                    //Текущий номер ПБР
-                    int curPBRNumber = -1;
-                    if (m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Length > @"ПБР".Length)
-                        if (Int32.TryParse(m_admin.m_curRDGValues[m_admin.m_curRDGValues.Length - 1].pbr_number.Substring(3), out curPBRNumber) == false)
-                            curPBRNumber = m_admin.getPBRNumber();
-                        else
-                            ;
-                    else
-                        curPBRNumber = m_admin.getPBRNumber();
-
                     string strMsg = string.Empty;
-
+                    //Ошибка по дате
                     if (iRes == -1)
                     {
-                        strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует тек./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
+                        strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует установл./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
                         MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        //Сравнить с текущим номером ПБР
+                        //Ошибка по номеру ПБР
                         if (iRes == -2)
                         {
                             strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}].{2}Продолжить?", (int)prop[1], curPBRNumber, Environment.NewLine);
                             if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                             {
-                                ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName, false);
+                                iRes = 0;
                             }
                             else
-                            {
-                            }
+                                ;
                         }
                         else
                             ;
                     }
                 }
+                else
+                    ;
+
+                //Еще одна проверка на ошибки (т.к. была возможность ее подтвердить)
+                if (iRes == 0)
+                    ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
                 else
                     ;
             }
