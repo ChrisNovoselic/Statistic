@@ -238,7 +238,7 @@ namespace Statistic
                                 , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
 
                 HMark markQueries = new HMark ();
-                markQueries.Marked ((int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT);
+                markQueries.Marked ((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec }, markQueries);
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
@@ -472,7 +472,10 @@ namespace Statistic
                 }
                 else
                 {
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");
+                    if (m_tecView.m_dtLastChangedAt_TM_Gen.Date.CompareTo (HAdmin.ToMoscowTimeZone (DateTime.Now).Date) == 0)
+                        m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
+                    else
+                        m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM].ForeColor = Color.Red;
                 }
             }

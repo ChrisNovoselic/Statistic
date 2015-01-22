@@ -242,7 +242,7 @@ namespace Statistic
                                 , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
 
                 HMark markQueries = new HMark();
-                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT);
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
                 m_tecView.SetDelegateReport(fErrRep, fActRep);

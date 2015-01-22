@@ -584,7 +584,7 @@ namespace Statistic
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)CONN_SETT_TYPE.PBR);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
             m_tecView.SetDelegateReport(fErrRep, fActRep);
@@ -834,15 +834,22 @@ namespace Statistic
         }
 
         private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
-        {
+        {//Вызов ТОЛЬКО для таблицы с ЧАСовыми значениями...
             int iFirstDisplayedScrollingRowIndex = -1;
 
             if (lastIndx < dgv.DisplayedRowCount(true))
             {
                 iFirstDisplayedScrollingRowIndex = 0; 
             }
-            else
+            else {
                 iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
+
+                if (!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE))
+                    //Если отображается еще один лишний час...
+                    iFirstDisplayedScrollingRowIndex ++;
+                else
+                    ;
+            }
 
             dgv.FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
         }

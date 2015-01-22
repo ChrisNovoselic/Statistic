@@ -957,10 +957,10 @@ namespace Statistic
 
                 bool bPrevValueValidate = false
                     , bMinValuesReceived = true;
-                double prevValue = 0.0, value = 0.0
-                    , valueEBefore = 0.0
-                    , valueECur = 0.0
-                    , valueEFuture = 0.0;
+                double prevValue = 0F, value = 0F
+                    , valueEBefore = 0F
+                    , valueECur = 0F
+                    , valueEFuture = 0F;
 
                 bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
@@ -977,15 +977,15 @@ namespace Statistic
                             value += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min];
                         else ;
                     else {
-                        bMinValuesReceived = false;
+                        //bMinValuesReceived = false;
 
-                        break;
+                        //break;
                     }
                 }
 
-                if ((bMinValuesReceived == true) && (value < 1) && (bPrevValueValidate == true) && (!(prevValue < 1)))
+                if ((bMinValuesReceived == true) && (value < 1F) && (bPrevValueValidate == true) && (!(prevValue < 1F)))
                 {
-                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1.0");
+                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F");
 
                     return;
                 }
@@ -1106,6 +1106,10 @@ namespace Statistic
                         }
                         else
                         {
+                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
+                            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
+                                m_lblPowerFactZoom.ForeColor = getColorFactValues ();
+                            
                             if (m_parent.m_tecView.lastMinError == true)
                             {
                                 string strErrMsg = @"По текущему ";
@@ -1120,16 +1124,9 @@ namespace Statistic
                                         ;
                                 strErrMsg += @" отрезку значений не найдено!";
                                 m_parent.m_tecView.ErrorReport(strErrMsg);
-                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
-                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-                                m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;
                             }
                             else
                             {
-                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
-                                m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-                                m_lblPowerFactZoom.ForeColor = System.Drawing.Color.LimeGreen;
-
                                 if (! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen; else ;
                                 if (!(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow; else ;
                             }
@@ -1140,11 +1137,12 @@ namespace Statistic
                 {
                     m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
                     m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-                    m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;
+                        m_lblPowerFactZoom.ForeColor = System.Drawing.Color.OrangeRed;
 
                     if ((! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) && (! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)))
                         m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor =
-                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.OrangeRed;
+                        m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor =
+                            System.Drawing.Color.OrangeRed;
                     else
                         ;
                 }
@@ -1160,20 +1158,15 @@ namespace Statistic
                         if (g.m_id < 500)
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
-                            {
+                            {//Цикл по списку с ТГ
+                                //Отобразить значение
                                 if (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0))
-                                {
                                     showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
-                                    if (m_parent.m_tecView.currHour == true)
-                                        m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
-                                    else
-                                        m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                                }
                                 else
-                                {
                                     m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                                }
+
+                                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues ();
+
                                 i++;
                             }
                         else
@@ -1186,18 +1179,12 @@ namespace Statistic
                     {
                         if ((!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes == null))
                             && (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0)))
-                        {
                             showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]);
-                            if (m_parent.m_tecView.currHour == true)
-                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.LimeGreen;
-                            else
-                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                        }
                         else
-                        {
                             m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
-                            m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = System.Drawing.Color.OrangeRed;
-                        }
+
+                        m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues ();
+
                         i++;
                     }
                 }
@@ -1206,6 +1193,17 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private Color getColorFactValues () {
+            //Определить цвет
+            if (m_parent.m_tecView.currHour == true)
+                if (m_parent.m_tecView.lastMinError == true)
+                    return System.Drawing.Color.OrangeRed;
+                else
+                    return System.Drawing.Color.LimeGreen;
+            else
+                return System.Drawing.Color.OrangeRed;
         }
 
         private void OnItemClick(object obj, EventArgs ev) {

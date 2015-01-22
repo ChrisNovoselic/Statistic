@@ -716,7 +716,7 @@ namespace StatisticCommon
         private void GetCurrentTMGenRequest()
         {
             //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields) {
@@ -836,7 +836,7 @@ namespace StatisticCommon
         private void GetCurrentTMSNRequest()
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.currentTMSNRequest());
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.currentTMSNRequest());
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
         private bool GetCurrentTMSNResponse(DataTable table)
@@ -1291,7 +1291,8 @@ namespace StatisticCommon
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         bRes = GetMinsFactResponse(table);
                     else
-                        if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)
+                        if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                            || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                             bRes = GetMinsTMResponse(table);
                         else
                             ;
@@ -1552,7 +1553,8 @@ namespace StatisticCommon
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_Fact);
                 else
-                    if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         states.Add((int)StatesMachine.Hours_TM);
                     else
                         ;
@@ -1582,7 +1584,8 @@ namespace StatisticCommon
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.RetroMins_Fact);
                 else
-                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         states.Add((int)StatesMachine.RetroMins_TM);
                     else
                         ;
@@ -1591,7 +1594,8 @@ namespace StatisticCommon
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_Fact);
                 else
-                    if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         states.Add((int)StatesMachine.Hours_TM);
                     else
                         ;
@@ -1633,7 +1637,8 @@ namespace StatisticCommon
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.RetroMins_Fact);
                 else
-                    if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         states.Add((int)StatesMachine.RetroMins_TM);
                     else
                         ;
@@ -1667,13 +1672,12 @@ namespace StatisticCommon
         private void initValuesMinLength()
         {
             if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE) && (! (m_valuesMins.Length == 21))
-                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO) && (! (m_valuesMins.Length == 21))) {
+                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO) && (! (m_valuesMins.Length == 21))
+                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN) && (! (m_valuesMins.Length == 21))) {
                 m_valuesMins = null;
             }
             else
-                if (((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                    && (! (m_valuesMins.Length == 61))) {
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN) && (! (m_valuesMins.Length == 61))) {
                     m_valuesMins = null;
                 }
                 else
@@ -1683,12 +1687,12 @@ namespace StatisticCommon
                 int cnt = -1;
                 
                 switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES]) {
-                    case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
                         cnt = 61;
                         break;
                     case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
                     case CONN_SETT_TYPE.DATA_AISKUE:
+                    case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     default:
                         cnt = 21;
                         break;
@@ -3329,7 +3333,7 @@ namespace StatisticCommon
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                             hour = lastHour;
 
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
                             double[] valHours = new double[listSensors.Count + 1];
                             //60 мин * 60 сек = 1 час
                             valHours = avgInterval(table
@@ -3445,7 +3449,7 @@ namespace StatisticCommon
                     switch (TEC.s_SourceSOTIASSO)
                     {
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES).Split (','));
+                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
                             double[] valHours = new double[listSensors.Count];
                             for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
                             {
@@ -3555,6 +3559,7 @@ namespace StatisticCommon
                                     break;
                                 case TEC.SOURCE_SOTIASSO.AVERAGE:
                                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                                    lastHour = hour + 0;
                                     break;
                                 default:
                                     break;
@@ -3740,7 +3745,7 @@ namespace StatisticCommon
                     if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                     {
                         dtVal = dtReq.Date.AddMinutes(59);
-                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES).Split(','));
+                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
                         int[] arIds = new int[listSensors.Count]
                             , arOwnerGTPIds = new int[listSensors.Count];
                         double[] valLastMins = new double[listSensors.Count + 1];
@@ -4360,7 +4365,7 @@ namespace StatisticCommon
                             int hour = lastHour - GetSeasonHourOffset(lastHour)
                                 ;                                
 
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
                             m_valuesMins[min].valuesFact = avgInterval(table
                                                                 , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
                                                                 , 180
@@ -4456,7 +4461,7 @@ namespace StatisticCommon
                             int [] arIds = null;
 
                             DateTime dtReq = m_curDate.Date.AddHours(lastHour);
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
                             arIds = new int[listSensors.Count];
                             double[] valMins = new double[listSensors.Count + 1];
 
@@ -4601,14 +4606,28 @@ namespace StatisticCommon
 
             lastMinError = ! (iRes == 0);
 
-            if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / 1))))
-            {
-                lastMinError = true;
-                //lastMin = ((selectedTime.Minute - 1) / 1) + 1;
+            int interval = -1;
+            switch (m_arTypeSourceData [(int)TG.ID_TIME.MINUTES]) {
+                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                    interval = 1;
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                    interval = 3;
+                    break;
+                default:
+                    break;
             }
+
+            if (interval > 0)
+                if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / interval))))
+                {
+                    lastMinError = true;
+                    //lastMin = ((selectedTime.Minute - 1) / 1) + 1;
+                }
+                else
+                    ;
             else
-            {
-            }
+                lastMinError = true;
 
             return iRes == 0;
         }
@@ -4687,12 +4706,12 @@ namespace StatisticCommon
 
         private void GetHourTMRequest(DateTime date, int lh)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS)));
         }
 
         private void GetHoursTMRequest(DateTime date)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS)));
         }
 
         private void GetMinsFactRequest(int hour)
@@ -4706,17 +4725,32 @@ namespace StatisticCommon
 
         private void GetMinTMRequest(DateTime date, int lh, int lm)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
         }
 
         private void GetMinsTMRequest(int hour)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, TG.ID_TIME.MINUTES)));
+            int interval = -1;
+            switch (m_arTypeSourceData [(int)TG.ID_TIME.MINUTES]) {
+                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                    interval = 3;
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                    interval = 1;
+                    break;
+                default:
+                    break;
+            }
+
+            if (interval > 0)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+            else
+                Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...");
         }
 
         private void GetHoursTMSNPsumRequest()
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.hoursTMSNPsumRequest(m_curDate));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
 
         private void GetLastMinutesTMRequest()
@@ -4730,7 +4764,7 @@ namespace StatisticCommon
 
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT), cnt));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
         private void GetPPBRValuesRequest()

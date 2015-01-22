@@ -1232,15 +1232,9 @@ namespace StatisticTrans
             ((AdminTS)m_arAdmin [m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
         }
 
-        protected /*virtual*/ void buttonDestSave_Click(object sender, EventArgs e)
-        {
-            
-        }
+        protected /*virtual*/ void buttonDestSave_Click(object sender, EventArgs e) { throw new NotImplementedException (); }
 
-        protected /*virtual*/ void buttonSourceSave_Click(object sender, EventArgs e)
-        {
-
-        }
+        protected /*virtual*/ void buttonSourceSave_Click(object sender, EventArgs e) { throw new NotImplementedException(); }
 
         protected virtual void component_Changed(object sender, EventArgs e)
         {

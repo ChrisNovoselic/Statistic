@@ -1352,7 +1352,14 @@ namespace StatisticCommon
                 }
                 else
                 {
-                    string strPBRNumber = getNamePBRNumber(DateTime.Now.Hour);
+                    string strPBRNumber = string.Empty;
+                    //strPBRNumber = getNamePBRNumber(DateTime.Now.Hour);
+                    strPBRNumber = m_curRDGValues[i].pbr_number;
+                    if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                        strPBRNumber = m_curRDGValues[i].pbr_number;
+                    else
+                        strPBRNumber = getNamePBRNumber();
+
                     // запись отсутствует, запоминаем значения
                     switch (m_typeFields)
                     {
@@ -2605,15 +2612,21 @@ namespace StatisticCommon
             else
                 ;
 
-            if ((! (m_curRDGValues == null))
-                && (! (m_curRDGValues[iIndx].pbr_number == null))
-                && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+            if (m_curDate.Date.CompareTo (serverTime.Date) == 0)
+                if ((! (m_curRDGValues == null))
+                    && (! (m_curRDGValues[iIndx].pbr_number == null))
+                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
+                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+                        iRes = base.GetPBRNumber();
+                    else
+                        ;
+                else
                     iRes = base.GetPBRNumber();
+            else
+                if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
+                    iRes = base.GetPBRNumber(0);
                 else
                     ;
-            else
-                iRes = base.GetPBRNumber();
 
             return iRes;
         }

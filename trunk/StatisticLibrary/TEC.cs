@@ -14,7 +14,7 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO_INSTANT = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
+        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 7
     };
 
@@ -43,7 +43,7 @@ namespace StatisticCommon
         public List<TECComponent> list_TECComponents;
 
         public List<TG> m_listTG;
-        protected volatile string m_SensorsString_SOTIASSO_INSTANT = string.Empty;
+        protected volatile string m_SensorsString_SOTIASSO = string.Empty;
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
         public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_TSQL };
@@ -65,7 +65,7 @@ namespace StatisticCommon
         public bool m_bSensorsStrings {
             get {
                 bool bRes = false;
-                if ((m_SensorsString_SOTIASSO_INSTANT.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
+                if ((m_SensorsString_SOTIASSO.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
                     if ((m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false))
                         bRes = true;
                     else
@@ -83,10 +83,10 @@ namespace StatisticCommon
 
             if (indx < 0) {
                 switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                        strRes = m_SensorsString_SOTIASSO_INSTANT;
+                        strRes = m_SensorsString_SOTIASSO;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_AISKUE:
                         strRes = m_SensorsStrings_ASKUE[(int)indxTime];
@@ -99,7 +99,7 @@ namespace StatisticCommon
             }
             else {
                 switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
                         strRes = list_TECComponents [indx].m_SensorsString_SOTIASSO;
@@ -253,7 +253,7 @@ namespace StatisticCommon
             else
                 m_SensorsStrings_ASKUE [(int)TG.ID_TIME.HOURS] = m_SensorsStrings_ASKUE [(int)TG.ID_TIME.MINUTES] = string.Empty;
 
-            m_SensorsString_SOTIASSO_INSTANT = string.Empty;
+            m_SensorsString_SOTIASSO = string.Empty;
 
             for (i = 0; i < list_TECComponents.Count; i++) {
                 if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
@@ -261,18 +261,18 @@ namespace StatisticCommon
 
                     m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsString_SOTIASSO_INSTANT = AddSensor(m_SensorsString_SOTIASSO_INSTANT, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
 
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                 }
                 else
                 {
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     }
                 }
             }
@@ -305,7 +305,7 @@ namespace StatisticCommon
                     connSetts[type].ignore = false;
             }
 
-            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)))
+            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                 if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
                 {
                     m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
@@ -627,30 +627,33 @@ namespace StatisticCommon
             DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes (3 * (min - 1));
             string request = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
-                        request = @"SELECT SUM ([VALUE]) as [VALUE], COUNT (*) as [cnt]"
-                                    + @" FROM ("
-                                        + @"SELECT AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
-                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
-                                            //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                            + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
-                                        + @" GROUP BY [ID]"
-                                    + @") t0"
-                                            ;
+                        request =
+                            @"SELECT SUM ([VALUE]) as [VALUE], COUNT (*) as [cnt]"
+                                + @" FROM ("
+                                    + @"SELECT AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
+                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                    + @" GROUP BY [ID]"
+                                + @") t0"
+                            ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
-                            request =   //--Привести дату/время к МСК (добавить разность с UTC)
-                                        @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-			                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
-                                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')";
+                            request =   
+                                //--Привести дату/время к МСК (добавить разность с UTC)
+                                @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+			                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
+                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                ;
                         else
                             if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
                                 request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
@@ -687,7 +690,7 @@ namespace StatisticCommon
             return request;
         }
 
-        public string minsTMRequest(DateTime usingDate, int hour, string sensors)
+        public string minsTMRequest(DateTime usingDate, int hour, string sensors, int interval)
         {
             if (hour == 24)
                 hour = 23;
@@ -697,19 +700,36 @@ namespace StatisticCommon
             DateTime dtReq = usingDate.Date.AddHours(hour);
             string request = string.Empty;
 
-            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
-                        request = //--Привести дату/время к МСК (добавить разность с UTC)
-                                @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                //--номер минуты
-                                + @", DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [MINUTE]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
-                                    //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                        request =
+                        ////Вариант №1
+                        ////--Привести дату/время к МСК (добавить разность с UTC)
+                        //@"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                        ////--номер минуты
+                        //+ @", DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [MINUTE]"
+                        //+ @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                        //+ @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                        //    //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                        //    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                        //        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                        //Вариант №2
+                        @"SELECT [ID] as [ID], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
+	                        + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+	                        + @", (DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) / " + interval + @") as [MINUTE]"
+                        + @" FROM ("
+	                        + @"SELECT [ID] as [ID], [Value] as [VALUE], [tmdelta] as [tmdelta]"
+		                        + @", DATEADD (MINUTE, - DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) % " + interval + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [last_changed_at]"
+	                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+		                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                     + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                        + @") t0"
+                        + @" GROUP BY [ID], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]), DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
+                        + @" ORDER BY [last_changed_at], [ID]"
                         ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
@@ -1242,7 +1262,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT * FROM [dbo].[v_LAST_VALUE_TSN] WHERE ID_TEC=" + m_id;
@@ -1258,7 +1278,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR"
@@ -1279,7 +1299,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
@@ -1312,7 +1332,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
@@ -1380,7 +1400,7 @@ namespace StatisticCommon
                     break;
             }
 
-            if (m_arInterfaceType[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL)
+            if (m_arInterfaceType[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL)
             {
                 query = query.Replace(@"DATEPART(n,", @"MINUTE(");
             }
