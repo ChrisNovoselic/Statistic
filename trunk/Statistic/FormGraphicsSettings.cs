@@ -25,8 +25,8 @@ namespace Statistic
                 , COUNT_TYPE_UPDATEGUI };
 
         private enum CONN_SETT_TYPE {
-            ASKUE_PLUS_SOTIASSO, ASKUE, SOTIASSO,
-            COSTUMIZE
+            ASKUE_PLUS_SOTIASSO, ASKUE, SOTIASSO_3_MIN, SOTIASSO_1_MIN
+            , COSTUMIZE
                 , COUNT_CONN_SETT_TYPE
         };
         HMark m_markSourceData;
@@ -71,7 +71,8 @@ namespace Statistic
                 bGroupBoxSourceData = true;
                 cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;
 
-                rbtnSourceData_ASKUE_PLUS_SOTIASSO.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
             }
             else
                 ;
@@ -95,24 +96,28 @@ namespace Statistic
 
         private void checkedSourceData()
         {
-            rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
-            rbtnSourceData_ASKUE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
-            rbtnSourceData_SOTIASSO.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO);
-            rbtnSourceData_COSTUMIZE.Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_3_MIN);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_1_MIN);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
 
-            if (rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked == true)
+            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Checked == true)
                 m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
             else
-                if (rbtnSourceData_ASKUE.Checked == true)
+                if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE].Checked == true)
                     m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE;
                 else
-                    if (rbtnSourceData_SOTIASSO.Checked == true)
-                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked == true)
+                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN;
                     else
-                        if (rbtnSourceData_COSTUMIZE.Checked == true)
-                            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                        if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked == true)
+                            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
                         else
-                            ;
+                            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked == true)
+                                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                            else
+                                ;
         }
 
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
@@ -164,56 +169,42 @@ namespace Statistic
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA);
         }
 
-        private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
+        private void rbtnSourceData_Click(CONN_SETT_TYPE indx)
         {
-            if (rbtnSourceData_ASKUE_PLUS_SOTIASSO.Checked == false)
+            if (m_arRadioButtonSourceData[(int)indx].Checked == false)
             {
                 m_markSourceData.UnMarked();
-                m_markSourceData.Marked((int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
+                m_markSourceData.Marked((int)indx);
 
                 rbtnSourceData_Click();
             }
             else
                 ;
+        }
+
+        private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
+        {
+            rbtnSourceData_Click(CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
         }
 
         private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)
         {
-            if (rbtnSourceData_ASKUE.Checked == false)
-            {
-                m_markSourceData.UnMarked();
-                m_markSourceData.Marked((int)CONN_SETT_TYPE.ASKUE);
-
-                rbtnSourceData_Click();
-            }
-            else
-                ;
+                rbtnSourceData_Click(CONN_SETT_TYPE.ASKUE);
         }
 
-        private void rbtnSourceData_SOTIASSO_Click(object sender, EventArgs e)
+        private void rbtnSourceData_SOTIASSO3min_Click(object sender, EventArgs e)
         {
-            if (rbtnSourceData_SOTIASSO.Checked == false)
-            {
-                m_markSourceData.UnMarked();
-                m_markSourceData.Marked((int)CONN_SETT_TYPE.SOTIASSO);
+            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_3_MIN);
+        }
 
-                rbtnSourceData_Click();
-            }
-            else
-                ;
+        private void rbtnSourceData_SOTIASSO1min_Click(object sender, EventArgs e)
+        {
+            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_1_MIN);
         }
 
         private void rbtnSourceData_COSTUMIZE_Click(object sender, EventArgs e)
         {
-            if (rbtnSourceData_COSTUMIZE.Checked == false)
-            {
-                m_markSourceData.UnMarked();
-                m_markSourceData.Marked((int)CONN_SETT_TYPE.COSTUMIZE);
-
-                rbtnSourceData_Click();
-            }
-            else
-                ;
+            rbtnSourceData_Click(CONN_SETT_TYPE.COSTUMIZE);
         }
     }
 }

@@ -1110,10 +1110,11 @@ namespace Statistic
                             {
                                 string strErrMsg = @"По текущему ";
                                 if ((m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                                    || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                                    || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+                                    || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
                                     strErrMsg += @"3-минутному";
                                 else
-                                    if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                                    if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
                                         strErrMsg += @"1-минутному";
                                     else
                                         ;

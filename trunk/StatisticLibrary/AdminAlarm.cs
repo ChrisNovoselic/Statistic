@@ -182,7 +182,9 @@ namespace StatisticCommon
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
             markQueries.Marked((int)CONN_SETT_TYPE.PBR);
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT);
+            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN);
+            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN);
 
             //Отладка ???!!!
             int DEBUG_ID_TEC = -1;
@@ -193,8 +195,8 @@ namespace StatisticCommon
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
 
-                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
-                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT;
+                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT;
 
                     EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
                 } else ;

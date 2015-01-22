@@ -44,6 +44,7 @@ namespace StatisticCommon
             , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
             , PROFILE_SETTINGS_CHANGEMODE
             , PROFILE_VIEW_ADDINGTABS
+            , SOURCEDATA_SOTIASSO_3_MIN //¬кл\выкл пункт меню
             ,
         };
 

@@ -48,10 +48,13 @@ namespace Statistic
             this.rbtnBar = new System.Windows.Forms.RadioButton();
             this.rbtnLine = new System.Windows.Forms.RadioButton();
             this.groupBoxSourceData = new System.Windows.Forms.GroupBox();
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO = new System.Windows.Forms.RadioButton();
-            this.rbtnSourceData_COSTUMIZE = new System.Windows.Forms.RadioButton();
-            this.rbtnSourceData_ASKUE = new System.Windows.Forms.RadioButton();
-            this.rbtnSourceData_SOTIASSO = new System.Windows.Forms.RadioButton();            
+            this.m_arRadioButtonSourceData = new System.Windows.Forms.RadioButton [] {
+                new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+            };
             this.gbxType.SuspendLayout();
             this.groupBoxSourceData.SuspendLayout();
             this.SuspendLayout();
@@ -128,66 +131,84 @@ namespace Statistic
             // 
             // groupBoxSourceData
             // 
-            this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_ASKUE_PLUS_SOTIASSO);
-            this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_COSTUMIZE);
-            this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_ASKUE);
-            this.groupBoxSourceData.Controls.Add(this.rbtnSourceData_SOTIASSO);
+            this.groupBoxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
             this.groupBoxSourceData.Location = new System.Drawing.Point(167, 96);
             this.groupBoxSourceData.Name = "groupBoxSourceData";
             this.groupBoxSourceData.Size = new System.Drawing.Size(173, 114);
             this.groupBoxSourceData.TabIndex = 8;
             this.groupBoxSourceData.TabStop = false;
             this.groupBoxSourceData.Text = "»ÒÚÓ˜ÌËÍË ‰‡ÌÌ˚ı „‡ÙËÍÓ‚";
+            
+            int indx = -1
+                , yPos = -1
+                , yMargin = 19;
             // 
             // rbtnSourceData_ASKUE_PLUS_SOTIASSO
             // 
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoCheck = false;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.AutoSize = true;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Location = new System.Drawing.Point(6, 17);
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Size = new System.Drawing.Size(134, 17);
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.TabIndex = 3;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Text = "¿»— ”›+—Œ“»¿——Œ";
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_ASKUE_PLUS_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
-            // 
-            // rbtnSourceData_COSTUMIZE
-            // 
-            this.rbtnSourceData_COSTUMIZE.AutoCheck = false;
-            this.rbtnSourceData_COSTUMIZE.AutoSize = true;
-            this.rbtnSourceData_COSTUMIZE.Location = new System.Drawing.Point(6, 87);
-            this.rbtnSourceData_COSTUMIZE.Name = "rbtnSourceData_COSTUMIZE";
-            this.rbtnSourceData_COSTUMIZE.Size = new System.Drawing.Size(80, 17);
-            this.rbtnSourceData_COSTUMIZE.TabIndex = 2;
-            this.rbtnSourceData_COSTUMIZE.TabStop = true;
-            this.rbtnSourceData_COSTUMIZE.Text = "‚˚·ÓÓ˜ÌÓ";
-            this.rbtnSourceData_COSTUMIZE.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_COSTUMIZE.Click += new System.EventHandler(this.rbtnSourceData_COSTUMIZE_Click);
+            indx = (int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO; yPos = 16;
+            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
+            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
+            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
+            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(134, 17);
+            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 3;
+            this.m_arRadioButtonSourceData[(int)indx].Text = "¿»— ”›+—Œ“»¿——Œ";
+            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
             // 
             // rbtnSourceData_ASKUE
             // 
-            this.rbtnSourceData_ASKUE.AutoCheck = false;
-            this.rbtnSourceData_ASKUE.AutoSize = true;
-            this.rbtnSourceData_ASKUE.Checked = true;
-            this.rbtnSourceData_ASKUE.Location = new System.Drawing.Point(6, 40);
-            this.rbtnSourceData_ASKUE.Name = "rbtnSourceData_ASKUE";
-            this.rbtnSourceData_ASKUE.Size = new System.Drawing.Size(69, 17);
-            this.rbtnSourceData_ASKUE.TabIndex = 1;
-            this.rbtnSourceData_ASKUE.Text = "¿»— ”›";
-            this.rbtnSourceData_ASKUE.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_ASKUE.Click += new System.EventHandler(this.rbtnSourceData_ASKUE_Click);
+            indx = (int)CONN_SETT_TYPE.ASKUE; yPos += yMargin;
+            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
+            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
+            this.m_arRadioButtonSourceData[(int)indx].Checked = true;
+            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_ASKUE";
+            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(69, 17);
+            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 1;
+            this.m_arRadioButtonSourceData[(int)indx].Text = "¿»— ”›";
+            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_ASKUE_Click);
             // 
-            // rbtnSourceData_SOTIASSO
+            // rbtnSourceData_SOTIASSO_3_min
+            //
+            indx = (int)CONN_SETT_TYPE.SOTIASSO_3_MIN; yPos += yMargin;
+            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
+            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
+            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_3_min";
+            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
+            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
+            this.m_arRadioButtonSourceData[(int)indx].Text = "—Œ“»¿——Œ(3 ÏËÌ)";
+            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO3min_Click);
             // 
-            this.rbtnSourceData_SOTIASSO.AutoCheck = false;
-            this.rbtnSourceData_SOTIASSO.AutoSize = true;
-            this.rbtnSourceData_SOTIASSO.Location = new System.Drawing.Point(6, 64);
-            this.rbtnSourceData_SOTIASSO.Name = "rbtnSourceData_SOTIASSO";
-            this.rbtnSourceData_SOTIASSO.Size = new System.Drawing.Size(84, 17);
-            this.rbtnSourceData_SOTIASSO.TabIndex = 0;
-            this.rbtnSourceData_SOTIASSO.Text = "—Œ“»¿——Œ";
-            this.rbtnSourceData_SOTIASSO.UseVisualStyleBackColor = true;
-            this.rbtnSourceData_SOTIASSO.Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO_Click);
+            // rbtnSourceData_SOTIASSO_1_min
+            // 
+            indx = (int)CONN_SETT_TYPE.SOTIASSO_1_MIN; yPos += yMargin;
+            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
+            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
+            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_1_min";
+            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
+            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
+            this.m_arRadioButtonSourceData[(int)indx].Text = "—Œ“»¿——Œ(1 ÏËÌ)";
+            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO1min_Click);
+            // 
+            // rbtnSourceData_COSTUMIZE
+            // 
+            indx = (int)CONN_SETT_TYPE.COSTUMIZE; yPos += yMargin;
+            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
+            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
+            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_COSTUMIZE";
+            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(80, 17);
+            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 2;
+            this.m_arRadioButtonSourceData[(int)indx].TabStop = true;
+            this.m_arRadioButtonSourceData[(int)indx].Text = "‚˚·ÓÓ˜ÌÓ";
+            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_COSTUMIZE_Click);
             // 
             // FormGraphicsSettings
             // 
@@ -226,10 +247,6 @@ namespace Statistic
         private System.Windows.Forms.RadioButton rbtnBar;
         private System.Windows.Forms.RadioButton rbtnLine;        
         private System.Windows.Forms.GroupBox groupBoxSourceData;
-        private System.Windows.Forms.RadioButton rbtnSourceData_COSTUMIZE;
-        private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE;
-        private System.Windows.Forms.RadioButton rbtnSourceData_SOTIASSO;        
-        private System.Windows.Forms.RadioButton rbtnSourceData_ASKUE_PLUS_SOTIASSO;
-        
+        private System.Windows.Forms.RadioButton [] m_arRadioButtonSourceData;        
     }
 }

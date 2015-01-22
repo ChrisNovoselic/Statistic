@@ -14,8 +14,8 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3 /*ТелеМеханика - СОТИАССО*/, MTERM = 4 /*Модес-Терминал*/,
-        COUNT_CONN_SETT_TYPE = 5
+        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO_INSTANT = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
+        COUNT_CONN_SETT_TYPE = 7
     };
 
     public class TEC
@@ -43,11 +43,11 @@ namespace StatisticCommon
         public List<TECComponent> list_TECComponents;
 
         public List<TG> m_listTG;
-        protected volatile string m_SensorsString_SOTIASSO = string.Empty;
+        protected volatile string m_SensorsString_SOTIASSO_INSTANT = string.Empty;
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
 
         public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_TSQL };
-        public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.INSATANT_APP;
+        public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.AVERAGE;
 
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
@@ -65,7 +65,7 @@ namespace StatisticCommon
         public bool m_bSensorsStrings {
             get {
                 bool bRes = false;
-                if ((m_SensorsString_SOTIASSO.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
+                if ((m_SensorsString_SOTIASSO_INSTANT.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
                     if ((m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false))
                         bRes = true;
                     else
@@ -83,8 +83,10 @@ namespace StatisticCommon
 
             if (indx < 0) {
                 switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
-                        strRes = m_SensorsString_SOTIASSO;
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                        strRes = m_SensorsString_SOTIASSO_INSTANT;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_AISKUE:
                         strRes = m_SensorsStrings_ASKUE[(int)indxTime];
@@ -97,7 +99,9 @@ namespace StatisticCommon
             }
             else {
                 switch ((int)connSettType) {
-                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                    case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
                         strRes = list_TECComponents [indx].m_SensorsString_SOTIASSO;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_AISKUE:
@@ -249,7 +253,7 @@ namespace StatisticCommon
             else
                 m_SensorsStrings_ASKUE [(int)TG.ID_TIME.HOURS] = m_SensorsStrings_ASKUE [(int)TG.ID_TIME.MINUTES] = string.Empty;
 
-            m_SensorsString_SOTIASSO = string.Empty;
+            m_SensorsString_SOTIASSO_INSTANT = string.Empty;
 
             for (i = 0; i < list_TECComponents.Count; i++) {
                 if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
@@ -257,18 +261,18 @@ namespace StatisticCommon
 
                     m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    m_SensorsString_SOTIASSO_INSTANT = AddSensor(m_SensorsString_SOTIASSO_INSTANT, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
 
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                 }
                 else
                 {
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     }
                 }
             }
@@ -301,7 +305,7 @@ namespace StatisticCommon
                     connSetts[type].ignore = false;
             }
 
-            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
+            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)))
                 if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
                 {
                     m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
@@ -501,7 +505,7 @@ namespace StatisticCommon
         //    string query = string.Empty;
         //    List <int> ids = new List<int> ();
 
-        //    switch (s_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_ASKUE])
+        //    switch (s_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_ASKUE])
         //    {
         //        case INDEX_TYPE_SOURCE_DATA.COMMON:
         //            //Общий источник для всех ТЭЦ
@@ -1238,7 +1242,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT * FROM [dbo].[v_LAST_VALUE_TSN] WHERE ID_TEC=" + m_id;
@@ -1254,7 +1258,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR"
@@ -1275,7 +1279,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
@@ -1308,7 +1312,7 @@ namespace StatisticCommon
         {
             string query = string.Empty;
 
-            switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
@@ -1375,8 +1379,9 @@ namespace StatisticCommon
                 default:
                     break;
             }
-            
-            if (m_arInterfaceType [(int)CONN_SETT_TYPE.DATA_SOTIASSO] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL) {
+
+            if (m_arInterfaceType[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT] == DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL)
+            {
                 query = query.Replace(@"DATEPART(n,", @"MINUTE(");
             }
             else

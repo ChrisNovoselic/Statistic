@@ -482,7 +482,7 @@ namespace Statistic
                 HMark markQueries = new HMark();
                 markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
                 markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
                 m_tecView.SetDelegateReport(fErrRep, fActRep);
