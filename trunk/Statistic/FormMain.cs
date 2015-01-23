@@ -88,6 +88,11 @@ namespace Statistic
             tclTecViews.OnClose += delegateOnCloseTab;
         }
 
+        private string GetINIParametersOfID(int id)
+        {
+            return formParameters.m_arParametrSetup [id];
+        }
+
         private int Initialize(out string msgError)
         {
             StartWait ();
@@ -122,6 +127,8 @@ namespace Statistic
                 DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
                 DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
                 DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+
+                DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             }
             catch (Exception e) {
                 Logging.Logg().Exception(e, @"FormMain::Initialize () ... загрузка предустановленных параметров ...");
@@ -307,43 +314,44 @@ namespace Statistic
         {
             if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
             {
-                int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
-                    , err = -1;
-                DbConnection dbConn = DbSources.Sources().GetConnection (idListenerConfigDB, out err);
-                //Сохранить значение для возможности восстановления...
-                string strPrevAppVersion = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION];
-                formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = FormParameters_DB.ReadString (ref dbConn, @"App Version", string.Empty);
+                int err = -1;
 
-                DbSources.Sources().UnRegister (idListenerConfigDB);
+                formParameters.Update (out err);
+                HAdmin.UpdateMarkDebugLog ();
 
-                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
-                    if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
-                    {
-                        if (IsHandleCreated/**/ == true)
+                if (err == 0)
+                {
+                    if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
+                        if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                         {
-                            if (InvokeRequired == true)
+                            if (IsHandleCreated/**/ == true)
                             {
-                                /*IAsyncResult iar = */
-                                this.BeginInvoke(new DelegateFunc(update));
-                                //this.EndInvoke (iar);
+                                if (InvokeRequired == true)
+                                {
+                                    /*IAsyncResult iar = */
+                                    this.BeginInvoke(new DelegateFunc(update));
+                                    //this.EndInvoke (iar);
+                                }
+                                else
+                                {
+                                    update();
+                                }
                             }
                             else
-                            {
-                                update();
-                            }
+                                ;
+
+                            //ProgramBase.AppRestart();
+
                         }
                         else
-                            ;
-
-                        //ProgramBase.AppRestart();
-
-                    }
+                        {
+                        }
                     else
-                    {
-                    }
+                        //При ошибке - восстанавливаем значение...
+                        ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
+                }
                 else
-                    //При ошибке - восстанавливаем значение...
-                    formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
+                    ; //DbSources.Sources().UnRegister(idListenerConfigDB);
             }
             else
             {

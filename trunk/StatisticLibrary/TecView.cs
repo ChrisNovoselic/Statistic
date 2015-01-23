@@ -299,7 +299,7 @@ namespace StatisticCommon
             indxTECComponents = indx_comp;
 
             m_pool_time = pool_time;
-            m_error_delay = m_error_delay;
+            m_error_delay = error_delay;
 
             m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
@@ -2661,10 +2661,13 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
-                                + @" (factSum=" + factSum.ToString(@"F3")
-                                + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
-                                + @") [" + hour + @", " + lastMin + @"]");
+            if (HAdmin.m_markDebugLog.IsMarked((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.RECOMENDATION_VAL))
+                Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
+                                    + @" (factSum=" + factSum.ToString(@"F3")
+                                    + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
+                                    + @") [" + hour + @", " + lastMin + @"]");
+            else
+                ;
         }
 
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
@@ -4706,12 +4709,22 @@ namespace StatisticCommon
 
         private void GetHourTMRequest(DateTime date, int lh)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS)));
+            int interval = getIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+
+            if (interval > 0)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS), interval));
+            else
+                ;
         }
 
         private void GetHoursTMRequest(DateTime date)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS)));
+            int interval = getIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+
+            if (interval > 0)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS), interval));
+            else
+                ;
         }
 
         private void GetMinsFactRequest(int hour)
@@ -4725,22 +4738,33 @@ namespace StatisticCommon
 
         private void GetMinTMRequest(DateTime date, int lh, int lm)
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
+            //int interval = getIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+
+            //if (interval > 0)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
+            //else ;
         }
 
-        private void GetMinsTMRequest(int hour)
-        {
-            int interval = -1;
-            switch (m_arTypeSourceData [(int)TG.ID_TIME.MINUTES]) {
+        private int getIntervalOfTypeSourceData (TG.ID_TIME id_time) {
+            int iRes = -1;
+            switch (m_arTypeSourceData[(int)id_time])
+            {
                 case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
-                    interval = 3;
+                    iRes = 3;
                     break;
                 case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                    interval = 1;
+                    iRes = 1;
                     break;
                 default:
                     break;
             }
+
+            return iRes;
+        }
+        
+        private void GetMinsTMRequest(int hour)
+        {
+            int interval = getIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
 
             if (interval > 0)
                 Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));

@@ -101,14 +101,14 @@ namespace StatisticCommon
 
             m_State++;
             
-            loadParam ();
+            loadParam (false);
         }
 
-        override public void buttonCancel_Click(object sender, EventArgs e)
+        override protected void buttonCancel_Click(object sender, EventArgs e)
         {
             m_State = 0;
             
-            loadParam();            
+            loadParam(false);            
 
             base.buttonCancel_Click(sender, e);
         }
@@ -141,7 +141,9 @@ namespace StatisticCommon
             Close();
         }
 
-        public override void loadParam()
+        public override void Update (out int err) { err = -1; }
+
+        protected override void loadParam(bool bInit)
         {
             for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
@@ -164,10 +166,10 @@ namespace StatisticCommon
         public FormParametersTG_FileINI (string nameSetupFileINI) {
             m_FileINI = new FileINI (nameSetupFileINI);
 
-            loadParam();
+            loadParam(true);
         }
 
-        public override void loadParam()
+        protected override void loadParam(bool bInit)
         {
             string key_value;
             string[] key_values;
@@ -197,7 +199,7 @@ namespace StatisticCommon
                 }
             }
 
-            base.loadParam();
+            base.loadParam(bInit);
         }
 
         private void WriteTGIds(int id_time, int num_tg)
@@ -210,7 +212,7 @@ namespace StatisticCommon
             m_FileINI.WriteString(NAME_SECTION_TG_ID, "TG" + (num_tg + 1).ToString() + " " + NAME_TIME[id_time], key_value);
         }
 
-        public override void saveParam()
+        protected override void saveParam()
         {
             for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
             {
@@ -251,7 +253,7 @@ namespace StatisticCommon
             else
                 m_tec = list_tec [indx_tec];
 
-            loadParam();
+            loadParam(true);
         }
 
         private void Start () {
@@ -272,7 +274,7 @@ namespace StatisticCommon
             return @"[SENSORS_NAME] LIKE '" + SENSORS_NAME_PREFIX + num.ToString() + SENSORS_NAME_POSTFIX + @"'";
         }
 
-        public override void loadParam()
+        protected override void loadParam(bool bInit)
         {
             int j = -1
                 , err = -1
@@ -336,7 +338,7 @@ namespace StatisticCommon
                     }
 
                     if (!(j < COUNT_TG))
-                        base.loadParam ();
+                        base.loadParam (bInit);
                     else
                         ;
                 }
@@ -349,7 +351,7 @@ namespace StatisticCommon
             Stop ();
         }
 
-        public override void saveParam()
+        protected override void saveParam()
         {
             Start ();
 

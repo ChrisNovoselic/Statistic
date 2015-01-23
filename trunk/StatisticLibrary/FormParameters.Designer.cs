@@ -50,7 +50,7 @@ namespace StatisticCommon
             this.m_dgvData.Columns[2].Resizable = DataGridViewTriState.False;
 
             this.m_dgvData.Location = new System.Drawing.Point (6, 6);
-            this.m_dgvData.Size = new System.Drawing.Size (238, 78);
+            this.m_dgvData.Size = new System.Drawing.Size (238, 278);
 
             this.m_dgvData.RowHeadersWidth = 40;
             
@@ -59,7 +59,7 @@ namespace StatisticCommon
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(250, 125);
+            this.ClientSize = new System.Drawing.Size(250, 325);
             this.Controls.Add(this.m_dgvData);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;

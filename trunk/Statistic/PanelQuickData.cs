@@ -1070,12 +1070,15 @@ namespace Statistic
                                     m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
                         if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;
 
-                        Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal.ToString(@"F3")
-                                            + @" (valueEBefore=" + valueEBefore.ToString(@"F3")
-                                            + @"; valueECur=" + valueECur.ToString (@"F3")
-                                            + @"; valueEFuture=" + valueEFuture.ToString(@"F3")
-                                            + @"; valuesUDGe=" + m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe
-                                            + @") [" + hour + @", " + m_parent.m_tecView.lastMin + @"]");
+                        if (HAdmin.m_markDebugLog.IsMarked ((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.DEVIATION_EVAL))
+                            Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal.ToString(@"F3")
+                                                + @" (valueEBefore=" + valueEBefore.ToString(@"F3")
+                                                + @"; valueECur=" + valueECur.ToString (@"F3")
+                                                + @"; valueEFuture=" + valueEFuture.ToString(@"F3")
+                                                + @"; valuesUDGe=" + m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe
+                                                + @") [" + hour + @", " + m_parent.m_tecView.lastMin + @"]");
+                        else
+                            ;
                     }
                     else
                         bDevEVal = false;

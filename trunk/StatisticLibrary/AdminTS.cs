@@ -1251,14 +1251,7 @@ namespace StatisticCommon
             date = date.Date;
             int currentHour = getCurrentHour (date);
 
-            bool bLogPBRNmber = false;
-            if (!(FormMainBase.DelegateGetINIParametersOfKEY == null))
-                bLogPBRNmber = bool.Parse(FormMainBase.DelegateGetINIParametersOfKEY(@"SetPBRQuery LogPBRNumber"));
-            else
-                if (!(FormMainBase.DelegateGetINIParametersOfID == null))
-                    ; //bLogPBRNmber = bool.Parse(FormMainBase.DelegateGetINIParametersOfID(...));
-                else
-                    ;
+            bool bLogPBRNmber = m_markDebugLog.IsMarked ((int)INDEX_DEBUGLOG_MESSAGE.SET_PBR_QUERY_NUMBER);
 
             for (int i = currentHour; i < 24; i++)
             {

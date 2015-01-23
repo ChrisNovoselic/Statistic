@@ -16,23 +16,23 @@ namespace StatisticCommon
                                     , SEASON_DATETIME, SEASON_ACTION
                                     //, GRINVICH_OFFSET_DATETIME
                                     , APP_VERSION, APP_VERSION_QUERY_INTERVAL
-                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER
+                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, TECVIEW_LOGRECOMENDATIONVAL, PANELQUICKDATA_LOGDEVIATIONEVAL
                                     , COUNT_PARAMETR_SETUP };
-        protected string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
+        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
                                                     @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
                                                     , @"App Version", @"App Version Query Interval"
-                                                    , @"SetPBRQuery LogPBRNumber"
+                                                    , @"SetPBRQuery LogPBRNumber", @"TecView LogRecomendation", @"ShowFactValues LogDevEVal"
                                                     };
-        protected string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
+        protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                     /*@"лог", */"сек", "сек",
                                                     @"стр", @"ном", @"ном"
                                                     , @"дата/время", @"ном"
                                                     //, "час"
                                                     , @"стр", @"мсек"
-                                                    , @"стр-лог"
+                                                    , @"стр-лог", @"стр-лог", @"стр-лог"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -69,17 +69,35 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"6666");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, @"False");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 
-            this.btnCancel.Location = new System.Drawing.Point(8, 90);
-            this.btnOk.Location = new System.Drawing.Point(89, 90);
-            this.btnReset.Location = new System.Drawing.Point(170, 90);
+            this.btnCancel.Location = new System.Drawing.Point(8, 290);
+            this.btnOk.Location = new System.Drawing.Point(89, 290);
+            this.btnReset.Location = new System.Drawing.Point(170, 290);
 
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
 
             mayClose = false;
+        }
+
+        protected void setDataGUI (bool bInit) {
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+            {
+                if (bInit == true)
+                {
+                    m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
+
+                    m_dgvData.Rows[(int)i].Height = 19;
+                    m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                    m_dgvData.Rows[(int)i].HeaderCell.Value = ((int)i).ToString();
+                }
+                else
+                    m_dgvData.Rows[(int)i].Cells[1].Value = m_arParametrSetup[(int)i];
+            }
         }
 
         //protected override void btnOk_Click(object sender, EventArgs e)
@@ -116,10 +134,12 @@ namespace StatisticCommon
             //ProgramBase.s_iAppID = Int32.Parse(m_arParametrSetup[(int)PARAMETR_SETUP.ID_APP]);
             //ProgramBase.s_iAppID = Properties.s
 
-            loadParam();
+            loadParam(true);
         }
 
-        public override void loadParam()
+        public override void Update(out int err) { err = -1; }
+
+        protected override void loadParam(bool bInit)
         {
             string strDefault = string.Empty;
 
@@ -135,17 +155,10 @@ namespace StatisticCommon
                     ;
             }
 
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-            {
-                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
-
-                m_dgvData.Rows[(int)i].Height = 19;
-                m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                m_dgvData.Rows[(int)i].HeaderCell.Value = ((int)i).ToString();
-            }
+            setDataGUI (bInit);
         }
 
-        public override void saveParam()
+        protected override void saveParam()
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
@@ -167,14 +180,27 @@ namespace StatisticCommon
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
             if (err == 0)
-                loadParam();
+                loadParam(true);
             else
                 ;
 
             DbSources.Sources().UnRegister(idListener);
         }
 
-        public override void loadParam()
+        public override void Update (out int err) {
+            err = -1;
+            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+
+            if (err == 0)
+                loadParam(false);
+            else
+                ;
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        protected override void loadParam(bool bInit)
         {
             string strDefault = string.Empty;
 
@@ -190,17 +216,10 @@ namespace StatisticCommon
                     ;
             }
 
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-            {
-                m_dgvData.Rows.Insert((int)i, new object[] { NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], NAMESI_PARAMETR_SETUP[(int)i] });
-
-                m_dgvData.Rows[(int)i].Height = 19;
-                m_dgvData.Rows[(int)i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                m_dgvData.Rows[(int)i].HeaderCell.Value = ((int)i).ToString();
-            }
+            setDataGUI (bInit);
         }
 
-        public override void saveParam()
+        protected override void saveParam()
         {
             int err = -1;
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
@@ -217,6 +236,11 @@ namespace StatisticCommon
 
         private string readString (string key, string valDef) {
             return ReadString (ref m_dbConn, key, valDef);
+        }
+
+        public static string ReadString(ref DbConnection dbConn, int key, string valDef)
+        {
+            return ReadString (ref dbConn, NAME_PARAMETR_SETUP [key], valDef);
         }
 
         public static string ReadString(ref DbConnection dbConn, string key, string valDef)
@@ -242,7 +266,7 @@ namespace StatisticCommon
             int err = -1;
             string query = string.Empty;
             //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
-            query = string.Format(@"UPDATE setup SET [VALUE] = '{0}' WHERE [KEY]='{1}'", key, val);
+            query = string.Format(@"UPDATE setup SET [VALUE] = '{0}' WHERE [KEY]='{1}'", val, key);
             DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
         }
     }

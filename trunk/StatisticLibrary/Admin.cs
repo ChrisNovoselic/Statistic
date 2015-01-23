@@ -98,6 +98,15 @@ namespace StatisticCommon
         protected int[,] m_arHaveDates;
         protected int m_iHavePBR_Number;
 
+        public enum INDEX_DEBUGLOG_MESSAGE { SET_PBR_QUERY_NUMBER
+                                            , RECOMENDATION_VAL
+                                            , DEVIATION_EVAL
+            , COUNT_INDEX_DEBUGLOG_MESSAGE };
+        private static int[] m_arDebugLogMessageIds = new int[(int)INDEX_DEBUGLOG_MESSAGE.COUNT_INDEX_DEBUGLOG_MESSAGE] { (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER
+                                                                                                                    , (int)FormParameters.PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL
+                                                                                                                    , (int)FormParameters.PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL };
+        public static HMark m_markDebugLog;
+
         private static int m_iSeasonAction;
         public static int SeasonAction {
             get { return m_iSeasonAction; } set { m_iSeasonAction = value; }
@@ -141,6 +150,29 @@ namespace StatisticCommon
             //    m_curRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //    m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //}
+
+            if (m_markDebugLog == null)
+            {
+                m_markDebugLog = new HMark ();
+                UpdateMarkDebugLog ();
+            }
+            else
+                ; //Инициализация уже проведена
+        }
+
+        public static void UpdateMarkDebugLog () {
+            bool bMarked = false;
+            for (int i = (int)INDEX_DEBUGLOG_MESSAGE.SET_PBR_QUERY_NUMBER; i < (int)INDEX_DEBUGLOG_MESSAGE.COUNT_INDEX_DEBUGLOG_MESSAGE; i ++) {
+                bMarked = false;
+                if (!(FormMainBase.DelegateGetINIParametersOfKEY == null))
+                    ; //bMarked = bool.Parse(FormMainBase.DelegateGetINIParametersOfKey(...));
+                else
+                    if (!(FormMainBase.DelegateGetINIParametersOfID == null))
+                        bMarked = bool.Parse(FormMainBase.DelegateGetINIParametersOfID(m_arDebugLogMessageIds[i]));
+                    else
+                        ;
+                m_markDebugLog.Set (i, bMarked);
+            }
         }
 
         /// <summary>
