@@ -1352,7 +1352,7 @@ namespace StatisticCommon
                 else
                 {
                     string strPBRNumber = string.Empty;
-                    if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
+                    if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > @"œ¡–".Length))
                         strPBRNumber = m_curRDGValues[i].pbr_number;
                     else
                         strPBRNumber = getNamePBRNumber();
