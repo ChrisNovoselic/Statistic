@@ -125,7 +125,6 @@ namespace StatisticCommon
 
         public HAdmin()
         {
-
             m_iHavePBR_Number = -1;
 
             Initialize ();
@@ -482,10 +481,47 @@ namespace StatisticCommon
         }
 
         protected string getNamePBRNumber (int hour = -1) {
-            return @"ÏÁĞ" + this.GetPBRNumber (hour);
+            return @"ÏÁĞ" + getPBRNumber (hour);
         }
 
-        public virtual int GetPBRNumber(int hour = -1)
+        public int GetPBRNumber(int indx = -1)
+        {
+            int iRes = -1
+                , iIndx = indx;
+
+            if (iIndx < 0)
+                iIndx = m_curRDGValues.Length - 1;
+            else
+                ;
+
+            if (m_curDate.Date.CompareTo(serverTime.Date) == 0)
+                if ((!(m_curRDGValues == null))
+                    && (!(m_curRDGValues[iIndx].pbr_number == null))
+                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ÏÁĞ".Length))
+                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ÏÁĞ".Length), out iRes) == false)
+                        iRes = getPBRNumber();
+                    else
+                        ;
+                else
+                    iRes = getPBRNumber();
+            else
+                if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
+                    if ((!(m_curRDGValues == null))
+                        && (!(m_curRDGValues[iIndx].pbr_number == null))
+                        && (m_curRDGValues[iIndx].pbr_number.Length > @"ÏÁĞ".Length))
+                        if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ÏÁĞ".Length), out iRes) == false)
+                            iRes = 0; //Ïğåäâàğèòåëüíûé ÏÁĞ
+                        else
+                            ;
+                    else
+                        iRes = getPBRNumber();
+                else
+                    ;
+
+            return iRes;
+        }
+
+        protected int getPBRNumber(int hour = -1)
         {
             int iRes = -1
                 , iHour = hour;

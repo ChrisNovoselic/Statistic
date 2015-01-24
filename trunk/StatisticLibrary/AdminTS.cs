@@ -962,6 +962,7 @@ namespace StatisticCommon
         protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             int addingVal = -1;
+            string pbr_number = string.Empty;
 
             if (type == CONN_SETT_TYPE.ADMIN)
                 addingVal = (int)HAdmin.seasonJumpE.None;
@@ -991,10 +992,21 @@ namespace StatisticCommon
                         ;
 
                     //if (!(table.Columns.IndexOf(@"PBR_NUMBER") < 0))
-                    if (type == CONN_SETT_TYPE.PBR) {
-                        addingVal = Int32.Parse(table.Rows[i][@"PBR_NUMBER"].ToString ().Substring (@"œ¡–".Length));
-                        if (m_iHavePBR_Number < addingVal)
-                            m_iHavePBR_Number = addingVal;
+                    if (type == CONN_SETT_TYPE.PBR)
+                    {
+                        pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
+                        if (pbr_number.Length > @"œ¡–".Length)
+                        {
+                            pbr_number = pbr_number.Substring(@"œ¡–".Length);
+
+                            if (Int32.TryParse(pbr_number, out addingVal) == true)
+                                if (m_iHavePBR_Number < addingVal)
+                                    m_iHavePBR_Number = addingVal;
+                                else
+                                    ;
+                            else
+                                m_iHavePBR_Number = 0;
+                        }
                         else
                             ;
                     }
@@ -1269,10 +1281,7 @@ namespace StatisticCommon
                             if (t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR].Equals (string.Empty) == false)  {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + " SET " +
                                 @"PBR_NUMBER='";
-                                if ((! (m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
-                                else
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getNamePBRNumber();
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"'" +
                                             @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
                                             @", " + name + @"_" + @"Pmin" + "='" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
@@ -1318,10 +1327,7 @@ namespace StatisticCommon
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
                                             " SET " +
                                             @"PBR_NUMBER='";
-                                if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
-                                else
-                                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += getNamePBRNumber();
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
                                             @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             @", OWNER=" + m_sOwner_PBR +
@@ -1346,8 +1352,6 @@ namespace StatisticCommon
                 else
                 {
                     string strPBRNumber = string.Empty;
-                    //strPBRNumber = getNamePBRNumber(DateTime.Now.Hour);
-                    strPBRNumber = m_curRDGValues[i].pbr_number;
                     if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > 3))
                         strPBRNumber = m_curRDGValues[i].pbr_number;
                     else
@@ -2593,35 +2597,6 @@ namespace StatisticCommon
             }
 
             return false;
-        }
-
-        public override int GetPBRNumber(int indx = -1)
-        {
-            int iRes = -1
-                , iIndx = indx;
-
-            if (iIndx < 0)
-                iIndx = m_curRDGValues.Length - 1;
-            else
-                ;
-
-            if (m_curDate.Date.CompareTo (serverTime.Date) == 0)
-                if ((! (m_curRDGValues == null))
-                    && (! (m_curRDGValues[iIndx].pbr_number == null))
-                    && (m_curRDGValues[iIndx].pbr_number.Length > @"œ¡–".Length))
-                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"œ¡–".Length), out iRes) == false)
-                        iRes = base.GetPBRNumber();
-                    else
-                        ;
-                else
-                    iRes = base.GetPBRNumber();
-            else
-                if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
-                    iRes = base.GetPBRNumber(0);
-                else
-                    ;
-
-            return iRes;
         }
     }
 }
