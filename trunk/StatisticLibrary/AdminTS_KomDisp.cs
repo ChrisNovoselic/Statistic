@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
@@ -10,32 +11,30 @@ namespace StatisticCommon
 {
     public class AdminTS_KomDisp : AdminTS
     {
-        string m_fullPathPPBRCSVValue; //Для возможности импорта ПБР из *.csv
+        string m_fullPathCSVValues; //Для возможности импорта ПБР из *.csv
         private static string s_strMarkSession = @"ГТП(генерация) Сессия(";
 
         public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
             : base(arMarkSavePPBRValues)
         {
-            delegateImportForeignValuesRequuest = ImpPPBRCSVValuesRequest;
-            //delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
-            delegateImportForeignValuesResponse = ImpPPBRCSVValuesResponse;
-            //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
+            delegateImportForeignValuesRequuest = ImpCSVValuesRequest;
+            delegateImportForeignValuesResponse = ImpCSVValuesResponse;
         }
 
         //Вызов из панели ком./дисп.
-        public int ImpPPBRCSVValues(DateTime date, string fullPath)
+        public int ImpCSVValues(DateTime date, string fullPath)
         {
             int iRes = 0; //Нет ошибки
 
-            if (!(m_tablePPBRValuesResponse == null))
+            if (!(m_tableValuesResponse == null))
             {
-                m_tablePPBRValuesResponse.Clear();
-                m_tablePPBRValuesResponse = null;
+                m_tableValuesResponse.Clear();
+                m_tableValuesResponse = null;
             }
             else
                 ;
 
-            m_fullPathPPBRCSVValue = fullPath;
+            m_fullPathCSVValues = fullPath;
 
             if (iRes == 0)
                 lock (m_lockState)
@@ -53,7 +52,7 @@ namespace StatisticCommon
                     m_prevDate = date.Date;
                     m_curDate = m_prevDate;
 
-                    states.Add((int)StatesMachine.PPBRCSVValues);
+                    states.Add((int)StatesMachine.CSVValues);
 
                     try
                     {
@@ -68,27 +67,78 @@ namespace StatisticCommon
                 ; //Ошибка
 
             if (!(iRes == 0))
-                m_fullPathPPBRCSVValue = string.Empty;
+                m_fullPathCSVValues = string.Empty;
             else ;
 
             return iRes;
         }
 
-        private void ImpPPBRCSVValuesRequest()
+        private void impCSVValues(out int err)
         {
-            //Противоположные операции при завершении потока 'threadPPBRCSVValues'
-            //Разрешить запись ПБР-значений
-            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
-            //Запретить запись Админ-значений
-            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
+            err = -1;
 
+            //strCSVNameFileTemp = strPPBRCSVNameFile;
+            string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
+
+            strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
+            strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
+            strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
+            strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
+            strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
+                                    strCSVNameFileTemp +
+                                    Path.GetExtension(m_fullPathCSVValues);
+
+            ////при аргументе = каталог размещения наборов
+            //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
+            //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
+
+            //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
+            File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
+
+            StreamReader sr = new StreamReader(strCSVNameFileTemp);
+            string cont = sr.ReadToEnd().Replace(',', '.');
+            sr.Close(); sr.Dispose();
+            StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
+            sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
+
+            if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
+
+            if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
+                //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
+                //                                                        @"SELECT * FROM ["
+                //                                                        //+ @"Sheet1$"
+                //                                                        + Path.GetFileName (strCSVNameFileTemp)
+                //                                                        + @"]"
+                //                                                        //+ @" WHERE GTP_ID='" +
+                //                                                        //allTECComponents[indxTECComponents].name_future +
+                //                                                        //@"'"
+                //                                                        , out err);
+                m_tableValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strCSVNameFileTemp)
+                                                                    + @"\" + Path.GetFileName(strCSVNameFileTemp)
+                                                                    , @"*"
+                                                                    , out err);
+            else
+                ;
+
+            //Logging.Logg ().LogLock ();
+            //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
+            //Logging.Logg().LogUnlock();
+
+            File.Delete(strCSVNameFileTemp);
+
+            if (!(err == 0))
+            {
+                m_tableValuesResponse.Clear();
+                m_tableValuesResponse = null;
+            }
+            else
+                ;
+        }
+
+        private void ImpCSVValuesRequest()
+        {
             int err = -1
                 , num_pbr = (int)GetPropertiesOfNameFilePPBRCSVValues()[1];
-            string strPPBRCSVNameFileTemp = string.Empty
-                ////при аргументе = каталог размещения наборов
-                //, strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr)
-                //, strCSVExt = @".csv"
-                    ;
 
             delegateStartWait();
 
@@ -102,60 +152,7 @@ namespace StatisticCommon
             //if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
             if ((num_pbr > 0) && (! (num_pbr < GetPBRNumber())))
             {
-                //strPPBRCSVNameFileTemp = strPPBRCSVNameFile;
-                strPPBRCSVNameFileTemp = Path.GetFileNameWithoutExtension (m_fullPathPPBRCSVValue);
-
-                strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace("(", string.Empty);
-                strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(")", string.Empty);
-                strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(".", string.Empty);
-                strPPBRCSVNameFileTemp = strPPBRCSVNameFileTemp.Replace(" ", string.Empty);
-                strPPBRCSVNameFileTemp = Path.GetDirectoryName(m_fullPathPPBRCSVValue) + @"\" +
-                                        strPPBRCSVNameFileTemp +
-                                        Path.GetExtension(m_fullPathPPBRCSVValue);
-
-                ////при аргументе = каталог размещения наборов
-                //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
-                //strPPBRCSVNameFileTemp = m_PPBRCSVDirectory + strPPBRCSVNameFileTemp + strCSVExt;
-
-                //File.Copy(strPPBRCSVNameFile, strPPBRCSVNameFileTemp, true);
-                File.Copy(m_fullPathPPBRCSVValue, strPPBRCSVNameFileTemp, true);
-
-                StreamReader sr = new StreamReader(strPPBRCSVNameFileTemp);
-                string cont = sr.ReadToEnd ().Replace (',', '.');
-                sr.Close (); sr.Dispose ();
-                StreamWriter sw = new StreamWriter(strPPBRCSVNameFileTemp);
-                sw.Write(cont); sw.Flush (); sw.Close (); sw.Dispose ();
-
-                if (!(m_tablePPBRValuesResponse == null)) m_tablePPBRValuesResponse.Clear(); else ;
-
-                if ((IsCanUseTECComponents() == true) && (strPPBRCSVNameFileTemp.Length > 0))
-                    //m_tablePPBRValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strPPBRCSVNameFileTemp),
-                    //                                                        @"SELECT * FROM ["
-                    //                                                        //+ @"Sheet1$"
-                    //                                                        + Path.GetFileName (strPPBRCSVNameFileTemp)
-                    //                                                        + @"]"
-                    //                                                        //+ @" WHERE GTP_ID='" +
-                    //                                                        //allTECComponents[indxTECComponents].name_future +
-                    //                                                        //@"'"
-                    //                                                        , out err);
-                    m_tablePPBRValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strPPBRCSVNameFileTemp)
-                                                                        + @"\" + Path.GetFileName(strPPBRCSVNameFileTemp)
-                                                                        , @"*"
-                                                                        , out err);
-                else
-                    ;
-
-                //Logging.Logg ().LogLock ();
-                //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
-                //Logging.Logg().LogUnlock();
-
-                File.Delete(strPPBRCSVNameFileTemp);
-
-                if (! (err == 0)) {
-                    m_tablePPBRValuesResponse.Clear();
-                    m_tablePPBRValuesResponse = null;
-                } else
-                    ;
+                impCSVValues(out err);
             }
             else
                 Logging.Logg().Action(@"Загрузка набора номер которого меньше, чем тек./час");
@@ -163,31 +160,60 @@ namespace StatisticCommon
             delegateStopWait();
         }
 
-        protected bool ImpPPBRCSVValuesResponse()
+        private bool ImpCSVValuesResponse()
         {
-            bool bRes = (((m_tablePPBRValuesResponse.Columns.Contains (@"GTP_ID") == true)
-                            && (m_tablePPBRValuesResponse.Columns.Contains (@"TotalBR") == true)
-                            && (m_tablePPBRValuesResponse.Columns.Contains(@"PminBR") == true)
-                            && (m_tablePPBRValuesResponse.Columns.Contains(@"PmaxBR") == true))
-                        && (m_tablePPBRValuesResponse.Rows.Count > 0)) ? true : false;
+            bool bRes = false;
+
+            int indxFieldtypeValues = 2;
+            List <string []> listFields = new List <string[]> ();
+            listFields.Add (new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"TotalBR", @"PminBR", @"PmaxBR" } );
+            listFields.Add (new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"FC", @"IS_PER", @"" } );
+
+            //Определить тип загружаемых значений
+            // по наличию в загруженной таблице поля с индексом [1]
+            int typeValues = -1;
+            for (typeValues = 0; typeValues < listFields.Count; typeValues ++)
+                if (m_tableValuesResponse.Columns.Contains(listFields[typeValues][indxFieldtypeValues]) == true)
+                    break;
+                else
+                    ;
+
+            if (typeValues < listFields.Count)
+                bRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[typeValues]);
+            else;
 
             if (bRes == true)
                 //'indxTECComponents' необходимо сохранить ??? - сохраняется в потоке !!!
-                new Thread(new ParameterizedThreadStart(threadPPBRCSVValues)).Start(null); //можно установить значение аргумента = 'm_curDate'
+                new Thread(new ParameterizedThreadStart(threadCSVValues)).Start(typeValues);
             else
-                Logging.Logg().Error(@"AdminTS_KomDisp::ImpPPBRCSVValuesResponse () - входная таблица не соответствует требованиям...");
+                Logging.Logg().Error(@"AdminTS_KomDisp::ImpCSVValuesResponse () - входная таблица не соответствует требованиям...");
 
             return bRes;
         }
 
-        private void threadPPBRCSVValues(object date)
+        private void threadCSVValues(object type)
         {
             Errors errRes = Errors.NoError;
 
+            //Определить тип загружаемых значений
+            int typeValues = (int)type;
+
             int indxEv = -1
                 , prevIndxTECComponents = indxTECComponents;
+            string strPBRNumber = string.Empty; // ...только для ПБР
 
-            string strPBRNumber = getNamePBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues ()[1]);
+            if (typeValues == 0)
+            {//Только для ПБР
+                //Противоположные операции при завершении потока 'threadPPBRCSVValues'
+                //Разрешить запись ПБР-значений
+                if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+                //Запретить запись Админ-значений
+                if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
+
+                strPBRNumber = getNamePBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues()[1]);
+            }
+            else
+                ;
 
             //Снять все признаки причин прекращения выполнения обработки событий
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
@@ -199,7 +225,7 @@ namespace StatisticCommon
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
                     {
-                        errRes = savePPBRCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
+                        errRes = saveCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
                     }
                     else
                         //Ошибка ???
@@ -211,20 +237,25 @@ namespace StatisticCommon
                     ;
 
             //Очистить таблицу, полученную из CSV-файла
-            m_tablePPBRValuesResponse.Clear ();
-            m_tablePPBRValuesResponse = null;
+            m_tableValuesResponse.Clear ();
+            m_tableValuesResponse = null;
 
-            //Противоположные операции в 'ImpPPBRCSVValuesRequest'
-            //Запретить запись ПБР-значений
-            // , запрет устанавливается автоматически 
-            //Разрешить запись Админ-значений
-            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
+            if (typeValues == 0)
+            {//Только для ПБР
+                //Противоположные операции в 'ImpPPBRCSVValuesRequest'
+                //Запретить запись ПБР-значений
+                // , запрет устанавливается автоматически 
+                //Разрешить запись Админ-значений
+                if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE); else ;
+            }
+            else
+                ;
 
             //Обновить значения на вкладке
             GetRDGValues (m_typeFields, prevIndxTECComponents);
         }
 
-        private Errors savePPBRCSVValues (int indx, string pbr_number) {
+        private Errors saveCSVValues (int indx, string pbr_number) {
             Errors errRes = Errors.NoSet;
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
@@ -232,7 +263,7 @@ namespace StatisticCommon
             double val = -1F;
 
             //Получить значения для сохранения
-            DataRow [] rowsTECComponent = m_tablePPBRValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
+            DataRow [] rowsTECComponent = m_tableValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
             //Проверить наличие записей для ГТП
             if (rowsTECComponent.Length > 0)
             {
@@ -307,7 +338,7 @@ namespace StatisticCommon
 
         public object[] GetPropertiesOfNameFilePPBRCSVValues()
         {
-            return GetPropertiesOfNameFilePPBRCSVValues(m_fullPathPPBRCSVValue);
+            return GetPropertiesOfNameFilePPBRCSVValues(m_fullPathCSVValues);
         }
 
         private string getNameFileSessionPPBRCSVValues(int num_pbr)

@@ -17,7 +17,8 @@ namespace Statistic
 {
     public class PanelAdminKomDisp : PanelAdmin
     {
-        private System.Windows.Forms.Button btnImportCSV;
+        private System.Windows.Forms.Button btnImportCSV_PBRValues;
+        private System.Windows.Forms.Button btnImportCSV_AdminDefaultValues;
 
         private System.Windows.Forms.CheckBox m_cbxAlarm;
         private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
@@ -73,11 +74,41 @@ namespace Statistic
         public AdminAlarm m_adminAlarm;
         private PanelLabelAlarm m_panelLabelAlarm;
 
+        private enum INDEX_CONTROL_UI { BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+                                        , GBX_DIVIDEALARM , CBX_ALARM
+                                        , LABEL_KOEFFALARMCURPOWER, NUDN_KOEFFALARMCURPOWER, BUTTON_ALARMCURPOWER, BUTTON_ALARMTGTUTNONOFF
+                                        , PANEL_ALARMSOURCES
+                                        , COUNT };
+
         protected override void InitializeComponents()
         {
             base.InitializeComponents ();
 
-            this.btnImportCSV = new System.Windows.Forms.Button();
+            int posY = 276
+                , offsetPosY = m_iSizeY + 2 * m_iMarginY
+                , indx = -1;
+            Rectangle[] arRectControlUI = new Rectangle[] {
+                //new Rectangle (new Point (10, 281), new Size (154, 23)) //btnImportCSV_PBRValues, BUTTON_CSV_IMPORT_PBR
+                //, new Rectangle (new Point (10, 307), new Size (154, 8)) //gbxDividerAlarm
+                //, new Rectangle (new Point (12, 323), new Size (-1, -1)) //cbxAlarm
+                //, new Rectangle (new Point (10, 326), new Size (-1, -1)) //lblKoeffAlarmCurPower
+                //, new Rectangle (new Point (116, 323), new Size (48, 20)) //nudnKoeffAlarmCurPower
+                //, new Rectangle (new Point (10, 352), new Size (154, 23)) //btnAlarmCurPower
+                //, new Rectangle (new Point (10, 381), new Size (154, 23)) //btnAlarmTGTurnOnOff
+                //, new Rectangle (new Point (10, 410), new Size (154, 6 * 29))
+                new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //btnImportCSV_PBRValues, BUTTON_CSV_IMPORT_PBR
+                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //btnImportCSV_AdminDefaultValues, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+                , new Rectangle (new Point (10, posY + 2 * (m_iSizeY + m_iMarginY)), new Size (154, 8)) //gbxDividerAlarm
+                , new Rectangle (new Point (12, posY + 3 * (m_iSizeY + m_iMarginY)), new Size (-1, -1)) //cbxAlarm
+                , new Rectangle (new Point (10, posY + 3 * (m_iSizeY + m_iMarginY) + (m_iSizeY + m_iMarginY)), new Size (-1, -1)) //lblKoeffAlarmCurPower
+                , new Rectangle (new Point (116, posY + 3 * (m_iSizeY + m_iMarginY) + (m_iSizeY + 0)), new Size (48, (m_iSizeY - m_iMarginY))) //nudnKoeffAlarmCurPower
+                , new Rectangle (new Point (10, posY + 4 * (m_iSizeY + m_iMarginY) + offsetPosY), new Size (154, m_iSizeY)) //btnAlarmCurPower
+                , new Rectangle (new Point (10, posY + 5 * (m_iSizeY + m_iMarginY) + offsetPosY), new Size (154, m_iSizeY)) //btnAlarmTGTurnOnOff
+                , new Rectangle (new Point (10, posY + 6 * (m_iSizeY + m_iMarginY) + offsetPosY), new Size (154, 6 * offsetPosY))
+            };
+            
+            this.btnImportCSV_PBRValues = new System.Windows.Forms.Button();
+            this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
 
             this.m_cbxAlarm = new CheckBox();
@@ -92,7 +123,8 @@ namespace Statistic
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
-            this.m_panelManagement.Controls.Add(this.btnImportCSV);
+            this.m_panelManagement.Controls.Add(this.btnImportCSV_PBRValues);
+            this.m_panelManagement.Controls.Add(this.btnImportCSV_AdminDefaultValues);
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
 
             this.m_panelManagement.Controls.Add(m_cbxAlarm);
@@ -105,16 +137,29 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(m_btnAlarmTGTurnOnOff);
 
             // 
-            // btnImportCSV
+            // btnImportCSV_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.BUTTON_CSV_IMPORT_PBR;
+            this.btnImportCSV_PBRValues.Location = arRectControlUI [indx].Location;
+            this.btnImportCSV_PBRValues.Name = "btnImportCSV_PBRValues";
+            this.btnImportCSV_PBRValues.Size = arRectControlUI[indx].Size;
+            this.btnImportCSV_PBRValues.TabIndex = 2;
+            this.btnImportCSV_PBRValues.Text = "Импорт из формата CSV";
+            this.btnImportCSV_PBRValues.UseVisualStyleBackColor = true;
+            this.btnImportCSV_PBRValues.Click += new System.EventHandler(this.btnImportCSV_PBRValues_Click);
+            this.btnImportCSV_PBRValues.Enabled = true;
             // 
-            this.btnImportCSV.Location = new System.Drawing.Point(10, 281);
-            this.btnImportCSV.Name = "btnImportCSV";
-            this.btnImportCSV.Size = new System.Drawing.Size(154, 23);
-            this.btnImportCSV.TabIndex = 2;
-            this.btnImportCSV.Text = "Импорт из формата CSV";
-            this.btnImportCSV.UseVisualStyleBackColor = true;
-            this.btnImportCSV.Click += new System.EventHandler(this.btnImportCSV_Click);
-            this.btnImportCSV.Enabled = true;
+            // btnImportCSV_AdminDefaultValues
+            // 
+            indx = (int)INDEX_CONTROL_UI.BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT;
+            this.btnImportCSV_AdminDefaultValues.Location = arRectControlUI[indx].Location;
+            this.btnImportCSV_AdminDefaultValues.Name = "btnImportCSV_AdminDefaultValues";
+            this.btnImportCSV_AdminDefaultValues.Size = arRectControlUI[indx].Size;
+            this.btnImportCSV_AdminDefaultValues.TabIndex = 2;
+            this.btnImportCSV_AdminDefaultValues.Text = "Реком. по умолчанию";
+            this.btnImportCSV_AdminDefaultValues.UseVisualStyleBackColor = true;
+            this.btnImportCSV_AdminDefaultValues.Click += new System.EventHandler(this.btnImportCSV_AdminValuesDefault_Click);
+            this.btnImportCSV_AdminDefaultValues.Enabled = true;
             // 
             // dgwAdminTable
             //
@@ -128,19 +173,21 @@ namespace Statistic
             // 
             // gbxDividerChoice
             // 
-            this.m_gbxDividerAlarm.Location = new System.Drawing.Point(10, 307);
+            indx = (int)INDEX_CONTROL_UI.GBX_DIVIDEALARM;
+            this.m_gbxDividerAlarm.Location = arRectControlUI[indx].Location;
             this.m_gbxDividerAlarm.Name = "gbxDividerAlarm";
-            this.m_gbxDividerAlarm.Size = new System.Drawing.Size(154, 8);
+            this.m_gbxDividerAlarm.Size = arRectControlUI[indx].Size;
             this.m_gbxDividerAlarm.TabIndex = 4;
             this.m_gbxDividerAlarm.TabStop = false;
 
             // 
             // m_cbxAlarm
             // 
+            indx = (int)INDEX_CONTROL_UI.CBX_ALARM;
             this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
             this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
 
-            this.m_cbxAlarm.Location = new System.Drawing.Point(12, 323);
+            this.m_cbxAlarm.Location = arRectControlUI[indx].Location;
             this.m_cbxAlarm.Name = "cbxAlarm";
             //this.m_cbxAlarm.Size = new System.Drawing.Size(154, 8);
             this.m_cbxAlarm.AutoSize = true;
@@ -149,12 +196,13 @@ namespace Statistic
             this.m_cbxAlarm.Text = @"Сигнализация вкл.";
             this.m_cbxAlarm.CheckedChanged += new EventHandler(cbxAlarm_CheckedChanged);
 
-            int offsetPosY = 28;
+            offsetPosY = 26; //28
             //
             // lblKoeffAlarmCurPower
             //
+            indx = (int)INDEX_CONTROL_UI.LABEL_KOEFFALARMCURPOWER;
             this.lblKoeffAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
-            this.lblKoeffAlarmCurPower.Location = new System.Drawing.Point(10, 326 + offsetPosY);
+            this.lblKoeffAlarmCurPower.Location = arRectControlUI[indx].Location;
             this.lblKoeffAlarmCurPower.Name = "lblKoeffAlarmCurPower";
             this.lblKoeffAlarmCurPower.AutoSize = true;
             //this.lblKoeffAlarmCurPower.Size = new System.Drawing.Size(70, 20);
@@ -165,10 +213,11 @@ namespace Statistic
             // 
             // m_nudnKoeffAlarmCurPower
             // 
+            indx = (int)INDEX_CONTROL_UI.NUDN_KOEFFALARMCURPOWER;
             m_nudnKoeffAlarmCurPower.Enabled = this.m_cbxAlarm.Checked;
-            m_nudnKoeffAlarmCurPower.Location = new System.Drawing.Point(116, 323 + offsetPosY);
+            m_nudnKoeffAlarmCurPower.Location = arRectControlUI[indx].Location;
             m_nudnKoeffAlarmCurPower.Name = "nudnKoeffAlarmCurPower";
-            m_nudnKoeffAlarmCurPower.Size = new System.Drawing.Size(48, 20);
+            m_nudnKoeffAlarmCurPower.Size = arRectControlUI[indx].Size;
             m_nudnKoeffAlarmCurPower.TabIndex = 26;
             m_nudnKoeffAlarmCurPower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             m_nudnKoeffAlarmCurPower.Minimum = 2M;
@@ -180,10 +229,11 @@ namespace Statistic
             // 
             // m_btnAlarmCurPower
             // 
+            indx = (int)INDEX_CONTROL_UI.BUTTON_ALARMCURPOWER;
             this.m_btnAlarmCurPower.Enabled = false;
-            this.m_btnAlarmCurPower.Location = new System.Drawing.Point(10, 352 + offsetPosY);
+            this.m_btnAlarmCurPower.Location = arRectControlUI[indx].Location;
             this.m_btnAlarmCurPower.Name = "btnAlarmCurPower";
-            this.m_btnAlarmCurPower.Size = new System.Drawing.Size(154, 23);
+            this.m_btnAlarmCurPower.Size = arRectControlUI[indx].Size;
             this.m_btnAlarmCurPower.TabIndex = 2;
             this.m_btnAlarmCurPower.Text = "Подтв. сигн. Pтек";
             this.m_btnAlarmCurPower.UseVisualStyleBackColor = true;
@@ -192,10 +242,11 @@ namespace Statistic
             // 
             // m_btnAlarmTGTurnOnOff
             // 
+            indx = (int)INDEX_CONTROL_UI.BUTTON_ALARMTGTUTNONOFF;
             this.m_btnAlarmTGTurnOnOff.Enabled = false;
-            this.m_btnAlarmTGTurnOnOff.Location = new System.Drawing.Point(10, 381 + offsetPosY);
+            this.m_btnAlarmTGTurnOnOff.Location = arRectControlUI[indx].Location;
             this.m_btnAlarmTGTurnOnOff.Name = "btnAlarmTGTurnOnOff";
-            this.m_btnAlarmTGTurnOnOff.Size = new System.Drawing.Size(154, 23);
+            this.m_btnAlarmTGTurnOnOff.Size = arRectControlUI[indx].Size;
             this.m_btnAlarmTGTurnOnOff.TabIndex = 2;
             this.m_btnAlarmTGTurnOnOff.Text = "Подтв. сигн. ТГвкл/откл";
             this.m_btnAlarmTGTurnOnOff.UseVisualStyleBackColor = true;
@@ -204,9 +255,10 @@ namespace Statistic
             // 
             // m_panelLabelAlarm
             // 
+            indx = (int)INDEX_CONTROL_UI.PANEL_ALARMSOURCES;
             this.m_panelLabelAlarm.Enabled = false;
-            this.m_panelLabelAlarm.Location = new System.Drawing.Point(10, 410 + offsetPosY);
-            this.m_panelLabelAlarm.Size = new System.Drawing.Size(154, 6 * 29);
+            this.m_panelLabelAlarm.Location = arRectControlUI[indx].Location;
+            this.m_panelLabelAlarm.Size = arRectControlUI[indx].Size;
             //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)((AnchorStyles.Left | AnchorStyles.Right) | (AnchorStyles.Bottom)));
             //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)((AnchorStyles.Left | AnchorStyles.Bottom) | (AnchorStyles.Right)));
             //this.m_panelLabelAlarm.Anchor = ((AnchorStyles)(AnchorStyles.Left | AnchorStyles.Bottom));
@@ -526,7 +578,7 @@ namespace Statistic
                 ;
         }
 
-        private void btnImportCSV_Click(object sender, EventArgs e)
+        private void btnImportCSV_PBRValues_Click(object sender, EventArgs e)
         {
             //Вариант №1 (каталог)
             //FolderBrowserDialog folders = new FolderBrowserDialog();
@@ -542,8 +594,8 @@ namespace Statistic
             //Вариант №2 (файл)
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
-            files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            //files.InitialDirectory = @"V:\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+            files.InitialDirectory = @"\\ne2844\2.X.X\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
             files.DefaultExt = @"csv";
             files.Filter = @"csv файлы (*.csv)|*.csv";
             files.Title = "Выберите файл с ПБР...";
@@ -600,12 +652,54 @@ namespace Statistic
 
                 //Еще одна проверка на ошибки (т.к. была возможность ее подтвердить)
                 if (iRes == 0)
-                    ((AdminTS_KomDisp)m_admin).ImpPPBRCSVValues(mcldrDate.SelectionStart, files.FileName);
+                    ((AdminTS_KomDisp)m_admin).ImpCSVPBRValues(mcldrDate.SelectionStart, files.FileName);
                 else
                     ;
             }
             else
                 ;
+        }
+
+        private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog files = new OpenFileDialog ();
+            files.Multiselect = false;
+            //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+            files.InitialDirectory = @"\\ne2844\2.X.X\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            files.DefaultExt = @"csv";
+            files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault.csv)|AdminValuesDefault.csv";
+            files.Title = "Выберите файл со рекомендациями по умолчанию...";
+
+            int iRes = -1;
+            if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
+                int days = (HAdmin.ToMoscowTimeZone(DateTime.Now).Date - m_admin.m_curDate.Date).Days;
+                if (days > 0)
+                {
+                    iRes = 0;
+                }
+                else
+                {
+                    if (days == 0)
+                    {
+                        string strMsg = string.Format(@"Рекомендации по умолчанию будут загружены на текущие сутки {0}.\nПродолжить?", HAdmin.ToMoscowTimeZone(DateTime.Now).Date);
+                        if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                            iRes = 0;
+                        else
+                            ;
+                    }
+                    else
+                    {
+                    }
+                }
+
+                if (iRes == 0)
+                    ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
+                else
+                    ;
+            }
+            else
+            {
+            }
         }
 
         private event DelegateIntIntFunc EventConfirm;

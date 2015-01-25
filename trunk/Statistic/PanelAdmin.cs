@@ -40,6 +40,9 @@ namespace Statistic
 
         public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
+        protected static int m_iSizeY = 21
+            , m_iMarginY = 3;
+
         protected virtual void InitializeComponents()
         {
             this.m_panelManagement = new Panel ();
@@ -103,12 +106,14 @@ namespace Statistic
             this.mcldrDate.MaxSelectionCount = 1;
             this.mcldrDate.ShowToday = false;
             this.mcldrDate.ShowTodayCircle = false;
+
+            int posY = 204;
             // 
             // btnSet
             // 
-            this.btnSet.Location = new System.Drawing.Point(10, 207);
+            this.btnSet.Location = new System.Drawing.Point(10, posY);
             this.btnSet.Name = "btnSet";
-            this.btnSet.Size = new System.Drawing.Size(154, 23);
+            this.btnSet.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnSet.TabIndex = 2;
             this.btnSet.Text = "Сохранить в базу";
             this.btnSet.UseVisualStyleBackColor = true;
@@ -116,9 +121,9 @@ namespace Statistic
             // 
             // btnRefresh
             // 
-            this.btnRefresh.Location = new System.Drawing.Point(10, 237);
+            this.btnRefresh.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + 2 * m_iMarginY));
             this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(154, 23);
+            this.btnRefresh.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnRefresh.TabIndex = 2;
             this.btnRefresh.Text = "Обновить из базы";
             this.btnRefresh.UseVisualStyleBackColor = true;
@@ -126,7 +131,7 @@ namespace Statistic
             // 
             // gbxDividerChoice
             // 
-            this.gbxDividerChoice.Location = new System.Drawing.Point(10, 264);
+            this.gbxDividerChoice.Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + 2 * m_iMarginY));
             this.gbxDividerChoice.Name = "gbxDividerChoice";
             this.gbxDividerChoice.Size = new System.Drawing.Size(154, 8);
             this.gbxDividerChoice.TabIndex = 4;

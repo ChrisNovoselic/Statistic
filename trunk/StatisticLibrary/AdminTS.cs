@@ -47,7 +47,7 @@ namespace StatisticCommon
         protected DelegateFuncBool delegateImportForeignValuesResponse,
                                     delegateExportForeignValuesResponse;
 
-        protected DataTable m_tablePPBRValuesResponse,
+        protected DataTable m_tableValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
         protected enum StatesMachine
@@ -62,7 +62,7 @@ namespace StatisticCommon
             SaveAdminValues, //Сохранение административных данных
             SavePPBRValues, //Сохранение PPBR
             SaveRDGExcelValues,
-            PPBRCSVValues,
+            CSVValues,
             //UpdateValuesPPBR, //Обновление PPBR после 'SaveValuesPPBR'
             //GetPass,
             //SetPassInsert,
@@ -530,7 +530,7 @@ namespace StatisticCommon
         {
             bool bRes = true;
 
-            m_tablePPBRValuesResponse = table.Copy ();
+            m_tableValuesResponse = table.Copy ();
 
             return bRes;
         }
@@ -557,16 +557,16 @@ namespace StatisticCommon
             if (tableAdminValuesResponse == null) {
                 tableAdminValuesResponse = new DataTable ();
 
-                //for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i ++)
+                //for (i = 0; i < m_tableValuesResponse.Rows.Count; i ++)
                 //    tableAdminValuesResponse.Rows.Add (new object [] {});
             } else { }
 
-            DataTable[] arTable = { m_tablePPBRValuesResponse, tableAdminValuesResponse };
+            DataTable[] arTable = { m_tableValuesResponse, tableAdminValuesResponse };
 
-            //int offsetPBR_NUMBER = m_tablePPBRValuesResponse.Columns.IndexOf ("PBR_NUMBER");
+            //int offsetPBR_NUMBER = m_tableValuesResponse.Columns.IndexOf ("PBR_NUMBER");
             //if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
-            int offsetPBR = m_tablePPBRValuesResponse.Columns.IndexOf("PBR")
+            int offsetPBR = m_tableValuesResponse.Columns.IndexOf("PBR")
                 , offsetPBRNumber = -1
                 , offsetDATE_ADMIN = -1;
             if (offsetPBR > 0) offsetPBR = 0; else ;
@@ -648,7 +648,7 @@ namespace StatisticCommon
                     ;
             }
 
-            offsetPBRNumber = m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER");
+            offsetPBRNumber = m_tableValuesResponse.Columns.IndexOf("PBR_NUMBER");
             offsetDATE_ADMIN = table.Columns.IndexOf("DATE_ADMIN");
 
             //Для поиска одинаковых часов
@@ -1670,7 +1670,7 @@ namespace StatisticCommon
                     strRep = @"Экспорт РДГ в книгу Excel.";
                     delegateExportForeignValuesRequuest();
                     break;
-                 case (int)StatesMachine.PPBRCSVValues:
+                 case (int)StatesMachine.CSVValues:
                     strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
@@ -1774,7 +1774,7 @@ namespace StatisticCommon
             table = null;
 
             if (((state == (int)StatesMachine.ImpRDGExcelValues) || (state == (int)StatesMachine.ExpRDGExcelValues)) ||
-                (state == (int)StatesMachine.PPBRCSVValues) ||
+                (state == (int)StatesMachine.CSVValues) ||
                 /*((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0))*/
                 (!(m_IdListenerCurrent < 0)))
             {
@@ -1795,8 +1795,8 @@ namespace StatisticCommon
                             error = false;
                             bRes = true;
                         break;
-                     case (int)StatesMachine.PPBRCSVValues:
-                        if ((!(m_tablePPBRValuesResponse == null)) && (m_tablePPBRValuesResponse.Rows.Count > 0))
+                     case (int)StatesMachine.CSVValues:
+                        if ((!(m_tableValuesResponse == null)) && (m_tableValuesResponse.Rows.Count > 0))
                         {
                             error = false;
 
@@ -1922,8 +1922,8 @@ namespace StatisticCommon
                     }
                     result = true;
                     break;
-                case (int)StatesMachine.PPBRCSVValues:
-                    ActionReport("Импорт ПБР из формата CSV.");
+                case (int)StatesMachine.CSVValues:
+                    ActionReport("Импорт значений из формата CSV.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
                     if (result)
@@ -2140,7 +2140,7 @@ namespace StatisticCommon
                     {
                     }
                     break;
-                case (int)StatesMachine.PPBRCSVValues:
+                case (int)StatesMachine.CSVValues:
                     reason = @"импорта из формата CSV";
                     waiting = @"Переход в ожидание";
 

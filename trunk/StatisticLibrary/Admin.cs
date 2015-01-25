@@ -282,6 +282,25 @@ namespace StatisticCommon
                 ;*/
         }
 
+        protected static bool CheckNameFieldsOfTable(DataTable tbl, string[] nameFields)
+        {
+            bool bRes = true;
+
+            foreach (string nameField in nameFields)
+            {
+                if (tbl.Columns.IndexOf(nameField) < 0)
+                {
+                    bRes = false;
+
+                    break;
+                }
+                else
+                    ;
+            }
+
+            return bRes;
+        }
+
         public abstract bool WasChanged();
 
         private void register(int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)

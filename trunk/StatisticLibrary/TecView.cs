@@ -719,23 +719,6 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
-        private static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields) {
-            bool bRes = true;
-
-            foreach (string nameField in nameFields) {
-                if (tbl.Columns.IndexOf(nameField) < 0)
-                {
-                    bRes = false;
-
-                    break;
-                }
-                else
-                    ;
-            }
-
-            return bRes;
-        }
-
         private bool GetCurrentTMGenResponse(DataTable table)
         {
             bool bRes = true;

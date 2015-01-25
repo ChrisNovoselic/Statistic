@@ -28,12 +28,14 @@ namespace Statistic
 
             this.m_panelManagement.Controls.Add(this.btnImportExcel);
             this.m_panelManagement.Controls.Add(this.btnExportExcel);
+
+            int posY = 276;
             // 
             // btnImportExcel
             // 
-            this.btnImportExcel.Location = new System.Drawing.Point(10, 281);
+            this.btnImportExcel.Location = new System.Drawing.Point(10, posY);
             this.btnImportExcel.Name = "btnImportExcel";
-            this.btnImportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnImportExcel.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnImportExcel.TabIndex = 667;
             this.btnImportExcel.Text = "Импорт из Excel";
             this.btnImportExcel.UseVisualStyleBackColor = true;
@@ -41,9 +43,9 @@ namespace Statistic
             // 
             // btnExportExcel
             // 
-            this.btnExportExcel.Location = new System.Drawing.Point(10, 311);
+            this.btnExportExcel.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + 2 * m_iMarginY));
             this.btnExportExcel.Name = "btnExportExcel";
-            this.btnExportExcel.Size = new System.Drawing.Size(154, 23);
+            this.btnExportExcel.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnExportExcel.TabIndex = 668;
             this.btnExportExcel.Text = "Экспорт в Excel";
             this.btnExportExcel.UseVisualStyleBackColor = true;
