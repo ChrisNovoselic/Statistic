@@ -107,7 +107,7 @@ namespace Statistic
             this.mcldrDate.ShowToday = false;
             this.mcldrDate.ShowTodayCircle = false;
 
-            int posY = 204;
+            int posY = 206;
             // 
             // btnSet
             // 
@@ -121,7 +121,7 @@ namespace Statistic
             // 
             // btnRefresh
             // 
-            this.btnRefresh.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + 2 * m_iMarginY));
+            this.btnRefresh.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + m_iMarginY));
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnRefresh.TabIndex = 2;
@@ -131,7 +131,7 @@ namespace Statistic
             // 
             // gbxDividerChoice
             // 
-            this.gbxDividerChoice.Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + 2 * m_iMarginY));
+            this.gbxDividerChoice.Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));
             this.gbxDividerChoice.Name = "gbxDividerChoice";
             this.gbxDividerChoice.Size = new System.Drawing.Size(154, 8);
             this.gbxDividerChoice.TabIndex = 4;

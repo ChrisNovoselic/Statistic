@@ -84,7 +84,7 @@ namespace Statistic
         {
             base.InitializeComponents ();
 
-            int posY = 276
+            int posY = 271
                 , offsetPosY = m_iSizeY + 2 * m_iMarginY
                 , indx = -1;
             Rectangle[] arRectControlUI = new Rectangle[] {
@@ -652,7 +652,7 @@ namespace Statistic
 
                 //Еще одна проверка на ошибки (т.к. была возможность ее подтвердить)
                 if (iRes == 0)
-                    ((AdminTS_KomDisp)m_admin).ImpCSVPBRValues(mcldrDate.SelectionStart, files.FileName);
+                    ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
                 else
                     ;
             }
@@ -662,43 +662,50 @@ namespace Statistic
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
         {
-            OpenFileDialog files = new OpenFileDialog ();
-            files.Multiselect = false;
-            //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            files.InitialDirectory = @"\\ne2844\2.X.X\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
-            files.DefaultExt = @"csv";
-            files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault.csv)|AdminValuesDefault.csv";
-            files.Title = "Выберите файл со рекомендациями по умолчанию...";
-
-            int iRes = -1;
-            if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
-                int days = (HAdmin.ToMoscowTimeZone(DateTime.Now).Date - m_admin.m_curDate.Date).Days;
-                if (days > 0)
-                {
-                    iRes = 0;
-                }
-                else
-                {
-                    if (days == 0)
-                    {
-                        string strMsg = string.Format(@"Рекомендации по умолчанию будут загружены на текущие сутки {0}.\nПродолжить?", HAdmin.ToMoscowTimeZone(DateTime.Now).Date);
-                        if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                            iRes = 0;
-                        else
-                            ;
-                    }
-                    else
-                    {
-                    }
-                }
-
-                if (iRes == 0)
-                    ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
-                else
-                    ;
+            int days = (m_admin.m_curDate.Date - HAdmin.ToMoscowTimeZone(DateTime.Now).Date).Days;
+            if (days < 0)
+            {
+                string strMsg = string.Format(@"Выбрана дата ретроспективных данных: {0}.", m_admin.m_curDate.Date.ToString(@"dd.MM.yyyy"));
+                MessageBox.Show(this, strMsg, @"Внимание", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             else
             {
+                OpenFileDialog files = new OpenFileDialog ();
+                files.Multiselect = false;
+                //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
+                files.InitialDirectory = @"\\ne2844\2.X.X\Statistic\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+                files.DefaultExt = @"csv";
+                files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault.csv)|AdminValuesDefault.csv";
+                files.Title = "Выберите файл со рекомендациями по умолчанию...";
+
+                int iRes = -1;
+                if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {                
+                    if (days > 0)
+                    {
+                        iRes = 0;
+                    }
+                    else
+                    {
+                        if (days == 0)
+                        {
+                            string strMsg = string.Format(@"Рекомендации по умолчанию будут загружены на текущие сутки: {0}.{1}Продолжить?", m_admin.m_curDate.Date.ToString(@"dd.MM.yyyy"), Environment.NewLine);
+                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                                iRes = 0;
+                            else
+                                ; //По-прежнему ошибка...
+                        }
+                        else
+                            ;
+                    }
+
+                    if (iRes == 0)
+                        ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
+                    else
+                        ;
+                }
+                else
+                {
+                }
             }
         }
 

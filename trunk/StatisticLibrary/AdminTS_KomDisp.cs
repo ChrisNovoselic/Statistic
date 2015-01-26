@@ -85,7 +85,7 @@ namespace StatisticCommon
             strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
             strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
             strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
-                                    strCSVNameFileTemp +
+                                    strCSVNameFileTemp + @"_копия" +
                                     Path.GetExtension(m_fullPathCSVValues);
 
             ////при аргументе = каталог размещения наборов
@@ -95,7 +95,7 @@ namespace StatisticCommon
             //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
             File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
 
-            StreamReader sr = new StreamReader(strCSVNameFileTemp);
+            StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
             string cont = sr.ReadToEnd().Replace(',', '.');
             sr.Close(); sr.Dispose();
             StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
@@ -138,7 +138,8 @@ namespace StatisticCommon
         private void ImpCSVValuesRequest()
         {
             int err = -1
-                , num_pbr = (int)GetPropertiesOfNameFilePPBRCSVValues()[1];
+                //, num_pbr = (int)GetPropertiesOfNameFilePPBRCSVValues()[1]
+                ;
 
             delegateStartWait();
 
@@ -149,13 +150,11 @@ namespace StatisticCommon
             //    strPPBRCSVNameFile = getNameFileSessionPPBRCSVValues(num_pbr);
             //}
 
-            //if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
-            if ((num_pbr > 0) && (! (num_pbr < GetPBRNumber())))
-            {
+            ////if ((num_pbr > 0) && (num_pbr > serverTime.Hour))
+            //if ((num_pbr > 0) && (! (num_pbr < GetPBRNumber())))
                 impCSVValues(out err);
-            }
-            else
-                Logging.Logg().Action(@"Загрузка набора номер которого меньше, чем тек./час");
+            //else
+            //    Logging.Logg().Action(@"Загрузка набора номер которого меньше, чем тек./час");
 
             delegateStopWait();
         }
@@ -166,20 +165,20 @@ namespace StatisticCommon
 
             int indxFieldtypeValues = 2;
             List <string []> listFields = new List <string[]> ();
-            listFields.Add (new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"TotalBR", @"PminBR", @"PmaxBR" } );
-            listFields.Add (new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"FC", @"IS_PER", @"" } );
+            listFields.Add ( new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" } );
+            listFields.Add(new string[] { @"GTP_ID", @"SESSION_INTERVAL", @"TotalBR", @"PminBR", @"PmaxBR" });
 
             //Определить тип загружаемых значений
             // по наличию в загруженной таблице поля с индексом [1]
-            int typeValues = -1;
-            for (typeValues = 0; typeValues < listFields.Count; typeValues ++)
-                if (m_tableValuesResponse.Columns.Contains(listFields[typeValues][indxFieldtypeValues]) == true)
+            CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+            for (typeValues = CONN_SETT_TYPE.ADMIN; typeValues < (CONN_SETT_TYPE.PBR + 1); typeValues ++)
+                if (m_tableValuesResponse.Columns.Contains(listFields[(int)typeValues][indxFieldtypeValues]) == true)
                     break;
                 else
                     ;
 
-            if (typeValues < listFields.Count)
-                bRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[typeValues]);
+            if (typeValues < (CONN_SETT_TYPE.PBR + 1))
+                bRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[(int)typeValues]);
             else;
 
             if (bRes == true)
@@ -196,13 +195,13 @@ namespace StatisticCommon
             Errors errRes = Errors.NoError;
 
             //Определить тип загружаемых значений
-            int typeValues = (int)type;
+            CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
 
             int indxEv = -1
                 , prevIndxTECComponents = indxTECComponents;
             string strPBRNumber = string.Empty; // ...только для ПБР
 
-            if (typeValues == 0)
+            if (typeValues == CONN_SETT_TYPE.PBR)
             {//Только для ПБР
                 //Противоположные операции при завершении потока 'threadPPBRCSVValues'
                 //Разрешить запись ПБР-значений
@@ -225,7 +224,21 @@ namespace StatisticCommon
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
                     {
-                        errRes = saveCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
+                        switch (typeValues) {
+                            case CONN_SETT_TYPE.ADMIN:
+                                errRes = saveCSVValues(allTECComponents.IndexOf(comp), typeValues);
+                                break;
+                            case CONN_SETT_TYPE.PBR:
+                                errRes = saveCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        //if (! (errRes == Errors.NoError))
+                        //    ; //Ошибка ???
+                        //else
+                        //    ;
                     }
                     else
                         //Ошибка ???
@@ -240,7 +253,7 @@ namespace StatisticCommon
             m_tableValuesResponse.Clear ();
             m_tableValuesResponse = null;
 
-            if (typeValues == 0)
+            if (typeValues == CONN_SETT_TYPE.PBR)
             {//Только для ПБР
                 //Противоположные операции в 'ImpPPBRCSVValuesRequest'
                 //Запретить запись ПБР-значений
@@ -255,54 +268,89 @@ namespace StatisticCommon
             GetRDGValues (m_typeFields, prevIndxTECComponents);
         }
 
-        private Errors saveCSVValues (int indx, string pbr_number) {
+        private Errors saveCSVValues (int indx, object pbr_number) {
             Errors errRes = Errors.NoSet;
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
             int hour = -1;
             double val = -1F;
 
-            //Получить значения для сохранения
-            DataRow [] rowsTECComponent = m_tableValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
-            //Проверить наличие записей для ГТП
-            if (rowsTECComponent.Length > 0)
-            {
-                foreach (DataRow r in rowsTECComponent)
-                {
-                    hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
-
-                    if (double.TryParse(r[@"TotalBR"].ToString(), out val) == false)
-                        if (hour > 0)
-                            curRDGValues[hour].pbr = curRDGValues[hour - 1].pbr;
-                        else
-                            ;
-                    else
-                        curRDGValues[hour].pbr = val;
-
-                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
-                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
-
-                    curRDGValues[hour].pbr_number = pbr_number;
-                }
-
-                //Очистить тек./массив с данными
-                ClearValues();
-
-                //Копировать полученные значения в "текущий массив"
-                curRDGValues.CopyTo(m_curRDGValues, 0);
-
-                indxTECComponents = indx;
-
-                errRes =
-                    SaveChanges()
-                    //Errors.NoSet
-                    //Errors.NoError
+            CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+            if (pbr_number is string)
+                typeValues = CONN_SETT_TYPE.PBR;
+            else
+                if (pbr_number is CONN_SETT_TYPE)
+                    typeValues = (CONN_SETT_TYPE)pbr_number; //ADMIN
+                else
                     ;
+
+            if ((typeValues == CONN_SETT_TYPE.PBR)
+                || (typeValues == CONN_SETT_TYPE.ADMIN))
+            {
+                //Получить значения для сохранения
+                DataRow [] rowsTECComponent = m_tableValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
+                //Проверить наличие записей для ГТП
+                if (rowsTECComponent.Length > 0)
+                {
+                    foreach (DataRow r in rowsTECComponent)
+                    {
+                        hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
+
+                        switch (typeValues)
+                        {
+                            case CONN_SETT_TYPE.PBR:
+                                if (double.TryParse(r[@"TotalBR"].ToString(), out val) == false)
+                                    if (hour > 0)
+                                        curRDGValues[hour].pbr = curRDGValues[hour - 1].pbr;
+                                    else
+                                        ;
+                                else
+                                    curRDGValues[hour].pbr = val;
+
+                                curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
+                                curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+
+                                curRDGValues[hour].pbr_number = pbr_number as string;
+                                break;
+                            case CONN_SETT_TYPE.ADMIN:
+                                if (double.TryParse(r[@"REC"].ToString(), out val) == false)
+                                    if (hour > 0)
+                                        curRDGValues[hour].recomendation = curRDGValues[hour - 1].recomendation;
+                                    else
+                                        ;
+                                else
+                                    curRDGValues[hour].recomendation = val;
+
+                                curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString()) == 1;
+                                curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString());
+                                curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString()) == 1;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    //Очистить тек./массив с данными
+                    ClearValues();
+
+                    //Копировать полученные значения в "текущий массив"
+                    curRDGValues.CopyTo(m_curRDGValues, 0);
+
+                    indxTECComponents = indx;
+
+                    errRes =
+                        SaveChanges()
+                        //Errors.NoSet
+                        //Errors.NoError
+                        ;
+                }
+                else
+                    //Пропустить запись ГТП, разрешить переход к следующей
+                    //Псевдо-закончена обработка всех событий
+                    completeHandleStates();
             }
             else
-                //Пропустить запись ГТП, разрешить переход к следующей
-                //Псевдо-закончена обработка всех событий
-                completeHandleStates();
+                ;
 
             return errRes;
         }
