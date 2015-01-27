@@ -4732,7 +4732,29 @@ namespace StatisticCommon
             int iRes = -1;
             switch (m_arTypeSourceData[(int)id_time])
             {
-                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                case CONN_SETT_TYPE.DATA_AISKUE:
+                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                    if (id_time == TG.ID_TIME.MINUTES)
+                        iRes = 3;
+                    else
+                        if (id_time == TG.ID_TIME.HOURS)
+                            switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES])
+                            {
+                                case CONN_SETT_TYPE.DATA_AISKUE:
+                                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:                    
+                                    iRes = 3;
+                                    break;
+                                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                    iRes = 1;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        else
+                            ;
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:                    
                     iRes = 3;
                     break;
                 case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:

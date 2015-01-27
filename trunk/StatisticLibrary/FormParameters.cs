@@ -202,18 +202,27 @@ namespace StatisticCommon
 
         protected override void loadParam(bool bInit)
         {
-            string strDefault = string.Empty;
+            string strDefault = string.Empty
+                , strRead = string.Empty;
+            int err = -1;
 
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
-                m_arParametrSetup[(int)i] = readString(NAME_PARAMETR_SETUP[(int)i], strDefault);
-                if (m_arParametrSetup[(int)i].Equals(strDefault) == true)
-                {
-                    m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
-                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
-                }
+                strRead = readString(NAME_PARAMETR_SETUP[(int)i], strDefault, out err);
+                if (! (err == (int)DbTSQLInterface.Error.NO_ERROR))
+                    switch (err)
+                    {
+                        case (int)DbTSQLInterface.Error.ROWS_0:
+                            m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
+                            writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], true);
+                            break;
+                        default:
+                            break;
+                    }
                 else
-                    ;
+                    m_arParametrSetup[(int)i] =
+                    m_arParametrSetupDefault [(int)i] =
+                        strRead;
             }
 
             setDataGUI (bInit);
@@ -227,46 +236,52 @@ namespace StatisticCommon
             
             if (err == 0)
                 for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], false);
             else
                 ;
 
             DbSources.Sources().UnRegister(idListener);
         }
 
-        private string readString (string key, string valDef) {
-            return ReadString (ref m_dbConn, key, valDef);
+        private string readString (string key, string valDef, out int err) {
+            return ReadString (ref m_dbConn, key, valDef, out err);
         }
 
-        public static string ReadString(ref DbConnection dbConn, int key, string valDef)
+        public static string ReadString(ref DbConnection dbConn, int key, string valDef, out int err)
         {
-            return ReadString (ref dbConn, NAME_PARAMETR_SETUP [key], valDef);
+            return ReadString (ref dbConn, NAME_PARAMETR_SETUP [key], valDef, out err);
         }
 
-        public static string ReadString(ref DbConnection dbConn, string key, string valDef)
+        public static string ReadString(ref DbConnection dbConn, string key, string valDef, out int err)
         {
             string strRes = valDef;
-            int err = -1;
+            err = -1;
             DataTable table = null;            
 
             string query = string.Empty;
             //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
             query = string.Format (@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
             table = DbTSQLInterface.Select (ref dbConn, query, null, null, out err);
-            if (table.Rows.Count == 1)
-                strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+            if (err == (int)DbTSQLInterface.Error.NO_ERROR)
+                if (table.Rows.Count == 1)
+                    strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+                else
+                    err = (int)DbTSQLInterface.Error.ROWS_0;
             else
                 ;
 
             return strRes;
         }
 
-        private void writeString(string key, string val)
+        private void writeString(string key, string val, bool bInsert)
         {
             int err = -1;
             string query = string.Empty;
-            //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
-            query = string.Format(@"UPDATE setup SET [VALUE] = '{0}' WHERE [KEY]='{1}'", val, key);
+            if (bInsert == false)
+                //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
+                query = string.Format(@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
+            else
+                query = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPADTE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
             DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
         }
     }
