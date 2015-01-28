@@ -168,15 +168,14 @@ namespace StatisticCommon
                     {
                         valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value, out value);
                         bool isPercent = bool.Parse(Rows[e.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
-                        double maxValue;
-                        double recom = double.Parse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value);
+                        double maxValue = -1F;
 
-                        if (isPercent)
+                        if (isPercent == true)
                             maxValue = maxDeviationPercentValue;
                         else
                             maxValue = maxDeviationValue; // вообще эти значения не суммируются, но для максимальной границы нормально
 
-                        if (!valid || value < 0 || value > maxValue)
+                        if ((valid == false) || (value < 0) || (value > maxValue))
                         {
                             //m_curRDGValues[e.RowIndex].deviation = 0;
                             Rows[e.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
@@ -186,8 +185,12 @@ namespace StatisticCommon
                             //m_curRDGValues[e.RowIndex].deviation = value;
                             Rows[e.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = value.ToString("F2");
                         }
-                        break;
+
+                        //Зачем преобразование еще и этой ячейки ???
+                        //double recom = -1F;
+                        //valid = double.TryParse((string)Rows[e.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out recom);
                     }
+                    break;
             }
         }
 

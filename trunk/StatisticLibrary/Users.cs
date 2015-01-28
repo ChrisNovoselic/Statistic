@@ -45,10 +45,10 @@ namespace StatisticCommon
             , PROFILE_SETTINGS_CHANGEMODE
             , PROFILE_VIEW_ADDINGTABS
             , SOURCEDATA_SOTIASSO_3_MIN //Вкл\выкл пункт меню
+            , AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
+            , AUTO_LOADSAVE_USERPROFILE //Автоматическая загрузка/сохранение профиля
             ,
         };
-
-
 
         public HStatisticUsers(int iListenerId)
             : base(iListenerId)

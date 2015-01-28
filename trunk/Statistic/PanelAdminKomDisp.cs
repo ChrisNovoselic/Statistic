@@ -18,7 +18,8 @@ namespace Statistic
     public class PanelAdminKomDisp : PanelAdmin
     {
         private System.Windows.Forms.Button btnImportCSV_PBRValues;
-        private System.Windows.Forms.Button btnImportCSV_AdminDefaultValues;
+        //private System.Windows.Forms.Button btnImportCSV_AdminDefaultValues;
+        private System.Windows.Forms.CheckBox ckbImportCSV_AdminDefaultValues;
 
         private System.Windows.Forms.CheckBox m_cbxAlarm;
         private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
@@ -74,7 +75,9 @@ namespace Statistic
         public AdminAlarm m_adminAlarm;
         private PanelLabelAlarm m_panelLabelAlarm;
 
-        private enum INDEX_CONTROL_UI { BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+        private enum INDEX_CONTROL_UI
+        {
+                                        BUTTON_CSV_IMPORT_PBR, CBX_CSV_IMPORT_ADMINVALUESDEFAULT //BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
                                         , GBX_DIVIDEALARM , CBX_ALARM
                                         , LABEL_KOEFFALARMCURPOWER, NUDN_KOEFFALARMCURPOWER, BUTTON_ALARMCURPOWER, BUTTON_ALARMTGTUTNONOFF
                                         , PANEL_ALARMSOURCES
@@ -97,7 +100,7 @@ namespace Statistic
                 //, new Rectangle (new Point (10, 381), new Size (154, 23)) //btnAlarmTGTurnOnOff
                 //, new Rectangle (new Point (10, 410), new Size (154, 6 * 29))
                 new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //btnImportCSV_PBRValues, BUTTON_CSV_IMPORT_PBR
-                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //btnImportCSV_AdminDefaultValues, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+                , new Rectangle (new Point (12, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //ckbImportCSV_AdminDefaultValues, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
                 , new Rectangle (new Point (10, posY + 2 * (m_iSizeY + m_iMarginY)), new Size (154, 8)) //gbxDividerAlarm
                 , new Rectangle (new Point (12, posY + 3 * (m_iSizeY + m_iMarginY)), new Size (-1, -1)) //cbxAlarm
                 , new Rectangle (new Point (10, posY + 3 * (m_iSizeY + m_iMarginY) + (m_iSizeY + m_iMarginY)), new Size (-1, -1)) //lblKoeffAlarmCurPower
@@ -108,7 +111,8 @@ namespace Statistic
             };
             
             this.btnImportCSV_PBRValues = new System.Windows.Forms.Button();
-            this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
+            //this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
+            this.ckbImportCSV_AdminDefaultValues = new System.Windows.Forms.CheckBox();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
 
             this.m_cbxAlarm = new CheckBox();
@@ -124,7 +128,7 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
 
             this.m_panelManagement.Controls.Add(this.btnImportCSV_PBRValues);
-            this.m_panelManagement.Controls.Add(this.btnImportCSV_AdminDefaultValues);
+            this.m_panelManagement.Controls.Add(this.ckbImportCSV_AdminDefaultValues);
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
 
             this.m_panelManagement.Controls.Add(m_cbxAlarm);
@@ -151,15 +155,16 @@ namespace Statistic
             // 
             // btnImportCSV_AdminDefaultValues
             // 
-            indx = (int)INDEX_CONTROL_UI.BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT;
-            this.btnImportCSV_AdminDefaultValues.Location = arRectControlUI[indx].Location;
-            this.btnImportCSV_AdminDefaultValues.Name = "btnImportCSV_AdminDefaultValues";
-            this.btnImportCSV_AdminDefaultValues.Size = arRectControlUI[indx].Size;
-            this.btnImportCSV_AdminDefaultValues.TabIndex = 2;
-            this.btnImportCSV_AdminDefaultValues.Text = "Реком. по умолчанию";
-            this.btnImportCSV_AdminDefaultValues.UseVisualStyleBackColor = true;
-            this.btnImportCSV_AdminDefaultValues.Click += new System.EventHandler(this.btnImportCSV_AdminValuesDefault_Click);
-            this.btnImportCSV_AdminDefaultValues.Enabled = true;
+            indx = (int)INDEX_CONTROL_UI.CBX_CSV_IMPORT_ADMINVALUESDEFAULT;
+            this.ckbImportCSV_AdminDefaultValues.Location = arRectControlUI[indx].Location;
+            this.ckbImportCSV_AdminDefaultValues.Name = "ckbImportCSV_AdminDefaultValues";
+            this.ckbImportCSV_AdminDefaultValues.Size = arRectControlUI[indx].Size;
+            this.ckbImportCSV_AdminDefaultValues.TabIndex = 2;
+            this.ckbImportCSV_AdminDefaultValues.Text = "Реком. по умолчанию";
+            this.ckbImportCSV_AdminDefaultValues.UseVisualStyleBackColor = true;
+            //this.ckbImportCSV_AdminDefaultValues.Click += new System.EventHandler(this.ckbImportCSV_AdminValuesDefault_Click);
+            this.ckbImportCSV_AdminDefaultValues.CheckedChanged += new EventHandler(ckbImportCSV_AdminDefaultValues_CheckedChanged);
+            this.ckbImportCSV_AdminDefaultValues.Enabled = true;
             // 
             // dgwAdminTable
             //
@@ -287,6 +292,8 @@ namespace Statistic
 
             this.m_nudnKoeffAlarmCurPower.ReadOnly = true;
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
+
+            this.ckbImportCSV_AdminDefaultValues.Checked = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_LOAD_ADMINVALUESDEFAULT);
         }
 
         public override void Activate(bool activate)
@@ -658,6 +665,10 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private void ckbImportCSV_AdminDefaultValues_CheckedChanged(object sender, EventArgs e)
+        {
         }
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)

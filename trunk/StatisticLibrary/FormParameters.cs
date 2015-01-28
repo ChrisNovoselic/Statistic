@@ -212,7 +212,8 @@ namespace StatisticCommon
                 if (! (err == (int)DbTSQLInterface.Error.NO_ERROR))
                     switch (err)
                     {
-                        case (int)DbTSQLInterface.Error.ROWS_0:
+                        case (int)DbTSQLInterface.Error.TABLE_NULL:
+                        case (int)DbTSQLInterface.Error.TABLE_ROWS_0:
                             m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
                             writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], true);
                             break;
@@ -263,10 +264,13 @@ namespace StatisticCommon
             query = string.Format (@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
             table = DbTSQLInterface.Select (ref dbConn, query, null, null, out err);
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)
-                if (table.Rows.Count == 1)
-                    strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+                if (! (table == null))
+                    if (table.Rows.Count == 1)
+                        strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+                    else
+                        err = (int)DbTSQLInterface.Error.TABLE_ROWS_0;
                 else
-                    err = (int)DbTSQLInterface.Error.ROWS_0;
+                    err = (int)DbTSQLInterface.Error.TABLE_NULL;
             else
                 ;
 
