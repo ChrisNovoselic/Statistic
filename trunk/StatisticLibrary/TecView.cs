@@ -1472,7 +1472,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)...");
+                        Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
                     }
                 else
                     ;

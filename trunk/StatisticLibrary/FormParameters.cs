@@ -212,7 +212,6 @@ namespace StatisticCommon
             string query = string.Empty;
             //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
             query = string.Format(@"SELECT * FROM setup");
-            DbSources.Sources().Request(0, query);
             DataTable table = DbTSQLInterface.Select(ref m_dbConn, query, null, null, out err);
             DataRow []rowRes;
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)

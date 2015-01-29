@@ -1148,16 +1148,16 @@ namespace Statistic
                 else
                 {
                 }
+            }
 
-                if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
-                    //Сохранить список основных вкладок...
-                    if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
-                        fileProfileSaveStandardTab ();
-                    else
-                        ;
+            if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                //Сохранить список основных вкладок...
+                if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
+                    fileProfileSaveStandardTab ();
                 else
                     ;
-            }
+            else
+                ;
 
             bool bTGBiysk = parametrsTGBiysk > 0;
             if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == 6))
