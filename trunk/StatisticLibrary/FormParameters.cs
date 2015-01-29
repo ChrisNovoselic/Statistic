@@ -16,7 +16,8 @@ namespace StatisticCommon
                                     , SEASON_DATETIME, SEASON_ACTION
                                     //, GRINVICH_OFFSET_DATETIME
                                     , APP_VERSION, APP_VERSION_QUERY_INTERVAL
-                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, TECVIEW_LOGRECOMENDATIONVAL, PANELQUICKDATA_LOGDEVIATIONEVAL
+                                    , KOMDISP_FOLDER_CSV
+                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, TECVIEW_LOGRECOMENDATIONVAL, PANELQUICKDATA_LOGDEVIATIONEVAL                                    
                                     , COUNT_PARAMETR_SETUP };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
@@ -24,6 +25,7 @@ namespace StatisticCommon
                                                     , @"Season DateTime", @"Season Action"
                                                     //, @"Grinvich OffsetDateTime"
                                                     , @"App Version", @"App Version Query Interval"
+                                                    , @"KomDisp Folder CSV"
                                                     , @"SetPBRQuery LogPBRNumber", @"TecView LogRecomendation", @"ShowFactValues LogDevEVal"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
@@ -32,6 +34,7 @@ namespace StatisticCommon
                                                     , @"дата/время", @"ном"
                                                     //, "час"
                                                     , @"стр", @"мсек"
+                                                    , @"стр"
                                                     , @"стр-лог", @"стр-лог", @"стр-лог"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
@@ -66,7 +69,9 @@ namespace StatisticCommon
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_APP, ((int)ProgramBase.ID_APP.STATISTIC).ToString ());
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION, Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/);
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"6666");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"66666");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.KOMDISP_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, @"False");
@@ -202,29 +207,48 @@ namespace StatisticCommon
 
         protected override void loadParam(bool bInit)
         {
-            string strDefault = string.Empty
-                , strRead = string.Empty;
             int err = -1;
 
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-            {
-                strRead = readString(NAME_PARAMETR_SETUP[(int)i], strDefault, out err);
-                if (! (err == (int)DbTSQLInterface.Error.NO_ERROR))
-                    switch (err)
+            string query = string.Empty;
+            //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
+            query = string.Format(@"SELECT * FROM setup");
+            DbSources.Sources().Request(0, query);
+            DataTable table = DbTSQLInterface.Select(ref m_dbConn, query, null, null, out err);
+            DataRow []rowRes;
+            if (err == (int)DbTSQLInterface.Error.NO_ERROR)
+                if (!(table == null))
+                {
+                    query = string.Empty;
+
+                    for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                     {
-                        case (int)DbTSQLInterface.Error.TABLE_NULL:
-                        case (int)DbTSQLInterface.Error.TABLE_ROWS_0:
-                            m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
-                            writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], true);
-                            break;
-                        default:
-                            break;
+                        //strRead = readString(NAME_PARAMETR_SETUP[(int)i], strDefault, out err);
+                        rowRes = table.Select(@"KEY='" + NAME_PARAMETR_SETUP[(int)i].ToString () + @"'");
+                        switch (rowRes.Length)
+                        {
+                            case 1:
+                                m_arParametrSetup[(int)i] =
+                                m_arParametrSetupDefault[(int)i] =
+                                    rowRes[0][@"VALUE"].ToString ().Trim ();
+                                break;
+                            case 0:
+                                m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
+                                query += getWriteStringRequest(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], true) + @";";
+                                break;
+                            default:
+                                break;
+                        }                            
                     }
+
+                    if (query.Equals (string.Empty) == false)
+                        DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
+                    else
+                        ;
+                }
                 else
-                    m_arParametrSetup[(int)i] =
-                    m_arParametrSetupDefault [(int)i] =
-                        strRead;
-            }
+                    err = (int)DbTSQLInterface.Error.TABLE_NULL;
+            else
+                ;
 
             setDataGUI (bInit);
         }
@@ -233,11 +257,17 @@ namespace StatisticCommon
         {
             int err = -1;
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            string query = string.Empty;
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
-            
+
             if (err == 0)
                 for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                    writeString(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], false);
+                    query += getWriteStringRequest(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], false) + @";";
+            else
+                ;
+
+            if (query.Equals(string.Empty) == false)
+                DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
             else
                 ;
 
@@ -277,16 +307,17 @@ namespace StatisticCommon
             return strRes;
         }
 
-        private void writeString(string key, string val, bool bInsert)
+        private string getWriteStringRequest(string key, string val, bool bInsert)
         {
             int err = -1;
-            string query = string.Empty;
+            string strRes = string.Empty;
             if (bInsert == false)
                 //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
-                query = string.Format(@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
+                strRes = string.Format(@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
             else
-                query = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPADTE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
-            DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
+                strRes = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPADTE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
+
+            return strRes;
         }
     }
 }

@@ -281,8 +281,13 @@ namespace StatisticCommon
                 tv.Stop ();
             }
 
-            m_timerAlarm.Dispose ();
-            m_timerAlarm = null;
+            if (! (m_timerAlarm == null))
+            {
+                m_timerAlarm.Dispose ();
+                m_timerAlarm = null;
+            }
+            else
+                ;
         }
 
         private void ChangeState () {

@@ -40,7 +40,7 @@ namespace Statistic
 
         public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
-        protected static int m_iSizeY = 21
+        protected static int m_iSizeY = 22
             , m_iMarginY = 3;
 
         protected virtual void InitializeComponents()
@@ -107,7 +107,7 @@ namespace Statistic
             this.mcldrDate.ShowToday = false;
             this.mcldrDate.ShowTodayCircle = false;
 
-            int posY = 206;
+            int posY = 207;
             // 
             // btnSet
             // 

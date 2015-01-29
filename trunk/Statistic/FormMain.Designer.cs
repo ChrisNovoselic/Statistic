@@ -39,8 +39,10 @@ namespace Statistic
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.загрузитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.сохранитьПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.файлПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.файлПрофильЗагрузитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.файлПрофильСохранитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.выходToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -98,27 +100,45 @@ namespace Statistic
             // файлToolStripMenuItem
             // 
             this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.загрузитьПрофильToolStripMenuItem
-                , this.сохранитьПрофильToolStripMenuItem
+                this.файлПрофильToolStripMenuItem
                 , new System.Windows.Forms.ToolStripSeparator()
                 , this.выходToolStripMenuItem});
             this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
             this.файлToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
             this.файлToolStripMenuItem.Text = "Файл";
             // 
-            // загрузитьПрофильToolStripMenuItem
+            // файлПрофильЗагрузитьToolStripMenuItem
             // 
-            this.загрузитьПрофильToolStripMenuItem.Name = "загрузитьПрофильToolStripMenuItem";
-            this.загрузитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.загрузитьПрофильToolStripMenuItem.Text = "Загрузить профиль";
-            this.загрузитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.загрузитьПрофильToolStripMenuItem_Click);
+            this.файлПрофильЗагрузитьToolStripMenuItem.Name = "файлПрофильЗагрузитьToolStripMenuItem";
+            this.файлПрофильЗагрузитьToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.файлПрофильЗагрузитьToolStripMenuItem.Text = "Загрузить";
+            this.файлПрофильЗагрузитьToolStripMenuItem.Click += new System.EventHandler(this.файлПрофильЗагрузитьToolStripMenuItem_Click);
             // 
-            // сохранитьПрофильToolStripMenuItem
+            // файлПрофильСохранитьToolStripMenuItem
             // 
-            this.сохранитьПрофильToolStripMenuItem.Name = "сохранитьПрофильToolStripMenuItem";
-            this.сохранитьПрофильToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
-            this.сохранитьПрофильToolStripMenuItem.Text = "Сохранить профиль";
-            this.сохранитьПрофильToolStripMenuItem.Click += new System.EventHandler(this.сохранитьПрофильToolStripMenuItem_Click);
+            this.файлПрофильСохранитьToolStripMenuItem.Name = "сохранитьПрофильToolStripMenuItem";
+            this.файлПрофильСохранитьToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.файлПрофильСохранитьToolStripMenuItem.Text = "Сохранить";
+            this.файлПрофильСохранитьToolStripMenuItem.Click += new System.EventHandler(this.файлПрофильСохранитьToolStripMenuItem_Click);
+            // 
+            // файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem
+            // 
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Name = "файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem";
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Text = "Авто Загружать/Сохранять";
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.CheckOnClick = true;
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = false;
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.CheckedChanged += new System.EventHandler(this.файлПрофильАвтоЗагрузитьСохранить_CheckedChanged);
+
+            this.файлПрофильToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.файлПрофильЗагрузитьToolStripMenuItem
+                , this.файлПрофильСохранитьToolStripMenuItem
+                , new System.Windows.Forms.ToolStripSeparator()
+                , this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem});
+            this.файлПрофильToolStripMenuItem.Name = "файлПрофильToolStripMenuItem";
+            this.файлПрофильToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
+            this.файлПрофильToolStripMenuItem.Text = "Профиль";
+
             // 
             // выходToolStripMenuItem
             // 
@@ -367,8 +387,10 @@ namespace Statistic
         private System.Windows.Forms.MenuStrip menuStrip;
         //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem загрузитьПрофильToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem сохранитьПрофильToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem файлПрофильToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem файлПрофильЗагрузитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem файлПрофильСохранитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сменитьРежимToolStripMenuItem;

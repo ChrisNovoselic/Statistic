@@ -51,18 +51,29 @@ namespace StatisticCommon
 
         public HMark m_markTabAdminChecked;
 
-        public FormChangeMode(List<TEC> tec, List<int> listIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
+        public FormChangeMode(List<TEC> tec, string strIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
             this.Text = @"Выбор режима";
 
-            if (!(m_MainFormContextMenuStripListTecViews == null))
+            List<int> listIDsProfileCheckedIndices = new List<int> ();
+            if (strIDsProfileCheckedIndices.Equals (string.Empty) == false)
             {
-                m_MainFormContextMenuStripListTecViews.ItemClicked -= new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
-                m_MainFormContextMenuStripListTecViews = null;
+                string [] ids = strIDsProfileCheckedIndices.Split (';');
+                foreach (string id in ids) {
+                    listIDsProfileCheckedIndices.Add (Int32.Parse (id));
+                }
+
+                if (!(m_MainFormContextMenuStripListTecViews == null))
+                {
+                    m_MainFormContextMenuStripListTecViews.ItemClicked -= new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
+                    m_MainFormContextMenuStripListTecViews = null;
+                }
+                else
+                    ;
             }
             else
-                ;
+                ; //Нет ID для автозагрузки
 
             m_MainFormContextMenuStripListTecViews = FormMainContextMenuStrip;
             m_MainFormContextMenuStripListTecViews.ItemClicked += new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);
@@ -402,7 +413,7 @@ namespace StatisticCommon
             string ids = string.Empty;
 
             foreach (Item item in m_listItems)
-                if (item.bChecked == true)
+                if ((item.bChecked == true) && (item.id < ID_SPECIAL_TAB [0]))
                     ids += item.id + @";";
                 else
                     ;

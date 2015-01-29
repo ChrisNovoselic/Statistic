@@ -44,9 +44,9 @@ namespace StatisticCommon
             , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
             , PROFILE_SETTINGS_CHANGEMODE
             , PROFILE_VIEW_ADDINGTABS
-            , SOURCEDATA_SOTIASSO_3_MIN //Вкл\выкл пункт меню
-            , AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
+            , SOURCEDATA_SOTIASSO_3_MIN //Вкл\выкл пункт меню            
             , AUTO_LOADSAVE_USERPROFILE //Автоматическая загрузка/сохранение профиля
+            //, AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
             ,
         };
 

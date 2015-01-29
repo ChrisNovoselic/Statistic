@@ -172,6 +172,10 @@ namespace Statistic
                     администрированиеToolStripMenuItem.Enabled =
                         HStatisticUsers.RoleIsAdmin;
 
+                    HMark markSett = new HMark (Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));                    
+                    файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = markSett.IsMarked(0);
+                    файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = markSett.IsMarked(1);
+
                     //панельГрафическихToolStripMenuItem.Enabled =
                     //выборОбъекты22ToolStripMenuItem.Enabled = 
                     //выборОбъекты23ToolStripMenuItem.Enabled = 
@@ -227,19 +231,37 @@ namespace Statistic
                         m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
                     }
 
-                    List <int> listIDs = new List<int> ();
+                    string listIDs = string.Empty;
                     //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
                     //if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true)
                     {
                         m_markPrevStatePanelAdmin.Set ((int)FormChangeMode.MANAGER.DISP, true);
-                        listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
+                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
+                        listIDs += FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP].ToString ();
                     }
                     else
                         ;
 
                     //Добавить закладки автоматически...
                     //listIDs.Add(5); listIDs.Add(111);
+                    if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
+                    {
+                        string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
+                        if (ids.Equals (string.Empty) == false)
+                        {
+                            if (listIDs.Equals(string.Empty) == false)
+                                listIDs += @";" + ids;
+                            else
+                                ;
+
+                            listIDs += ids;
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        ;
 
                     if (!(formChangeMode == null))
                     {
@@ -440,7 +462,27 @@ namespace Statistic
                                                 ;
         }
 
-        private void загрузитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        private void файлПрофильАвтоЗагрузитьСохранить_CheckedChanged(object sender, EventArgs e)
+        {
+            файлПрофильЗагрузитьToolStripMenuItem.Enabled = 
+            файлПрофильСохранитьToolStripMenuItem.Enabled =
+                ! файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
+
+            if ((!(m_timer == null)) && (! (m_timer.Interval == ProgramBase.TIMER_START_INTERVAL)))
+            {
+                HMark markSett = new HMark ();
+                markSett.Set (0, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled);
+                markSett.Set(1, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked);
+
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
+                HStatisticUsers.SetAllowed(idListener, (int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE, markSett.Value.ToString ());
+                DbSources.Sources().UnRegister(idListener);
+            }
+            else
+                ; //Загрузка формы...
+        }
+
+        private void файлПрофильЗагрузитьToolStripMenuItem_Click(object sender, EventArgs e)
         {            
             string ids = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
             Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString () + @"): ids=" + ids);
@@ -477,17 +519,30 @@ namespace Statistic
                 ;
         }
 
-        private void сохранитьПрофильToolStripMenuItem_Click(object sender, EventArgs e)
+        private void fileProfileSaveStandardTab () {
+            int iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
+            fileProfileSaveStandardTab (iListenerId);
+            DbSources.Sources().UnRegister (iListenerId);
+        }
+
+        private void fileProfileSaveStandardTab(int idListener)
+        {
+            //Сохранить список основных вкладок...
+            HStatisticUsers.SetAllowed(idListener, (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE, formChangeMode.SaveProfile());
+        }
+
+        private void fileProfileSaveAddingTab()
+        {
+            int iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
+            fileProfileSaveAddingTab (iListenerId);
+            DbSources.Sources().UnRegister (iListenerId);
+        }
+
+        private void fileProfileSaveAddingTab(int idListener)
         {
             string ids = string.Empty;
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-
-            //Сохранить список основных вкладок...
-            ids = formChangeMode.SaveProfile();
-            HStatisticUsers.SetAllowed(idListener, (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE, ids);
-
             ids = string.Empty;
-            //Сохранить список "дополнительных" вкладок...
+
             foreach (int key in m_dictAddingTabs.Keys)
                 if (m_dictAddingTabs[key].menuItem.Checked == true)
                 {
@@ -512,6 +567,17 @@ namespace Statistic
             else
                 ;
             HStatisticUsers.SetAllowed(idListener, (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS, ids);
+        }
+        
+        private void файлПрофильСохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
+
+            //Сохранить список основных вкладок...
+            fileProfileSaveStandardTab(idListener);
+
+            //Сохранить список "дополнительных" вкладок...
+            fileProfileSaveAddingTab(idListener);
 
             DbSources.Sources().UnRegister(idListener);
         }
@@ -749,7 +815,7 @@ namespace Statistic
                         Abort(msg, false);
                         break;
                     default:
-                        сменитьРежимToolStripMenuItem.Enabled = true;
+                        //Успех...
                         break;
                 }
             }
@@ -1082,6 +1148,15 @@ namespace Statistic
                 else
                 {
                 }
+
+                if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                    //Сохранить список основных вкладок...
+                    if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
+                        fileProfileSaveStandardTab ();
+                    else
+                        ;
+                else
+                    ;
             }
 
             bool bTGBiysk = parametrsTGBiysk > 0;
@@ -1573,6 +1648,15 @@ namespace Statistic
 
                 obj.Start();
                 ActivateTabPage();
+
+                if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                    //Сохранить список дополнительных вкладок...
+                    if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
+                        fileProfileSaveAddingTab();
+                    else
+                        ;
+                else
+                    ;
             }
             else
             {

@@ -77,54 +77,65 @@ namespace StatisticCommon
         {
             err = -1;
 
-            //strCSVNameFileTemp = strPPBRCSVNameFile;
-            string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
+            if (!(m_fullPathCSVValues == string.Empty))
+            {
+                if (File.Exists(m_fullPathCSVValues) == true)
+                {
+                    //strCSVNameFileTemp = strPPBRCSVNameFile;
+                    string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-            strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
-            strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
-            strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
-            strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
-            strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
-                                    strCSVNameFileTemp + @"_копия" +
-                                    Path.GetExtension(m_fullPathCSVValues);
+                    strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
+                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
+                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
+                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
+                    strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
+                                            strCSVNameFileTemp + @"_копия" +
+                                            Path.GetExtension(m_fullPathCSVValues);
 
-            ////при аргументе = каталог размещения наборов
-            //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
-            //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
+                    ////при аргументе = каталог размещения наборов
+                    //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
+                    //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
 
-            //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
-            File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
+                    //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
+                    File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
 
-            StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
-            string cont = sr.ReadToEnd().Replace(',', '.');
-            sr.Close(); sr.Dispose();
-            StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
-            sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
+                    StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
+                    string cont = sr.ReadToEnd().Replace(',', '.');
+                    sr.Close(); sr.Dispose();
+                    StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
+                    sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
 
-            if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
+                    if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
 
-            if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
-                //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
-                //                                                        @"SELECT * FROM ["
-                //                                                        //+ @"Sheet1$"
-                //                                                        + Path.GetFileName (strCSVNameFileTemp)
-                //                                                        + @"]"
-                //                                                        //+ @" WHERE GTP_ID='" +
-                //                                                        //allTECComponents[indxTECComponents].name_future +
-                //                                                        //@"'"
-                //                                                        , out err);
-                m_tableValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strCSVNameFileTemp)
-                                                                    + @"\" + Path.GetFileName(strCSVNameFileTemp)
-                                                                    , @"*"
-                                                                    , out err);
+                    if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
+                        //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
+                        //                                                        @"SELECT * FROM ["
+                        //                                                        //+ @"Sheet1$"
+                        //                                                        + Path.GetFileName (strCSVNameFileTemp)
+                        //                                                        + @"]"
+                        //                                                        //+ @" WHERE GTP_ID='" +
+                        //                                                        //allTECComponents[indxTECComponents].name_future +
+                        //                                                        //@"'"
+                        //                                                        , out err);
+                        m_tableValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strCSVNameFileTemp)
+                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)
+                                                                            , @"*"
+                                                                            , out err);
+                    else
+                        ;
+
+                    //Logging.Logg ().LogLock ();
+                    //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
+                    //Logging.Logg().LogUnlock();
+
+                    File.Delete(strCSVNameFileTemp);
+                }
+                else
+                    err = -2; //Файл не существует (очень НЕвероятно, т.к. выбран с помощью диалогового окна)
+            }
             else
-                ;
-
-            //Logging.Logg ().LogLock ();
-            //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
-            //Logging.Logg().LogUnlock();
-
-            File.Delete(strCSVNameFileTemp);
+            {
+            }
 
             if (!(err == 0))
             {
