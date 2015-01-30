@@ -143,7 +143,7 @@ namespace StatisticTrans
             //}
             //else { }
 
-            Logging.ReLogg (Logging.LOG_MODE.FILE);
+            Logging.ReLogg (Logging.LOG_MODE.FILE_EXE);
 
             m_sFileINI.Add(@"ОкноНазначение", @"Конвертер (...)");
             m_sFileINI.Add(@"ID_TECNotUse", string.Empty);

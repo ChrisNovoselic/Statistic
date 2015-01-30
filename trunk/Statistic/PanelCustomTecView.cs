@@ -17,7 +17,7 @@ namespace Statistic
         const Char CHAR_DELIM_PROP = '+'
                 , CHAR_DELIM_LABEL = '&'
                 , CHAR_DELIM_ARRAYITEM = ',';
-        
+
         public class HLabelCustomTecView : Label {
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
             public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
@@ -365,6 +365,8 @@ namespace Statistic
     
     public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
     {
+        public event DelegateFunc EventContentChanged;
+        
         private HLabelCustomTecView[] m_arLabelEmpty;
         //private Control[] m_arControls;
 
@@ -549,6 +551,8 @@ namespace Statistic
                     m_arLabelEmpty[indxLabel].ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = true;
                 }
             }
+
+            EventContentChanged ();
         }
 
         private void clearAddress (int indx) {

@@ -707,6 +707,8 @@ namespace Statistic
 
         public override void Start()
         {
+            m_tecView.Start();
+
             FillDefaultMins();
             FillDefaultHours();
 
@@ -720,8 +722,8 @@ namespace Statistic
             //Время д.б. МСК ???
             m_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
 
-            initTableHourRows ();
             //initTableMinRows ();
+            initTableHourRows ();            
 
             ////??? Перенос в 'Activate'
             ////В зависимости от установленных признаков в контекстном меню
@@ -730,8 +732,6 @@ namespace Statistic
             //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
             //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
-            m_tecView.Start();
-
             m_evTimerCurrent = new ManualResetEvent(true);
             //timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
             m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000);
@@ -739,8 +739,9 @@ namespace Statistic
             //timerCurrent = new System.Windows.Forms.Timer ();
             //timerCurrent.Tick += TimerCurrent_Tick;
 
+            //??? TecView::Start
             update = false;
-            setNowDate(true);
+            //setNowDate(true); //??? ...не требуется
 
             //??? Отображение графиков по 'Activate (true)'
             //DrawGraphMins(0);
@@ -792,7 +793,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ...");
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID);
         }
 
         private void UpdateGUI_TM_Gen()
@@ -808,7 +809,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ...");
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID);
         }
 
         protected virtual void UpdateGUI_Fact(int hour, int min)
@@ -828,7 +829,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ...");
+                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID);
                 }
             }
         }
@@ -1040,7 +1041,7 @@ namespace Statistic
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
 
-        private void NewDateRefresh()
+        protected void NewDateRefresh()
         {
             //delegateStartWait ();
             if (!(delegateStartWait == null)) delegateStartWait(); else ;
@@ -1085,7 +1086,7 @@ namespace Statistic
         {
             m_tecView.currHour = true;
 
-            if (received)
+            if (received == true)
             {
                 update = false;
                 m_pnlQuickData.dtprDate.Value = m_tecView.m_curDate;
@@ -1098,7 +1099,12 @@ namespace Statistic
 
         private void btnSetNow_Click(object sender, EventArgs e)
         {
-            setNowDate(false);
+            ////Вариань №1
+            //setNowDate(false);
+
+            //Вариань №2
+            m_tecView.currHour = true;
+            NewDateRefresh();
         }
 
         private void ChangeState()

@@ -1464,19 +1464,19 @@ namespace StatisticCommon
                     default:
                         break;
                 }
-
-                if (! (m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
-                    }
-                else
-                    ;
             }
+
+            if (! (m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
+                }
+            else
+                ;
         }
 
         protected void GetCurrentTimeRequest()
@@ -4488,6 +4488,7 @@ namespace StatisticCommon
                         case TEC.SOURCE_SOTIASSO.AVERAGE:
                         case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:                        
                             int id = -1;
+                            int[] cntRecievedValues = new int[m_valuesMins.Length + 1];
                             TG tgTmp = null;
                             Dictionary<int, TG> dictTGRecievedValues = new Dictionary<int, TG>();
 
@@ -4547,6 +4548,31 @@ namespace StatisticCommon
                                 min ++;
                                 m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min] = val;
                                 m_valuesMins [min].valuesFact += val;
+
+                                cntRecievedValues [min] ++;
+                            }
+
+                            switch (min)
+                            {
+                                case -1:
+                                    break;
+                                case 0:
+                                    break;
+                                case 1:
+                                    break;
+                                default:
+                                    if (cntRecievedValues [min] < cntRecievedValues [min - 1])
+                                    {
+                                        foreach (valuesTG vals in m_dictValuesTG.Values)
+                                            vals.m_powerMinutes[min] = 0;
+
+                                        m_valuesMins[min].valuesFact = 0;
+
+                                        min --;
+                                    }
+                                    else
+                                        ;
+                                    break;
                             }
                             break;
                         default:

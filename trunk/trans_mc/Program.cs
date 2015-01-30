@@ -17,7 +17,7 @@ namespace trans_mc
         {
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
             //Logging.s_mode = Logging.LOG_MODE.DB;
-            Logging.s_mode = Logging.LOG_MODE.FILE;
+            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
 
             ProgramBase.Start();
 

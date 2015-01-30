@@ -41,7 +41,12 @@ namespace Statistic
                 menuItem.Text = text;
                 panel = null;
             }
-        };        
+        };
+        /// <summary>
+        /// Признак процесса авто/загрузки вкладок
+        /// для предотвращения сохранения их в режиме "реальное время"
+        /// </summary>
+        private static bool m_bAutoLoadTabs = false;
 
         public enum ID_ERROR_INIT { UNKNOWN = -1, }
         private enum INDEX_ERROR_INIT { UNKNOWN = 0, }
@@ -282,13 +287,24 @@ namespace Statistic
                     if (iRes == 0) {
                         Start(); //Старт 1-сек-го таймера для строки стостояния
 
+                        createAddingTabs ();
+
                         stopTimerAppReset ();                        
                         int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
                         m_timerAppReset = new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset);
 
+                        m_bAutoLoadTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
+                        
                         //сменитьРежимToolStripMenuItem_Click();
                         //formChangeMode.LoadProfile(@"116");
                         formChangeMode.LoadProfile(string.Empty);
+
+                        if (m_bAutoLoadTabs == true)
+                            fileProfileLoadAddingTab();
+                        else
+                            ;
+
+                        m_bAutoLoadTabs = false;
                     }
                     else
                         ;
@@ -484,12 +500,24 @@ namespace Statistic
 
         private void файлПрофильЗагрузитьToolStripMenuItem_Click(object sender, EventArgs e)
         {            
-            string ids = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString () + @"): ids=" + ids);
-            formChangeMode.LoadProfile(ids);
+            m_bAutoLoadTabs = true;
+            
+            fileProfileLoadStandatdTab ();
 
-            ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString () + @"): ids=" + ids);
+            fileProfileLoadAddingTab ();
+
+            m_bAutoLoadTabs = false;
+        }
+
+        private void fileProfileLoadStandatdTab () {
+            string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids);
+            formChangeMode.LoadProfile(ids);
+        }
+
+        private void fileProfileLoadAddingTab () {
+            string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids);
 
             if (ids.Equals(string.Empty) == false)
             {
@@ -497,12 +525,12 @@ namespace Statistic
                 foreach (string profile in arProfie)
                 {
                     int id = -1;
-                    if (profile.IndexOf ('=') < 0)
+                    if (profile.IndexOf('=') < 0)
                         id = Int32.Parse(profile);
                     else
-                        id = Int32.Parse(profile.Substring (0, profile.IndexOf ('=')));
+                        id = Int32.Parse(profile.Substring(0, profile.IndexOf('=')));
 
-                    m_dictAddingTabs[id].menuItem.Checked = true;
+                    m_dictAddingTabs[id].menuItem.PerformClick ();
 
                     switch (id)
                     {
@@ -1150,7 +1178,8 @@ namespace Statistic
                 }
             }
 
-            if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+            //if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+            if (m_bAutoLoadTabs == false)
                 //Сохранить список основных вкладок...
                 if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
                     fileProfileSaveStandardTab ();
@@ -1546,10 +1575,7 @@ namespace Statistic
             }
         }
 
-        protected override void  timer_Start()
-        {
- 	        int i = -1;
-
+        private void createAddingTabs () {
             m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
             //m_panelCurPower.Start();
@@ -1570,6 +1596,8 @@ namespace Statistic
             m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
             //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
             //m_panelCustomTecView.Start();
+            ((PanelCustomTecView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
+            ((PanelCustomTecView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
 
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled == true)
             //if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB) == true)
@@ -1579,6 +1607,18 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        private void FormMain_PanelCustomTecView_EvtContentChanged () {
+            if (m_bAutoLoadTabs == false)
+                this.BeginInvoke(new DelegateFunc(fileProfileSaveAddingTab));
+            else
+                ;
+        }
+
+        protected override void  timer_Start()
+        {
+ 	        int i = -1;
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1649,7 +1689,8 @@ namespace Statistic
                 obj.Start();
                 ActivateTabPage();
 
-                if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                //if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                if (m_bAutoLoadTabs == false)
                     //Сохранить список дополнительных вкладок...
                     if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
                         fileProfileSaveAddingTab();

@@ -16,7 +16,7 @@ namespace StatisticAnalyzer
         [STAThread]
         static void Main()
         {
-            Logging.s_mode = Logging.LOG_MODE.FILE;
+            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
 
             ProgramBase.Start();
 

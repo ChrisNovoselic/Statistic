@@ -83,7 +83,7 @@ namespace Statistic
             stctrView.Panel2.Controls.Clear();
             this.stctrViewPanel1.Panel1.Controls.Clear ();
             this.stctrViewPanel2.Panel1.Controls.Clear();
-            
+
             int iRow = 0;
             int iPercTotal = 100;
             int[] arPercRows = { 5, 71 };
@@ -91,7 +91,7 @@ namespace Statistic
             this.Controls.Add(m_label, 0, iRow);
             iPercTotal -= arPercRows[iRow];
             this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
-            
+
             if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] < 0) {
                 //Отобразить ТОЛЬКО один элемент
                 bool bVisible = true;
@@ -528,8 +528,14 @@ namespace Statistic
 
                 if (bRetroHour == true)
                     setRetroTickTime(m_tecView.lastHour, 60);
-                else
-                    setNowDate(false);
+                else {
+                    ////Вариань №1
+                    //setNowDate(false);
+
+                    //Вариань №2
+                    m_tecView.currHour = true;
+                    NewDateRefresh();
+                }
 
                 if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }
