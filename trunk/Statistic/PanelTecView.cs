@@ -35,8 +35,6 @@ namespace Statistic
 
             if (! (m_label == null))
             {
-                                
-
                 m_label.Text = m_tecView.m_tec.name_shr;
                 if (!(indx_TECComponent < 0))
                     m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
