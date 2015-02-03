@@ -1091,9 +1091,9 @@ namespace StatisticCommon
                             string name = t.NameFieldOfAdminRequest(comp);
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] +
                                         @" SET " + name +
-                                        @"_REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"_REC='" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + name + @"_IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @", " + name + "_DIVIAT='" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                         @"'" +
@@ -1104,9 +1104,9 @@ namespace StatisticCommon
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] +
                                         @" SET " +
-                                        @"REC='" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"REC='" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                         @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
                                         @" WHERE " +
@@ -1128,16 +1128,16 @@ namespace StatisticCommon
                     {
                         case AdminTS.TYPE_FIELDS.STATIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", '" + m_curRDGValues[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                        @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + (comp.m_id) +
                                         @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                         @", " + (m_curRDGValues[i].fc ? 1 : 0) +
@@ -1274,7 +1274,7 @@ namespace StatisticCommon
                     {
                         case AdminTS.TYPE_FIELDS.STATIC:
                             string name = t.NameFieldOfPBRRequest(comp);
-                            /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + m_curRDGValues[i].plan.ToString("F1", CultureInfo.InvariantCulture) +
+                            /*requestUpdate += @"UPDATE " + t.m_strUsedPPBRvsPBR + " SET " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.REC] + "='" + m_curRDGValues[i].plan.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"' WHERE " +
                                         @"DATE_TIME = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                         @"'; ";*/
@@ -1283,9 +1283,9 @@ namespace StatisticCommon
                                 @"PBR_NUMBER='";
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"'" +
-                                            @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
-                                            @", " + name + @"_" + @"Pmin" + "='" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
-                                            @", " + name + @"_" + @"Pmax" + "='" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + @"'" +
+                                            @", " + name + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + "='" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + @"'" +
+                                            @", " + name + @"_" + @"Pmin" + "='" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + @"'" +
+                                            @", " + name + @"_" + @"Pmax" + "='" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + @"'" +
                                             @" WHERE " +
                                             t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
@@ -1331,9 +1331,9 @@ namespace StatisticCommon
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
                                             @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             @", OWNER=" + m_sOwner_PBR +
-                                            @", PBR='" + m_curRDGValues[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmin='" + m_curRDGValues[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmax='" + m_curRDGValues[i].pmax.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", PBR='" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmin='" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmax='" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
                                             @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
@@ -1365,9 +1365,9 @@ namespace StatisticCommon
                                         @"', '" + serverTime.Date.ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + strPBRNumber +
                                         @"', '" + m_sOwner_PBR +
-                                        @"', '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) +
-                                        @"', '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) +
-                                        @"', '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) +
+                                        @"', '" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"'),";
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
@@ -1378,9 +1378,9 @@ namespace StatisticCommon
                                             @", '" + strPBRNumber +
                                             @"', " + comp.m_id +
                                             @", '" + m_sOwner_PBR + "'" +
-                                            @", '" + m_curRDGValues[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_curRDGValues[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_curRDGValues[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
                                             @"),";
                             else
                                 ; //Нельзя записывать значения "-1"

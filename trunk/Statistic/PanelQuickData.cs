@@ -452,8 +452,15 @@ namespace Statistic
                         break;
                     case CONTROLS.lblCurrentEVal:
                     case CONTROLS.lblHourEVal:
-                    case CONTROLS.lblDevEVal:
                         foreColor = Color.LimeGreen;
+                        backClolor = Color.Black;
+                        szFont = 15F;
+                        align = ContentAlignment.MiddleCenter;
+                        //sz = arPlacement[(int)i].sz;
+                        //col = 5;
+                        break;
+                    case CONTROLS.lblDevEVal:
+                        foreColor = Color.Yellow;
                         backClolor = Color.Black;
                         szFont = 15F;
                         align = ContentAlignment.MiddleCenter;
@@ -818,7 +825,17 @@ namespace Statistic
             InitializeComponent();
         }
 
-        private void showTMValue(ref Label lbl, int tg_id, double tg_val, ref double val)
+        private void showTMValue(TG tg, ref double val)
+        {
+            showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
+                                            , tg.id_tm
+                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
+                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
+                                            , m_parent.m_tecView.serverTime
+                                            , ref val);
+        }
+
+        private void showTMValue(ref Label lbl, int tg_id, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
         {
             string text = string.Empty
                 , textNotValue = @"---";
@@ -844,7 +861,11 @@ namespace Statistic
             if (text.Equals (textNotValue) == true)
                 lbl.ForeColor = Color.Orange;
             else
-                lbl.ForeColor = Color.Green;
+                //if ((dt_srv - dt_val).TotalMinutes > 1)
+                if (m_parent.m_tecView.currHour == false)
+                    lbl.ForeColor = Color.Orange;
+                else
+                    lbl.ForeColor = Color.Green;
 
             lbl.Text = text;
         }
@@ -855,7 +876,6 @@ namespace Statistic
         public void ShowTMValues()
         {
             double value_TM = 0.0;
-            int i = 0;
 
             if (!(m_parent == null))
             {
@@ -878,11 +898,7 @@ namespace Statistic
                         if (g.m_id < 500)
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
-                            {
-                                showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
-
-                                i++;
-                            }
+                                showTMValue(tg, ref value_TM);
                         else
                             ;
                     }
@@ -890,11 +906,7 @@ namespace Statistic
                 else
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
-                    {
-                        showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM], tg.id_tm, m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM, ref value_TM);
-
-                        i++;
-                    }
+                        showTMValue(tg, ref value_TM);
                 }
             }
             else
@@ -906,6 +918,12 @@ namespace Statistic
                 ;
 
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal], value_TM, true, string.Empty);
+            Color frCol = Color.Empty;
+            if (m_parent.m_tecView.currHour == true)
+                frCol = Color.Green;
+            else
+                frCol = Color.Orange;
+            m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal].ForeColor = frCol;
         }
 
         /// <summary>

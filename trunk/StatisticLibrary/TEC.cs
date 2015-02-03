@@ -615,7 +615,7 @@ namespace StatisticCommon
             return request;
         }
 
-        public string minTMRequest(DateTime usingDate, int hour, int min, string sensors)
+        public string minTMAverageRequest(DateTime usingDate, int hour, int min, string sensors, int interval)
         {
             if (hour == 24)
                 hour = 23;
@@ -624,7 +624,30 @@ namespace StatisticCommon
 
             if (min == 0) min++; else ;
 
-            DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes (3 * (min - 1));
+            DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes(interval * (min - 1));
+
+            return @"SELECT [ID], AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
+                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
+                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                        //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                    + @" GROUP BY [ID]";
+        }
+
+        public string minTMRequest(DateTime usingDate, int h, int m, string sensors)
+        {
+            int interval = 3
+                , hour= -1, min = -1;
+
+            if (h == 24)
+                hour = 23;
+            else
+                hour = h;
+
+            if (m == 0) min = 1; else min = m;
+
+            DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes(interval * (min - 1));
             string request = string.Empty;
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
@@ -634,13 +657,7 @@ namespace StatisticCommon
                         request =
                             @"SELECT SUM ([VALUE]) as [VALUE], COUNT (*) as [cnt]"
                                 + @" FROM ("
-                                    + @"SELECT AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
-                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
-                                        //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
-                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                            + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
-                                    + @" GROUP BY [ID]"
+                                    + minTMAverageRequest(usingDate, h, m, sensors, interval)
                                 + @") t0"
                             ;
                     else
@@ -652,7 +669,7 @@ namespace StatisticCommon
 			                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
                                     //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
-                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                 ;
                         else
                             if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
@@ -664,7 +681,7 @@ namespace StatisticCommon
 			                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
                                                 //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
                                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString (@"yyyyMMdd HH:mm:00.000") + @"')"
-                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (3).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                                + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                             + @" ) as S0"
                                         + @" GROUP BY S0.[ID]";
                             else

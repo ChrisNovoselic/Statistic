@@ -50,7 +50,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2, new ADDING_TAB("выборОбъектывыборОбъекты22ToolStripMenuItem", "Выбор объектов отображения (2X2)"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3, new ADDING_TAB("выборОбъектывыборОбъекты23ToolStripMenuItem", "Выбор объектов отображения (2X3)"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн"));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текукщей мощности ТЭЦг, ТЭЦсн"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));

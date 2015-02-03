@@ -47,6 +47,7 @@ namespace StatisticCommon
             LastMinutes_TM, //значения крайних минут часа за указанные сутки, СОТИАССО
             //RetroHours,
             RetroMins_Fact, //указанные сутки/час, АСКУЭ
+            RetroMin_TM_Gen, //указанные сутки/час, СОТИАССО
             RetroMins_TM, //указанные сутки/час, СОТИАССО
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
@@ -93,6 +94,7 @@ namespace StatisticCommon
         public class valuesTG : Object {
             public double[] m_powerMinutes; //для мин./значений в течении часа
             public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
+            public DateTime m_dtCurrent_TM; //для даты/времени получения текущего значения ТМ
             public double m_powerCurrent_TM; //для текущего значения ТМ
             public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
         }
@@ -429,7 +431,7 @@ namespace StatisticCommon
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                    //Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
 
                     if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
@@ -737,6 +739,7 @@ namespace StatisticCommon
                 foreach (TG tg in g.m_listTG)
                 {
                     m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
+                    m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
                 }
             }
 
@@ -772,19 +775,20 @@ namespace StatisticCommon
                     else
                         ;
 
-                    if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt)
+                    if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
-                    else
-                        ;
 
-                    if ((!(value < 1)) && ((dtServer - m_dtLastChangedAt_TM_Gen).TotalMinutes > 3) && (currentMinuteTM_GenError == false))
-                    {
-                        currentMinuteTM_GenError = true;
+                        if ((!(value < 1)) && ((dtServer - m_dtLastChangedAt_TM_Gen).TotalMinutes > 1) && (currentMinuteTM_GenError == false))
+                        {
+                            currentMinuteTM_GenError = true;
 
-                        Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
+                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
 
-                        //return true;
-                        break; //bRes по-прежнему == true ???
+                            //return true;
+                            break; //bRes по-прежнему == true ???
+                        }
+                        else
+                            ;
                     }
                     else
                         ;
@@ -800,7 +804,11 @@ namespace StatisticCommon
                             break;
                     }
 
-                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value)) m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value; else ;
+                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value)) {
+                        m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HAdmin.ToMoscowTimeZone(dtLastChangedAt);
+                        m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
+                    }
+                    else ;
                 }
 
                 //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
@@ -885,6 +893,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.LastMinutes_TM:
                 //case (int)StatesMachine.RetroHours:
                 case (int)StatesMachine.RetroMins_Fact:
+                case (int)StatesMachine.RetroMin_TM_Gen:
                 case (int)StatesMachine.RetroMins_TM:
                 case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
@@ -982,6 +991,10 @@ namespace StatisticCommon
                 //    break;
                 case (int)StatesMachine.RetroMins_Fact:
                     reason = @"3-х минутных значений";
+                    waiting = @"Переход в ожидание";
+                    break;
+                case (int)StatesMachine.RetroMin_TM_Gen:
+                    reason = @"M-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.RetroMins_TM:
@@ -1101,6 +1114,10 @@ namespace StatisticCommon
                 case (int)StatesMachine.RetroMins_Fact:
                     msg = @"трёхминутных значений";
                     GetMinsFactRequest(lastHour);
+                    break;
+                case (int)StatesMachine.RetroMin_TM_Gen:
+                    msg = @"M-минутнго значения";
+                    GetMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
                     break;
                 case (int)StatesMachine.RetroMins_TM:
                     msg = @"1-минутных значений";
@@ -1267,6 +1284,13 @@ namespace StatisticCommon
                 //    else
                 //        ;
                 //    break;
+                case (int)StatesMachine.RetroMin_TM_Gen:
+                    bRes = GetMinTMGenResponse (table);
+                    if (bRes == true)
+                        updateGUI_TM_Gen ();
+                    else
+                        ;
+                    break;
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMins_TM:
                     ClearValuesMins();
@@ -1572,6 +1596,7 @@ namespace StatisticCommon
                         states.Add((int)StatesMachine.RetroMins_TM);
                     else
                         ;
+                states.Add((int)StatesMachine.RetroMin_TM_Gen);
 
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
@@ -1591,6 +1616,22 @@ namespace StatisticCommon
                     semaState.Release(1);
                 }
                 catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+            }
+        }
+
+        public void GetRetroMinTMGen()
+        {
+            lock (m_lockValue)
+            {
+                ClearStates();
+
+                states.Add((int)StatesMachine.RetroMin_TM_Gen);
+
+                try
+                {
+                    semaState.Release(1);
+                }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
             }
         }
 
@@ -1625,6 +1666,7 @@ namespace StatisticCommon
                         states.Add((int)StatesMachine.RetroMins_TM);
                     else
                         ;
+                states.Add((int)StatesMachine.RetroMin_TM_Gen);
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
 
@@ -4618,17 +4660,7 @@ namespace StatisticCommon
 
             lastMinError = ! (iRes == 0);
 
-            int interval = -1;
-            switch (m_arTypeSourceData [(int)TG.ID_TIME.MINUTES]) {
-                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                    interval = 1;
-                    break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
-                    interval = 3;
-                    break;
-                default:
-                    break;
-            }
+            int interval = getIntervalOfTypeSourceData (TG.ID_TIME.MINUTES);
 
             if (interval > 0)
                 if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / interval))))
@@ -4640,6 +4672,112 @@ namespace StatisticCommon
                     ;
             else
                 lastMinError = true;
+
+            return iRes == 0;
+        }
+
+        private bool GetMinTMGenResponse(DataTable table)
+        {
+            //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
+
+            if (lastMin > m_valuesMins.Length)
+                return true;
+            else
+                ;
+
+            string  [] checkFields = null;
+
+            switch (TEC.s_SourceSOTIASSO) {
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                    checkFields = new string[] { @"ID", @"VALUE" };
+                    break;
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                    break;
+                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                    break;
+                default:
+                    break;
+            }
+
+            int iRes = -1;
+
+            currentMinuteTM_GenError = false;
+
+            foreach (TECComponent g in m_localTECComponents)
+            {
+                foreach (TG tg in g.m_listTG)
+                {
+                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
+                    m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
+                }
+            }
+
+            if ((!(checkFields == null)) && (checkFields.Length > 0))
+            {
+                iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1;
+
+                if (iRes == 0)
+                {
+                    iRes = table.Rows.Count > 0 ? 0 : -10;
+
+                    if (iRes == 0)
+                    {
+                        switch (TEC.s_SourceSOTIASSO) {
+                            case TEC.SOURCE_SOTIASSO.AVERAGE:
+                                int id_tm = -1;
+                                double val = -1F;
+                                TG tgTmp;
+                                Dictionary <int, TG> dictTGRecievedValues =  new Dictionary <int, TG> ();
+                                
+                                foreach (DataRow r in table.Rows) {
+                                    id_tm = Int32.Parse (r[@"ID"].ToString ());
+                                    
+                                    tgTmp = null;
+                                    if (dictTGRecievedValues.ContainsKey(id_tm) == false)
+                                    {
+                                        tgTmp = m_tec.FindTGById(id_tm, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+
+                                        if (! (tgTmp == null))
+                                            dictTGRecievedValues.Add(id_tm, tgTmp);
+                                        else
+                                            ;
+                                    }
+                                    else
+                                        tgTmp = dictTGRecievedValues[id_tm];
+
+                                    if (tgTmp == null)
+                                    {
+                                        iRes = -4;
+                                        break;
+                                    }
+                                    else
+                                        ;
+
+                                    //Отладка ???
+                                    if (!(val > 0))
+                                        val = 0F;
+                                    else
+                                        ;
+
+                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
+                                }
+                                break;
+                            case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                                break;
+                            case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+            else
+                ;
 
             return iRes == 0;
         }
@@ -4747,11 +4885,20 @@ namespace StatisticCommon
 
         private void GetMinTMRequest(DateTime date, int lh, int lm)
         {
-            //int interval = getIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+            //int interval = getIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
 
             //if (interval > 0)
                 Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)));
             //else ;
+        }
+
+        private void GetMinTMGenRequest(DateTime date, int lh, int lm)
+        {
+            int interval = getIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
+
+            if (interval > 0)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMAverageRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+            else ;
         }
 
         private int getIntervalOfTypeSourceData (TG.ID_TIME id_time) {

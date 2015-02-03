@@ -487,6 +487,7 @@ namespace Statistic
                     int prevLastMin = m_tecView.lastMin;
                     m_tecView.recalcAver = true;
                     m_tecView.lastMin = index + 2;
+                    m_tecView.GetRetroMinTMGen ();
                     m_pnlQuickData.ShowFactValues();
                     //m_tecView.recalcAver = true;
                     m_tecView.lastMin = prevLastMin;
