@@ -113,6 +113,7 @@ namespace Statistic
             this.файлПрофильЗагрузитьToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.файлПрофильЗагрузитьToolStripMenuItem.Text = "Загрузить";
             this.файлПрофильЗагрузитьToolStripMenuItem.Click += new System.EventHandler(this.файлПрофильЗагрузитьToolStripMenuItem_Click);
+            this.файлПрофильЗагрузитьToolStripMenuItem.Enabled = false;
             // 
             // файлПрофильСохранитьToolStripMenuItem
             // 
@@ -120,6 +121,7 @@ namespace Statistic
             this.файлПрофильСохранитьToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.файлПрофильСохранитьToolStripMenuItem.Text = "Сохранить";
             this.файлПрофильСохранитьToolStripMenuItem.Click += new System.EventHandler(this.файлПрофильСохранитьToolStripMenuItem_Click);
+            this.файлПрофильСохранитьToolStripMenuItem.Enabled = false;
             // 
             // файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem
             // 
@@ -129,6 +131,7 @@ namespace Statistic
             this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.CheckOnClick = true;
             this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = false;
             this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.CheckedChanged += new System.EventHandler(this.файлПрофильАвтоЗагрузитьСохранить_CheckedChanged);
+            this.файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = false;
 
             this.файлПрофильToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
                 this.файлПрофильЗагрузитьToolStripMenuItem
@@ -304,7 +307,7 @@ namespace Statistic
             this.параметрыToolStripMenuItem.Name = "параметрыToolStripMenuItem";
             this.параметрыToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.параметрыToolStripMenuItem.Text = "Параметры";
-            параметрыToolStripMenuItem.Enabled = false;
+            //параметрыToolStripMenuItem.Enabled = false;
             // 
             // параметрыПриложенияToolStripMenuItem
             // 
@@ -312,6 +315,7 @@ namespace Statistic
             this.параметрыПриложенияToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.параметрыПриложенияToolStripMenuItem.Text = "Параметры приложения";
             this.параметрыПриложенияToolStripMenuItem.Click += new System.EventHandler(this.параметрыПриложенияToolStripMenuItem_Click);
+            this.параметрыПриложенияToolStripMenuItem.Enabled = false;
             // 
             // параметрыТГБийскToolStripMenuItem
             // 

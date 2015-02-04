@@ -845,17 +845,23 @@ namespace Statistic
                 if (tg_val > 1)
                 {
                     text = tg_val.ToString("F2");
-                    val += tg_val;
+                    if (! (val < 0))
+                        val += tg_val;
+                    else
+                        ;
                 }
                 else
                     if (!(tg_val < 0))
                         text = 0.ToString("F0");
-                    else
+                    else {
                         text = textNotValue;
+                        val = -1F;
+                    }
             }
             else
             {
                 text = textNotValue;
+                val = -1F;
             }
 
             if (text.Equals (textNotValue) == true)
@@ -919,7 +925,7 @@ namespace Statistic
 
             showValue(ref m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_TM - m_indxStartCommonPVal], value_TM, true, string.Empty);
             Color frCol = Color.Empty;
-            if (m_parent.m_tecView.currHour == true)
+            if ((!(m_parent == null)) && (m_parent.m_tecView.currHour == true))
                 frCol = Color.Green;
             else
                 frCol = Color.Orange;

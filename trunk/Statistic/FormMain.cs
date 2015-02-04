@@ -284,6 +284,8 @@ namespace Statistic
                     formSetPassword = new FormSetPassword(m_passwords);
                     formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
+                    параметрыПриложенияToolStripMenuItem.Enabled = HStatisticUsers.RoleIsAdmin == true;
+
                     if (iRes == 0) {
                         Start(); //Старт 1-сек-го таймера для строки стостояния
 
@@ -1191,9 +1193,6 @@ namespace Statistic
             bool bTGBiysk = parametrsTGBiysk > 0;
             if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == 6))
             {
-                параметрыToolStripMenuItem.Enabled =
-                параметрыПриложенияToolStripMenuItem.Enabled = bTGBiysk || (HStatisticUsers.RoleIsAdmin == true);
-
                 параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
 
                 //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");

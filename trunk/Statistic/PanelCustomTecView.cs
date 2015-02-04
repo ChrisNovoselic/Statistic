@@ -77,6 +77,8 @@ namespace Statistic
                 EventRestruct ();
 
                 ContentMenuStateChange ();
+
+                ((PanelCustomTecView)Parent.Parent).EventContentChanged ();
             }
 
             private void setProperty (int indx, int newVal) {
