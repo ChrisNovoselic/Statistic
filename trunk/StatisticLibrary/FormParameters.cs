@@ -18,6 +18,7 @@ namespace StatisticCommon
                                     , APP_VERSION, APP_VERSION_QUERY_INTERVAL
                                     , KOMDISP_FOLDER_CSV
                                     , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, TECVIEW_LOGRECOMENDATIONVAL, PANELQUICKDATA_LOGDEVIATIONEVAL                                    
+                                    , VALIDATE_TM_VALUE
                                     , COUNT_PARAMETR_SETUP };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
                                                     /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
@@ -27,6 +28,7 @@ namespace StatisticCommon
                                                     , @"App Version", @"App Version Query Interval"
                                                     , @"KomDisp Folder CSV"
                                                     , @"SetPBRQuery LogPBRNumber", @"TecView LogRecomendation", @"ShowFactValues LogDevEVal"
+                                                    , @"Validate TM Value"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "סוך", "סוך", "וה.", @"לסוך", @"לסוך", @"םמל",
                                                     /*@"כמד", */"סוך", "סוך",
@@ -36,6 +38,7 @@ namespace StatisticCommon
                                                     , @"סענ", @"לסוך"
                                                     , @"סענ"
                                                     , @"סענ-כמד", @"סענ-כמד", @"סענ-כמד"
+                                                    , @"סוך"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -76,6 +79,8 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 

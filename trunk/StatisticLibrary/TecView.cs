@@ -67,6 +67,7 @@ namespace StatisticCommon
         public double m_dblTotalPower_TM_SN;
         public DateTime m_dtLastChangedAt_TM_Gen;
         public DateTime m_dtLastChangedAt_TM_SN;
+        public static int SEC_VALIDATE_TMVALUE = -1;
         public double [] m_arValueCurrentTM_Gen;
 
         private AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
@@ -778,14 +779,14 @@ namespace StatisticCommon
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
 
-                        if ((!(value < 1)) && ((dtServer - m_dtLastChangedAt_TM_Gen).TotalMinutes > 1) && (currentMinuteTM_GenError == false))
+                        if ((!(value < 1)) && (ValidateDatetimeTMValue (dtServer, m_dtLastChangedAt_TM_Gen) == false) && (currentMinuteTM_GenError == false))
                         {
                             currentMinuteTM_GenError = true;
 
                             Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
 
                             //return true;
-                            break; //bRes по-прежнему == true ???
+                            //break; //bRes по-прежнему == true ???
                         }
                         else
                             ;
@@ -804,7 +805,7 @@ namespace StatisticCommon
                             break;
                     }
 
-                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value)) {
+                    if ((!(value < 1)) && (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value))) {
                         m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HAdmin.ToMoscowTimeZone(dtLastChangedAt);
                         m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
                     }
@@ -822,6 +823,16 @@ namespace StatisticCommon
                 ;
 
             return bRes;
+        }
+
+        public static bool ValidateDatetimeTMValue (DateTime dt_srv, DateTime dt_val) {
+            if (SEC_VALIDATE_TMVALUE > 0)
+            {
+                int delta = (int)(dt_srv - dt_val).TotalSeconds;
+                return (!(delta > SEC_VALIDATE_TMVALUE)) || (delta < 0);
+            }
+            else
+                return true;
         }
 
         private void GetCurrentTMSNRequest()

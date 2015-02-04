@@ -286,6 +286,8 @@ namespace Statistic
 
                     параметрыПриложенияToolStripMenuItem.Enabled = HStatisticUsers.RoleIsAdmin == true;
 
+                    TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+
                     if (iRes == 0) {
                         Start(); //Старт 1-сек-го таймера для строки стостояния
 
@@ -350,6 +352,14 @@ namespace Statistic
             ProgramBase.AppExit ();
         }
 
+        private void updateParametersSetup () {
+            HAdmin.UpdateMarkDebugLog();
+            TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+            //??? Параметрвы для ALARM...
+
+            //??? Параметры обновления "основной панели"...
+        }
+
         private void fTimerAppReset(object obj)
         {
             if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
@@ -357,10 +367,12 @@ namespace Statistic
                 int err = -1;
 
                 formParameters.Update (out err);
-                HAdmin.UpdateMarkDebugLog ();
 
                 if (err == 0)
                 {
+                    //Динамическое обновление параметров...
+                    updateParametersSetup ();
+
                     if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
                         if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                         {

@@ -6,6 +6,9 @@ using System.Text;
 using System.IO; //Path
 using System.Data; //DataTable
 
+using System.Data.OracleClient;
+using System.Data.OleDb;
+
 using HClassLibrary;
 using StatisticCommon;
 
@@ -19,12 +22,53 @@ namespace TestFunc
 
             try {
                 //test = new DomainName ();
-                test = new ImportCSV ();
+                //test = new ImportCSV ();
+                test = new DbConnectionOracle ();
             } catch (Exception e) {
                 Console.Write(e.Message + Environment.NewLine);
             }
 
             Console.Write(@"Для завершения работы нажмите любую клавишу..."); Console.ReadKey();
+        }
+
+        private class DbConnectionOracle {
+            public DbConnectionOracle () {
+                //using (OracleConnection conn = new OracleConnection())
+                using (OleDbConnection conn = new OleDbConnection())
+                {
+                    //conn.ConnectionString = @"host=10.220.2.5;database=ORD;uid=client;pwd=client";
+                    conn.ConnectionString = @"Provider=OraOLEDB.Oracle;Data Source=ORD;User Id=arch_viewer;Password=1; OLEDB.NET=True;";
+                    try
+                    {
+                        conn.Open();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    Console.WriteLine("State: {0}", conn.State);
+                    Console.WriteLine("ConnectionString: {0}", conn.ConnectionString);
+
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        //OracleCommand command = conn.CreateCommand();
+                        OleDbCommand command = conn.CreateCommand();
+                        string sql = @"SELECT * FROM myTableName";
+                        command.CommandText = sql;
+
+                        //OracleDataReader reader = command.ExecuteReader();
+                        OleDbDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            string myField = (string)reader["MYFIELD"];
+                            Console.WriteLine(myField);
+                        }
+                    }
+                    else
+                        ;
+                }
+            }
         }
 
         private class DomainName {

@@ -465,7 +465,7 @@ namespace Statistic
 
                 //m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
-                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_Gen).TotalMinutes < 3)
+                if (TecView.ValidateDatetimeTMValue (m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_Gen) == true)
                 {
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM].ForeColor = Color.Black;
@@ -484,7 +484,7 @@ namespace Statistic
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
 
-                if ((m_tecView.serverTime - m_tecView.m_dtLastChangedAt_TM_SN).TotalMinutes < 3)
+                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_Gen) == true)
                 {
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Black;

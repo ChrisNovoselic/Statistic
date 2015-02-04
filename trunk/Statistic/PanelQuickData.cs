@@ -845,7 +845,7 @@ namespace Statistic
                 if (tg_val > 1)
                 {
                     text = tg_val.ToString("F2");
-                    if (! (val < 0))
+                    if ((TecView.ValidateDatetimeTMValue(dt_srv, dt_val) == true) && (!(val < 0)))
                         val += tg_val;
                     else
                         ;
@@ -864,7 +864,8 @@ namespace Statistic
                 val = -1F;
             }
 
-            if (text.Equals (textNotValue) == true)
+            //if (text.Equals (textNotValue) == true)
+            if (val == -1F)
                 lbl.ForeColor = Color.Orange;
             else
                 //if ((dt_srv - dt_val).TotalMinutes > 1)
