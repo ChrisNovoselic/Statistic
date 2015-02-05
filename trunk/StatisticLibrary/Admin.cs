@@ -105,7 +105,7 @@ namespace StatisticCommon
         private static int[] m_arDebugLogMessageIds = new int[(int)INDEX_DEBUGLOG_MESSAGE.COUNT_INDEX_DEBUGLOG_MESSAGE] { (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER
                                                                                                                     , (int)FormParameters.PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL
                                                                                                                     , (int)FormParameters.PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL };
-        public static HMark m_markDebugLog;
+        public static HMark s_markDebugLog = new HMark ();
 
         private static int m_iSeasonAction;
         public static int SeasonAction {
@@ -150,9 +150,8 @@ namespace StatisticCommon
             //    m_prevRDGValues[i].ppbr = new double[3 /*4 для SN???*/];
             //}
 
-            if (m_markDebugLog == null)
+            if (s_markDebugLog == null)
             {
-                m_markDebugLog = new HMark ();
                 UpdateMarkDebugLog ();
             }
             else
@@ -170,7 +169,7 @@ namespace StatisticCommon
                         bMarked = bool.Parse(FormMainBase.DelegateGetINIParametersOfID(m_arDebugLogMessageIds[i]));
                     else
                         ;
-                m_markDebugLog.Set (i, bMarked);
+                s_markDebugLog.Set (i, bMarked);
             }
         }
 

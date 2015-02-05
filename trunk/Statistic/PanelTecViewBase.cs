@@ -576,9 +576,7 @@ namespace Statistic
         {
             //InitializeComponent();
 
-            m_tecView = new TecView(TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
+            m_tecView = new TecView(TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp);
 
             HMark markQueries = new HMark();
             markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
@@ -1209,7 +1207,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])))
+                if (!(currValuesPeriod++ < POOL_TIME))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

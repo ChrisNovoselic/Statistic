@@ -13,6 +13,9 @@ namespace StatisticCommon
         public abstract void Stop();
 
         public abstract void Activate(bool active);
+
+        public static volatile int POOL_TIME = -1
+            , ERROR_DELAY = -1;
     }
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic

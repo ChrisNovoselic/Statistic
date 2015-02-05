@@ -56,8 +56,10 @@ namespace StatisticCommon
 
         private ManualResetEvent m_evTimerCurrent;
         private System.Threading.Timer m_timerAlarm;
-        private Int32 m_msecTimerUpdate;
-        private Int32 m_msecEventRetry;
+        public static volatile int MSEC_ALARM_TIMERUPDATE = -1;
+        public static volatile int MSEC_ALARM_EVENTRETRY = -1;
+        //private Int32 m_msecTimerUpdate;
+        //private Int32 m_msecEventRetry;
 
         private int m_iActiveCounter;
 
@@ -123,7 +125,7 @@ namespace StatisticCommon
                     bEventRetry = true;
                 }
                 else {
-                    if ((m_dictAlarmObject[cKey].dtConfirm - m_dictAlarmObject[cKey].dtReg) > TimeSpan.FromMilliseconds (m_msecEventRetry)) {
+                    if ((m_dictAlarmObject[cKey].dtConfirm - m_dictAlarmObject[cKey].dtReg) > TimeSpan.FromMilliseconds (MSEC_ALARM_EVENTRETRY)) {
                         bEventRetry = true;
                     }
                     else
@@ -174,7 +176,7 @@ namespace StatisticCommon
             return bRes;
         }
 
-        public void InitTEC(List<StatisticCommon.TEC> listTEC, int pool_time, int error_delay)
+        public void InitTEC(List<StatisticCommon.TEC> listTEC)
         {
             m_listTecView = new List<TecView> ();
 
@@ -190,7 +192,7 @@ namespace StatisticCommon
             int DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
-                    m_listTecView.Add(new TecView(TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1, pool_time, error_delay));
+                    m_listTecView.Add(new TecView(TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
@@ -203,7 +205,7 @@ namespace StatisticCommon
             }
         }
 
-        public AdminAlarm(int msecTimerUpdate, int msecEventRetry)
+        public AdminAlarm()
         {
             m_dictAlarmObject = new Dictionary<KeyValuePair <int, int>,ALARM_OBJECT> ();
             
@@ -212,8 +214,8 @@ namespace StatisticCommon
             m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
             //m_bDestGUIActivated = false; //Активна ли вкладка (родитель) для отображения событий сигнализации
 
-            m_msecTimerUpdate = msecTimerUpdate;
-            m_msecEventRetry = msecEventRetry; 
+            //m_msecTimerUpdate = msecTimerUpdate;
+            //m_msecEventRetry = msecEventRetry; 
         }
 
         public void Activate(bool active)
@@ -233,14 +235,14 @@ namespace StatisticCommon
                 else
                     return;
 
-            Int32 msecTimerUpdate = m_msecTimerUpdate;
+            //Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)
                 //Немедленный запуск ТОЛЬКО при 1-ой активации
                 if (m_iActiveCounter == 0)
-                    m_timerAlarm.Change(0, msecTimerUpdate);
+                    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
                 else
                     if (m_iActiveCounter > 0)
-                        m_timerAlarm.Change(msecTimerUpdate, msecTimerUpdate);
+                        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
                     else
                         ;
 
@@ -304,6 +306,8 @@ namespace StatisticCommon
                 if (! (m_iActiveCounter < 0))
                 {
                     ChangeState();
+
+                    m_timerAlarm.Change (MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
                 }
                 else
                     ;

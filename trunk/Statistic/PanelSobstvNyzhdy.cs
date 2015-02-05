@@ -69,15 +69,11 @@ namespace Statistic
 
         enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
 
-        public int m_msecPeriodUpdate;
-
         public bool m_bIsActive;
 
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             InitializeComponent();
-
-            m_msecPeriodUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000;
 
             this.Dock = DockStyle.Fill;
 
@@ -261,9 +257,7 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
+                m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
 
                 HMark markQueries = new HMark();
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE); //Только для определения сезона ???
@@ -350,7 +344,7 @@ namespace Statistic
                 m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelSobstvNyzhdy)Parent).m_msecPeriodUpdate - 1, ((PanelSobstvNyzhdy)Parent).m_msecPeriodUpdate - 1);
+                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
 
                 isActive = false;
             }
@@ -425,6 +419,8 @@ namespace Statistic
                 if (isActive == true)
                 {
                     ChangeState();
+
+                    m_timerCurrent.Change (PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                 }
                 else
                     ;

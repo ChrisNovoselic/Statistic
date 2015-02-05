@@ -70,8 +70,6 @@ namespace Statistic
 
         enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
 
-        public int m_msecPeriodUpdate;
-
         //HReports m_report;
 
         public bool m_bIsActive;
@@ -79,8 +77,6 @@ namespace Statistic
         public PanelTMSNPower(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
         {
             InitializeComponent();
-
-            m_msecPeriodUpdate = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000;
 
             this.Dock = DockStyle.Fill;
 
@@ -237,9 +233,7 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME])
-                                , Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]));
+                m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1);
 
                 HMark markQueries = new HMark();
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
@@ -330,7 +324,8 @@ namespace Statistic
                 m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, ((PanelTMSNPower)Parent).m_msecPeriodUpdate - 1, ((PanelTMSNPower)Parent).m_msecPeriodUpdate - 1);
+                //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1);
+                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
 
                 isActive = false;
             }
@@ -359,7 +354,7 @@ namespace Statistic
 
                 if (isActive == true)
                 {
-                    ChangeState();
+                    m_timerCurrent.Change (0, System.Threading.Timeout.Infinite);
                 }
                 else
                 {
@@ -431,7 +426,7 @@ namespace Statistic
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
 
-                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_Gen) == true)
+                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_SN) == true)
                 {
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
                     m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Black;
@@ -461,6 +456,8 @@ namespace Statistic
                 if (isActive == true)
                 {
                     ChangeState();
+
+                    m_timerCurrent.Change (PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                 }
                 else
                     ;

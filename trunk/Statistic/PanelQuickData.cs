@@ -1095,7 +1095,7 @@ namespace Statistic
                                     m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
                         if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;
 
-                        if (HAdmin.m_markDebugLog.IsMarked ((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.DEVIATION_EVAL))
+                        if (HAdmin.s_markDebugLog.IsMarked ((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.DEVIATION_EVAL))
                             Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal.ToString(@"F3")
                                                 + @" (valueEBefore=" + valueEBefore.ToString(@"F3")
                                                 + @"; valueECur=" + valueECur.ToString (@"F3")

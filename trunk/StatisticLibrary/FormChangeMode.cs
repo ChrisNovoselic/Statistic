@@ -385,8 +385,6 @@ namespace StatisticCommon
 
         public void LoadProfile(string ids)
         {
-            Logging.Logg().Action(@"Загрузка профайла (FormChangeMode): ids=" + ids);
-            
             if (ids.Equals(string.Empty) == false)
             {
                 string[] arId = ids.Split(';');

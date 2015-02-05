@@ -149,11 +149,6 @@ namespace StatisticCommon
         //'public' дл€ доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public double recomendation;
 
-        //private bool started;
-        private int m_pool_time
-            , m_error_delay
-            ;
-
         //'public' дл€ доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public volatile bool adminValuesReceived;
 
@@ -293,16 +288,13 @@ namespace StatisticCommon
         }
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
-        public TecView(TYPE_PANEL type, int indx_tec, int indx_comp, int pool_time, int error_delay)
+        public TecView(TYPE_PANEL type, int indx_tec, int indx_comp)
             : base()
         {            
             m_typePanel = type;
 
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
-
-            m_pool_time = pool_time;
-            m_error_delay = error_delay;
 
             m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
@@ -783,7 +775,7 @@ namespace StatisticCommon
                         {
                             currentMinuteTM_GenError = true;
 
-                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse () - currentMinuteTM_GenError = true");
+                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenError=" + currentMinuteTM_GenError.ToString ());
 
                             //return true;
                             //break; //bRes по-прежнему == true ???
@@ -953,48 +945,48 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.Hours_Fact:
                     reason = @"получасовых значений";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.Hour_TM:
                     reason = @"усредн. за час телемеханики";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.Hours_TM:
                     reason = @"часовых значений";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
                     reason = @"усредн. за интервал телемеханики";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     reason = @"1-минутных значений";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генераци€)";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
                 case (int)StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     reason = @"текущих значений 59 мин.";
-                    waiting = @"ќжидание " + m_pool_time.ToString() + " секунд";
+                    waiting = @"ќжидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 //case (int)StatesMachine.RetroHours:
                 //    reason = @"получасовых значений";
@@ -1206,7 +1198,7 @@ namespace StatisticCommon
                     if (bRes == true)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
-                        m_curDate = m_curDate.AddSeconds(-1 * m_error_delay);
+                        m_curDate = m_curDate.AddSeconds(-1 * PanelStatistic.ERROR_DELAY);
                         //this.BeginInvoke(delegateSetNowDate, true);
                         if (!(setDatetimeView == null)) setDatetimeView(); else ;
                     }
@@ -2697,7 +2689,7 @@ namespace StatisticCommon
             else
                 ;
 
-            if (HAdmin.m_markDebugLog.IsMarked((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.RECOMENDATION_VAL))
+            if (HAdmin.s_markDebugLog.IsMarked((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.RECOMENDATION_VAL))
                 Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
                                     + @" (factSum=" + factSum.ToString(@"F3")
                                     + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
