@@ -17,7 +17,12 @@ namespace StatisticCommon
                                     //, GRINVICH_OFFSET_DATETIME
                                     , APP_VERSION, APP_VERSION_QUERY_INTERVAL
                                     , KOMDISP_FOLDER_CSV
-                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, TECVIEW_LOGRECOMENDATIONVAL, PANELQUICKDATA_LOGDEVIATIONEVAL                                    
+                                    //Логгирование
+                                    , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
+                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
+                                    , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
+                                    , PANELQUICKDATA_LOGDEVIATIONEVAL
+                                    //Продолжение параметров...
                                     , VALIDATE_TM_VALUE
                                     , COUNT_PARAMETR_SETUP };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
@@ -27,7 +32,12 @@ namespace StatisticCommon
                                                     //, @"Grinvich OffsetDateTime"
                                                     , @"App Version", @"App Version Query Interval"
                                                     , @"KomDisp Folder CSV"
-                                                    , @"SetPBRQuery LogPBRNumber", @"TecView LogRecomendation", @"ShowFactValues LogDevEVal"
+                                                    //Логгирование
+                                                    , @"ControlHandle LogErrorCreate"
+                                                    , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
+                                                    , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
+                                                    , @"ShowFactValues LogDevEVal"
+                                                    //Продолжение параметров...
                                                     , @"Validate TM Value"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
@@ -37,7 +47,12 @@ namespace StatisticCommon
                                                     //, "час"
                                                     , @"стр", @"мсек"
                                                     , @"стр"
-                                                    , @"стр-лог", @"стр-лог", @"стр-лог"
+                                                    //Логгирование
+                                                    , @"стр-лог"
+                                                    , @"стр-лог", @"стр-лог"
+                                                    , @"стр-лог", @"стр-лог"
+                                                    , @"стр-лог"
+                                                    //Продолжение параметров...
                                                     , @"сек"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
@@ -76,8 +91,11 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.KOMDISP_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
 
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, @"False");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING, @"False");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");

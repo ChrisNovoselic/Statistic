@@ -162,7 +162,7 @@ namespace StatisticCommon
             insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             try { Columns.Insert(Columns.Count - 1, insColumn); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, "dgwAdminNSS - addTextBoxColumn () - Columns.Insert");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "dgwAdminNSS - addTextBoxColumn () - Columns.Insert");
             }
 
             m_listIds.Add (new int [(int)ID_TYPE.COUNT_ID_TYPE] {id, id_owner});

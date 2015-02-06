@@ -40,7 +40,7 @@ namespace trans_mt
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query);
 
-            Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
+            Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
@@ -168,7 +168,7 @@ namespace trans_mt
                         m_curRDGValues[hour - 1].deviation = 0;
                     }
                     catch (Exception e) {
-                        Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminMT::GetPPBRValuesResponse () - ...");
                     }
             }
 
@@ -232,7 +232,7 @@ namespace trans_mt
                     break;
             }
 
-            Logging.Logg().Debug(@"AdminMT::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMT::StateRequest () - state=" + state.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }
@@ -292,7 +292,7 @@ namespace trans_mt
             else
                 ;
 
-            Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }
@@ -381,7 +381,7 @@ namespace trans_mt
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminMC::GetRDGValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminMC::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }

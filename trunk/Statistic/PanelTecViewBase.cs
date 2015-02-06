@@ -791,7 +791,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID);
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
         }
 
         private void UpdateGUI_TM_Gen()
@@ -807,7 +807,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID);
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
         }
 
         protected virtual void UpdateGUI_Fact(int hour, int min)
@@ -827,7 +827,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID);
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID);
                 }
             }
         }
@@ -1077,7 +1077,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke (new DelegateBoolFunc (setNowDate), true);
             else
-                Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...");
+                Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         protected void setNowDate(bool received)
@@ -1225,7 +1225,7 @@ namespace Statistic
             //}
             //catch (Exception e)
             //{
-            //    Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'");
+            //    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "Обращение к переменной 'timerCurrent'");
             //}
         }
 
@@ -1441,7 +1441,7 @@ namespace Statistic
                                         ;
                                 }
                                 catch (Exception e) {
-                                    Logging.Logg().Exception(e, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin);
+                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin);
                                 }
                                 break;
                         }

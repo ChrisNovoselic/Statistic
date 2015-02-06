@@ -35,7 +35,7 @@ namespace trans_mc
             string query = "PPBR";
             int i = -1;
 
-            Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вХод...: query=" + query);
+            Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вХод...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
 
             query += ";";
             for (i = 0; i < comp.m_listMCentreId.Count; i++)
@@ -50,7 +50,7 @@ namespace trans_mc
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
 
-            Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query);
+            Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
@@ -169,7 +169,7 @@ namespace trans_mc
                 case (int)StatesMachine.InitIGO:
                     msg = @"Инициализация объектов Modes-Centre";
                     ActionReport(msg);
-                    Logging.Logg().Debug(@"AdminMC::StateResponse () - " + msg);
+                    Logging.Logg().Debug(@"AdminMC::StateResponse () - " + msg, Logging.INDEX_MESSAGE.NOT_SET);
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
@@ -190,7 +190,7 @@ namespace trans_mc
                     break;
             }
 
-            Logging.Logg().Debug(@"AdminMC::StateRequest () - state=" + state.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMC::StateRequest () - state=" + state.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }
@@ -226,7 +226,7 @@ namespace trans_mc
                     result = true;
                     if (result == true)
                     {
-                        Logging.Logg().Debug(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre");
+                        Logging.Logg().Debug(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                     else
                         ;
@@ -260,7 +260,7 @@ namespace trans_mc
             else
                 ;
 
-            Logging.Logg().Debug(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...");
+            Logging.Logg().Debug(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }
@@ -375,7 +375,7 @@ namespace trans_mc
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminMC::GetRDGValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminMC::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }

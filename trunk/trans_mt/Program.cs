@@ -22,7 +22,7 @@ namespace trans_mt
             try { formMain = new FormMainTransMT(); }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, "!Ошибка! запуска приложения.");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "!Ошибка! запуска приложения.");
             }
 
             if (!(formMain == null))

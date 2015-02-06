@@ -81,7 +81,7 @@ namespace StatisticAlarm
             {//...для this.BeginInvoke
             }
             else
-                Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...");
+                Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)

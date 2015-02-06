@@ -110,11 +110,11 @@ namespace StatisticCommon
 
         public virtual Errors SaveChanges()
         {
-            Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...");
+            Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             delegateStartWait();
 
-            Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -130,7 +130,7 @@ namespace StatisticCommon
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear()");
+                    Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                     states.Add((int)StatesMachine.CurrentTime);
 
@@ -154,11 +154,11 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::SaveChanges () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::SaveChanges () - semaState.Release(1)");
                     }
                 }
 
-                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
+                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
                 {
@@ -173,7 +173,7 @@ namespace StatisticCommon
                 if (! (saveComplete == null)) saveComplete(); else ;
             }
             else {
-                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=false");
+                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
 
                 saveResult = Errors.NoAccess;
                 saving = true;
@@ -190,7 +190,7 @@ namespace StatisticCommon
 
             delegateStartWait();
 
-            Logging.Logg().Debug("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            Logging.Logg().Debug("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -203,7 +203,7 @@ namespace StatisticCommon
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear()");
+                    Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                     states.Add((int)StatesMachine.CurrentTime);
                     states.Add((int)StatesMachine.AdminDates);
@@ -219,12 +219,12 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::ClearRDG () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ClearRDG () - semaState.Release(1)");
                     }
                 }
 
                 //Ожидание окончания записи
-                Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString ());
+                Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
                 {
@@ -235,7 +235,7 @@ namespace StatisticCommon
                 }
             }
             else {
-                Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=false");
+                Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
 
                 errClearResult = Errors.NoAccess;
             }
@@ -328,7 +328,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminTS::Reinit () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::Reinit () - semaState.Release(1)");
                 }
             }
         }
@@ -341,7 +341,7 @@ namespace StatisticCommon
 
                 indxTECComponents = indx;
 
-                Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear()");
+                Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                 states.Add((int)StatesMachine.CurrentTime);
 
@@ -351,7 +351,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminTS::GetCurrentTime () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetCurrentTime () - semaState.Release(1)");
                 }
             }
         }
@@ -391,7 +391,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminTS::GetRDGValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }
@@ -426,7 +426,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminTS::GetRDGValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetRDGValues () - semaState.Release(1)");
                 }
             }
         }
@@ -464,7 +464,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
                 }
             }
         }
@@ -472,7 +472,7 @@ namespace StatisticCommon
         public virtual Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
-            Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING);
+            Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -496,11 +496,11 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::ExpRDGExcelValues () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ExpRDGExcelValues () - semaState.Release(1)");
                     }
                 }
 
-                Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
+                Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
                 try
                 {
                     semaDBAccess.Release(1);
@@ -514,7 +514,7 @@ namespace StatisticCommon
             else {
                 lock (m_lockState)
                 {
-                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=false");
+                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
                     
                     saveResult = Errors.NoAccess;
                     saving = true;
@@ -594,7 +594,7 @@ namespace StatisticCommon
                     try { arTable[i].Columns.Remove("ID_COMPONENT"); }
                     catch (Exception e)
                     { //ArgumentException
-                        Logging.Logg().Exception(e, "Remove(\"ID_COMPONENT\")");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "Remove(\"ID_COMPONENT\")");
                     }
                 else
                     ;
@@ -762,7 +762,7 @@ namespace StatisticCommon
                                 }
                                 else
                                 {//Ошибка ... ???
-                                    Logging.Logg().Error(@"AdminTS::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                    Logging.Logg().Error(@"AdminTS::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour, Logging.INDEX_MESSAGE.NOT_SET);
                                 }
 
                                 //continue; ???
@@ -832,7 +832,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, @"AdminRS::GetAdminValuesResponse () - ... hour = " + hour);
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminRS::GetAdminValuesResponse () - ... hour = " + hour);
                     }
                 }
 
@@ -1173,7 +1173,7 @@ namespace StatisticCommon
         
         protected virtual void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Logging.Logg().Debug("AdminTS::SetAdminValuesRequest ()");
+            Logging.Logg().Debug("AdminTS::SetAdminValuesRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
 
             string[] query = setAdminValuesQuery(t, comp, date);
 
@@ -1250,7 +1250,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().Debug("AdminTS::ClearAdminValuesRequest ()");
+            Logging.Logg().Debug("AdminTS::ClearAdminValuesRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1262,8 +1262,6 @@ namespace StatisticCommon
 
             date = date.Date;
             int currentHour = getCurrentHour (date);
-
-            bool bLogPBRNmber = s_markDebugLog.IsMarked ((int)INDEX_DEBUGLOG_MESSAGE.SET_PBR_QUERY_NUMBER);
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1318,10 +1316,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (bLogPBRNmber == true)
-                                Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number);
-                            else
-                                ;
+                            Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_002);
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
@@ -1440,14 +1435,20 @@ namespace StatisticCommon
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
                                    //@"';";
 
-            Logging.Logg().Debug("AdminTS::SetPPBRRequest ()");
+            Logging.Logg().Debug("AdminTS::SetPPBRRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Equals(string.Empty) == false) ||
                 (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals(string.Empty) == false))
+            {
+                Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - INSERT: " + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT], Logging.INDEX_MESSAGE.D_005);
+                Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - UPDATE: " + query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], Logging.INDEX_MESSAGE.D_005);
+                //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - DELETE: " + resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], Logging.INDEX_MESSAGE.D_005);
+
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
                 Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            }
             else
-                Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty"); //Запрос пуст
+                Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty", Logging.INDEX_MESSAGE.NOT_SET); //Запрос пуст
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
@@ -1493,7 +1494,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().Debug("ClearPPBRRequest");
+            Logging.Logg().Debug("ClearPPBRRequest", Logging.INDEX_MESSAGE.NOT_SET);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1615,7 +1616,7 @@ namespace StatisticCommon
                     StartDbInterfaces();
                 //}
             else
-                Logging.Logg().Error(@"AdminTS::Start () - m_list_tec == null");
+                Logging.Logg().Error(@"AdminTS::Start () - m_list_tec == null", Logging.INDEX_MESSAGE.NOT_SET);
 
             semaDBAccess = new Semaphore(1, 1);
 
@@ -1632,7 +1633,7 @@ namespace StatisticCommon
                     StopDbInterfaces();
                 }
             else
-                Logging.Logg().Error(@"AdminTS::Stop () - m_list_tec == null");
+                Logging.Logg().Error(@"AdminTS::Stop () - m_list_tec == null", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override bool StateRequest(int /*StatesMachine*/ state)
@@ -1973,14 +1974,14 @@ namespace StatisticCommon
                     if (states.IndexOf(state) == (states.Count - 1))
                         try { semaDBAccess.Release(1); }
                         catch (Exception e) {
-                            Logging.Logg().Exception(e, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...");
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...");
                         }
                     else
                         ;
                     result = true;
                     if (result == true)
                     {
-                        Logging.Logg().Debug(@"AdminTS::StateResponse () - saveComplete is set=" + (saveComplete == null ? false.ToString () : true.ToString ()) + @" - вЫход...");
+                        Logging.Logg().Debug(@"AdminTS::StateResponse () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
                         //Вызов завершения операции сохранения изменений - НЕЛьЗЯ операция не завершена
                         //if (!(saveComplete == null)) saveComplete(); else ;
@@ -2091,7 +2092,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                         }
                     }
                     else
@@ -2163,7 +2164,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
 
                     reason += @" сохранённых часовых значений (PPBR)";
@@ -2187,7 +2188,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
 
                     reason += @" сохранённых часовых значений (AdminValues)";
@@ -2202,7 +2203,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
                     }
 
                     reason = @"сохранения административных данных";
@@ -2282,7 +2283,7 @@ namespace StatisticCommon
 
             if (! (errorData == null)) errorData (); else ;
 
-            Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...");
+            Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
@@ -2306,7 +2307,7 @@ namespace StatisticCommon
                         m_curDate = m_prevDate;
                         using_date = false;
 
-                        Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear()");
+                        Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                         //states.Add((int)StatesMachine.CurrentTime);
                         states.Add((int)StatesMachine.PPBRValues);
@@ -2318,7 +2319,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, "AdminTS::SaveRDGValues () - semaState.Release(1)");
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::SaveRDGValues () - semaState.Release(1)");
                         }
                     }
                 else
@@ -2409,7 +2410,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::ClearRDGValues () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ClearRDGValues () - semaState.Release(1)");
                     }
                 }
             }

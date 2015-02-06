@@ -229,7 +229,7 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else
-                    Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...");
+                    Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...", Logging.INDEX_MESSAGE.D_001);
             else
                 ;
         }
@@ -705,7 +705,7 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowLastMinutesTM));
                 else
-                    Logging.Logg().Error(@"PanelTecLastMinutes::showLastMinutesTM () - ... BeginInvoke (ShowLastMinutesTM) - ...");
+                    Logging.Logg().Error(@"PanelTecLastMinutes::showLastMinutesTM () - ... BeginInvoke (ShowLastMinutesTM) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
             private void ShowLastMinutesTM()

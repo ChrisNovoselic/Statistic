@@ -315,7 +315,7 @@ namespace StatisticCommon
                                         }
                                         catch (Exception e)
                                         {
-                                            Logging.Logg().Exception(e, "InitTEC::InitTEC (3 параметра) - ...for (int j = 0; j < list_TECComponents.Rows.Count; j++)...");
+                                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "InitTEC::InitTEC (3 параметра) - ...for (int j = 0; j < list_TECComponents.Rows.Count; j++)...");
                                         }
                                     else
                                         ; //Ошибка при получении списка компонентов

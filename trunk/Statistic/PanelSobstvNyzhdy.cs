@@ -388,14 +388,14 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
                 else
-                    Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");
+                    Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
             private void ShowTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
                 //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
-                //catch (Exception e) { Logging.Logg ().Exception (e, @"PanelSobstvNyzhdy::ShowTMSNPower () - ..."); }
+                //catch (Exception e) { Logging.Logg ().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelSobstvNyzhdy::ShowTMSNPower () - ..."); }
                 m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
 
                 DrawGraphHours();

@@ -87,7 +87,7 @@ namespace StatisticCommon
 
         public void OnEventConfirm(int id, int id_tg)
         {
-            Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString () + @"; id_tg=" + id_tg.ToString ());
+            Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
             KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
@@ -101,7 +101,7 @@ namespace StatisticCommon
                     ;
             }
             else
-                Logging.Logg().Error(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString() + @", ме мюидем!");
+                Logging.Logg().Error(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString() + @", ме мюидем!", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void OnAdminAlarm_EventReg(TecView obj, TecView.EventRegEventArgs ev)

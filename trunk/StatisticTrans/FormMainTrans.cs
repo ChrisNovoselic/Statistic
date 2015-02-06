@@ -100,7 +100,7 @@ namespace StatisticTrans
             m_markQueries = new HMark();
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
-            DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(GetINIParametersOfKey);
+            Logging.DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(GetINIParametersOfKey);
 
             m_sFileINI = new FileINI(@"setup.ini", par, val);
 
@@ -863,7 +863,7 @@ namespace StatisticTrans
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
                 else
-                    Logging.Logg().Error(@"FormMainTrans::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...");
+                    Logging.Logg().Error(@"FormMainTrans::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...", Logging.INDEX_MESSAGE.D_001);
 
                 //this.BeginInvoke(new DelegateFunc(trans_auto_next));
             }
@@ -884,7 +884,7 @@ namespace StatisticTrans
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 else
-                    Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...");
+                    Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
             }
             else
                 ;
@@ -910,7 +910,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void saveDataGridViewAdminComplete()
         {
-            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...");
+            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
@@ -925,7 +925,7 @@ namespace StatisticTrans
             else
                 ;
 
-            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...");
+            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected void setDatetimePickerMain(DateTime date)
@@ -938,7 +938,7 @@ namespace StatisticTrans
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
             else
-                Logging.Logg().Error(@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...");
+                Logging.Logg().Error(@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         protected override void Stop()
@@ -1127,7 +1127,7 @@ namespace StatisticTrans
         }
 
         protected void trans_auto_next () {
-            Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex);
+            Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex, Logging.INDEX_MESSAGE.NOT_SET);
 
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {

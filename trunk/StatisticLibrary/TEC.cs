@@ -93,7 +93,7 @@ namespace StatisticCommon
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString ()
-                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")");
+                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                 }
             }
@@ -109,7 +109,7 @@ namespace StatisticCommon
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString()
-                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")");
+                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                 }
             }

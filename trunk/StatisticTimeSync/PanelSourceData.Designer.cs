@@ -127,7 +127,7 @@ namespace StatisticTimeSync
 
                 //if (! (errorData == null)) errorData (); else ;
 
-                Logging.Logg().Error(@"HGetDate::StateErrors () - error=" + error + @" - вЫход...");
+                Logging.Logg().Error(@"HGetDate::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             protected void getDate()
@@ -151,7 +151,7 @@ namespace StatisticTimeSync
                 {
                     ClearStates();
 
-                    Logging.Logg().Debug("HGetDate::GetCurrentTime () - states.Clear()");
+                    Logging.Logg().Debug("HGetDate::GetCurrentTime () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                     states.Add((int)StatesMachine.CurrentTime);
 
@@ -161,7 +161,7 @@ namespace StatisticTimeSync
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "HGetDate::GetCurrentTime () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "HGetDate::GetCurrentTime () - semaState.Release(1)");
                     }
                 }
             }

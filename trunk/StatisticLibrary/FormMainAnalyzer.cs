@@ -246,8 +246,8 @@ namespace StatisticCommon
                                 BeginInvoke(new DelegateFunc(TabLoggingClearText));
                             }
                             else
-                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...");
-                            
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
                             //Если активна 0-я вкладка (лог-файл)
                             m_tcpClient.delegateConnect = ConnectToLogRead;
                             break;
@@ -259,7 +259,7 @@ namespace StatisticCommon
                                 BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
                             }
                             else
-                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...");
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...", Logging.INDEX_MESSAGE.D_001);
 
                             //Если активна 1-я вкладка (вкладки)
                             m_tcpClient.delegateConnect = ConnectToTab;

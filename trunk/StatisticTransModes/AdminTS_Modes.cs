@@ -24,15 +24,15 @@ namespace StatisticTransModes
 
         public override Errors SaveChanges()
         {
-            Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - вХод...");
+            Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             try { delegateStartWait(); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...");
             }
 
             int msecWaitSemaDbAccess = DbInterface.MAX_RETRY * DbInterface.MAX_WAIT_COUNT * DbInterface.WAIT_TIME_MS;
-            Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess);
+            Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess, Logging.INDEX_MESSAGE.NOT_SET);
 
             if (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true)
             //if ((semaState.WaitOne(msecWaitSemaDbAccess) == true) && (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true))
@@ -46,7 +46,7 @@ namespace StatisticTransModes
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - states.Clear()");
+                    Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                     states.Add((int)StatesMachine.CurrentTime);
                     //states.Add((int)StatesMachine.AdminDates);
@@ -62,11 +62,11 @@ namespace StatisticTransModes
                     }
                     catch
                     {
-                        Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaState.Release(1)");
+                        Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaState.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
 
-                Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString());
+                Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
                 try
                 {
                     semaDBAccess.Release(1);
@@ -80,7 +80,7 @@ namespace StatisticTransModes
                 saveComplete ();
             }
             else {
-                Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=false");
+                Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
 
                 saveResult = Errors.NoAccess;
                 saving = true;
@@ -89,7 +89,7 @@ namespace StatisticTransModes
             try { delegateStopWait(); }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - delegateStopWait() - ...");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_Modes::SaveChanges () - delegateStopWait() - ...");
             }
 
             return saveResult;

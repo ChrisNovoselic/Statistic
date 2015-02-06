@@ -76,7 +76,7 @@ namespace trans_mc
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "FormMainTransMC::FormMainTransMC ()");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "FormMainTransMC::FormMainTransMC ()");
                     //ErrorReport("Ошибка соединения. Переход в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;

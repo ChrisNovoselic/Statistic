@@ -54,7 +54,7 @@ namespace trans_mc_cmd
                 try { techsite = new MySQLtechsite(bCalculatedHalfHourValues); }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "MySQLtechsite::MySQLtechsite () - new MySqlConnection (...)");
                     itssAUX.PrintErrorMessage(e.Message + Environment.NewLine);
                     iTechsiteInitialized = 1;
                 }

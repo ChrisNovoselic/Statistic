@@ -57,7 +57,7 @@ namespace Statistic
                     }
                     else
                     {
-                        Logging.Logg().Error(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text);
+                        Logging.Logg().Error(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text, Logging.INDEX_MESSAGE.NOT_SET);
 
                         break;
                     }
@@ -118,14 +118,14 @@ namespace Statistic
                         if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
                             ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
                         else
-                            Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null");
+                            Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                     else
                     {
                     }
                 }
             else
-                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts=null");
+                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts=null", Logging.INDEX_MESSAGE.NOT_SET);
         }
     }
 
@@ -888,7 +888,7 @@ namespace Statistic
             {
                 if (m_parent.m_tecView.currHour == true)
                 {
-                    if (m_parent.m_tecView.currentMinuteTM_GenError == true)
+                    if (m_parent.m_tecView.currentMinuteTM_GenWarning == true)
                     {
                         m_parent.m_tecView.ErrorReport("Значение телемеханики для одного из ТГ не найдено!");
                     }
@@ -1010,7 +1010,7 @@ namespace Statistic
 
                 if ((bMinValuesReceived == true) && (value < 1F) && (bPrevValueValidate == true) && (!(prevValue < 1F)))
                 {
-                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F");
+                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
 
                     return;
                 }
@@ -1095,15 +1095,13 @@ namespace Statistic
                                     m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) / m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe) * 100);
                         if (Math.Abs (dblDevEVal) < 100) ; else bDevEVal = false;
 
-                        if (HAdmin.s_markDebugLog.IsMarked ((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.DEVIATION_EVAL))
-                            Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal.ToString(@"F3")
-                                                + @" (valueEBefore=" + valueEBefore.ToString(@"F3")
-                                                + @"; valueECur=" + valueECur.ToString (@"F3")
-                                                + @"; valueEFuture=" + valueEFuture.ToString(@"F3")
-                                                + @"; valuesUDGe=" + m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe
-                                                + @") [" + hour + @", " + m_parent.m_tecView.lastMin + @"]");
-                        else
-                            ;
+                        Logging.Logg().Debug(@"dblDevEVal=" + dblDevEVal.ToString(@"F3")
+                                            + @" (valueEBefore=" + valueEBefore.ToString(@"F3")
+                                            + @"; valueECur=" + valueECur.ToString (@"F3")
+                                            + @"; valueEFuture=" + valueEFuture.ToString(@"F3")
+                                            + @"; valuesUDGe=" + m_parent.m_tecView.m_valuesHours[m_parent.m_tecView.lastHour].valuesUDGe
+                                            + @") [" + hour + @", " + m_parent.m_tecView.lastMin + @"]"
+                                            , Logging.INDEX_MESSAGE.D_004);
                     }
                     else
                         bDevEVal = false;

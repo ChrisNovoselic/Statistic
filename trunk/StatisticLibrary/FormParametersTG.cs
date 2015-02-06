@@ -347,7 +347,7 @@ namespace StatisticCommon
             }
             else
                 //Ошибка получения объекта "соединение" с БД конфигурации
-                Logging.Logg ().Error (@"FormParametrsTG::loadParam (" + getQueryParam((int)m_State) + @")");
+                Logging.Logg().Error(@"FormParametrsTG::loadParam (" + getQueryParam((int)m_State) + @")", Logging.INDEX_MESSAGE.NOT_SET);
 
             Stop ();
         }

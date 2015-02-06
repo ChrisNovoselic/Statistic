@@ -79,8 +79,9 @@ namespace Statistic
 
             ProgramBase.s_iMessageShowUnhandledException = 1;
 
-            m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
-            m_TCPServer.delegateRead = ReadAnalyzer;
+            //??? как рез-т проверка на запуск нового экземпляра... см. 'Program.cs'
+            //m_TCPServer = new TcpServerAsync(IPAddress.Any, 6666);
+            //m_TCPServer.delegateRead = ReadAnalyzer;
 
             //??? как рез-т проверка на запуск нового экземпляра... см. 'Program.cs'
             //if (!(m_TCPServer.Start() == 0)) Abort(@"Запуск дублирующего экземпляра приложения", true, false); else ;
@@ -120,6 +121,15 @@ namespace Statistic
                 //formParameters = new FormParameters_FIleINI("setup.ini");
                 formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_002, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER);
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_003, (int)FormParameters.PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL);
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_004, (int)FormParameters.PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL);
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_005, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY);
+                Logging.LinkId (Logging.INDEX_MESSAGE.W_001, (int)FormParameters.PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING);
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE);
+
+                Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
+ 
                 updateParametersSetup();
 
                 //Предустановленные в файле/БД конфигурации
@@ -127,11 +137,9 @@ namespace Statistic
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
-
-                DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             }
             catch (Exception e) {
-                Logging.Logg().Exception(e, @"FormMain::Initialize () ... загрузка предустановленных параметров ...");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Initialize () ... загрузка предустановленных параметров ...");
 
                 msgError = e.Message;
                 iRes = -5;
@@ -296,7 +304,7 @@ namespace Statistic
                         
                         //сменитьРежимToolStripMenuItem_Click();
                         //formChangeMode.LoadProfile(@"116");
-                        Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + listIDs);
+                        Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + listIDs, Logging.INDEX_MESSAGE.NOT_SET);
                         formChangeMode.LoadProfile(string.Empty);
 
                         if (m_bAutoLoadTabs == true)
@@ -350,7 +358,7 @@ namespace Statistic
 
         private void updateParametersSetup () {
             //Параметры записи сообщений лог-а...
-            HAdmin.UpdateMarkDebugLog();
+            Logging.UpdateMarkDebugLog();
 
             //Параметры обновления "основной панели"...
             PanelStatistic.POOL_TIME = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
@@ -446,11 +454,11 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateStringFunc(panelAdminKomDispEventGUIReg), text);
                 else
-                    Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...");                
+                    Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...", Logging.INDEX_MESSAGE.D_001);
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
             }
         }
 
@@ -538,13 +546,13 @@ namespace Statistic
 
         private void fileProfileLoadStandatdTab () {
             string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids, Logging.INDEX_MESSAGE.NOT_SET);
             formChangeMode.LoadProfile(ids);
         }
 
         private void fileProfileLoadAddingTab () {
             string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids, Logging.INDEX_MESSAGE.NOT_SET);
 
             if (ids.Equals(string.Empty) == false)
             {
@@ -691,7 +699,7 @@ namespace Statistic
                     m_TCPServer.Stop ();
                     m_TCPServer = null;
                 } catch (Exception e) {
-                    Logging.Logg().Exception(e, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
                 }
             } else
                 ;
@@ -744,7 +752,7 @@ namespace Statistic
 
         private void ClearTabPages()
         {
-            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вХод...");
+            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             activateTabPage(tclTecViews.SelectedIndex, false);
 
@@ -771,7 +779,7 @@ namespace Statistic
 
             //selectedTecViews.Clear();
 
-            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вЫход...");
+            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void activateTabPage(int indx, bool active)
@@ -814,7 +822,7 @@ namespace Statistic
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
 
-            Logging.Logg().Debug(strMsgDebug + @" - вЫход...");
+            Logging.Logg().Debug(strMsgDebug + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void ActivateTabPage()
@@ -1796,7 +1804,7 @@ namespace Statistic
                             //tv.tec.parametersTGForm.ShowDialog(this);
                             m_formParametersTG.ShowDialog(this);
                         else
-                            Logging.Logg().Error(@"FormMain::параметрыТГБийскToolStripMenuItem_Click () - m_formParametersTG == null");
+                            Logging.Logg().Error(@"FormMain::параметрыТГБийскToolStripMenuItem_Click () - m_formParametersTG == null", Logging.INDEX_MESSAGE.NOT_SET);
 
                         break;
                     }
@@ -1916,18 +1924,25 @@ namespace Statistic
         }
 
         private ToolStripMenuItem getSelectedMenuItem (ToolStripMenuItem owner) {
+            ToolStripMenuItem itemRes = null;
+
             foreach (ToolStripItem item in owner.DropDownItems)
             {
                 if (item is ToolStripMenuItem)
                     if ((item as ToolStripMenuItem).DropDownItems.Count > 0 && item.Enabled == true)
                     {
-                        return getSelectedMenuItem(item as ToolStripMenuItem);
+                        itemRes = getSelectedMenuItem(item as ToolStripMenuItem);
+                        if (! (itemRes == null))
+                            break;
+                        else
+                            ;
                     }
                     else
                     {
                         if (item.Selected == true)
                         {
-                            return item as ToolStripMenuItem;
+                            itemRes = item as ToolStripMenuItem;
+                            break;
                         }
                         else
                             ;
@@ -1936,7 +1951,7 @@ namespace Statistic
                     ;
             }
 
-            return null;
+            return itemRes;
         }
 
         private void menuStrip_MenuDeactivate(object sender, EventArgs e)

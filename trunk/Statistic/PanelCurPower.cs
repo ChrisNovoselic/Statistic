@@ -416,7 +416,7 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
                 else
-                    Logging.Logg().Error(@"PanelTecCurPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...");
+                    Logging.Logg().Error(@"PanelTecCurPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
             private void showTMSNPower()
@@ -424,7 +424,7 @@ namespace Statistic
                 if (InvokeRequired)
                     this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
                 else
-                    Logging.Logg().Error(@"PanelTecCurPower::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...");
+                    Logging.Logg().Error(@"PanelTecCurPower::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
             private void ShowTMGenPower () {

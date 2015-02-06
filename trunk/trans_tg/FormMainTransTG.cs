@@ -113,7 +113,7 @@ namespace trans_tg
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "FormMainTransTG::FormMainTransTG ()");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "FormMainTransTG::FormMainTransTG ()");
                     //ErrorReport("Ошибка соединения. Перехож в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;
@@ -386,7 +386,7 @@ namespace trans_tg
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
             else
-                Logging.Logg().Error(@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...");
+                Logging.Logg().Error(@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         protected override void buttonClear_Click(object sender, EventArgs e)
@@ -409,7 +409,7 @@ namespace trans_tg
             //Вариант №2
             bCompletedSaveChanges = WaitHandle.WaitAny(new WaitHandle[] { ((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete }, 0) == 0;
 
-            Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString());
+            Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
             if (bCompletedSaveChanges == true)
             {
@@ -437,7 +437,7 @@ namespace trans_tg
                     if (IsHandleCreated/*InvokeRequired*/ == true)
                         this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
                     else
-                        Logging.Logg().Error(@"FormMainTransTG::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...");
+                        Logging.Logg().Error(@"FormMainTransTG::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...", Logging.INDEX_MESSAGE.D_001);
 
                     //this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 }

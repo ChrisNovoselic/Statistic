@@ -60,7 +60,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
                     }
                 }
             else
@@ -196,7 +196,7 @@ namespace StatisticCommon
                 //'indxTECComponents' необходимо сохранить ??? - сохран€етс€ в потоке !!!
                 new Thread(new ParameterizedThreadStart(threadCSVValues)).Start(typeValues);
             else
-                Logging.Logg().Error(@"AdminTS_KomDisp::ImpCSVValuesResponse () - входна€ таблица не соответствует требовани€м...");
+                Logging.Logg().Error(@"AdminTS_KomDisp::ImpCSVValuesResponse () - входна€ таблица не соответствует требовани€м...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return bRes;
         }

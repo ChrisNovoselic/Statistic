@@ -98,15 +98,6 @@ namespace StatisticCommon
         protected int[,] m_arHaveDates;
         protected int m_iHavePBR_Number;
 
-        public enum INDEX_DEBUGLOG_MESSAGE { SET_PBR_QUERY_NUMBER
-                                            , RECOMENDATION_VAL
-                                            , DEVIATION_EVAL
-            , COUNT_INDEX_DEBUGLOG_MESSAGE };
-        private static int[] m_arDebugLogMessageIds = new int[(int)INDEX_DEBUGLOG_MESSAGE.COUNT_INDEX_DEBUGLOG_MESSAGE] { (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER
-                                                                                                                    , (int)FormParameters.PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL
-                                                                                                                    , (int)FormParameters.PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL };
-        public static HMark s_markDebugLog = new HMark ();
-
         private static int m_iSeasonAction;
         public static int SeasonAction {
             get { return m_iSeasonAction; } set { m_iSeasonAction = value; }
@@ -149,28 +140,6 @@ namespace StatisticCommon
             //    m_curRDGValues[i].ppbr = new double[3 /*4 дл€ SN???*/];
             //    m_prevRDGValues[i].ppbr = new double[3 /*4 дл€ SN???*/];
             //}
-
-            if (s_markDebugLog == null)
-            {
-                UpdateMarkDebugLog ();
-            }
-            else
-                ; //»нициализаци€ уже проведена
-        }
-
-        public static void UpdateMarkDebugLog () {
-            bool bMarked = false;
-            for (int i = (int)INDEX_DEBUGLOG_MESSAGE.SET_PBR_QUERY_NUMBER; i < (int)INDEX_DEBUGLOG_MESSAGE.COUNT_INDEX_DEBUGLOG_MESSAGE; i ++) {
-                bMarked = false;
-                if (!(FormMainBase.DelegateGetINIParametersOfKEY == null))
-                    ; //bMarked = bool.Parse(FormMainBase.DelegateGetINIParametersOfKey(...));
-                else
-                    if (!(FormMainBase.DelegateGetINIParametersOfID == null))
-                        bMarked = bool.Parse(FormMainBase.DelegateGetINIParametersOfID(m_arDebugLogMessageIds[i]));
-                    else
-                        ;
-                s_markDebugLog.Set (i, bMarked);
-            }
         }
 
         /// <summary>
@@ -346,10 +315,10 @@ namespace StatisticCommon
                     }
                     else
                         //¬ообще нельз€ что-либо инициализировать
-                        Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - connSetts == null ...");
+                        Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - connSetts == null ...", Logging.INDEX_MESSAGE.NOT_SET);
             else
                 //¬ообще нельз€ что-либо инициализировать
-                Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...");
+                Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         //private void stopDbInterfaces()
@@ -392,7 +361,7 @@ namespace StatisticCommon
         public void SetDelegateSaveComplete(DelegateFunc f) {            
             saveComplete = f;
 
-            Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вџход");
+            Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вџход", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public void SetDelegateData(DelegateDateFunc s, DelegateFunc e) { readyData = s; errorData = e; }
@@ -571,7 +540,7 @@ namespace StatisticCommon
                 if (!(FormMainBaseWithStatusStrip.m_report == null))
                     FormMainBaseWithStatusStrip.m_report.ClearStates();
                 else
-                    Logging.Logg().Error(@"HAdmin::ClearStates () - m_report=null");
+                    Logging.Logg().Error(@"HAdmin::ClearStates () - m_report=null", Logging.INDEX_MESSAGE.NOT_SET);
             //}
         }
 
@@ -581,7 +550,7 @@ namespace StatisticCommon
         protected void completeHandleStates () {
             try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
             }
         }
 

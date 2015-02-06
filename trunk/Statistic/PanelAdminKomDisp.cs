@@ -443,7 +443,7 @@ namespace Statistic
                 toEventGUIReg(ev);
             }
             else
-                Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...");
+                Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
@@ -527,7 +527,7 @@ namespace Statistic
                 m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
             }
             else
-                Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...");
+                Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
 
             ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 

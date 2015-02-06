@@ -22,8 +22,8 @@ namespace Statistic
             int iRes = 0;
 
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            Logging.s_mode = Logging.LOG_MODE.DB;
-            //Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
+            //Logging.s_mode = Logging.LOG_MODE.DB;
+            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
             //Logging.s_mode = Logging.LOG_MODE.FILE_DESKTOP;
 
             string strHeaderError = string.Empty;
@@ -47,7 +47,7 @@ namespace Statistic
                     {
                         strHeaderError = "Ошибка запуска приложения";
                         MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeaderError);
-                        Logging.Logg().Exception(e, strHeaderError);
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, strHeaderError);
                     }
 
                     if (!(formMain == null))
@@ -56,7 +56,7 @@ namespace Statistic
                         {
                             strHeaderError = "Ошибка выполнения приложения";
                             MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeaderError);
-                            Logging.Logg().Exception(e, strHeaderError);
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, strHeaderError);
                         }
                     else
                         ;

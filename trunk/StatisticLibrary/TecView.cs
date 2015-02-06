@@ -126,7 +126,7 @@ namespace StatisticCommon
         public volatile bool lastMinError;
         public volatile bool lastHourError;
         public volatile bool lastHourHalfError;
-        public volatile bool currentMinuteTM_GenError;
+        public volatile bool currentMinuteTM_GenWarning;
 
         public volatile string lastLayout;
 
@@ -402,7 +402,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release (1) - ...");
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ChangeState () - semaState.Release (1) - ...");
             }
         }
 
@@ -417,7 +417,7 @@ namespace StatisticCommon
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (lastHourError == true)) || ((curMinute == 0) || (lastMinError == true)))
             {
-                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute);
+                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
             }
             else {            
                 foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
@@ -725,7 +725,7 @@ namespace StatisticCommon
                 , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
 
-            currentMinuteTM_GenError = false;
+            currentMinuteTM_GenWarning = false;
 
             foreach (TECComponent g in m_localTECComponents)
             {
@@ -771,11 +771,11 @@ namespace StatisticCommon
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
 
-                        if ((!(value < 1)) && (ValidateDatetimeTMValue (dtServer, m_dtLastChangedAt_TM_Gen) == false) && (currentMinuteTM_GenError == false))
+                        if ((!(value < 1)) && (ValidateDatetimeTMValue (dtServer, m_dtLastChangedAt_TM_Gen) == false) && (currentMinuteTM_GenWarning == false))
                         {
-                            currentMinuteTM_GenError = true;
+                            currentMinuteTM_GenWarning = true;
 
-                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenError=" + currentMinuteTM_GenError.ToString ());
+                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + currentMinuteTM_GenWarning.ToString (), Logging.INDEX_MESSAGE.W_001);
 
                             //return true;
                             //break; //bRes по-прежнему == true ???
@@ -808,7 +808,7 @@ namespace StatisticCommon
                 try { m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
                 }
             }
             else
@@ -1049,7 +1049,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ");
+            Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override bool StateRequest(int state)
@@ -1500,7 +1500,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
                 }
             else
                 ;
@@ -1534,7 +1534,7 @@ namespace StatisticCommon
                 }
                 catch (Exception excpt)
                 {
-                    Logging.Logg().Exception(excpt, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
+                    Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
 
                     return false;
                 }
@@ -1576,7 +1576,7 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
             }
         }
 
@@ -1618,7 +1618,7 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
             }
         }
 
@@ -1634,7 +1634,7 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
             }
         }
 
@@ -1677,7 +1677,7 @@ namespace StatisticCommon
                 {
                     semaState.Release(1);
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - TecView::getRetroMins () - sem.Release(1)"); }
+                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMins () - sem.Release(1)"); }
             }
         }
 
@@ -1989,7 +1989,7 @@ namespace StatisticCommon
                             else
                                 ;
                         }
-                        catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
+                        catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
                     }
                     else
                     {
@@ -2096,7 +2096,7 @@ namespace StatisticCommon
                                             }
                                             else
                                             {//Ошибка ... ???
-                                                Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                                Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour, Logging.INDEX_MESSAGE.NOT_SET);
                                             }
                                         }
                                         else
@@ -2159,7 +2159,7 @@ namespace StatisticCommon
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                                 }
                                 //j++;
                             }
@@ -2178,7 +2178,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
                         }
                     }
                     else
@@ -2439,7 +2439,7 @@ namespace StatisticCommon
                                     }
                                     else
                                     {//Ошибка ... ???
-                                        Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour);
+                                        Logging.Logg().Error(@"TecView::GetAdminValueResponse () - ... нет ни одной записи для [HAdmin.SeasonDateTime.Hour] = " + hour, Logging.INDEX_MESSAGE.NOT_SET);
                                     }
                                 }
                                 else
@@ -2509,7 +2509,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, "PanelTecViewBase::GetAdminValueResponse ()...");
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "PanelTecViewBase::GetAdminValueResponse ()...");
                         }
                     }
                     else
@@ -2689,13 +2689,10 @@ namespace StatisticCommon
             else
                 ;
 
-            if (HAdmin.s_markDebugLog.IsMarked((int)HAdmin.INDEX_DEBUGLOG_MESSAGE.RECOMENDATION_VAL))
-                Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
-                                    + @" (factSum=" + factSum.ToString(@"F3")
-                                    + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
-                                    + @") [" + hour + @", " + lastMin + @"]");
-            else
-                ;
+            Logging.Logg().Debug(@"recomendation=" + recomendation.ToString(@"F3")
+                                + @" (factSum=" + factSum.ToString(@"F3")
+                                + @"; valuesUDGe=" + m_valuesHours[hour].valuesUDGe.ToString(@"F3")
+                                + @") [" + hour + @", " + lastMin + @"]", Logging.INDEX_MESSAGE.D_003);
         }
 
         public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
@@ -3093,7 +3090,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetHoursResponse () - ...");
                     }
 
                     if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
@@ -3751,7 +3748,7 @@ namespace StatisticCommon
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
 
                                     dtVal = DateTime.Now.Date;
                                 }
@@ -3986,7 +3983,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
 
                         dt = DateTime.Now.Date;
                     }
@@ -4704,7 +4701,7 @@ namespace StatisticCommon
 
             int iRes = -1;
 
-            currentMinuteTM_GenError = false;
+            currentMinuteTM_GenWarning = false;
 
             foreach (TECComponent g in m_localTECComponents)
             {
@@ -4950,7 +4947,7 @@ namespace StatisticCommon
             if (interval > 0)
                 Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
             else
-                Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...");
+                Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void GetHoursTMSNPsumRequest()

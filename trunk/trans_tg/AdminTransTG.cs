@@ -277,7 +277,7 @@ namespace trans_tg
             }
             else
             {
-                Logging.Logg().Debug("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count);
+                Logging.Logg().Debug("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             return resQuery;
@@ -345,12 +345,12 @@ namespace trans_tg
                 }
             }
             else {
-                Logging.Logg().Debug("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count);
+                Logging.Logg().Debug("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
 
-            Logging.Logg().Debug("AdminTransTG::setPPBRQuery ()");
+            Logging.Logg().Debug("AdminTransTG::setPPBRQuery ()", Logging.INDEX_MESSAGE.NOT_SET);
 
             return resQuery;
         }

@@ -161,7 +161,7 @@ namespace Statistic
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
                 else
-                    Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...");
+                    Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
             //else
             //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
         }
