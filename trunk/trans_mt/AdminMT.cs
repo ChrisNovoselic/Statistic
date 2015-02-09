@@ -43,9 +43,9 @@ namespace trans_mt
             Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
             int i = -1, j = -1,
                 hour = -1,
                 PBRNumber = -1;
@@ -172,7 +172,7 @@ namespace trans_mt
                     }
             }
 
-            return bRes;
+            return iRes;
         }
 
         protected override bool InitDbInterfaces () {
@@ -203,9 +203,9 @@ namespace trans_mt
             return bRes;
         }
 
-        protected override bool StateRequest(int /*StatesMachine*/ state)
+        protected override int StateRequest(int /*StatesMachine*/ state)
         {
-            bool result = true;
+            int result = 0;
             string msg = string.Empty;
 
             switch (state)
@@ -215,12 +215,12 @@ namespace trans_mt
                     if (indxTECComponents < allTECComponents.Count)
                         GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
                     else
-                        result = false;
+                        result = -1;
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
-                        result = false;
+                        result = -1;
                         break;
                     }
                     else
@@ -237,9 +237,9 @@ namespace trans_mt
             return result;
         }
 
-        protected override bool StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
+        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
         {
-            bool bRes = false;
+            int iRes = -1;
 
             error = true;
             table = null;
@@ -249,25 +249,25 @@ namespace trans_mt
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    bRes = Response(0, out error, out table/*, false*/);
+                    iRes = Response(0, out error, out table/*, false*/);
                     break;
                 default:
                     break;
             }
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool StateResponse(int /*StatesMachine*/ state, DataTable table)
+        protected override int StateResponse(int /*StatesMachine*/ state, DataTable table)
         {
-            bool result = false;
+            int result = -1;
             switch (state)
             {
                 case (int)StatesMachine.PPBRValues:
                     delegateStopWait();
 
                     result = GetPPBRValuesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                         readyData(m_curDate);
                     }
@@ -277,7 +277,7 @@ namespace trans_mt
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                     }
                     else
@@ -287,8 +287,8 @@ namespace trans_mt
                     break;
             }
 
-            if (result == true)
-                FormMainBaseWithStatusStrip.m_report.ClearStates ();
+            if (result == 0)
+                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
             else
                 ;
 
@@ -347,6 +347,10 @@ namespace trans_mt
                 ;
 
             if (!(errorData == null)) errorData(); else ;
+        }
+
+        protected override void StateWarnings(int state, bool response)
+        {
         }
 
         public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)

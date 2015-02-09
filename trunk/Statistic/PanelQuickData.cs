@@ -890,7 +890,7 @@ namespace Statistic
                 {
                     if (m_parent.m_tecView.currentMinuteTM_GenWarning == true)
                     {
-                        m_parent.m_tecView.ErrorReport("Значение телемеханики для одного из ТГ не найдено!");
+                        ; //m_parent.m_tecView.WarningReport("Значение телемеханики для одного из ТГ не найдено!");
                     }
                     else
                         ;

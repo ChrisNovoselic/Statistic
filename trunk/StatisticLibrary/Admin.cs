@@ -413,11 +413,11 @@ namespace StatisticCommon
 
         protected abstract void GetPPBRDatesRequest(DateTime date);
 
-        protected abstract bool GetPPBRDatesResponse(DataTable table, DateTime date);
+        protected abstract int GetPPBRDatesResponse(DataTable table, DateTime date);
 
         protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode);
 
-        protected abstract bool GetPPBRValuesResponse(DataTable table, DateTime date);        
+        protected abstract int GetPPBRValuesResponse(DataTable table, DateTime date);        
 
         protected virtual void ClearDates(CONN_SETT_TYPE type)
         {
@@ -538,7 +538,7 @@ namespace StatisticCommon
                 base.ClearStates();
 
                 if (!(FormMainBaseWithStatusStrip.m_report == null))
-                    FormMainBaseWithStatusStrip.m_report.ClearStates();
+                    FormMainBaseWithStatusStrip.m_report.ClearStates(true);
                 else
                     Logging.Logg().Error(@"HAdmin::ClearStates () - m_report=null", Logging.INDEX_MESSAGE.NOT_SET);
             //}
@@ -597,7 +597,7 @@ namespace StatisticCommon
             }
         }
 
-        protected virtual bool GetCurrentTimeResponse(DataTable table)
+        protected virtual int GetCurrentTimeResponse(DataTable table)
         {
             if (table.Rows.Count == 1)
             {
@@ -619,7 +619,7 @@ namespace StatisticCommon
                 ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
             }
 
-            return true;
+            return 0;
         }
 
         public virtual void ResetRDGExcelValues()

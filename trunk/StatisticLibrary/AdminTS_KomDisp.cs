@@ -170,9 +170,9 @@ namespace StatisticCommon
             delegateStopWait();
         }
 
-        private bool ImpCSVValuesResponse()
+        private int ImpCSVValuesResponse()
         {
-            bool bRes = false;
+            int iRes = -1;
 
             int indxFieldtypeValues = 2;
             List <string []> listFields = new List <string[]> ();
@@ -189,16 +189,16 @@ namespace StatisticCommon
                     ;
 
             if (typeValues < (CONN_SETT_TYPE.PBR + 1))
-                bRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[(int)typeValues]);
+                iRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[(int)typeValues]) == true ? 0 : -1;
             else;
 
-            if (bRes == true)
+            if (iRes == 0)
                 //'indxTECComponents' необходимо сохранить ??? - сохран€етс€ в потоке !!!
                 new Thread(new ParameterizedThreadStart(threadCSVValues)).Start(typeValues);
             else
                 Logging.Logg().Error(@"AdminTS_KomDisp::ImpCSVValuesResponse () - входна€ таблица не соответствует требовани€м...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            return bRes;
+            return iRes;
         }
 
         private void threadCSVValues(object type)

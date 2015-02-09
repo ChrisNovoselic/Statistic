@@ -140,7 +140,7 @@ namespace trans_tg
                 for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                    m_arAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+                    m_arAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport);
 
                     m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);
                     m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);

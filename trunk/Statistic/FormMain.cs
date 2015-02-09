@@ -236,7 +236,7 @@ namespace Statistic
                         }
 
                         m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, ActionReport);
+                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport);
                     }
 
                     string listIDs = string.Empty;
@@ -1112,7 +1112,7 @@ namespace Statistic
             else
                 ;
 
-            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, ActionReport);
+            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, WarningReport, ActionReport);
             panelTecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
             tecViews.Add(panelTecView);
         }
@@ -1285,10 +1285,10 @@ namespace Statistic
             ActivateTabPage ();
         }
 
-        protected override bool UpdateStatusString()
+        protected override int UpdateStatusString()
         {
-            bool have_eror = false;
-            m_lblDescError.Text = m_lblDateError.Text = string.Empty;
+            int have_msg = 0;
+            m_lblDescMessage.Text = m_lblDateMessage.Text = string.Empty;
             PanelTecViewBase selTecView = null;
 
             //for (int i = 0; i < selectedTecViews.Count; i++)
@@ -1308,8 +1308,8 @@ namespace Statistic
                         {
                             if (selTecView.isActive == true)
                             {
-                                m_lblDateError.Text = m_report.last_time_action.ToString();
-                                m_lblDescError.Text = m_report.last_action;
+                                m_lblDateMessage.Text = m_report.last_time_action.ToString();
+                                m_lblDescMessage.Text = m_report.last_action;
                             }
                             else
                                 ;
@@ -1317,14 +1317,31 @@ namespace Statistic
                         else
                             ;
 
-                        if ((m_report.errored_state == true) && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false) &&
-                                                                            (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                        if ((m_report.warninged_state == true)
+                            && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
+                            && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
-                            have_eror = true;
+                            have_msg = 1;
                             if (selTecView.isActive == true)
                             {
-                                m_lblDateError.Text = m_report.last_time_error.ToString();
-                                m_lblDescError.Text = m_report.last_error;
+                                m_lblDateMessage.Text = m_report.last_time_warning.ToString();
+                                m_lblDescMessage.Text = m_report.last_warning;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            ;
+
+                        if ((m_report.errored_state == true)
+                            && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
+                            && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                        {
+                            have_msg = -1;
+                            if (selTecView.isActive == true)
+                            {
+                                m_lblDateMessage.Text = m_report.last_time_error.ToString();
+                                m_lblDescMessage.Text = m_report.last_error;
                             }
                             else
                                 ;
@@ -1342,7 +1359,7 @@ namespace Statistic
                     //    {
                     //        if (m_report.actioned_state == true)
                     //        {
-                    //            m_lblDateError.Text = m_report.last_time_action.ToString();
+                    //            m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     //            m_lblDescError.Text = m_report.last_action;
                     //        }
                     //        else
@@ -1351,7 +1368,7 @@ namespace Statistic
                     //        if (m_report.errored_state == true)
                     //        {
                     //            have_eror = true;
-                    //            m_lblDateError.Text = m_report.last_time_error.ToString();
+                    //            m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     //            m_lblDescError.Text = m_report.last_error;
                     //        }
                     //        else
@@ -1364,7 +1381,7 @@ namespace Statistic
                     //{
                     //    if (m_report.actioned_state == true)
                     //    {
-                    //        m_lblDateError.Text = m_report.last_time_action.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     //        m_lblDescError.Text = m_report.last_action;
                     //    }
                     //    else
@@ -1373,7 +1390,7 @@ namespace Statistic
                     //    if (m_report.errored_state == true)
                     //    {
                     //        have_eror = true;
-                    //        m_lblDateError.Text = m_report.last_time_error.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     //        m_lblDescError.Text = m_report.last_error;
                     //    }
                     //    else
@@ -1386,7 +1403,7 @@ namespace Statistic
                     //{
                     //    if (m_report.actioned_state == true)
                     //    {
-                    //        m_lblDateError.Text = m_report.last_time_action.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     //        m_lblDescError.Text = m_report.last_action;
                     //    }
                     //    else
@@ -1395,7 +1412,7 @@ namespace Statistic
                     //    if (m_report.errored_state == true)
                     //    {
                     //        have_eror = true;
-                    //        m_lblDateError.Text = m_report.last_time_error.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     //        m_lblDescError.Text = m_report.last_error;
                     //    }
                     //    else
@@ -1408,7 +1425,7 @@ namespace Statistic
                     //{
                     //    if (m_report.actioned_state == true)
                     //    {
-                    //        m_lblDateError.Text = m_report.last_time_action.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     //        m_lblDescError.Text = m_report.last_action;
                     //    }
                     //    else
@@ -1417,7 +1434,7 @@ namespace Statistic
                     //    if (m_report.errored_state == true)
                     //    {
                     //        have_eror = true;
-                    //        m_lblDateError.Text = m_report.last_time_error.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     //        m_lblDescError.Text = m_report.last_error;
                     //    }
                     //    else
@@ -1430,7 +1447,7 @@ namespace Statistic
                     //{
                     //    if (m_report.actioned_state == true)
                     //    {
-                    //        m_lblDateError.Text = m_report.last_time_action.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     //        m_lblDescError.Text = m_report.last_action;
                     //    }
                     //    else
@@ -1439,7 +1456,7 @@ namespace Statistic
                     //    if (m_report.errored_state == true)
                     //    {
                     //        have_eror = true;
-                    //        m_lblDateError.Text = m_report.last_time_error.ToString();
+                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     //        m_lblDescError.Text = m_report.last_error;
                     //    }
                     //    else
@@ -1450,17 +1467,26 @@ namespace Statistic
 
                     if (m_report.actioned_state == true)
                     {
-                        m_lblDateError.Text = m_report.last_time_action.ToString();
-                        m_lblDescError.Text = m_report.last_action;
+                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
+                        m_lblDescMessage.Text = m_report.last_action;
+                    }
+                    else
+                        ;
+
+                    if (m_report.warninged_state == true)
+                    {
+                        have_msg = 1;
+                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
+                        m_lblDescMessage.Text = m_report.last_warning;
                     }
                     else
                         ;
 
                     if (m_report.errored_state == true)
                     {
-                        have_eror = true;
-                        m_lblDateError.Text = m_report.last_time_error.ToString();
-                        m_lblDescError.Text = m_report.last_error;
+                        have_msg = -1;
+                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
+                        m_lblDescMessage.Text = m_report.last_error;
                     }
                     else
                         ;
@@ -1469,7 +1495,7 @@ namespace Statistic
             else
                 ;
 
-            return have_eror;
+            return have_msg;
         }
 
         private void addTabPagesAdmin()
@@ -1608,24 +1634,24 @@ namespace Statistic
         }
 
         private void createAddingTabs () {
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
             //m_panelCurPower.Start();
             ////В работе постоянно
             //m_panelCurPower.Activate (true);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
             //m_panelLastMinutes.Start();
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
             ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, ActionReport);
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, WarningReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, WarningReport, ActionReport);
             //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
             //m_panelCustomTecView.Start();
             ((PanelCustomTecView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);

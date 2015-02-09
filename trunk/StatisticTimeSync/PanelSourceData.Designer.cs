@@ -41,9 +41,9 @@ namespace StatisticTimeSync
             {
             }
 
-            protected override bool StateRequest(int state)
+            protected override int StateRequest(int state)
             {
-                bool bRes = true;
+                int iRes = 0;
 
                 switch (state)
                 {
@@ -54,41 +54,41 @@ namespace StatisticTimeSync
                         break;
                 }
 
-                return bRes;
+                return iRes;
             }
 
-            protected override bool StateCheckResponse(int state, out bool error, out DataTable table)
+            protected override int StateCheckResponse(int state, out bool error, out DataTable table)
             {
-                bool bRes = true;
+                int iRes = 0;
                 error = true;
                 table = null;
 
                 switch (state)
                 {
                     case (int)StatesMachine.CurrentTime:
-                        bRes = Response(m_IdListenerCurrent, out error, out table);
+                        iRes = Response(m_IdListenerCurrent, out error, out table);
                         break;
                     default:
                         break;
                 }
 
-                return bRes;
+                return iRes;
             }
 
-            protected override bool StateResponse(int state, DataTable table)
+            protected override int StateResponse(int state, DataTable table)
             {
-                bool bRes = true;
+                int iRes = 0;
 
                 switch (state)
                 {
                     case (int)StatesMachine.CurrentTime:
-                        bRes = GetCurrentTimeResponse(table);
+                        iRes = GetCurrentTimeResponse(table);
                         break;
                     default:
                         break;
                 }
 
-                return bRes;
+                return 0;
             }
 
             protected override void StateErrors(int state, bool response)
@@ -130,6 +130,10 @@ namespace StatisticTimeSync
                 Logging.Logg().Error(@"HGetDate::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
+            protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
+            {
+            }
+
             protected void getDate()
             {
                 DbInterface.DB_TSQL_INTERFACE_TYPE type = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
@@ -166,7 +170,7 @@ namespace StatisticTimeSync
                 }
             }
 
-            protected bool GetCurrentTimeResponse(DataTable table)
+            protected int GetCurrentTimeResponse(DataTable table)
             {
                 if (table.Rows.Count == 1)
                 {
@@ -184,7 +188,7 @@ namespace StatisticTimeSync
                 else
                     ;
 
-                return true;
+                return 0;
             }
         }
 

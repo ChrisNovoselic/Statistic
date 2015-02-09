@@ -22,8 +22,8 @@ namespace Statistic
     {
         PanelCustomTecView.HLabelCustomTecView m_label;
 
-        public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label, DelegateFunc fErrRep, DelegateFunc fActRep)
-            : base(tec, num_tec, num_comp, fErrRep, fActRep)
+        public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+            : base(tec, num_tec, num_comp, fErrRep, fWarRep, fActRep)
         {
             m_label = label;
             

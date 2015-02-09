@@ -43,8 +43,8 @@ namespace StatisticCommon
 
         protected DelegateFunc delegateImportForeignValuesRequuest,
                                 delegateExportForeignValuesRequuest;
-        protected delegate bool DelegateFuncBool();
-        protected DelegateFuncBool delegateImportForeignValuesResponse,
+        protected delegate int DelegateFuncInt();
+        protected DelegateFuncInt delegateImportForeignValuesResponse,
                                     delegateExportForeignValuesResponse;
 
         protected DataTable m_tableValuesResponse,
@@ -526,23 +526,23 @@ namespace StatisticCommon
             return saveResult;
         }
 
-        protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
 
             m_tableValuesResponse = table.Copy ();
 
-            return bRes;
+            return iRes;
         }
 
-        protected bool GetAdminValuesResponseWithoutAdminValues(DateTime date)
+        protected int GetAdminValuesResponseWithoutAdminValues(DateTime date)
         {
-            bool bRes = false;
+            int iRes = -1;
 
-            return bRes;
+            return iRes;
         }
 
-        protected virtual bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
+        protected virtual int GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
             DataTable table = null;
             int i = -1, j = -1, k = -1,
@@ -864,7 +864,7 @@ namespace StatisticCommon
                 }
             }
 
-            return true;
+            return 0;
         }
 
         protected void setRDGExcelValuesItem(out RDGStruct item, int iRows)
@@ -959,7 +959,7 @@ namespace StatisticCommon
             ClearDates(CONN_SETT_TYPE.ADMIN);
         }
 
-        protected virtual bool GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
+        protected virtual int GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             int addingVal = -1;
             string pbr_number = string.Empty;
@@ -1018,15 +1018,15 @@ namespace StatisticCommon
                 catch { }
             }
 
-            return true;
+            return 0;
         }
 
-        private bool GetAdminDatesResponse(DataTable table, DateTime date)
+        private int GetAdminDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
         }
 
-        protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
@@ -1636,9 +1636,9 @@ namespace StatisticCommon
                 Logging.Logg().Error(@"AdminTS::Stop () - m_list_tec == null", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override bool StateRequest(int /*StatesMachine*/ state)
+        protected override int StateRequest(int /*StatesMachine*/ state)
         {
-            bool result = true;
+            int result = 0;
             string strRep = string.Empty;
 
             switch (state)
@@ -1687,7 +1687,7 @@ namespace StatisticCommon
                         catch
                         {
                         }
-                        result = false;
+                        result = -1;
                         break;
                     }
                     else
@@ -1709,7 +1709,7 @@ namespace StatisticCommon
                         catch
                         {
                         }
-                        result = false;
+                        result = -1;
                         break;
                     }
                     else
@@ -1767,9 +1767,9 @@ namespace StatisticCommon
             return result;
         }
 
-        protected override bool StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
+        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
         {
-            bool bRes = false;
+            int iRes = -1;
 
             error = true;
             table = null;
@@ -1786,7 +1786,8 @@ namespace StatisticCommon
                         {
                             error = false;
 
-                            bRes = true;
+                            //??? Разве не ошибка...
+                            iRes = 0;
                         }
                         else
                             ;
@@ -1794,26 +1795,26 @@ namespace StatisticCommon
                     case (int)StatesMachine.ExpRDGExcelValues:
                             //??? Всегда успех ???
                             error = false;
-                            bRes = true;
+                            iRes = 0;
                         break;
                      case (int)StatesMachine.CSVValues:
                         if ((!(m_tableValuesResponse == null)) && (m_tableValuesResponse.Rows.Count > 0))
                         {
                             error = false;
 
-                            bRes = true;
+                            iRes = 0;
                         }
                         else
                             ;
                         break;
                     case (int)StatesMachine.AdminDates:
                         if (allTECComponents [indxTECComponents].tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
-                            bRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                            iRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
                         else {
                             error = false;
                             table = null;
 
-                            bRes = true;
+                            iRes = 0;
                         }
                         break;
                     case (int)StatesMachine.CurrentTime:
@@ -1826,7 +1827,7 @@ namespace StatisticCommon
                     case (int)StatesMachine.ClearAdminValues:
                     case (int)StatesMachine.ClearPPBRValues:
                     //case (int)StatesMachine.GetPass:
-                        bRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                        iRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
                         break;
                     //case (int)StatesMachine.LayoutGet:
                     //case (int)StatesMachine.LayoutSet:
@@ -1842,22 +1843,22 @@ namespace StatisticCommon
                 error = true;
                 table = null;
 
-                bRes = false;
+                iRes = -1;
             }
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool StateResponse(int /*StatesMachine*/ state, DataTable table)
+        protected override int StateResponse(int /*StatesMachine*/ state, DataTable table)
         {
-            bool result = false;
+            int result = -1;
             string strRep = string.Empty;
 
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
                     result = GetCurrentTimeResponse(table);
-                    if (result == true)
+                    if (result == 0)
                     {
                         if (using_date == true) {
                             m_prevDate = serverTime.Date;
@@ -1873,7 +1874,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRValues:
                     result = GetPPBRValuesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                     }
                     else
@@ -1889,10 +1890,10 @@ namespace StatisticCommon
                             //result = GetAdminValuesResponseWithoutAdminValues(m_curDate);
                             result = GetAdminValuesResponse(null, m_curDate);
                         else
-                            result = false;
+                            result = -1;
                     }
 
-                    if (result == true)
+                    if (result == 0)
                     {
                         readyData(m_prevDate);
                     }
@@ -1903,7 +1904,7 @@ namespace StatisticCommon
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
-                    if (result == true)
+                    if (result == 0)
                     {
                         readyData(m_prevDate);
                     }
@@ -1921,13 +1922,13 @@ namespace StatisticCommon
                     catch
                     {
                     }
-                    result = true;
+                    result = 0;
                     break;
                 case (int)StatesMachine.CSVValues:
                     ActionReport("Импорт значений из формата CSV.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
-                    if (result)
+                    if (result == 0)
                     {
                         readyData(m_prevDate);
                     }
@@ -1937,7 +1938,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                     }
                     else
@@ -1948,9 +1949,9 @@ namespace StatisticCommon
                     if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                         result = GetAdminDatesResponse(table, m_curDate);
                     else
-                        result = true;
+                        result = 0;
 
-                    if (result == true)
+                    if (result == 0)
                     {
                     }
                     else
@@ -1964,8 +1965,8 @@ namespace StatisticCommon
                         catch { }
                     else
                         ;
-                    result = true;
-                    if (result == true) { }
+                    result = 0;
+                    if (result == 0) { }
                     else ;
                     break;
                 case (int)StatesMachine.SavePPBRValues:
@@ -1978,8 +1979,8 @@ namespace StatisticCommon
                         }
                     else
                         ;
-                    result = true;
-                    if (result == true)
+                    result = 0;
+                    if (result == 0)
                     {
                         Logging.Logg().Debug(@"AdminTS::StateResponse () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -2020,8 +2021,8 @@ namespace StatisticCommon
                 //        ;
                 //    break;
                 case (int)StatesMachine.ClearAdminValues:
-                    result = true;
-                    if (result == true) { }
+                    result = 0;
+                    if (result == 0) { }
                     else ;
                     break;
                 case (int)StatesMachine.ClearPPBRValues:
@@ -2032,8 +2033,8 @@ namespace StatisticCommon
                     catch
                     {
                     }
-                    result = true;
-                    if (result == true)
+                    result = 0;
+                    if (result == 0)
                     {
                     }
                     break;
@@ -2041,8 +2042,8 @@ namespace StatisticCommon
                     break;
             }
 
-            if (result == true)
-                FormMainBaseWithStatusStrip.m_report.ClearStates ();
+            if (result == 0)
+                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
             else
                 ;
 
@@ -2284,6 +2285,10 @@ namespace StatisticCommon
             if (! (errorData == null)) errorData (); else ;
 
             Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
+        {
         }
 
         public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)

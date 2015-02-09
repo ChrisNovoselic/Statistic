@@ -22,7 +22,7 @@ namespace StatisticTransModes
             base.Initialize();
         }
 
-        public override bool Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
+        public override int Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
         {
             return DbMCSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
         }
@@ -30,11 +30,11 @@ namespace StatisticTransModes
         protected override void GetPPBRDatesRequest(DateTime date) {
         }
 
-        protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
 
-            return bRes;
+            return iRes;
         }
 
         public override void getCurRDGValues(HAdmin source)

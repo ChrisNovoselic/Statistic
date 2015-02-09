@@ -240,9 +240,9 @@ namespace Statistic
             m_admin.SetDelegateWait(fstart, fstop, fev);
         }
 
-        public void SetDelegateReport(DelegateFunc ferr, DelegateFunc fact)
+        public void SetDelegateReport(DelegateFunc ferr, DelegateFunc fwar, DelegateFunc fact)
         {
-            m_admin.SetDelegateReport(ferr, fact);
+            m_admin.SetDelegateReport(ferr, fwar, fact);
         }
 
         public override void Start () {

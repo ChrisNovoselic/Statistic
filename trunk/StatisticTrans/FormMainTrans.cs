@@ -206,9 +206,9 @@ namespace StatisticTrans
             // m_lblMainState
             this.m_lblMainState.Size = new System.Drawing.Size(166, 17);
             // m_lblDateError
-            this.m_lblDateError.Size = new System.Drawing.Size(166, 17);
+            this.m_lblDateMessage.Size = new System.Drawing.Size(166, 17);
             // m_lblDescError
-            this.m_lblDescError.Size = new System.Drawing.Size(463, 17);
+            this.m_lblDescMessage.Size = new System.Drawing.Size(463, 17);
 
             //this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
             notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
@@ -1071,42 +1071,50 @@ namespace StatisticTrans
         //    this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), true);
         //}
 
-        protected override bool UpdateStatusString()
+        protected override int UpdateStatusString()
         {
-            bool have_eror = true;
+            int have_msg = -1;
 
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                have_eror = m_report.errored_state;
+                have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
 
-                if (((have_eror == true) || (m_report.actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
+                if (((! (have_msg == 0)) || (m_report.actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
                 {
                     if (m_report.actioned_state == true)
                     {
-                        m_lblDescError.Text = m_report.last_action;
-                        m_lblDateError.Text = m_report.last_time_action.ToString();
+                        m_lblDescMessage.Text = m_report.last_action;
+                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
                     }
                     else
                         ;
 
-                    if (have_eror == true)
+                    if (have_msg == 1)
                     {
-                        m_lblDescError.Text = m_report.last_error;
-                        m_lblDateError.Text = m_report.last_time_error.ToString();
+                        m_lblDescMessage.Text = m_report.last_warning;
+                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
+                    }
+                    else
+                        ;
+
+                    if (have_msg == -1)
+                    {
+                        m_lblDescMessage.Text = m_report.last_error;
+                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
                     }
                     else
                         ;
                 }
                 else
                 {
-                    m_lblDescError.Text = string.Empty;
-                    m_lblDateError.Text = string.Empty;
+                    m_lblDescMessage.Text = string.Empty;
+                    m_lblDateMessage.Text = string.Empty;
                 }
             }
             else
                 ;
 
-            return have_eror;
+            return have_msg;
         }
 
         private void trans_auto_start()

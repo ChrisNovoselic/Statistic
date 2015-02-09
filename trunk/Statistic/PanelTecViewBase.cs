@@ -572,7 +572,7 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, DelegateFunc fErrRep, DelegateFunc fActRep)
+        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
         {
             //InitializeComponent();
 
@@ -585,7 +585,7 @@ namespace Statistic
             markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
-            m_tecView.SetDelegateReport(fErrRep, fActRep);
+            m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep);
 
             m_tecView.setDatetimeView = new DelegateFunc(setNowDate);
 
@@ -753,7 +753,7 @@ namespace Statistic
             if (! (m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
             if (!(m_timerCurrent == null)) { m_timerCurrent.Dispose(); m_timerCurrent = null; } else ;
 
-            FormMainBaseWithStatusStrip.m_report.ClearStates ();
+            FormMainBaseWithStatusStrip.m_report.ClearStates (true);
         }
 
         protected override void initTableHourRows()

@@ -71,7 +71,7 @@ namespace Statistic
 
         public bool m_bIsActive;
 
-        public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
+        public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
         {
             InitializeComponent();
 
@@ -93,7 +93,7 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecSobstvNyzhdy(listTec[i], fErrRep, fActRep);
+                ptcp = new PanelTecSobstvNyzhdy(listTec[i], fErrRep, fWarRep, fActRep);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
 
@@ -104,8 +104,8 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
-            : this(listTec, fErrRep, fActRep)
+        public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+            : this(listTec, fErrRep, fWarRep, fActRep)
         {
             container.Add(this);
         }
@@ -253,7 +253,7 @@ namespace Statistic
 
             ZedGraphControl m_zedGraphHours;
 
-            public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
+            public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
 
@@ -264,15 +264,15 @@ namespace Statistic
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
-                m_tecView.SetDelegateReport(fErrRep, fActRep);
+                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep);
 
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
 
                 Initialize();
             }
 
-            public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
-                : this(tec, fErrRep, fActRep)
+            public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+                : this(tec, fErrRep, fWarRep, fActRep)
             {
                 container.Add(this);
             }

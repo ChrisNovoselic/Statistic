@@ -86,9 +86,9 @@ namespace StatisticCommon
             m_evSaveChangesComplete = new ManualResetEvent (false);
         }
 
-        protected override bool GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
+        protected override int GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
-            bool bRes = base.GetAdminValuesResponse(tableAdminValuesResponse, date);
+            int iRes = base.GetAdminValuesResponse(tableAdminValuesResponse, date);
 
             RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];            
 
@@ -108,7 +108,7 @@ namespace StatisticCommon
 
             m_listCurRDGValues.Add (curRDGValues);
 
-            return bRes;
+            return iRes;
         }
 
         public void fillListIndexTECComponent (int id) {
@@ -314,22 +314,22 @@ namespace StatisticCommon
             return bRes;
         }
 
-        protected virtual /*override*/ bool ImpRDGExcelValuesResponse()
+        protected virtual /*override*/ int ImpRDGExcelValuesResponse()
         {
             //bool bRes = base.ImpRDGExcelValuesResponse();
-            bool bRes = IsCanUseTECComponents();
+            int iRes = IsCanUseTECComponents() == true ? 0 : -1;
             int rowOffsetData = 0;
 
-            if (bRes)
+            if (iRes == 0)
             {
                 int i = -1,
                     iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
                     rowRDGExcelStart = 1 + iTimeZoneOffset,
                     hour = -1;
 
-                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) iRes = 0; else ;
 
-                if (bRes)
+                if (iRes == 0)
                 {
                     for (i = rowRDGExcelStart; i < m_tableRDGExcelValuesResponse.Rows.Count - rowOffsetData; i++)
                     {
@@ -359,7 +359,7 @@ namespace StatisticCommon
 
             m_listCurRDGValues.Add(curRDGValues);
 
-            return bRes;
+            return iRes;
         }
 
         public override Errors SaveChanges()

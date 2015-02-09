@@ -53,16 +53,16 @@ namespace trans_mc
             Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override bool GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
             int i = -1, j = -1,
                 hour = -1,
                 offsetPBR = 2
@@ -134,7 +134,7 @@ namespace trans_mc
                     catch { }
             }
 
-            return bRes;
+            return iRes;
         }
 
         protected override bool InitDbInterfaces () {
@@ -159,9 +159,9 @@ namespace trans_mc
             return bRes;
         }
 
-        protected override bool StateRequest(int /*StatesMachine*/ state)
+        protected override int StateRequest(int /*StatesMachine*/ state)
         {
-            bool result = true;
+            int result = 0;
             string msg = string.Empty;
 
             switch (state)
@@ -178,7 +178,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
-                        result = false;
+                        result = -1;
                         break;
                     }
                     else
@@ -195,9 +195,9 @@ namespace trans_mc
             return result;
         }
 
-        protected override bool StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
+        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
         {
-            bool bRes = false;
+            int iRes = -1;
 
             error = true;
             table = null;
@@ -208,23 +208,23 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    bRes = Response(0, out error, out table/*, false*/);
+                    iRes = Response(0, out error, out table/*, false*/);
                     break;
                 default:
                     break;
             }
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool StateResponse(int /*StatesMachine*/ state, DataTable table)
+        protected override int StateResponse(int /*StatesMachine*/ state, DataTable table)
         {
-            bool result = false;
+            int result = -1;
             switch (state)
             {
                 case (int)StatesMachine.InitIGO:
-                    result = true;
-                    if (result == true)
+                    result = 0;
+                    if (result == 0)
                     {
                         Logging.Logg().Debug(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre", Logging.INDEX_MESSAGE.NOT_SET);
                     }
@@ -235,7 +235,7 @@ namespace trans_mc
                     delegateStopWait();
 
                     result = GetPPBRValuesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                         readyData(m_curDate);
                     }
@@ -245,7 +245,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
                     result = GetPPBRDatesResponse(table, m_curDate);
-                    if (result == true)
+                    if (result == 0)
                     {
                     }
                     else
@@ -255,8 +255,8 @@ namespace trans_mc
                     break;
             }
 
-            if (result == true)
-                FormMainBaseWithStatusStrip.m_report.ClearStates ();
+            if (result == 0)
+                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
             else
                 ;
 
@@ -318,6 +318,10 @@ namespace trans_mc
                 ;
 
             if (! (errorData == null)) errorData(); else ;
+        }
+
+        protected override void StateWarnings(int state, bool response)
+        {
         }
 
         private bool InitIGO ()

@@ -683,18 +683,18 @@ namespace StatisticCommon
         {
         }
 
-        protected override bool GetPPBRDatesResponse(System.Data.DataTable table, DateTime date)
+        protected override int GetPPBRDatesResponse(System.Data.DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool GetPPBRValuesResponse(System.Data.DataTable table, DateTime date)
+        protected override int GetPPBRValuesResponse(System.Data.DataTable table, DateTime date)
         {
-            bool bRes = true;
+            int iRes = 0;
 
-            return bRes;
+            return iRes;
         }
 
         private bool GetSensorsTEC()
@@ -714,9 +714,9 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
-        private bool GetCurrentTMGenResponse(DataTable table)
+        private int GetCurrentTMGenResponse(DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
             int i = -1,
                 id = -1;
             double value = -1;
@@ -736,26 +736,26 @@ namespace StatisticCommon
                 }
             }
 
-            bRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"value", @"last_changed_at" });
-            if (bRes == true)
+            iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"value", @"last_changed_at" }) == true ? 0 : -1;
+            if (iRes == 0)
             {
                 for (i = 0; i < table.Rows.Count; i++)
                 {
                     if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                        return false;
+                        return -1;
                     else
                         ;
 
                     tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
                     if (tgTmp == null)
-                        return false;
+                        return -1;
                     else
                         ;
 
                     if (!(table.Rows[i]["value"] is DBNull))
                         if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
-                            return false;
+                            return -1;
                         else
                             ;
                     else
@@ -764,7 +764,7 @@ namespace StatisticCommon
                     //Опрделить дата/время для "нормальных" (>= 1) значений
                     if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
                         //Нельзя определить дата/время для "нормальных" (>= 1) значений
-                        return false;
+                        return -1;
                     else
                         ;
 
@@ -774,6 +774,7 @@ namespace StatisticCommon
                         if ((!(value < 1)) && (ValidateDatetimeTMValue (dtServer, m_dtLastChangedAt_TM_Gen) == false) && (currentMinuteTM_GenWarning == false))
                         {
                             currentMinuteTM_GenWarning = true;
+                            iRes = 0;
 
                             Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + currentMinuteTM_GenWarning.ToString (), Logging.INDEX_MESSAGE.W_001);
 
@@ -814,7 +815,7 @@ namespace StatisticCommon
             else
                 ;
 
-            return bRes;
+            return iRes;
         }
 
         public static bool ValidateDatetimeTMValue (DateTime dt_srv, DateTime dt_val) {
@@ -833,45 +834,45 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
-        private bool GetCurrentTMSNResponse(DataTable table)
+        private int GetCurrentTMSNResponse(DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
             int id = -1;
 
             m_dtLastChangedAt_TM_SN = DateTime.Now;
 
-            bRes = CheckNameFieldsOfTable(table, new string[] { @"ID_TEC", @"SUM_P_SN", @"LAST_UPDATE" });
-            if ((bRes == true) && (table.Rows.Count == 1))
+            iRes = CheckNameFieldsOfTable(table, new string[] { @"ID_TEC", @"SUM_P_SN", @"LAST_UPDATE" }) == true ? 0 : -1;
+            if ((iRes == 0) && (table.Rows.Count == 1))
             {
                 if (int.TryParse(table.Rows[0]["ID_TEC"].ToString(), out id) == false)
-                    return false;
+                    return -1;
                 else
                     ;
 
                 if (!(table.Rows[0]["SUM_P_SN"] is DBNull))
                     if (double.TryParse(table.Rows[0]["SUM_P_SN"].ToString(), out m_dblTotalPower_TM_SN) == false)
-                        return false;
+                        return -1;
                     else
                         ;
                 else
                     m_dblTotalPower_TM_SN = 0.0;
 
                 if ((!(m_dblTotalPower_TM_SN < 1)) && (DateTime.TryParse(table.Rows[0]["LAST_UPDATE"].ToString(), out m_dtLastChangedAt_TM_SN) == false))
-                    return false;
+                    return -1;
                 else
                     ;
             }
             else
             {
-                bRes = false;
+                iRes = -1;
             }
 
-            return bRes;
+            return iRes;
         }
             
-        protected override bool StateCheckResponse(int state, out bool error, out System.Data.DataTable table)
+        protected override int StateCheckResponse(int state, out bool error, out System.Data.DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
             
             error = false;
             table = null;
@@ -903,16 +904,16 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminDates:
                 case (int)StatesMachine.AdminValues:
                     //bRes = Response(m_IdListenerCurrent, out error, out table);
-                    bRes = Response(out error, out table);
+                    iRes = Response(out error, out table);
                     break;
                 default:
-                    bRes = false;
+                    iRes = -1;
                     break;
             }
 
-            error = !bRes;
+            error = ! (iRes == 0);
 
-            return bRes;
+            return iRes;
         }
 
         protected override void StateErrors(int state, bool response)
@@ -920,7 +921,7 @@ namespace StatisticCommon
             string reason = string.Empty,
                     waiting = string.Empty,
                     msg = string.Empty;
-            
+
             switch (state)
             {
                 case (int)StatesMachine.InitSensors:
@@ -1052,9 +1053,40 @@ namespace StatisticCommon
             Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override bool StateRequest(int state)
+        protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
         {
-            bool bRes = true;
+            string reason = string.Empty,
+                    waiting = string.Empty,
+                    msg = string.Empty;
+
+            switch (state)
+            {
+                case (int)StatesMachine.LastValue_TM_Gen:
+                    reason = @"текущих значений (генерация)";
+                    waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
+                    break;
+                default:
+                    break;
+            }
+
+            msg = m_tec.name_shr;
+
+            if (waiting.Equals(string.Empty) == true)
+                msg += ". Предупреждение " + reason + ". " + waiting + ".";
+            else
+                msg += ". Предупреждение " + reason + ".";
+
+            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+                WarningReport(msg);
+            else
+                ;
+
+            Logging.Logg().Error(@"TecView::StateWarnings () - предупреждение " + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        protected override int StateRequest(int state)
+        {
+            int iRes = 0;
 
             string msg = string.Empty;
 
@@ -1141,7 +1173,7 @@ namespace StatisticCommon
                     GetAdminValuesRequest(s_typeFields);
                     break;
                 default:
-                    bRes = false;
+                    iRes = -1;
                     break;
             }
 
@@ -1152,12 +1184,12 @@ namespace StatisticCommon
 
             //Logging.Logg().Debug(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
-            return bRes;
+            return iRes;
         }
 
-        protected override bool StateResponse(int state, System.Data.DataTable table)
+        protected override int StateResponse(int state, System.Data.DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
 
             switch (state)
             {
@@ -1166,20 +1198,20 @@ namespace StatisticCommon
                         {
                             case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                                bRes = GetSensorsTEC();
+                                iRes = (GetSensorsTEC() == true) ? 0 : -1;
                                 break;
                             default:
                                 break;
                         }
-                        if (bRes == true)
+                        if (iRes == 0)
                         {
                         }
                         else
                             ;
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
-                    bRes = GetCurrentTimeAdminResponse(table);
-                    if (bRes == true)
+                    iRes = GetCurrentTimeAdminResponse(table);
+                    if (iRes == 0)
                     {
                         if (using_date == true) {
                             m_prevDate = serverTime.Date;
@@ -1194,8 +1226,8 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.CurrentTimeView:
-                    bRes = GetCurrentTimeViewResponse(table);
-                    if (bRes == true)
+                    iRes = GetCurrentTimeViewResponse(table);
+                    if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
                         m_curDate = m_curDate.AddSeconds(-1 * PanelStatistic.ERROR_DELAY);
@@ -1208,24 +1240,24 @@ namespace StatisticCommon
                 case (int)StatesMachine.Hours_Fact:
                     ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    bRes = GetHoursFactResponse(table);
-                    if (bRes == true)
+                    iRes = GetHoursFactResponse(table);
+                    if (iRes == 0)
                     {
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.Hour_TM:
-                    bRes = GetHourTMResponse(table);
+                    iRes = GetHourTMResponse(table);
                     break;
                 case (int)StatesMachine.Hours_TM:
                     ClearValuesHours();
-                    bRes = GetHoursTMResponse(table);
+                    iRes = GetHoursTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     ClearValuesMins();
-                    bRes = GetMinsFactResponse(table);
-                    if (bRes == true)
+                    iRes = GetMinsFactResponse(table);
+                    if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                     }
@@ -1233,23 +1265,23 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
-                    bRes = GetMinTMResponse(table);
+                    iRes = GetMinTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
-                    bRes = GetMinsTMResponse(table);
+                    iRes = GetMinsTMResponse(table);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                    bRes = GetHoursTMSNPsumResponse(table);
-                    if (bRes == true)
+                    iRes = GetHoursTMSNPsumResponse(table);
+                    if (iRes == 0)
                     {
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
-                    bRes = GetCurrentTMGenResponse(table);
-                    if (bRes == true)
+                    iRes = GetCurrentTMGenResponse(table);
+                    if (! (iRes < 0))
                     {
                         if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
                     }
@@ -1257,8 +1289,8 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.LastValue_TM_SN:
-                    bRes = GetCurrentTMSNResponse(table);
-                    if (bRes == true)
+                    iRes = GetCurrentTMSNResponse(table);
+                    if (iRes == 0)
                     {
                         updateGUI_TM_SN ();
                     }
@@ -1267,8 +1299,8 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     ClearValuesLastMinutesTM ();
-                    bRes = GetLastMinutesTMResponse(table, m_curDate);
-                    if (bRes == true)
+                    iRes = GetLastMinutesTMResponse(table, m_curDate);
+                    if (iRes == 0)
                     {
                         if (! (updateGUI_LastMinutes == null))
                             updateGUI_LastMinutes();
@@ -1288,8 +1320,8 @@ namespace StatisticCommon
                 //        ;
                 //    break;
                 case (int)StatesMachine.RetroMin_TM_Gen:
-                    bRes = GetMinTMGenResponse (table);
-                    if (bRes == true)
+                    iRes = GetMinTMGenResponse (table);
+                    if (iRes == 0)
                         updateGUI_TM_Gen ();
                     else
                         ;
@@ -1299,14 +1331,14 @@ namespace StatisticCommon
                     ClearValuesMins();
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        bRes = GetMinsFactResponse(table);
+                        iRes = GetMinsFactResponse(table);
                     else
                         if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                             || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                            bRes = GetMinsTMResponse(table);
+                            iRes = GetMinsTMResponse(table);
                         else
                             ;
-                    if (bRes == true)
+                    if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
                         updateGUI_Fact(lastHour, lastMin);
@@ -1316,8 +1348,8 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
-                    bRes = GetPPBRDatesResponse(table, m_curDate);
-                    if (bRes == true)
+                    iRes = GetPPBRDatesResponse(table, m_curDate);
+                    if (iRes == 0)
                     {
                     }
                     else
@@ -1325,8 +1357,8 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ClearPBRValues();
-                    bRes = GetPPBRValuesResponse(table);
-                    if (bRes == true)
+                    iRes = GetPPBRValuesResponse(table);
+                    if (iRes == 0)
                     {
                     }
                     else
@@ -1336,8 +1368,8 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     ClearAdminValues();
-                    bRes = GetAdminValuesResponse(table);
-                    if (bRes == true)
+                    iRes = GetAdminValuesResponse(table);
+                    if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
                         ComputeRecomendation(lastHour - 0);
@@ -1349,18 +1381,18 @@ namespace StatisticCommon
                         ;
                     break;
                 default:
-                    bRes = false;
+                    iRes = -1;
                     break;
             }
 
-            if ((bRes == true) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
-                FormMainBaseWithStatusStrip.m_report.ClearStates ();
+            if ((iRes == 0) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
+                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
             else
-                ;
+                Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ());
 
             //Logging.Logg().Debug(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
 
-            return bRes;
+            return iRes;
         }
 
         private void ChangeState_CurPower () {
@@ -1518,12 +1550,12 @@ namespace StatisticCommon
                                     m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
         }
 
-        private bool GetCurrentTimeAdminResponse(DataTable table)
+        private int GetCurrentTimeAdminResponse(DataTable table)
         {
             return GetCurrentTimeResponse(table);
         }
 
-        private bool GetCurrentTimeViewResponse(DataTable table)
+        private int GetCurrentTimeViewResponse(DataTable table)
         {
             if (table.Rows.Count == 1)
             {
@@ -1536,17 +1568,17 @@ namespace StatisticCommon
                 {
                     Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
 
-                    return false;
+                    return -1;
                 }
             }
             else
             {
                 //selectedTime = System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
                 //ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
-                return false;
+                return -1;
             }
 
-            return true;
+            return 0;
         }
 
         public void GetRetroHours()
@@ -1901,7 +1933,7 @@ namespace StatisticCommon
                 m_valuesMins[i].valuesUDGe = 0;
         }
 
-        private bool GetAdminValuesResponse(DataTable table_in)
+        private int GetAdminValuesResponse(DataTable table_in)
         {
             DateTime date = m_curDate //m_pnlQuickData.dtprDate.Value.Date
                     , dtPBR;
@@ -2643,7 +2675,7 @@ namespace StatisticCommon
                 m_valuesMins[i].valuesDiviation = m_valuesHours[hour - 0].valuesDiviation;
             }
 
-            return true;
+            return 0;
         }
 
         private void ComputeRecomendation(int hour)
@@ -2960,7 +2992,7 @@ namespace StatisticCommon
             return table_in_restruct;
         }
 
-        private bool GetHoursFactResponse(DataTable table)
+        private int GetHoursFactResponse(DataTable table)
         {
             int i, j
                 , half = 0 //Индекс получаса
@@ -3007,7 +3039,7 @@ namespace StatisticCommon
 
             //Проверка наличия в таблице необходимых полей
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
-                return false;
+                return -1;
             else
                 ;
 
@@ -3029,7 +3061,7 @@ namespace StatisticCommon
                     ;
 
                 //Завершаем выполнение функции, но возращаем признак успеха ???
-                return true;
+                return 0;
             }
             else
                 ;
@@ -3047,12 +3079,12 @@ namespace StatisticCommon
                     try
                     {
                         if (DateTime.TryParse(r[@"DATA_DATE"].ToString(), out dt) == false)
-                            return false;
+                            return -1;
                         else
                             ;
 
                         if (int.TryParse(r[@"SEASON"].ToString(), out season) == false)
-                            return false;
+                            return -1;
                         else
                             ;
 
@@ -3094,7 +3126,7 @@ namespace StatisticCommon
                     }
 
                     if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
-                        return false;
+                        return -1;
                     else
                         ;
 
@@ -3316,10 +3348,10 @@ namespace StatisticCommon
 
             lastReceivedHour = lastHour;
 
-            return true;
+            return 0;
         }
 
-        private bool GetHourTMResponse(DataTable table)
+        private int GetHourTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
 
@@ -3432,12 +3464,10 @@ namespace StatisticCommon
                 else
                     ;
 
-            return
-                true
-                ;
+            return 0;
         }
 
-        private bool GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
+        private int GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
         {
             int iRes = -1
                 , hour = -1;
@@ -3609,12 +3639,12 @@ namespace StatisticCommon
                     ;
             }
 
-            return (! (iRes < 0)) || (bErrorCritical == false);
+            return (bErrorCritical == true) ? iRes : 0;
         }
 
-        private bool GetHoursTMSNPsumResponse(DataTable table)
+        private int GetHoursTMSNPsumResponse(DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
             int i = -1
                 , hour = -1;
 
@@ -3626,12 +3656,12 @@ namespace StatisticCommon
                     m_valuesHours[hour].valuesTMSNPsum = double.Parse(table.Rows[i][@"VALUE"].ToString());
                 }
             else
-                bRes = false;
+                iRes = -1;
 
-            return bRes;
+            return iRes;
         }
 
-        private bool GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
+        private int GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
             int iRes = -1;
             int i = -1,
@@ -3681,7 +3711,7 @@ namespace StatisticCommon
                                 {
                                     if (!(tgRows[i]["value"] is DBNull))
                                         if (double.TryParse(tgRows[i]["value"].ToString(), out val) == false)
-                                            return false;
+                                            return -1;
                                         else
                                             ;
                                     else
@@ -3689,7 +3719,7 @@ namespace StatisticCommon
 
                                     //if ((!(value < 1)) && (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false))
                                     if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                        return false;
+                                        return -1;
                                     else
                                         ;
 
@@ -3737,12 +3767,12 @@ namespace StatisticCommon
                                 try
                                 {
                                     if (double.TryParse(tgRows[i]["value"].ToString(), out val) == false)
-                                        return false;
+                                        return -1;
                                     else
                                         ;
 
                                     if (DateTime.TryParse(tgRows[i]["last_changed_at"].ToString(), out dtVal) == false)
-                                        return false;
+                                        return -1;
                                     else
                                         ;
                                 }
@@ -3781,7 +3811,7 @@ namespace StatisticCommon
                         {
                             TG tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
                             if (tg == null)
-                                return false;
+                                return -1;
                             else
                                 ;
 
@@ -3835,10 +3865,10 @@ namespace StatisticCommon
                 }
             }
 
-            return iRes == 0;
+            return iRes;
         }
 
-        private bool GetMinsFactResponse(DataTable table)
+        private int GetMinsFactResponse(DataTable table)
         {
             int i, j = 0, min = 0;
             double minuteVal = 0, value;
@@ -3855,7 +3885,7 @@ namespace StatisticCommon
             f2.FillMinTable(table);*/
 
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
-                return false;
+                return -1;
             else
                 ;
 
@@ -3866,7 +3896,7 @@ namespace StatisticCommon
                 //Определить 1-ю отметку времени и сезон для этой отметки времени
                 //if (table.Columns.Contains(@"DATA_DATE") == true)
                     if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
-                        return false;
+                        return -1;
                     else
                         ;
                 //else
@@ -3874,7 +3904,7 @@ namespace StatisticCommon
 
                 //if (table.Columns.Contains(@"SEASON") == true)
                     if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
-                        return false;
+                        return -4;
                     else
                         ;
                 //else
@@ -3903,14 +3933,14 @@ namespace StatisticCommon
                 /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
                 f2.ShowDialog();*/
 
-                return true;
+                return 0;
             }
 
             //Проверить наличие среди записей "другого" сезона (с большим числом записей)
             for (i = 0; i < table.Rows.Count; i++)
             {
                 if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                    return false;
+                    return -4;
                 else
                     ;
 
@@ -3972,12 +4002,12 @@ namespace StatisticCommon
                     try
                     {
                         if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
-                            return false;
+                            return -1;
                         else
                             ;
 
                         if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                            return false;
+                            return -4;
                         else
                             ;
                     }
@@ -4005,19 +4035,19 @@ namespace StatisticCommon
                         ;
 
                     if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
-                        return false;
+                        return -1;
                     else
                         ;
 
                     tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
 
                     if (tgTmp == null)
-                        return false;
+                        return -2;
                     else
                         ;
 
                     if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value))
-                        return false;
+                        return -3;
                     else
                         ;
 
@@ -4077,7 +4107,7 @@ namespace StatisticCommon
             else
                 ;
 
-            return true;
+            return 0;
         }
 
         private double [] avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, List <string> listSensors, out int iRes) {
@@ -4344,12 +4374,12 @@ namespace StatisticCommon
             return tgCurValues;
         }
 
-        private bool GetMinTMResponse(DataTable table)
+        private int GetMinTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
             if (lastMin == 21)
-                return true;
+                return 0;
             else
                 ;
 
@@ -4450,13 +4480,11 @@ namespace StatisticCommon
             //{
             //}
 
-            return
-                true
-                //iRes == 0
-                ;
+            //???
+            return 0;
         }
 
-        private bool GetMinsTMResponse(DataTable table)
+        private int GetMinsTMResponse(DataTable table)
         {
             string [] checkFields = null;
 
@@ -4498,7 +4526,7 @@ namespace StatisticCommon
                                 TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
                                 if (tg == null)
                                     //iRes = -4
-                                    return false;
+                                    return -4;
                                 else
                                     ;
 
@@ -4673,15 +4701,15 @@ namespace StatisticCommon
             else
                 lastMinError = true;
 
-            return iRes == 0;
+            return iRes;
         }
 
-        private bool GetMinTMGenResponse(DataTable table)
+        private int GetMinTMGenResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
             if (lastMin > m_valuesMins.Length)
-                return true;
+                return 0;
             else
                 ;
 
@@ -4779,7 +4807,7 @@ namespace StatisticCommon
             else
                 ;
 
-            return iRes == 0;
+            return iRes;
         }
 
         private int LayotByName(string l)
@@ -4835,16 +4863,16 @@ namespace StatisticCommon
             return bRes;
         }
 
-        private bool GetPPBRValuesResponse(DataTable table)
+        private int GetPPBRValuesResponse(DataTable table)
         {
-            bool bRes = true;
+            int iRes = 0;
 
             if (!(table == null))
                 m_tablePPBRValuesResponse = table.Copy();
             else
                 ;
 
-            return bRes;
+            return iRes;
         }
 
         private void GetHoursFactRequest(DateTime date)

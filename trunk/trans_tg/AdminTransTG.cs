@@ -34,22 +34,22 @@ namespace trans_tg
             m_listCurTimezoneOffsetRDGExcelValues = new List<RDGStruct[]> ();
         }
 
-        protected override bool ImpRDGExcelValuesResponse()
+        protected override int ImpRDGExcelValuesResponse()
         {
-            bool bRes = false;
+            int iRes = -1;
 
-            bRes = IsCanUseTECComponents();
+            iRes = IsCanUseTECComponents() == true ? 0 : -1;
             int i = -1
                 , iTimeZoneOffset = -1;
 
-            if (bRes == true)
+            if (iRes == 0)
             {
                 iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
                 m_listCurTimezoneOffsetRDGExcelValues.Add(new RDGStruct[iTimeZoneOffset]);
 
-                if (m_tableRDGExcelValuesResponse.Rows.Count > 0) bRes = true; else ;
+                iRes = m_tableRDGExcelValuesResponse.Rows.Count > 0 ? 0 : -1;
 
-                if (bRes)
+                if (iRes == 0)
                     for (i = 0; i < iTimeZoneOffset; i++)
                         setRDGExcelValuesItem(out m_listCurTimezoneOffsetRDGExcelValues[m_listCurTimezoneOffsetRDGExcelValues.Count - 1][i], i + 1);
                 else
@@ -58,9 +58,9 @@ namespace trans_tg
             else
                 ;
 
-            bRes = base.ImpRDGExcelValuesResponse();
+            iRes = base.ImpRDGExcelValuesResponse();
 
-            return bRes;
+            return iRes;
         }
 
         protected override void ClearDates(StatisticCommon.CONN_SETT_TYPE type)
@@ -77,7 +77,7 @@ namespace trans_tg
 
         }
 
-        protected override bool GetDatesResponse(StatisticCommon.CONN_SETT_TYPE type, DataTable table, DateTime date)
+        protected override int GetDatesResponse(StatisticCommon.CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
             //bool bIsHourTimezoneOffsetRDGExcel = false;
@@ -104,7 +104,7 @@ namespace trans_tg
                 catch { }
             }
 
-            return true;
+            return 0;
         }
 
         protected override void GetAdminDatesRequest(DateTime date)

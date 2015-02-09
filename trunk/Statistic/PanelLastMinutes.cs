@@ -90,7 +90,7 @@ namespace Statistic
 
         private event DelegateObjectFunc EventChangeDateTime;
 
-        public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
+        public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
         {
             int i = -1;
 
@@ -111,7 +111,7 @@ namespace Statistic
             
             for (i = 0; i < listTec.Count; i++)
             {
-                this.Controls.Add(new PanelTecLastMinutes(listTec[i], fErrRep, fActRep), i + 1, 0);
+                this.Controls.Add(new PanelTecLastMinutes(listTec[i], fErrRep, fWarRep, fActRep), i + 1, 0);
                 EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls [i + 1]).OnEventChangeDateTime);
                 iCountSubColumns += ((PanelTecLastMinutes)this.Controls [i + 1]).CountTECComponent; //Слева столбец дата/время
             }
@@ -124,8 +124,8 @@ namespace Statistic
             }
         }
 
-        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fActRep)
-            : this(listTec, fErrRep, fActRep)
+        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+            : this(listTec, fErrRep, fWarRep, fActRep)
         {
             container.Add(this);
         }
@@ -470,7 +470,7 @@ namespace Statistic
             //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
             TecView m_tecView;
 
-            public PanelTecLastMinutes(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
+            public PanelTecLastMinutes(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
             {
                 InitializeComponent();
 
@@ -483,15 +483,15 @@ namespace Statistic
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
-                m_tecView.SetDelegateReport(fErrRep, fActRep);
+                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep);
 
                 m_tecView.updateGUI_LastMinutes = new DelegateFunc(showLastMinutesTM);
 
                 Initialize();
             }
 
-            public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fActRep)
-                : this(tec, fErrRep, fActRep)
+            public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+                : this(tec, fErrRep, fWarRep, fActRep)
             {
                 container.Add(this);
             }
@@ -558,7 +558,7 @@ namespace Statistic
 
                 m_tecView.Stop();
 
-                FormMainBaseWithStatusStrip.m_report.ClearStates();
+                FormMainBaseWithStatusStrip.m_report.ClearStates(true);
             }
 
             private void ChangeState()
