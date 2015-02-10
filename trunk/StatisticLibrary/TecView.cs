@@ -604,8 +604,6 @@ namespace StatisticCommon
         //public override void  ClearValues(int cnt = -1)
         public override void  ClearValues()
         {
-            m_markWarning.UnMarked ();
-
             ClearValuesMins();
             //ClearValuesHours(cnt);
             ClearValuesHours();
@@ -728,8 +726,7 @@ namespace StatisticCommon
             int i = -1,
                 id = -1;
             double value = -1;
-            DateTime dtLastChangedAt =
-                m_dtLastChangedAt_TM_Gen = DateTime.UtcNow
+            DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
                 , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
 
@@ -1068,6 +1065,8 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.Hours_Fact:
+                    //"ѕо текущему часу значений не найдено!"
+                    //"«а текущий час не получены некоторые получасовые значени€!"
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                 case (int)StatesMachine.CurrentMins_TM:
@@ -1822,7 +1821,11 @@ namespace StatisticCommon
                 }
             }
 
+            m_markWarning.UnMarked((int)INDEX_WARNING.LAST_MIN);
+
+            m_dtLastChangedAt_TM_Gen = DateTime.MaxValue;
             m_arValueCurrentTM_Gen [(int)TG.ID_TIME.MINUTES] = -1F;
+            m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
         }
 
         //protected void ClearValuesHours(int cnt = -1)
@@ -1882,6 +1885,9 @@ namespace StatisticCommon
             //m_valuesHours.season = seasonJumpE.None;
             //m_valuesHours.hourAddon = 0;
             //m_valuesHours.addonValues = false;
+
+            m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOUR);
+            m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOURHALF);
 
             m_arValueCurrentTM_Gen[(int)TG.ID_TIME.HOURS] = -1F;
         }

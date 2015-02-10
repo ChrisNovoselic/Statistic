@@ -205,6 +205,10 @@ namespace StatisticCommon
         {
             Errors errRes = Errors.NoError;
 
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                new System.Globalization.CultureInfo (@"en-US");
+
             //Определить тип загружаемых значений
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
 
@@ -307,58 +311,71 @@ namespace StatisticCommon
                     {
                         hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
 
-                        switch (typeValues)
+                        try
                         {
-                            case CONN_SETT_TYPE.PBR:
-                                if (double.TryParse(r[@"TotalBR"].ToString(), out val) == false)
-                                    if (hour > 0)
-                                        curRDGValues[hour].pbr = curRDGValues[hour - 1].pbr;
-                                    else
-                                        ;
-                                else
-                                    curRDGValues[hour].pbr = val;
+                            switch (typeValues)
+                            {
+                                case CONN_SETT_TYPE.PBR:                                    
+                                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
+                                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
+                                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
 
-                                curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
-                                curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+                                    curRDGValues[hour].pbr_number = pbr_number as string;
 
-                                curRDGValues[hour].pbr_number = pbr_number as string;
-                                break;
-                            case CONN_SETT_TYPE.ADMIN:
-                                if (double.TryParse(r[@"REC"].ToString(), out val) == false)
-                                    if (hour > 0)
-                                        curRDGValues[hour].recomendation = curRDGValues[hour - 1].recomendation;
-                                    else
-                                        ;
-                                else
-                                    curRDGValues[hour].recomendation = val;
-
-                                curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString()) == 1;
-                                curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString());
-                                curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString()) == 1;
-                                break;
-                            default:
-                                break;
+                                    ////Отладка
+                                    //Console.WriteLine(@"GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @") TotalBR=" + curRDGValues[hour].pbr + @"; PBRNumber=" + curRDGValues[hour].pbr_number);
+                                    break;
+                                case CONN_SETT_TYPE.ADMIN:
+                                    curRDGValues[hour].recomendation = double.Parse(r[@"REC"].ToString());
+                                    curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString()) == 1;
+                                    curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString());
+                                    curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString()) == 1;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                        catch (Exception e) {
+                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET
+                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @")");
+
+                            errRes = Errors.ParseError;
+                        }
+
+                        if (errRes == Errors.ParseError)
+                            break;
+                        else
+                            ;
                     }
 
-                    //Очистить тек./массив с данными
-                    ClearValues();
+                    if (errRes == Errors.NoSet)
+                    {
+                        //Очистить тек./массив с данными
+                        ClearValues();
 
-                    //Копировать полученные значения в "текущий массив"
-                    curRDGValues.CopyTo(m_curRDGValues, 0);
+                        //Копировать полученные значения в "текущий массив"
+                        curRDGValues.CopyTo(m_curRDGValues, 0);
 
-                    indxTECComponents = indx;
+                        indxTECComponents = indx;
 
-                    errRes =
-                        SaveChanges()
-                        //Errors.NoSet
-                        //Errors.NoError
-                        ;
+                        errRes =
+                            SaveChanges()
+                            //Errors.NoSet
+                            //Errors.NoError
+                            ;
+                    }
+                    else
+                        ; //errRes = Errors.ParseError;
                 }
                 else
+                    errRes = Errors.ParseError;
+
+                if (errRes == Errors.ParseError)
                     //Пропустить запись ГТП, разрешить переход к следующей
                     //Псевдо-закончена обработка всех событий
                     completeHandleStates();
+                else
+                    ;
             }
             else
                 ;
