@@ -886,17 +886,17 @@ namespace Statistic
 
             if (!(m_parent == null))
             {
-                if (m_parent.m_tecView.currHour == true)
-                {
-                    if (m_parent.m_tecView.currentMinuteTM_GenWarning == true)
-                    {
-                        ; //m_parent.m_tecView.WarningReport("Значение телемеханики для одного из ТГ не найдено!");
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
+                //if (m_parent.m_tecView.currHour == true)
+                //{
+                //    if (m_parent.m_tecView.currentMinuteTM_GenWarning == true)
+                //    {
+                //        ; //m_parent.m_tecView.WarningReport("Значение телемеханики для одного из ТГ не найдено!");
+                //    }
+                //    else
+                //        ;
+                //}
+                //else
+                //    ;
 
                 if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                 {
@@ -1119,24 +1119,23 @@ namespace Statistic
 
                 if (m_parent.m_tecView.currHour == true)
                 {
-                    if (m_parent.m_tecView.lastHourError == true)
-                    {
-                        //m_parent.ErrorReport("По текущему часу значений не найдено!");
-                        m_parent.m_tecView.ErrorReport("По текущему часу значений не найдено!");
-                    }
-                    else
-                    {
-                        if (m_parent.m_tecView.lastHourHalfError == true)
-                        {
-                            m_parent.m_tecView.ErrorReport("За текущий час не получены некоторые получасовые значения!");
-                        }
-                        else
-                        {
+                    //if (m_parent.m_tecView.lastHourError == true)
+                    //{
+                    //    m_parent.m_tecView.ErrorReport("По текущему часу значений не найдено!");
+                    //}
+                    //else
+                    //{
+                    //    if (m_parent.m_tecView.lastHourHalfError == true)
+                    //    {
+                    //        m_parent.m_tecView.ErrorReport("За текущий час не получены некоторые получасовые значения!");
+                    //    }
+                    //    else
+                    //    {
                             m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
                             m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
                                 m_lblPowerFactZoom.ForeColor = getColorFactValues ();
                             
-                            if (m_parent.m_tecView.lastMinError == true)
+                            if (m_parent.m_tecView.m_markWarning.IsMarked ((int)TecView.INDEX_WARNING.LAST_MIN) == true)
                             {
                                 string strErrMsg = @"По текущему ";
                                 if ((m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
@@ -1156,8 +1155,8 @@ namespace Statistic
                                 if (! (m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen; else ;
                                 if (!(m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickData.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow; else ;
                             }
-                        }
-                    }
+                    //    }
+                    //}
                 }
                 else
                 {
@@ -1224,7 +1223,7 @@ namespace Statistic
         private Color getColorFactValues () {
             //Определить цвет
             if (m_parent.m_tecView.currHour == true)
-                if (m_parent.m_tecView.lastMinError == true)
+                if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
                     return System.Drawing.Color.OrangeRed;
                 else
                     return System.Drawing.Color.LimeGreen;

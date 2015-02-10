@@ -123,10 +123,13 @@ namespace StatisticCommon
         public volatile int lastReceivedHour;
         public volatile int lastMin;
 
-        public volatile bool lastMinError;
-        public volatile bool lastHourError;
-        public volatile bool lastHourHalfError;
-        public volatile bool currentMinuteTM_GenWarning;
+        //public volatile bool lastMinError;
+        //public volatile bool lastHourError;
+        //public volatile bool lastHourHalfError;
+        //public volatile bool currentMinuteTM_GenWarning;
+        public enum INDEX_WARNING { LAST_MIN, LAST_HOUR, LAST_HOURHALF, CURR_MIN_TM_GEN
+                                    , COUNT_WARNING };
+        public HMark m_markWarning;
 
         public volatile string lastLayout;
 
@@ -183,6 +186,8 @@ namespace StatisticCommon
 
         protected override void Initialize () {
             base.Initialize ();
+
+            m_markWarning = new HMark ();
 
             currHour = true;
             lastHour = 0;
@@ -415,7 +420,8 @@ namespace StatisticCommon
             Console.WriteLine (@"curHour=" + curHour.ToString () + @"; curMinute=" + curMinute.ToString ());
 
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
-            if (((curHour == 24) || (lastHourError == true)) || ((curMinute == 0) || (lastMinError == true)))
+            if (((curHour == 24) || (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
+                || ((curMinute == 0) || (m_markWarning.IsMarked ((int)TecView.INDEX_WARNING.LAST_MIN) == true)))
             {
                 Logging.Logg().Error(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -598,6 +604,8 @@ namespace StatisticCommon
         //public override void  ClearValues(int cnt = -1)
         public override void  ClearValues()
         {
+            m_markWarning.UnMarked ();
+
             ClearValuesMins();
             //ClearValuesHours(cnt);
             ClearValuesHours();
@@ -725,8 +733,6 @@ namespace StatisticCommon
                 , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
 
-            currentMinuteTM_GenWarning = false;
-
             foreach (TECComponent g in m_localTECComponents)
             {
                 foreach (TG tg in g.m_listTG)
@@ -771,12 +777,12 @@ namespace StatisticCommon
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
 
-                        if ((!(value < 1)) && (ValidateDatetimeTMValue (dtServer, m_dtLastChangedAt_TM_Gen) == false) && (currentMinuteTM_GenWarning == false))
+                        if ((!(value < 1)) && (ValidateDatetimeTMValue(dtServer, m_dtLastChangedAt_TM_Gen) == false) && (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN) == false))
                         {
-                            currentMinuteTM_GenWarning = true;
-                            iRes = 0;
+                            m_markWarning.Marked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN);
+                            iRes = 1;
 
-                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + currentMinuteTM_GenWarning.ToString (), Logging.INDEX_MESSAGE.W_001);
+                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + true.ToString (), Logging.INDEX_MESSAGE.W_001);
 
                             //return true;
                             //break; //bRes по-прежнему == true ???
@@ -1061,6 +1067,11 @@ namespace StatisticCommon
 
             switch (state)
             {
+                case (int)StatesMachine.Hours_Fact:
+                    break;
+                case (int)StatesMachine.CurrentMins_Fact:
+                case (int)StatesMachine.CurrentMins_TM:
+                    break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
@@ -1241,8 +1252,8 @@ namespace StatisticCommon
                     ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     iRes = GetHoursFactResponse(table);
-                    if (iRes == 0)
-                    {
+                    if (! (iRes < 0))
+                    {//Успех...
                     }
                     else
                         ;
@@ -1385,7 +1396,7 @@ namespace StatisticCommon
                     break;
             }
 
-            if ((iRes == 0) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
+            if ((! (iRes < 0)) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
                 FormMainBaseWithStatusStrip.m_report.ClearStates (false);
             else
                 Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ());
@@ -3018,9 +3029,6 @@ namespace StatisticCommon
             /*Form2 f2 = new Form2();
             f2.FillHourTable(table);*/
 
-            //Предполагаем, что ошибок нет ???
-            lastHourHalfError = lastHourError = false;
-
             //Предполагаем, что не получено ни одного значения ни за один получасовой интервал ???
             //foreach (TECComponent g in m_tec.list_TECComponents)
             //{
@@ -3052,7 +3060,9 @@ namespace StatisticCommon
                     {//Не начало суток
                         lastHour = lastReceivedHour = dtServer.Hour;
                         //Признак частичной ошибки
-                        lastHourError = true;
+                        m_markWarning.Marked ((int)INDEX_WARNING.LAST_HOUR);
+
+                        return 1;
                     }
                     else
                         ;
@@ -3060,7 +3070,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                //Завершаем выполнение функции, но возращаем признак успеха ???
+                //Завершаем аварийно выполнение функции, но возращаем признак успеха ???
                 return 0;
             }
             else
@@ -3279,6 +3289,8 @@ namespace StatisticCommon
                 else
                     ;
 
+            int iRes = 0;
+
             //Logging.Logg().Debug(@"TecView::GetHoursFactReuest () - hour=" + hour);
 
             if (currHour == true)
@@ -3295,15 +3307,17 @@ namespace StatisticCommon
 
                 if (lastHour < dtServer.Hour)
                 {//Ошибка получения часовых значений
-                    lastHourError = true;
+                    m_markWarning.Marked((int)INDEX_WARNING.LAST_HOUR);
                     lastHour = dtServer.Hour;
+                    iRes = 1;
                 }
                 else
                 {
                     if ((dtServer.Hour == 0) && (!(lastHour == 24)) && (!(dtNeeded.Date == dtServer.Date)))
                     {//Переход через границу суток
-                        lastHourError = true;
+                        m_markWarning.Marked((int)INDEX_WARNING.LAST_HOUR);
                         lastHour = 24;
+                        iRes = 1;
                     }
                     else
                     {
@@ -3316,7 +3330,8 @@ namespace StatisticCommon
                                     //MessageBox.Show("sensor " + sensorId2TG[i].name + ", h1 " + sensorId2TG[i].receivedHourHalf1[lastHour - 1].ToString());
                                     if (powerHourHalf[i, 0, lastHour - 1] < 0)
                                     {//Ошибка получения 1-ого получасового значения
-                                        lastHourHalfError = true;
+                                        m_markWarning.Marked((int)INDEX_WARNING.LAST_HOURHALF);
+                                        iRes = 2;
                                         break;
                                     }
                                     else
@@ -3328,7 +3343,8 @@ namespace StatisticCommon
                                     if (powerHourHalf[i, 1, lastHour - 1] < 0)
                                     {
                                         //Ошибка получения 2-ого получасового значения
-                                        lastHourHalfError = true;
+                                        m_markWarning.Marked((int)INDEX_WARNING.LAST_HOURHALF);
+                                        iRes = 2;
                                         break;
                                     }
                                     else
@@ -3348,7 +3364,7 @@ namespace StatisticCommon
 
             lastReceivedHour = lastHour;
 
-            return 0;
+            return iRes;
         }
 
         private int GetHourTMResponse(DataTable table)
@@ -3578,9 +3594,10 @@ namespace StatisticCommon
             }
             else
             {
-                if (bErrorCritical == true)
-                    lastHourError =
-                    lastHourHalfError = false;
+                if (bErrorCritical == true) {
+                    m_markWarning.UnMarked ((int)INDEX_WARNING.LAST_HOUR);
+                    m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOURHALF);
+                }
                 else
                     ;
 
@@ -3879,8 +3896,6 @@ namespace StatisticCommon
             int season = 0, need_season = 0, max_season = 0;
             bool jump = false;
 
-            lastMinError = false;
-
             /*Form2 f2 = new Form2();
             f2.FillMinTable(table);*/
 
@@ -3921,7 +3936,7 @@ namespace StatisticCommon
                 {
                     if (!((m_curDate.Minute / 3) == 0))
                     {//Ошибка - номер 3-хмин > 1
-                        lastMinError = true;
+                        m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
                         //lastMin = ((m_curDate.Minute) / 3) + 1;
                     }
                     else
@@ -4093,7 +4108,7 @@ namespace StatisticCommon
 
             if (! (lastMin > ((m_curDate.Minute - 1) / 3)))
             {
-                lastMinError = true;
+                m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
                 //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
             } else {
             }
@@ -4502,8 +4517,6 @@ namespace StatisticCommon
                 ;
             double val = -1F;
 
-            lastMinError = false;
-
             if (iRes == 0)
             {
                 iRes = table.Rows.Count > 0 ? 0 : -10; //??? почему -1, ведь это другой тип ошибки, чем отсутствие необходимых полей
@@ -4686,20 +4699,20 @@ namespace StatisticCommon
                 }
             }
 
-            lastMinError = ! (iRes == 0);
+            m_markWarning.Set((int)INDEX_WARNING.LAST_MIN, !(iRes == 0));
 
             int interval = getIntervalOfTypeSourceData (TG.ID_TIME.MINUTES);
 
             if (interval > 0)
-                if ((lastMinError == false) && (!(lastMin > ((m_curDate.Minute - 1) / interval))))
+                if ((m_markWarning.IsMarked((int)INDEX_WARNING.LAST_MIN) == false) && (!(lastMin > ((m_curDate.Minute - 1) / interval))))
                 {
-                    lastMinError = true;
+                    m_markWarning.Marked(((int)INDEX_WARNING.LAST_MIN));
                     //lastMin = ((selectedTime.Minute - 1) / 1) + 1;
                 }
                 else
                     ;
             else
-                lastMinError = true;
+                m_markWarning.Marked(((int)INDEX_WARNING.LAST_MIN));
 
             return iRes;
         }
@@ -4728,8 +4741,6 @@ namespace StatisticCommon
             }
 
             int iRes = -1;
-
-            currentMinuteTM_GenWarning = false;
 
             foreach (TECComponent g in m_localTECComponents)
             {
