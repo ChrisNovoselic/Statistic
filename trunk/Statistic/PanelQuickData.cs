@@ -167,6 +167,8 @@ namespace Statistic
 
     partial class PanelQuickData
     {
+        private enum INDEX_CONTEXTMENUITEM { FORECASTEE, TM};
+        
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>
@@ -236,7 +238,7 @@ namespace Statistic
                     break;
             }
 
-            if ((((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == false) && (col > 2))
+            if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false) && (col > 2))
                 col --;
             else
                 ;
@@ -265,8 +267,8 @@ namespace Statistic
                 new ToolStripMenuItem (@"Прогноз ЭЭ"),
                 new ToolStripMenuItem (@"Знач. телеметрии") });
             //Checked = bChecked;
-            this.ContextMenuStrip.Items[0].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[0]).Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_FORECASTEE); this.ContextMenuStrip.Items[0].Click += OnItemClick;
-            this.ContextMenuStrip.Items[1].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[1]).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_TMVALUES); this.ContextMenuStrip.Items[1].Click += OnItemClick;
+            this.ContextMenuStrip.Items[0].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_FORECASTEE); this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE].Click += OnItemClick;
+            this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM].Enabled = bEnabled; ((ToolStripMenuItem)this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUCONTEXTITEM_PANELQUICKDATA_TMVALUES); this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM].Click += OnItemClick;
 
             this.RowCount = COUNT_ROWS;
 
@@ -630,13 +632,15 @@ namespace Statistic
             while (this.ColumnStyles.Count > 1)
                 this.ColumnStyles.RemoveAt(this.ColumnStyles.Count - 1);
 
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) {
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false)
+            {
                 COL_TG_START -= 2;
             }
             else
                 ;
-            
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false) {
+
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false)
+            {
                 COUNT_LABEL --;
                 COL_TG_START --;
             }
@@ -646,7 +650,7 @@ namespace Statistic
             for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
             {
                 bool bAddItem = false;
-                if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false)
+                if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false)
                 {
                     if (i == CONTROLS.lblCommonPVal_TM)
                         ; //continue;
@@ -674,13 +678,13 @@ namespace Statistic
             //Ширина столбцов группы "Рекомендация"
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == true)
                 //Телеметрия для объекта отображения
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
             else
                 ;
 
-            if (((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == true)
+            if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == true)
             {
                 for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
                 {
@@ -704,7 +708,7 @@ namespace Statistic
             {
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
-                if (((ToolStripMenuItem)ContextMenuStrip.Items [1]).Checked == true)
+                if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == true)
                     //Телеметрия ТГ
                     this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 75F));
                 else
@@ -729,7 +733,7 @@ namespace Statistic
                     this.SetCellPosition(m_tgLabels[key][(int)TG.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition(c, r));
                     this.SetRowSpan(m_tgLabels[key][(int)TG.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
 
-                    if (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == true)
+                    if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == true)
                     {
                         this.Controls.Add(m_tgLabels[key][(int)TG.INDEX_VALUE.TM]);
                         c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
@@ -744,7 +748,7 @@ namespace Statistic
             }
 
             //if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST))
-            if ((((ToolStripMenuItem)ContextMenuStrip.Items[0]).Checked == false) && (((ToolStripMenuItem)ContextMenuStrip.Items[1]).Checked == false))
+            if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false) && (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false))
             {
                 this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
                 this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
@@ -825,37 +829,49 @@ namespace Statistic
             InitializeComponent();
         }
 
-        private void showTMValue(TG tg, ref double val)
+        private void showTMValue(TG tg, ref double val, int min)
         {
             showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                             , tg.id_tm
+                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes [min]
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
                                             , m_parent.m_tecView.serverTime
                                             , ref val);
         }
 
-        private void showTMValue(ref Label lbl, int tg_id, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
+        private void showTMValue(ref Label lbl, int tg_id, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
         {
             string text = string.Empty
                 , textNotValue = @"---";
+            bool bValidateDateTime = false;
 
             if (tg_id > 0)
             {
                 if (tg_val > 1)
                 {
+                    bValidateDateTime = TecView.ValidateDatetimeTMValue(dt_srv, dt_val);
                     text = tg_val.ToString("F2");
-                    if ((TecView.ValidateDatetimeTMValue(dt_srv, dt_val) == true) && (!(val < 0)))
-                        val += tg_val;
+                    if (bValidateDateTime == true)
+                        if (!(val < 0))
+                            val += tg_val;
+                        else
+                            ;
                     else
-                        ;
+                        val = -1F;
                 }
                 else
                     if (!(tg_val < 0))
                         text = 0.ToString("F0");
                     else {
-                        text = textNotValue;
-                        val = -1F;
+                        if (! (tg_val_fact > 1)) {
+                            text = 0.ToString("F0");
+                            bValidateDateTime = true;
+                        }
+                        else
+                            text = textNotValue;
+
+                        //val = -1F;
                     }
             }
             else
@@ -865,7 +881,7 @@ namespace Statistic
             }
 
             //if (text.Equals (textNotValue) == true)
-            if (val == -1F)
+            if (bValidateDateTime == false)
                 lbl.ForeColor = Color.Orange;
             else
                 //if ((dt_srv - dt_val).TotalMinutes > 1)
@@ -884,7 +900,7 @@ namespace Statistic
         {
             double value_TM = 0.0;
 
-            if (!(m_parent == null))
+            if ((!(m_parent == null)) && ((m_parent.m_tecView.serverTime - DateTime.MinValue).TotalSeconds > 1))
             {
                 //if (m_parent.m_tecView.currHour == true)
                 //{
@@ -898,6 +914,8 @@ namespace Statistic
                 //else
                 //    ;
 
+                int min = m_parent.m_tecView.lastMin < m_parent.m_tecView.m_valuesMins.Length ? m_parent.m_tecView.lastMin : m_parent.m_tecView.m_valuesMins.Length - 1;
+
                 if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                 {
                     foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
@@ -905,7 +923,7 @@ namespace Statistic
                         if (g.m_id < 500)
                             //Только ГТП
                             foreach (TG tg in g.m_listTG)
-                                showTMValue(tg, ref value_TM);
+                                showTMValue(tg, ref value_TM, min);
                         else
                             ;
                     }
@@ -913,7 +931,7 @@ namespace Statistic
                 else
                 {
                     foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
-                        showTMValue(tg, ref value_TM);
+                        showTMValue(tg, ref value_TM, min);
                 }
             }
             else
@@ -1233,6 +1251,11 @@ namespace Statistic
 
         private void OnItemClick(object obj, EventArgs ev) {
             ((ToolStripMenuItem)obj).Checked = ! ((ToolStripMenuItem)obj).Checked;
+
+            if (ContextMenuStrip.Items.IndexOf((ToolStripMenuItem)obj) == (int)INDEX_CONTEXTMENUITEM.TM)
+                m_parent.m_tecView.m_bLastValue_TM_Gen = ((ToolStripMenuItem)obj).Checked;
+            else
+                ;
 
             RestructControl(); 
         }

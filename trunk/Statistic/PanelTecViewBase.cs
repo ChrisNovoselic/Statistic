@@ -624,6 +624,8 @@ namespace Statistic
             //    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] =
             //        m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
+            m_tecView.m_bLastValue_TM_Gen = ((ToolStripMenuItem)m_pnlQuickData.ContextMenuStrip.Items [1]).Checked;
+
             isActive = false;
 
             update = false;

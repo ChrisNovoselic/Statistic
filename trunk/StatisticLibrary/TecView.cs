@@ -158,6 +158,9 @@ namespace StatisticCommon
         //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
         public volatile bool recalcAver;
 
+        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        public volatile bool m_bLastValue_TM_Gen;
+
         public StatisticCommon.TEC m_tec {
             get { return m_list_tec [0]; }
         }
@@ -196,6 +199,8 @@ namespace StatisticCommon
             recalcAver = true;
 
             m_lockValue = new object();
+
+            m_bLastValue_TM_Gen = false;
 
             m_valuesMins = new valuesTEC [21];
             m_valuesHours = new valuesTEC [24];
@@ -352,7 +357,6 @@ namespace StatisticCommon
                 states.Add((int)StatesMachine.CurrentTimeView);
             else
                 ;
-            states.Add((int)StatesMachine.LastValue_TM_Gen);
 
             //??? а где AISKUE+SOTIASSO
             if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
@@ -372,6 +376,11 @@ namespace StatisticCommon
                     states.Add((int)StatesMachine.CurrentMins_TM);
                 else
                     ;
+
+            if (m_bLastValue_TM_Gen == true)
+                states.Add((int)StatesMachine.LastValue_TM_Gen);
+            else
+                ;
 
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);
@@ -919,6 +928,24 @@ namespace StatisticCommon
             return iRes;
         }
 
+        private string getNameInterval () {
+            string strRes = string.Empty;
+            switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES])
+            {
+                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                    strRes = @"3";
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                    strRes = @"1";
+                    break;
+                default:
+                    break;
+            }
+
+            return strRes;
+        }
+
         protected override void StateErrors(int state, bool response)
         {
             string reason = string.Empty,
@@ -971,7 +998,7 @@ namespace StatisticCommon
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
-                    reason = @"1-минутных значений";
+                    reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     break;
@@ -1000,12 +1027,12 @@ namespace StatisticCommon
                     reason = @"3-х минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.RetroMin_TM_Gen:
-                    reason = @"M-минутных значений";
+                case (int)StatesMachine.RetroMin_TM_Gen:                    
+                    reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.RetroMins_TM:
-                    reason = @"1-минутных значений";
+                case (int)StatesMachine.RetroMins_TM:                    
+                    reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.PPBRDates:
@@ -1065,26 +1092,37 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.Hours_Fact:
-                    //"По текущему часу значений не найдено!"
-                    //"За текущий час не получены некоторые получасовые значения!"
+                    if (m_markWarning.IsMarked ((int)INDEX_WARNING.LAST_HOUR) == true)
+                        reason = @"По текущему часу значений не найдено";
+                    else
+                        if (m_markWarning.IsMarked ((int)INDEX_WARNING.LAST_HOURHALF) == true)
+                            reason = @"За текущий час не получены некоторые получасовые значения";
+                        else
+                            ;
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                 case (int)StatesMachine.CurrentMins_TM:
+                    if (m_markWarning.IsMarked ((int)INDEX_WARNING.LAST_MIN) == true)
+                        reason = @"По текущему минутному интервалу значений не найдено";
+                    else
+                        ;
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
-                    reason = @"текущих значений (генерация)";
-                    waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
+                    reason = @"Нет значений СОТИАССО (генерация) по одному из ТГ или значения устарели";
                     break;
                 default:
                     break;
             }
 
+            waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
+
             msg = m_tec.name_shr;
 
+            msg += @". " + reason + ".";
             if (waiting.Equals(string.Empty) == true)
-                msg += ". Предупреждение " + reason + ". " + waiting + ".";
+                msg += @" " + waiting + ".";
             else
-                msg += ". Предупреждение " + reason + ".";
+                ;
 
             if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
                 WarningReport(msg);
@@ -1128,7 +1166,7 @@ namespace StatisticCommon
                     GetMinsFactRequest(lastHour);
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
-                    msg = @"1-минутных значений";
+                    msg = getNameInterval () + @"-минутных значений";
                     GetMinsTMRequest(lastHour);
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
@@ -1165,7 +1203,7 @@ namespace StatisticCommon
                     GetMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
                     break;
                 case (int)StatesMachine.RetroMins_TM:
-                    msg = @"1-минутных значений";
+                    msg = getNameInterval () + @"-минутных значений";
                     GetMinsTMRequest(lastHour);
                     break;
                 case (int)StatesMachine.PPBRDates:
@@ -1492,7 +1530,10 @@ namespace StatisticCommon
                         states.Add((int)StatesMachine.CurrentMins_TM);
                     else
                         ;
-            states.Add((int)StatesMachine.LastValue_TM_Gen);
+            if (m_bLastValue_TM_Gen == true)
+                states.Add((int)StatesMachine.LastValue_TM_Gen);
+            else
+                ;
             states.Add((int)StatesMachine.LastMinutes_TM);
             states.Add((int)StatesMachine.PPBRValues);
             states.Add((int)StatesMachine.AdminValues);

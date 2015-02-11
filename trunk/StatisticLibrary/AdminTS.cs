@@ -1031,7 +1031,7 @@ namespace StatisticCommon
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
 
-        private int getCurrentHour (DateTime dt) {
+        private int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
             int iRes = -1;
 
             if (dt < serverTime.Date)
@@ -1046,16 +1046,27 @@ namespace StatisticCommon
                 }
             else
                 if (dt == serverTime.Date)
-                    iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1; //Возможность изменять рекомендации за тек./час
+                    if (type == CONN_SETT_TYPE.ADMIN)
+                        //Возможность изменять рекомендации за тек./час
+                        iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1;
+                    else
+                        if (type == CONN_SETT_TYPE.PBR)
+                            iRes = serverTime.Hour;
+                        else
+                            ;
                 else
                     if (dt > serverTime.Date)
                         iRes = 0;
                     else
                         ;
 
-            //Возможность изменять рекомендации за пред./час
-            if (iRes > 0)
-                iRes--;
+            //Толко для "рекомендаций"
+            if (type == CONN_SETT_TYPE.ADMIN)
+                //Возможность изменять рекомендации за пред./час
+                if (iRes > 0)
+                    iRes--;
+                else
+                    ;
             else
                 ;
 
@@ -1070,7 +1081,7 @@ namespace StatisticCommon
             int offset = -1
                 , currentHour = -1;
 
-            currentHour = getCurrentHour(date);
+            currentHour = getCurrentHour(date, CONN_SETT_TYPE.ADMIN);
             if (currentHour < 0)
                 //Недопустимая ситуация
                 return resQuery;
@@ -1261,7 +1272,7 @@ namespace StatisticCommon
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
             date = date.Date;
-            int currentHour = getCurrentHour (date);
+            int currentHour = getCurrentHour (date, CONN_SETT_TYPE.PBR);
 
             for (int i = currentHour; i < 24; i++)
             {
