@@ -1855,6 +1855,7 @@ namespace StatisticCommon
                     else
                         ;
 
+                    m_dictValuesTG[tg.m_id].m_bPowerMinutesRecieved = false;
                     for (int i = 0; i < m_dictValuesTG[tg.m_id].m_powerMinutes.Length; i++)
                     {
                         m_dictValuesTG[tg.m_id].m_powerMinutes[i] = -1; //Признак НЕполучения данных
@@ -4678,6 +4679,9 @@ namespace StatisticCommon
                                 min ++;
                                 m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min] = val;
                                 m_valuesMins [min].valuesFact += val;
+
+                                //Признак получения значения хотя бы за один интервал
+                                if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
 
                                 cntRecievedValues [min] ++;
                             }
