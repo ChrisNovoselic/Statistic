@@ -474,10 +474,15 @@ namespace Statistic
             if (!(obj is BarItem) && !(obj is LineItem))
                 //Выход, если объект не "требуемого" типа
                 return true;
-            
-            if (m_tecView.lastMin <= index + 1)
-                //Выход, если выбранный объект находится "в будущем"
-                return true;
+
+            if (m_tecView.currHour == true)
+                if (!(m_tecView.lastMin > index + 1))
+                    //Выход, если выбранный объект находится "в будущем"
+                    return true;
+                else
+                    ;
+            else
+                ;
 
             if (found == true)
             {
@@ -490,10 +495,11 @@ namespace Statistic
                     m_tecView.GetRetroMinTMGen ();
                     m_pnlQuickData.ShowFactValues();
                     //m_tecView.recalcAver = true;
-                    m_tecView.lastMin = prevLastMin;
+                    //???Отработка запроса происходит при восстановленном значении...
+                    //m_tecView.lastMin = prevLastMin;
 
                     if (m_tecView.currHour == false)
-                        setRetroTickTime(m_tecView.lastHour, (index + 1) * 3);
+                        setRetroTickTime(m_tecView.lastHour, (index + 1) * m_tecView.GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES));
                     else
                         ;
                 }

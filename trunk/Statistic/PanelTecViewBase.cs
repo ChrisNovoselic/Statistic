@@ -1067,7 +1067,8 @@ namespace Statistic
 
                 NewDateRefresh();
 
-                setRetroTickTime(m_tecView.lastHour, (m_tecView.lastMin - 1) * 3);
+                //setRetroTickTime(m_tecView.lastHour, (m_tecView.lastMin - 1) * m_tecView.GetIntervalOfTypeSourceData (TG.ID_TIME.MINUTES));
+                setRetroTickTime(m_tecView.lastHour, 60);
             }
             else
                 update = true;

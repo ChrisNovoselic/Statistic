@@ -629,16 +629,16 @@ namespace StatisticCommon
             return @"SELECT [ID], AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
                                     + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
                                     + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                        + @" AND [Value] > 1"
                                         //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
                                         + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                     + @" GROUP BY [ID]";
         }
 
-        public string minTMRequest(DateTime usingDate, int h, int m, string sensors)
+        public string minTMRequest(DateTime usingDate, int h, int m, string sensors, int interval)
         {
-            int interval = 3
-                , hour= -1, min = -1;
+            int hour= -1, min = -1;
 
             if (h == 24)
                 hour = 23;
@@ -741,6 +741,7 @@ namespace StatisticCommon
 		                        + @", DATEADD (MINUTE, - DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) % " + interval + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [last_changed_at]"
 	                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
                             + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                + @" AND [Value] > 1"
 		                        //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                      + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
@@ -894,6 +895,7 @@ namespace StatisticCommon
                                     + @", DATEADD (MINUTE, - DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) % " + interval + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [last_changed_at]"
                                 + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
                                 + @" WHERE [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                    + @" AND [Value] > 1"
 					                //--ѕривести дату/врем€ к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt1.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt2.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
