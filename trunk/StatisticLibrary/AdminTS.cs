@@ -80,28 +80,28 @@ namespace StatisticCommon
         }
 
         public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_AVALIABLE, ADMIN_ENABLED, ADMIN_AVALIABLE };
-        protected HMark m_MarkSavedValues;
+        protected HMark m_markSavedValues;
 
         public AdminTS(bool[] arMarkSavePPBRValues)
             : base()
         {
-            m_MarkSavedValues = new HMark();
+            m_markSavedValues = new HMark();
 
             if (!(arMarkSavePPBRValues == null))
             {
-                if ((arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) && (arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_ENABLED] == true))
-                    m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED);
+                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_ENABLED)
+                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_ENABLED]);
                 else ;
 
-                if ((arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) && (arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE] == true))
-                    m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE);
+                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE)
+                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE] == true);
                 else ;
             }
             else
                 ;
 
-            m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED);
-            m_MarkSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE);
+            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED);
+            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE);
         }
 
         protected override void Initialize () {
@@ -134,14 +134,14 @@ namespace StatisticCommon
 
                     states.Add((int)StatesMachine.CurrentTime);
 
-                    if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
                     {
                         states.Add((int)StatesMachine.AdminDates);
                         states.Add((int)StatesMachine.SaveAdminValues);
                     }
                     else ;
 
-                    if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
                     {
                         states.Add((int)StatesMachine.PPBRDates);
                         states.Add((int)StatesMachine.SavePPBRValues);
@@ -361,7 +361,7 @@ namespace StatisticCommon
         /// </summary>
         private void protectSavedPPBRValues()
         {
-            if (m_MarkSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_MarkSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+            if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
         }
         
         public virtual void GetRDGValues (TYPE_FIELDS mode, int indx) {
@@ -417,8 +417,14 @@ namespace StatisticCommon
 
                 m_typeFields = (TYPE_FIELDS)mode;
 
-                states.Add((int)StatesMachine.PPBRValues);
-                states.Add((int)StatesMachine.AdminValues);
+                if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                    states.Add((int)StatesMachine.PPBRValues);
+                else
+                    ;
+                if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    states.Add((int)StatesMachine.AdminValues);
+                else
+                    ;
 
                 try
                 {
@@ -566,9 +572,14 @@ namespace StatisticCommon
             //int offsetPBR_NUMBER = m_tableValuesResponse.Columns.IndexOf ("PBR_NUMBER");
             //if (offsetPBR_NUMBER > 0) offsetPBR_NUMBER = 0; else ;
 
-            int offsetPBR = m_tableValuesResponse.Columns.IndexOf("PBR")
+            int offsetPBR = -1
                 , offsetPBRNumber = -1
                 , offsetDATE_ADMIN = -1;
+            if (! (m_tableValuesResponse == null))
+                offsetPBR = m_tableValuesResponse.Columns.IndexOf("PBR");
+            else
+                ;
+
             if (offsetPBR > 0) offsetPBR = 0; else ;
 
             //Определить признак даты переходы сезонов (заранее, не при итерации в цикле) - копия 'TecView'

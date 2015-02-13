@@ -147,7 +147,8 @@ namespace trans_gtp
                 //} else {
                 //}
 
-                if (i == (int)CONN_SETT_TYPE.DEST) {
+                if ((i == (int)CONN_SETT_TYPE.DEST) && (arTypeConfigDB[(int)CONN_SETT_TYPE.DEST] == TYPE_DATABASE_CFG.CFG_190))
+                {
                     string strTECParametersDest = m_sFileINI.GetValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
