@@ -383,6 +383,10 @@ namespace Statistic
 
         private void fTimerAppReset(object obj)
         {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture = 
+                ProgramBase.ss_MainCultureInfo;
+
             if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
             {
                 int err = -1;
@@ -850,6 +854,10 @@ namespace Statistic
         }
 
         private void MainForm_FormLoad(object sender, EventArgs e) {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                ProgramBase.ss_MainCultureInfo; //ru-Ru
+
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //m_fileConnSett = new FIleConnSett(new string [] {@"connsett", Properties.Settings.Default.Properties[@"connsett"].ToString ()});
             //m_fileConnSett = new FIleConnSett(Properties.Settings.Default.Properties [@"connsett"].DefaultValue.ToString (), FIleConnSett.MODE.SETTINGS);

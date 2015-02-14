@@ -88,6 +88,9 @@ namespace StatisticCommon
             , serverTime
             , m_curDate;
 
+        //Обрабатывать ли данные?
+        public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
+
         protected volatile bool using_date;
         public bool m_ignore_date;
         /// <summary>
@@ -169,6 +172,14 @@ namespace StatisticCommon
             }
         }
 
+        private void initQueries(HMark markQueries)
+        {
+            if (m_markQueries == null)
+                m_markQueries = markQueries;
+            else
+                m_markQueries.Add(markQueries);
+        }
+        
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
         {
             this.m_list_tec = new List<TEC> ();
@@ -179,7 +190,8 @@ namespace StatisticCommon
                 //else ;
             }
 
-            initTEC(markQueries);
+            initQueries(markQueries);
+            initTEC();
         }
 
         public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, TYPE_DATABASE_CFG typeCfg, HMark markQueries, bool bIgnoreTECInUse)
@@ -214,10 +226,11 @@ namespace StatisticCommon
             else
                 this.m_list_tec = new List <TEC> ();
 
-            initTEC(markQueries);
+            initQueries(markQueries);
+            initTEC();
         }
 
-        private void initTEC(HMark markQueries)
+        private void initTEC()
         {
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
@@ -225,11 +238,6 @@ namespace StatisticCommon
             foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
-
-                if (t.m_markQueries == null)
-                    t.m_markQueries = markQueries;
-                else
-                    t.m_markQueries.Add (markQueries);
 
                 if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
@@ -279,22 +287,29 @@ namespace StatisticCommon
         public override void StartDbInterfaces()
         {
             if (!(m_list_tec == null))
+            {
+                bool bInitSensorsStrings = (m_markQueries.IsMarked((int)CONN_SETT_TYPE.DATA_AISKUE) == true)
+                                            || (m_markQueries.IsMarked((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true)
+                                            || (m_markQueries.IsMarked((int)CONN_SETT_TYPE.MTERM) == true);
                 foreach (TEC t in m_list_tec)
+                {
                     if (!(t.connSetts == null))
                     {
                         CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
 
-                        if (m_dictIdListeners.ContainsKey(t.m_id) == false) {
+                        if (m_dictIdListeners.ContainsKey(t.m_id) == false)
+                        {
                             m_dictIdListeners.Add(t.m_id, new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE]);
 
                             for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                                 m_dictIdListeners[t.m_id][(int)i] = -1;
-                        } else
+                        }
+                        else
                             ;
 
                         for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                         {
-                            if ((!(t.connSetts[(int)i] == null)) && (t.m_markQueries.IsMarked ((int)i) == true))
+                            if ((!(t.connSetts[(int)i] == null)) && (m_markQueries.IsMarked((int)i) == true))
                             {
                                 if (m_dictIdListeners[t.m_id][(int)i] < 0)
                                     ;
@@ -307,8 +322,7 @@ namespace StatisticCommon
                                 ;
                         }
 
-                        if (((t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_AISKUE) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true) || (t.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.MTERM) == true)) &&
-                            (t.m_bSensorsStrings == false))
+                        if ((bInitSensorsStrings == true) && (t.m_bSensorsStrings == false))
                             t.InitSensorsTEC();
                         else
                             ;
@@ -316,6 +330,8 @@ namespace StatisticCommon
                     else
                         //Вообще нельзя что-либо инициализировать
                         Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - connSetts == null ...", Logging.INDEX_MESSAGE.NOT_SET);
+                } //foreach...
+            }
             else
                 //Вообще нельзя что-либо инициализировать
                 Logging.Logg().Error(@"HAdmin::StartDbInterfaces () - m_list_tec == null ...", Logging.INDEX_MESSAGE.NOT_SET);

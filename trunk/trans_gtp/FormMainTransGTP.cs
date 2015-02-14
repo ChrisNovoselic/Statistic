@@ -112,16 +112,25 @@ namespace trans_gtp
 
             m_sFileINI.Add(@"ТЭЦПараметрыНазначение", @"{}");
 
+            HMark markQueries = new HMark();
+            markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
+            markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, ОпросАдминЗначенияToolStripMenuItem.Checked);
+
             int idListener = -1;
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                m_arAdmin[i] = new AdminTS_KomDisp(new bool[] { false, true });
+                bool bPPBRSavedValues = false;
+                if (i == (Int16)CONN_SETT_TYPE.DEST)
+                    bPPBRSavedValues = СохранППБРToolStripMenuItem.Checked;
+                else
+                    ;
+                m_arAdmin[i] = new AdminTS_KomDisp(new bool[] { false, bPPBRSavedValues });
                 idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], m_markQueries, true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], markQueries, true);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

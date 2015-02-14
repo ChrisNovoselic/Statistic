@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,10 @@ namespace Statistic
     {
         public HPanelTableLayout()
         {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                ProgramBase.ss_MainCultureInfo;
+
             InitializeComponent();
         }
 

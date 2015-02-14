@@ -47,7 +47,7 @@ namespace StatisticTrans
 
         protected CheckBox m_checkboxModeMashine;
 
-        protected HMark m_markQueries;
+        //protected HMark m_markQueries;
 
         protected bool m_bTransAuto {
             get
@@ -94,10 +94,13 @@ namespace StatisticTrans
         public FormMainTrans(int id_app, string[] par, string[] val)
         //public FormMainTrans(int id_app, string []par, string [] val)
         {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                ProgramBase.ss_MainCultureInfo; //ru-Ru
+
             InitializeComponent();
 
             m_report = new HReports();
-            m_markQueries = new HMark();
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             Logging.DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(GetINIParametersOfKey);
@@ -143,13 +146,11 @@ namespace StatisticTrans
             //}
             //else { }
 
-            Logging.ReLogg (Logging.LOG_MODE.FILE_EXE);
-
             m_sFileINI.Add(@"ОкноНазначение", @"Конвертер (...)");
             m_sFileINI.Add(@"ID_TECNotUse", string.Empty);
 
-            m_sFileINI.Add(@"ОпросСохранениеППБР", false.ToString());
-            m_sFileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString());
+            m_sFileINI.Add(@"ОпросСохранениеППБР", false.ToString() + @"," + false.ToString());
+            m_sFileINI.Add(@"ОпросСохранениеАдминЗнач", false.ToString() + @"," + false.ToString());
 
             keyPar = @"Season DateTime";
             m_sFileINI.Add(keyPar, @"26.10.2014 02:00");
@@ -158,6 +159,9 @@ namespace StatisticTrans
 
             keyPar = @"SetPBRQuery LogPBRNumber";
             m_sFileINI.Add(keyPar, false.ToString ());
+
+            keyPar = @"SetPBRQuery LogQuery";
+            m_sFileINI.Add(keyPar, false.ToString ());            
 
             this.Text =
             this.notifyIconMain.Text = @"Статистика: " + m_sFileINI.GetValueOfKey(@"ОкноНазначение");
@@ -172,28 +176,41 @@ namespace StatisticTrans
                     ;
             }
 
-            string strChecked = string.Empty;
-            bool bRes = false
-                , bChecked = false;
-            strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеППБР");
-            if (bool.TryParse(strChecked, out bChecked) == true)
-                опросСохранППБРToolStripMenuItem.Checked = bChecked;
-            else
-                опросСохранППБРToolStripMenuItem.Checked = false;
+            try
+            {
+                string strChecked = string.Empty;
+                bool bRes = false
+                    , bChecked = false;
+                strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеППБР");
+                if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
+                    ОпросППБРToolStripMenuItem.Checked = bChecked;
+                else
+                    ОпросППБРToolStripMenuItem.Checked = false;
+                if (bool.TryParse(strChecked.Split(',')[1], out bChecked) == true)
+                    СохранППБРToolStripMenuItem.Checked = bChecked;
+                else
+                    СохранППБРToolStripMenuItem.Checked = false;
 
-            bRes = 
-            bChecked = false;
-            strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеАдминЗнач");
-            if (bool.TryParse(strChecked, out bChecked) == true)
-                опросСохранАдминЗначенияToolStripMenuItem.Checked = bChecked;
-            else
-                опросСохранАдминЗначенияToolStripMenuItem.Checked = false;
+                bRes =
+                bChecked =
+                    false;
+                strChecked = m_sFileINI.GetValueOfKey(@"ОпросСохранениеАдминЗнач");
+                if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
+                    ОпросАдминЗначенияToolStripMenuItem.Checked = bChecked;
+                else
+                    ОпросАдминЗначенияToolStripMenuItem.Checked = false;
+                if (bool.TryParse(strChecked.Split(',')[1], out bChecked) == true)
+                    СохранАдминЗначенияToolStripMenuItem.Checked = bChecked;
+                else
+                    СохранАдминЗначенияToolStripMenuItem.Checked = false;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(@"FormMainTrans::нет возможности установить перечень опрашиваемых/сохранямых параметров...");
+            }
 
-            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, опросСохранППБРToolStripMenuItem.Checked);
-            m_markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, опросСохранАдминЗначенияToolStripMenuItem.Checked);
-
-            if ((m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.PBR) == false) &&
-                (m_markQueries.IsMarked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN) == false))
+            if ((ОпросАдминЗначенияToolStripMenuItem.Checked == false) &&
+                (ОпросППБРToolStripMenuItem.Checked == false))
             {
                 throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
             }

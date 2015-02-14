@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Data;
@@ -9,6 +10,13 @@ namespace StatisticCommon
 {
     public abstract class PanelStatistic : TableLayoutPanel
     {
+        public PanelStatistic ()
+        {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                ProgramBase.ss_MainCultureInfo;
+        }
+        
         public abstract void Start();
         public abstract void Stop();
 

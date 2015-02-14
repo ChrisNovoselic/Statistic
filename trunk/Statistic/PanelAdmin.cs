@@ -457,29 +457,29 @@ namespace Statistic
             m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
-        private string SetNumberSeparator(string current_str)
-        {
-            if (current_str.IndexOf(".") > 0)
-            {
-                if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ".")
-                    return current_str.Replace(".", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
-                else
-                    ;
-            }
-            else
-            {
-                if (current_str.IndexOf(",") > 0)
-                {
-                    if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ",")
-                        return current_str.Replace(",", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
-            return current_str;
-        }
+        //private string SetNumberSeparator(string current_str)
+        //{
+        //    if (current_str.IndexOf(".") > 0)
+        //    {
+        //        if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ".")
+        //            return current_str.Replace(".", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
+        //        else
+        //            ;
+        //    }
+        //    else
+        //    {
+        //        if (current_str.IndexOf(",") > 0)
+        //        {
+        //            if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ",")
+        //                return current_str.Replace(",", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
+        //            else
+        //                ;
+        //        }
+        //        else
+        //            ;
+        //    }
+        //    return current_str;
+        //}
 
         public bool MayToClose()
         {

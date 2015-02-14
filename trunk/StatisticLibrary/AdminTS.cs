@@ -382,8 +382,12 @@ namespace StatisticCommon
                 m_typeFields = mode;
 
                 states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.PPBRValues);
-                states.Add((int)StatesMachine.AdminValues);
+                if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                    states.Add((int)StatesMachine.PPBRValues);
+                else ;
+                if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    states.Add((int)StatesMachine.AdminValues);
+                else ;
 
                 try
                 {
@@ -417,14 +421,13 @@ namespace StatisticCommon
 
                 m_typeFields = (TYPE_FIELDS)mode;
 
-                if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                //???Опрос обязателен...
+                if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
                     states.Add((int)StatesMachine.PPBRValues);
-                else
-                    ;
-                if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                else ;
+                if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                     states.Add((int)StatesMachine.AdminValues);
-                else
-                    ;
+                else ;
 
                 try
                 {
@@ -541,13 +544,6 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected int GetAdminValuesResponseWithoutAdminValues(DateTime date)
-        {
-            int iRes = -1;
-
-            return iRes;
-        }
-
         protected virtual int GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
             DataTable table = null;
@@ -556,16 +552,18 @@ namespace StatisticCommon
             //Массив индексов таблиц, 1-ый эл-т таблицы - индекс таблицы с БОЛЬШИМ кол-м строк
             //1-ый эл-т таблицы - индекс таблицы с МЕНЬШИМ кол-м строк
             //если кол-во строк РАВНЫ, то 1-ый эл-т индекс ППБР, 2-ой АДМИН_ВАЛ
-            int [] arIndexTables = {0, 1},
-                arFieldsCount = {-1, -1};
+            int[] arIndexTables = { 0, 1 },
+                arFieldsCount = { -1, -1 };
             bool bSeason = false;
 
-            if (tableAdminValuesResponse == null) {
-                tableAdminValuesResponse = new DataTable ();
+            if (tableAdminValuesResponse == null)
+            {
+                tableAdminValuesResponse = new DataTable();
 
                 //for (i = 0; i < m_tableValuesResponse.Rows.Count; i ++)
                 //    tableAdminValuesResponse.Rows.Add (new object [] {});
-            } else { }
+            }
+            else { }
 
             DataTable[] arTable = { m_tableValuesResponse, tableAdminValuesResponse };
 
@@ -575,7 +573,7 @@ namespace StatisticCommon
             int offsetPBR = -1
                 , offsetPBRNumber = -1
                 , offsetDATE_ADMIN = -1;
-            if (! (m_tableValuesResponse == null))
+            if (!(m_tableValuesResponse == null))
                 offsetPBR = m_tableValuesResponse.Columns.IndexOf("PBR");
             else
                 ;
@@ -583,13 +581,14 @@ namespace StatisticCommon
             if (offsetPBR > 0) offsetPBR = 0; else ;
 
             //Определить признак даты переходы сезонов (заранее, не при итерации в цикле) - копия 'TecView'
-            if (HAdmin.SeasonDateTime.Date.CompareTo (date.Date) == 0)
+            if (HAdmin.SeasonDateTime.Date.CompareTo(date.Date) == 0)
                 bSeason = true;
             else
                 ;
 
             //Удаление столбцов 'ID_COMPONENT'
-            for (i = 0; i < arTable.Length; i++) {
+            for (i = 0; i < arTable.Length; i++)
+            {
                 /*
                 for (j = 0; j < arTable[i].Columns.Count; j++)
                 {
@@ -611,29 +610,33 @@ namespace StatisticCommon
                     ;
             }
 
-            if (arTable[0].Rows.Count < arTable[1].Rows.Count) {
+            if (arTable[0].Rows.Count < arTable[1].Rows.Count)
+            {
                 arIndexTables[0] = 1;
                 arIndexTables[1] = 0;
             }
-            else {
+            else
+            {
             }
 
-            for (i = 0; i < arTable.Length; i++) {
-                arFieldsCount [i] = arTable [i].Columns.Count;
+            for (i = 0; i < arTable.Length; i++)
+            {
+                arFieldsCount[i] = arTable[i].Columns.Count;
             }
 
-            table = arTable[arIndexTables [0]].Copy();
-            table.Merge(arTable[arIndexTables[1]].Clone (), false);
+            table = arTable[arIndexTables[0]].Copy();
+            table.Merge(arTable[arIndexTables[1]].Clone(), false);
 
             for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
             {
                 for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
                 {
                     //Сравниваем дату/время 0 = [DATE_PBR], [DATE_ADMIN]
-                    if (arTable[arIndexTables[0]].Rows[i][0].Equals (arTable[arIndexTables[1]].Rows[j][0])) {
+                    if (arTable[arIndexTables[0]].Rows[i][0].Equals(arTable[arIndexTables[1]].Rows[j][0]))
+                    {
                         for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
                         {
-                            table.Rows [i] [arTable[arIndexTables[1]].Columns [k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
+                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
                         }
 
                         break;
@@ -693,11 +696,11 @@ namespace StatisticCommon
 
                         //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                         //{
-                            j = 0;
-                            if (!(table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/] is DBNull))
-                                m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/];
-                            else
-                                m_curRDGValues[hour - 1].pbr = 0;
+                        j = 0;
+                        if (!(table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/] is DBNull))
+                            m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (j + 1) /*+ offsetPBR_NUMBER*/ /*+ offsetPBR*/ /*"PBR"*/];
+                        else
+                            m_curRDGValues[hour - 1].pbr = 0;
                         //}
 
                         j = 1;
@@ -760,9 +763,10 @@ namespace StatisticCommon
                                 if (arSeasonRows.Length > 0)
                                 {
                                     int h = -1;
-                                    foreach (DataRow r in arSeasonRows) {
+                                    foreach (DataRow r in arSeasonRows)
+                                    {
                                         h = iDate.Hour;
-                                        GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString ()), ref h);
+                                        GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref h);
 
                                         m_curRDGValues[h - 1].recomendation = (byte)r[@"FC"];
 
@@ -791,7 +795,7 @@ namespace StatisticCommon
                         }
 
                         if ((bSeason == false) ||
-                            ((! (hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)))
+                            ((!(hour == HAdmin.SeasonDateTime.Hour)) && (bSeason == true)))
                             if (!(offsetDATE_ADMIN < 0))
                             {
                                 m_curRDGValues[hour - 1].fc = (byte)table.Rows[i][arIndexTables[1] * arFieldsCount[0] + 5] == 1;
@@ -849,9 +853,9 @@ namespace StatisticCommon
 
                 if (hour > 0)
                     if (!(offsetPBRNumber < 0))
-                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString ();
+                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i]["PBR_NUMBER"].ToString();
                     else
-                        m_curRDGValues[hour - 1].pbr_number = getNamePBRNumber (hour - 1);
+                        m_curRDGValues[hour - 1].pbr_number = getNamePBRNumber(hour - 1);
                 else
                     ;
 
@@ -914,13 +918,13 @@ namespace StatisticCommon
             {
                 TEC tec = allTECComponents[indxTECComponents].tec;
                 int indx = -1;
-                if (tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
+                if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
                     indx = (int)CONN_SETT_TYPE.ADMIN;
-                else if (tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.PBR) == true)
+                else if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.PBR) == true)
                         indx = (int)CONN_SETT_TYPE.PBR;
-                        else
-                            ;
-                
+                    else
+                        ;
+
                 if (! (indx < 0))
                     GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(tec.connSetts[indx].port), m_dictIdListeners[tec.m_id][indx]);
                 else
@@ -1678,7 +1682,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
-                    if ((indxTECComponents < allTECComponents.Count) && (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
+                    if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
                         GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, m_typeFields);
                     else
                         ; //result = false;
@@ -1737,14 +1741,14 @@ namespace StatisticCommon
                     else
                         ;
                     strRep = @"Получение списка сохранённых часовых значений.";
-                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                         GetAdminDatesRequest(m_curDate);
                     else
                         ;
                     break;
                 case (int)StatesMachine.SaveAdminValues:
                     strRep = @"Сохранение административных данных.";
-                    if ((indxTECComponents < allTECComponents.Count) && (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true))
+                    if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true))
                         SetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
@@ -1830,7 +1834,7 @@ namespace StatisticCommon
                             ;
                         break;
                     case (int)StatesMachine.AdminDates:
-                        if (allTECComponents [indxTECComponents].tec.m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
+                        if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
                             iRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
                         else {
                             error = false;
@@ -1898,18 +1902,30 @@ namespace StatisticCommon
                     result = GetPPBRValuesResponse(table, m_curDate);
                     if (result == 0)
                     {
+                        if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == false)
+                        {
+                            result = GetAdminValuesResponse(null, m_curDate);
+
+                            if (result == 0)
+                            {
+                                readyData(m_prevDate);
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            ;                        
                     }
                     else
                         ;
                     break;
                 case (int)StatesMachine.AdminValues:
-                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                         result = GetAdminValuesResponse(table, m_curDate);
                     else {
                         table = null;
 
-                        if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
-                            //result = GetAdminValuesResponseWithoutAdminValues(m_curDate);
+                        if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
                             result = GetAdminValuesResponse(null, m_curDate);
                         else
                             result = -1;
@@ -1968,7 +1984,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminDates:
                     ClearAdminDates();
-                    if (allTECComponents[indxTECComponents].tec.m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                         result = GetAdminDatesResponse(table, m_curDate);
                     else
                         result = 0;

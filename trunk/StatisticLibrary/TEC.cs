@@ -51,9 +51,7 @@ namespace StatisticCommon
 
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
 
-        public ConnectionSettings [] connSetts;
-        //Обрабатывать ли данные?
-        public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
+        public ConnectionSettings [] connSetts;        
 
         //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
 

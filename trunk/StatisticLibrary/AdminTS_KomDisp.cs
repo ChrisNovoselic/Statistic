@@ -99,11 +99,12 @@ namespace StatisticCommon
                     //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
                     File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
 
-                    StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
-                    string cont = sr.ReadToEnd().Replace(',', '.');
-                    sr.Close(); sr.Dispose();
-                    StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
-                    sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
+                    ////Для en-US
+                    //StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
+                    //string cont = sr.ReadToEnd().Replace(',', '.');
+                    //sr.Close(); sr.Dispose();
+                    //StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
+                    //sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
 
                     if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
 
@@ -207,7 +208,7 @@ namespace StatisticCommon
 
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                new System.Globalization.CultureInfo (@"en-US");
+                ProgramBase.ss_MainCultureInfo; //new System.Globalization.CultureInfo(@"en-US");
 
             //Определить тип загружаемых значений
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;

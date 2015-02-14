@@ -31,7 +31,7 @@ namespace trans_mt
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mt.ini", false);
+            CreateFormConnectionSettings("connsett_mt.ini", true);
 
             m_sFileINI.Add(@"ТипБДКфгИсточник", @"200");
             m_sFileINI.Add(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
