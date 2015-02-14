@@ -96,6 +96,10 @@ namespace StatisticTransModes
                 //Вариант №2
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = m_arAdmin[indxDB].m_curRDGValues[i].pbr.ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].ToolTipText = m_arAdmin[indxDB].m_curRDGValues[i].pbr_number;
+                if (i > 0)
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + m_arAdmin[indxDB].m_curRDGValues[i - 1].pbr) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
+                else
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues_PBR_0) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmin.ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = m_arAdmin[indxDB].m_curRDGValues[i].pmax.ToString("F2");
             }

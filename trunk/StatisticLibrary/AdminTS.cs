@@ -557,13 +557,12 @@ namespace StatisticCommon
             bool bSeason = false;
 
             if (tableAdminValuesResponse == null)
-            {
                 tableAdminValuesResponse = new DataTable();
+            else ;
 
-                //for (i = 0; i < m_tableValuesResponse.Rows.Count; i ++)
-                //    tableAdminValuesResponse.Rows.Add (new object [] {});
-            }
-            else { }
+            if (m_tableValuesResponse == null)
+                m_tableValuesResponse = new DataTable();
+            else ;
 
             DataTable[] arTable = { m_tableValuesResponse, tableAdminValuesResponse };
 
@@ -588,18 +587,6 @@ namespace StatisticCommon
 
             //׃האכוםטו סעמכבצמג 'ID_COMPONENT'
             for (i = 0; i < arTable.Length; i++)
-            {
-                /*
-                for (j = 0; j < arTable[i].Columns.Count; j++)
-                {
-                    if (arTable[i].Columns [j].ColumnName == "ID_COMPONENT") {
-                        arTable[i].Columns.RemoveAt (j);
-                        break;
-                    }
-                    else
-                        ;
-                }
-                */
                 if (!(arTable[i].Columns.IndexOf("ID_COMPONENT") < 0))
                     try { arTable[i].Columns.Remove("ID_COMPONENT"); }
                     catch (Exception e)
@@ -608,7 +595,6 @@ namespace StatisticCommon
                     }
                 else
                     ;
-            }
 
             if (arTable[0].Rows.Count < arTable[1].Rows.Count)
             {
@@ -745,7 +731,10 @@ namespace StatisticCommon
                         else
                             if (hour == 0)
                             {
-                                m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
+                                if ((arIndexTables[0] * arFieldsCount[1] + 1) < table.Columns.Count)
+                                    m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
+                                else
+                                    m_curRDGValues_PBR_0 = 0F;
 
                                 continue;
                             }
@@ -815,7 +804,7 @@ namespace StatisticCommon
                         else
                             ;
 
-                        if ((!(table.Rows[i]["DATE_PBR"] is System.DBNull)) && (offsetPBR == 0))
+                        if ((offsetPBR == 0) && (!(table.Rows[i]["DATE_PBR"] is System.DBNull)))
                         {
                             //for (j = 0; j < 3 /*4 הכÿ SN???*/; j ++)
                             //{
