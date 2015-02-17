@@ -206,12 +206,21 @@ namespace StatisticCommon
                     Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                     states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.AdminDates);
-                    //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                    states.Add((int)StatesMachine.PPBRDates);
-                    states.Add((int)StatesMachine.ClearAdminValues);
-                    states.Add((int)StatesMachine.ClearPPBRValues);
-                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    {
+                        states.Add((int)StatesMachine.AdminDates);
+                        states.Add((int)StatesMachine.ClearAdminValues);
+                    }
+                    else
+                        ;
+
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    {
+                        states.Add((int)StatesMachine.PPBRDates);
+                        states.Add((int)StatesMachine.ClearPPBRValues);
+                    }
+                    else
+                        ;
 
                     try
                     {
@@ -2342,8 +2351,15 @@ namespace StatisticCommon
                         Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
                         //states.Add((int)StatesMachine.CurrentTime);
-                        states.Add((int)StatesMachine.PPBRValues);
-                        states.Add((int)StatesMachine.AdminValues);
+                        if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                            states.Add((int)StatesMachine.PPBRValues);
+                        else
+                            ;
+
+                        if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                            states.Add((int)StatesMachine.AdminValues);
+                        else
+                            ;
 
                         try
                         {
@@ -2433,8 +2449,14 @@ namespace StatisticCommon
                     using_date = false;
 
                     //states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.PPBRValues);
-                    states.Add((int)StatesMachine.AdminValues);
+                    if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
+                        states.Add((int)StatesMachine.PPBRValues);
+                    else
+                        ;
+                    if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                        states.Add((int)StatesMachine.AdminValues);
+                    else
+                        ;
 
                     try
                     {
