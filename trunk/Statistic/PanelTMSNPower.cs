@@ -236,6 +236,7 @@ namespace Statistic
                 m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1);
 
                 HMark markQueries = new HMark();
+                markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
                 markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
