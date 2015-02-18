@@ -18,15 +18,13 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip
+    public abstract partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip
     {
-        TcpClientAsync m_tcpClient;
-        List<TcpClientAsync> m_listTCPClientUsers;
         Thread m_threadChecked;
-        bool m_bThreadCheckedAllowed;
-        LogParse m_LogParse;
+        protected bool m_bThreadCheckedAllowed;
+        protected LogParse m_LogParse;
 
-        DataTable m_tableUsers
+        protected DataTable m_tableUsers
                     , m_tableRoles;
 
         private DbConnection m_connConfigDB;
@@ -35,12 +33,12 @@ namespace StatisticCommon
 
         int m_prevDatetimeRowIndex;
 
-        private const string list_sorted = @"DESCRIPTION";
-        private const string NameFieldToConnect = "COMPUTER_NAME";
+        protected const string c_list_sorted = @"DESCRIPTION";
+        protected const string c_NameFieldToConnect = "COMPUTER_NAME";
 
         List <TEC> m_listTEC;
 
-        Dictionary <int, int []> m_dicTabVisibleIdItems;
+        protected Dictionary <int, int []> m_dicTabVisibleIdItems;
 
         public FormMainAnalyzer(int idListener, List <TEC> tec)
         {
@@ -82,7 +80,7 @@ namespace StatisticCommon
                 HStatisticUsers.GetRoles(ref m_connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
                 FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
 
-                HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, list_sorted, out m_tableUsers, out err);
+                HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
                 //DbTSQLInterface.CloseConnection (connDB, out err);
@@ -112,15 +110,12 @@ namespace StatisticCommon
             }
         }
 
-        private void ProcChecked()
-        {
-            int i = -1;
-            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
-            {
-                //Проверка активности
-                m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][NameFieldToConnect].ToString() + ";" + i, 6666);
-            }
-        }
+        protected abstract void ProcChecked();
+
+        /// <summary>
+        /// Отключение от клиента (активного пользователя)
+        /// </summary>
+        protected abstract void Disconnect();
 
         private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -134,19 +129,8 @@ namespace StatisticCommon
             Thread_ProcCheckedStop ();
         }
 
-        private void Thread_ProcCheckedStart()
-        {
-            m_listTCPClientUsers = new List<TcpClientAsync>();
-            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
-            {
-                //Проверка активности
-                m_listTCPClientUsers.Add(new TcpClientAsync());
-                m_listTCPClientUsers[i].delegateConnect = ConnectToChecked;
-                m_listTCPClientUsers[i].delegateErrorConnect = ErrorConnect;
-                m_listTCPClientUsers[i].delegateRead = Read;
-                //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
-            }
-            
+        protected virtual void Thread_ProcCheckedStart()
+        {            
             m_bThreadCheckedAllowed = true;
 
             m_threadChecked = new Thread(Thread_ProcChecked);
@@ -155,7 +139,7 @@ namespace StatisticCommon
             m_threadChecked.Start();
         }
 
-        private void Thread_ProcCheckedStop ()
+        protected virtual void Thread_ProcCheckedStop ()
         {
             m_bThreadCheckedAllowed = false;
             
@@ -167,33 +151,15 @@ namespace StatisticCommon
                 else
                     ;
             } else
-                ;
-
-            if (! (m_listTCPClientUsers == null))
-                m_listTCPClientUsers.Clear ();
-            else
-                ;
+                ;            
         }
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
             Close ();
-        }
+        }        
 
-        private void Disconnect ()
-        {
-            if (!(m_tcpClient == null))
-            {
-                m_tcpClient.Write(@"DISCONNECT");
-                m_tcpClient.Disconnect();
-
-                m_tcpClient = null;
-            }
-            else
-                ;
-        }
-
-        private void SetModeVisibleTabs (int mode)
+        protected void SetModeVisibleTabs (int mode)
         {
             //Состояние эл-ов упр-я 'CheckBox' (ТЭЦ, ГТП, ТГ, ЩУ)
             for (int i = 0; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
@@ -203,118 +169,9 @@ namespace StatisticCommon
                     m_arCheckBoxMode[i].CheckState = CheckState.Unchecked;
         }
 
-        private void dgvClient_SelectionChanged(object sender, EventArgs e)
-        {
-            if (!(m_tcpClient == null))
-            {
-                Disconnect ();
-            }
-            else
-                ;
+        protected abstract void dgvClient_SelectionChanged(object sender, EventArgs e);        
 
-            if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
-            {
-                bool bUpdate = true;
-                if (tabControlAnalyzer.SelectedIndex == 0)
-                    if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
-                        if (e == null)
-                            bUpdate = false;
-                        else
-                            ;
-                    else
-                        ;
-                else
-                    ;
-
-                if (bUpdate == true)
-                {
-                    m_tcpClient = new TcpClientAsync();
-                    m_tcpClient.delegateRead = Read;
-
-                    switch (tabControlAnalyzer.SelectedIndex)
-                    {
-                        case 0:
-                            //Останов потока разбора лог-файла пред. пользователя
-                            m_LogParse.Stop();
-
-                            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                            //Очистить элементы управления с данными от пред. лог-файла
-                            if (IsHandleCreated/*InvokeRequired*/ == true)
-                            {
-                                BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
-                                BeginInvoke(new DelegateFunc(TabLoggingClearText));
-                            }
-                            else
-                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                            //Если активна 0-я вкладка (лог-файл)
-                            m_tcpClient.delegateConnect = ConnectToLogRead;
-                            break;
-                        case 1:
-                            //Очистить элементы управления с данными от пред. пользователя
-                            if (IsHandleCreated/*InvokeRequired*/ == true)
-                            {
-                                BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
-                                BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
-                            }
-                            else
-                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                            //Если активна 1-я вкладка (вкладки)
-                            m_tcpClient.delegateConnect = ConnectToTab;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    m_tcpClient.delegateErrorConnect = ErrorConnect;
-
-                    //m_tcpClient.Connect("localhost", 6666);
-                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
-                }
-                else
-                    ; //Обновлять нет необходимости
-            }
-            else
-                ;
-        }
-
-        private int getIndexTcpClient (TcpClient obj)
-        {
-            int i = -1;
-            for (i = 0; i < m_listTCPClientUsers.Count; i++)
-            {
-                if (m_listTCPClientUsers[i].Equals (obj) == true)
-                    break;
-                else
-                    ;
-            }
-
-            return i;
-        }
-
-        private void ConnectToChecked(TcpClient res, string data)
-        {
-            int indxTcpClient = getIndexTcpClient (res);
-
-            if (indxTcpClient < m_listTCPClientUsers.Count)
-                m_listTCPClientUsers[indxTcpClient].Write(@"INIT=?");
-            else
-                ;
-        }
-
-        private void ConnectToLogRead(TcpClient res, string data)
-        {
-            m_tcpClient.Write("LOG_LOCK=?");
-        }
-
-        private void ConnectToTab(TcpClient res, string data)
-        {
-            m_tcpClient.Write("TAB_VISIBLE=?");
-        }
-
-        private void ErrorConnect(string ValueToCreate)
+        protected void ErrorConnect(string ValueToCreate)
         {
             int indx = Convert.ToInt32 (ValueToCreate.Split(';')[1]);
 
@@ -354,9 +211,9 @@ namespace StatisticCommon
                 ;
         }
 
-        void TabLoggingClearDatetimeStart() { dgvDatetimeStart.Rows.Clear(); }
+        protected void TabLoggingClearDatetimeStart() { dgvDatetimeStart.Rows.Clear(); }
 
-        void TabLoggingClearText() { textBoxLog.Clear (); }
+        protected void TabLoggingClearText() { textBoxLog.Clear(); }
 
         void TabLoggingPositionText()
         {
@@ -399,13 +256,13 @@ namespace StatisticCommon
                 ;
         }
 
-        private void TabVisibliesClearChecked ()
+        protected void TabVisibliesClearChecked ()
         {
             foreach (KeyValuePair<int, int[]> pair in m_dicTabVisibleIdItems)
                 dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = false;
         }
 
-        private void StartLogParse (string full_path)
+        protected void StartLogParse (string full_path)
         {
             FileInfo fi = new FileInfo(full_path);
             FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -416,95 +273,7 @@ namespace StatisticCommon
             m_LogParse.Start(sr.ReadToEnd());
 
             sr.Close();
-        }
-
-        void Read (TcpClient res, string rec)
-        {
-            bool bResOk = rec.Split('=')[1].Split(';')[0].Equals ("OK", StringComparison.InvariantCultureIgnoreCase);
-
-            if (bResOk == true)
-            {
-                //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
-                switch (rec.Split ('=') [0].Split (';')[0])
-                {
-                    case "INIT":
-                        int indxTcpClient = getIndexTcpClient (res);
-
-                        if (indxTcpClient < m_listTCPClientUsers.Count)
-                        {
-                            dgvClient.Rows[indxTcpClient].Cells[0].Value = true;
-                            m_listTCPClientUsers [indxTcpClient].Write (@"DISCONNECT");
-
-                            m_listTCPClientUsers [indxTcpClient].Disconnect ();
-                        }
-                        else
-                            ;
-                        break;
-                    case "LOG_LOCK":
-                        //rec.Split('=')[1].Split(';')[1] - полный путь лог-файла
-                        StartLogParse(rec.Split('=')[1].Split(';')[1]);
-
-                        m_tcpClient.Write("LOG_UNLOCK=?");
-                        break;
-                    case "LOG_UNLOCK":
-                        Disconnect ();
-                        break;
-                    case "TAB_VISIBLE":
-                        string [] recParameters = rec.Split('=')[1].Split(';'); //список отображаемых вкладок пользователя
-                        int i = -1,
-                            mode = -1
-                            //, key = -1
-                            ;
-                        int [] IdItems;
-                        string [] indexes = null;
-                        bool bChecked = false;
-
-                        if (recParameters.Length > 1)
-                        {
-                            mode = Convert.ToInt32 (recParameters [1]);
-
-                            BeginInvoke (new DelegateIntFunc (SetModeVisibleTabs), mode);
-
-                            if (recParameters.Length > 2)
-                            {
-                                indexes = recParameters[2].Split(',');
-                                //arIndexes = recParameters[2].Split(',').ToArray <int> ();
-
-                                IdItems = new int [indexes.Length];
-                                for (i = 0; i < indexes.Length; i++)
-                                    IdItems [i] = Convert.ToInt32(indexes[i]);
-
-                                foreach (KeyValuePair <int, int []> pair in m_dicTabVisibleIdItems)
-                                {
-                                    if (IdItems.Contains (pair.Key) == true)
-                                        bChecked = true;
-                                    else
-                                        bChecked = false;
-
-                                    dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = bChecked;
-                                }
-                            }
-                            else
-                                //Не отображается ни одна вкладка
-                                TabVisibliesClearChecked ();
-                        }
-                        else
-                        {// !Ошибка! Не переданы индексы отображаемых вкладок
-                        }
-
-                        Disconnect();
-                        break;
-                    case "DISCONNECT":
-                        break;
-                    case "":
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else
-                ;
-        }
+        }        
 
         private void dgvFilterRoles_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -539,7 +308,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                HStatisticUsers.GetUsers(ref m_connConfigDB, where, list_sorted, out m_tableUsers, out err);
+                HStatisticUsers.GetUsers(ref m_connConfigDB, where, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
                 Thread_ProcCheckedStart();
@@ -586,7 +355,7 @@ namespace StatisticCommon
             dgvClient_SelectionChanged (null, null);
         }
 
-        private void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
+        protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
         {
             DataRow [] rows = new DataRow [] {};
             string where = string.Empty;
@@ -709,5 +478,288 @@ namespace StatisticCommon
             return have_eror;
         }
         */
+    }
+
+    public class FormMainAnalyzer_TCPIP : FormMainAnalyzer
+    {
+        TcpClientAsync m_tcpClient;
+        List<TcpClientAsync> m_listTCPClientUsers;
+
+        public FormMainAnalyzer_TCPIP(int idListener, List<TEC> tec) : base (idListener, tec)
+        {
+        }
+
+        /// <summary>
+        /// Обмен данными (чтение) с приложением "Статистика" пользователя
+        /// </summary>
+        /// <param name="res">соединение с приложением пользователя</param>
+        /// <param name="rec">ответ от приложения пользователя</param>
+        void Read(TcpClient res, string rec)
+        {
+            bool bResOk = rec.Split('=')[1].Split(';')[0].Equals("OK", StringComparison.InvariantCultureIgnoreCase);
+
+            if (bResOk == true)
+            {
+                //Message from Analyzer CMD;ARG1, ARG2,...,ARGN=RESULT
+                switch (rec.Split('=')[0].Split(';')[0])
+                {
+                    case "INIT":
+                        int indxTcpClient = getIndexTcpClient(res);
+
+                        if (indxTcpClient < m_listTCPClientUsers.Count)
+                        {
+                            dgvClient.Rows[indxTcpClient].Cells[0].Value = true;
+                            m_listTCPClientUsers[indxTcpClient].Write(@"DISCONNECT");
+
+                            m_listTCPClientUsers[indxTcpClient].Disconnect();
+                        }
+                        else
+                            ;
+                        break;
+                    case "LOG_LOCK":
+                        //rec.Split('=')[1].Split(';')[1] - полный путь лог-файла
+                        StartLogParse(rec.Split('=')[1].Split(';')[1]);
+
+                        m_tcpClient.Write("LOG_UNLOCK=?");
+                        break;
+                    case "LOG_UNLOCK":
+                        Disconnect();
+                        break;
+                    case "TAB_VISIBLE":
+                        string[] recParameters = rec.Split('=')[1].Split(';'); //список отображаемых вкладок пользователя
+                        int i = -1,
+                            mode = -1
+                            //, key = -1
+                            ;
+                        int[] IdItems;
+                        string[] indexes = null;
+                        bool bChecked = false;
+
+                        if (recParameters.Length > 1)
+                        {
+                            mode = Convert.ToInt32(recParameters[1]);
+
+                            BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), mode);
+
+                            if (recParameters.Length > 2)
+                            {
+                                indexes = recParameters[2].Split(',');
+                                //arIndexes = recParameters[2].Split(',').ToArray <int> ();
+
+                                IdItems = new int[indexes.Length];
+                                for (i = 0; i < indexes.Length; i++)
+                                    IdItems[i] = Convert.ToInt32(indexes[i]);
+
+                                foreach (KeyValuePair<int, int[]> pair in m_dicTabVisibleIdItems)
+                                {
+                                    if (IdItems.Contains(pair.Key) == true)
+                                        bChecked = true;
+                                    else
+                                        bChecked = false;
+
+                                    dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = bChecked;
+                                }
+                            }
+                            else
+                                //Не отображается ни одна вкладка
+                                TabVisibliesClearChecked();
+                        }
+                        else
+                        {// !Ошибка! Не переданы индексы отображаемых вкладок
+                        }
+
+                        Disconnect();
+                        break;
+                    case "DISCONNECT":
+                        break;
+                    case "":
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+                ;
+        }
+
+        private int getIndexTcpClient(TcpClient obj)
+        {
+            int i = -1;
+            for (i = 0; i < m_listTCPClientUsers.Count; i++)
+            {
+                if (m_listTCPClientUsers[i].Equals(obj) == true)
+                    break;
+                else
+                    ;
+            }
+
+            return i;
+        }
+
+        protected void ConnectToChecked(TcpClient res, string data)
+        {
+            int indxTcpClient = getIndexTcpClient(res);
+
+            if (indxTcpClient < m_listTCPClientUsers.Count)
+                m_listTCPClientUsers[indxTcpClient].Write(@"INIT=?");
+            else
+                ;
+        }
+
+        protected void ConnectToLogRead(TcpClient res, string data)
+        {
+            m_tcpClient.Write("LOG_LOCK=?");
+        }
+
+        protected void ConnectToTab(TcpClient res, string data)
+        {
+            m_tcpClient.Write("TAB_VISIBLE=?");
+        }
+
+        protected override void Thread_ProcCheckedStart()
+        {
+            m_listTCPClientUsers = new List<TcpClientAsync>();
+            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
+            {
+                //Проверка активности
+                m_listTCPClientUsers.Add(new TcpClientAsync());
+                m_listTCPClientUsers[i].delegateConnect = ConnectToChecked;
+                m_listTCPClientUsers[i].delegateErrorConnect = ErrorConnect;
+                m_listTCPClientUsers[i].delegateRead = Read;
+                //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
+            }
+
+            base.Thread_ProcCheckedStart ();
+        }
+
+        protected override void ProcChecked()
+        {
+            int i = -1;
+            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
+            {
+                //Проверка активности
+                m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
+            }
+        }
+
+        protected override void Thread_ProcCheckedStop()
+        {
+            base.Thread_ProcCheckedStop ();
+
+            if (!(m_listTCPClientUsers == null))
+                m_listTCPClientUsers.Clear();
+            else
+                ;
+        }
+
+        protected override void Disconnect()
+        {
+            if (!(m_tcpClient == null))
+            {
+                m_tcpClient.Write(@"DISCONNECT");
+                m_tcpClient.Disconnect();
+
+                m_tcpClient = null;
+            }
+            else
+                ;
+        }
+
+        protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
+        {
+            if (!(m_tcpClient == null))
+            {
+                Disconnect();
+            }
+            else
+                ;
+
+            if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
+            {
+                bool bUpdate = true;
+                if (tabControlAnalyzer.SelectedIndex == 0)
+                    if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
+                        if (e == null)
+                            bUpdate = false;
+                        else
+                            ;
+                    else
+                        ;
+                else
+                    ;
+
+                if (bUpdate == true)
+                {
+                    m_tcpClient = new TcpClientAsync();
+                    m_tcpClient.delegateRead = Read;
+
+                    switch (tabControlAnalyzer.SelectedIndex)
+                    {
+                        case 0:
+                            //Останов потока разбора лог-файла пред. пользователя
+                            m_LogParse.Stop();
+
+                            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+                            //Очистить элементы управления с данными от пред. лог-файла
+                            if (IsHandleCreated/*InvokeRequired*/ == true)
+                            {
+                                BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
+                                BeginInvoke(new DelegateFunc(TabLoggingClearText));
+                            }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                            //Если активна 0-я вкладка (лог-файл)
+                            m_tcpClient.delegateConnect = ConnectToLogRead;
+                            break;
+                        case 1:
+                            //Очистить элементы управления с данными от пред. пользователя
+                            if (IsHandleCreated/*InvokeRequired*/ == true)
+                            {
+                                BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
+                                BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
+                            }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                            //Если активна 1-я вкладка (вкладки)
+                            m_tcpClient.delegateConnect = ConnectToTab;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    m_tcpClient.delegateErrorConnect = ErrorConnect;
+
+                    //m_tcpClient.Connect("localhost", 6666);
+                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                }
+                else
+                    ; //Обновлять нет необходимости
+            }
+            else
+                ;
+        }
+    }
+
+    public class FormMainAnalyzer_DB : FormMainAnalyzer
+    {
+        public FormMainAnalyzer_DB(int idListener, List<TEC> tec)
+            : base(idListener, tec)
+        {
+        }
+
+        protected override void ProcChecked()
+        {
+        }
+
+        protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
+        {
+        }
+
+        protected override void Disconnect()
+        {
+        }
     }
 }

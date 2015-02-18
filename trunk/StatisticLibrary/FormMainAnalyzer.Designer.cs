@@ -499,7 +499,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TabControl tabControlAnalyzer;
+        protected System.Windows.Forms.TabControl tabControlAnalyzer;
         private System.Windows.Forms.TabPage tabPageLogging;
         private System.Windows.Forms.TabPage tabPageTabes;
         private System.Windows.Forms.Label labelFilterActives;
@@ -512,11 +512,11 @@
         private System.Windows.Forms.DataGridView dgvFilterRoles;
         private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewRolesCheckBoxColumnUse;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewRolesTextBoxColumnDesc;
-        private System.Windows.Forms.DataGridView dgvClient;
+        protected System.Windows.Forms.DataGridView dgvClient;
         private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewClientCheckBoxColumnActive;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewClientTextBoxColumnDesc;
         private System.Windows.Forms.Label labelDatetimeStart;
-        private System.Windows.Forms.DataGridView dgvDatetimeStart;
+        protected System.Windows.Forms.DataGridView dgvDatetimeStart;
         private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridView dgvTypeMessage;
@@ -530,7 +530,7 @@
         private System.Windows.Forms.CheckBox checkBoxGTP;
         private System.Windows.Forms.CheckBox checkBoxTG;
         private System.Windows.Forms.CheckBox checkBoxTEC;
-        private System.Windows.Forms.DataGridView dgvTabVisible;
+        protected System.Windows.Forms.DataGridView dgvTabVisible;
     }
 }
 

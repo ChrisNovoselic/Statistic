@@ -1030,7 +1030,7 @@ namespace Statistic
         private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer(idListener, formChangeMode.m_list_tec);
+            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer_DB(idListener, formChangeMode.m_list_tec);
             formAnalyzer.ShowDialog (this);
             DbSources.Sources ().UnRegister (idListener);
         }
