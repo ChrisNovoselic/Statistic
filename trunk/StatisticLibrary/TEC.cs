@@ -277,31 +277,9 @@ namespace StatisticCommon
         }
 
         public int connSettings (DataTable source, int type) {
-            int iRes = 0, iVal = -1;
-            bool bRes = false, bVal = false;
+            int iRes = 0;
 
-            connSetts[type] = new ConnectionSettings();
-            connSetts[type].id = Int32.Parse(source.Rows[0]["ID"].ToString());
-            connSetts[type].server = source.Rows[0]["IP"].ToString();
-            connSetts[type].port = Int32.Parse(source.Rows[0]["PORT"].ToString());
-            connSetts[type].dbName = source.Rows[0]["DB_NAME"].ToString();
-            connSetts[type].userName = source.Rows[0]["UID"].ToString();
-            connSetts[type].password = source.Rows[0]["PASSWORD"].ToString();
-
-            bRes = int.TryParse(source.Rows[0]["IGNORE"].ToString(), out iVal);
-            if (bRes == true)
-            {
-                connSetts[type].ignore = iVal == 1; //== "1";
-            }
-            else {
-                bRes = bool.TryParse(source.Rows[0]["IGNORE"].ToString(), out bVal);
-                if (bRes == true)
-                {
-                    connSetts[type].ignore = bVal;
-                }
-                else
-                    connSetts[type].ignore = false;
-            }
+            connSetts[type] = new ConnectionSettings(source.Rows[0], false);
 
             if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                 if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)

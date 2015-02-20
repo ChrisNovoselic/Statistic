@@ -27,7 +27,7 @@ namespace StatisticCommon
         protected DataTable m_tableUsers
                     , m_tableRoles;
 
-        private DbConnection m_connConfigDB;
+        protected DbConnection m_connConfigDB;
 
         CheckBox [] m_arCheckBoxMode;
 
@@ -745,13 +745,70 @@ namespace StatisticCommon
 
     public class FormMainAnalyzer_DB : FormMainAnalyzer
     {
+        private DbConnection m_connLoggingDB;
+
         public FormMainAnalyzer_DB(int idListener, List<TEC> tec)
             : base(idListener, tec)
         {
+            int err = -1
+                , iListenerId = -1
+                , idMainDB = -1;
+
+            idMainDB = Int32.Parse (DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString ());
+            DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref m_connConfigDB, idMainDB, -1, out err);
+            ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], false);
+            iListenerId = DbSources.Sources().Register(connSettMainDB, false, @"");
+            m_connLoggingDB = DbSources.Sources().GetConnection(iListenerId, out err);
+        }
+
+        protected override void Thread_ProcCheckedStart()
+        {            
+            base.Thread_ProcCheckedStart ();
+        }
+
+        protected override void Thread_ProcCheckedStop ()
+        {
+            base.Thread_ProcCheckedStop ();
         }
 
         protected override void ProcChecked()
         {
+            int err = -1
+                , i = -1
+                , msecSleep = -1;
+            if (! (m_connLoggingDB == null))
+            {
+                DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref m_connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
+                DataRow [] rowsMaxDatetimeWR;
+                if (err == 0)
+                    for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
+                    {
+                        //Проверка активности
+                        rowsMaxDatetimeWR = tblMaxDatetimeWR.Select(@"[ID_USER]=" + m_tableUsers.Rows[i][@"ID"]);
+
+                        bool bActive = false;
+                        if (rowsMaxDatetimeWR.Length == 0) { //В течении 2-х недель нет ни одного запуска на выполнение ППО
+                        }
+                        else {
+                            if (rowsMaxDatetimeWR.Length > 1) { //Ошибка
+                            }
+                            else {
+                                //Обрабатываем...
+                                bActive = (DateTime.Now - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
+                            }
+                        }
+
+                        dgvClient.Rows[i].Cells[0].Value = bActive;
+                    }
+                else
+                    ; //Ошибка при выборке данных...
+
+                msecSleep = 66666;
+            }
+            else
+                msecSleep = 666; //Нет соединения с БД...
+
+            Thread.Sleep (msecSleep);
         }
 
         protected override void dgvClient_SelectionChanged(object sender, EventArgs e)

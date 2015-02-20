@@ -208,7 +208,7 @@ namespace StatisticCommon
 
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                ProgramBase.ss_MainCultureInfo; //new System.Globalization.CultureInfo(@"en-US");
+                ProgramBase.ss_MainCultureInfo; //new System.Globalization.CultureInfo(@"en-US")
 
             //Определить тип загружаемых значений
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
@@ -404,7 +404,7 @@ namespace StatisticCommon
                 indxStartDateTime--;
             }
 
-            arObjRes[0] = DateTime.Parse(nameFile.Substring(indxStartDateTime + 1, nameFile.Length - @".csv".Length - indxStartDateTime - 1));
+            arObjRes[0] = DateTime.Parse(nameFile.Substring(indxStartDateTime + 1, nameFile.Length - @".csv".Length - indxStartDateTime - 1), new System.Globalization.CultureInfo (@"en-US"));
 
             int indxStartSession = nameFile.IndexOf(s_strMarkSession, 0) + s_strMarkSession.Length
                 , indxEndSession = nameFile.IndexOf(@")", indxStartSession);
