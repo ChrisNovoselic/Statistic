@@ -476,7 +476,7 @@ namespace Statistic
 
             DbConnection conn = DbSources.Sources().GetConnection(m_idListener, out err);
             for (i = 0; i < m_list_data/*_original*/.Length; i ++) {
-                DbTSQLInterface.RecUpdateInsertDelete(ref conn, FormChangeMode.getPrefixMode(i) + "_LIST", m_list_data_original[i], m_list_data[i], out err);
+                DbTSQLInterface.RecUpdateInsertDelete(ref conn, FormChangeMode.getPrefixMode(i) + "_LIST", @"ID", m_list_data_original[i], m_list_data[i], out err);
             }
 
             buttonClick(DialogResult.Yes);

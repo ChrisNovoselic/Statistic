@@ -111,7 +111,7 @@ namespace Statistic
             int err = 0;
 
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
-            DbTSQLInterface.RecUpdateInsertDelete(ref conn, "users", m_users_origin, m_users_edit, out err);
+            DbTSQLInterface.RecUpdateInsertDelete(ref conn, "users", @"ID", m_users_origin, m_users_edit, out err);
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)

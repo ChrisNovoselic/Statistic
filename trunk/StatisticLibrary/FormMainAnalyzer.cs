@@ -20,8 +20,8 @@ namespace StatisticCommon
 {
     public abstract partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip
     {
-        Thread m_threadChecked;
-        protected bool m_bThreadCheckedAllowed;
+        protected System.Threading.Timer m_timerChecked;
+        protected bool m_bThreadTimerCheckedAllowed;
         protected LogParse m_LogParse;
 
         protected DataTable m_tableUsers
@@ -102,15 +102,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void Thread_ProcChecked (object data)
-        {
-            while (m_bThreadCheckedAllowed == true)
-            {
-                ProcChecked ();
-            }
-        }
-
-        protected abstract void ProcChecked();
+        protected abstract void ProcChecked(object obj);
 
         /// <summary>
         /// Отключение от клиента (активного пользователя)
@@ -131,25 +123,20 @@ namespace StatisticCommon
 
         protected virtual void Thread_ProcCheckedStart()
         {            
-            m_bThreadCheckedAllowed = true;
+            m_bThreadTimerCheckedAllowed = true;
 
-            m_threadChecked = new Thread(Thread_ProcChecked);
-            m_threadChecked.IsBackground = true;
-            m_threadChecked.Name = "Поток опроса состояния пользователей";
-            m_threadChecked.Start();
+            m_timerChecked = new System.Threading.Timer(new TimerCallback (ProcChecked), null, 0, System.Threading.Timeout.Infinite);
         }
 
         protected virtual void Thread_ProcCheckedStop ()
         {
-            m_bThreadCheckedAllowed = false;
+            m_bThreadTimerCheckedAllowed = false;
             
-            if (! (m_threadChecked == null))
-            {
-                bool joined = m_threadChecked.Join(6666);
-                if (joined == false)
-                    m_threadChecked.Abort();
-                else
-                    ;
+            if (! (m_timerChecked == null))
+            {                    
+                m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerChecked.Dispose();
+                m_timerChecked = null;
             } else
                 ;            
         }
@@ -174,6 +161,8 @@ namespace StatisticCommon
         protected void ErrorConnect(string ValueToCreate)
         {
             int indx = Convert.ToInt32 (ValueToCreate.Split(';')[1]);
+
+            Logging.Logg ().Error (string.Format ("FormAnalyzer::ErrorConnect () - {0}, индекс: {1}", ValueToCreate.Split(';')[0], ValueToCreate.Split(';')[1]), Logging.INDEX_MESSAGE.NOT_SET);
 
             Console.WriteLine("FormAnalyzer::ErrorConnect () - {0}, индекс: {1}", ValueToCreate.Split(';')[0], ValueToCreate.Split(';')[1]);
             if (indx < dgvClient.Rows.Count) //m_tableUsers, m_listTcpClient
@@ -282,7 +271,8 @@ namespace StatisticCommon
 
             if (e.ColumnIndex == 0)
             {
-                Thread_ProcCheckedStop ();
+                //Thread_ProcCheckedStop();
+                m_timerChecked.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
 
                 dgvFilterRoles.Rows [e.RowIndex].Cells [0].Value = ! bool.Parse (dgvFilterRoles.Rows [e.RowIndex].Cells [0].Value.ToString ());
 
@@ -311,7 +301,8 @@ namespace StatisticCommon
                 HStatisticUsers.GetUsers(ref m_connConfigDB, where, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
-                Thread_ProcCheckedStart();
+                //Thread_ProcCheckedStart();
+                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
             }
             else
                 ;
@@ -632,14 +623,16 @@ namespace StatisticCommon
             base.Thread_ProcCheckedStart ();
         }
 
-        protected override void ProcChecked()
+        protected override void ProcChecked(object obj)
         {
             int i = -1;
-            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
+            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
             {
                 //Проверка активности
                 m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
             }
+
+            m_timerChecked.Change (66666, System.Threading.Timeout.Infinite);
         }
 
         protected override void Thread_ProcCheckedStop()
@@ -771,17 +764,17 @@ namespace StatisticCommon
             base.Thread_ProcCheckedStop ();
         }
 
-        protected override void ProcChecked()
+        protected override void ProcChecked(object obj)
         {
             int err = -1
                 , i = -1
-                , msecSleep = -1;
+                , msecSleep = System.Threading.Timeout.Infinite;
             if (! (m_connLoggingDB == null))
             {
                 DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref m_connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
                 DataRow [] rowsMaxDatetimeWR;
                 if (err == 0)
-                    for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadCheckedAllowed == true); i++)
+                    for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
                     {
                         //Проверка активности
                         rowsMaxDatetimeWR = tblMaxDatetimeWR.Select(@"[ID_USER]=" + m_tableUsers.Rows[i][@"ID"]);
@@ -808,11 +801,84 @@ namespace StatisticCommon
             else
                 msecSleep = 666; //Нет соединения с БД...
 
-            Thread.Sleep (msecSleep);
+            m_timerChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
         }
 
         protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
         {
+            if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
+            {
+                bool bUpdate = true;
+                if (tabControlAnalyzer.SelectedIndex == 0)
+                    if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
+                        if (e == null)
+                            bUpdate = false;
+                        else
+                            ;
+                    else
+                        ;
+                else
+                    ;
+
+                if (bUpdate == true)
+                {
+                    switch (tabControlAnalyzer.SelectedIndex)
+                    {
+                        case 0:
+                            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+                            //Очистить элементы управления с данными от пред. лог-файла
+                            if (IsHandleCreated == true)
+                                if (InvokeRequired == true)
+                                {
+                                    BeginInvoke(new DelegateFunc(TabLoggingClearDatetimeStart));
+                                    BeginInvoke(new DelegateFunc(TabLoggingClearText));
+                                }
+                                else {
+                                    TabLoggingClearDatetimeStart ();
+                                    TabLoggingClearText ();
+                                }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                            //Если активна 0-я вкладка (лог-файл)
+                            m_tcpClient.delegateConnect = ConnectToLogRead;
+                            break;
+                        case 1:
+                            //Очистить элементы управления с данными от пред. пользователя
+                            if (IsHandleCreated == true)
+                            {
+                                if (InvokeRequired == true)
+                                {
+                                    BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), 0);
+                                    BeginInvoke(new DelegateFunc(TabVisibliesClearChecked));
+                                }
+                                else
+                                {
+                                    SetModeVisibleTabs(0);
+                                    TabVisibliesClearChecked();
+                                }
+                            }
+                            else
+                                Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                            //Если активна 1-я вкладка (вкладки)
+                            m_tcpClient.delegateConnect = ConnectToTab;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    m_tcpClient.delegateErrorConnect = ErrorConnect;
+
+                    //m_tcpClient.Connect("localhost", 6666);
+                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                }
+                else
+                    ; //Обновлять нет необходимости
+            }
+            else
+                ;
         }
 
         protected override void Disconnect()
