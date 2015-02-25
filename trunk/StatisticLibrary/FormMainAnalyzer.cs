@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
-using System.Data.Common;
+using System.Data.Common; //DbConnection
 
 using System.Net;
 using System.Net.Sockets;
@@ -93,10 +93,22 @@ namespace StatisticCommon
                     dgvTypeMessage.Rows[(int)i].Cells[2].Value = 0;
                 }
 
-                m_LogParse = new LogParse ();
-                m_LogParse.Exit = LogParseExit;
+                if (this is FormMainAnalyzer_DB)
+                    m_LogParse = new LogParse_DB ();
+                else
+                    if (this is FormMainAnalyzer_TCPIP)
+                        m_LogParse = new LogParse_File();
+                    else
+                        ;
 
-                Thread_ProcCheckedStart ();
+                if (! (m_LogParse == null))
+                {
+                    m_LogParse.Exit = LogParseExit;
+
+                    Thread_ProcCheckedStart ();
+                }
+                else
+                    ;
             }
             else 
                 ;
@@ -251,18 +263,7 @@ namespace StatisticCommon
                 dgvTabVisible.Rows[m_dicTabVisibleIdItems[pair.Key][0]].Cells[m_dicTabVisibleIdItems[pair.Key][1]].Value = false;
         }
 
-        protected void StartLogParse (string full_path)
-        {
-            FileInfo fi = new FileInfo(full_path);
-            FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-            StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
-
-            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-            m_LogParse.Start(sr.ReadToEnd());
-
-            sr.Close();
-        }        
+        protected abstract void StartLogParse (string par);
 
         private void dgvFilterRoles_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -734,24 +735,43 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        protected override void StartLogParse(string full_path)
+        {
+            FileInfo fi = new FileInfo(full_path);
+            FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
+            StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
+
+            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+            m_LogParse.Start(sr.ReadToEnd());
+
+            sr.Close();
+        }
     }
 
     public class FormMainAnalyzer_DB : FormMainAnalyzer
     {
-        private DbConnection m_connLoggingDB;
+        //class HLogMsgSource {
+            //public
+                DelegateIntFunc delegateConnect;
+            //public
+                DelegateFunc delegateErrorConnect;
+        //}
+        //HLogMsgSource m_logMsgSource;
+
+        private int m_idListenerLoggingDB;
 
         public FormMainAnalyzer_DB(int idListener, List<TEC> tec)
             : base(idListener, tec)
         {
             int err = -1
-                , iListenerId = -1
                 , idMainDB = -1;
 
             idMainDB = Int32.Parse (DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString ());
             DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref m_connConfigDB, idMainDB, -1, out err);
             ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], false);
-            iListenerId = DbSources.Sources().Register(connSettMainDB, false, @"");
-            m_connLoggingDB = DbSources.Sources().GetConnection(iListenerId, out err);
+            m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"");            
         }
 
         protected override void Thread_ProcCheckedStart()
@@ -761,6 +781,8 @@ namespace StatisticCommon
 
         protected override void Thread_ProcCheckedStop ()
         {
+            DbSources.Sources().UnRegister(m_idListenerLoggingDB);
+
             base.Thread_ProcCheckedStop ();
         }
 
@@ -769,9 +791,10 @@ namespace StatisticCommon
             int err = -1
                 , i = -1
                 , msecSleep = System.Threading.Timeout.Infinite;
-            if (! (m_connLoggingDB == null))
+            DbConnection connLoggingDB = DbSources.Sources().GetConnection(m_idListenerLoggingDB, out err);
+            if (! (connLoggingDB == null))
             {
-                DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref m_connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
+                DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
                 DataRow [] rowsMaxDatetimeWR;
                 if (err == 0)
                     for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
@@ -825,6 +848,9 @@ namespace StatisticCommon
                     switch (tabControlAnalyzer.SelectedIndex)
                     {
                         case 0:
+                            //Останов потока разбора лог-файла пред. пользователя
+                            m_LogParse.Stop();
+
                             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
                             //Очистить элементы управления с данными от пред. лог-файла
@@ -842,7 +868,7 @@ namespace StatisticCommon
                                 Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
                             //Если активна 0-я вкладка (лог-файл)
-                            m_tcpClient.delegateConnect = ConnectToLogRead;
+                            delegateConnect = ConnectToLogRead;
                             break;
                         case 1:
                             //Очистить элементы управления с данными от пред. пользователя
@@ -863,16 +889,17 @@ namespace StatisticCommon
                                 Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (SetModeVisibleTabs, TabVisibliesClearChecked) - ...", Logging.INDEX_MESSAGE.D_001);
 
                             //Если активна 1-я вкладка (вкладки)
-                            m_tcpClient.delegateConnect = ConnectToTab;
+                            delegateConnect = ConnectToTab;
                             break;
                         default:
                             break;
                     }
 
-                    m_tcpClient.delegateErrorConnect = ErrorConnect;
+                    delegateErrorConnect = ErrorConnect;
 
-                    //m_tcpClient.Connect("localhost", 6666);
-                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                    ////m_tcpClient.Connect("localhost", 6666);
+                    //m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                    getLogMsg(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index], dgvClient.SelectedRows[0].Index);
                 }
                 else
                     ; //Обновлять нет необходимости
@@ -883,6 +910,31 @@ namespace StatisticCommon
 
         protected override void Disconnect()
         {
+        }
+
+        private void ConnectToLogRead (int id) {
+            StartLogParse (id.ToString ());
+        }
+
+        private void ConnectToTab(int id)
+        {
+        }
+
+        private void ErrorConnect()
+        {
+        }
+
+        private void getLogMsg (DataRow rowUser, int indxRowUser)
+        {            
+            if (! (m_idListenerLoggingDB < 0))
+                delegateConnect(Int32.Parse (rowUser[@"ID"].ToString ()));
+            else
+                delegateErrorConnect ();
+        }
+
+        protected override void StartLogParse (string id)
+        {
+            m_LogParse.Start (m_idListenerLoggingDB.ToString () + @"," + id);
         }
     }
 }

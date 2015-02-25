@@ -5,6 +5,7 @@ using System.Text;
 
 using System.IO; //Path
 using System.Data; //DataTable
+using System.Data.Common; //DbConnection
 
 using System.Data.OracleClient;
 using System.Data.OleDb;
@@ -32,12 +33,35 @@ namespace TestFunc
         }
 
         private class DbConnectionOracle {
+            string dataSource = @"ORD"
+                , uid = @"arch_viewer"
+                , pswd = @"1";
             public DbConnectionOracle () {
-                //using (OracleConnection conn = new OracleConnection())
-                using (OleDbConnection conn = new OleDbConnection())
+                DbConnection conn; 
+
+                OracleConnectionStringBuilder csb = new OracleConnectionStringBuilder();
+                csb.DataSource = @"ORCL";
+                csb.UserID = uid;
+                csb.Password = pswd;
+                conn = new OracleConnection(csb.ConnectionString);
+                OracleCommand cmd = new OracleCommand("Select * from TableName", conn as OracleConnection);
+                conn.Open();
+                OracleDataAdapter da = new OracleDataAdapter(cmd);
+                DataTable results = new DataTable();
+                da.Fill(results);
+                conn.Close();
+
+                OracleConnectionStringBuilder oraConnStr = new OracleConnectionStringBuilder ();
+                oraConnStr.DataSource = dataSource;
+                oraConnStr.IntegratedSecurity = false;
+                oraConnStr.PersistSecurityInfo = false;
+                oraConnStr.UserID = uid;
+                oraConnStr.Password = pswd;
+                oraConnStr.Pooling = false;
+                using (conn = new OleDbConnection())
                 {
-                    //conn.ConnectionString = @"host=10.220.2.5;database=ORD;uid=client;pwd=client";
-                    conn.ConnectionString = @"Provider=OraOLEDB.Oracle;Data Source=ORD;User Id=arch_viewer;Password=1; OLEDB.NET=True;";
+                    conn.ConnectionString = oraConnStr.ConnectionString;
+                    //conn.ConnectionString = @"Provider=OraOLEDB.Oracle;host=10.220.2.5:1521;Data Source=ORD;User Id=arch_viewer;Password=1; OLEDB.NET=True;";
                     try
                     {
                         conn.Open();
@@ -53,7 +77,7 @@ namespace TestFunc
                     if (conn.State == ConnectionState.Open)
                     {
                         //OracleCommand command = conn.CreateCommand();
-                        OleDbCommand command = conn.CreateCommand();
+                        OleDbCommand command = (conn as OleDbConnection).CreateCommand();
                         string sql = @"SELECT * FROM myTableName";
                         command.CommandText = sql;
 
