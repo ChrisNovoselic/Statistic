@@ -40,6 +40,9 @@ namespace StatisticCommon
 
         protected Dictionary <int, int []> m_dicTabVisibleIdItems;
 
+        private enum INDEX_DELIMETER {PART, ROW};
+        private static Char [] m_chDelimeters = {',', '&'};
+
         public FormMainAnalyzer(int idListener, List <TEC> tec)
         {
             InitializeComponent();
@@ -214,7 +217,7 @@ namespace StatisticCommon
 
         protected void TabLoggingClearDatetimeStart() { dgvDatetimeStart.Rows.Clear(); }
 
-        protected void TabLoggingClearText() { textBoxLog.Clear(); }
+        protected void TabLoggingClearText() { m_LogParse.Clear(); textBoxLog.Clear(); }
 
         void TabLoggingPositionText()
         {
@@ -234,19 +237,26 @@ namespace StatisticCommon
                 textBoxLog.AppendText(text);
         }
 
-        void TabLoggingAppendDatetimeStart(string text)
+        void TabLoggingAppendDatetimeStart(string rows)
         {
-            bool bRowChecked = bool.Parse(text.Split(';')[0]);
+            string[] strDatetimeStartRows = rows.Split(m_chDelimeters[(int)INDEX_DELIMETER.ROW]);
 
-            if (bRowChecked == true)
+            bool bRowChecked = false;
+
+            foreach (string row in strDatetimeStartRows)
             {
-                dgvDatetimeStart.SelectionChanged += dgvDatetimeStart_SelectionChanged;
-                m_prevDatetimeRowIndex = dgvDatetimeStart.Rows.Count;
-            }
-            else
-                ;
+                bRowChecked = bool.Parse(row.Split(';')[0]);
 
-            dgvDatetimeStart.Rows.Add(new object[] { bRowChecked, text.Split(';')[1] });
+                if (bRowChecked == true)
+                {
+                    dgvDatetimeStart.SelectionChanged += dgvDatetimeStart_SelectionChanged;
+                    m_prevDatetimeRowIndex = dgvDatetimeStart.Rows.Count;
+                }
+                else
+                    ;
+
+                dgvDatetimeStart.Rows.Add(new object[] { bRowChecked, row.Split(';')[1] });
+            }
 
             if (bRowChecked == true)
             {
@@ -321,6 +331,7 @@ namespace StatisticCommon
 
             //Получение списка дата/время запуска приложения
             bool rowChecked = false;
+            string strDatetimeStart = string.Empty;
             i = m_LogParse.Select((int)LogParse.TYPE_LOGMESSAGE.START, string.Empty, string.Empty, ref rows);
             for (i = 0; i < rows.Length; i ++)
             {
@@ -329,23 +340,24 @@ namespace StatisticCommon
                 else
                     ;
 
-                BeginInvoke (delegateAppendDatetimeStart, rowChecked.ToString() + ";" + rows[i]["DATE_TIME"].ToString());
+                strDatetimeStart += rowChecked.ToString() + ";" + rows[i]["DATE_TIME"].ToString() + @"&";
             }
 
-            //where = "DATE_TIME>='" + rows[rows.Length - 1]["DATE_TIME"] + "'";
-            //rows = m_tableLog.Select(where, "DATE_TIME");
-            //for (i = 0; i < rows.Length; i++)
-            //{
-            //    BeginInvoke (delegateAppendText, "[" + rows[i]["DATE_TIME"] + "]: " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
-            //}
-
-            //BeginInvoke(delegateAppendText, string.Empty);
+            if (strDatetimeStart.Length > 0)
+            {
+                strDatetimeStart = strDatetimeStart.Substring(0, strDatetimeStart.Length - 1);
+                BeginInvoke(delegateAppendDatetimeStart, strDatetimeStart);
+            }
+            else
+                ;
         }
 
         private void buttonUpdate_Click(object sender, EventArgs e)
         {
             dgvClient_SelectionChanged (null, null);
         }
+
+        protected abstract int SelectLogMessage (int type, DateTime beg, DateTime end, ref DataRow []rows);
 
         protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
         {
@@ -361,12 +373,14 @@ namespace StatisticCommon
 
             TabLoggingClearText ();
 
-            string strDatetimeEnd = string.Empty;
+            DateTime dtEnd = DateTime.MaxValue;
             if ((rowIndex + 1) < dgvDatetimeStart.Rows.Count)
-                strDatetimeEnd = dgvDatetimeStart.Rows[rowIndex + 1].Cells[1].Value.ToString();
+                dtEnd = DateTime.Parse(dgvDatetimeStart.Rows[rowIndex + 1].Cells[1].Value.ToString ());
             else
                 ;
-            i = m_LogParse.Select(-1, dgvDatetimeStart.Rows[rowIndex].Cells[1].Value.ToString(), strDatetimeEnd, ref rows);
+
+            i = SelectLogMessage(-1, DateTime.Parse(dgvDatetimeStart.Rows[rowIndex].Cells[1].Value.ToString()), dtEnd, ref rows);            
+
             for (i = 0; i < rows.Length; i++)
             {
                 if (Convert.ToInt32(rows[i]["TYPE"]) == (int)LogParse.TYPE_LOGMESSAGE.DETAIL)
@@ -748,6 +762,11 @@ namespace StatisticCommon
 
             sr.Close();
         }
+
+        protected override int SelectLogMessage(int type, DateTime beg, DateTime end, ref DataRow[] rows)
+        {
+            return m_LogParse.Select(-1, beg.ToShortDateString (), end.ToShortDateString (), ref rows);
+        }
     }
 
     public class FormMainAnalyzer_DB : FormMainAnalyzer
@@ -765,17 +784,18 @@ namespace StatisticCommon
         public FormMainAnalyzer_DB(int idListener, List<TEC> tec)
             : base(idListener, tec)
         {
-            int err = -1
-                , idMainDB = -1;
-
-            idMainDB = Int32.Parse (DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString ());
-            DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref m_connConfigDB, idMainDB, -1, out err);
-            ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], false);
-            m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"");            
         }
 
         protected override void Thread_ProcCheckedStart()
-        {            
+        {
+            int err = -1
+                , idMainDB = -1;
+
+            idMainDB = Int32.Parse(DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
+            DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref m_connConfigDB, idMainDB, -1, out err);
+            ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], false);
+            m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB");
+
             base.Thread_ProcCheckedStart ();
         }
 
@@ -792,7 +812,7 @@ namespace StatisticCommon
                 , i = -1
                 , msecSleep = System.Threading.Timeout.Infinite;
             DbConnection connLoggingDB = DbSources.Sources().GetConnection(m_idListenerLoggingDB, out err);
-            if (! (connLoggingDB == null))
+            if (! (connLoggingDB == null) && (err == 0))
             {
                 DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
                 DataRow [] rowsMaxDatetimeWR;
@@ -935,6 +955,103 @@ namespace StatisticCommon
         protected override void StartLogParse (string id)
         {
             m_LogParse.Start (m_idListenerLoggingDB.ToString () + @"," + id);
+        }
+
+        protected override int SelectLogMessage(int type, DateTime beg, DateTime end, ref DataRow[] rows)
+        {
+            return (m_LogParse as LogParse_DB).Select(m_idListenerLoggingDB, -1, beg, end, ref rows);
+        }
+    }
+
+    public class LogParse_DB : LogParse
+    {
+        private int m_idUser;
+
+        public LogParse_DB () : base ()
+        {
+            m_idUser = -1;
+        }
+
+        protected override void Thread_Proc(object data)
+        {
+            int err = -1;
+            DbConnection connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse((data as string).Split(',')[0]), out err);
+            m_idUser = Int32.Parse ((data as string).Split(',')[1]);
+
+            string query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
+                    + @" FROM [techsite-2.X.X].[dbo].[logging]"
+                    + @" WHERE [ID_USER]=" + m_idUser
+                    + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
+                    + @" ORDER BY [DD]";
+
+            DataTable tblDatetimeStart = DbTSQLInterface.Select(ref connLoggingDB, query, null, null, out err);
+            DateTime dtStart;
+
+            for (int i = 0; i < tblDatetimeStart.Rows.Count; i ++)
+            {
+                dtStart = new DateTime (Int32.Parse(tblDatetimeStart.Rows[i][@"YYYY"].ToString ())
+                                                , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString ())
+                                                , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString ()));
+                m_tableLog.Rows.Add(new object[] { dtStart, (int)TYPE_LOGMESSAGE.START, ProgramBase.MessageWellcome });
+            }
+
+            base.Thread_Proc(data);
+        }
+
+        public int Select(int iListenerId, int type, DateTime beg, DateTime end, ref DataRow[] res)
+        {
+            int iRes = -1;
+            string where = string.Empty;
+
+            m_tableLog.Clear();
+
+            DbConnection connLoggingDB = DbSources.Sources ().GetConnection (iListenerId, out iRes);
+
+            if (iRes == 0)
+            {
+                if (beg.Equals(DateTime.MaxValue) == false)
+                {
+                    ////Вариан №1 диапазон даты/времени
+                    //where = "DATETIME_WR>='" + beg.ToString("yyyyMMdd HH:mm:ss") + "'";
+                    //if (end.Equals(DateTime.MaxValue) == false)
+                    //    where += " AND DATETIME_WR<'" + end.ToString("yyyyMMdd HH:mm:ss") + "'";
+                    //else ;
+                    //Вариан №2 указанные сутки
+                    where = "DATETIME_WR='" + beg.ToString("yyyyMMdd") + "'";
+                }
+                else
+                    ;
+
+                if (!(type < 0))
+                {
+                    if (where.Equals(string.Empty) == false)
+                        where += " AND ";
+                    else
+                        ;
+
+                    where += "TYPE=" + type;
+                }
+                else
+                    ;
+
+                string query = @"SELECT DATETIME_WR as DATE_TIME, ID_LOGMSG as TYPE, MESSAGE FROM logging WHERE ID_USER=" + m_idUser;
+                if (where.Equals(string.Empty) == false)
+                    where = " AND " + where;
+                else
+                    ;
+                m_tableLog = DbTSQLInterface.Select(ref connLoggingDB, query, null, null, out iRes);
+            }
+            else
+                ;
+
+            if (iRes == 0) {
+                iRes = m_tableLog.Rows.Count;
+                res  = m_tableLog.Select (string.Empty, @"DATE_TIME");
+            }
+            else
+                ;
+
+            return iRes;
         }
     }
 }

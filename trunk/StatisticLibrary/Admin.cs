@@ -560,16 +560,6 @@ namespace StatisticCommon
             //}
         }
 
-        /// <summary>
-        /// Установить признак окончания обработки всех событий
-        /// </summary>
-        protected void completeHandleStates () {
-            try { ((AutoResetEvent)m_waitHandleState[0]).Set (); }
-            catch (Exception e) {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "TecView_ThreadFunction () - m_waitHandleState[0]).Set()");
-            }
-        }
-
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)
         {
             FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
