@@ -317,9 +317,9 @@ namespace StatisticCommon
                             switch (typeValues)
                             {
                                 case CONN_SETT_TYPE.PBR:                                    
-                                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString());
-                                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString());
-                                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString());
+                                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString(), ProgramBase.ss_MainCultureInfo);
+                                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString(), ProgramBase.ss_MainCultureInfo);
+                                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString(), ProgramBase.ss_MainCultureInfo);
 
                                     curRDGValues[hour].pbr_number = pbr_number as string;
 
@@ -327,10 +327,10 @@ namespace StatisticCommon
                                     //Console.WriteLine(@"GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @") TotalBR=" + curRDGValues[hour].pbr + @"; PBRNumber=" + curRDGValues[hour].pbr_number);
                                     break;
                                 case CONN_SETT_TYPE.ADMIN:
-                                    curRDGValues[hour].recomendation = double.Parse(r[@"REC"].ToString());
-                                    curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString()) == 1;
-                                    curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString());
-                                    curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString()) == 1;
+                                    curRDGValues[hour].recomendation = double.Parse(r[@"REC"].ToString(), ProgramBase.ss_MainCultureInfo);
+                                    curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString(), ProgramBase.ss_MainCultureInfo) == 1;
+                                    curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString(), ProgramBase.ss_MainCultureInfo);
+                                    curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString(), ProgramBase.ss_MainCultureInfo) == 1;
                                     break;
                                 default:
                                     break;

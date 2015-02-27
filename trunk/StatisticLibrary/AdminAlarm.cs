@@ -200,6 +200,8 @@ namespace StatisticCommon
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
 
+                    m_listTecView[m_listTecView.Count - 1].m_bLastValue_TM_Gen = true;
+
                     EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
                 } else ;
             }

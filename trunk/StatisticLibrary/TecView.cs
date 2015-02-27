@@ -363,7 +363,8 @@ namespace StatisticCommon
                 states.Add((int)StatesMachine.Hours_Fact);
             else
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_TM);
                 else
                     ;
@@ -372,7 +373,8 @@ namespace StatisticCommon
                 states.Add((int)StatesMachine.CurrentMins_Fact);
             else
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
                     states.Add((int)StatesMachine.CurrentMins_TM);
                 else
                     ;
@@ -422,6 +424,8 @@ namespace StatisticCommon
 
         public void SuccessThreadRDGValues(int curHour, int curMinute)
         {
+            int iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - эмуляция
+
             double TGTURNONOFF_VALUE = -1F, NOT_VALUE = -2F
                 , power_TM = NOT_VALUE;
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
@@ -439,7 +443,10 @@ namespace StatisticCommon
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    //Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                    if (iDebug == 0)
+                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                    else
+                        ;
 
                     if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
@@ -454,31 +461,34 @@ namespace StatisticCommon
                         power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
                     }
 
-                    ////Отладка - изменяем состояние
-                    //if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
-                    //{
-                    //    if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                    //    {
-                    //        power_TM -= tg.power_TM;
+                    //Отладка - изменяем состояние
+                    if (iDebug == 1)
+                        if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
+                        {
+                            if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
+                            {
+                                power_TM -= m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
 
-                    //        tg.power_TM = 0.666;
+                                m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 0.666;
 
-                    //        curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                    //    }
-                    //    else
-                    //        if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                    //        {
-                    //            tg.power_TM = 66.6;
+                                curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
+                            }
+                            else
+                                if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
+                                {
+                                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 66.6;
 
-                    //            curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-                    //        }
-                    //        else
-                    //            ;
+                                    curTurnOnOff = TG.INDEX_TURNOnOff.ON;
+                                }
+                                else
+                                    ;
 
-                    //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tg.power_TM + Environment.NewLine);
-                    //}
-                    //else
-                    //    ;
+                            Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
+                        }
+                        else
+                            ;
+                    else
+                        ;
 
                     if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
                     {
@@ -500,8 +510,11 @@ namespace StatisticCommon
                             ; //EventUnReg...
                     }
 
-                    if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
-                        Console.Write(@", ");
+                    if (iDebug == 0)
+                        if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
+                            Console.Write(@", ");
+                        else
+                            ;
                     else
                         ;
                 }
@@ -1129,7 +1142,7 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Error(@"TecView::StateWarnings () - предупреждение " + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Warning(reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override int StateRequest(int state)
@@ -5011,7 +5024,8 @@ namespace StatisticCommon
                             {
                                 case CONN_SETT_TYPE.DATA_AISKUE:
                                 case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
-                                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:                    
+                                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                case CONN_SETT_TYPE.DATA_SOTIASSO: //...для AdminAlarm???
                                     iRes = 3;
                                     break;
                                 case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
@@ -5024,6 +5038,7 @@ namespace StatisticCommon
                             ;
                     break;
                 case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:                    
+                case CONN_SETT_TYPE.DATA_SOTIASSO: //...для AdminAlarm???
                     iRes = 3;
                     break;
                 case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:

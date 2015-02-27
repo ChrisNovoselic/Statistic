@@ -1468,8 +1468,9 @@ namespace StatisticCommon
                 Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - UPDATE: " + query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], Logging.INDEX_MESSAGE.D_005);
                 //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - DELETE: " + resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], Logging.INDEX_MESSAGE.D_005);
 
-                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
-                Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+                Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE]
+                                                                            + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT]
+                                                                            + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
             }
             else
                 Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty", Logging.INDEX_MESSAGE.NOT_SET); //Запрос пуст
