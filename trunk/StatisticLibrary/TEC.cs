@@ -279,7 +279,7 @@ namespace StatisticCommon
         public int connSettings (DataTable source, int type) {
             int iRes = 0;
 
-            connSetts[type] = new ConnectionSettings(source.Rows[0], false);
+            connSetts[type] = new ConnectionSettings(source.Rows[0], -1);
 
             if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                 if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)

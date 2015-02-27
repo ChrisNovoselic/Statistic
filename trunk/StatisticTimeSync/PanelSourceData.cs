@@ -531,7 +531,7 @@ namespace StatisticTimeSync
                         , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par [0]).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
                         , err = -1;
                     DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
-                    ConnectionSettings connSett = new ConnectionSettings(rowConnSett, false);
+                    ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
                     ((PanelGetDate)((EventArgsDataHost)ev).par [0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object [] { connSett } ));
                     DbSources.Sources().UnRegister(iListenerId);
                     break;

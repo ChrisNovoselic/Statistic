@@ -45,6 +45,10 @@ namespace StatisticCommon
 
         public FormMainAnalyzer(int idListener, List <TEC> tec)
         {
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                ProgramBase.ss_MainCultureInfo;
+
             InitializeComponent();
             /*
             //При наследовании от 'FormMainBaseWithStatusStrip'
@@ -793,8 +797,8 @@ namespace StatisticCommon
 
             idMainDB = Int32.Parse(DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
             DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref m_connConfigDB, idMainDB, -1, out err);
-            ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], false);
-            m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB");
+            ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
+            m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);
 
             base.Thread_ProcCheckedStart ();
         }
