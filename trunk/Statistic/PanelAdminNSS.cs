@@ -43,7 +43,8 @@ namespace Statistic
             // 
             // btnExportExcel
             // 
-            this.btnExportExcel.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + 2 * m_iMarginY));
+            //this.btnExportExcel.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + 2 * m_iMarginY));
+            this.btnExportExcel.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + m_iMarginY));
             this.btnExportExcel.Name = "btnExportExcel";
             this.btnExportExcel.Size = new System.Drawing.Size(154, m_iSizeY);
             this.btnExportExcel.TabIndex = 668;
@@ -71,6 +72,7 @@ namespace Statistic
         public PanelAdminNSS(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.NSS, markQueries)
         {
+            m_admin.SetDelegateSaveComplete(null);
         }
 
         private int GetIndexGTPOwner(int indx_tg)
@@ -132,7 +134,7 @@ namespace Statistic
             for (int i = 0; i < 24; i++)
             {
                 if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString("yyyyMMdd HH");
+                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString(@"dd.MM.yyyy-HH", CultureInfo.InvariantCulture);
                 else
                     ;
 

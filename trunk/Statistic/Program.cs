@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 
 using System.Threading; //Mutex
+using System.Reflection; //Assembly
 
 using HClassLibrary;
 using StatisticCommon;
@@ -22,9 +23,13 @@ namespace Statistic
             int iRes = 0;
 
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            Logging.s_mode = Logging.LOG_MODE.DB;
-            //Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
+            //Logging.s_mode = Logging.LOG_MODE.DB;
+            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
             //Logging.s_mode = Logging.LOG_MODE.FILE_DESKTOP;
+
+            ////Если в строке Assembly заменить номер Построения на "*", номер Ревизия на "очистить"
+            //Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            //DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build).AddSeconds(version.Revision * 2);
 
             string strHeaderError = string.Empty;
             bool bRun = false;  

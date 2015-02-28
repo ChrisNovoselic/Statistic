@@ -84,7 +84,7 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(this.mcldrDate);
             this.m_panelManagement.Controls.Add(this.comboBoxTecComponent);
             this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
-            
+
             this.m_panelManagement.Controls.Add(this.btnSet);
             this.m_panelManagement.Controls.Add(this.btnRefresh);
 

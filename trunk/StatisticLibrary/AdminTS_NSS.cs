@@ -417,7 +417,7 @@ namespace StatisticCommon
                 m_evSaveChangesComplete.Set();
             //else ;
 
-            saveComplete();
+            if (!(saveComplete == null)) saveComplete(); else ;
 
             return errRes;
         }

@@ -430,13 +430,17 @@ namespace StatisticCommon
                 , power_TM = NOT_VALUE;
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-            Console.WriteLine (@"curHour=" + curHour.ToString () + @"; curMinute=" + curMinute.ToString ());
+            if (!(iDebug < 0))
+                Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
+            else
+                ;
 
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
                 || ((curMinute == 0) || (m_markWarning.IsMarked ((int)TecView.INDEX_WARNING.LAST_MIN) == true)))
             {
-                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues () - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"])"
+                                    + @" - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
             }
             else {            
                 foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
@@ -1093,7 +1097,8 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Error(@"TecView::StateErrors () - ошибка " + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Error(@"TecView::StateErrors (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"]" + @")"
+                                + @" - ошибка " + reason + @". " + waiting + @".", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
@@ -1142,7 +1147,8 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Warning(reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Warning(m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"] - "
+                                + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override int StateRequest(int state)
