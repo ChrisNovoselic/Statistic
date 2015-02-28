@@ -786,6 +786,14 @@ namespace Statistic
             Logging.Logg().Debug(@"FormMain::ClearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
+        /// <summary>
+        /// Активация текущей вкладки...
+        /// </summary>
+        private void activateTabPage()
+        {
+            activateTabPage(tclTecViews.SelectedIndex, true);
+        }
+
         private void activateTabPage(int indx, bool active)
         {
             string strMsgDebug = string.Empty;
@@ -1029,11 +1037,30 @@ namespace Statistic
 
         private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            activateTabPage(tclTecViews.SelectedIndex, false);
+
             int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             FormMainAnalyzer formAnalyzer = new FormMainAnalyzer_DB(idListener, formChangeMode.m_list_tec);
-            formAnalyzer.ShowDialog (this);
-            DbSources.Sources ().UnRegister (idListener);
+            ////Вариант №1
+            //formAnalyzer.FormClosed += new FormClosedEventHandler(formAnalyzerCloused);
+            //new Thread(() => formAnalyzer.ShowDialog()).Start();
+
+            //Вариант №2
+            formAnalyzer.ShowDialog(this);
+            activateTabPage();
         }
+
+        ////Вариант №1
+        //private void formAnalyzerCloused (object obj, FormClosedEventArgs ev)
+        //{
+        //    if (IsHandleCreated == true)
+        //        if (InvokeRequired == true)
+        //            this.BeginInvoke(new DelegateFunc(activateTabPage));
+        //        else
+        //            activateTabPage();
+        //    else
+        //        ;
+        //}
 
         private void настройкиСоединенияToolStripMenuItem_Click(object sender, EventArgs e, CONN_SETT_TYPE type)
         {
@@ -1754,16 +1781,6 @@ namespace Statistic
 
                 obj.Start();
                 ActivateTabPage();
-
-                //if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
-                if (m_bAutoLoadTabs == false)
-                    //Сохранить список дополнительных вкладок...
-                    if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
-                        fileProfileSaveAddingTab();
-                    else
-                        ;
-                else
-                    ;
             }
             else
             {
@@ -1771,6 +1788,15 @@ namespace Statistic
                 obj.Activate(false);
                 obj.Stop();
             }
+
+            if (m_bAutoLoadTabs == false)
+                //Сохранить список дополнительных вкладок...
+                if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
+                    fileProfileSaveAddingTab();
+                else
+                    ;
+            else
+                ;
         }
 
         protected override void UpdateActiveGui(int type)

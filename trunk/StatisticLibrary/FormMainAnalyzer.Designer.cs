@@ -32,15 +32,15 @@
             this.tabControlAnalyzer = new System.Windows.Forms.TabControl();
             this.tabPageLogging = new System.Windows.Forms.TabPage();
             this.dgvTypeMessage = new System.Windows.Forms.DataGridView();
-            this.dataGridViewCheckBoxColumn2 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewCheckBoxColumnTypeMessageUse = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.dataGridViewTextBoxColumnTypeMessageDesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.labelFilterTypeMessage = new System.Windows.Forms.Label();
-            this.textBoxLog = new System.Windows.Forms.TextBox();
+            this.dgvLogMessage = new System.Windows.Forms.DataGridView();
             this.labelDatetimeStart = new System.Windows.Forms.Label();
             this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();
-            this.dataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewCheckBoxColumnDatetimeStartUse = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.dataGridViewTextBoxColumnDatetimeStartDesc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabPageTabes = new System.Windows.Forms.TabPage();
             this.labelFilterActives = new System.Windows.Forms.Label();
             this.labelFilterRoles = new System.Windows.Forms.Label();
@@ -91,7 +91,7 @@
             // 
             this.tabPageLogging.Controls.Add(this.dgvTypeMessage);
             this.tabPageLogging.Controls.Add(this.labelFilterTypeMessage);
-            this.tabPageLogging.Controls.Add(this.textBoxLog);
+            this.tabPageLogging.Controls.Add(this.dgvLogMessage);
             this.tabPageLogging.Controls.Add(this.labelDatetimeStart);
             this.tabPageLogging.Controls.Add(this.dgvDatetimeStart);
             this.tabPageLogging.Location = new System.Drawing.Point(4, 22);
@@ -111,8 +111,8 @@
             this.dgvTypeMessage.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTypeMessage.ColumnHeadersVisible = false;
             this.dgvTypeMessage.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewCheckBoxColumn2,
-            this.dataGridViewTextBoxColumn2,
+            this.dataGridViewCheckBoxColumnTypeMessageUse,
+            this.dataGridViewTextBoxColumnTypeMessageDesc,
             this.ColumnCount});
             this.dgvTypeMessage.Location = new System.Drawing.Point(6, 206);
             this.dgvTypeMessage.MultiSelect = false;
@@ -124,21 +124,21 @@
             this.dgvTypeMessage.Size = new System.Drawing.Size(170, 92);
             this.dgvTypeMessage.TabIndex = 14;
             // 
-            // dataGridViewCheckBoxColumn2
+            // dataGridViewCheckBoxColumnTypeMessageUse
             // 
-            this.dataGridViewCheckBoxColumn2.Frozen = true;
-            this.dataGridViewCheckBoxColumn2.HeaderText = "Use";
-            this.dataGridViewCheckBoxColumn2.Name = "dataGridViewCheckBoxColumn2";
-            this.dataGridViewCheckBoxColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewCheckBoxColumn2.Width = 25;
+            this.dataGridViewCheckBoxColumnTypeMessageUse.Frozen = true;
+            this.dataGridViewCheckBoxColumnTypeMessageUse.HeaderText = "Use";
+            this.dataGridViewCheckBoxColumnTypeMessageUse.Name = "dataGridViewCheckBoxColumnTypeMessageUse";
+            this.dataGridViewCheckBoxColumnTypeMessageUse.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewCheckBoxColumnTypeMessageUse.Width = 25;
             // 
-            // dataGridViewTextBoxColumn2
+            // dataGridViewTextBoxColumnTypeMessageDesc
             // 
-            this.dataGridViewTextBoxColumn2.Frozen = true;
-            this.dataGridViewTextBoxColumn2.HeaderText = "Desc";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            this.dataGridViewTextBoxColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewTextBoxColumn2.Width = 105;
+            this.dataGridViewTextBoxColumnTypeMessageDesc.Frozen = true;
+            this.dataGridViewTextBoxColumnTypeMessageDesc.HeaderText = "Desc";
+            this.dataGridViewTextBoxColumnTypeMessageDesc.Name = "dataGridViewTextBoxColumnTypeMessageDesc";
+            this.dataGridViewTextBoxColumnTypeMessageDesc.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumnTypeMessageDesc.Width = 105;
             // 
             // ColumnCount
             // 
@@ -156,18 +156,30 @@
             this.labelFilterTypeMessage.TabIndex = 13;
             this.labelFilterTypeMessage.Text = "Фильтр: тип сообщения";
             // 
-            // textBoxLog
+            // dgvLogMessage
             // 
-            this.textBoxLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.dgvLogMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxLog.Location = new System.Drawing.Point(182, 6);
-            this.textBoxLog.Multiline = true;
-            this.textBoxLog.Name = "textBoxLog";
-            this.textBoxLog.ReadOnly = true;
-            this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxLog.Size = new System.Drawing.Size(371, 292);
-            this.textBoxLog.TabIndex = 15;
+            this.dgvLogMessage.Location = new System.Drawing.Point(182, 6);
+            this.dgvLogMessage.MultiSelect = false;
+            this.dgvLogMessage.Name = "dgvLogMessage";
+            this.dgvLogMessage.ReadOnly = true;
+            this.dgvLogMessage.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.dgvLogMessage.Size = new System.Drawing.Size(371, 292);
+            this.dgvLogMessage.TabIndex = 15;
+            this.dgvLogMessage.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new System.Windows.Forms.DataGridViewTextBoxColumn ()
+                , new System.Windows.Forms.DataGridViewTextBoxColumn ()
+                , new System.Windows.Forms.DataGridViewTextBoxColumn ()
+            });
+            this.dgvLogMessage.ColumnHeadersVisible = false;
+            this.dgvLogMessage.RowHeadersVisible = false;
+            this.dgvLogMessage.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvLogMessage.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvLogMessage.Columns[0].Width = 85; this.dgvLogMessage.Columns[0].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvLogMessage.Columns[1].Width = 45; this.dgvLogMessage.Columns[1].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvLogMessage.Columns[2].Width = 239; this.dgvLogMessage.Columns[2].Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // labelDatetimeStart
             // 
@@ -185,8 +197,8 @@
             this.dgvDatetimeStart.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvDatetimeStart.ColumnHeadersVisible = false;
             this.dgvDatetimeStart.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewCheckBoxColumn1,
-            this.dataGridViewTextBoxColumn1});
+            this.dataGridViewCheckBoxColumnDatetimeStartUse,
+            this.dataGridViewTextBoxColumnDatetimeStartDesc});
             this.dgvDatetimeStart.Location = new System.Drawing.Point(6, 23);
             this.dgvDatetimeStart.MultiSelect = false;
             this.dgvDatetimeStart.Name = "dgvDatetimeStart";
@@ -198,23 +210,23 @@
             this.dgvDatetimeStart.Size = new System.Drawing.Size(170, 164);
             this.dgvDatetimeStart.TabIndex = 10;
             // 
-            // dataGridViewCheckBoxColumn1
+            // dataGridViewCheckBoxColumnDatetimeStartUse
             // 
-            this.dataGridViewCheckBoxColumn1.Frozen = true;
-            this.dataGridViewCheckBoxColumn1.HeaderText = "Use";
-            this.dataGridViewCheckBoxColumn1.Name = "dataGridViewCheckBoxColumn1";
-            this.dataGridViewCheckBoxColumn1.ReadOnly = true;
-            this.dataGridViewCheckBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewCheckBoxColumn1.Width = 25;
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.Frozen = true;
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.HeaderText = "Use";
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.Name = "dataGridViewCheckBoxColumn1";
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.ReadOnly = true;
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewCheckBoxColumnDatetimeStartUse.Width = 25;
             // 
-            // dataGridViewTextBoxColumn1
+            // dataGridViewTextBoxColumnDatetimeStartDesc
             // 
-            this.dataGridViewTextBoxColumn1.Frozen = true;
-            this.dataGridViewTextBoxColumn1.HeaderText = "Desc";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewTextBoxColumn1.Width = 145;
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.Frozen = true;
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.HeaderText = "Desc";
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.Name = "dataGridViewTextBoxColumnDatetimeStartDesc";
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.ReadOnly = true;
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumnDatetimeStartDesc.Width = 145;
             // 
             // tabPageTabes
             // 
@@ -517,13 +529,13 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewClientTextBoxColumnDesc;
         private System.Windows.Forms.Label labelDatetimeStart;
         protected System.Windows.Forms.DataGridView dgvDatetimeStart;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridView dgvTypeMessage;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnDatetimeStartUse;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnDatetimeStartDesc;
+        protected System.Windows.Forms.DataGridView dgvTypeMessage;
         private System.Windows.Forms.Label labelFilterTypeMessage;
-        private System.Windows.Forms.TextBox textBoxLog;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.DataGridView dgvLogMessage;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnTypeMessageUse;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumnTypeMessageDesc;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCount;
         private System.Windows.Forms.CheckBox checkBoxAdmin;
         private System.Windows.Forms.CheckBox checkBoxPC;

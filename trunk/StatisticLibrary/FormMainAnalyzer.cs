@@ -40,8 +40,8 @@ namespace StatisticCommon
 
         protected Dictionary <int, int []> m_dicTabVisibleIdItems;
 
-        private enum INDEX_DELIMETER {PART, ROW};
-        private static Char [] m_chDelimeters = {',', '&'};
+        protected enum INDEX_DELIMETER {PART, ROW};
+        protected static string[] m_chDelimeters = { @"DELIMETER_PART", "DELIMETER_ROW" };
 
         public FormMainAnalyzer(int idListener, List <TEC> tec)
         {
@@ -75,7 +75,7 @@ namespace StatisticCommon
             dgvFilterActives.Rows.Add (2);
             dgvFilterActives.Rows[0].Cells[0].Value = true; dgvFilterActives.Rows[0].Cells[1].Value = "Активные";
             dgvFilterActives.Rows[1].Cells[0].Value = true; dgvFilterActives.Rows[1].Cells[1].Value = "Не активные";
-            dgvFilterActives.Enabled = false;
+            dgvFilterActives.Enabled = true;
 
             int err = -1;
 
@@ -90,16 +90,6 @@ namespace StatisticCommon
                 HStatisticUsers.GetUsers(ref m_connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
-                //DbTSQLInterface.CloseConnection (connDB, out err);
-
-                dgvTypeMessage.Rows.Add((int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE);
-                for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
-                {
-                    dgvTypeMessage.Rows [(int)i].Cells [0].Value = true;
-                    dgvTypeMessage.Rows[(int)i].Cells[1].Value = LogParse.DESC_LOGMESSAGE[(int)i];
-                    dgvTypeMessage.Rows[(int)i].Cells[2].Value = 0;
-                }
-
                 if (this is FormMainAnalyzer_DB)
                     m_LogParse = new LogParse_DB ();
                 else
@@ -107,6 +97,8 @@ namespace StatisticCommon
                         m_LogParse = new LogParse_File();
                     else
                         ;
+
+                fillTypeMessage();
 
                 if (! (m_LogParse == null))
                 {
@@ -127,6 +119,19 @@ namespace StatisticCommon
         /// Отключение от клиента (активного пользователя)
         /// </summary>
         protected abstract void Disconnect();
+
+        protected abstract void fillTypeMessage();
+
+        protected void fillTypeMessage(string []strTypeMessages)
+        {
+            dgvTypeMessage.Rows.Add(strTypeMessages.Length);
+            for (int i = 0; i < strTypeMessages.Length; i++)
+            {
+                dgvTypeMessage.Rows[(int)i].Cells[0].Value = true;
+                dgvTypeMessage.Rows[(int)i].Cells[1].Value = strTypeMessages[i];
+                dgvTypeMessage.Rows[(int)i].Cells[2].Value = 0;
+            }
+        }
 
         private void FormMainAnalyzer_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -219,37 +224,50 @@ namespace StatisticCommon
                 ;
         }
 
+        private void fillDataGridViewClient(string where, out int err)
+        {            
+            HStatisticUsers.GetUsers(ref m_connConfigDB, where, c_list_sorted, out m_tableUsers, out err);
+            FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
+
+            m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+        }
+
         protected void TabLoggingClearDatetimeStart() { dgvDatetimeStart.Rows.Clear(); }
 
-        protected void TabLoggingClearText() { m_LogParse.Clear(); textBoxLog.Clear(); }
+        protected void TabLoggingClearText() { m_LogParse.Clear(); /*textBoxLog.Clear();*/ dgvLogMessage.Rows.Clear(); }
 
         void TabLoggingPositionText()
         {
+            /*
             textBoxLog.Select(0, 0);
             textBoxLog.ScrollToCaret();
+            */
+
+            dgvLogMessage.FirstDisplayedScrollingRowIndex = 0;
         }
 
         void TabLoggingAppendText (string text)
         {
-            if (text.Equals (string.Empty) == true)
+            if (text.Equals(string.Empty) == true)
             {
-                TabLoggingPositionText ();
+                TabLoggingPositionText();
                 //textBoxLog.Focus();
                 //textBoxLog.AutoScrollOffset = new Point (0, 0);
             }
             else
-                textBoxLog.AppendText(text);
+                //textBoxLog.AppendText(text);
+                dgvLogMessage.Rows.Add(text.Split(new string [] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None));
         }
 
         void TabLoggingAppendDatetimeStart(string rows)
         {
-            string[] strDatetimeStartRows = rows.Split(m_chDelimeters[(int)INDEX_DELIMETER.ROW]);
+            string[] strDatetimeStartRows = rows.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
 
             bool bRowChecked = false;
 
             foreach (string row in strDatetimeStartRows)
             {
-                bRowChecked = bool.Parse(row.Split(';')[0]);
+                bRowChecked = bool.Parse(row.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[0]);
 
                 if (bRowChecked == true)
                 {
@@ -259,7 +277,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                dgvDatetimeStart.Rows.Add(new object[] { bRowChecked, row.Split(';')[1] });
+                dgvDatetimeStart.Rows.Add(new object[] { bRowChecked, row.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[1] });
             }
 
             if (bRowChecked == true)
@@ -278,6 +296,56 @@ namespace StatisticCommon
         }
 
         protected abstract void StartLogParse (string par);
+
+        private void dgvFilterActives_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            int i = -1, err = -1;
+            string where = string.Empty;
+
+            if (e.ColumnIndex == 0)
+            {
+                m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+                dgvFilterActives.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterActives.Rows[e.RowIndex].Cells[0].Value.ToString());
+
+                if (dgvFilterActives.Rows[0].Cells[0].Value == dgvFilterActives.Rows[1].Cells[0].Value)
+                    if (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == true)
+                        //Отображать всех...
+                        ;
+                    else
+                        //Пустой список...
+                        ;
+                else
+                {
+                    for (i = 0; i < dgvClient.Rows.Count; i++)
+                    {
+                        if (((bool.Parse(dgvClient.Rows[i].Cells[0].Value.ToString()) == true) && (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == true))
+                            || ((bool.Parse(dgvClient.Rows[i].Cells[0].Value.ToString()) == false) && (bool.Parse(dgvFilterActives.Rows[1].Cells[0].Value.ToString()) == true)))
+                        {
+                                if (where.Equals(string.Empty) == true)
+                                {
+                                    where = "ID_USER IN (";
+                                }
+                                else
+                                    where += ",";
+
+                                where += m_tableUsers.Rows[i]["ID"];
+                        }
+                        else
+                            ;
+                    }
+
+                    if (where.Equals(string.Empty) == false)
+                        where += ")";
+                    else
+                        ;
+                }
+
+                fillDataGridViewClient(where, out err);
+            }
+            else
+                ;
+        }
 
         private void dgvFilterRoles_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -313,11 +381,7 @@ namespace StatisticCommon
                 else
                     ;
 
-                HStatisticUsers.GetUsers(ref m_connConfigDB, where, c_list_sorted, out m_tableUsers, out err);
-                FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
-
-                //Thread_ProcCheckedStart();
-                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+                fillDataGridViewClient(where, out err);
             }
             else
                 ;
@@ -336,7 +400,7 @@ namespace StatisticCommon
             //Получение списка дата/время запуска приложения
             bool rowChecked = false;
             string strDatetimeStart = string.Empty;
-            i = m_LogParse.Select((int)LogParse.TYPE_LOGMESSAGE.START, string.Empty, string.Empty, ref rows);
+            i = m_LogParse.Select(0, string.Empty, string.Empty, ref rows);
             for (i = 0; i < rows.Length; i ++)
             {
                 if (i == (rows.Length - 1))
@@ -344,12 +408,15 @@ namespace StatisticCommon
                 else
                     ;
 
-                strDatetimeStart += rowChecked.ToString() + ";" + rows[i]["DATE_TIME"].ToString() + @"&";
+                strDatetimeStart += rowChecked.ToString()
+                        + m_chDelimeters[(int)INDEX_DELIMETER.PART]
+                        + rows[i]["DATE_TIME"].ToString()
+                        + m_chDelimeters[(int)INDEX_DELIMETER.ROW];
             }
 
             if (strDatetimeStart.Length > 0)
             {
-                strDatetimeStart = strDatetimeStart.Substring(0, strDatetimeStart.Length - 1);
+                strDatetimeStart = strDatetimeStart.Substring(0, strDatetimeStart.Length - m_chDelimeters[(int)INDEX_DELIMETER.ROW].Length);
                 BeginInvoke(delegateAppendDatetimeStart, strDatetimeStart);
             }
             else
@@ -369,7 +436,7 @@ namespace StatisticCommon
             string where = string.Empty;
             int i = -1;
             int rowIndex = dgvDatetimeStart.SelectedRows [0].Index;
-            int[] arTypeLogMsgCounter = new int[(int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE];
+            int[] arTypeLogMsgCounter = new int[dgvTypeMessage.Rows.Count];
 
             dgvDatetimeStart.Rows [m_prevDatetimeRowIndex].Cells [0].Value = false;
             dgvDatetimeStart.Rows[rowIndex].Cells[0].Value = true;
@@ -383,25 +450,24 @@ namespace StatisticCommon
             else
                 ;
 
-            i = SelectLogMessage(-1, DateTime.Parse(dgvDatetimeStart.Rows[rowIndex].Cells[1].Value.ToString()), dtEnd, ref rows);            
+            i = SelectLogMessage(-1, DateTime.Parse(dgvDatetimeStart.Rows[rowIndex].Cells[1].Value.ToString()), dtEnd, ref rows);
+            List<int> listIdTypeMessages = LogParse_DB.s_IdTypeMessages.ToList<int>();
 
             for (i = 0; i < rows.Length; i++)
             {
-                if (Convert.ToInt32(rows[i]["TYPE"]) == (int)LogParse.TYPE_LOGMESSAGE.DETAIL)
-                    TabLoggingAppendText("    " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
-                else
-                    TabLoggingAppendText ("[" + rows[i]["DATE_TIME"] + "]: " + rows[i]["MESSAGE"].ToString() + Environment.NewLine);
+                TabLoggingAppendText (getTabLoggingTextRow (rows[i]));
 
-                arTypeLogMsgCounter[Convert.ToInt32 (rows[i]["TYPE"])] ++;
+                //???Весьма ресурсоемкая обработка...
+                arTypeLogMsgCounter[listIdTypeMessages.IndexOf (Convert.ToInt32 (rows[i]["TYPE"]))] ++;
             }
 
             TabLoggingAppendText (string.Empty);
 
-            for (i = 0; i < (int)LogParse.TYPE_LOGMESSAGE.COUNT_TYPE_LOGMESSAGE; i++)
-            {
+            for (i = 0; i < dgvTypeMessage.Rows.Count; i++)
                 dgvTypeMessage.Rows [i].Cells [2].Value = arTypeLogMsgCounter [i];
-            }
         }
+
+        protected abstract string getTabLoggingTextRow(DataRow r);        
 
         private void tabControlAnalyzer_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -626,6 +692,11 @@ namespace StatisticCommon
             m_tcpClient.Write("TAB_VISIBLE=?");
         }
 
+        protected override void fillTypeMessage()
+        {
+            fillTypeMessage(LogParse_File.DESC_LOGMESSAGE);
+        }
+
         protected override void Thread_ProcCheckedStart()
         {
             m_listTCPClientUsers = new List<TcpClientAsync>();
@@ -771,6 +842,18 @@ namespace StatisticCommon
         {
             return m_LogParse.Select(-1, beg.ToShortDateString (), end.ToShortDateString (), ref rows);
         }
+
+        protected override string getTabLoggingTextRow(DataRow r)
+        {
+            string strRes = string.Empty;
+
+            if (Convert.ToInt32(r["TYPE"]) == (int)LogParse_File.TYPE_LOGMESSAGE.DETAIL)
+                strRes = "    " + r["MESSAGE"].ToString() + Environment.NewLine;
+            else
+                strRes = "[" + r["DATE_TIME"] + "]: " + r["MESSAGE"].ToString() + Environment.NewLine;
+
+            return strRes;
+        }
     }
 
     public class FormMainAnalyzer_DB : FormMainAnalyzer
@@ -849,6 +932,11 @@ namespace StatisticCommon
                 msecSleep = 666; //Нет соединения с БД...
 
             m_timerChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
+        }
+
+        protected override void fillTypeMessage()
+        {
+            fillTypeMessage(LogParse_DB.DESC_LOGMESSAGE);
         }
 
         protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
@@ -958,29 +1046,65 @@ namespace StatisticCommon
 
         protected override void StartLogParse (string id)
         {
-            m_LogParse.Start (m_idListenerLoggingDB.ToString () + @"," + id);
+            m_LogParse.Start (m_chDelimeters[(int)INDEX_DELIMETER.PART].Length
+                    + m_chDelimeters[(int)INDEX_DELIMETER.PART]
+                    + m_idListenerLoggingDB.ToString ()
+                    + m_chDelimeters[(int)INDEX_DELIMETER.PART] + id);
         }
 
         protected override int SelectLogMessage(int type, DateTime beg, DateTime end, ref DataRow[] rows)
         {
             return (m_LogParse as LogParse_DB).Select(m_idListenerLoggingDB, -1, beg, end, ref rows);
         }
+
+        protected override string getTabLoggingTextRow(DataRow r)
+        {
+            string strRes = string.Empty;
+
+            strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
+                                    , new string[] {
+                                        r["DATE_TIME"].ToString ()
+                                        , r["TYPE"].ToString ()
+                                        , r["MESSAGE"].ToString()
+                                    }
+            );
+
+            return strRes;
+        }        
     }
 
     public class LogParse_DB : LogParse
     {
+        public enum TYPE_LOGMESSAGE { START, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
+        public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
+                                            "Действие", "Отладка", "Исключение",
+                                            "Исключение БД",
+                                            "Ошибка",
+                                            "Предупреждение",
+                                            "Неопределенный тип" };
+
         private int m_idUser;
 
         public LogParse_DB () : base ()
         {
             m_idUser = -1;
+
+            s_IdTypeMessages = new int[] {
+                1, 2, 3, 4, 5, 6, 7, 8, 9
+                , 10
+            };
         }
 
         protected override void Thread_Proc(object data)
         {
-            int err = -1;
-            DbConnection connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse((data as string).Split(',')[0]), out err);
-            m_idUser = Int32.Parse ((data as string).Split(',')[1]);
+            int err = -1
+                , lDelimeter = 0;
+
+            while (Char.IsDigit((data as string).ToCharArray()[lDelimeter]) == true) lDelimeter++;
+            string strDelimeter = (data as string).Substring(lDelimeter, Int32.Parse((data as string).Substring (0, lDelimeter)));
+            string text = (data as string).Substring(lDelimeter + strDelimeter.Length, (data as string).Length - (lDelimeter + strDelimeter.Length));
+            DbConnection connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse(text.Split(new string [] { strDelimeter }, StringSplitOptions.None)[0]), out err);
+            m_idUser = Int32.Parse(text.Split(new string[] { strDelimeter }, StringSplitOptions.None)[1]);
 
             string query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
                     + @" FROM [techsite-2.X.X].[dbo].[logging]"
@@ -991,15 +1115,18 @@ namespace StatisticCommon
             DataTable tblDatetimeStart = DbTSQLInterface.Select(ref connLoggingDB, query, null, null, out err);
             DateTime dtStart;
 
+            int cnt = 0;
             for (int i = 0; i < tblDatetimeStart.Rows.Count; i ++)
             {
                 dtStart = new DateTime (Int32.Parse(tblDatetimeStart.Rows[i][@"YYYY"].ToString ())
                                                 , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString ())
                                                 , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString ()));
-                m_tableLog.Rows.Add(new object[] { dtStart, (int)TYPE_LOGMESSAGE.START, ProgramBase.MessageWellcome });
+                m_tableLog.Rows.Add(new object[] { dtStart, s_IdTypeMessages [(int)TYPE_LOGMESSAGE.START], ProgramBase.MessageWellcome });
+
+                cnt += Int32.Parse(tblDatetimeStart.Rows[i][@"CNT"].ToString());
             }
 
-            base.Thread_Proc(data);
+            base.Thread_Proc(cnt);
         }
 
         public int Select(int iListenerId, int type, DateTime beg, DateTime end, ref DataRow[] res)
@@ -1056,6 +1183,6 @@ namespace StatisticCommon
                 ;
 
             return iRes;
-        }
+        }        
     }
 }
