@@ -284,6 +284,12 @@ namespace StatisticCommon
             GetRDGValues (m_typeFields, prevIndxTECComponents);
         }
 
+        private void doubleParse(string valIn, out double valOut)
+        {
+            //valOut = double.Parse(valIn, ProgramBase.ss_MainCultureInfo);
+            valOut = double.Parse(valIn, System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowDecimalPoint | System.Globalization.NumberStyles.AllowThousands);
+        }
+
         private Errors saveCSVValues (int indx, object pbr_number) {
             Errors errRes = Errors.NoSet;
 
@@ -316,10 +322,10 @@ namespace StatisticCommon
                         {
                             switch (typeValues)
                             {
-                                case CONN_SETT_TYPE.PBR:                                    
-                                    curRDGValues[hour].pbr = double.Parse(r[@"TotalBR"].ToString(), ProgramBase.ss_MainCultureInfo);
-                                    curRDGValues[hour].pmin = double.Parse(r[@"PminBR"].ToString(), ProgramBase.ss_MainCultureInfo);
-                                    curRDGValues[hour].pmax = double.Parse(r[@"PmaxBR"].ToString(), ProgramBase.ss_MainCultureInfo);
+                                case CONN_SETT_TYPE.PBR:
+                                    doubleParse(r[@"TotalBR"].ToString(), out curRDGValues[hour].pbr);
+                                    doubleParse(r[@"PminBR"].ToString(), out curRDGValues[hour].pmin);
+                                    doubleParse(r[@"PmaxBR"].ToString(), out curRDGValues[hour].pmax);
 
                                     curRDGValues[hour].pbr_number = pbr_number as string;
 
@@ -327,10 +333,10 @@ namespace StatisticCommon
                                     //Console.WriteLine(@"GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @") TotalBR=" + curRDGValues[hour].pbr + @"; PBRNumber=" + curRDGValues[hour].pbr_number);
                                     break;
                                 case CONN_SETT_TYPE.ADMIN:
-                                    curRDGValues[hour].recomendation = double.Parse(r[@"REC"].ToString(), ProgramBase.ss_MainCultureInfo);
-                                    curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString(), ProgramBase.ss_MainCultureInfo) == 1;
-                                    curRDGValues[hour].deviation = double.Parse(r[@"DIVIAT"].ToString(), ProgramBase.ss_MainCultureInfo);
-                                    curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString(), ProgramBase.ss_MainCultureInfo) == 1;
+                                    doubleParse(r[@"REC"].ToString(), out curRDGValues[hour].recomendation);
+                                    curRDGValues[hour].deviationPercent = Int16.Parse(r[@"IS_PER"].ToString()) == 1;
+                                    doubleParse(r[@"DIVIAT"].ToString(), out curRDGValues[hour].deviation);
+                                    curRDGValues[hour].fc = Int16.Parse(r[@"FC"].ToString()) == 1;
                                     break;
                                 default:
                                     break;

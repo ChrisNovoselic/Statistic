@@ -121,7 +121,7 @@ namespace StatisticCommon
                 ProcessChilds(igo, 1, idInnner);
             }
 
-            if (m_listIGO[m_listIGO.Count - 1].IdInner == idInnner)
+            if ((m_listIGO.Count > 0) && (m_listIGO[m_listIGO.Count - 1].IdInner == idInnner))
                 return m_listIGO[m_listIGO.Count - 1];
             else
                 return null;
