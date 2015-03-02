@@ -69,6 +69,8 @@ namespace StatisticCommon
                 dgvFilterActives.CellClick += new DataGridViewCellEventHandler(dgvFilterActives_CellClick);
                 dgvFilterActives.Enabled = true;
 
+                dgvFilterTypeMessage.CellClick += new DataGridViewCellEventHandler(dgvFilterTypeMessage_CellClick);
+
                 int err = -1;
 
                 m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
@@ -222,7 +224,13 @@ namespace StatisticCommon
 
             protected void TabLoggingClearDatetimeStart() { dgvDatetimeStart.Rows.Clear(); }
 
-            protected void TabLoggingClearText() { m_LogParse.Clear(); /*textBoxLog.Clear();*/ dgvLogMessage.Rows.Clear(); }
+            protected void TabLoggingClearText()
+            {
+                m_LogParse.Clear();
+                /*textBoxLog.Clear();*/ dgvLogMessage.Rows.Clear();
+                for (int i = 0; i < dgvFilterTypeMessage.Rows.Count; i++)
+                    dgvFilterTypeMessage.Rows[(int)i].Cells[2].Value = 0;
+            }
 
             void TabLoggingPositionText()
             {
@@ -256,7 +264,7 @@ namespace StatisticCommon
                         parts = text.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None);
                         dgvLogMessage.Rows.Add(parts);
 
-                        i = listIdTypeMessages[Int32.Parse(parts[1])];
+                        i = listIdTypeMessages.IndexOf (Int32.Parse(parts[1]));
                         if ((i < arTypeLogMsgCounter.Length) && (!(i < 0)))
                         {
                             arTypeLogMsgCounter[i]++;
@@ -416,6 +424,19 @@ namespace StatisticCommon
                     ;
             }
 
+            private void dgvFilterTypeMessage_CellClick(object sender, DataGridViewCellEventArgs e)
+            {
+                int i = -1, err = -1;
+                string where = string.Empty;
+
+                if (e.ColumnIndex == 0)
+                {
+                    dgvFilterTypeMessage.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterTypeMessage.Rows[e.RowIndex].Cells[0].Value.ToString());
+                }
+                else
+                    ;
+            }
+
             public void LogParseExit()
             {
                 int i = -1;
@@ -439,7 +460,7 @@ namespace StatisticCommon
 
                     strDatetimeStart += rowChecked.ToString()
                             + m_chDelimeters[(int)INDEX_DELIMETER.PART]
-                            + rows[i]["DATE_TIME"].ToString()
+                            + rows[i]["DATE_TIME"].ToString ()
                             + m_chDelimeters[(int)INDEX_DELIMETER.ROW];
                 }
 
@@ -1447,7 +1468,7 @@ namespace StatisticCommon
 
                 strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
                                         , new string[] {
-                                            r["DATE_TIME"].ToString ()
+                                            DateTime.Parse (r["DATE_TIME"].ToString ()).ToString (@"HH:mm:ss.fff")
                                             , r["TYPE"].ToString ()
                                             , r["MESSAGE"].ToString()
                                         }
