@@ -205,9 +205,9 @@ namespace StatisticCommon
                 // labelFilterRoles
                 // 
                 this.labelFilterRoles.AutoSize = true;
-                this.labelFilterRoles.Location = new System.Drawing.Point(9, 71);
+                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 71);
                 this.labelFilterRoles.Name = "labelFilterRoles";
-                this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 this.labelFilterRoles.TabIndex = 5;
                 this.labelFilterRoles.Text = "Фильтр: роли";
                 // 
@@ -246,12 +246,13 @@ namespace StatisticCommon
                 // dataGridViewRolesTextBoxColumnDesc
                 // 
                 i = 1;
-                this.dgvFilterRoles.Columns[i].Frozen = true;
+                //this.dgvFilterRoles.Columns[i].Frozen = true;
                 this.dgvFilterRoles.Columns[i].HeaderText = "Desc";
                 this.dgvFilterRoles.Columns[i].Name = "dataGridViewRolesTextBoxColumnDesc";
                 this.dgvFilterRoles.Columns[i].ReadOnly = true;
                 this.dgvFilterRoles.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoles.Columns[i].Width = 145;
+                //this.dgvFilterRoles.Columns[i].Width = 145;
+                this.dgvFilterRoles.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 // 
                 // dgvClient
                 // 
@@ -398,9 +399,10 @@ namespace StatisticCommon
                 // 
                 this.dgvFilterTypeMessage.AllowUserToAddRows = false;
                 this.dgvFilterTypeMessage.AllowUserToDeleteRows = false;
+                dgvFilterTypeMessage.ReadOnly = true;
                 dgvFilterTypeMessage.Dock = DockStyle.Fill;
                 //this.dgvFilterTypeMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                this.dgvFilterTypeMessage.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                //this.dgvFilterTypeMessage.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
                 this.dgvFilterTypeMessage.ColumnHeadersVisible = false;
                 this.dgvFilterTypeMessage.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
                     new DataGridViewCheckBoxColumn (),
@@ -420,7 +422,7 @@ namespace StatisticCommon
                 // 
                 i = 0;
                 this.dgvFilterTypeMessage.Columns[i].Frozen = true;
-                this.dgvFilterTypeMessage.Columns[i].HeaderText = "Use";
+                //this.dgvFilterTypeMessage.Columns[i].HeaderText = "Use";
                 this.dgvFilterTypeMessage.Columns[i].Name = "dataGridViewCheckBoxColumnTypeMessageUse";
                 this.dgvFilterTypeMessage.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvFilterTypeMessage.Columns[i].Width = 25;
@@ -429,7 +431,7 @@ namespace StatisticCommon
                 // 
                 i = 1;
                 this.dgvFilterTypeMessage.Columns[i].Frozen = true;
-                this.dgvFilterTypeMessage.Columns[i].HeaderText = "Desc";
+                //this.dgvFilterTypeMessage.Columns[i].HeaderText = "Desc";
                 this.dgvFilterTypeMessage.Columns[i].Name = "dataGridViewTextBoxColumnTypeMessageDesc";
                 this.dgvFilterTypeMessage.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvFilterTypeMessage.Columns[i].Width = 105;
@@ -437,7 +439,8 @@ namespace StatisticCommon
                 // dataGridViewTextBoxColumnCounter
                 // 
                 i = 2;
-                this.dgvFilterTypeMessage.Columns[i].Frozen = true;
+                this.dgvFilterTypeMessage.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                //this.dgvFilterTypeMessage.Columns[i].Frozen = true;
                 this.dgvFilterTypeMessage.Columns[i].HeaderText = "Count";
                 this.dgvFilterTypeMessage.Columns[i].Name = "ColumnCount";
                 this.dgvFilterTypeMessage.Columns[i].Width = 20;                

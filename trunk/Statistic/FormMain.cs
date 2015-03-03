@@ -1047,7 +1047,8 @@ namespace Statistic
 
             //Вариант №2
             formAnalyzer.ShowDialog(this);
-            activateTabPage();
+            DbSources.Sources().UnRegister (idListener);
+            activateTabPage(); //по умолчанию текущая вкладка и 'true'
         }
 
         ////Вариант №1

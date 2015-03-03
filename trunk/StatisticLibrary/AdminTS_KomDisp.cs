@@ -284,10 +284,80 @@ namespace StatisticCommon
             GetRDGValues (m_typeFields, prevIndxTECComponents);
         }
 
+        private double doubleParse(string valIn)
+        {
+            double valOut = double.NaN;
+            int iPartInt = Int32.MinValue, iPartFract = Int32.MinValue; 
+            string valPart = string.Empty;
+
+            valIn = valIn.Trim ();
+
+            int i = 0;
+            while (i < valIn.Length)
+            {
+                if (Char.IsDigit (valIn[i]) == false)
+                    break;
+                else
+                    ;
+
+                valPart += valIn[i];
+                i ++;
+            }
+
+            if (valPart.Length > 0)
+                iPartInt = Int32.Parse (valPart);
+            else
+                ;
+            valPart = string.Empty;
+
+            i ++;
+
+            while (i < valIn.Length)
+            {
+                if (Char.IsDigit (valIn[i]) == false)
+                    break;
+                else
+                    ;
+
+                valPart += valIn[i];
+                i ++;
+            }
+
+            if (valPart.Length > 0)
+                iPartFract = Int32.Parse (valPart);
+            else
+                ;
+
+            if (! (iPartInt == Int32.MinValue))
+                valOut = iPartInt;
+            else
+                ;
+
+            if (! (iPartFract == Int32.MinValue))
+                if (!(iPartInt == Int32.MinValue))
+                    valOut += iPartInt / Math.Pow (10, valPart.Length + 1);
+                else
+                    valOut = iPartInt / Math.Pow(10, valPart.Length + 1);
+            else
+                ;
+
+            return valOut;
+        }
+
         private void doubleParse(string valIn, out double valOut)
         {
-            //valOut = double.Parse(valIn, ProgramBase.ss_MainCultureInfo);
-            valOut = double.Parse(valIn, System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowDecimalPoint | System.Globalization.NumberStyles.AllowThousands);
+            try {
+                //valOut = double.Parse(valIn, ProgramBase.ss_MainCultureInfo);
+                valOut = double.Parse(valIn, System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowDecimalPoint | System.Globalization.NumberStyles.AllowThousands);
+            }
+            catch (Exception e) {
+                valOut = doubleParse (valIn);
+
+                if (valOut == double.NaN)
+                    throw new Exception(@"AdminTS_KomDisp::doubleParse () - вход = " + valIn, e);
+                else
+                    ;
+            }
         }
 
         private Errors saveCSVValues (int indx, object pbr_number) {
