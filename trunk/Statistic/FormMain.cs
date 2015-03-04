@@ -46,7 +46,7 @@ namespace Statistic
         /// Признак процесса авто/загрузки вкладок
         /// для предотвращения сохранения их в режиме "реальное время"
         /// </summary>
-        private static bool m_bAutoLoadTabs = false;
+        private static bool m_bAutoActionTabs = false;
 
         public enum ID_ERROR_INIT { UNKNOWN = -1, }
         private enum INDEX_ERROR_INIT { UNKNOWN = 0, }
@@ -300,19 +300,19 @@ namespace Statistic
                         int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
                         m_timerAppReset = new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset);
 
-                        m_bAutoLoadTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
+                        m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
                         
                         //сменитьРежимToolStripMenuItem_Click();
                         //formChangeMode.LoadProfile(@"116");
                         Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + listIDs, Logging.INDEX_MESSAGE.NOT_SET);
                         formChangeMode.LoadProfile(string.Empty);
 
-                        if (m_bAutoLoadTabs == true)
+                        if (m_bAutoActionTabs == true)
                             fileProfileLoadAddingTab();
                         else
                             ;
 
-                        m_bAutoLoadTabs = false;
+                        m_bAutoActionTabs = false;
                     }
                     else
                         ;
@@ -539,13 +539,13 @@ namespace Statistic
 
         private void файлПрофильЗагрузитьToolStripMenuItem_Click(object sender, EventArgs e)
         {            
-            m_bAutoLoadTabs = true;
+            m_bAutoActionTabs = true;
             
             fileProfileLoadStandatdTab ();
 
             fileProfileLoadAddingTab ();
 
-            m_bAutoLoadTabs = false;
+            m_bAutoActionTabs = false;
         }
 
         private void fileProfileLoadStandatdTab () {
@@ -662,6 +662,8 @@ namespace Statistic
         private void Stop(FormClosingEventArgs ev)
         {
             int i = -1;
+
+            m_bAutoActionTabs = true;
 
             if ((!(formChangeMode == null))
                 && ((m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.DISP) == true)
@@ -1250,7 +1252,7 @@ namespace Statistic
             }
 
             //if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
-            if (m_bAutoLoadTabs == false)
+            if (m_bAutoActionTabs == false)
                 //Сохранить список основных вкладок...
                 if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
                     fileProfileSaveStandardTab ();
@@ -1704,7 +1706,7 @@ namespace Statistic
         }
 
         private void FormMain_PanelCustomTecView_EvtContentChanged () {
-            if (m_bAutoLoadTabs == false)
+            if (m_bAutoActionTabs == false)
                 this.BeginInvoke(new DelegateFunc(fileProfileSaveAddingTab));
             else
                 ;
@@ -1790,7 +1792,7 @@ namespace Statistic
                 obj.Stop();
             }
 
-            if (m_bAutoLoadTabs == false)
+            if (m_bAutoActionTabs == false)
                 //Сохранить список дополнительных вкладок...
                 if (файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked == true)
                     fileProfileSaveAddingTab();
