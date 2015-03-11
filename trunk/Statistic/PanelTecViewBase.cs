@@ -438,8 +438,8 @@ namespace Statistic
         protected DataGridViewHours m_dgwHours;
         protected DataGridViewMins m_dgwMins;
 
-        private DataGridViewCellStyle dgvCellStyleError;
-        private DataGridViewCellStyle dgvCellStyleCommon;
+        private DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
+            , dgvCellStyleCommon;
 
         //protected DelegateFunc delegateSetNowDate;
 
@@ -605,6 +605,8 @@ namespace Statistic
 
             dgvCellStyleError = new DataGridViewCellStyle();
             dgvCellStyleError.BackColor = Color.Red;
+            dgvCellStyleWarning = new DataGridViewCellStyle();
+            dgvCellStyleWarning.BackColor = Color.Yellow;
             dgvCellStyleCommon = new DataGridViewCellStyle();
 
             if (tec.type() == TEC.TEC_TYPE.BIYSK)
@@ -957,7 +959,12 @@ namespace Statistic
                     cntWarn = 0;
 
                 if (! (cntWarn == 0))
-                    curCellStyle = dgvCellStyleError;
+                {
+                    if (cntWarn > 3)
+                        curCellStyle = dgvCellStyleError;
+                    else
+                        curCellStyle = dgvCellStyleWarning;
+                }
                 else
                     curCellStyle = dgvCellStyleCommon;
                 m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;

@@ -737,8 +737,11 @@ namespace Statistic
                             if ((! (warn == 0)) &&
                                 (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1))
                             {
-                                clrBackColor = Color.Red;
-                                cntWarn ++;
+                                cntWarn++;
+                                if (cntWarn > 3)
+                                    clrBackColor = Color.Red;
+                                else
+                                    clrBackColor = Color.Yellow;                                
                             }
                             else
                                 cntWarn = 0;
