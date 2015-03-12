@@ -1783,7 +1783,10 @@ namespace Statistic
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(obj);
 
                 obj.Start();
-                ActivateTabPage();
+                if (m_bAutoActionTabs == false)
+                    ActivateTabPage();
+                else
+                    ;
             }
             else
             {
