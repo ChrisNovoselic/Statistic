@@ -26,7 +26,9 @@ namespace Statistic
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
-        private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2, CUSTOM_2X3, DATETIMESYNC_SOURCE_DATA, };
+        private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1, DATETIMESYNC_SOURCE_DATA
+                , CUSTOM_2X2_2, CUSTOM_2X3_2,
+        };
         private class ADDING_TAB
         {
             public ToolStripMenuItem menuItem;
@@ -730,21 +732,7 @@ namespace Statistic
         {
             if (!(tecViews == null))
             {
-                //for (i = 0; i < formChangeMode.tec_index.Count; i++)
-                foreach (PanelTecViewBase tv in tecViews)
-                {
-                    tv.Stop();
-                }
-
-                tecViews.Clear();
-
-                tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
-
-                tclTecViews.TabPages.Clear();
-
-                tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
-
-                //selectedTecViews.Clear();
+                 clearTabPages (false);
             }
             else
                 ;
@@ -756,14 +744,14 @@ namespace Statistic
             }
         }
 
-        private void ClearTabPages()
+        private void clearTabPages(bool bAttachSelIndxChanged)
         {
-            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             activateTabPage(tclTecViews.SelectedIndex, false);
 
             List<int> indxRemove = new List<int>();
-
+ 
             foreach (TabPage tab in tclTecViews.TabPages)
             {
                 if ((tab.Controls[0] is PanelTecViewBase) || (tab.Controls[0] is PanelAdmin)) {
@@ -778,14 +766,17 @@ namespace Statistic
 
             for (int i = indxRemove.Count - 1; !(i < 0); i--)
             {
-                tclTecViews.TabPages.RemoveAt(indxRemove[i]);
+                tclTecViews.RemoveTabPage(indxRemove[i]);
             }
 
-            tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
+            if (bAttachSelIndxChanged == true)
+                tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
+            else
+                ;
 
             //selectedTecViews.Clear();
 
-            Logging.Logg().Debug(@"FormMain::ClearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"FormMain::clearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         /// <summary>
@@ -1160,7 +1151,7 @@ namespace Statistic
             StartWait();
 
             //StartWait();
-            ClearTabPages ();
+            clearTabPages (true);
 
             Int16 parametrsTGBiysk = 0;
             int tecView_index = -1
@@ -1237,7 +1228,7 @@ namespace Statistic
                         else
                             ;
 
-                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr);
+                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, HTabCtrlEx.TYPE_TAB.FIXED);
 
                         tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
 
@@ -1614,7 +1605,7 @@ namespace Statistic
                             break;
                     }
 
-                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode));
+                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), HTabCtrlEx.TYPE_TAB.FIXED);
 
                     tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
@@ -1779,7 +1770,14 @@ namespace Statistic
         {
             if (bChecked == true)
             {
-                tclTecViews.AddTabPage(nameTab);
+                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
+
+                if (nameTab.IndexOf(@"по выбору 2") > -1)
+                    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
+                else
+                    ;
+
+                tclTecViews.AddTabPage(nameTab, typeTab);
                 tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(obj);
 
                 obj.Start();
@@ -1790,7 +1788,7 @@ namespace Statistic
             }
             else
             {
-                tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab(nameTab));
+                tclTecViews.RemoveTabPage(nameTab);
                 obj.Activate(false);
                 obj.Stop();
             }
@@ -1986,7 +1984,7 @@ namespace Statistic
 
         private void menuStrip_MenuActivate(object sender, EventArgs e)
         {
-            activateTabPage (tclTecViews.SelectedIndex, false);
+            activateTabPage(tclTecViews.SelectedIndex, false);
         }
 
         private ToolStripMenuItem getSelectedMenuItem (ToolStripMenuItem owner) {
