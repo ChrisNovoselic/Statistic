@@ -80,7 +80,7 @@ namespace Statistic
         
         public bool m_bIsActive;
 
-        public PanelCurPower(List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+        public PanelCurPower(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
         {
             InitializeComponent();
 
@@ -102,7 +102,7 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecCurPower(listTec[i], fErrRep, fWarRep, fActRep);
+                ptcp = new PanelTecCurPower(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
 
@@ -113,8 +113,8 @@ namespace Statistic
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
-        public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
-            : this(listTec, fErrRep, fWarRep, fActRep)
+        public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            : this(listTec, fErrRep, fWarRep, fActRep, fRepClr)
         {
             container.Add(this);
         }
@@ -225,7 +225,7 @@ namespace Statistic
 
             //private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecCurPower(StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
+            public PanelTecCurPower(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
             {
                 InitializeComponent();
 
@@ -236,7 +236,7 @@ namespace Statistic
                 markQueries.Marked ((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec }, markQueries);
-                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep);
+                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc (showTMGenPower);
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
@@ -244,8 +244,8 @@ namespace Statistic
                 Initialize();
             }
 
-            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec, DelegateFunc fErrRep, DelegateFunc fWarRep, DelegateFunc fActRep)
-                : this(tec, fErrRep, fWarRep, fActRep)
+            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+                : this(tec, fErrRep, fWarRep, fActRep, fRepClr)
             {
                 container.Add(this);
             }
@@ -385,7 +385,7 @@ namespace Statistic
 
                 lock (m_lockRep)
                 {
-                    FormMainBaseWithStatusStrip.m_report.ClearStates (true);
+                    m_tecView.ReportClear(true);
                 }
             }
 
@@ -408,7 +408,7 @@ namespace Statistic
                 }
                 else
                 {
-                    FormMainBaseWithStatusStrip.m_report.ClearStates (true);
+                    m_tecView.ReportClear(true);
                 }
             }
 

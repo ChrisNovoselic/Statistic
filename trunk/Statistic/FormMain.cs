@@ -29,6 +29,7 @@ namespace Statistic
         private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1, DATETIMESYNC_SOURCE_DATA
                 , CUSTOM_2X2_2, CUSTOM_2X3_2,
         };
+        private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
         {
             public ToolStripMenuItem menuItem;
@@ -56,10 +57,13 @@ namespace Statistic
 
         private PanelAdmin [] m_arPanelAdmin;
         Dictionary<int, ADDING_TAB> m_dictAddingTabs;
+        private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2 }
+                                                                                , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2 }
+                                                                            };
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
-        private List<PanelTecViewBase> tecViews;
+        private List<PanelTecViewBase> m_listStandardTabs;
         //private List<PanelTecViewBase> selectedTecViews;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
@@ -71,6 +75,8 @@ namespace Statistic
         //public FormParametersTG parametersTGForm;
         HStatisticUsers m_user;
         FormParametersTG m_formParametersTG;
+
+        Form [,] m_arFormFloat;
 
         TcpServerAsync m_TCPServer;
         System.Threading.Timer m_timerAppReset;
@@ -94,6 +100,7 @@ namespace Statistic
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
 
             tclTecViews.OnClose += delegateOnCloseTab;
+            tclTecViews.OnFloat += delegateOnFloatTab;
         }
 
         private string GetINIParametersOfID(int id)
@@ -114,7 +121,7 @@ namespace Statistic
             m_prevSelectedIndex = 1; //??? = -1
             m_markPrevStatePanelAdmin = new HMark ();
 
-            tecViews = new List<PanelTecViewBase>();
+            m_listStandardTabs = new List<PanelTecViewBase>();
 
             int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - DbSources.Sources().Register (...)", @"Отладка!");
@@ -238,7 +245,7 @@ namespace Statistic
                         }
 
                         m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport);
+                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                     }
 
                     string listIDs = string.Empty;
@@ -468,7 +475,23 @@ namespace Statistic
             }
         }
 
-        void delegateOnCloseTab(object sender, CloseTabEventArgs e)
+        INDEX_CUSTOM_TAB getIndexCustomTab (string text)
+        {
+            INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
+            if (text.Contains(@"2X3") == true)
+                indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
+            else
+                ;
+
+            return indxRes;
+        }
+
+        int getIndexItemCustomTab (string text)
+        {
+            return Int32.Parse (text.Substring (text.Length - 1, 1)) - 1;
+        }
+
+        void delegateOnCloseTab(object sender, HTabCtrlExEventArgs e)
         {
             //formChangeMode.SetItemChecked(m_ContextMenuStripListTecViews.Items.IndexOfKey(e.TabHeaderText), false);
 
@@ -500,12 +523,10 @@ namespace Statistic
                                     else
                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
                                         {
-                                            if (e.TabHeaderText.Contains(@"2X2") == true)
-                                                m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].menuItem.Checked = false;
-                                            else if (e.TabHeaderText.Contains(@"2X3") == true)
-                                                m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].menuItem.Checked = false;
-                                            else
-                                                ;
+                                            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab (e.TabHeaderText);
+                                            int indxItem = getIndexItemCustomTab (e.TabHeaderText);
+
+                                            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].menuItem.Checked = false;
                                         }
                                         else
                                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
@@ -517,6 +538,64 @@ namespace Statistic
                                             }
                                             else
                                                 ;
+        }
+
+        void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
+        {
+            if (m_arFormFloat == null)
+                m_arFormFloat = new Form[m_arIdCustomTabs.GetLength(0), m_arIdCustomTabs.GetLength(1)];
+            else
+                ;
+
+            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(e.TabHeaderText);
+            int indxItem = getIndexItemCustomTab (e.TabHeaderText);
+            m_arFormFloat[(int)indxTab, indxItem] = new FormAbout (); //new FormMainFloat();
+            m_arFormFloat[(int)indxTab, indxItem].Text = e.TabHeaderText;
+            //m_arFormFloat[(int)indxTab, indxItem].FormClosing += new FormClosingEventHandler(FormMain_OnFormFloat_Closing);
+            m_arFormFloat[(int)indxTab, indxItem].Load += new EventHandler(FormMain_OnFormFloat_Load);
+
+            //this.BeginInvoke(new DelegateObjectFunc(showFormFloat), new object[] { e.TabHeaderText, (int)indxTab, indxItem });
+            this.BeginInvoke(new DelegateObjectFunc(showFormFloat), e.TabHeaderText);
+
+            //m_arFormFloat[(int)indxTab, indxItem].ShowDialog(this);            
+            //m_arFormFloat[(int)indxTab, indxItem].Focus();
+        }
+
+        private void showFormFloat (object pars)
+        {
+            //tclTecViews.RemoveTabPage((string)((object[])pars)[0]);
+            //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)((object[])pars)[1], (int)((object[])pars)[2]]].panel.Activate(false);
+            //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)((object[])pars)[1], (int)((object[])pars)[2]]].panel.Stop();
+
+            //m_arFormFloat[(int)((object[])pars)[1], (int)((object[])pars)[2]].Show(null);
+            //m_arFormFloat[(int)((object[])pars)[1], (int)((object[])pars)[2]].Focus();
+
+            m_arFormFloat[0, 0].ShowDialog(this);
+            m_arFormFloat[0, 0].Focus();
+        }
+
+        private void FormMain_OnFormFloat_Load(object sender, EventArgs e)
+        {
+            Form formFloat = sender as Form; //FormMainFloat;
+            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
+            int indxItem = getIndexItemCustomTab(formFloat.Text);
+
+            using (formFloat)
+            //using (m_arFormFloat[(int)indxTab, indxItem])
+            {
+                //Controls.Add(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel);
+            }
+        }
+
+        private void FormMain_OnFormFloat_Closing(object sender, FormClosingEventArgs e)
+        {
+            FormMainFloat formFloat = sender as FormMainFloat;
+            //tclTecViews.AddTabPage(formFloat.Text, HTabCtrlEx.TYPE_TAB.FLOAT);
+            //tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(formFloat.Controls[0]);
+            //if (tclTecViews.TabPages.Count == 1)
+            //    activateTabPage (0, true);
+            //else
+            //    activateTabPage(tclTecViews.TabPages.Count - 1, false);
         }
 
         private void файлПрофильАвтоЗагрузитьСохранить_CheckedChanged(object sender, EventArgs e)
@@ -575,8 +654,10 @@ namespace Statistic
 
                     switch (id)
                     {
-                        case (int)ID_ADDING_TAB.CUSTOM_2X2:
-                        case (int)ID_ADDING_TAB.CUSTOM_2X3:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_1:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_1:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_2:
                             ((PanelCustomTecView)m_dictAddingTabs[id].panel).LoadProfile(profile.Substring(profile.IndexOf('=') + 1));
                             break;
                         default: //CUR_POWER, TM_SN_POWER...
@@ -618,8 +699,10 @@ namespace Statistic
                     string recTab = string.Empty;
                     switch (key)
                     {
-                        case (int)ID_ADDING_TAB.CUSTOM_2X2:
-                        case (int)ID_ADDING_TAB.CUSTOM_2X3:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_1:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_1:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_2:
                             recTab = key.ToString() + @"=" + ((PanelCustomTecView)m_dictAddingTabs[key].panel).SaveProfile();
                             break;
                         default: //CUR_POWER, TM_SN_POWER...
@@ -730,7 +813,7 @@ namespace Statistic
 
         private void StopTabPages()
         {
-            if (!(tecViews == null))
+            if (!(m_listStandardTabs == null))
             {
                  clearTabPages (false);
             }
@@ -854,7 +937,8 @@ namespace Statistic
             Properties.Settings.Default.Save ();
         }
 
-        private void MainForm_FormLoad(object sender, EventArgs e) {
+        private void FormMain_FormLoad(object sender, EventArgs e)
+        {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru
@@ -899,9 +983,9 @@ namespace Statistic
             this.Activate();            
         }
 
-        public override void Close(bool bForce) { if (bForce == false) base.Close(bForce); else MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.ApplicationExitCall, true)); }
+        public override void Close(bool bForce) { if (bForce == false) base.Close(bForce); else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
                 if (e.Cancel == false)
@@ -968,7 +1052,7 @@ namespace Statistic
                 else
                     ;
 
-                //foreach (PanelTecViewBase t in tecViews)
+                //foreach (PanelTecViewBase t in m_listStandardTabs)
                 //{
                 //    t.Reinit();
                 //}
@@ -992,9 +1076,9 @@ namespace Statistic
 
                     StopTabPages();
 
-                    if (!(tecViews == null))
-                        for (int i = 0; i < tecViews.Count; i++)
-                            tecViews[i].Stop();
+                    if (!(m_listStandardTabs == null))
+                        for (int i = 0; i < m_listStandardTabs.Count; i++)
+                            m_listStandardTabs[i].Stop();
                     else
                         ;
 
@@ -1141,9 +1225,9 @@ namespace Statistic
             else
                 ;
 
-            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, WarningReport, ActionReport);
+            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, WarningReport, ActionReport, ReportClear);
             panelTecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
-            tecViews.Add(panelTecView);
+            m_listStandardTabs.Add(panelTecView);
         }
 
         private void сменитьРежимToolStripMenuItem_Click()
@@ -1168,15 +1252,15 @@ namespace Statistic
                     else
                         ;
 
-                    for (tecView_index = 0; tecView_index < tecViews.Count; tecView_index++)
+                    for (tecView_index = 0; tecView_index < m_listStandardTabs.Count; tecView_index++)
                     {
-                        if ((tecViews[tecView_index].m_ID == formChangeMode.m_listItems[i].id))
+                        if ((m_listStandardTabs[tecView_index].m_ID == formChangeMode.m_listItems[i].id))
                             break;
                         else
                             ;
                     }
 
-                    if (! (tecView_index < tecViews.Count))
+                    if (! (tecView_index < m_listStandardTabs.Count))
                     {//Не найден элемент - создаем, добавляем
                         foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                         {
@@ -1184,7 +1268,7 @@ namespace Statistic
                             {
                                 addPanelTecView(t, formChangeMode.m_list_tec.IndexOf (t), -1);
 
-                                tecView_index = tecViews.Count - 1;
+                                tecView_index = m_listStandardTabs.Count - 1;
 
                                 break;
                             }
@@ -1199,7 +1283,7 @@ namespace Statistic
                                     {
                                         addPanelTecView(t, formChangeMode.m_list_tec.IndexOf(t), t.list_TECComponents.IndexOf (g));
 
-                                        tecView_index = tecViews.Count - 1;
+                                        tecView_index = m_listStandardTabs.Count - 1;
 
                                         break;
                                     }
@@ -1210,7 +1294,7 @@ namespace Statistic
                             else
                                 ;
 
-                            if (tecView_index == (tecViews.Count - 1))
+                            if (tecView_index == (m_listStandardTabs.Count - 1))
                                 break;
                             else
                                 ;
@@ -1219,20 +1303,20 @@ namespace Statistic
                     else
                         ;
 
-                    if (tecView_index < tecViews.Count)
+                    if (tecView_index < m_listStandardTabs.Count)
                     {
                         //list_tecView_index_checked.Add(tecView_index);
 
-                        if ((tecViews[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;
                         else
                             ;
 
                         tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, HTabCtrlEx.TYPE_TAB.FIXED);
 
-                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(tecViews[tecView_index]);
+                        tclTecViews.TabPages[tclTecViews.TabPages.Count - 1].Controls.Add(m_listStandardTabs[tecView_index]);
 
-                        tecViews[tecView_index].Start();
+                        m_listStandardTabs[tecView_index].Start();
                     }
                     else
                         ;
@@ -1383,117 +1467,6 @@ namespace Statistic
                 }
                 else
                 {
-                    //for (int i = (int)FormChangeMode.MANAGER.DISP; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                    //    if (m_arPanelAdmin [i].isActive == true)
-                    //    {
-                    //        if (m_report.actioned_state == true)
-                    //        {
-                    //            m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    //            m_lblDescError.Text = m_report.last_action;
-                    //        }
-                    //        else
-                    //            ;
-
-                    //        if (m_report.errored_state == true)
-                    //        {
-                    //            have_eror = true;
-                    //            m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    //            m_lblDescError.Text = m_report.last_error;
-                    //        }
-                    //        else
-                    //            ;
-                    //    }
-                    //    else
-                    //        ;
-
-                    //if (m_panelCurPower.m_bIsActive == true)
-                    //{
-                    //    if (m_report.actioned_state == true)
-                    //    {
-                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    //        m_lblDescError.Text = m_report.last_action;
-                    //    }
-                    //    else
-                    //        ;
-
-                    //    if (m_report.errored_state == true)
-                    //    {
-                    //        have_eror = true;
-                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    //        m_lblDescError.Text = m_report.last_error;
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-                    //else
-                    //    ;
-
-                    //if (m_panelSNPower.m_bIsActive == true)
-                    //{
-                    //    if (m_report.actioned_state == true)
-                    //    {
-                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    //        m_lblDescError.Text = m_report.last_action;
-                    //    }
-                    //    else
-                    //        ;
-
-                    //    if (m_report.errored_state == true)
-                    //    {
-                    //        have_eror = true;
-                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    //        m_lblDescError.Text = m_report.last_error;
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-                    //else
-                    //    ;
-
-                    //if (m_panelLastMinutes.m_bIsActive == true)
-                    //{
-                    //    if (m_report.actioned_state == true)
-                    //    {
-                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    //        m_lblDescError.Text = m_report.last_action;
-                    //    }
-                    //    else
-                    //        ;
-
-                    //    if (m_report.errored_state == true)
-                    //    {
-                    //        have_eror = true;
-                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    //        m_lblDescError.Text = m_report.last_error;
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-                    //else
-                    //    ;
-
-                    //if (m_panelCustomTecView.m_bIsActive == true)
-                    //{
-                    //    if (m_report.actioned_state == true)
-                    //    {
-                    //        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    //        m_lblDescError.Text = m_report.last_action;
-                    //    }
-                    //    else
-                    //        ;
-
-                    //    if (m_report.errored_state == true)
-                    //    {
-                    //        have_eror = true;
-                    //        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    //        m_lblDescError.Text = m_report.last_error;
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-                    //else
-                    //    ;
-
                     if (m_report.actioned_state == true)
                     {
                         m_lblDateMessage.Text = m_report.last_time_action.ToString();
@@ -1663,28 +1636,31 @@ namespace Statistic
         }
 
         private void createAddingTabs () {
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
             //m_panelCurPower.Start();
             ////В работе постоянно
             //m_panelCurPower.Activate (true);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
             ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
             //m_panelLastMinutes.Start();
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport);
+            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
             ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegate(null, null, delegateEvent);
 
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, WarningReport, ActionReport);
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, WarningReport, ActionReport);
-            //m_panelCustomTecView.SetDelegate(null, null, delegateEvent);
-            //m_panelCustomTecView.Start();
-            ((PanelCustomTecView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
-            ((PanelCustomTecView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
+            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, WarningReport, ActionReport, ReportClear);
+            ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
+            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].panel = new PanelCustomTecView(formChangeMode, new Size(2, 2), ErrorReport, WarningReport, ActionReport, ReportClear);
+            ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
+
+            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 0]].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, WarningReport, ActionReport, ReportClear);
+            ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 0]].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
+            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 1]].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, WarningReport, ActionReport, ReportClear);
+            ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 1]].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
 
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled == true)
             //if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB) == true)
@@ -1748,17 +1724,32 @@ namespace Statistic
 
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel, @"Собственные нужды", ((ToolStripMenuItem)sender).Checked);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel
+                ////Вариант №1
+                //, @"Собственные нужды"
+                ////Вариант №2
+                //, m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Text
+                //Вариант №3
+                , ((ToolStripMenuItem)sender).Text
+                , ((ToolStripMenuItem)sender).Checked);
         }
 
         private void выборОбъекты22ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].panel, @"Объекты по выбору 2X2", ((ToolStripMenuItem)sender).Checked);
+            ToolStripMenuItem obj = sender as ToolStripMenuItem;
+            int indxItem = ((ToolStripMenuItem)obj.OwnerItem).DropDownItems.IndexOf(obj);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, indxItem]].panel
+                , obj.OwnerItem.Text + @" - " + obj.Text
+                , obj.Checked);
         }
 
         private void выборОбъекты23ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].panel, @"Объекты по выбору 2X3", ((ToolStripMenuItem)sender).Checked);
+            ToolStripMenuItem obj = sender as ToolStripMenuItem;
+            int indxItem = ((ToolStripMenuItem)obj.OwnerItem).DropDownItems.IndexOf(obj);
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, indxItem]].panel
+                , obj.OwnerItem.Text + @" - " + obj.Text
+                , obj.Checked);
         }
 
         private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -1772,7 +1763,7 @@ namespace Statistic
             {
                 HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
 
-                if (nameTab.IndexOf(@"по выбору 2") > -1)
+                if (nameTab.IndexOf(@"Окно") > -1)
                     typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
                 else
                     ;
@@ -1836,7 +1827,7 @@ namespace Statistic
              int cy,         // height
              uint uFlags);       // window positioning flags
 
-        private void MainForm_Activated(object sender, EventArgs e)
+        private void FormMain_Activated(object sender, EventArgs e)
         {
             if (панельГрафическихToolStripMenuItem.Checked)
             {
@@ -1861,7 +1852,7 @@ namespace Statistic
         {
             if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                foreach (PanelTecViewBase tv in tecViews)
+                foreach (PanelTecViewBase tv in m_listStandardTabs)
                     if (tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
                         if (!(m_formParametersTG == null))

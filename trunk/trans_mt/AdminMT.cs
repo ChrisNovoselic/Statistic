@@ -288,7 +288,7 @@ namespace trans_mt
             }
 
             if (result == 0)
-                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
+                ReportClear (false);
             else
                 ;
 

@@ -256,7 +256,7 @@ namespace trans_mc
             }
 
             if (result == 0)
-                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
+                ReportClear (false);
             else
                 ;
 

@@ -235,7 +235,7 @@ namespace trans_gtp
                 setUIControlConnectionSettings(i);
 
                 m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                m_arAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport);
+                m_arAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
 
                 m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);
                 m_arAdmin[i].SetDelegateSaveComplete(saveDataGridViewAdminComplete);

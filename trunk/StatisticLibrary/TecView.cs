@@ -1456,7 +1456,7 @@ namespace StatisticCommon
             }
 
             if ((! (iRes < 0)) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
-                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
+                ReportClear (false);
             else
                 Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ());
 

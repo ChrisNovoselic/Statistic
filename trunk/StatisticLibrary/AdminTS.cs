@@ -1785,7 +1785,7 @@ namespace StatisticCommon
                     break;
             }
 
-            FormMainBaseWithStatusStrip.m_report.ActionReport(strRep);
+            ActionReport(strRep);
 
             //Logging.Logg().Debug(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
 
@@ -2080,7 +2080,7 @@ namespace StatisticCommon
             }
 
             if (result == 0)
-                FormMainBaseWithStatusStrip.m_report.ClearStates (false);
+                clearReportStates (false);
             else
                 ;
 
@@ -2616,7 +2616,7 @@ namespace StatisticCommon
             base.ClearValues();
 
             m_curRDGValues_PBR_0 = 0F;
-            
+
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 m_curRDGValues[i].pbr =

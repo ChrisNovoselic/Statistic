@@ -552,11 +552,6 @@ namespace StatisticCommon
             //lock (m_lockState)
             //{
                 base.ClearStates();
-
-                if (!(FormMainBaseWithStatusStrip.m_report == null))
-                    FormMainBaseWithStatusStrip.m_report.ClearStates(true);
-                else
-                    Logging.Logg().Error(@"HAdmin::ClearStates () - m_report=null", Logging.INDEX_MESSAGE.NOT_SET);
             //}
         }
 

@@ -47,8 +47,10 @@ namespace Statistic
 
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();            
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2, new ADDING_TAB("выборОбъектывыборОбъекты22ToolStripMenuItem", "Выбор объектов отображения (2X2)"));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3, new ADDING_TAB("выборОбъектывыборОбъекты23ToolStripMenuItem", "Выбор объектов отображения (2X3)"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_1, new ADDING_TAB("выборОбъектывыборОбъекты22-1-ToolStripMenuItem", "Окно 1"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_2, new ADDING_TAB("выборОбъектывыборОбъекты22-2-ToolStripMenuItem", "Окно 2"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1"));            
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
@@ -153,14 +155,21 @@ namespace Statistic
             // видToolStripMenuItem
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.панельГрафическихToolStripMenuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem,
-            m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem});
+                this.панельГрафическихToolStripMenuItem
+                , new System.Windows.Forms.ToolStripMenuItem (@"Объекты по выбору (2X2)", null, new System.Windows.Forms.ToolStripItem [] {
+                    m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].menuItem
+                }) 
+                , new System.Windows.Forms.ToolStripMenuItem (@"Объекты по выбору (2X3)", null, new System.Windows.Forms.ToolStripItem [] {
+                    m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 0]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 1]].menuItem
+                })
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem
+            });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             this.видToolStripMenuItem.Text = "Вид";
@@ -176,11 +185,13 @@ namespace Statistic
             // 
             // выборОбъекты22ToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты22ToolStripMenuItem_CheckedChanged);
             // 
             // выборОбъекты23ToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 0]].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 1]].menuItem.CheckedChanged += new System.EventHandler(this.выборОбъекты23ToolStripMenuItem_CheckedChanged);
             // 
             // значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem
             // 
@@ -373,9 +384,9 @@ namespace Statistic
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Статистика";
-            this.Activated += new System.EventHandler(this.MainForm_Activated);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(MainForm_FormLoad);
+            this.Activated += new System.EventHandler(this.FormMain_Activated);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
+            this.Load += new System.EventHandler(FormMain_FormLoad);
             this.ContextMenuStrip.Opened += new System.EventHandler(menuStrip_MenuActivate);
             this.ContextMenuStrip.Closed += new System.Windows.Forms.ToolStripDropDownClosedEventHandler(contextMenuStrip_Closed);
             this.menuStrip.ResumeLayout(false);
