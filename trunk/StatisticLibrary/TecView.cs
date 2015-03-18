@@ -590,11 +590,16 @@ namespace StatisticCommon
             new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
-            base.Activate(active);
+            bool bRes = base.Activate(active);
 
-            ClearStates();
+            if (bRes == true)
+                ClearStates();
+            else
+                ;
+
+            return bRes;
         }
 
         public override void Start()

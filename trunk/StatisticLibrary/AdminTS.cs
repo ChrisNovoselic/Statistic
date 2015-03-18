@@ -290,14 +290,18 @@ namespace StatisticCommon
             return listIndex;
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
-            base.Activate (active);
+            bool bRes = base.Activate (active);
 
-            if ((active == true) && (threadIsWorking == 1))
+            if ((active == true)
+                && (bRes == true)
+                && (threadIsWorking == 1))
                 GetRDGValues (m_typeFields, indxTECComponents);
             else
                 ;
+
+            return bRes;
         }
 
         public virtual bool IsRDGExcel (int indx) {
