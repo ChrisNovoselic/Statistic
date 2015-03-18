@@ -526,9 +526,14 @@ namespace Statistic
 
         public override void Activate(bool active)
         {
-            isActive = active;
+            if (!(isActive == active))
+            {
+                isActive = active;
 
-            m_admin.Activate (active);
+                m_admin.Activate(active);
+            }
+            else
+                ;
         }
     }
 }

@@ -62,6 +62,8 @@ namespace StatisticAlarm
                 && (m_adminAlarm.IsStarted == false))
                 m_adminAlarm.Start();
             else ;
+
+            m_adminAlarm.Activate(activate);
         }
 
         private void initAdminAlarm()

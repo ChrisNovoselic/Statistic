@@ -1130,8 +1130,9 @@ namespace Statistic
         public override void Activate(bool active)
         {
             int err = 0;
-            
-            if (Started == true)
+
+            if ((Started == true)
+                && (!(isActive == active)))
             {
                 isActive = active;
 
@@ -1151,7 +1152,8 @@ namespace Statistic
 
                     if (m_tecView.currHour == true)
                         NewDateRefresh();
-                    else {
+                    else
+                    {
                         updateGraphicsRetro(markSourceData);
                     }
 
@@ -1170,7 +1172,11 @@ namespace Statistic
                 }
             }
             else
-                err = -1; //Ошибка
+            {
+                err = -1; //???Ошибка
+
+                Logging.Logg().Warning(@"PanelTecViewBase::Activate (" + active + @") - ... ID=" + m_ID + @", Started=" + Started + @", isActive=" + isActive, Logging.INDEX_MESSAGE.NOT_SET);
+            }
         }
 
         private void ShowValues(string caption)
