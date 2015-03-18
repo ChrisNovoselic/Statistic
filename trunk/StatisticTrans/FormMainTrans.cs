@@ -218,8 +218,8 @@ namespace StatisticTrans
                 ;
 
             // m_statusStripMain
-            FormMainBaseWithStatusStrip.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
-            FormMainBaseWithStatusStrip.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
+            this.m_statusStripMain.Location = new System.Drawing.Point(0, 546);
+            this.m_statusStripMain.Size = new System.Drawing.Size(841, 22);
             // m_lblMainState
             this.m_lblMainState.Size = new System.Drawing.Size(166, 17);
             // m_lblDateError

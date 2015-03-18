@@ -350,7 +350,7 @@ namespace Statistic
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tclTecViews.Location = new System.Drawing.Point(0, 24);
             this.tclTecViews.Name = "tclTecViews";
-            this.tclTecViews.SelectedIndex = 0;
+            //this.tclTecViews.SelectedIndex = 0;
             this.tclTecViews.Size = new System.Drawing.Size(982, 735);
             this.tclTecViews.TabIndex = 3;
             this.tclTecViews.SelectedIndexChanged += new System.EventHandler(this.tclTecViews_SelectedIndexChanged);

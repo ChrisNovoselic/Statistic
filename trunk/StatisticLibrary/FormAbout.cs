@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     public partial class FormAbout : Form
@@ -14,7 +16,7 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
-            m_lblProductVersion.Text = Application.ProductVersion/*Properties.Resources.TradeMarkVersion*/;
+            m_lblProductVersion.Text = ProgramBase.AppProductVersion; //Application.ProductVersion; //Properties.Resources.TradeMarkVersion;
         }
 
         private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

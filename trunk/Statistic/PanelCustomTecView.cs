@@ -28,7 +28,7 @@ namespace Statistic
             public event DelegateFunc EventRestruct;
 
             private int m_prevViewOrientation;
-            
+
             //public bool ContentEnabled {
             //    get {
             //        bool bRes = true;
@@ -256,8 +256,11 @@ namespace Statistic
 
                 //Назначить объект
                 int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]));
-                if ((!(indx < 0)) && (indx < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
+                if ((!(indx < 0)) && (indx < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)) {
                     ContextMenu.MenuItems[m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))].PerformClick();
+
+                    ContentMenuStateChange();
+                }
                 else
                     ; //??? Ошибка: не найден
             }
@@ -391,10 +394,7 @@ namespace Statistic
             this.RowCount = sz.Height;
             this.ColumnCount = sz.Width;
 
-            m_fErrorReport = fErrRep;
-            m_fWarningReport = fWarRep;
-            m_fActionReport = fActRep;
-            m_fReportClear = fREpClr;
+            SetDelegateReport (fErrRep, fWarRep, fActRep, fREpClr);
 
             InitializeComponent();
         }
@@ -433,6 +433,20 @@ namespace Statistic
         }
 
         protected void Clear () {
+        }
+
+        public void SetDelegateReport (DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr) {
+            m_fErrorReport = fErrRep;
+            m_fWarningReport = fWarRep;
+            m_fActionReport = fActRep;
+            m_fReportClear = fRepClr;
+
+            foreach (var child in Controls) {
+                if (child is PanelTecView) {
+                    (child as PanelTecView).m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+                } else {
+                }
+            }
         }
 
         public void UpdateGraphicsCurrent(int type)
