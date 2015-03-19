@@ -27,7 +27,7 @@ namespace Statistic
     {
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1, DATETIMESYNC_SOURCE_DATA
-                , CUSTOM_2X2_2, CUSTOM_2X3_2,
+                , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4,
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -57,8 +57,8 @@ namespace Statistic
 
         private PanelAdmin [] m_arPanelAdmin;
         Dictionary<int, ADDING_TAB> m_dictAddingTabs;
-        private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2 }
-                                                                                , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2 }
+        private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
+                                                                                , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
                                                                             };
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
@@ -696,8 +696,12 @@ namespace Statistic
                         {
                             case (int)ID_ADDING_TAB.CUSTOM_2X2_1:
                             case (int)ID_ADDING_TAB.CUSTOM_2X2_2:
+                            case (int)ID_ADDING_TAB.CUSTOM_2X2_3:
+                            case (int)ID_ADDING_TAB.CUSTOM_2X2_4:
                             case (int)ID_ADDING_TAB.CUSTOM_2X3_1:
                             case (int)ID_ADDING_TAB.CUSTOM_2X3_2:
+                            case (int)ID_ADDING_TAB.CUSTOM_2X3_3:
+                            case (int)ID_ADDING_TAB.CUSTOM_2X3_4:
                                 ((PanelCustomTecView)m_dictAddingTabs[id].panel).LoadProfile(profile.Substring(profile.IndexOf('=') + 1));
                                 break;
                             default: //CUR_POWER, TM_SN_POWER...
@@ -744,8 +748,12 @@ namespace Statistic
                     {
                         case (int)ID_ADDING_TAB.CUSTOM_2X2_1:
                         case (int)ID_ADDING_TAB.CUSTOM_2X2_2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_3:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X2_4:
                         case (int)ID_ADDING_TAB.CUSTOM_2X3_1:
                         case (int)ID_ADDING_TAB.CUSTOM_2X3_2:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_3:
+                        case (int)ID_ADDING_TAB.CUSTOM_2X3_4:
                             recTab = key.ToString() + @"=" + ((PanelCustomTecView)m_dictAddingTabs[key].panel).SaveProfile();
                             break;
                         default: //CUR_POWER, TM_SN_POWER...
@@ -1355,7 +1363,7 @@ namespace Statistic
                         else
                             ;
 
-                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, HTabCtrlEx.TYPE_TAB.FIXED);
+                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, HTabCtrlEx.TYPE_TAB.FLOAT);
 
                         tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_listStandardTabs[tecView_index]);
 
@@ -1621,7 +1629,7 @@ namespace Statistic
                             break;
                     }
 
-                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), HTabCtrlEx.TYPE_TAB.FIXED);
+                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), HTabCtrlEx.TYPE_TAB.FLOAT);
 
                     tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
@@ -1854,12 +1862,12 @@ namespace Statistic
         {
             if (arCheckedStoped[0] == true)
             {
-                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
+                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
 
-                if (nameTab.IndexOf(@"Окно") > -1)
-                    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
-                else
-                    ;
+                //if (nameTab.IndexOf(@"Окно") > -1)
+                //    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
+                //else
+                //    ;
 
                 tclTecViews.AddTabPage(nameTab, typeTab);
                 tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(obj);

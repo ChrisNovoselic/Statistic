@@ -49,8 +49,12 @@ namespace Statistic
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_1, new ADDING_TAB("выборОбъектывыборОбъекты22-1-ToolStripMenuItem", "Окно 1"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_2, new ADDING_TAB("выборОбъектывыборОбъекты22-2-ToolStripMenuItem", "Окно 2"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_3, new ADDING_TAB("выборОбъектывыборОбъекты22-3-ToolStripMenuItem", "Окно 3"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_4, new ADDING_TAB("выборОбъектывыборОбъекты22-4-ToolStripMenuItem", "Окно 4"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1"));            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_3, new ADDING_TAB("выборОбъектывыборОбъекты23-3-ToolStripMenuItem", "Окно 3"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_4, new ADDING_TAB("выборОбъектывыборОбъекты23-4-ToolStripMenuItem", "Окно 4"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
@@ -159,10 +163,14 @@ namespace Statistic
                 , new System.Windows.Forms.ToolStripMenuItem (@"Объекты по выбору (2X2)", null, new System.Windows.Forms.ToolStripItem [] {
                     m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].menuItem
                     , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 2]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 3]].menuItem
                 }) 
                 , new System.Windows.Forms.ToolStripMenuItem (@"Объекты по выбору (2X3)", null, new System.Windows.Forms.ToolStripItem [] {
                     m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 0]].menuItem
                     , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 1]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 2]].menuItem
+                    , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 3]].menuItem
                 })
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
