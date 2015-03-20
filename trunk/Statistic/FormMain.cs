@@ -55,16 +55,16 @@ namespace Statistic
         private enum INDEX_ERROR_INIT { UNKNOWN = 0, }
         private static string [] MSG_ERROR_INIT = { @"Неизвестная причина" };
 
+        private Dictionary<int, Form> m_dictFormFloat;
         private PanelAdmin [] m_arPanelAdmin;
-        Dictionary<int, ADDING_TAB> m_dictAddingTabs;
+        private List<PanelTecViewBase> m_listStandardTabs;
+        private Dictionary<int, ADDING_TAB> m_dictAddingTabs;
         private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
                                                                                 , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
                                                                             };
         //public AdminTS [] m_arAdmin;
         //public Users m_user;
         public Passwords m_passwords;
-        private List<PanelTecViewBase> m_listStandardTabs;
-        //private List<PanelTecViewBase> selectedTecViews;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
         private FormChangeMode formChangeMode;
@@ -74,9 +74,7 @@ namespace Statistic
         public static FormParameters formParameters;
         //public FormParametersTG parametersTGForm;
         HStatisticUsers m_user;
-        FormParametersTG m_formParametersTG;
-
-        Dictionary <int, Form> m_dictFormFloat;
+        FormParametersTG m_formParametersTG;        
 
         TcpServerAsync m_TCPServer;
         System.Threading.Timer m_timerAppReset;
@@ -477,21 +475,21 @@ namespace Statistic
             }
         }
 
-        INDEX_CUSTOM_TAB getIndexCustomTab (string text)
-        {
-            INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
-            if (text.Contains(@"2X3") == true)
-                indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
-            else
-                ;
+        //INDEX_CUSTOM_TAB getIndexCustomTab (string text)
+        //{
+        //    INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
+        //    if (text.Contains(@"2X3") == true)
+        //        indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
+        //    else
+        //        ;
 
-            return indxRes;
-        }
+        //    return indxRes;
+        //}
 
-        int getIndexItemCustomTab (string text)
-        {
-            return Int32.Parse (text.Substring (text.Length - 1, 1)) - 1;
-        }
+        //int getIndexItemCustomTab (string text)
+        //{
+        //    return Int32.Parse (text.Substring (text.Length - 1, 1)) - 1;
+        //}
 
         void delegateOnCloseTab(object sender, HTabCtrlExEventArgs e)
         {
@@ -554,6 +552,26 @@ namespace Statistic
             this.BeginInvoke(new DelegateObjectFunc(showFormFloat), e);
         }
 
+        private int getKeyFormFloat (Form f)
+        {
+            int iRes = -1;
+
+            if (m_dictFormFloat.ContainsValue (f) == true)
+                foreach (KeyValuePair <int, Form> pair in m_dictFormFloat)
+                    if (pair.Value.Equals (f) == true)
+                    {
+                        iRes = pair.Key;
+
+                        break;
+                    }
+                    else
+                        ;
+            else
+                ;
+
+            return iRes;
+        }
+
         private void showFormFloat (object obj)
         {
             HTabCtrlExEventArgs ev = obj as HTabCtrlExEventArgs;
@@ -565,9 +583,6 @@ namespace Statistic
             //formFloat.Load += new EventHandler(FormMain_OnFormFloat_Load);
             //formFloat.Show();
 
-            ////Определить индексы в массиве
-            //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
-            //int indxItem = getIndexItemCustomTab(text);
             ////Деактивировать, остановить "панель"
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(false);
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Stop();
@@ -587,7 +602,25 @@ namespace Statistic
             formFloat.Show(null);
             formFloat.Focus();
             //Сохранить значение в массиве "вспомогательных" форм
-            m_dictFormFloat.Add((int)m_arIdCustomTabs[(int)indxTab, indxItem], formFloat);            
+            //m_dictFormFloat.Add((int)m_arIdCustomTabs[(int)indxTab, indxItem], formFloat);
+            int key = -1;
+            if (panel is PanelCustomTecView)
+            {
+                //Определить индексы в массиве
+                INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
+                int indxItem = getIndexItemCustomTab(text);
+                key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+            } else {
+                if (panel is PanelTecViewBase)
+                {
+                    key = (panel as PanelTecViewBase).m_ID;
+                }
+                else
+                {
+
+                }
+            }            
+            m_dictFormFloat.Add((panel as PanelTecViewBase).m_ID, formFloat);            
         }
 
         private void FormMain_OnFormFloat_Load(object pars)
@@ -598,14 +631,15 @@ namespace Statistic
             DelegateStringFunc[] arFuncRep = ((object[])pars)[2] as DelegateStringFunc[];
             DelegateBoolFunc fRepClr = ((object[])pars)[3] as DelegateBoolFunc;
 
-            //Определить индексы в массиве
-            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
-            int indxItem = getIndexItemCustomTab(formFloat.Text);
+            ////Определить индексы в массиве
+            //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
+            //int indxItem = getIndexItemCustomTab(formFloat.Text);
             //Назначить новые делегаты для заполнения строки статуса...
             ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel).SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);            
             //"Стартовать", активировать "панель"...
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Start();
-            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(true);            
+            //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(true);            
+            m_dictAddingTabs[getKeyFormFloat(formFloat)].panel.Activate(true);            
         }
 
         private void FormMain_OnFormFloat_Closing(object pars)
@@ -613,10 +647,10 @@ namespace Statistic
             //Параметры
             FormMainFloat formFloat = ((object[])pars)[0] as FormMainFloat;
             FormClosingEventArgs ev = ((object[])pars)[1] as FormClosingEventArgs;
-            //Определить индексы в массиве
-            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
-            int indxItem = getIndexItemCustomTab(formFloat.Text);
-            int keyTab = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+            ////Определить индексы в массиве
+            //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
+            //int indxItem = getIndexItemCustomTab(formFloat.Text);
+            int keyTab = getKeyFormFloat (formFloat); //(int)m_arIdCustomTabs[(int)indxTab, indxItem];
 
             //Проверить авто/закрытие
             if (m_bAutoActionTabs == false)
