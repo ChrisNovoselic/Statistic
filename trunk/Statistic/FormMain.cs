@@ -475,22 +475,6 @@ namespace Statistic
             }
         }
 
-        //INDEX_CUSTOM_TAB getIndexCustomTab (string text)
-        //{
-        //    INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
-        //    if (text.Contains(@"2X3") == true)
-        //        indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
-        //    else
-        //        ;
-
-        //    return indxRes;
-        //}
-
-        //int getIndexItemCustomTab (string text)
-        //{
-        //    return Int32.Parse (text.Substring (text.Length - 1, 1)) - 1;
-        //}
-
         void delegateOnCloseTab(object sender, HTabCtrlExEventArgs e)
         {
             //formChangeMode.SetItemChecked(m_ContextMenuStripListTecViews.Items.IndexOfKey(e.TabHeaderText), false);
@@ -523,10 +507,15 @@ namespace Statistic
                                     else
                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
                                         {
-                                            INDEX_CUSTOM_TAB indxTab = getIndexCustomTab (e.TabHeaderText);
-                                            int indxItem = getIndexItemCustomTab (e.TabHeaderText);
+                                            int key = -1;
+                                            ////Вариант №1
+                                            //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab (e.TabHeaderText);
+                                            //int indxItem = getIndexItemCustomTab (e.TabHeaderText);                                            
+                                            //key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+                                            //Вариант №2
+                                            key = e.Id;
 
-                                            m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].menuItem.Checked = false;
+                                            m_dictAddingTabs[key].menuItem.Checked = false;
                                         }
                                         else
                                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
@@ -552,6 +541,49 @@ namespace Statistic
             this.BeginInvoke(new DelegateObjectFunc(showFormFloat), e);
         }
 
+        INDEX_CUSTOM_TAB getIndexCustomTab(string text)
+        {
+            INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
+            if (text.Contains(@"2X3") == true)
+                indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
+            else
+                ;
+
+            return indxRes;
+        }
+
+        int getIndexItemCustomTab(string text)
+        {
+            return Int32.Parse(text.Substring(text.Length - 1, 1)) - 1;
+        }
+
+        //private int getKeyOfPanel (Panel panel)
+        //{
+        //    int iRes = -1;
+            
+        //    if (panel is PanelCustomTecView)
+        //    {
+        //        //Определить индексы в массиве
+        //        string text = tclTecViews.NameOfItemControl(panel);
+        //        INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
+        //        int indxItem = getIndexItemCustomTab(text);
+        //        iRes = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+        //    }
+        //    else
+        //    {
+        //        if (panel is PanelTecViewBase)
+        //        {
+        //            iRes = (panel as PanelTecViewBase).m_ID;
+        //        }
+        //        else
+        //        {
+        //            throw new Exception(@"FormMain::getKeyOfPanel () - невозможно определить идентификатор панали - неизвестный тип панели...");
+        //        }
+        //    }
+
+        //    return iRes;
+        //}
+
         private int getKeyFormFloat (Form f)
         {
             int iRes = -1;
@@ -566,6 +598,11 @@ namespace Statistic
                     }
                     else
                         ;
+            else
+                ;
+
+            if(iRes < 0)
+                throw new Exception(@"FormMain::getKeyFormFloat () - не найден ключ в словаре для формы...");
             else
                 ;
 
@@ -598,29 +635,39 @@ namespace Statistic
             //Назначить обработчики событий...
             formFloat.delegateFormClosing = FormMain_OnFormFloat_Closing;
             formFloat.delegateFormLoad = FormMain_OnFormFloat_Load;
-            //Отобразить окно, установить на нем фокус...
-            formFloat.Show(null);
-            formFloat.Focus();
             //Сохранить значение в массиве "вспомогательных" форм
             //m_dictFormFloat.Add((int)m_arIdCustomTabs[(int)indxTab, indxItem], formFloat);
             int key = -1;
+            ////Вариант №1
+            //key = getKeyOfPanel(panel);
+            //Вариант №2
             if (panel is PanelCustomTecView)
             {
                 //Определить индексы в массиве
+                string text = string.Empty;
+                ////Вариант №1
+                //text = tclTecViews.NameOfItemControl(panel);
+                //Вариант №2
+                text = ev.TabHeaderText;
                 INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
                 int indxItem = getIndexItemCustomTab(text);
                 key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
-            } else {
+            }
+            else
+            {
                 if (panel is PanelTecViewBase)
                 {
                     key = (panel as PanelTecViewBase).m_ID;
                 }
                 else
                 {
-
+                    throw new Exception(@"FormMain::showFormFloat () - невозможно определить идентификатор панели - неизвестный тип панели...");
                 }
-            }            
-            m_dictFormFloat.Add((panel as PanelTecViewBase).m_ID, formFloat);            
+            }
+            m_dictFormFloat.Add(key, formFloat);
+            //Отобразить окно, установить на нем фокус...
+            formFloat.Show(null);
+            formFloat.Focus();            
         }
 
         private void FormMain_OnFormFloat_Load(object pars)
@@ -635,17 +682,25 @@ namespace Statistic
             //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
             //int indxItem = getIndexItemCustomTab(formFloat.Text);
             //Назначить новые делегаты для заполнения строки статуса...
-            ((PanelCustomTecView)m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel).SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);            
+            Panel panel = formFloat.GetPanel ();
+            if (panel is PanelCustomTecView)
+                ((PanelCustomTecView)panel).SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
+            else
+                if (panel is PanelTecView)
+                    ((PanelTecView)panel).m_tecView.SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
+                else
+                    throw new Exception(@"FormMain::FormMain_OnFormFloat_Load () - невозможно назначить делегаты обновления строки статуса...");
             //"Стартовать", активировать "панель"...
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Start();
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(true);            
-            m_dictAddingTabs[getKeyFormFloat(formFloat)].panel.Activate(true);            
+            ((PanelStatistic)panel).Activate(true);            
         }
 
         private void FormMain_OnFormFloat_Closing(object pars)
         {
             //Параметры
             FormMainFloat formFloat = ((object[])pars)[0] as FormMainFloat;
+            Panel panel = formFloat.GetPanel ();
             FormClosingEventArgs ev = ((object[])pars)[1] as FormClosingEventArgs;
             ////Определить индексы в массиве
             //INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(formFloat.Text);
@@ -656,10 +711,16 @@ namespace Statistic
             if (m_bAutoActionTabs == false)
             {                
                 //Восстановить старые делегаты для заполнения строки статуса...
-                ((PanelCustomTecView)m_dictAddingTabs[keyTab].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                if (panel is PanelCustomTecView)
+                    ((PanelCustomTecView)panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                else
+                    if (panel is PanelTecView)
+                        ((PanelTecView)panel).m_tecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                    else
+                        throw new Exception(@"FormMain::FormMain_OnFormFloat_Closing () - невозможно определить тип панели...");
                 //Добавить вкладку в "основное" окно
-                tclTecViews.AddTabPage(formFloat.Text, HTabCtrlEx.TYPE_TAB.FLOAT);
-                tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel);
+                tclTecViews.AddTabPage(formFloat.Text, getKeyFormFloat(formFloat), HTabCtrlEx.TYPE_TAB.FLOAT);
+                tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(formFloat.GetPanel ());
             
                 //???Отладка
                 Console.WriteLine(@"FormMain::FormMain_OnFormFloat_Closing () - TabCount=" + tclTecViews.TabCount + @", SelectedIndex=" + tclTecViews.SelectedIndex);
@@ -926,12 +987,27 @@ namespace Statistic
 
             activateTabPage(tclTecViews.SelectedIndex, false);
 
-            List<int> indxRemove = new List<int>();
- 
+            int i = -1;
+            List<int> listToRemove = new List<int>();
+
+            listToRemove.Clear ();
+            if (! (m_dictFormFloat == null))
+                foreach (KeyValuePair <int, Form> pair in m_dictFormFloat)
+                    if (pair.Key < 10000)
+                        listToRemove.Add (pair.Key);
+                    else
+                        ;
+            else
+                ;
+
+            for (i = listToRemove.Count - 1; !(i < 0); i--)
+                m_dictFormFloat[listToRemove[i]].Close ();
+
+            listToRemove.Clear();
             foreach (TabPage tab in tclTecViews.TabPages)
             {
                 if ((tab.Controls[0] is PanelTecViewBase) || (tab.Controls[0] is PanelAdmin)) {
-                    indxRemove.Add(tclTecViews.TabPages.IndexOf(tab));
+                    listToRemove.Add(tclTecViews.TabPages.IndexOf(tab));
                     ((PanelStatistic)tab.Controls[0]).Stop ();
                 }
                 else
@@ -940,10 +1016,8 @@ namespace Statistic
 
             tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
 
-            for (int i = indxRemove.Count - 1; !(i < 0); i--)
-            {
-                tclTecViews.RemoveTabPage(indxRemove[i]);
-            }
+            for (i = listToRemove.Count - 1; !(i < 0); i--)
+                tclTecViews.RemoveTabPage(listToRemove[i]);
 
             if (bAttachSelIndxChanged == true)
                 tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
@@ -1405,7 +1479,7 @@ namespace Statistic
                         else
                             ;
 
-                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, HTabCtrlEx.TYPE_TAB.FLOAT);
+                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, m_listStandardTabs[tecView_index].m_ID, HTabCtrlEx.TYPE_TAB.FLOAT);
 
                         tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_listStandardTabs[tecView_index]);
 
@@ -1671,7 +1745,7 @@ namespace Statistic
                             break;
                     }
 
-                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), HTabCtrlEx.TYPE_TAB.FLOAT);
+                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
 
                     tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
@@ -1843,7 +1917,7 @@ namespace Statistic
             int keyTab = (int)m_arIdCustomTabs[(int)indx, indxItem];
 
             if ((obj.Checked == false)
-                && (!(m_dictFormFloat == null))
+                && (m_dictFormFloat.ContainsKey (keyTab) == true)
                 && (!(m_dictFormFloat[keyTab] == null)))
             {
                 m_dictFormFloat[keyTab].Close();
@@ -1883,14 +1957,20 @@ namespace Statistic
         {
             if (arCheckedStoped[0] == true)
             {
-                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
+                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
+                int key = -1;
 
-                //if (nameTab.IndexOf(@"Окно") > -1)
-                //    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
-                //else
-                //    ;
+                if (nameTab.IndexOf(@"Окно") > -1)
+                {
+                    INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(nameTab);
+                    int indxItem = getIndexItemCustomTab(nameTab);
+                    key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+                    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
+                }
+                else
+                    ;
 
-                tclTecViews.AddTabPage(nameTab, typeTab);
+                tclTecViews.AddTabPage(nameTab, key, typeTab);
                 tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(obj);
 
                 obj.Start();
