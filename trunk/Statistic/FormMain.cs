@@ -1909,6 +1909,25 @@ namespace Statistic
             выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X3);
         }
 
+        private Size getPanelCustomTecViewSize (INDEX_CUSTOM_TAB type)
+        {
+            Size szRes = Size.Empty;
+
+            switch (type)
+            {
+                case INDEX_CUSTOM_TAB.TAB_2X2:
+                    szRes = new Size (2, 2);
+                    break;
+                case INDEX_CUSTOM_TAB.TAB_2X3:
+                    szRes = new Size(3, 2);
+                    break;
+                default:
+                    throw new Exception(@"FormMain::getPanelCustomTecViewSize () - невозможно определить размерность вкладки...");
+            }
+
+            return szRes;
+        }
+
         private void выборОбъектыToolStripMenuItem_CheckedChanged(object sender, EventArgs e, INDEX_CUSTOM_TAB indx)
         {
             ToolStripMenuItem obj = sender as ToolStripMenuItem;
@@ -1917,6 +1936,7 @@ namespace Statistic
             int keyTab = (int)m_arIdCustomTabs[(int)indx, indxItem];
 
             if ((obj.Checked == false)
+                && (! (m_dictFormFloat == null))
                 && (m_dictFormFloat.ContainsKey (keyTab) == true)
                 && (!(m_dictFormFloat[keyTab] == null)))
             {
@@ -1931,7 +1951,7 @@ namespace Statistic
                 //&& (obj.Checked == true)
                 )
             {
-                m_dictAddingTabs[keyTab].panel = new PanelCustomTecView(formChangeMode, new Size(3, 2), ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[keyTab].panel = new PanelCustomTecView(formChangeMode, getPanelCustomTecViewSize (indx), ErrorReport, WarningReport, ActionReport, ReportClear);
                 ((PanelCustomTecView)m_dictAddingTabs[keyTab].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
             }
             else
