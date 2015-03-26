@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3E471AB3-D65E-484D-9D3C-2D94921D25DE}</ProjectGuid>
+    <ProjectGuid>{2086F646-4759-41EA-A9E3-76662D95127D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestFunc</RootNamespace>
-    <AssemblyName>TestFunc</AssemblyName>
+    <RootNamespace>biysktmora</RootNamespace>
+    <AssemblyName>biysktmora</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -35,25 +35,20 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OraSOTIASSO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OraSOTIASSO.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
       <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
       <Name>HClassLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
-      <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
-      <Name>StatisticCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

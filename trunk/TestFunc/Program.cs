@@ -25,143 +25,32 @@ namespace TestFunc
                 //test = new DomainName ();
                 //test = new ImportCSV ();
 
-                test = new TestOleDbConnectionOracle();
-                //test = new TestOracleConnection();
-                (test as TestDbOracle).Close ();
-                (test as TestDbOracle).OutResult ();
+                //test = new HOracleConnection();
+                ////test = new HOleDbOracleConnection ();
+                //(test as HDbOracle).Open ();
+                //(test as HDbOracle).Query();                
+                //(test as HDbOracle).Close ();
+                //(test as HDbOracle).OutResult ();
+
+                test = new HOleDbOracleConnection();
+                int err = -1;
+                ConnectionSettings connSett = new ConnectionSettings(@"OraSOTIASSO-ORD", (test as HDbOracle).host, Int32.Parse((test as HDbOracle).port), (test as HDbOracle).dataSource, (test as HDbOracle).uid, (test as HDbOracle).pswd);
+                int iListenerId =  DbSources.Sources ().Register (connSett, false, @"СОТИАССО-Бийск-Oracle");
+                DbConnection dbConn = DbSources.Sources ().GetConnection (iListenerId, out err);
+
+                if (err == 0)
+                {
+                    (test as HDbOracle).query = @"SELECT SYSDATE FROM dual";
+                    DataTable res = DbTSQLInterface.Select(ref dbConn, (test as HDbOracle).query, null, null, out err);
+                }
+                else
+                    ;
+                DbSources.Sources().UnRegister(iListenerId);
             } catch (Exception e) {
                 Console.Write(e.Message + Environment.NewLine);
             }
 
             Console.Write(@"Для завершения работы нажмите любую клавишу..."); Console.ReadKey();
-        }
-
-        private class TestDbOracle
-        {
-            protected struct SIGNAL
-            {
-                public int id;
-                public string table;
-                public SIGNAL (int id, string table)
-                {
-                    this.id = id;
-                    this.table = table;
-                }
-            }
-            protected SIGNAL [] arSignals;
-            
-            private DateTime dtStart;
-            public DbConnection conn;
-            public DataTable results;
-            public string host = @"10.220.2.5", port = @"1521"
-                , dataSource = @"ORCL"
-                , uid = @"arch_viewer"
-                , pswd = @"1"
-                , query = string.Empty;
-
-            public TestDbOracle ()
-            {
-                dtStart = DateTime.Now;
-
-                arSignals = new SIGNAL[] { new SIGNAL(20001, @"TAG_000046"), new SIGNAL(20002, @"TAG_000047"), new SIGNAL(20003, @"TAG_000048") };
-
-                query = @"SELECT " + arSignals[0].id + @" as ID, VALUE, QUALITY, DATETIME FROM ARCH_SIGNALS." + arSignals[0].table + @" WHERE DATETIME BETWEEN"
-                    + @" to_timestamp('" + DateTime.Now.AddMinutes(-1).ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')" + @" AND"
-                    + @" to_timestamp('" + DateTime.Now.ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')"
-                    //+ @" ORDER BY DATETIME DESC"
-                    + @" UNION "
-                    + @"SELECT " + arSignals[1].id + @" as ID, VALUE, QUALITY, DATETIME FROM ARCH_SIGNALS." + arSignals[1].table + @" WHERE DATETIME BETWEEN"
-                    + @" to_timestamp('" + DateTime.Now.AddMinutes(-1).ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')" + @" AND"
-                    + @" to_timestamp('" + DateTime.Now.ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')"
-                    + @" UNION "
-                    + @"SELECT " + arSignals[2].id + @" as ID, VALUE, QUALITY, DATETIME FROM ARCH_SIGNALS." + arSignals[2].table + @" WHERE DATETIME BETWEEN"
-                    + @" to_timestamp('" + DateTime.Now.AddMinutes(-1).ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')" + @" AND"
-                    + @" to_timestamp('" + DateTime.Now.ToString(@"yyyyMMdd HHmm") + @"', 'yyyymmdd hh24mi')"
-                    + @" ORDER BY DATETIME DESC"
-                    ;
-            }
-
-            protected int open ()
-            {
-                int iRes = 0;
-                
-                conn.Open();
-
-                Console.WriteLine("State: {0}", conn.State);
-                Console.WriteLine("ConnectionString: {0}", conn.ConnectionString);
-                Console.WriteLine("Query: {0}", query);
-
-                return iRes;
-            }
-
-            public void Close ()
-            {
-                conn.Close();
-            }
-
-            public void OutResult ()
-            {
-                Console.WriteLine("Time (msec): {0}", (DateTime.Now - dtStart).Milliseconds);
-                Console.WriteLine("Last changed at: {0}", results.Rows[0][@"DATETIME"]);
-                Console.WriteLine("Rows result count: {0}", results.Rows.Count);
-            }
-        }
-
-        private class TestOleDbConnectionOracle : TestDbOracle
-        {
-            public TestOleDbConnectionOracle ()
-            {
-                using (conn = new OleDbConnection())
-                {
-                    conn.ConnectionString = @"Provider=OraOLEDB.Oracle;host=" + host + @":" + port + @";Data Source=" + dataSource + @";User Id=" + uid + @";Password=" + pswd + @"; OLEDB.NET=True;";
-
-                    open ();
-
-                    if (conn.State == ConnectionState.Open)
-                    {
-                        //OracleCommand command = conn.CreateCommand();
-                        OleDbCommand cmd = (conn as OleDbConnection).CreateCommand();
-                        cmd.CommandText = query;
-                        //Вариант №1
-                        OleDbDataAdapter adapter = new OleDbDataAdapter (cmd);
-                        results = new DataTable();
-                        adapter.Fill(results);
-                        ////Вариант №2
-                        //OleDbDataReader reader = cmd.ExecuteReader();
-                        //while (reader.Read())
-                        //{
-                        //    string val = (string)reader["VALUE"];
-                        //    Console.WriteLine(val);
-                        //}
-                    }
-                    else
-                        ;
-                }
-            }
-        }
-
-        private class TestOracleConnection : TestDbOracle
-        {            
-            public TestOracleConnection()
-            {
-                OracleConnectionStringBuilder csb = new OracleConnectionStringBuilder();
-                csb.DataSource = dataSource;
-                csb.UserID = uid;
-                csb.Password = pswd;
-                conn = new OracleConnection(csb.ConnectionString);
-
-                open ();
-
-                if (conn.State == ConnectionState.Open)
-                {
-                    OracleCommand cmd = new OracleCommand(query, conn as OracleConnection);
-                    OracleDataAdapter adapter = new OracleDataAdapter(cmd);
-                    results = new DataTable();
-                    adapter.Fill(results);
-                }
-                else
-                    ;
-            }
         }
 
         private class DomainName {

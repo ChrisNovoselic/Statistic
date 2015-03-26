@@ -31,8 +31,8 @@
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>7</ApplicationRevision>
-    <ApplicationVersion>1.9.5.7</ApplicationVersion>
+    <ApplicationRevision>8</ApplicationRevision>
+    <ApplicationVersion>1.9.5.8</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -233,19 +233,19 @@
     <PublishFile Include="Statistic.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticCommon.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
