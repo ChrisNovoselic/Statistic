@@ -26,6 +26,8 @@ namespace Statistic
             Logging.s_mode = Logging.LOG_MODE.DB;
             //Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
             //Logging.s_mode = Logging.LOG_MODE.FILE_DESKTOP;
+            //Logging.s_mode = Logging.LOG_MODE.FILE_NETDEV;
+            //Logging.s_mode = Logging.LOG_MODE.FILE_LOCALDEV;
 
             ////Если в строке Assembly заменить номер Построения на "*", номер Ревизия на "очистить"
             //Version version = Assembly.GetExecutingAssembly().GetName().Version;

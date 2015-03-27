@@ -12,7 +12,7 @@ namespace biysktmora
     class Program
     {
         static Semaphore semaUserCancel;
-        static int msecInreval = 6666;
+        static int msecInreval = 16666;
         static Timer timer;
         static object lockTimer;
 

@@ -91,11 +91,11 @@ namespace biysktmora
                     ;
 
                 iCur = results.Rows.Count;
+
+                Console.WriteLine(@"Обновление рез-та: [было=" + iPrev + @", удалено=" + iDel + @", осталось=" + iCur + @"]");
             }
             else
                 ;
-
-            Console.WriteLine(@"Обнавление запроса: [было=" + iPrev + @", удалено=" + iDel + @", осталось=" + iCur + @"]");
 
             string strUnion = @" UNION "
                 //Строки для условия "по дате/времени"
@@ -198,34 +198,58 @@ namespace biysktmora
                     else
                         ;
 
-                    if (results.Rows.Count == 0)
-                    {
-                        results = table.Copy ();
-                    }
-                    else
-                        ;
-
-                    int iPrev = -1, iAdd = -1, iCur = -1;
-                    iPrev = 0; iAdd = 0; iCur = 0;
+                    int iPrev = -1, iDupl = -1, iAdd = -1, iCur = -1;
+                    iPrev = 0; iDupl = 0; iAdd = 0; iCur = 0;
                     iPrev = results.Rows.Count;
 
-                    DataRow [] arDupl;
+                    //if (results.Rows.Count == 0)
+                    //{
+                    //    results = table.Copy ();
+                    //}
+                    //else
+                    //    ;
+
+                    DataRow [] arSel;
                     foreach (DataRow rRes in results.Rows)
                     {
-                        arDupl = table.Select(@"ID=" + rRes[@"ID"] + @" AND " + @"DATETIME='" + ((DateTime)rRes[@"DATETIME"]).ToString(@"yyyy/MM/dd HH:mm:ss.fff") + @"'");
-                        foreach (DataRow rDel in arDupl)
+                        arSel = table.Select(@"ID=" + rRes[@"ID"] + @" AND " + @"DATETIME='" + ((DateTime)rRes[@"DATETIME"]).ToString(@"yyyy/MM/dd HH:mm:ss.fff") + @"'");
+                        iDupl += arSel.Length;
+                        foreach (DataRow rDel in arSel)
                             table.Rows.Remove (rDel);
+                        //table.AcceptChanges ();
                     }
+
+                    DataTable tableIns = new DataTable ();
+                    arSel = table.Select (string.Empty, @"ID, DATETIME DESC");
+                    //foreach (DataRow r in arSel)
+                    for (int i = 0; i < arSel.Length; i ++)
+                    {
+                        tableIns.ImportRow (arSel[i]);
+                        //Console.WriteLine(@"ID=" + r[@"ID"] + @", DATETIME=" + ((DateTime)r[@"DATETIME"]).ToString(@"dd.MM.yyyy HH:mm:ss.fff"));
+                        Console.Write(@"ID=" + arSel[i][@"ID"] + @", DATETIME=" + ((DateTime)arSel[i][@"DATETIME"]).ToString(@"dd.MM.yyyy HH:mm:ss.fff"));
+                        if (i > 0)
+                            Console.WriteLine(@", tmdelta=" + ((DateTime)arSel[i][@"DATETIME"] - (DateTime)arSel[i - 1][@"DATETIME"]).Milliseconds);
+                        else
+                            Console.WriteLine();                            
+                    }
+                    tableIns.AcceptChanges ();
+
+                    //foreach (DataRow r in tableIns.Rows)
+                    //{
+                    //    Console.WriteLine (@"ID=" + r[@"ID"] + @", DATETIME=" + ((DateTime)r[@"DATETIME"]).ToString (@"dd.MM.yyyy HH:mm:ss.fff"));
+                    //}
+
+                    //table.Columns.Add(@"tmdelta", Type.GetType("Int32"));
 
                     iAdd = table.Rows.Count;
                     results.Merge(table);
                     iCur = results.Rows.Count;
-                    Console.WriteLine(@"Объединение таблицы-рез-та: [было=" + iPrev + @", добавлено=" + iAdd + @", стало=" + iCur + @"]");
-                    DataTable tableChanged = results.GetChanges();
-                    if (! (tableChanged == null))
-                        Console.WriteLine(@"Изменено строк: " + tableChanged.Rows.Count);
-                    else
-                        Console.WriteLine(@"Изменено строк: " + 0);                    
+                    Console.WriteLine(@"Объединение таблицы-рез-та: [было=" + iPrev + @", дублирущих= " + iDupl + @", добавлено=" + iAdd + @", стало=" + iCur + @"]");
+                    //DataTable tableChanged = results.GetChanges();
+                    //if (! (tableChanged == null))
+                    //    Console.WriteLine(@"Изменено строк: " + tableChanged.Rows.Count);
+                    //else
+                    //    Console.WriteLine(@"Изменено строк: " + 0);
                     break;
                 default:
                     break;
@@ -244,6 +268,9 @@ namespace biysktmora
                 case (int)StatesMachine.CurrentTimeSource: //Ошибка получения даты/времени сервера-источника
                     msgErr = @"получения даты/времени сервера-источника";
                     break;
+                case (int)StatesMachine.SourceValues: //Ошибка получения значений источника
+                    msgErr = @"получения значений источника";
+                    break;
                 default:
                     break;
             }
@@ -258,13 +285,27 @@ namespace biysktmora
 
         protected override void StateWarnings(int state, bool response)
         {
+            string unknownErr = @"Неизвестное предупреждение"
+                , msgErr = unknownErr;
+
             switch (state)
             {
-                case (int)StatesMachine.CurrentTimeSource: //Предупреждение при получении даты/времени сервера-источника
+                case (int)StatesMachine.CurrentTimeSource: //Ошибка получения даты/времени сервера-источника
+                    msgErr = @"получении даты/времени сервера-источника";
+                    break;
+                case (int)StatesMachine.SourceValues: //Ошибка получения значений источника
+                    msgErr = @"получении значений источника";
                     break;
                 default:
                     break;
             }
+
+            if (msgErr.Equals(unknownErr) == false)
+                msgErr = @"ПРедупреждение при " + msgErr;
+            else
+                ;
+
+            Console.WriteLine(msgErr);
         }
     }
 }
