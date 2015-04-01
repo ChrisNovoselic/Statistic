@@ -1725,9 +1725,10 @@ namespace StatisticCommon
                     GetPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.AdminDates:
-                int offset_days = (serverTime.Date - m_curDate.Date).Days;
-                    if (((offset_days > 0) && (m_ignore_date == false))
-                        || (((offset_days > 1) && (serverTime.Hour > 0)) && (m_ignore_date == false)))
+                    //int offset_days = (m_curDate.Date - serverTime.Date).Days;
+                    //if (((offset_days > 0) && (m_ignore_date == false))
+                    //    || (((offset_days > 1) && (serverTime.Hour > 0)) && (m_ignore_date == false)))
+                    if (getCurrentHour (m_curDate, CONN_SETT_TYPE.ADMIN) < 0)
                     {
                         //Останавливаем сохранение
                         saveResult = Errors.InvalidValue;
