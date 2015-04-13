@@ -132,7 +132,7 @@ namespace Statistic
                 switch (m_users_edit.Columns [i].ColumnName)
                 {
                     case "ID":
-                        val = DbTSQLInterface.getIdNext(ref conn, "users");
+                        val = DbTSQLInterface.GetIdNext(ref conn, "users");
                         break;
                     case "DESCRIPTION":
                         val = textBoxUserDesc.Text;
