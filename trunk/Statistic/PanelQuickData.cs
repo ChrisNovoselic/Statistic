@@ -1037,7 +1037,7 @@ namespace Statistic
                     //Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
                     Logging.Logg().Warning(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    return;
+                    //return;
                 }
                 else
                     ;
