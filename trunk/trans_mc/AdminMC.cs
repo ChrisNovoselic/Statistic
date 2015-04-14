@@ -265,7 +265,7 @@ namespace trans_mc
             return result;
         }
 
-        protected override void StateErrors(int /*StatesMachine*/ state, bool response)
+        protected override void StateErrors(int /*StatesMachine*/ state, int request, int result)
         {
             bool bClear = false;
 
@@ -277,7 +277,7 @@ namespace trans_mc
                     ErrorReport("Ошибка инициализации объектов Modes-Centre. Переход в ожидание.");
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    if (response)
+                    if (request == 0)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
                     else
                     {
@@ -287,7 +287,7 @@ namespace trans_mc
                     }
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    if (response)
+                    if (request == 0)
                     {
                         ErrorReport("Ошибка разбора сохранённых часовых значений (PPBR). Переход в ожидание.");
                         //saveResult = Errors.ParseError;
@@ -320,7 +320,7 @@ namespace trans_mc
             if (! (errorData == null)) errorData(); else ;
         }
 
-        protected override void StateWarnings(int state, bool response)
+        protected override void StateWarnings(int state, int request, int result)
         {
         }
 

@@ -42,12 +42,12 @@ namespace StatisticCommon
             Hours_TM, //указанные сутки, СОТИАССО
             CurrentMins_TM, //текущие сутки/час, СОТИАССО
             CurrentHours_TM_SN_PSUM, //текущие сутки для Собственные Нужды, СОТИАССО
-            LastValue_TM_Gen, //крайние значения для ГЕНЕРАЦИЯ, СОТИАССО
+            LastValue_TM_Gen, //крайние значения для ГЕНЕРАЦИЯ, СОТИАССО - панель оперативной информации
             LastValue_TM_SN, //крайние значения для Собственные Нужды, СОТИАССО
             LastMinutes_TM, //значения крайних минут часа за указанные сутки, СОТИАССО
             //RetroHours,
             RetroMins_Fact, //указанные сутки/час, АСКУЭ
-            RetroMin_TM_Gen, //указанные сутки/час, СОТИАССО
+            RetroMin_TM_Gen, //указанные сутки/час, СОТИАССО - панель оперативной информации
             RetroMins_TM, //указанные сутки/час, СОТИАССО
             AdminDates, //Получение списка сохранённых часовых значений
             PPBRDates,
@@ -971,7 +971,7 @@ namespace StatisticCommon
             return strRes;
         }
 
-        protected override void StateErrors(int state, bool response)
+        protected override void StateErrors(int state, int request, int result)
         {
             string reason = string.Empty,
                     waiting = string.Empty,
@@ -986,7 +986,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
                 case (int)StatesMachine.CurrentTimeView:
-                    if (response == true)
+                    if (request == 0)
                     {
                         reason = @"разбора";
                     }
@@ -1061,7 +1061,7 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    if (response == true)
+                    if (request == 0)
                     {
                         reason = @"разбора";
                     }
@@ -1088,7 +1088,7 @@ namespace StatisticCommon
                     break;
             }
 
-            if (response)
+            if (request == 0)
                 reason = @"разбора " + reason;
             else
                 reason = @"получения " + reason;
@@ -1109,7 +1109,7 @@ namespace StatisticCommon
                                 + @" - ошибка " + reason + @". " + waiting + @".", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
+        protected override void StateWarnings(int /*StatesMachine*/ state, int request, int result)
         {
             string reason = string.Empty,
                     waiting = string.Empty,
@@ -1135,6 +1135,9 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"Нет значений СОТИАССО (генерация) по одному из ТГ или значения устарели";
+                    break;
+                case (int)StatesMachine.RetroMin_TM_Gen:
+                    reason = @"Нет значений СОТИАССО (генерация) ни по одному из ТГ";
                     break;
                 default:
                     break;
@@ -1396,10 +1399,10 @@ namespace StatisticCommon
                 //    break;
                 case (int)StatesMachine.RetroMin_TM_Gen:
                     iRes = GetMinTMGenResponse (table);
-                    if (iRes == 0)
+                    //14.04.2015 ???
+                    //if (iRes == 0)
                         updateGUI_TM_Gen ();
-                    else
-                        ;
+                    //else ;
                     break;
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMins_TM:
@@ -1413,13 +1416,13 @@ namespace StatisticCommon
                             iRes = GetMinsTMResponse(table);
                         else
                             ;
-                    if (iRes == 0)
-                    {
-                        //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
-                        updateGUI_Fact(lastHour, lastMin);
-                    }
-                    else
-                        ;
+                    //14.04.2015 - всегда будет вызвана из 'AdminValues'
+                    //if (iRes == 0)
+                    //{
+                    //    //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
+                    //    updateGUI_Fact(lastHour, lastMin);
+                    //}
+                    //else ;
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
@@ -1635,6 +1638,8 @@ namespace StatisticCommon
 
         private int GetCurrentTimeViewResponse(DataTable table)
         {
+            int iRes = 0;
+            
             if (table.Rows.Count == 1)
             {
                 try
@@ -1646,17 +1651,17 @@ namespace StatisticCommon
                 {
                     Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
 
-                    return -1;
+                    iRes = -1;
                 }
             }
             else
             {
                 //selectedTime = System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3 + 1);
                 //ErrorReport("Ошибка получения текущего времени сервера. Используется локальное время.");
-                return -1;
+                iRes = -1;
             }
 
-            return 0;
+            return iRes;
         }
 
         public void GetRetroHours()
@@ -1700,17 +1705,7 @@ namespace StatisticCommon
 
                 adminValuesReceived = false;
 
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    states.Add((int)StatesMachine.RetroMins_Fact);
-                else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.RetroMins_TM);
-                    else
-                        ;
-                states.Add((int)StatesMachine.RetroMin_TM_Gen);
-
+                //Часы...
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     states.Add((int)StatesMachine.Hours_Fact);
@@ -1721,6 +1716,21 @@ namespace StatisticCommon
                     else
                         ;
 
+                //Минуты...
+                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    states.Add((int)StatesMachine.RetroMins_Fact);
+                else
+                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                        states.Add((int)StatesMachine.RetroMins_TM);
+                    else
+                        ;
+                if (m_bLastValue_TM_Gen == true)
+                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                else ;
+
+                states.Add((int)StatesMachine.LastMinutes_TM);
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
 
@@ -1734,18 +1744,22 @@ namespace StatisticCommon
 
         public void GetRetroMinTMGen()
         {
-            lock (m_lockValue)
+            if (m_bLastValue_TM_Gen == true)
             {
-                ClearStates();
-
-                states.Add((int)StatesMachine.RetroMin_TM_Gen);
-
-                try
+                lock (m_lockValue)
                 {
-                    semaState.Release(1);
+                    ClearStates();
+
+                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+
+                    try
+                    {
+                        semaState.Release(1);
+                    }
+                    catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
                 }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
             }
+            else ;
         }
 
         private void getRetroMins(int indxHour)
@@ -1779,7 +1793,9 @@ namespace StatisticCommon
                         states.Add((int)StatesMachine.RetroMins_TM);
                     else
                         ;
-                states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                if (m_bLastValue_TM_Gen)
+                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                else ;
                 states.Add((int)StatesMachine.PPBRValues);
                 states.Add((int)StatesMachine.AdminValues);
 
@@ -3967,12 +3983,14 @@ namespace StatisticCommon
 
         private int GetMinsFactResponse(DataTable table)
         {
-            int i, j = 0, min = 0;
+            int iRes = 0
+                , i, j = 0, min = 0;
             double minuteVal = 0, value;
             TG tgTmp;
             int id;
             bool end = false;
-            DateTime dt, dtNeeded;
+            DateTime dt
+                , dtNeeded = DateTime.MinValue;
             int season = 0, need_season = 0, max_season = 0;
             bool jump = false;
 
@@ -3980,229 +3998,271 @@ namespace StatisticCommon
             f2.FillMinTable(table);*/
 
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
-                return -1;
+                iRes = -1;
             else
                 ;
 
-            lastMin = 0;
-
-            if (table.Rows.Count > 0)
+            if (iRes == 0)
             {
-                //Определить 1-ю отметку времени и сезон для этой отметки времени
-                //if (table.Columns.Contains(@"DATA_DATE") == true)
-                    if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
-                        return -1;
-                    else
-                        ;
-                //else
-                //    return false;
+                lastMin = 0;
 
-                //if (table.Columns.Contains(@"SEASON") == true)
-                    if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
-                        return -4;
-                    else
-                        ;
-                //else
-                //    return false;
-
-                need_season = max_season = season;
-                min = (int)(dt.Minute / 3);
-                dtNeeded = dt;
-            }
-            else
-            {
-                //Ошибка - нет ни одной строки
-                if (currHour == true)
+                if (table.Rows.Count > 0)
                 {
-                    if (!((m_curDate.Minute / 3) == 0))
-                    {//Ошибка - номер 3-хмин > 1
+                    //Определить 1-ю отметку времени и сезон для этой отметки времени
+                    //if (table.Columns.Contains(@"DATA_DATE") == true)
+                        if (DateTime.TryParse(table.Rows[0][@"DATA_DATE"].ToString(), out dt) == false)
+                            iRes = -1;
+                        else
+                            ;
+                    //else
+                    //    return false;
+
+                    if (iRes == 0)
+                    //if (table.Columns.Contains(@"SEASON") == true)
+                        if (int.TryParse(table.Rows[0][@"SEASON"].ToString(), out season) == false)
+                            iRes = -4;
+                        else
+                            ;
+                    //else
+                    //    return false;
+                    else
+                        ;
+
+                    if (iRes == 0)
+                    {
+                        need_season = max_season = season;
+                        min = (int)(dt.Minute / 3);
+                        dtNeeded = dt;
+                    }
+                    else
+                        ;
+                }
+                else
+                {
+                    //Ошибка - нет ни одной строки
+                    if (currHour == true)
+                    {
+                        if (!((m_curDate.Minute / 3) == 0))
+                        {//Ошибка - номер 3-хмин > 1
+                            m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
+                            //lastMin = ((m_curDate.Minute) / 3) + 1;
+                        }
+                        else
+                            ; //Успех
+                    }
+                    else
+                        ;
+
+                    /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
+                    f2.ShowDialog();*/
+
+                    return 0;
+                }
+
+                //Проверить наличие среди записей "другого" сезона (с большим числом записей)
+                for (i = 0; i < table.Rows.Count; i++)
+                {
+                    if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season)) {
+                        //return -4;
+                        iRes = -4;
+                        break;
+                    }
+                    else
+                        ;
+
+                    if (max_season < season)
+                    {
+                        max_season = season;
+                        break;
+                    }
+                    else
+                        ;
+                }
+
+                if ((iRes == 0) && (dtNeeded > DateTime.MinValue))
+                {
+                    if (currHour == true)
+                    {//На отображении вызван "текущий" час
+                        if (! (need_season == max_season))
+                        {//Среди полученных записей - записи с разными сезонами
+                            //m_valuesHours.addonValues = true;
+                            //m_valuesHours.hourAddon = lastHour - 1;
+                            need_season = max_season;
+                        }
+                        else
+                            ; //сезон одинаков для всех записей
+                    }
+                    else
+                    {//На отображении вызвана "ретроспектива"
+                        //if (m_valuesHours.addonValues == true)
+                            need_season = max_season;
+                        //else ;
+                    }
+
+                    for (i = 0; (end == false) && (min < m_valuesMins.Length); min++)
+                    {
+                        //При 1-м проходе всегда == false
+                        if (jump == true)
+                        {
+                            min--;
+                        }
+                        else
+                        {//Всегда выполняется при 1-ом проходе
+                            m_valuesMins[min].valuesFact = 0;
+                            minuteVal = 0;
+                        }
+
+                        /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
+                                         ", table.Rows.Count " + table.Rows.Count.ToString());*/
+
+                        //
+                        jump = false;
+                        for (j = 0; j < CountTG; j++, i++)
+                        {
+                            if (i >= table.Rows.Count)
+                            {
+                                end = true; //Установка признака выхода из цикла 'i'
+                                break; //Выход из цикла 'j'
+                            }
+                            else
+                                ;
+
+                            try
+                            {
+                                if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt)) {
+                                    //return -1;
+                                    iRes = -1;
+                                    break;
+                                }
+                                else
+                                    ;
+
+                                if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season)) {
+                                    //return -4;
+                                    iRes = -4;
+                                    break;
+                                }
+                                else
+                                    ;
+                            }
+                            catch (Exception e)
+                            {
+                                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+
+                                dt = DateTime.Now.Date;
+                            }
+
+                            if (!(season == need_season))
+                            {
+                                jump = true;
+                                i++;
+                                break;
+                            }
+                            else
+                                ;
+
+                            if (! (dt.CompareTo(dtNeeded) == 0))
+                            {
+                                break;
+                            }
+                            else
+                                ;
+
+                            if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id)) {
+                                //return -1;
+                                iRes = -1;
+                                break;
+                            }
+                            else
+                                ;
+
+                            tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
+
+                            if (tgTmp == null) {
+                                //return -2;
+                                iRes = -2;
+                                break;
+                            }
+                            else
+                                ;
+
+                            if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value)) {
+                                //return -3;
+                                iRes = -3;
+                                break;
+                            }
+                            else
+                                ;
+
+                            switch (m_tec.type())
+                            {
+                                case TEC.TEC_TYPE.COMMON:
+                                    break;
+                                case TEC.TEC_TYPE.BIYSK:
+                                    value *= 20;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            minuteVal += value;
+                            m_dictValuesTG[tgTmp.m_id].m_powerMinutes [min] = value / 1000;
+                            //tgTmp.receivedMin[min] = true;
+
+                            //Признак получения значения хотя бы за один интервал
+                            if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
+                        }
+
+                        //if ((j < CountTG) && ((end == false) || (jump == false)))
+                        if (! (iRes == 0))
+                            break;
+                        else
+                            ;
+
+                        if (jump == false)
+                        {
+                            dtNeeded = dtNeeded.AddMinutes(3);
+
+                            //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
+
+                            if (end == false)
+                            {
+                                m_valuesMins[min].valuesFact = minuteVal / 1000;
+                                lastMin = min + 1;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            ;
+                    }
+
+                    /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
+                    f2.ShowDialog();*/
+
+                    if (! (lastMin > ((m_curDate.Minute - 1) / 3)))
+                    {
                         m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
-                        //lastMin = ((m_curDate.Minute) / 3) + 1;
+                        //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
+                    } else {
+                    }
+
+                    if (lastMin < 0)
+                    {
+                        string strMes = @"TecView::GetMinsFactResponse () - lastMin = " + lastMin;
+                        //Logging.Logg().Error(strMes);
+                        throw new Exception(strMes);
                     }
                     else
-                        ; //Успех
+                        ;
                 }
                 else
-                    ;
-
-                /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
-                f2.ShowDialog();*/
-
-                return 0;
-            }
-
-            //Проверить наличие среди записей "другого" сезона (с большим числом записей)
-            for (i = 0; i < table.Rows.Count; i++)
-            {
-                if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                    return -4;
-                else
-                    ;
-
-                if (max_season < season)
-                {
-                    max_season = season;
-                    break;
-                }
-                else
-                    ;
-            }
-
-            if (currHour == true)
-            {//На отображении вызван "текущий" час
-                if (! (need_season == max_season))
-                {//Среди полученных записей - записи с разными сезонами
-                    //m_valuesHours.addonValues = true;
-                    //m_valuesHours.hourAddon = lastHour - 1;
-                    need_season = max_season;
-                }
-                else
-                    ; //сезон одинаков для всех записей
+                    ; //Проверка записей "другого" сезона
             }
             else
-            {//На отображении вызвана "ретроспектива"
-                //if (m_valuesHours.addonValues == true)
-                    need_season = max_season;
-                //else ;
-            }
+                ; //Проверка наличия столбцов в таблице
 
-            for (i = 0; (end == false) && (min < m_valuesMins.Length); min++)
-            {
-                //При 1-м проходе всегда == false
-                if (jump == true)
-                {
-                    min--;
-                }
-                else
-                {//Всегда выполняется при 1-ом проходе
-                    m_valuesMins[min].valuesFact = 0;
-                    minuteVal = 0;
-                }
-
-                /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
-                                 ", table.Rows.Count " + table.Rows.Count.ToString());*/
-
-                //
-                jump = false;
-                for (j = 0; j < CountTG; j++, i++)
-                {
-                    if (i >= table.Rows.Count)
-                    {
-                        end = true; //Установка признака выхода из цикла 'i'
-                        break; //Выход из цикла 'j'
-                    }
-                    else
-                        ;
-
-                    try
-                    {
-                        if (!DateTime.TryParse(table.Rows[i][@"DATA_DATE"].ToString(), out dt))
-                            return -1;
-                        else
-                            ;
-
-                        if (!int.TryParse(table.Rows[i][@"SEASON"].ToString(), out season))
-                            return -4;
-                        else
-                            ;
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
-
-                        dt = DateTime.Now.Date;
-                    }
-
-                    if (!(season == need_season))
-                    {
-                        jump = true;
-                        i++;
-                        break;
-                    }
-                    else
-                        ;
-
-                    if (dt.CompareTo(dtNeeded) != 0)
-                    {
-                        break;
-                    }
-                    else
-                        ;
-
-                    if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id))
-                        return -1;
-                    else
-                        ;
-
-                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
-
-                    if (tgTmp == null)
-                        return -2;
-                    else
-                        ;
-
-                    if (!double.TryParse(table.Rows[i][@"VALUE0"].ToString(), out value))
-                        return -3;
-                    else
-                        ;
-
-                    switch (m_tec.type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            value *= 20;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    minuteVal += value;
-                    m_dictValuesTG[tgTmp.m_id].m_powerMinutes [min] = value / 1000;
-                    //tgTmp.receivedMin[min] = true;
-
-                    //Признак получения значения хотя бы за один интервал
-                    if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
-                }
-
-                if (jump == false)
-                {
-                    dtNeeded = dtNeeded.AddMinutes(3);
-
-                    //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
-
-                    if (end == false)
-                    {
-                        m_valuesMins[min].valuesFact = minuteVal / 1000;
-                        lastMin = min + 1;
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
-
-            /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
-            f2.ShowDialog();*/
-
-            if (! (lastMin > ((m_curDate.Minute - 1) / 3)))
-            {
-                m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
-                //lastMin = ((selectedTime.Minute - 1) / 3) + 1;
-            } else {
-            }
-
-            if (lastMin < 0)
-            {
-                string strMes = @"TecView::GetMinsFactResponse () - lastMin = " + lastMin;
-                //Logging.Logg().Error(strMes);
-                throw new Exception(strMes);
-            }
-            else
-                ;
-
-            return 0;
+            return iRes;
         }
 
         private double [] avgInterval (DataTable table, DateTime dtReqBegin, int secInterval, List <string> listSensors, out int iRes) {
@@ -4617,36 +4677,41 @@ namespace StatisticCommon
                             foreach (string strId in listSensors)
                             {
                                 TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
-                                if (tg == null)
-                                    //iRes = -4
-                                    return -4;
+                                if (tg == null) {
+                                    //return -4;
+                                    iRes = -4;
+                                    break;
+                                }
                                 else
                                     ;
 
                                 arIds[listSensors.IndexOf(strId)] = tg.m_id;
                             }
 
-                            for (min = 0; (min < 60) && (iRes == 0); min ++, dtReq = dtReq.AddMinutes (1))
-                            {
-                                valMins = avgInterval (table
-                                                , dtReq
-                                                , 60
-                                                , listSensors
-                                                , out iRes);
-
-                                if (iRes == 0)
+                            if (iRes == 0)
+                                for (min = 0; (min < 60) && (iRes == 0); min ++, dtReq = dtReq.AddMinutes (1))
                                 {
-                                    foreach (string strId in listSensors)
-                                    {                            
-                                        indx = listSensors.IndexOf (strId);
-                                        m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
-                                    }
+                                    valMins = avgInterval (table
+                                                    , dtReq
+                                                    , 60
+                                                    , listSensors
+                                                    , out iRes);
 
-                                    m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
+                                    if (iRes == 0)
+                                    {
+                                        foreach (string strId in listSensors)
+                                        {                            
+                                            indx = listSensors.IndexOf (strId);
+                                            m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
+                                        }
+
+                                        m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
+                                    }
+                                    else
+                                        ;
                                 }
-                                else
-                                    ;
-                            }
+                            else
+                                ;
                             break;
                         case TEC.SOURCE_SOTIASSO.AVERAGE:
                         case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:                        
@@ -4841,7 +4906,7 @@ namespace StatisticCommon
 
                 if (iRes == 0)
                 {
-                    iRes = table.Rows.Count > 0 ? 0 : -10;
+                    iRes = table.Rows.Count > 0 ? 0 : 10;
 
                     if (iRes == 0)
                     {

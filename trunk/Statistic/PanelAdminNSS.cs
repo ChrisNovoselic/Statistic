@@ -77,7 +77,8 @@ namespace Statistic
 
         private int GetIndexGTPOwner(int indx_tg)
         {
-            int id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
+            int iRes = -1
+                , id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
             
             foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail)
             {
@@ -88,7 +89,7 @@ namespace Statistic
                     ;
             }
 
-            return -1;
+            return iRes;
         }
 
         protected override void getDataGridViewAdmin()

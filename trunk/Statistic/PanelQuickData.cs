@@ -1031,9 +1031,11 @@ namespace Statistic
                     }
                 }
 
+                //14.04.2015 ???
                 if ((bMinValuesReceived == true) && (value < 1F) && (bPrevValueValidate == true) && (!(prevValue < 1F)))
                 {
-                    Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
+                    //Logging.Logg().Debug(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Warning(@"PanelQuickData::ShowFactValues () - value < 1F", Logging.INDEX_MESSAGE.NOT_SET);
 
                     return;
                 }

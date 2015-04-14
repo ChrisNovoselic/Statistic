@@ -258,7 +258,7 @@ namespace biysktmora
             return iRes;
         }
 
-        protected override void StateErrors(int state, bool response)
+        protected override void StateErrors(int state, int request, int result)
         {
             string unknownErr = @"Неизвестная ошибка"
                 , msgErr = unknownErr;
@@ -283,7 +283,7 @@ namespace biysktmora
             Console.WriteLine(msgErr);
         }
 
-        protected override void StateWarnings(int state, bool response)
+        protected override void StateWarnings(int state, int request, int result)
         {
             string unknownErr = @"Неизвестное предупреждение"
                 , msgErr = unknownErr;

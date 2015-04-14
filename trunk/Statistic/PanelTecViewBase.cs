@@ -1053,7 +1053,11 @@ namespace Statistic
             //delegateStartWait ();
             if (!(delegateStartWait == null)) delegateStartWait(); else ;
             
-            ChangeState();
+            //14.04.2015 ???
+            if (m_tecView.currHour == true)
+                ChangeState();
+            else
+                m_tecView.GetRetroValues ();
 
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;

@@ -91,7 +91,7 @@ namespace StatisticTimeSync
                 return 0;
             }
 
-            protected override void StateErrors(int state, bool response)
+            protected override void StateErrors(int state, int request, int result)
             {
                 string error = string.Empty,
                     reason = string.Empty,
@@ -100,7 +100,7 @@ namespace StatisticTimeSync
                 switch (state)
                 {
                     case (int)StatesMachine.CurrentTime:
-                        if (response == true)
+                        if (request == 0)
                         {
                             reason = @"разбора";
                         }
@@ -130,7 +130,7 @@ namespace StatisticTimeSync
                 Logging.Logg().Error(@"HGetDate::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
+            protected override void StateWarnings(int /*StatesMachine*/ state, int request, int result)
             {
             }
 

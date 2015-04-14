@@ -2094,7 +2094,7 @@ namespace StatisticCommon
             return result;
         }
 
-        protected override void StateErrors(int /*StatesMachine*/ state, bool response)
+        protected override void StateErrors(int /*StatesMachine*/ state, int request, int result)
         {
             bool bClear = false;
 
@@ -2105,7 +2105,7 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
-                    if (response == true)
+                    if (request == 0)
                     {
                         reason = @"разбора";
 
@@ -2142,7 +2142,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    if (response == true)
+                    if (request == 0)
                         reason = @"разбора";
                     else {
                         reason = @"получени€";
@@ -2154,7 +2154,7 @@ namespace StatisticCommon
 
                     break;
                 case (int)StatesMachine.AdminValues:
-                    if (response)
+                    if (request == 0)
                         reason = @"разбора";
                     else {
                         reason = @"получени€";
@@ -2191,7 +2191,7 @@ namespace StatisticCommon
                     // ???
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    if (response == true)
+                    if (request == 0)
                     {
                         reason = @"разбора";
                         saveResult = Errors.ParseError;
@@ -2215,7 +2215,7 @@ namespace StatisticCommon
 
                     break;
                 case (int)StatesMachine.AdminDates:
-                    if (response)
+                    if (request == 0)
                     {
                         reason = @"разбора";
                         saveResult = Errors.ParseError;
@@ -2329,7 +2329,7 @@ namespace StatisticCommon
             Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вџход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override void StateWarnings(int /*StatesMachine*/ state, bool response)
+        protected override void StateWarnings(int /*StatesMachine*/ state, int req, int res)
         {
         }
 

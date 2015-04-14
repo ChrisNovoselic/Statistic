@@ -148,7 +148,9 @@ namespace StatisticTransModes
 
         private int GetIndexGTPOwner(int indx_tg)
         {
-            return -1;
+            int iRes = -1;
+            
+            return iRes;
         }
 
         protected override void getDataGridViewAdmin(int indxDB) //indxDB = DEST (ВСЕГДА)
