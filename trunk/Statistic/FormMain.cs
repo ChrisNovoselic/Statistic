@@ -1120,22 +1120,28 @@ namespace Statistic
             //Только для 'FIleConnSett.MODE.SETTINGS'
             //m_fileConnSett.EventFileConnSettSave += new FIleConnSett.DelegateOnEventFileConnSettSave(OnEventFileConnSettSave);
 
+            string msg = string.Empty;
+            bool bAbort = false;
+
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
-            {
-                string msg = string.Empty;
+            {                
                 switch (Initialize(out msg))
                 {
                     case -1:
-                        Abort(@"Неизвестная причина", false);
+                        msg = @"Неизвестная причина";
                         break;
-                    case -2:
-                    case -3:
+                    case -3: //Не найден пользователь
+                        //Остальные п.п. меню блокируются в 'сменитьРежимToolStripMenuItem_EnabledChanged'
+                        // этот п. блокируется только при конкретной ошибке "-3"
+                        this.настройкиСоединенияБДКонфToolStripMenuItem.Enabled = false;
+                        break;
+                    case -2:                    
                     case -5:
                     case -4: //@"Необходимо изменить параметры соединения с БД"
-                        Abort(msg, false);
+                        //Сообщение получено из 'Initialize'
                         break;
                     default:
                         //Успех...
@@ -1144,8 +1150,13 @@ namespace Statistic
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
-                Abort(@"Необходимо изменить параметры соединения с БД конфигурации", false);
+                msg = @"Необходимо изменить параметры соединения с БД конфигурации";
             }
+
+            if (msg.Equals (string.Empty) == false)
+                Abort (msg, bAbort);
+            else
+                ;
 
             this.Activate();            
         }

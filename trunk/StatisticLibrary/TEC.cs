@@ -1316,8 +1316,9 @@ namespace StatisticCommon
                             + @" FROM [dbo].[P_SUMM_TSN]"
                             + @" WHERE [ID_TEC] = " + m_id
                                 + @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"'"
-                                    + @" AND '" + dtReq.AddHours(HAdmin.CountHoursOfDate(dtReq)).ToString(@"yyyyMMdd HH:00:01") + @"'"
-                            + @" GROUP BY DATEPART(hour,[LAST_UPDATE])";
+                                    + @" AND '" + dtReq.Date.AddHours(HAdmin.CountHoursOfDate(dtReq)).ToString(@"yyyyMMdd HH:00:01") + @"'"
+                            + @" GROUP BY DATEPART(hour,[LAST_UPDATE])"
+                            + @" ORDER BY [HOUR]";
                     break;
                 default:
                     break;
