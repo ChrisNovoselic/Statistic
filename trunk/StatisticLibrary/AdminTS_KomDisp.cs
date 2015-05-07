@@ -73,16 +73,9 @@ namespace StatisticCommon
                     m_prevDate = date.Date;
                     m_curDate = m_prevDate;
 
-                    states.Add((int)StatesMachine.CSVValues);
+                    AddState((int)StatesMachine.CSVValues);
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
-                    }
+                    Run(@"AdminTS::ImpRDGExcelValues ()");
                 }
             else
                 ; //Ошибка

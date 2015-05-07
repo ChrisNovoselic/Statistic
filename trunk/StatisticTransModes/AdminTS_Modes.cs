@@ -48,22 +48,15 @@ namespace StatisticTransModes
 
                     Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    //states.Add((int)StatesMachine.AdminDates);
+                    AddState((int)StatesMachine.CurrentTime);
+                    //AddState((int)StatesMachine.AdminDates);
                     //??? Состояния позволяют НАЧать процесс разработки возможности редактирования ПЛАНа на вкладке 'Редактирование ПБР'
-                    states.Add((int)StatesMachine.PPBRDates);
-                    //states.Add((int)StatesMachine.SaveAdminValues);
-                    states.Add((int)StatesMachine.SavePPBRValues);
-                    //states.Add((int)StatesMachine.UpdateValuesPPBR);
+                    AddState((int)StatesMachine.PPBRDates);
+                    //AddState((int)StatesMachine.SaveAdminValues);
+                    AddState((int)StatesMachine.SavePPBRValues);
+                    //AddState((int)StatesMachine.UpdateValuesPPBR);
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch
-                    {
-                        Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaState.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
+                    Run(@"AdminTS_Modes::SaveChanges ()");
                 }
 
                 Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);

@@ -132,30 +132,23 @@ namespace StatisticCommon
 
                     Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    states.Add((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.CurrentTime);
 
                     if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
                     {
-                        states.Add((int)StatesMachine.AdminDates);
-                        states.Add((int)StatesMachine.SaveAdminValues);
+                        AddState((int)StatesMachine.AdminDates);
+                        AddState((int)StatesMachine.SaveAdminValues);
                     }
                     else ;
 
                     if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
                     {
-                        states.Add((int)StatesMachine.PPBRDates);
-                        states.Add((int)StatesMachine.SavePPBRValues);
+                        AddState((int)StatesMachine.PPBRDates);
+                        AddState((int)StatesMachine.SavePPBRValues);
                     }
                     else ;
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::SaveChanges () - semaState.Release(1)");
-                    }
+                    Run(@"AdminTS::SaveChanges ()");
                 }
 
                 Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
@@ -205,31 +198,24 @@ namespace StatisticCommon
 
                     Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    states.Add((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.CurrentTime);
                     if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
                     {
-                        states.Add((int)StatesMachine.AdminDates);
-                        states.Add((int)StatesMachine.ClearAdminValues);
+                        AddState((int)StatesMachine.AdminDates);
+                        AddState((int)StatesMachine.ClearAdminValues);
                     }
                     else
                         ;
 
                     if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
                     {
-                        states.Add((int)StatesMachine.PPBRDates);
-                        states.Add((int)StatesMachine.ClearPPBRValues);
+                        AddState((int)StatesMachine.PPBRDates);
+                        AddState((int)StatesMachine.ClearPPBRValues);
                     }
                     else
                         ;
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ClearRDG () - semaState.Release(1)");
-                    }
+                    Run(@"AdminTS::ClearRDG ()");
                 }
 
                 //Ожидание окончания записи
@@ -333,16 +319,9 @@ namespace StatisticCommon
 
                 using_date = true; //???
 
-                states.Add((int)StatesMachine.CurrentTime);
+                AddState((int)StatesMachine.CurrentTime);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::Reinit () - semaState.Release(1)");
-                }
+                Run(@"AdminTS::Reinit ()");
             }
         }
 
@@ -356,16 +335,9 @@ namespace StatisticCommon
 
                 Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                states.Add((int)StatesMachine.CurrentTime);
+                AddState((int)StatesMachine.CurrentTime);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetCurrentTime () - semaState.Release(1)");
-                }
+                Run(@"AdminTS::GetCurrentTime ()");
             }
         }
 
@@ -394,22 +366,15 @@ namespace StatisticCommon
 
                 m_typeFields = mode;
 
-                states.Add((int)StatesMachine.CurrentTime);
+                AddState((int)StatesMachine.CurrentTime);
                 if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
-                    states.Add((int)StatesMachine.PPBRValues);
+                    AddState((int)StatesMachine.PPBRValues);
                 else ;
                 if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                    states.Add((int)StatesMachine.AdminValues);
+                    AddState((int)StatesMachine.AdminValues);
                 else ;
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetRDGValues () - semaState.Release(1)");
-                }
+                Run(@"AdminTS::GetRDGValues ()");
             }
         }
 
@@ -436,20 +401,13 @@ namespace StatisticCommon
 
                 //???Опрос обязателен...
                 if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
-                    states.Add((int)StatesMachine.PPBRValues);
+                    AddState((int)StatesMachine.PPBRValues);
                 else ;
                 if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                    states.Add((int)StatesMachine.AdminValues);
+                    AddState((int)StatesMachine.AdminValues);
                 else ;
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::GetRDGValues () - semaState.Release(1)");
-                }
+                Run(@"AdminTS::GetRDGValues ()");
             }
         }
 
@@ -478,16 +436,9 @@ namespace StatisticCommon
                 m_prevDate = date.Date;
                 m_curDate = m_prevDate;
 
-                states.Add((int)StatesMachine.ImpRDGExcelValues);
+                AddState((int)StatesMachine.ImpRDGExcelValues);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ImpRDGExcelValues () - semaState.Release(1)");
-                }
+                Run(@"AdminTS::ImpRDGExcelValues ()");
             }
         }
 
@@ -510,16 +461,9 @@ namespace StatisticCommon
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    states.Add((int)StatesMachine.ExpRDGExcelValues);
+                    AddState((int)StatesMachine.ExpRDGExcelValues);
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ExpRDGExcelValues () - semaState.Release(1)");
-                    }
+                    Run(@"AdminTS::ExpRDGExcelValues ()");
                 }
 
                 Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
@@ -1839,7 +1783,7 @@ namespace StatisticCommon
                         break;
                     case (int)StatesMachine.AdminDates:
                         if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
-                            iRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                            iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                         else {
                             error = false;
                             table = null;
@@ -1857,7 +1801,7 @@ namespace StatisticCommon
                     case (int)StatesMachine.ClearAdminValues:
                     case (int)StatesMachine.ClearPPBRValues:
                     //case (int)StatesMachine.GetPass:
-                        iRes = Response(m_IdListenerCurrent, out error, out table/*, false*/);
+                        iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                         break;
                     //case (int)StatesMachine.LayoutGet:
                     //case (int)StatesMachine.LayoutSet:
@@ -2002,7 +1946,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
-                    if (states.IndexOf (state) == (states.Count - 1))
+                    if (isLastState (state) == true)
                         try { semaDBAccess.Release(1); }
                         catch { }
                     else
@@ -2014,7 +1958,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
-                    if (states.IndexOf(state) == (states.Count - 1))
+                    if (isLastState(state) == true)
                         try { semaDBAccess.Release(1); }
                         catch (Exception e) {
                             Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...");
@@ -2356,25 +2300,18 @@ namespace StatisticCommon
 
                         Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                        //states.Add((int)StatesMachine.CurrentTime);
+                        //AddState((int)StatesMachine.CurrentTime);
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
-                            states.Add((int)StatesMachine.PPBRValues);
+                            AddState((int)StatesMachine.PPBRValues);
                         else
                             ;
 
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                            states.Add((int)StatesMachine.AdminValues);
+                            AddState((int)StatesMachine.AdminValues);
                         else
                             ;
 
-                        try
-                        {
-                            semaState.Release(1);
-                        }
-                        catch (Exception e)
-                        {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::SaveRDGValues () - semaState.Release(1)");
-                        }
+                        Run(@"AdminTS::SaveRDGValues ()");
                     }
                 else
                     ;
@@ -2414,9 +2351,9 @@ namespace StatisticCommon
         //            Logging.Logg().Send("SaveRDGValues () - states.Clear()", true, true, false);
         //            Logging.Logg().LogUnlock();
 
-        //            states.Add((int)StatesMachine.CurrentTime);
-        //            states.Add((int)StatesMachine.PPBRValues);
-        //            states.Add((int)StatesMachine.AdminValues);
+        //            AddState((int)StatesMachine.CurrentTime);
+        //            AddState((int)StatesMachine.PPBRValues);
+        //            AddState((int)StatesMachine.AdminValues);
 
         //            try
         //            {
@@ -2454,24 +2391,17 @@ namespace StatisticCommon
                     m_curDate = m_prevDate;
                     using_date = false;
 
-                    //states.Add((int)StatesMachine.CurrentTime);
+                    //AddState((int)StatesMachine.CurrentTime);
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
-                        states.Add((int)StatesMachine.PPBRValues);
+                        AddState((int)StatesMachine.PPBRValues);
                     else
                         ;
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        states.Add((int)StatesMachine.AdminValues);
+                        AddState((int)StatesMachine.AdminValues);
                     else
                         ;
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::ClearRDGValues () - semaState.Release(1)");
-                    }
+                    Run(@"AdminTS::ClearRDGValues ()");
                 }
             }
             else

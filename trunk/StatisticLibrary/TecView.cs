@@ -349,43 +349,43 @@ namespace StatisticCommon
 
             if ((m_tec.m_bSensorsStrings == false))
             {
-                states.Add((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.InitSensors);
             }
             else ;
 
             if (currHour == true)
-                states.Add((int)StatesMachine.CurrentTimeView);
+                AddState((int)StatesMachine.CurrentTimeView);
             else
                 ;
 
             //??? а где AISKUE+SOTIASSO
             if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                states.Add((int)StatesMachine.Hours_Fact);
+                AddState((int)StatesMachine.Hours_Fact);
             else
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
-                    states.Add((int)StatesMachine.Hours_TM);
+                    AddState((int)StatesMachine.Hours_TM);
                 else
                     ;
 
             if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                states.Add((int)StatesMachine.CurrentMins_Fact);
+                AddState((int)StatesMachine.CurrentMins_Fact);
             else
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
-                    states.Add((int)StatesMachine.CurrentMins_TM);
+                    AddState((int)StatesMachine.CurrentMins_TM);
                 else
                     ;
 
             if (m_bLastValue_TM_Gen == true)
-                states.Add((int)StatesMachine.LastValue_TM_Gen);
+                AddState((int)StatesMachine.LastValue_TM_Gen);
             else
                 ;
 
-            states.Add((int)StatesMachine.PPBRValues);
-            states.Add((int)StatesMachine.AdminValues);
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
         }
 
         public void OnEventConfirm(int id_tg)
@@ -412,14 +412,7 @@ namespace StatisticCommon
         private void getRDGValues () {
             GetRDGValues((int)s_typeFields, indxTECComponents, DateTime.Now);
 
-            try
-            {
-                semaState.Release(1);
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ChangeState () - semaState.Release (1) - ...");
-            }
+            Run(@"TecView::GetRDGValues ()");
         }
 
         public void SuccessThreadRDGValues(int curHour, int curMinute)
@@ -578,12 +571,12 @@ namespace StatisticCommon
             ClearValues();
 
             if (m_tec.m_bSensorsStrings == false)
-                states.Add((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.InitSensors);
             else ;
 
-            //states.Add((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
-            states.Add((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-            states.Add((int)TecView.StatesMachine.LastValue_TM_SN);
+            //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
+            AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
+            AddState((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
         private void ChangeState_AdminAlarm () {
@@ -941,7 +934,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminDates:
                 case (int)StatesMachine.AdminValues:
                     //bRes = Response(m_IdListenerCurrent, out error, out table);
-                    iRes = Response(out error, out table);
+                    iRes = response(out error, out table);
                     break;
                 default:
                     iRes = -1;
@@ -1477,12 +1470,12 @@ namespace StatisticCommon
             ClearStates ();
 
             if (m_tec.m_bSensorsStrings == false)
-                states.Add((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.InitSensors);
             else ;
 
-            states.Add((int)TecView.StatesMachine.CurrentTimeView);
-            states.Add((int)TecView.StatesMachine.LastValue_TM_Gen);
-            states.Add((int)TecView.StatesMachine.LastValue_TM_SN);
+            AddState((int)TecView.StatesMachine.CurrentTimeView);
+            AddState((int)TecView.StatesMachine.LastValue_TM_Gen);
+            AddState((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
         private void ChangeState_LastMinutes () {
@@ -1491,15 +1484,15 @@ namespace StatisticCommon
             ClearValues();
 
             if (m_tec.m_bSensorsStrings == false)
-                states.Add((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.InitSensors);
             else ;
 
             adminValuesReceived = false;
             
-            states.Add((int)StatesMachine.PPBRValues);
-            states.Add((int)StatesMachine.AdminValues);
-            //states.Add((int)StatesMachine.CurrentTimeView);
-            states.Add((int)StatesMachine.LastMinutes_TM);
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
+            //AddState((int)StatesMachine.CurrentTimeView);
+            AddState((int)StatesMachine.LastMinutes_TM);
         }
 
         private void ChangeState_View () {
@@ -1511,7 +1504,7 @@ namespace StatisticCommon
             {
                 if (currHour == true)
                 {
-                    states.Add((int)StatesMachine.CurrentTimeView);
+                    AddState((int)StatesMachine.CurrentTimeView);
                 }
                 else
                 {
@@ -1520,64 +1513,64 @@ namespace StatisticCommon
             }
             else
             {
-                states.Add((int)StatesMachine.InitSensors);
-                states.Add((int)StatesMachine.CurrentTimeView);
+                AddState((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.CurrentTimeView);
             }
 
             //Часы...
             if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
-                states.Add((int)StatesMachine.Hours_Fact);
+                AddState((int)StatesMachine.Hours_Fact);
                 if (currHour == true)
-                    states.Add((int)StatesMachine.Hour_TM);
+                    AddState((int)StatesMachine.Hour_TM);
                 else
                     ;
             }
             else
                 if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                    states.Add((int)StatesMachine.Hours_Fact);
+                    AddState((int)StatesMachine.Hours_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         ||(m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.Hours_TM);
+                        AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
             //Минуты...
             if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
-                states.Add((int)StatesMachine.CurrentMins_Fact);
+                AddState((int)StatesMachine.CurrentMins_Fact);
                 if (currHour == true)
-                    states.Add((int)StatesMachine.CurrentMin_TM);
+                    AddState((int)StatesMachine.CurrentMin_TM);
                 else
                     ;
             }
             else
                 if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    states.Add((int)StatesMachine.CurrentMins_Fact);
+                    AddState((int)StatesMachine.CurrentMins_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.CurrentMins_TM);
+                        AddState((int)StatesMachine.CurrentMins_TM);
                     else
                         ;
             if (m_bLastValue_TM_Gen == true)
-                states.Add((int)StatesMachine.LastValue_TM_Gen);
+                AddState((int)StatesMachine.LastValue_TM_Gen);
             else
                 ;
-            states.Add((int)StatesMachine.LastMinutes_TM);
-            states.Add((int)StatesMachine.PPBRValues);
-            states.Add((int)StatesMachine.AdminValues);
+            AddState((int)StatesMachine.LastMinutes_TM);
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
         }
 
         private void ChangeState_TMSNPower () {
             ClearStates ();
 
             if (m_tec.m_bSensorsStrings == false)
-                states.Add((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.InitSensors);
             else ;
 
-            states.Add((int)StatesMachine.LastValue_TM_Gen);
-            states.Add((int)StatesMachine.LastValue_TM_SN);
+            AddState((int)StatesMachine.LastValue_TM_Gen);
+            AddState((int)StatesMachine.LastValue_TM_SN);
         }
 
         public void ChangeState()
@@ -1606,15 +1599,8 @@ namespace StatisticCommon
                 }
             }
 
-            if (! (m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ChangeState () - semaState.Release(1)... ID = " + m_ID);
-                }
+            if (!(m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
+                Run(@"TecView::ChangeState ()");
             else
                 ;
         }
@@ -1676,22 +1662,18 @@ namespace StatisticCommon
 
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    states.Add((int)StatesMachine.Hours_Fact);
+                    AddState((int)StatesMachine.Hours_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.Hours_TM);
+                        AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
 
-                states.Add((int)StatesMachine.PPBRValues);
-                states.Add((int)StatesMachine.AdminValues);
+                AddState((int)StatesMachine.PPBRValues);
+                AddState((int)StatesMachine.AdminValues);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+                Run(@"TecView::GetRetroHours ()");
             }
         }
 
@@ -1708,37 +1690,33 @@ namespace StatisticCommon
                 //Часы...
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    states.Add((int)StatesMachine.Hours_Fact);
+                    AddState((int)StatesMachine.Hours_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.Hours_TM);
+                        AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
 
                 //Минуты...
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    states.Add((int)StatesMachine.RetroMins_Fact);
+                    AddState((int)StatesMachine.RetroMins_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.RetroMins_TM);
+                        AddState((int)StatesMachine.RetroMins_TM);
                     else
                         ;
                 if (m_bLastValue_TM_Gen == true)
-                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                    AddState((int)StatesMachine.RetroMin_TM_Gen);
                 else ;
 
-                states.Add((int)StatesMachine.LastMinutes_TM);
-                states.Add((int)StatesMachine.PPBRValues);
-                states.Add((int)StatesMachine.AdminValues);
+                AddState((int)StatesMachine.LastMinutes_TM);
+                AddState((int)StatesMachine.PPBRValues);
+                AddState((int)StatesMachine.AdminValues);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::GetRetroHours () - sem.Release(1)"); }
+                Run(@"TecView::GetRetroHours ()");
             }
         }
 
@@ -1750,13 +1728,9 @@ namespace StatisticCommon
                 {
                     ClearStates();
 
-                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                    AddState((int)StatesMachine.RetroMin_TM_Gen);
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMinTMGen () - sem.Release(1)"); }
+                    Run(@"TecView::getRetroMinTMGen ()");
                 }
             }
             else ;
@@ -1786,24 +1760,20 @@ namespace StatisticCommon
 
                 if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                     || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    states.Add((int)StatesMachine.RetroMins_Fact);
+                    AddState((int)StatesMachine.RetroMins_Fact);
                 else
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        states.Add((int)StatesMachine.RetroMins_TM);
+                        AddState((int)StatesMachine.RetroMins_TM);
                     else
                         ;
                 if (m_bLastValue_TM_Gen)
-                    states.Add((int)StatesMachine.RetroMin_TM_Gen);
+                    AddState((int)StatesMachine.RetroMin_TM_Gen);
                 else ;
-                states.Add((int)StatesMachine.PPBRValues);
-                states.Add((int)StatesMachine.AdminValues);
+                AddState((int)StatesMachine.PPBRValues);
+                AddState((int)StatesMachine.AdminValues);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - TecView::getRetroMins () - sem.Release(1)"); }
+                Run(@"TecView::getRetroMins ()");
             }
         }
 

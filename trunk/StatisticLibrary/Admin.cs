@@ -15,7 +15,7 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public abstract class HAdmin : HStates
+    public abstract class HAdmin : HHandlerDb
     {
         public static int SEASON_BASE = 5;
         public enum seasonJumpE

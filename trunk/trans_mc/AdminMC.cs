@@ -366,21 +366,14 @@ namespace trans_mc
 
                 //if (m_listIGO.Count == 0)
                 //{
-                //    states.Add((int)StatesMachine.InitIGO);
+                //    AddState((int)StatesMachine.InitIGO);
                 //}
                 //else
                 //    ;
 
-                states.Add((int)StatesMachine.PPBRValues);
+                AddState((int)StatesMachine.PPBRValues);
 
-                try
-                {
-                    semaState.Release(1);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminMC::GetRDGValues () - semaState.Release(1)");
-                }
+                Run(@"AdminMC::GetRDGValues ()");
             }
         }
     }

@@ -5,13 +5,13 @@ using System.Globalization; //DaylightTime
 
 using System.Data; //DataTable
 
-using HClassLibrary; //HStates
+using HClassLibrary; //HHandlerDb
 
 namespace StatisticTimeSync
 {
     partial class PanelSourceData
     {
-        class HGetDate : HStates
+        class HGetDate : HHandlerDb
         {
             ConnectionSettings m_ConnSett;
             DateTime m_serverTime;
@@ -66,7 +66,7 @@ namespace StatisticTimeSync
                 switch (state)
                 {
                     case (int)StatesMachine.CurrentTime:
-                        iRes = Response(m_IdListenerCurrent, out error, out table);
+                        iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
                     default:
                         break;
@@ -157,16 +157,9 @@ namespace StatisticTimeSync
 
                     Logging.Logg().Debug("HGetDate::GetCurrentTime () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    states.Add((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.CurrentTime);
 
-                    try
-                    {
-                        semaState.Release(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "HGetDate::GetCurrentTime () - semaState.Release(1)");
-                    }
+                    Run(@"HGetDate::GetCurrentTime ()");
                 }
             }
 
