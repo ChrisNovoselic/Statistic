@@ -1797,7 +1797,7 @@ namespace StatisticCommon
             return result;
         }
 
-        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
+        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out object table)
         {
             int iRes = -1;
 
@@ -1879,7 +1879,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected override int StateResponse(int /*StatesMachine*/ state, DataTable table)
+        protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
             string strRep = string.Empty;
@@ -1887,7 +1887,7 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.CurrentTime:
-                    result = GetCurrentTimeResponse(table);
+                    result = GetCurrentTimeResponse(table as DataTable);
                     if (result == 0)
                     {
                         if (using_date == true) {
@@ -1903,7 +1903,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    result = GetPPBRValuesResponse(table, m_curDate);
+                    result = GetPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == false)
@@ -1925,7 +1925,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        result = GetAdminValuesResponse(table, m_curDate);
+                        result = GetAdminValuesResponse(table as System.Data.DataTable, m_curDate);
                     else {
                         table = null;
 
@@ -1979,7 +1979,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table, m_curDate);
+                    result = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                     if (result == 0)
                     {
                     }
@@ -1989,7 +1989,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminDates:
                     ClearAdminDates();
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        result = GetAdminDatesResponse(table, m_curDate);
+                        result = GetAdminDatesResponse(table as System.Data.DataTable, m_curDate);
                     else
                         result = 0;
 

@@ -57,7 +57,7 @@ namespace StatisticTimeSync
                 return iRes;
             }
 
-            protected override int StateCheckResponse(int state, out bool error, out DataTable table)
+            protected override int StateCheckResponse(int state, out bool error, out object table)
             {
                 int iRes = 0;
                 error = true;
@@ -75,14 +75,14 @@ namespace StatisticTimeSync
                 return iRes;
             }
 
-            protected override int StateResponse(int state, DataTable table)
+            protected override int StateResponse(int state, object table)
             {
                 int iRes = 0;
 
                 switch (state)
                 {
                     case (int)StatesMachine.CurrentTime:
-                        iRes = GetCurrentTimeResponse(table);
+                        iRes = GetCurrentTimeResponse(table as DataTable);
                         break;
                     default:
                         break;

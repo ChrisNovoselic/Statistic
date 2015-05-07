@@ -907,7 +907,7 @@ namespace StatisticCommon
             return iRes;
         }
             
-        protected override int StateCheckResponse(int state, out bool error, out System.Data.DataTable table)
+        protected override int StateCheckResponse(int state, out bool error, out object table)
         {
             int iRes = 0;
             
@@ -1265,7 +1265,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected override int StateResponse(int state, System.Data.DataTable table)
+        protected override int StateResponse(int state, object table)
         {
             int iRes = 0;
 
@@ -1288,7 +1288,7 @@ namespace StatisticCommon
                             ;
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
-                    iRes = GetCurrentTimeAdminResponse(table);
+                    iRes = GetCurrentTimeAdminResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         if (using_date == true) {
@@ -1304,7 +1304,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.CurrentTimeView:
-                    iRes = GetCurrentTimeViewResponse(table);
+                    iRes = GetCurrentTimeViewResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
@@ -1318,7 +1318,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.Hours_Fact:
                     ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    iRes = GetHoursFactResponse(table);
+                    iRes = GetHoursFactResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
                     {//Успех...
                     }
@@ -1326,15 +1326,15 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.Hour_TM:
-                    iRes = GetHourTMResponse(table);
+                    iRes = GetHourTMResponse(table as System.Data.DataTable);
                     break;
                 case (int)StatesMachine.Hours_TM:
                     ClearValuesHours();
-                    iRes = GetHoursTMResponse(table);
+                    iRes = GetHoursTMResponse(table as System.Data.DataTable);
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     ClearValuesMins();
-                    iRes = GetMinsFactResponse(table);
+                    iRes = GetMinsFactResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
@@ -1343,14 +1343,14 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
-                    iRes = GetMinTMResponse(table);
+                    iRes = GetMinTMResponse(table as System.Data.DataTable);
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
-                    iRes = GetMinsTMResponse(table);
+                    iRes = GetMinsTMResponse(table as System.Data.DataTable);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                    iRes = GetHoursTMSNPsumResponse(table);
+                    iRes = GetHoursTMSNPsumResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                     }
@@ -1358,7 +1358,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
-                    iRes = GetCurrentTMGenResponse(table);
+                    iRes = GetCurrentTMGenResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
                     {
                         if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
@@ -1367,7 +1367,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.LastValue_TM_SN:
-                    iRes = GetCurrentTMSNResponse(table);
+                    iRes = GetCurrentTMSNResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         updateGUI_TM_SN ();
@@ -1377,7 +1377,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.LastMinutes_TM:
                     ClearValuesLastMinutesTM ();
-                    iRes = GetLastMinutesTMResponse(table, m_curDate);
+                    iRes = GetLastMinutesTMResponse(table as System.Data.DataTable, m_curDate);
                     if (iRes == 0)
                     {
                         if (! (updateGUI_LastMinutes == null))
@@ -1398,7 +1398,7 @@ namespace StatisticCommon
                 //        ;
                 //    break;
                 case (int)StatesMachine.RetroMin_TM_Gen:
-                    iRes = GetMinTMGenResponse (table);
+                    iRes = GetMinTMGenResponse(table as System.Data.DataTable);
                     //14.04.2015 ???
                     //if (iRes == 0)
                         updateGUI_TM_Gen ();
@@ -1409,11 +1409,11 @@ namespace StatisticCommon
                     ClearValuesMins();
                     if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                         || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        iRes = GetMinsFactResponse(table);
+                        iRes = GetMinsFactResponse(table as System.Data.DataTable);
                     else
                         if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                             || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                            iRes = GetMinsTMResponse(table);
+                            iRes = GetMinsTMResponse(table as System.Data.DataTable);
                         else
                             ;
                     //14.04.2015 - всегда будет вызвана из 'AdminValues'
@@ -1426,7 +1426,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
-                    iRes = GetPPBRDatesResponse(table, m_curDate);
+                    iRes = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                     if (iRes == 0)
                     {
                     }
@@ -1435,7 +1435,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ClearPBRValues();
-                    iRes = GetPPBRValuesResponse(table);
+                    iRes = GetPPBRValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                     }
@@ -1446,7 +1446,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     ClearAdminValues();
-                    iRes = GetAdminValuesResponse(table);
+                    iRes = GetAdminValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");

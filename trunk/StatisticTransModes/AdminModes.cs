@@ -22,8 +22,10 @@ namespace StatisticTransModes
             base.Initialize();
         }
 
-        public override int Response(int idListener, out bool error, out DataTable table/*, bool isTec*/)
+        public override int Response(int idListener, out bool error, out object outobj/*, bool isTec*/)
         {
+            outobj = null;
+            DataTable table = outobj as DataTable;
             return DbMCSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
         }
 

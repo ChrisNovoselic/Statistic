@@ -195,7 +195,7 @@ namespace trans_mc
             return result;
         }
 
-        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out DataTable table)
+        protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out object table)
         {
             int iRes = -1;
 
@@ -217,7 +217,7 @@ namespace trans_mc
             return iRes;
         }
 
-        protected override int StateResponse(int /*StatesMachine*/ state, DataTable table)
+        protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
             switch (state)
@@ -234,7 +234,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                     delegateStopWait();
 
-                    result = GetPPBRValuesResponse(table, m_curDate);
+                    result = GetPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                         readyData(m_curDate);
@@ -244,7 +244,7 @@ namespace trans_mc
                     break;
                 case (int)StatesMachine.PPBRDates:
                     ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table, m_curDate);
+                    result = GetPPBRDatesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                     }
