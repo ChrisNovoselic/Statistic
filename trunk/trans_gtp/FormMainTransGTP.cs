@@ -72,8 +72,8 @@ namespace trans_gtp
             //else
             //    ;
 
-            m_sFileINI.Add(@"ТипБДКфгИсточник", @"190");
-            m_sFileINI.Add(@"РДГФорматТаблицаИсточник", @"STATIC");
+            m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"190");
+            m_sFileINI.AddMainPar(@"РДГФорматТаблицаИсточник", @"STATIC");
 
             ////Для переназначения идентификаторов источников данных БийскТЭЦ
             //m_fileINI.Add(@"ID_БДНазначение_ASKUE", @"6,");
@@ -87,7 +87,7 @@ namespace trans_gtp
             TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                arConfigDB[i] = Int32.Parse(m_sFileINI.GetValueOfKey(arKeyTypeConfigDB[i]));
+                arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
                 for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
@@ -101,16 +101,16 @@ namespace trans_gtp
             }
 
             string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetValueOfKey(@"РДГФорматТаблицаИсточник");
-            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
+            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаИсточник");
+            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
 
             bool bIgnoreDateTime = false;
-            if (Boolean.TryParse(m_sFileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
+            if (Boolean.TryParse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
                 bIgnoreDateTime = false;
             else
                 ;
 
-            m_sFileINI.Add(@"ТЭЦПараметрыНазначение", @"{}");
+            m_sFileINI.AddMainPar(@"ТЭЦПараметрыНазначение", @"{}");
 
             HMark markQueries = new HMark();
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
@@ -158,7 +158,7 @@ namespace trans_gtp
 
                 if ((i == (int)CONN_SETT_TYPE.DEST) && (arTypeConfigDB[(int)CONN_SETT_TYPE.DEST] == TYPE_DATABASE_CFG.CFG_190))
                 {
-                    string strTECParametersDest = m_sFileINI.GetValueOfKey(@"ТЭЦПараметрыНазначение");
+                    string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         string prefix_admin = @""

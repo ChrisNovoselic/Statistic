@@ -24,9 +24,9 @@ namespace update_pbr
             FIleConnSett fileConnSett = new FIleConnSett(@"connsett_ne22.ini", FIleConnSett.MODE.FILE);
             FileINI fileINI = null;
             //fileINI = new FileINI(@"setup.ini", new string[] { @"ID_TECNotUse" }, new string[] { @"6" });
-            fileINI = new FileINI(@"setup.ini");
+            fileINI = new FileINI(@"setup.ini", false);
 
-            fileINI.Add(@"ID_TECNotUse", string.Empty);
+            fileINI.AddMainPar(@"ID_TECNotUse", string.Empty);
 
             ProgramBase.Start();
 
@@ -57,7 +57,7 @@ namespace update_pbr
 
             string [] arPrefix = new string [] {@"PBR", @"Pmin", @"Pmax"};
             query = string.Empty;
-            string strIds_TECNotUse = fileINI.GetValueOfKey(@"ID_TECNotUse");
+            string strIds_TECNotUse = fileINI.GetMainValueOfKey(@"ID_TECNotUse");
             int[] arIds_TECNotUse = new int[strIds_TECNotUse.Split(',').Length];
             for (i = 0; i < arIds_TECNotUse.Length; i++)
             {

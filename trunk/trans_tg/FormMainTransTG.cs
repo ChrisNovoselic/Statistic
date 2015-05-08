@@ -75,7 +75,7 @@ namespace trans_tg
             string keyTypeConfigDB = @"ТипБДКфгНазначение";
             //FileINI fileINI = new FileINI(@"setup.ini");
             //string sec = "Main (" + ProgramBase.AppName + ")";
-            iConfigDB = Int32.Parse(m_sFileINI.GetValueOfKey(keyTypeConfigDB));
+            iConfigDB = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyTypeConfigDB));
 
             TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
 

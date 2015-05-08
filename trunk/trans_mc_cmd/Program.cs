@@ -27,7 +27,7 @@ namespace trans_mc_cmd
         static bool g_bWriteToWinEventLog;
         static DateTime g_dtList;
 
-        public static FileINI m_fileINI = new FileINI("setup.ini");
+        public static FileINI m_fileINI = new FileINI("setup.ini", false);
         private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + Logging.AppName + @".exe" + ")";
         private static Crypt m_crypt;
 

@@ -22,11 +22,14 @@ namespace StatisticTransModes
             base.Initialize();
         }
 
-        public override int Response(int idListener, out bool error, out object outobj/*, bool isTec*/)
+        protected override int response(int idListener, out bool error, out object outobj/*, bool isTec*/)
         {
-            outobj = null;
-            DataTable table = outobj as DataTable;
-            return DbMCSources.Sources ().Response(m_IdListenerCurrent, out error, out table);
+            int iRes = -1;
+            DataTable table = null;
+            iRes = DbMCSources.Sources().Response(idListener, out error, out table);
+            outobj = table as DataTable;
+
+            return iRes;
         }
 
         protected override void GetPPBRDatesRequest(DateTime date) {

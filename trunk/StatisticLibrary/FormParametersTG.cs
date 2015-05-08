@@ -164,7 +164,7 @@ namespace StatisticCommon
         FileINI m_FileINI;
 
         public FormParametersTG_FileINI (string nameSetupFileINI) {
-            m_FileINI = new FileINI (nameSetupFileINI);
+            m_FileINI = new FileINI (nameSetupFileINI, false);
 
             loadParam(true);
         }

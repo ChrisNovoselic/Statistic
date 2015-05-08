@@ -34,7 +34,7 @@ namespace StatisticTimeSync
             {
                 m_dictIdListeners.Add(0, new int[] { -1 });
 
-                register(0, m_ConnSett, m_ConnSett.name, 0);
+                register(0, 0, m_ConnSett, m_ConnSett.name);
             }
 
             public override void ClearValues()

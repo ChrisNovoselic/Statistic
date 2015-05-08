@@ -281,7 +281,7 @@ namespace StatisticCommon
 
         private void register(int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)
         {
-            register (id, connSett, name, (int)type);
+            register(id, (int)type, connSett, name);
         }
 
         public override void StartDbInterfaces()

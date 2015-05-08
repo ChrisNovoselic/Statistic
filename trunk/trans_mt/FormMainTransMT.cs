@@ -33,8 +33,8 @@ namespace trans_mt
 
             CreateFormConnectionSettings("connsett_mt.ini", true);
 
-            m_sFileINI.Add(@"ТипБДКфгИсточник", @"200");
-            m_sFileINI.Add(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
+            m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"200");
+            m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
 
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
@@ -42,7 +42,7 @@ namespace trans_mt
             TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                arConfigDB[i] = Int32.Parse(m_sFileINI.GetValueOfKey(arKeyTypeConfigDB[i]));
+                arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
                 for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
                 {
                     if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
@@ -56,7 +56,7 @@ namespace trans_mt
             }
 
             bool bIgnoreTECInUse = false;
-            string strTypeField = m_sFileINI.GetValueOfKey(@"РДГФорматТаблицаНазначение");
+            string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = -1;
 
             HMark markQueries = new HMark();
@@ -96,7 +96,7 @@ namespace trans_mt
                     switch (i)
                     {
                         case (Int16)CONN_SETT_TYPE.SOURCE:
-                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetValueOfKey(@"ИгнорДатаВремя-ModesTerminale"));
+                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-ModesTerminale"));
                             break;
                         case (Int16)CONN_SETT_TYPE.DEST:
                             if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
@@ -105,7 +105,7 @@ namespace trans_mt
                                 ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                             else
                                 ;
-                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetValueOfKey(@"ИгнорДатаВремя-techsite"));
+                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"));
                             break;
                         default:
                             break;
