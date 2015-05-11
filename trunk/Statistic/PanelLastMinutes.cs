@@ -541,7 +541,7 @@ namespace Statistic
 
             public void Start()
             {
-                if (! (m_tecView.threadIsWorking < 0))
+                if (m_tecView.IsStarted == true)
                     return;
                 else
                     ;
@@ -551,7 +551,7 @@ namespace Statistic
 
             public void Stop()
             {
-                if (m_tecView.threadIsWorking < 0)
+                if (m_tecView.IsStarted == false)
                     return;
                 else
                     ;
@@ -573,7 +573,7 @@ namespace Statistic
             {
                 m_tecView.Activate(active);
 
-                if (m_tecView.m_bIsActive == true)
+                if (m_tecView.Actived == true)
                 {
                     //ChangeState();
                 }

@@ -282,7 +282,7 @@ namespace StatisticCommon
 
             if ((active == true)
                 && (bRes == true)
-                && (threadIsWorking == 1))
+                && (IsFirstActivated == true)) //Только при 1-ой активации
                 GetRDGValues (m_typeFields, indxTECComponents);
             else
                 ;
@@ -302,7 +302,7 @@ namespace StatisticCommon
 
         public void Reinit()
         {
-            if (! (m_bIsActive == true))
+            if (! (Actived == true))
                 return;
             else
                 ;

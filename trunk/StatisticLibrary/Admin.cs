@@ -356,23 +356,23 @@ namespace StatisticCommon
         //        Logging.Logg().Error(@"HAdmin::stopDbInterfaces () - m_list_tec == null ...");
         //}
 
-        public void RefreshConnectionSettings()
-        {
-            if (threadIsWorking > 0)
-            {
-                foreach (TEC t in m_list_tec) {
-                    for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-                    {
-                        if (!(m_dictIdListeners [t.m_id][i] < 0))
-                            DbSources.Sources().SetConnectionSettings(m_dictIdListeners[t.m_id][i], t.connSetts[i], true);
-                        else
-                            ;
-                    }
-                }
-            }
-            else
-                ;
-        }
+        //public void RefreshConnectionSettings()
+        //{
+        //    if (threadIsWorking > 0)
+        //    {
+        //        foreach (TEC t in m_list_tec) {
+        //            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+        //            {
+        //                if (!(m_dictIdListeners [t.m_id][i] < 0))
+        //                    DbSources.Sources().SetConnectionSettings(m_dictIdListeners[t.m_id][i], t.connSetts[i], true);
+        //                else
+        //                    ;
+        //            }
+        //        }
+        //    }
+        //    else
+        //        ;
+        //}
 
         public void SetDelegateSaveComplete(DelegateFunc f) {            
             saveComplete = f;
@@ -626,7 +626,7 @@ namespace StatisticCommon
         public virtual void ResetRDGExcelValues()
         {
             if (m_waitHandleState.Length > 1)
-                ((ManualResetEvent)m_waitHandleState[1]).Reset();
+                ((ManualResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.ERROR]).Reset();
             else
                 ;
         }

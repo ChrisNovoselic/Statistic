@@ -255,7 +255,7 @@ namespace Statistic
         {
             CalendarSetDate(DateTime.Now.Date);
 
-            if (! (m_admin.threadIsWorking < 0)) m_admin.Stop(); else ;
+            if (m_admin.IsStarted == true) m_admin.Stop(); else ;
         }
 
         protected virtual void getDataGridViewAdmin() {}

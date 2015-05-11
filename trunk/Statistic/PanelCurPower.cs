@@ -359,7 +359,7 @@ namespace Statistic
 
             public void Start()
             {
-                if (! (m_tecView.threadIsWorking < 0))
+                if (m_tecView.IsStarted == true)
                     return;
                 else
                     ;
@@ -373,7 +373,7 @@ namespace Statistic
 
             public void Stop()
             {
-                if (m_tecView.threadIsWorking < 0)
+                if (m_tecView.IsStarted == false)
                     return;
                 else
                     ;
@@ -402,7 +402,7 @@ namespace Statistic
             {
                 m_tecView.Activate(active);
 
-                if (m_tecView.m_bIsActive == true)
+                if (m_tecView.Actived == true)
                 {
                     m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
                 }
@@ -532,7 +532,8 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                if (m_tecView.m_bIsActive == true) {
+                if (m_tecView.Actived == true)
+                {
                     m_tecView.ChangeState ();
 
                     m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
