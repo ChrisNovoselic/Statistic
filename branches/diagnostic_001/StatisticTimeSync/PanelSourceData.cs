@@ -4,14 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-
 using System.Threading;
-
 using System.Windows.Forms; //TableLayoutPanel
-
 using System.Data; //DataTable
 using System.Data.Common; //DbConnection
-
 using HClassLibrary;
 using StatisticCommon;
 

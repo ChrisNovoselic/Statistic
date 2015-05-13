@@ -38,7 +38,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.CSharp">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -52,6 +54,12 @@
     <Compile Include="FormStatisticDiagnostic.Designer.cs">
       <DependentUpon>FormStatisticDiagnostic.cs</DependentUpon>
     </Compile>
+    <Compile Include="PanelDiagnostic.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelDiagnostic.Designer.cs">
+      <DependentUpon>PanelDiagnostic.cs</DependentUpon>
+    </Compile>
     <Compile Include="PanelStatisticDiagnostic.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -62,6 +70,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormStatisticDiagnostic.resx">
       <DependentUpon>FormStatisticDiagnostic.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PanelDiagnostic.resx">
+      <DependentUpon>PanelDiagnostic.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PanelStatisticDiagnostic.resx">
       <DependentUpon>PanelStatisticDiagnostic.cs</DependentUpon>
@@ -89,10 +100,12 @@
     <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
       <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
       <Name>HClassLibrary</Name>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

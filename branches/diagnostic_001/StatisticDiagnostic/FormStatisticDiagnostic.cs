@@ -5,12 +5,9 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Windows.Forms; //TableLayoutPanel
-using System.Data; //DataTable
-using System.Data.Common; //DbConnection
-using StatisticCommon;
 using HClassLibrary;
+using System.Windows.Forms;
+
 
 namespace StatisticDiagnostic
 {
@@ -25,12 +22,15 @@ namespace StatisticDiagnostic
         {
 
         }
-
-        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void FormStatisticDiagnostic_Activate(object obj, EventArgs ev)
         {
-
+            panelMain.Activate(true);
         }
 
-             
+        private void FormStatisticDiagnostic_Deactivate(object obj, EventArgs ev)
+        {
+            panelMain.Activate(false);
+        }
+                            
     }
 }
