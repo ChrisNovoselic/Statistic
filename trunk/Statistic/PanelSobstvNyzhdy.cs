@@ -245,7 +245,7 @@ namespace Statistic
             #endregion
         }
 
-        private partial class PanelTecSobstvNyzhdy : TableLayoutPanel
+        private partial class PanelTecSobstvNyzhdy : HPanelCommon
         {
             System.Windows.Forms.Label[] m_arLabel;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
@@ -260,6 +260,7 @@ namespace Statistic
             ZedGraphControl m_zedGraphHours;
 
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+                : base (-1, -1)
             {
                 InitializeComponent();
 
@@ -281,6 +282,11 @@ namespace Statistic
                 : this(tec, fErrRep, fWarRep, fActRep, fRepClr)
             {
                 container.Add(this);
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                throw new NotImplementedException();
             }
 
             private void Initialize()
@@ -345,8 +351,10 @@ namespace Statistic
                 isActive = false;
             }
 
-            public void Start()
+            public override void Start()
             {
+                base.Start ();
+                
                 m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
@@ -355,12 +363,14 @@ namespace Statistic
                 isActive = false;
             }
 
-            public void Stop()
+            public override void Stop()
             {
                 m_tecView.Stop ();
 
                 if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
                 if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
+
+                base.Stop ();
             }
 
             private void ChangeState()

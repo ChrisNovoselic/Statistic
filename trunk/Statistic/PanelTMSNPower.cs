@@ -222,7 +222,7 @@ namespace Statistic
             #endregion
         }
 
-        private partial class PanelTecTMSNPower : TableLayoutPanel
+        private partial class PanelTecTMSNPower : HPanelCommon
         {
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
@@ -237,6 +237,7 @@ namespace Statistic
             //private DelegateFunc delegateUpdateGUI;
 
             public PanelTecTMSNPower(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+                : base (-1, -1)
             {
                 InitializeComponent();
 
@@ -259,6 +260,11 @@ namespace Statistic
                 : this(tec, fErrRep, fWarRep, fActRep, fRepClr)
             {
                 container.Add(this);
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                throw new NotImplementedException();
             }
 
             private void Initialize()

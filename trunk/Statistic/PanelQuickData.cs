@@ -1210,7 +1210,10 @@ namespace Statistic
                             foreach (TG tg in g.m_listTG)
                             {//Цикл по списку с ТГ
                                 //Отобразить значение
-                                if (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0))
+                                if ((!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes == null))
+                                    //Ошибка при запуске 'CustomTecView' с оперативной панелью (Исправлено: 13.05.2015)
+                                    // не "успевает" new ???
+                                    && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
                                     showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
                                 else
                                     m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";

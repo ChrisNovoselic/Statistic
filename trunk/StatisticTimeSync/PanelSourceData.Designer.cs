@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms; //TableLayoutPanel
+﻿using System.Windows.Forms; //TableLayoutPanel, DockStyle
 using System;
 
 using System.Globalization; //DaylightTime

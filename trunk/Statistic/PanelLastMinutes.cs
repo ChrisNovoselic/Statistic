@@ -291,12 +291,12 @@ namespace Statistic
             #endregion
         }
 
-        private partial class PanelDateTime : TableLayoutPanel
+        private partial class PanelDateTime : PanelStatisticWithTableHourRows
         {
             public DateTimePicker m_dtprDate;
             private Dictionary<int, Label> m_dictLabelTime;
 
-            public PanelDateTime()
+            public PanelDateTime() : base ()
             {
                 InitializeComponent();
 
@@ -333,7 +333,12 @@ namespace Statistic
                 //m_dtprDate.Value = DateTime.Now; Иначе Парент == null ???
             }
 
-            private void initTableHourRows()
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void initTableHourRows()
             {
                 DateTime dt = m_dtprDate.Value.Date;
                 bool bSeason = false
@@ -473,7 +478,7 @@ namespace Statistic
             #endregion
         }
 
-        public partial class PanelTecLastMinutes : TableLayoutPanel
+        public partial class PanelTecLastMinutes : HPanelCommon
         {
             public int m_id_tec { get { return m_tecView.m_tec.m_id; } }
 
@@ -488,6 +493,7 @@ namespace Statistic
             TecView m_tecView;
 
             public PanelTecLastMinutes(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+                : base (-1, -1)
             {
                 InitializeComponent();
 
@@ -511,6 +517,11 @@ namespace Statistic
                 : this(tec, fErrRep, fWarRep, fActRep, frepClr)
             {
                 container.Add(this);
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                throw new NotImplementedException();
             }
 
             private void Initialize()
