@@ -185,6 +185,11 @@ namespace StatisticTimeSync
             }
         }
 
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            initializeLayoutStyleEvenly (cols, rows);
+        }
+
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>
@@ -232,13 +237,7 @@ namespace StatisticTimeSync
             this.SuspendLayout();
 
             this.Dock = DockStyle.Fill;
-            this.ColumnCount = 3; this.RowCount = 7;
-            this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-
-            for (i = 0; i < this.ColumnCount; i++)
-                this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100 / this.ColumnCount));
-            for (i = 0; i < this.RowCount; i++)
-                this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100 / this.RowCount));
+            initializeLayoutStyle (3, 7);
 
             this.Controls.Add(m_arPanels[0], 0, 0);
 

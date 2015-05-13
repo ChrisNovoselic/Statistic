@@ -47,15 +47,18 @@ namespace StatisticAlarm
 
         public override void Start()
         {
+            base.Start ();
         }
 
         public override void Stop()
         {
-            throw new NotImplementedException();
+            base.Stop ();
         }
 
-        public override void Activate(bool activate)
+        public override bool Activate(bool activate)
         {
+            bool bRes = base.Activate (activate);
+            
             if (m_adminAlarm == null) initAdminAlarm(); else ;
 
             if ((activate == true)
@@ -64,6 +67,13 @@ namespace StatisticAlarm
             else ;
 
             m_adminAlarm.Activate(activate);
+
+            return bRes;
+        }
+
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            throw new NotImplementedException();
         }
 
         private void initAdminAlarm()

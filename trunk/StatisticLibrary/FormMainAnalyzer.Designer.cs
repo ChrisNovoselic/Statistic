@@ -3,7 +3,7 @@
 namespace StatisticCommon
 {
     partial class FormMainAnalyzer
-    {
+    {        
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>
@@ -142,13 +142,7 @@ namespace StatisticCommon
                 this.SuspendLayout();
 
                 //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-                this.RowCount = 24; ((TableLayoutPanel)this).ColumnCount = 12;
-
-                int i = -1;
-                for (i = 0; i < this.ColumnCount; i ++)
-                    this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 100F / this.ColumnCount));
-                for (i = 0; i < this.RowCount; i++)
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.RowCount));
+                initializeLayoutStyle (12, 24);
 
                 // 
                 // labelFilterActives
@@ -183,7 +177,7 @@ namespace StatisticCommon
                 // 
                 // dataGridViewActivesCheckBoxColumnUse
                 // 
-                i = 0;
+                int i = 0;
                 this.dgvFilterActives.Columns[i].Frozen = true;
                 this.dgvFilterActives.Columns[i].HeaderText = "Use";
                 this.dgvFilterActives.Columns[i].Name = "dataGridViewActivesCheckBoxColumnUse";
@@ -633,6 +627,11 @@ namespace StatisticCommon
 
                 this.ResumeLayout(false);
                 this.PerformLayout();
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                initializeLayoutStyleEvenly (cols, rows);
             }
         }
     }

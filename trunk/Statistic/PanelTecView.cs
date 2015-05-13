@@ -30,6 +30,11 @@ namespace Statistic
             InitializeComponent ();
         }
 
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void InitializeComponent () {
             base.InitializeComponent ();
 

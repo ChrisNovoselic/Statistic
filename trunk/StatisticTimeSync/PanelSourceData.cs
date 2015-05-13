@@ -31,7 +31,7 @@ namespace StatisticTimeSync
             //, -1, -1, -1, -1, -1, -1
         };
         
-        private partial class PanelGetDate : TableLayoutPanel
+        private partial class PanelGetDate : HPanelCommon
         {
             public enum ID_ASKED_DATAHOST { CONN_SETT
                                             ,  }
@@ -45,12 +45,12 @@ namespace StatisticTimeSync
             private HGetDate m_getDate;
             private DateTime [] m_arDateTime;
 
-            public PanelGetDate()
+            public PanelGetDate() : base (-1, -1)
             {
                 initialize();                
             }
 
-            public PanelGetDate(IContainer container)
+            public PanelGetDate(IContainer container) : base (container, -1, -1)
             {
                 container.Add(this);
 
@@ -224,8 +224,10 @@ namespace StatisticTimeSync
                 recievedEtalonDate(date);
             }
 
-            public void Stop () {
+            public override void Stop () {
                 stop ();
+
+                base.Stop ();
             }
             
             private void stop () {
@@ -316,6 +318,11 @@ namespace StatisticTimeSync
 
         partial class PanelGetDate
         {
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                initializeLayoutStyleEvenly (cols, rows);
+            }
+            
             /// <summary>
             /// Требуется переменная конструктора.
             /// </summary>
@@ -349,13 +356,10 @@ namespace StatisticTimeSync
                 this.m_labelTime = new System.Windows.Forms.Label();
                 this.m_labelDiff = new System.Windows.Forms.Label();
 
-                this.ColumnCount = 2; this.RowCount = 2;
+                
                 this.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
 
-                for (int i = 0; i < this.ColumnCount; i++)
-                    this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-                for (int i = 0; i < this.RowCount; i++)
-                    this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+                initializeLayoutStyle (2, 2);
 
                 this.Controls.Add(m_checkBoxTurnOn, 0, 1);
                 this.Controls.Add(m_comboBoxSourceData, 0, 0);
@@ -462,6 +466,8 @@ namespace StatisticTimeSync
 
         public override void Start()
         {
+            base.Start ();
+            
             Start (new ConnectionSettings()
             {
                 id = -1
@@ -565,6 +571,8 @@ namespace StatisticTimeSync
             {
                 m_arPanels[i].Stop();
             }
+
+            base.Stop();
         }
 
         private void stop () {
@@ -578,7 +586,9 @@ namespace StatisticTimeSync
                 ;
         }
 
-        public override void Activate (bool activated) {
+        public override bool Activate (bool activated) {
+            bool bRes = base.Activate(activated);
+            
             //Выбрать действие
             lock (m_lockTimerGetDate) {
                 if (activated == true)
@@ -598,6 +608,8 @@ namespace StatisticTimeSync
             for (int i = 0; i < m_arPanels.Length; i ++) {
                 m_arPanels[i].Activate(activated);
             }
+
+            return bRes;
         }
     }
 }

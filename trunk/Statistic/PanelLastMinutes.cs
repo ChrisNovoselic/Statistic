@@ -55,7 +55,7 @@ namespace Statistic
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         
-        private List <Label> m_listLabelDateTime;
+        //private List <Label> m_listLabelDateTime;
         private PanelDateTime m_panelDateTime;
 
         private ManualResetEvent m_evTimerCurrent;
@@ -86,14 +86,12 @@ namespace Statistic
 
         public int m_msecPeriodUpdate;
 
-        public bool m_bIsActive;
+        //public bool m_bIsActive;
 
         private event DelegateObjectFunc EventChangeDateTime;
 
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
         {
-            int i = -1;
-
             InitializeComponent();
 
             this.Dock = DockStyle.Fill;
@@ -109,19 +107,14 @@ namespace Statistic
 
             int iCountSubColumns = 0;
             
-            for (i = 0; i < listTec.Count; i++)
+            for (int i = 0; i < listTec.Count; i++)
             {
                 this.Controls.Add(new PanelTecLastMinutes(listTec[i], fErrRep, fWarRep, fActRep, fRepClr), i + 1, 0);
                 EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls [i + 1]).OnEventChangeDateTime);
                 iCountSubColumns += ((PanelTecLastMinutes)this.Controls [i + 1]).CountTECComponent; //Слева столбец дата/время
             }
 
-            //Размеры столбцов после создания столбцов, т.к.
-            //кол-во "подстолбцов" в столбцах до их создания неизвестно
-            for (i = 0; i < listTec.Count; i++)
-            {
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, ((float)100 - fPercentColDatetime) / iCountSubColumns * ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent));
-            }
+            initializeLayoutStyle(iCountSubColumns);
         }
 
         public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -132,6 +125,8 @@ namespace Statistic
 
         public override void Start()
         {
+            base.Start();
+            
             int i = 0;
             foreach (Control ctrl in this.Controls)
             {
@@ -180,6 +175,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            base.Stop ();
         }
 
         protected override void initTableHourRows()
@@ -188,14 +185,32 @@ namespace Statistic
             //m_panelDateTime.initTableHourRows(); ??? Панель сама инициирует изменение даты, т.к. 'календарь' принадлежит ей
         }
 
-        public override void Activate(bool active)
+        //???
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
-            if (m_bIsActive == active)
-                return;
+            if (!(this.ColumnStyles.Count == 1))
+                throw new Exception(@"PanelLastMinutes::initializeLayoutStyle () - ...");
             else
                 ;
 
-            m_bIsActive = active;
+            float fPercentColDatetime = this.ColumnStyles[0].Width;
+            
+            //Размеры столбцов после создания столбцов, т.к.
+            //кол-во "подстолбцов" в столбцах до их создания неизвестно
+            for (int i = 0; i < this.ColumnCount - 1; i++)
+            {
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, ((float)100 - fPercentColDatetime) / cols * ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent));
+            }
+        }
+
+        public override bool Activate(bool active)
+        {
+            bool bRes = base.Activate (active);
+            
+            if (bRes == false)
+                return bRes;
+            else
+                ;
 
             int i = 0;
             foreach (Control ctrl in this.Controls)
@@ -211,10 +226,12 @@ namespace Statistic
                     ;
             }
 
-            if (m_bIsActive == true)
+            if (Actived == true)
                 EventChangeDateTime (m_panelDateTime.m_dtprDate.Value);
             else
                 ;
+
+            return bRes;
         }
 
         private void setDatetimePicker(DateTime dtSet)
@@ -225,7 +242,7 @@ namespace Statistic
         }
 
         private void TimerCurrent_Tick (object obj) {
-            if (m_bIsActive == true)
+            if (Actived == true)
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else

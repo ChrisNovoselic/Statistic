@@ -36,12 +36,21 @@ namespace Statistic
         protected List <int>m_listTECComponentIndex;
         protected volatile int prevSelectedIndex;
 
-        public bool isActive;
-
         public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
 
         protected static int m_iSizeY = 22
             , m_iMarginY = 3;
+
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            this.ColumnCount = cols;
+            this.RowCount = rows;            
+
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        }
 
         protected virtual void InitializeComponents()
         {
@@ -56,8 +65,7 @@ namespace Statistic
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
             this.gbxDividerChoice = new System.Windows.Forms.GroupBox();
 
-            this.RowCount = 1;
-            this.ColumnCount = 2;
+            initializeLayoutStyle (2, 1);
 
             this.SuspendLayout();
 
@@ -74,12 +82,7 @@ namespace Statistic
             this.m_panelRDGValues.Dock = DockStyle.Fill;
 
             this.Controls.Add (m_panelManagement, 0, 0);
-            this.Controls.Add(m_panelRDGValues, 1, 0);
-
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            this.Controls.Add(m_panelRDGValues, 1, 0);            
 
             this.m_panelManagement.Controls.Add(this.mcldrDate);
             this.m_panelManagement.Controls.Add(this.comboBoxTecComponent);
@@ -231,8 +234,6 @@ namespace Statistic
             m_admin.m_typeFields = s_typeFields;
 
             InitializeComponents();
-
-            isActive = false;
         }
 
         public void SetDelegateWait(DelegateFunc fstart, DelegateFunc fstop, DelegateFunc fev)
@@ -524,16 +525,18 @@ namespace Statistic
 
         public virtual void ClearTables() {}
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
-            if (!(isActive == active))
+            bool bRes = base.Activate (active);
+            
+            if (bRes == true)
             {
-                isActive = active;
-
                 m_admin.Activate(active);
             }
             else
                 ;
+
+            return bRes;
         }
     }
 }

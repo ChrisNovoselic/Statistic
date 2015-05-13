@@ -151,7 +151,7 @@ namespace StatisticCommon
                     ;
             }
 
-            public override void Activate(bool active)
+            public override bool Activate(bool active)
             {
                 throw new NotImplementedException();
             }

@@ -352,20 +352,17 @@ namespace Statistic
             m_formChangeMode.OnMenuItemsClear += new DelegateFunc(OnMenuItemsClear);
             m_formChangeMode.OnMenuItemAdd += new DelegateStringFunc (OnMenuItemAdd);
 
-            for (int i = 0; i < RowCount; i++)
-            {
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, (float) Math.Floor (100F / RowCount)));
-            }
-
-            for (int i = 0; i < ColumnCount; i++)
-            {
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, (float)Math.Floor(100F / ColumnCount)));
-            }
+            initializeLayoutStyle ();
 
             this.Dock = DockStyle.Fill;
         }
 
         #endregion
+
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            initializeLayoutStyleEvenly ();
+        }
     }
     
     public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
@@ -375,7 +372,7 @@ namespace Statistic
         private HLabelCustomTecView[] m_arLabelEmpty;
         //private Control[] m_arControls;
 
-        public bool m_bIsActive;
+        //public bool m_bIsActive;
 
         private FormChangeMode m_formChangeMode;
         DelegateStringFunc m_fErrorReport, m_fWarningReport, m_fActionReport;
@@ -407,6 +404,8 @@ namespace Statistic
 
         public override void Start()
         {
+            base.Start ();
+            
             foreach (Control panel in this.Controls)
             {
                 if (panel is PanelTecView) ((PanelTecView)panel).Start(); else ;
@@ -418,13 +417,19 @@ namespace Statistic
             {
                 if (panel is PanelTecView) ((PanelTecView)panel).Stop(); else ;
             }
+
+            base.Stop ();
         }
 
-        public override void Activate (bool active) {
+        public override bool Activate (bool active) {
+            bool bRes = base.Activate(active);
+            
             foreach (Control panel in this.Controls)
             {
                 if (panel is PanelTecView) ((PanelTecView)panel).Activate(active); else ;
             }
+
+            return bRes;
         }
 
         protected override void initTableHourRows()

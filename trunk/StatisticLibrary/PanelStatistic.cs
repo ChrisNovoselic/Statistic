@@ -8,19 +8,14 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public abstract class PanelStatistic : TableLayoutPanel
+    public abstract class PanelStatistic : HPanelCommon
     {
-        public PanelStatistic ()
+        public PanelStatistic () : base (-1, -1)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
-        }
-        
-        public abstract void Start();
-        public abstract void Stop();
-
-        public abstract void Activate(bool active);
+        }        
 
         public static volatile int POOL_TIME = -1
             , ERROR_DELAY = -1;

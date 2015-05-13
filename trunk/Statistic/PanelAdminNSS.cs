@@ -193,8 +193,10 @@ namespace Statistic
                 ;
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
+            bool bRes = false;
+            
             visibleControlRDGExcel();
 
             if (active == true)
@@ -205,7 +207,7 @@ namespace Statistic
                 //((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables ();
             }
 
-            base.Activate (active);
+            bRes = base.Activate(active);
 
             //ClearTables ();
 
@@ -215,6 +217,8 @@ namespace Statistic
 
             //Вариант №2
             //comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
+
+            return bRes;
         }
 
         public override void Stop()

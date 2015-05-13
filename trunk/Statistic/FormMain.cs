@@ -1597,7 +1597,7 @@ namespace Statistic
                             && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
                             && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
-                            if (selTecView.isActive == true)
+                            if (selTecView.Actived == true)
                             {
                                 m_lblDateMessage.Text = m_report.last_time_action.ToString();
                                 m_lblDescMessage.Text = m_report.last_action;
@@ -1613,7 +1613,7 @@ namespace Statistic
                             && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_msg = 1;
-                            if (selTecView.isActive == true)
+                            if (selTecView.Actived == true)
                             {
                                 m_lblDateMessage.Text = m_report.last_time_warning.ToString();
                                 m_lblDescMessage.Text = m_report.last_warning;
@@ -1629,7 +1629,7 @@ namespace Statistic
                             && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
                         {
                             have_msg = -1;
-                            if (selTecView.isActive == true)
+                            if (selTecView.Actived == true)
                             {
                                 m_lblDateMessage.Text = m_report.last_time_error.ToString();
                                 m_lblDescMessage.Text = m_report.last_error;

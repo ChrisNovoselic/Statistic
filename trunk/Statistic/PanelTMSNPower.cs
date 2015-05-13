@@ -90,21 +90,13 @@ namespace Statistic
 
             int i = -1;
 
-            this.ColumnCount = listTec.Count / 2;
-            if (this.ColumnCount == 0) this.ColumnCount++; else ;
-            this.RowCount = listTec.Count / this.ColumnCount;
+            initializeLayoutStyle (listTec.Count / 2, listTec.Count);
 
             for (i = 0; i < listTec.Count; i++)
             {
                 ptcp = new PanelTecTMSNPower(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
-
-            for (i = 0; i < this.ColumnCount; i++)
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / this.ColumnCount));
-
-            for (i = 0; i < this.RowCount; i++)
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
         public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -113,8 +105,19 @@ namespace Statistic
             container.Add(this);
         }
 
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            this.ColumnCount = cols;
+            if (this.ColumnCount == 0) this.ColumnCount++; else ;
+            this.RowCount = rows / this.ColumnCount;
+            
+            initializeLayoutStyleEvenly();
+        }
+
         public override void Start()
         {
+            base.Start();
+
             int i = 0;
             foreach (Control ctrl in this.Controls)
             {
@@ -145,6 +148,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            base.Stop();
         }
 
         protected override void initTableHourRows()
@@ -152,14 +157,14 @@ namespace Statistic
             //Ничего не делаем, т.к. нет таблиц с часовыми значениями
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
-            if (m_bIsActive == active)
-                return;
+            bool bRes = base.Activate (active);
+            
+            if (bRes == false)
+                return bRes;
             else
                 ;
-
-            m_bIsActive = active;
 
             //TypeConverter conv;
             //dynamic dynObj = null;
@@ -179,6 +184,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            return bRes;
         }
 
         partial class PanelTecTMSNPower

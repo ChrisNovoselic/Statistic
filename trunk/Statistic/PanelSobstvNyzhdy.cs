@@ -69,8 +69,6 @@ namespace Statistic
 
         enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
 
-        public bool m_bIsActive;
-
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
         {
             InitializeComponent();
@@ -87,21 +85,14 @@ namespace Statistic
 
             int i = -1;
 
-            this.ColumnCount = listTec.Count / 2;
-            if (this.ColumnCount == 0) this.ColumnCount++; else ;
-            this.RowCount = listTec.Count / this.ColumnCount;
+            initializeLayoutStyle(listTec.Count / 2
+                , listTec.Count);
 
             for (i = 0; i < listTec.Count; i++)
             {
                 ptcp = new PanelTecSobstvNyzhdy(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
-
-            for (i = 0; i < this.ColumnCount; i++)
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / this.ColumnCount));
-
-            for (i = 0; i < this.RowCount; i++)
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
         }
 
         public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr)
@@ -110,8 +101,19 @@ namespace Statistic
             container.Add(this);
         }
 
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            this.ColumnCount = cols;
+            if (this.ColumnCount == 0) this.ColumnCount++; else ;
+            this.RowCount = rows / this.ColumnCount;
+
+            initializeLayoutStyleEvenly ();
+        }
+
         public override void Start()
         {
+            base.Start();
+            
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is PanelTecSobstvNyzhdy)
@@ -134,6 +136,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            base.Stop();
         }
 
         protected override void initTableHourRows()
@@ -141,14 +145,14 @@ namespace Statistic
             //Ничего не делаем (на данный момент), т.к. собственные нужды отображаем только тек./сутки
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
-            if (m_bIsActive == active)
-                return;
+            bool bRes = base.Activate(active);
+
+            if (bRes == false)
+                return bRes;
             else
                 ;
-
-            m_bIsActive = active;
 
             //TypeConverter conv;
             //dynamic dynObj = null;
@@ -165,6 +169,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            return bRes;
         }
 
         public void UpdateGraphicsCurrent(int type)

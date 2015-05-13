@@ -28,15 +28,21 @@ namespace Statistic
         private System.Windows.Forms.Button m_btnAlarmCurPower;
         private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
 
-        private class PanelLabelAlarm : TableLayoutPanel {
+        private class PanelLabelAlarm : HPanelCommon {
             private Dictionary<KeyValuePair<int, int>, System.Windows.Forms.Label> m_dictLabel;
             
-            public PanelLabelAlarm () {
+            public PanelLabelAlarm () : base (-1, -1) {
                 m_dictLabel = new Dictionary<KeyValuePair<int,int>,Label> ();
-                this.ColumnCount = 1;
-                this.RowCount = 6;
 
-                for (int i = 0; i < this.RowCount; i ++)
+                initializeLayoutStyle (1, 6);
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                this.ColumnCount = cols;
+                this.RowCount = rows;
+
+                for (int i = 0; i < this.RowCount; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, this.Height / this.RowCount));
             }
 
@@ -294,7 +300,7 @@ namespace Statistic
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
 
-        public override void Activate(bool activate)
+        public override bool Activate(bool activate)
         {
             //Значит пользователь администратор
             if (m_adminAlarm == null) initAdminAlarm(); else ;
@@ -304,7 +310,7 @@ namespace Statistic
                 m_adminAlarm.Start();
             else ;
 
-            base.Activate (activate);
+            return base.Activate (activate);
         }
 
         private void initAdminAlarm()

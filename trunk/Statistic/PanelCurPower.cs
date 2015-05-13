@@ -78,7 +78,16 @@ namespace Statistic
 
         //HReports m_report;
         
-        public bool m_bIsActive;
+        //public bool m_bIsActive;
+
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            this.ColumnCount = cols;
+            if (this.ColumnCount == 0) this.ColumnCount++; else ;
+            this.RowCount = rows / this.ColumnCount;
+
+            initializeLayoutStyleEvenly ();
+        }
 
         public PanelCurPower(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
         {
@@ -94,23 +103,14 @@ namespace Statistic
 
             PanelTecCurPower ptcp;
 
-            int i = -1;
+            initializeLayoutStyle(listTec.Count / 2
+                                , listTec.Count);
 
-            this.ColumnCount = listTec.Count / 2;
-            if (this.ColumnCount == 0) this.ColumnCount ++ ; else ;
-            this.RowCount = listTec.Count / this.ColumnCount;
-
-            for (i = 0; i < listTec.Count; i++)
+            for (int i = 0; i < listTec.Count; i++)
             {
                 ptcp = new PanelTecCurPower(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
-            }
-
-            for (i = 0; i < this.ColumnCount; i++)
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / this.ColumnCount));
-
-            for (i = 0; i < this.RowCount; i++)
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / this.RowCount));
+            }            
         }
 
         public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -120,6 +120,8 @@ namespace Statistic
         }
 
         public override void Start () {
+            base.Start ();
+
             int i = 0;
             foreach (Control ctrl in this.Controls) {
                 if (ctrl is PanelTecCurPower) {
@@ -145,15 +147,17 @@ namespace Statistic
                 else
                     ;
             }
+
+            base.Stop ();
         }
 
-        public override void Activate (bool active) {
-            if (m_bIsActive == active)
-                return;
+        public override bool Activate (bool active) {
+            bool bRes = base.Activate (active);
+
+            if (bRes == false)
+                return bRes;
             else
                 ;
-
-            m_bIsActive = active;
 
             //TypeConverter conv;
             //dynamic dynObj = null;
@@ -172,6 +176,8 @@ namespace Statistic
                 else
                     ;
             }
+
+            return bRes;
         }
 
         protected override void initTableHourRows () {
@@ -212,7 +218,7 @@ namespace Statistic
             #endregion
         }
 
-        private partial class PanelTecCurPower : TableLayoutPanel
+        private partial class PanelTecCurPower : HPanelCommon
         {
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
@@ -226,6 +232,7 @@ namespace Statistic
             //private DelegateFunc delegateUpdateGUI;
 
             public PanelTecCurPower(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+                : base (-1, -1)
             {
                 InitializeComponent();
 
@@ -259,11 +266,7 @@ namespace Statistic
 
                 this.Dock = DockStyle.Fill;
                 //Свойства колонок
-                this.ColumnCount = 4;
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+                this.ColumnCount = 4;                
 
                 //Видимая граница для отладки
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
@@ -343,6 +346,20 @@ namespace Statistic
                         ;
                 }
 
+                initializeLayoutStyle ();
+
+                m_lockRep = new object();
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {                
+                int i = -1;
+
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+
                 //Свойства зафиксированных строк
                 for (i = 0; i < COUNT_FIXED_ROWS; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
@@ -353,12 +370,12 @@ namespace Statistic
                 {
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((double)(100 - (10 * COUNT_FIXED_ROWS)) / (this.RowCount - COUNT_FIXED_ROWS), 1)));
                 }
-
-                m_lockRep = new object();
             }
 
-            public void Start()
+            public override void Start()
             {
+                base.Start ();
+
                 if (m_tecView.IsStarted == true)
                     return;
                 else
@@ -371,7 +388,7 @@ namespace Statistic
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
             }
 
-            public void Stop()
+            public override void Stop()
             {
                 if (m_tecView.IsStarted == false)
                     return;
@@ -387,6 +404,8 @@ namespace Statistic
                 {
                     m_tecView.ReportClear(true);
                 }
+
+                base.Stop ();
             }
 
             public void InitTableHourRows (DateTime dt) {
@@ -398,8 +417,10 @@ namespace Statistic
                 m_tecView.ChangeState ();
             }
 
-            public void Activate(bool active)
+            public override bool Activate(bool active)
             {
+                bool bRes = base.Activate (active);
+                
                 m_tecView.Activate(active);
 
                 if (m_tecView.Actived == true)
@@ -410,6 +431,8 @@ namespace Statistic
                 {
                     m_tecView.ReportClear(true);
                 }
+
+                return bRes;
             }
 
             private void showTMGenPower()
@@ -457,6 +480,8 @@ namespace Statistic
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], dblTotalPower_TM);
 
                 switch (m_tecView.m_dtLastChangedAt_TM_Gen.Kind) {
+                    default:
+                        break;
                 }
 
                 //m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);

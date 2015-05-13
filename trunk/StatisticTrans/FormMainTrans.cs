@@ -1096,7 +1096,7 @@ namespace StatisticTrans
             {
                 have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
 
-                if (((! (have_msg == 0)) || (m_report.actioned_state == true)) && (!(m_arAdmin[m_IndexDB].threadIsWorking < 0)))
+                if (((! (have_msg == 0)) || (m_report.actioned_state == true)) && (m_arAdmin[m_IndexDB].IsStarted == true))
                 {
                     if (m_report.actioned_state == true)
                     {

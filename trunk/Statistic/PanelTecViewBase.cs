@@ -463,8 +463,6 @@ namespace Statistic
         //protected FormGraphicsSettings graphSettings;
         //protected FormParameters parameters;
 
-        public volatile bool isActive;
-
         public TecView m_tecView;
 
         int currValuesPeriod;
@@ -628,8 +626,6 @@ namespace Statistic
 
             m_tecView.m_bLastValue_TM_Gen = ((ToolStripMenuItem)m_pnlQuickData.ContextMenuStrip.Items [1]).Checked;
 
-            isActive = false;
-
             update = false;
 
             delegateTickTime = new DelegateObjectFunc(TickTime);
@@ -709,6 +705,8 @@ namespace Statistic
 
         public override void Start()
         {
+            base.Start ();
+            
             m_tecView.Start();
 
             FillDefaultMins();
@@ -758,6 +756,8 @@ namespace Statistic
             if (!(m_timerCurrent == null)) { m_timerCurrent.Dispose(); m_timerCurrent = null; } else ;
 
             m_tecView.ReportClear(true);
+
+            base.Stop();
         }
 
         protected override void initTableHourRows()
@@ -1126,21 +1126,22 @@ namespace Statistic
             m_tecView.ChangeState ();
         }
 
-        protected bool Started
+        protected bool timerCurrentStarted
         {
             get { return ! (m_timerCurrent == null); }
         }
 
-        public override void Activate(bool active)
+        public override bool Activate(bool active)
         {
             int err = 0;
+            bool bRes = false;
 
-            if ((Started == true)
-                && (!(isActive == active)))
+            if ((timerCurrentStarted == true)
+                && (!(Actived == active)))
             {
-                isActive = active;
+                bRes = base.Activate (active);
 
-                if (isActive == true)
+                if (Actived == true)
                 {
                     currValuesPeriod = 0;
 
@@ -1179,8 +1180,10 @@ namespace Statistic
             {
                 err = -1; //???Ошибка
 
-                Logging.Logg().Warning(@"PanelTecViewBase::Activate (" + active + @") - ... ID=" + m_ID + @", Started=" + Started + @", isActive=" + isActive, Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Warning(@"PanelTecViewBase::Activate (" + active + @") - ... ID=" + m_ID + @", Started=" + Started + @", isActive=" + Actived, Logging.INDEX_MESSAGE.NOT_SET);
             }
+
+            return bRes;
         }
 
         private void ShowValues(string caption)
@@ -1217,7 +1220,7 @@ namespace Statistic
         /// <param name="stateInfo">объкт синхронизации</param>
         private void TimerCurrent_Tick(Object stateInfo)
         {
-            if ((m_tecView.currHour == true) && (isActive == true))
+            if ((m_tecView.currHour == true) && (Actived == true))
             {
                 m_tecView.serverTime = m_tecView.serverTime.AddSeconds(1);
 
