@@ -18,7 +18,7 @@
     <UpgradeBackupLocation />
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile />
-    <PublishUrl>\\10.100.104.18\2.x.x\</PublishUrl>
+    <PublishUrl>D:\Statistic2\</PublishUrl>
     <Install>false</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -28,9 +28,9 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>\\ne1150\D%24\My Project%27s\Work%27s\C.Net\Staistic-2.X.X\Statistic\bin\Debug\</InstallUrl>
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
-    <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>9</ApplicationRevision>
     <ApplicationVersion>1.9.5.9</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
@@ -67,7 +67,7 @@
     <ManifestKeyFile>Statistic_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>false</GenerateManifests>
+    <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
@@ -186,6 +186,10 @@
     <None Include="app.config" />
     <None Include="bin\Debug\connsett.ini" />
     <None Include="bin\Debug\setup.ini" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="connsett.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
