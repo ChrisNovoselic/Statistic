@@ -20,8 +20,8 @@ namespace StatisticCommon
 
     public class TEC
     {
-        public enum INDEX_TYPE_SOURCE_DATA { COMMON, INDIVIDUAL, COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
-        public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA [(int)INDEX_TYPE_SOURCE_DATA.COUNT_TYPE_SOURCEDATA];
+        public enum INDEX_TYPE_SOURCE_DATA { COMMON, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
+        public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA[(int)(CONN_SETT_TYPE.DATA_SOTIASSO - CONN_SETT_TYPE.DATA_AISKUE + 1)];
         public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
@@ -159,7 +159,7 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        public static string AddSensor(string prevSensors, int sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
+        public static string AddSensor(string prevSensors, object sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
         {
             string strRes = prevSensors;
 
@@ -169,10 +169,6 @@ namespace StatisticCommon
                     case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                         //Общий источник для всех ТЭЦ
                         strRes += @", "; //@" OR ";
-                        break;
-                    case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                        //Источник для каждой ТЭЦ свой
-                        strRes += @" OR ";
                         break;
                     default:
                         break;
@@ -186,19 +182,6 @@ namespace StatisticCommon
                     //Общий источник для всех ТЭЦ
                     strRes += sensor.ToString();
                     break;
-                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Источник для каждой ТЭЦ свой
-                    switch (typeTEC)
-                    {
-                        case TEC.TEC_TYPE.BIYSK:
-                            strRes += @"[dbo].[IZM_TII].[IDCHANNEL] = " + sensor.ToString();
-                            break;
-                        case TEC.TEC_TYPE.COMMON:
-                        default:
-                            strRes += @"[dbo].[SENSORS].[ID] = " + sensor.ToString();
-                            break;
-                    }
-                    break;
                 default:
                     break;
             }
@@ -206,7 +189,7 @@ namespace StatisticCommon
             return strRes;
         }
 
-        public TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
+        public TG FindTGById(object id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
         {
             int i = -1;
             
@@ -215,13 +198,13 @@ namespace StatisticCommon
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if (list_TECComponents[i].m_listTG [0].ids_fact[(int)id_type] == id)
+                            if (list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)id_type] == (int)id)
                                 return list_TECComponents[i].m_listTG[0];
                             else
                                 ;
                             break;
                         case TG.INDEX_VALUE.TM:
-                            if (list_TECComponents[i].m_listTG[0].id_tm == id)
+                            if (list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM.Equals((string)id) == true)
                                 return list_TECComponents[i].m_listTG[0];
                             else
                                 ;
@@ -257,20 +240,20 @@ namespace StatisticCommon
                 if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
                     m_listTG.Add(list_TECComponents[i].m_listTG[0]);
 
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
 
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                 }
                 else
                 {
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].m_strKKS_NAME_TM, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     }
                 }
             }
@@ -287,7 +270,7 @@ namespace StatisticCommon
                     m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
                 }
                 else
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
+                    throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...");
             else
                 ;
 
@@ -536,23 +519,6 @@ namespace StatisticCommon
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsFactCommonRequest (usingDate, sensors);
                             break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                            request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
-                                     @"FROM DEVICES " +
-                                     @"INNER JOIN SENSORS ON " +
-                                     @"DEVICES.ID = SENSORS.STATIONID " +
-                                     @"INNER JOIN DATA ON " +
-                                     @"DEVICES.CODE = DATA.OBJECT AND " +
-                                     @"SENSORS.CODE = DATA.ITEM AND " +
-                                     @"DATA.DATA_DATE >= '" + usingDate.ToString("yyyy.MM.dd HH:00:00") +
-                                     @"' AND " +
-                                     @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
-                                     @"' " +
-                                     @"WHERE DATA.PARNUMBER = 2 AND (" + sensors +
-                                     @") " +
-                                     @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
-                            break;
                         default:
                             break;
                     }
@@ -562,22 +528,6 @@ namespace StatisticCommon
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsFactCommonRequest(usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                                     @"FROM IZM_TII " +
-                                     @"INNER JOIN CHANNELS ON " +
-                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                                     @"INNER JOIN DEVICES ON " +
-                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                                     @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
-                                     @"' AND " +
-                                     @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
-                                     @"' WHERE IZM_TII.PERIOD = 180 AND " +
-                                     @"IZM_TII.IDCHANNEL IN(" + sensors +
-                                     @") " +
-                                     @"ORDER BY IZM_TII.TIME";
                             break;
                         default:
                             break;
@@ -663,17 +613,6 @@ namespace StatisticCommon
                             else
                                 ;
                     break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    switch (type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC_TYPE.BIYSK:
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
                 default:
                     break;
             }
@@ -755,17 +694,6 @@ namespace StatisticCommon
                             else
                                 ;
                     break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    switch (type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC_TYPE.BIYSK:
-                            break;
-                        default:
-                            break;
-                    }
-                    break;
                 default:
                     break;
             }
@@ -796,23 +724,6 @@ namespace StatisticCommon
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursFactCommonRequest(usingDate, sensors);
                             break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                            request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
-                                        @"FROM DEVICES " +
-                                        @"INNER JOIN SENSORS ON " +
-                                        @"DEVICES.ID = SENSORS.STATIONID " +
-                                        @"INNER JOIN DATA ON " +
-                                        @"DEVICES.CODE = DATA.OBJECT AND " +
-                                        @"SENSORS.CODE = DATA.ITEM AND " +
-                                        @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
-                                        @"' AND " +
-                                        @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                                        @"' " +
-                                        @"WHERE DATA.PARNUMBER = 12 AND (" + sensors +
-                                        @") " +
-                                        @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
-                            break;
                         default:
                             break;
                     }
@@ -822,24 +733,6 @@ namespace StatisticCommon
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursFactCommonRequest(usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                                     @"FROM IZM_TII " +
-                                     @"INNER JOIN CHANNELS ON " +
-                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                                     @"INNER JOIN DEVICES ON " +
-                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                                     @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
-                                     @"' AND " +
-                                     @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
-                                     @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                                     //@"IZM_TII.IDCHANNEL IN(" + sensors +
-                                     @"(" + sensors +
-                                     @") " +
-                                //@"ORDER BY IZM_TII.TIME";
-                                     @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
                             break;
                         default:
                             break;
@@ -949,8 +842,6 @@ namespace StatisticCommon
                             break;
                     }
                     break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    break;
                 default:
                     break;
             }
@@ -1012,8 +903,6 @@ namespace StatisticCommon
                         default:
                             break;
                     }
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     break;
                 default:
                     break;
@@ -1340,19 +1229,6 @@ namespace StatisticCommon
                             @"WHERE [ID_TEC]=" + m_id + @" " +
                             @"AND [ID_IN_SOTIASSO] IN (" + sensors + @")";
                     break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Источник для каждой ТЭЦ свой
-                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
-                                    @"FROM [dbo].[NAME_TABLE] " +
-                                    @"INNER JOIN " +
-                                        @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-                                        @"FROM [dbo].[NAME_TABLE] " +
-                                        @"GROUP BY [id]) AS t2 " +
-                                    @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
-                                    sensors +
-                                    @"))";
-                    query = query.Replace(@"NAME_TABLE", @"states_real_his");
-                    break;
                 default:
                     break;
             }
@@ -1372,8 +1248,8 @@ namespace StatisticCommon
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
                         //Ваоиант №3.a (из усредненной таблицы)
                         query = @"SELECT [ID], [Value], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                + @" WHERE [ID_TEC]=" + m_id + @" AND [ID] IN (" + sensors + @") "
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0_KKS]"
+                                + @" WHERE [ID_TEC]=" + m_id + @" AND [KKS_NAME] IN (" + sensors + @") "
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
@@ -1407,26 +1283,6 @@ namespace StatisticCommon
                                         ;
                         else
                             ;
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Если данные в БД по мск
-                    //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
-                    //Если данные в БД по ГринвичУ
-                    dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfMoscowTimeZone()).TotalMinutes);
-
-                    //Источник для каждой ТЭЦ свой - вариант №1
-                    //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
-                    //        @"FROM [dbo].[NAME_TABLE] " +
-                    //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
-                    //        @"AND (" + sensors + @") " +
-                    //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
-                    //query = query.Replace("NAME_TABLE", "states_real_his");
-                    //Источник для каждой ТЭЦ свой - вариант №2
-                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
-                            @"FROM [dbo].[NAME_TABLE] " +
-                            @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                                @"AND (" + sensors + @")";
-                    query = query.Replace("NAME_TABLE", "states_real_his_0");
                     break;
                 default:
                     break;

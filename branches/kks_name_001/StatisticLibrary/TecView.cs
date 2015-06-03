@@ -3142,7 +3142,7 @@ namespace StatisticCommon
             //Цикл по ТГ 
             foreach (TG tg in listTG)
             {                
-                tgRows = table.Select(@"ID=" + tg.ids_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
+                tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
 
                 hour = -1;
                 offset_season = 0;
@@ -3788,7 +3788,7 @@ namespace StatisticCommon
                                 //    tg.m_power_LastMinutesTM[i] = 0;
                                 //}
 
-                                tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+                                tgRows = table_in.Select(@"[KKS_NAME]=" + tg.m_strKKS_NAME_TM);
 
                                 for (i = 0; i < tgRows.Length; i++)
                                 {
@@ -3838,7 +3838,7 @@ namespace StatisticCommon
                             //    comp.m_listTG[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
+                            tgRows = table_in.Select(@"[KKS_NAME]=" + comp.m_listTG[0].m_strKKS_NAME_TM);
 
                             for (i = 0; i < tgRows.Length; i++)
                             {

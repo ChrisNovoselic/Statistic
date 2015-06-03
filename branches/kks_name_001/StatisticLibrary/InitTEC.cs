@@ -109,7 +109,7 @@ namespace StatisticCommon
 
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
-            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG] (" + ver + @")", null, null, out err);
+            return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG_KKS] (" + ver + @")", null, null, out err);
         }
         
         private bool IsNameField(DataRow data, string nameField) { return data.Table.Columns.IndexOf(nameField) > -1 ? true : false; }
@@ -153,9 +153,9 @@ namespace StatisticCommon
                 ;
 
             DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
-            dest.id_tm = Int32.Parse(rows_tg[0][@"ID_IN_SOTIASSO"].ToString());
-            dest.ids_fact[(int)TG.ID_TIME.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
-            dest.ids_fact[(int)TG.ID_TIME.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
+            dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
+            dest.m_arIds_fact[(int)TG.ID_TIME.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
+            dest.m_arIds_fact[(int)TG.ID_TIME.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
         }
 
         /// <summary>

@@ -837,7 +837,7 @@ namespace Statistic
         private void showTMValue(TG tg, ref double val, int min)
         {
             showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                                            , tg.id_tm
+                                            , tg.m_strKKS_NAME_TM
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes [min]
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
@@ -845,13 +845,13 @@ namespace Statistic
                                             , ref val);
         }
 
-        private void showTMValue(ref Label lbl, int tg_id, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
+        private void showTMValue(ref Label lbl, string tg_kksname, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
         {
             string text = string.Empty
                 , textNotValue = @"---";
             bool bValidateDateTime = false;
 
-            if (tg_id > 0)
+            if (tg_kksname.Length > 0)
             {
                 if (tg_val > 1)
                 {

@@ -404,7 +404,7 @@ namespace Statistic
 
                         foreach (TG tg in g.m_listTG)
                         {
-                            if (tg.id_tm > 0)
+                            if (tg.m_strKKS_NAME_TM.Length > 0)
                             {
                                 dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesTG [tg.m_id].m_powerCurrent_TM);
                             }

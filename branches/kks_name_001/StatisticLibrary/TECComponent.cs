@@ -34,8 +34,8 @@ namespace StatisticCommon
         //public bool receivedHourHalf2Addon;
 
         //public int id;
-        public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
-        public int id_tm;
+        public int[] m_arIds_fact; //Для особенной ТЭЦ (Бийск)
+        public string m_strKKS_NAME_TM;
         //public TECComponent m_owner;
         public int m_id_owner_gtp,
                     m_id_owner_pc;
@@ -46,7 +46,7 @@ namespace StatisticCommon
         {
             //m_powerMinutes = new double[21];
 
-            ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
+            m_arIds_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
 
             m_id_owner_gtp =
             m_id_owner_pc = -1; //Неизвестный владелец
