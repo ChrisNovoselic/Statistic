@@ -247,6 +247,8 @@ namespace Statistic
         }
 
         public override void Start () {
+            base.Start ();
+
             initTableHourRows();
             
             m_admin.Start ();
@@ -257,6 +259,8 @@ namespace Statistic
             CalendarSetDate(DateTime.Now.Date);
 
             if (m_admin.IsStarted == true) m_admin.Stop(); else ;
+
+            base.Stop ();
         }
 
         protected virtual void getDataGridViewAdmin() {}

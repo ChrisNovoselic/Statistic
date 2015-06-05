@@ -58,6 +58,7 @@ namespace StatisticCommon
             public bool fc;
 
             public string pbr_number;
+            public DateTime dtRecUpdate;
         }
 
         public volatile RDGStruct[] m_prevRDGValues;

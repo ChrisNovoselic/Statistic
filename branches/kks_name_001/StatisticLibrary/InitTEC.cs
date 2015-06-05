@@ -221,6 +221,8 @@ namespace StatisticCommon
                                             bUseData));
 
                             int indx_tec = tec.Count - 1;
+                            FormParameters.EventUpdateIdLinkSources += tec[indx_tec].OnUpdateIdLinkSource;
+
                             tec[indx_tec].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
                                                 list_tec.Rows[i]["ADMIN_REC"].ToString(),
                                                 list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
@@ -402,6 +404,8 @@ namespace StatisticCommon
                                         prefix_admin,
                                         prefix_pbr,
                                         bUseData));
+
+                        FormParameters.EventUpdateIdLinkSources += tec[i].OnUpdateIdLinkSource;
 
                         //List <string> listNamesField;
                         //listNamesField = new List<string> ();
@@ -744,6 +748,8 @@ namespace StatisticCommon
                     //listNamesField.Add ();
 
                     int indx_tec = tec.Count - 1;
+                    FormParameters.EventUpdateIdLinkSources += tec[indx_tec].OnUpdateIdLinkSource;
+
                     tec[indx_tec].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
                                         list_tec.Rows[i]["ADMIN_REC"].ToString(),
                                         list_tec.Rows[i]["ADMIN_IS_PER"].ToString(),
@@ -861,6 +867,8 @@ namespace StatisticCommon
                                     list_tec.Rows[i]["PREFIX_ADMIN"].ToString(),
                                     list_tec.Rows[i]["PREFIX_PBR"].ToString(),
                                     bUseData));
+
+                    FormParameters.EventUpdateIdLinkSources += tec[i].OnUpdateIdLinkSource;
 
                     //List <string> listNamesField;
                     //listNamesField = new List<string> ();

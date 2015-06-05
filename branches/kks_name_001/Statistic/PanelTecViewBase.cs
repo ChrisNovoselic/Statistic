@@ -1026,7 +1026,7 @@ namespace Statistic
                 if (bDevVal == true)
                 {
                     m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
-                    if (Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe) > m_tecView.m_valuesHours[i].valuesDiviation
+                    if ((Math.Round(Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe), 2) > Math.Round(m_tecView.m_valuesHours[i].valuesDiviation, 2))
                         && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
                         m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
                     else

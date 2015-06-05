@@ -10,50 +10,67 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP { POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
-                                    /*ALARM_USE, */ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
-                                    USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
-                                    , SEASON_DATETIME, SEASON_ACTION
-                                    //, GRINVICH_OFFSET_DATETIME
-                                    , APP_VERSION, APP_VERSION_QUERY_INTERVAL
-                                    , KOMDISP_FOLDER_CSV
-                                    //Логгирование
-                                    , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
-                                    , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
-                                    , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
-                                    , PANELQUICKDATA_LOGDEVIATIONEVAL
-                                    //Продолжение параметров...
-                                    , VALIDATE_TM_VALUE
-                                    , COUNT_PARAMETR_SETUP };
+        public static void UpdateIdLinkSources ()
+        {
+            if (! (EventUpdateIdLinkSources == null))
+                EventUpdateIdLinkSources ();
+            else
+                ;
+        }
+        public static event DelegateFunc EventUpdateIdLinkSources;
+
+        public enum PARAMETR_SETUP {    UNKNOWN = -1
+                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
+                                        /*ALARM_USE, */ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
+                                        USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+                                        , SEASON_DATETIME, SEASON_ACTION
+                                        //, GRINVICH_OFFSET_DATETIME
+                                        , APP_VERSION, APP_VERSION_QUERY_INTERVAL
+                                        , KOMDISP_FOLDER_CSV
+                                        //Логгирование
+                                        , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
+                                        , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
+                                        , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
+                                        , PANELQUICKDATA_LOGDEVIATIONEVAL
+                                        //Продолжение параметров...
+                                        , VALIDATE_TM_VALUE
+                                        //??? И где же универсальность
+                                        , ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+                                        , COUNT_PARAMETR_SETUP
+                                    };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
-                                                    /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
-                                                    @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
-                                                    , @"Season DateTime", @"Season Action"
-                                                    //, @"Grinvich OffsetDateTime"
-                                                    , @"App Version", @"App Version Query Interval"
-                                                    , @"KomDisp Folder CSV"
-                                                    //Логгирование
-                                                    , @"ControlHandle LogErrorCreate"
-                                                    , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
-                                                    , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
-                                                    , @"ShowFactValues LogDevEVal"
-                                                    //Продолжение параметров...
-                                                    , @"Validate TM Value"
+                                                            /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
+                                                            @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+                                                            , @"Season DateTime", @"Season Action"
+                                                            //, @"Grinvich OffsetDateTime"
+                                                            , @"App Version", @"App Version Query Interval"
+                                                            , @"KomDisp Folder CSV"
+                                                            //Логгирование
+                                                            , @"ControlHandle LogErrorCreate"
+                                                            , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
+                                                            , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
+                                                            , @"ShowFactValues LogDevEVal"
+                                                            //Продолжение параметров...
+                                                            , @"Validate TM Value"
+                                                            //Идентификаторы прилинкованных активных источников СОТИАССО
+                                                            , @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
-                                                    /*@"лог", */"сек", "сек",
-                                                    @"стр", @"ном", @"ном"
-                                                    , @"дата/время", @"ном"
-                                                    //, "час"
-                                                    , @"стр", @"мсек"
-                                                    , @"стр"
-                                                    //Логгирование
-                                                    , @"стр-лог"
-                                                    , @"стр-лог", @"стр-лог"
-                                                    , @"стр-лог", @"стр-лог"
-                                                    , @"стр-лог"
-                                                    //Продолжение параметров...
-                                                    , @"сек"
+                                                            /*@"лог", */"сек", "сек",
+                                                            @"стр", @"ном", @"ном"
+                                                            , @"дата/время", @"ном"
+                                                            //, "час"
+                                                            , @"стр", @"мсек"
+                                                            , @"стр"
+                                                            //Логгирование
+                                                            , @"стр-лог"
+                                                            , @"стр-лог", @"стр-лог"
+                                                            , @"стр-лог", @"стр-лог"
+                                                            , @"стр-лог"
+                                                            //Продолжение параметров...
+                                                            , @"сек"
+                                                            //Идентификаторы прилинкованных активных источников СОТИАССО
+                                                            , @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -99,6 +116,13 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");
+
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC, @"12");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2, @"22");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3, @"32");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4, @"42");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5, @"52");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC, @"63");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 
@@ -197,6 +221,40 @@ namespace StatisticCommon
     {
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
+
+        public int GetTECIdLinkSource (int id)
+        {
+            int iRes = -1;
+            PARAMETR_SETUP param = PARAMETR_SETUP.UNKNOWN;
+
+            switch (id)
+            {
+                case 1:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC;
+                    break;
+                case 2:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2;
+                    break;
+                case 3:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3;
+                    break;
+                case 4:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4;
+                    break;
+                case 5:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5;
+                    break;
+                case 6:
+                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC;
+                    break;
+                default:
+                    break;
+            }
+
+            iRes = Convert.ToInt32(m_arParametrSetup[(int)param]);
+
+            return iRes;
+        }
 
         //public FormParameters_DB(int idListener)
         public FormParameters_DB(ConnectionSettings connSett) : base ()

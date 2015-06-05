@@ -570,6 +570,7 @@ namespace StatisticCommon
             table = arTable[arIndexTables[0]].Copy();
             table.Merge(arTable[arIndexTables[1]].Clone(), false);
 
+            Type typeCol;
             for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
             {
                 for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
@@ -596,8 +597,16 @@ namespace StatisticCommon
                             table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = table.Rows[i][k];
                         else
                         {
-                            //Type type = arTable[arIndexTables[1]].Columns[k].DataType;
-                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = 0;
+                            typeCol = arTable[arIndexTables[1]].Columns[k].DataType;
+                            if (typeCol.IsPrimitive == true)
+                                table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = 0;
+                            else
+                            {
+                                if (typeCol.Equals (typeof(DateTime)) == true)
+                                    table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = DateTime.MinValue;
+                                else
+                                    throw new Exception (@"AdminTS::GetAdminValuesResponse () - неизвестный тип поля ...");
+                            }
                         }
                     }
                 }
@@ -805,6 +814,8 @@ namespace StatisticCommon
                 else
                     ;
 
+                m_curRDGValues[hour - 1].dtRecUpdate = (DateTime)table.Rows[i]["WR_DATE_TIME"];
+
                 //Копия сверху по разбору ... + копии в 'TecView'
                 if (bSeason == true)
                 {
@@ -815,6 +826,7 @@ namespace StatisticCommon
                         m_curRDGValues[hour + 0].pmax = m_curRDGValues[hour - 1].pmax;
 
                         m_curRDGValues[hour + 0].pbr_number = m_curRDGValues[hour - 1].pbr_number;
+                        m_curRDGValues[hour + 0].dtRecUpdate = m_curRDGValues[hour - 1].dtRecUpdate;
                     }
                     else
                     {
@@ -2518,6 +2530,7 @@ namespace StatisticCommon
                 m_prevRDGValues[i].pmin = Math.Round(m_curRDGValues[i].pmin, 2);
                 m_prevRDGValues[i].pmax = Math.Round(m_curRDGValues[i].pmax, 2);
                 m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
+                m_prevRDGValues[i].dtRecUpdate = m_curRDGValues[i].dtRecUpdate;
                 m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
                 m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
                 m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
@@ -2538,6 +2551,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].pmin = ((HAdmin)source).m_curRDGValues[i].pmin;
                 m_curRDGValues[i].pmax = ((HAdmin)source).m_curRDGValues[i].pmax;
                 m_curRDGValues[i].pbr_number = ((HAdmin)source).m_curRDGValues[i].pbr_number;
+                m_curRDGValues[i].dtRecUpdate = ((HAdmin)source).m_curRDGValues[i].dtRecUpdate;
                 m_curRDGValues[i].recomendation = ((HAdmin)source).m_curRDGValues[i].recomendation;
                 m_curRDGValues[i].deviationPercent = ((HAdmin)source).m_curRDGValues[i].deviationPercent;
                 m_curRDGValues[i].deviation = ((HAdmin)source).m_curRDGValues[i].deviation;
@@ -2560,6 +2574,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].deviationPercent = false;
 
                 m_curRDGValues[i].pbr_number = string.Empty;
+                m_curRDGValues[i].dtRecUpdate = DateTime.MinValue;
             }
 
             //CopyCurToPrevRDGValues();
