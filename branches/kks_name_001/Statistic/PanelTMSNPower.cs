@@ -227,7 +227,7 @@ namespace Statistic
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
 
-            bool isActive;
+            //bool isActive;
 
             public TecView m_tecView;
 
@@ -330,26 +330,30 @@ namespace Statistic
                 for (i = 0; i < COUNT_FIXED_ROWS; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
-                isActive = false;
+                //isActive = false;
             }
 
-            public void Start()
+            public override void Start()
             {
+                base.Start ();
+
                 m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
 
-                isActive = false;
+                //isActive = false;
             }
 
-            public void Stop()
+            public override void Stop()
             {
                 m_tecView.Stop ();
 
                 if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
                 if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
+
+                base.Stop ();
             }
 
             private void ChangeState()
@@ -357,16 +361,16 @@ namespace Statistic
                 m_tecView.ChangeState ();
             }
 
-            public void Activate(bool active)
+            public override bool Activate(bool active)
             {
-                if (isActive == active)
-                    return;
+                bool bRes = base.Activate (active);
+
+                if (bRes == false)
+                    return false;
                 else
                     ;
 
-                isActive = active;
-
-                if (isActive == true)
+                if (Actived == true)
                 {
                     m_timerCurrent.Change (0, System.Threading.Timeout.Infinite);
                 }
@@ -374,6 +378,8 @@ namespace Statistic
                 {
                     m_tecView.ClearStates ();
                 }
+
+                return bRes;
             }
 
             private void showTMGenPower()
@@ -467,7 +473,7 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                if (isActive == true)
+                if (Actived == true)
                 {
                     ChangeState();
 
