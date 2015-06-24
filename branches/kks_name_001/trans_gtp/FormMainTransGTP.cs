@@ -161,8 +161,6 @@ namespace trans_gtp
                     string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
-                        string prefix_admin = @""
-                            , prefix_pbr = @"BiTEC";
                         int err = -1
                             , indx = -1
                             , indx_tec = -1;
@@ -179,9 +177,7 @@ namespace trans_gtp
                         if (! (indx_tec < 0))
                         {
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableAdminValues[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR";
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_admin = prefix_admin;
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_pbr = prefix_pbr;
+                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR"; //???
 
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
                                                 @"", //ADMIN_REC
@@ -192,28 +188,6 @@ namespace trans_gtp
                                                 @"PBR_number");
 
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
-
-                            if (err == 0)
-                            {
-                                for (int c = 0; c < m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents.Count; c ++) {
-                                    if ((m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id > 100) && (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id < 500)) {
-                                        switch (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id) {
-                                            case 117:
-                                                prefix_pbr = @"TG1";
-                                                break;
-                                            case 118:
-                                                prefix_pbr = @"TG28";
-                                                break;
-                                            default:
-                                                break;
-                                        }
-                                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].prefix_admin = prefix_admin;
-                                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents[c].prefix_pbr = prefix_pbr;
-                                    } else {
-                                    }
-                                }
-                            
-                            } else ; //Ошибка получения параметров соединений с БД
                         } else ;
                     } else ;
                 }

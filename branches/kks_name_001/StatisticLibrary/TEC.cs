@@ -11,51 +11,110 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// Перечисление типов соединения с БД
+    /// </summary>
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
         DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 7
     };
-
+    /// <summary>
+    /// Класс описания ТЭЦ
+    /// </summary>
     public class TEC
     {
-        public enum INDEX_TYPE_SOURCE_DATA { COMMON, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
+        /// <summary>
+        /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
+        ///  только для АИИС КУЭ, СОТИАССО
+        /// </summary>
+        public enum INDEX_TYPE_SOURCE_DATA { COMMON, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA };
+        /// <summary>
+        /// Массив типов источников данных (только для АИИС КУЭ, СОТИАССО)
+        /// </summary>
         public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA[(int)(CONN_SETT_TYPE.DATA_SOTIASSO - CONN_SETT_TYPE.DATA_AISKUE + 1)];
+        /// <summary>
+        /// Массив типов интерфейсов к источникам данных
+        ///  утратил актуальность при переходе к сборке
+        /// </summary>
         public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
+        /// <summary>
+        /// Перечисление - индексы полей в результирующей таблице
+        ///  при обработке запроса ПБР, административных значений
+        /// </summary>
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
                                         PBR_DATETIME, PBR, PBR_NUMBER, 
                                         COUNT_INDEX_NAME_FIELD};
+        /// <summary>
+        /// Перечисление - типы ТЭЦ
+        ///  Бийская ТЭЦ - "особенная" с отличными от других АИИС КУЭ, СОТИАССО
+        /// </summary>
         public enum TEC_TYPE { COMMON, BIYSK };
-
+        /// <summary>
+        /// Идентификатор ТЭЦ (из БД конфигурации)
+        /// </summary>
         public int m_id;
-        public string name_shr,
-                    prefix_admin, prefix_pbr;
+        /// <summary>
+        /// Краткое наименование
+        /// </summary>
+        public string name_shr;
+        /// <summary>
+        /// Массив наименований таблиц со значениями ПБР, административными значениями
+        /// </summary>
         public string [] m_arNameTableAdminValues, m_arNameTableUsedPPBRvsPBR;
+        /// <summary>
+        /// Список наименований полей
+        /// </summary>
         public List <string> m_strNamesField;
-
+        /// <summary>
+        /// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
+        /// </summary>
         public int m_timezone_offset_msc { get; set; }
+        /// <summary>
+        /// Путь для размещения с файлом-книгой MS Excel
+        ///  со значениями РДГ на уровне ТГ (НСС)
+        /// </summary>
         public string m_path_rdg_excel { get; set;}
+        /// <summary>
+        /// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
+        /// </summary>
         public string m_strTemplateNameSgnDataTM,
                     m_strTemplateNameSgnDataFact;
-
+        /// <summary>
+        /// Список компонентов для ТЭЦ
+        /// </summary>
         public List<TECComponent> list_TECComponents;
-
+        /// <summary>
+        /// Список ТГ для ТЭЦ
+        /// </summary>
         public List<TG> m_listTG;
+        /// <summary>
+        /// Строка-перечисление (разделитель - запятая) с идентификаторами ТГ в системе СОТИАССО
+        /// </summary>
         protected volatile string m_SensorsString_SOTIASSO = string.Empty;
-        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
-
+        /// <summary>
+        /// Массив строк-перечислений (разделитель - запятая) с идентификаторами ТГ в системе АИИС КУЭ
+        ///  массив для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
+        /// </summary>
+        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty };
+        /// <summary>
+        /// Перечисление - индексы возможных вариантов усреднения "мгновенных" значений
+        /// </summary>
         public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_TSQL };
+        /// <summary>
+        /// Вариант текущего усреднения "мгновенных" значений
+        /// </summary>
         public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.AVERAGE;
-
+        /// <summary>
+        /// Вернуть тип ТЭЦ
+        /// </summary>
+        /// <returns></returns>
         public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
-
+        /// <summary>
+        /// Массив с параметрами соединения для источников данных
+        /// </summary>
         public ConnectionSettings [] connSetts;        
-
-        //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
-
-        //public FormParametersTG parametersTGForm;
 
         /// <summary>
         /// Признак инициализации строки с идентификаторами ТГ
@@ -75,11 +134,17 @@ namespace StatisticCommon
                 return bRes;
             }
         }
-
+        /// <summary>
+        /// Возвратить строку-перечисление с идентификаторами
+        /// </summary>
+        /// <param name="indx">Индекс компонента (указать -1 для ТЭЦ в целом)</param>
+        /// <param name="connSettType">Тип соединения с БД</param>
+        /// <param name="indxTime">Индекс интервала времени</param>
+        /// <returns>Строка-перечисление с идентификаторами</returns>
         public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
             string strRes = string.Empty;
 
-            if (indx < 0) {
+            if (indx < 0) { // для ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -95,7 +160,7 @@ namespace StatisticCommon
                         break;
                 }
             }
-            else {
+            else { // для компонета ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -116,14 +181,27 @@ namespace StatisticCommon
         }
 
         private volatile int m_IdSOTIASSOLinkSource;
+        /// <summary>
+        /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
+        /// </summary>
         public event IntDelegateIntFunc EventGetTECIdLinkSource;
-
+        /// <summary>
+        /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
+        /// </summary>
         public void OnUpdateIdLinkSource ()
         {
+            //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
             m_IdSOTIASSOLinkSource = EventGetTECIdLinkSource(m_id);
         }
-
-        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
+        /// <summary>
+        /// Коструктор объекта (с параметрами)
+        /// </summary>
+        /// <param name="id">Идентификатр ТЭЦ</param>
+        /// <param name="name_shr">Краткое наименование</param>
+        /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
+        /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
+        /// <param name="bUseData">Признак создания объекта</param>
+        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
@@ -143,15 +221,22 @@ namespace StatisticCommon
             //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin;
             //this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
 
-            //Сохранить составные части наимнований полей
-            this.prefix_admin = prefix_admin; this.prefix_pbr = prefix_pbr;
-
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
             for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);           
         }
-
+        /// <summary>
+        /// Установить наименования полей таблиц при обращении к БД с запросами для получения
+        ///  административных значений, ПБР
+        /// </summary>
+        /// <param name="admin_datetime"></param>
+        /// <param name="admin_rec"></param>
+        /// <param name="admin_is_per"></param>
+        /// <param name="admin_diviat"></param>
+        /// <param name="pbr_datetime"></param>
+        /// <param name="ppbr_vs_pbr"></param>
+        /// <param name="pbr_number"></param>
         public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
                                     string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
             //INDEX_NAME_FIELD.ADMIN_DATETIME
@@ -321,36 +406,6 @@ namespace StatisticCommon
                     strRes = strRes.Substring(2);
                 }
             }
-
-            return strRes;
-        }
-
-        //Вызывается только для БД со статическими полями (старый формат)
-        private string selectPBRValueQuery(TECComponent g)
-        {
-            string strRes = string.Empty;
-
-            if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
-                if (g.prefix_pbr.Length > 0)
-                {
-                    //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmin";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmax";
-                }
-                else
-                {
-                    //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmin";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmax";
-                }
-            else
-                ;
 
             return strRes;
         }
@@ -977,34 +1032,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    if (num_comp < 0)
-                    {
-                        string strDelim = ", ",
-                                comp_selectPBRValueQuery = string.Empty;
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            comp_selectPBRValueQuery = string.Empty;
-                            if ((g.m_id > 100) && (g.m_id < 500))
-                            {
-                                comp_selectPBRValueQuery = selectPBRValueQuery(g);
-
-                                if (comp_selectPBRValueQuery.Length > 0)
-                                    selectPBR += (strDelim + comp_selectPBRValueQuery);
-                                else
-                                    ;
-                            }
-                            else
-                                ;
-                        }
-                        if (selectPBR.Length > strDelim.Length)
-                            selectPBR = selectPBR.Substring(strDelim.Length);
-                        else
-                            ;
-                    }
-                    else
-                    {
-                        selectPBR = selectPBRValueQuery(list_TECComponents[num_comp]);
-                    }
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(num_comp);
@@ -1026,10 +1054,10 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    selectPBR = selectPBRValueQuery(comp);
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = "PBR, Pmin, Pmax"; //Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    selectPBR = "PBR, Pmin, Pmax"; //??? Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
 
                     selectPBR += ";";
 
@@ -1040,27 +1068,6 @@ namespace StatisticCommon
             }
 
             strRes = pbrValueQuery(selectPBR, dt, mode);
-
-            return strRes;
-        }
-
-        private string selectAdminValueQuery(TECComponent g)
-        {
-            string strRes = String.Empty;
-
-            if (g.prefix_admin.Length > 0)
-            {
-                strRes += m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + g.tec.prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
-            else {
-                strRes += m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                //selectPBR += strUsedPPBRvsPBR + "." + namePBR + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
 
             return strRes;
         }
@@ -1163,7 +1170,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    selectAdmin = selectAdminValueQuery(comp);
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] +
@@ -1317,26 +1324,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    if (num_comp < 0)
-                    {
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            if ((g.m_id > 100) && (g.m_id < 500))
-                            {
-                                selectAdmin += ", ";
-                                //selectPBR += ", ";
-
-                                selectAdmin += selectAdminValueQuery(g);
-                            }
-                            else
-                                ;
-                        }
-                        selectAdmin = selectAdmin.Substring(2);
-                    }
-                    else
-                    {
-                        selectAdmin = selectAdminValueQuery(list_TECComponents[num_comp]);
-                    }
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectAdmin = idComponentValueQuery (num_comp);
@@ -1468,34 +1456,6 @@ namespace StatisticCommon
                 default:
                     break;
             }
-
-            return strRes;
-        }
-
-        public string NameFieldOfAdminRequest(TECComponent comp)
-        {
-            string strRes = @"" + this.prefix_admin;
-
-            if ((!(comp.prefix_admin == null)) && (comp.prefix_admin.Length > 0))
-            {
-                strRes += "_" + comp.prefix_admin;
-            }
-            else
-                ;
-
-            return strRes;
-        }
-
-        public string NameFieldOfPBRRequest(TECComponent comp)
-        {
-            string strRes = @"" + this.prefix_pbr;
-
-            if ((! (comp.prefix_pbr == null)) && (comp.prefix_pbr.Length > 0))
-            {
-                strRes += "_" + comp.prefix_pbr;
-            }
-            else
-                ;
 
             return strRes;
         }
