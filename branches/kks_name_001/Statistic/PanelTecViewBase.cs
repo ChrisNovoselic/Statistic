@@ -18,26 +18,34 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    /// <summary>
+    /// Класс для описания объекта расчетов по контролю
+    ///  мощности 4% (+2%/-2%)
+    /// </summary>
     public class Hd2PercentControl
     {
-        //private double m_valuesBaseCalculate;
-
-        //public double valuesBaseCalculate { get { return m_valuesBaseCalculate; } }
-        //public double difference { get { return m_valuesBaseCalculate; } }
-
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
         public Hd2PercentControl() { }
-
+        /// <summary>
+        /// Функция расчета 
+        /// </summary>
+        /// <param name="values">Объект со значениями компонента ТЭЦ - входные данные</param>
+        /// <param name="bPmin">Признак использования в алгоритме ветви с использованием "Мощность минимальная"</param>
+        /// <param name="err">Признак ошибки при выполнении расчета</param>
+        /// <returns>Строка - результат (для отображения)</returns>
         public string Calculate(TecView.values values, bool bPmin, out int err)
         {
-            string strRes = string.Empty;
-            double valuesBaseCalculate = -1F;
+            string strRes = string.Empty; //Строка - результат
+            double valuesBaseCalculate = -1F; //Основная величина по которой производится расчет
 
             double dblRel = 0.0
                     , delta = -1.0
                     , dbl2AbsPercentControl = -1.0
                     ;
-            int iReverse = 0;
-            bool bAbs = false;
+            int iReverse = 0; //Признак направления отклонения (по умолчанию - нет)
+            bool bAbs = false; //Признак абсолютного значения (по умолчанию - нет)
 
             if (values.valuesPBR == values.valuesPmax)
             {
@@ -55,18 +63,24 @@ namespace Statistic
                 //else
                 //    ;
 
+                //Проверить наличие внешней команды
                 if (values.valuesForeignCommand == true)
-                {
+                {//Есть внешняя команда
                     valuesBaseCalculate = values.valuesUDGe;
+                    //Установить признак отклонения "вверх"
                     iReverse = 1;
+                    //Установить признак абсолютного значения
                     bAbs = true;
                 }
                 else
-                {
+                {//Нет внешней команды
+                    //Проверить признак использования ветви "Мощность минимальная"
                     if (bPmin == true)
+                        //Использовать ветвь "Мощность минимальная"
                         if (values.valuesPBR == values.valuesPmin)
-                        {
+                        {//Установить значение величины-основания
                             valuesBaseCalculate = values.valuesPBR;
+                            //Установить признак отклонения "вниз"
                             iReverse = -1;
                         }
                         else
@@ -76,19 +90,23 @@ namespace Statistic
                         ;
                 }
             }
-
+            //Проверить установлена ли величина-основание
             if (valuesBaseCalculate > 1) {
+                //Произвести расчет по величине-основании
                 strRes += @"Уров=" + valuesBaseCalculate.ToString(@"F2");
                 strRes += @"; ПБР=" + values.valuesPBR.ToString(@"F2") + @"; Pmax=" + values.valuesPmax.ToString(@"F2");
+                //Проверить признак использования ветви "Мощность минимальная"
                 if (bPmin == true) {
                     strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 } else ;
-
+                //Проверить признак наличия значения за крайнюю минуту часа
                 if (values.valuesLastMinutesTM > 1)
                 {
+                    //Проверить признак направления отклонения
                     if (!(iReverse == 0))
-                    {
+                    {//Есть признак отклонения
                         delta = iReverse * (valuesBaseCalculate - values.valuesLastMinutesTM);
+                        //Проверить признак абсолютного значения
                         if (bAbs == true)
                             delta = Math.Abs(delta);
                         else
@@ -138,7 +156,9 @@ namespace Statistic
 
             return strRes;
         }
-
+        /// <summary>
+        /// Строка для формирования подписей (подсказок) для полученных значений
+        /// </summary>
         public static string StringToolTipEmpty = @"Уров=---.-; Откл=--(--%)";
     }
 
@@ -441,27 +461,9 @@ namespace Statistic
         private DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
             , dgvCellStyleCommon;
 
-        //protected DelegateFunc delegateSetNowDate;
-
-        //private DelegateIntIntFunc delegateUpdateGUI_Fact;
-        //private DelegateFunc delegateUpdateGUI_TM;
-
-        //protected object m_lockValue;
-
-        //private Thread taskThread;
-        //protected Semaphore m_sem;
-        //private volatile bool threadIsWorking;
-        //protected volatile bool m_newState;
-        //protected volatile List<StatesMachine> m_states;
-        //private int currValuesPeriod = 0;
         private ManualResetEvent m_evTimerCurrent;
         private System.Threading.Timer m_timerCurrent;
-        //private System.Windows.Forms.Timer timerCurrent;
         private DelegateObjectFunc delegateTickTime;
-
-        //private AdminTS m_admin;
-        //protected FormGraphicsSettings graphSettings;
-        //protected FormParameters parameters;
 
         public TecView m_tecView;
 
@@ -470,14 +472,6 @@ namespace Statistic
         public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
         public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
         public int m_ID { get { return m_tecView.m_ID; } }
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        //public TG[] sensorId2TG;        
-
-        //public volatile TEC tec;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        //public List<TECComponentBase> m_list_TECComponents;
 
         private bool update;
 
@@ -607,7 +601,7 @@ namespace Statistic
             dgvCellStyleWarning.BackColor = Color.Yellow;
             dgvCellStyleCommon = new DataGridViewCellStyle();
 
-            if (tec.type() == TEC.TEC_TYPE.BIYSK)
+            if (tec.Type == TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;
             else
                 ;

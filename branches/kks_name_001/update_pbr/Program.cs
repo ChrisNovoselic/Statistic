@@ -75,7 +75,7 @@ namespace update_pbr
                 if (arIds_TECNotUse.Contains<int>(t.m_id) == false)
                 {
                     //switch (t.m_id)
-                    switch (t.type())
+                    switch (t.Type)
                     {
                         //case 1:
                         //case 2:
@@ -97,7 +97,7 @@ namespace update_pbr
                     idListenerDB = DbSources.Sources().Register(t.connSetts[(int)CONN_SETT_TYPE.PBR], false, @"ТЭЦ=" + t.name_shr + @", DESC=" + i.ToString());
                     dbConn = DbSources.Sources().GetConnection(idListenerDB, out err);
 
-                    switch (t.type())
+                    switch (t.Type)
                     {
                         case TEC.TEC_TYPE.COMMON:
                             query = @"UPDATE `techsite`.`PPBRvsPBRnew2014` SET ";

@@ -1499,7 +1499,7 @@ namespace Statistic
                     {
                         //list_tecView_index_checked.Add(tecView_index);
 
-                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;
                         else
                             ;
@@ -2105,7 +2105,7 @@ namespace Statistic
             if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in m_listStandardTabs)
-                    if (tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)
+                    if (tv.m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
                         if (!(m_formParametersTG == null))
                             //tv.tec.parametersTGForm.ShowDialog(this);

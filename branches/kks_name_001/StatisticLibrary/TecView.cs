@@ -10,7 +10,37 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public class TecView : HAdmin
+    interface ITecView
+    {
+        bool Activate(bool active);
+        void ChangeState();
+        void ChangeState_SobstvNyzhdy();
+        void ClearValues();
+        void ClearValuesLastMinutesTM();
+        void CopyCurToPrevRDGValues();
+        int CountTG { get; }
+        event TecView.DelegateOnEventReg EventReg;
+        void getCurRDGValues(HAdmin source);
+        int GetIntervalOfTypeSourceData(TG.ID_TIME id_time);
+        void GetRDGValues(int mode, int indx, DateTime date);
+        void GetRetroHours();
+        void GetRetroMins();
+        void GetRetroMinTMGen();
+        void GetRetroValues();
+        void InitializeTECComponents();
+        void InitTEC(System.Collections.Generic.List<TEC> listTEC, HClassLibrary.HMark markQueries);
+        System.Collections.Generic.List<TG> listTG { get; }
+        int m_ID { get; }
+        TEC m_tec { get; }
+        void OnEventConfirm(int id_tg);
+        void Start();
+        void Stop();
+        void SuccessThreadRDGValues(int curHour, int curMinute);
+        bool WasChanged();
+        bool zedGraphHours_MouseUpEvent(int indx);
+    }
+
+    public class TecView : HAdmin, StatisticCommon.ITecView
     {
         public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, COUNT_TYPE_PANEL };
         TYPE_PANEL m_typePanel;
@@ -811,7 +841,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                     {
                         case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             break;
@@ -1262,7 +1292,7 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.InitSensors:
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                         {
                             case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             case StatisticCommon.TEC.TEC_TYPE.BIYSK:
@@ -2023,7 +2053,7 @@ namespace StatisticCommon
             else
                 ;
 
-            //switch (tec.type ()) {
+            //switch (tec.Type) {
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
@@ -3198,7 +3228,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                     {
                         case TEC.TEC_TYPE.COMMON:
                             break;
@@ -4161,7 +4191,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            switch (m_tec.type())
+                            switch (m_tec.Type)
                             {
                                 case TEC.TEC_TYPE.COMMON:
                                     break;

@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 //using System.Data.SqlClient;
-using System.Data.OleDb;
-using System.IO;
 //using MySql.Data.MySqlClient;
 using System.Threading;
-using System.Globalization;
-
+using System.Windows.Forms;
 using HClassLibrary;
 
 namespace StatisticCommon
@@ -2382,13 +2378,13 @@ namespace StatisticCommon
             int err = -1;
 
             for (int i = 0; i < m_list_tec.Count; i ++) {
-                if (m_list_tec[i].type () == TEC.TEC_TYPE.COMMON) {
+                if (m_list_tec[i].Type == TEC.TEC_TYPE.COMMON) {
                     //TYPE_DATABASE_CFG.CFG_200 = ???
                     m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(HClassLibrary.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
                     m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(HClassLibrary.TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
                 }
                 else {
-                    if (m_list_tec[i].type() == TEC.TEC_TYPE.BIYSK)
+                    if (m_list_tec[i].Type == TEC.TEC_TYPE.BIYSK)
                     {
                         //TYPE_DATABASE_CFG.CFG_200 = ???
                         m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, idListaener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
