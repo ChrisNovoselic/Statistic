@@ -1,0 +1,1853 @@
+=================================================
+08.06.2015 11:10:38.636
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+08.06.2015 11:10:46.644
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 142
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 52
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 39
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 622
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 649
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 642
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 41
+=================================================
+08.06.2015 11:10:46.644
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+08.06.2015 11:11:00.169
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+08.06.2015 11:11:06.799
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 142
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 52
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 39
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 622
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 649
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 642
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 41
+=================================================
+08.06.2015 11:11:06.799
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+08.06.2015 11:18:34.038
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+08.06.2015 11:18:37.143
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 142
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 52
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 39
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 622
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 649
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 642
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 41
+=================================================
+08.06.2015 11:18:37.143
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+08.06.2015 12:54:16.684
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+08.06.2015 12:54:21.420
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 145
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 52
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 47
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 625
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 652
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 41
+=================================================
+08.06.2015 12:54:21.422
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+08.06.2015 13:18:35.838
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+08.06.2015 13:18:40.377
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 147
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 52
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.PanelGetData..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 47
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 635
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 662
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 655
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 41
+=================================================
+08.06.2015 13:18:40.377
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:53:35.617
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:53:35.822
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:53:35.885
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:53:37.714
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:53:37.716
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:53:40.342
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:53:40.467
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:53:42.869
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:53:52.589
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:53:52.698
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:53:52.698
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:53:54.399
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:54:11.915
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:54:12.009
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:17.907
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:29.718
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:29.827
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:31.122
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:31.122
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:36.816
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:36.957
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:38.907
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:38.907
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:40.919
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:41.028
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:57:41.060
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:42.214
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:42.214
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:44.195
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:44.305
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:57:44.305
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:45.381
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:45.381
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:46.910
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:47.050
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:48.049
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:48.049
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:51.013
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:51.122
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:57:52.027
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:57:52.027
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:57:57.508
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:57:57.617
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:57:57.617
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:59:37.803
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:59:37.928
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:59:37.928
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:59:39.816
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:59:39.816
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:59:42.109
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:59:42.234
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 07:59:42.249
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 07:59:43.139
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 07:59:43.139
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 07:59:45.011
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 07:59:45.135
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:00:13.669
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:00:29.441
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:00:29.581
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:00:29.581
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:00:30.392
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:00:30.392
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:00:31.765
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:00:31.890
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:00:57.006
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:00:57.147
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:00:57.147
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:07.286
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:13.285
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:13.410
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:14.642
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:14.642
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:18.293
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:18.417
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:18.449
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:19.447
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:19.447
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:21.381
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:21.506
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:21.537
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:22.162
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:22.162
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:23.768
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:23.909
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:23.909
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:24.689
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:24.689
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:26.218
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:26.342
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:26.358
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:27.138
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:27.138
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:29.057
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:29.182
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:29.182
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:30.336
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:30.336
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:38.714
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:38.854
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:38.854
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:02:40.835
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:02:40.835
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:02:45.032
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:02:45.172
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:02:45.172
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:03:12.475
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:03:12.600
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:03:12.600
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:03:14.035
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:03:14.035
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:03:17.186
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:03:17.295
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:03:18.263
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.AddSourceDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 645
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 552
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:03:18.263
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:09.980
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:10.105
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:04:10.136
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:11.041
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:11.041
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:14.285
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:14.426
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:04:14.441
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:15.549
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:15.549
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:17.686
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:17.873
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:18.809
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:18.809
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:20.541
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:20.728
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:04:20.728
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:21.742
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:21.742
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:23.365
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:23.474
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:23.474
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:04:24.503
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:24.503
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:04:26.282
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:04:26.453
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:04:26.453
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:04:27.343
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:04:27.343
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:05:42.248
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:05:42.358
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:05:42.373
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:05:43.762
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 526
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 581
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 574
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:05:43.762
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:05:54.910
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:05:55.020
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:06:59.134
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:06:59.243
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:06:59.383
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 08:07:06.590
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:07:13.489
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:07:13.614
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:07:13.614
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:07:14.659
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:07:14.659
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:07:18.481
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:07:18.591
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:07:18.606
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:07:19.589
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:07:19.589
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:07:54.720
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:07:54.861
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:07:54.861
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:07:56.873
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:07:56.873
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:08:00.321
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:08:00.461
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:08:00.477
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:08:01.335
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:08:01.335
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:08:05.749
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:08:13.998
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:08:43.248
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:08:47.319
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:08:47.319
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:08:47.335
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 08:10:31.512
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:10:43.571
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:10:43.696
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:10:43.711
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:10:45.193
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:10:45.209
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:12:07.596
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:12:07.736
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:12:07.752
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:12:08.937
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:12:08.937
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:12:20.107
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:12:20.247
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:12:20.263
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:12:21.324
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentDataTEC() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 525
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 580
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 573
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 08:12:21.324
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 08:12:23.945
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 08:12:24.085
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 08:12:24.101
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 08:12:24.116
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 08:16:06.783
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 12:10:05.269
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 12:10:05.627
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 12:10:06.364
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 12:18:32.321
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 13:49:36.189
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:49:36.641
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:49:36.657
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 13:49:38.341
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentData() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 659
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 564
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 619
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 612
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 13:49:38.341
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 13:49:41.539
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:49:41.742
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 13:49:41.742
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:49:42.585
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 13:49:45.455
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 13:57:31.095
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:57:31.279
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:57:32.292
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentData() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 660
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 564
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 613
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 13:57:32.292
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 13:57:34.382
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:57:34.523
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 13:57:34.538
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:57:36.239
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentData() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 660
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 564
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 620
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 613
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+23.06.2015 13:57:36.239
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.06.2015 13:57:38.766
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:57:38.937
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 13:57:38.937
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:57:38.953
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+23.06.2015 13:58:08.207
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.06.2015 13:58:08.378
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+23.06.2015 13:58:08.378
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+23.06.2015 13:58:08.394
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+System.Data.SqlClient.SqlException: Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+Недопустимое имя столбца "ТЭЦ".
+   в System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection)
+   в System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj)
+   в System.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+   в System.Data.SqlClient.SqlDataReader.ConsumeMetaData()
+   в System.Data.SqlClient.SqlDataReader.get_MetaData()
+   в System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, DbAsyncResult result)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   в System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable[] dataTables, Int32 startRecord, Int32 maxRecords, IDbCommand command, CommandBehavior behavior)
+   в System.Data.Common.DbDataAdapter.Fill(DataTable dataTable)
+   в HClassLibrary.DbTSQLInterface.Select(DbConnection& conn, String query, DbType[] types, Object[] parametrs, Int32& er) в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 677
+=================================================
+25.06.2015 12:52:02.238
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+25.06.2015 12:52:03.096
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+25.06.2015 12:52:03.189
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+25.06.2015 12:52:05.092
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения
+Исключение: В экземпляре объекта не задана ссылка на объект.
+System.NullReferenceException: В экземпляре объекта не задана ссылка на объект.
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.GetCurrentData() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 689
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 595
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1.initialize() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 651
+   в StatisticDiagnostic1.PanelStatisticDiagnostic1..ctor(IContainer container) в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\PanelStatisticDiagnostic.cs:строка 644
+   в StatisticDiagnostic1.FormDiagnostic.InitializeComponent() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.Designer.cs:строка 34
+   в StatisticDiagnostic1.FormDiagnostic..ctor() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\FormDiagnostic.cs:строка 18
+   в StatisticDiagnostic1.Program.Main() в D:\MyProjects\C.Net\statistic\StatisticDiagnostic1\Program.cs:строка 48
+=================================================
+25.06.2015 12:52:05.092
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+25.06.2015 12:52:08.135
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+25.06.2015 12:52:08.306
+-------------------------------------------------
+!Исключение! Работа с БД
+Строка соединения: Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;
+Ошибка: Недопустимая операция. Подключение закрыто.
+System.InvalidOperationException: Недопустимая операция. Подключение закрыто.
+   в System.Data.SqlClient.SqlConnection.GetOpenConnection()
+   в System.Data.SqlClient.SqlConnection.get_Parser()
+   в System.Data.SqlClient.SqlConnection.Open()
+   в HClassLibrary.DbTSQLInterface.Connect() в D:\MyProjects\C.Net\HClassLibrary\DbTSQLInterface.cs:строка 164
+=================================================
+25.06.2015 12:52:08.322
+-------------------------------------------------
+!Отладка!: Соединение с базой установлено (Data Source=10.105.2.39,1433;Network Library=DBMSSOCN;Initial Catalog=techsite_cfg-2.X.X;User Id=client1;)
+=================================================
+25.06.2015 12:52:27.822
+-------------------------------------------------
+***************Выход из приложения...***************
