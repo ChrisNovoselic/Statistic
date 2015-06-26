@@ -567,47 +567,55 @@ namespace StatisticCommon
             table.Merge(arTable[arIndexTables[1]].Clone(), false);
 
             Type typeCol;
-            for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
+            try
             {
-                for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
+                for (i = 0; i < arTable[arIndexTables[0]].Rows.Count; i++)
                 {
-                    //Сравниваем дату/время 0 = [DATE_PBR], [DATE_ADMIN]
-                    if (arTable[arIndexTables[0]].Rows[i][0].Equals(arTable[arIndexTables[1]].Rows[j][0]))
+                    for (j = 0; j < arTable[arIndexTables[1]].Rows.Count; j++)
                     {
+                        //Сравниваем дату/время 0 = [DATE_PBR], [DATE_ADMIN]
+                        if (arTable[arIndexTables[0]].Rows[i][0].Equals(arTable[arIndexTables[1]].Rows[j][0]))
+                        {
+                            for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
+                            {
+                                table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
+                            }
+
+                            break;
+                        }
+                        else
+                            ;
+                    }
+
+                    if (!(j < arTable[arIndexTables[1]].Rows.Count))
+                    {//Не было найдено соответствия по дате ППБР и админ./данных
                         for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
                         {
-                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = arTable[arIndexTables[1]].Rows[j][k];
+                            if (k == 0) //Columns[k].ColumnName == DATE
+                                table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = table.Rows[i][k];
+                            else
+                            {
+                                typeCol = arTable[arIndexTables[1]].Columns[k].DataType;
+                                if (typeCol.IsPrimitive == true)
+                                    table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = 0;
+                                else
+                                    if (typeCol.Equals(typeof(DateTime)) == true)
+                                        table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = DateTime.MinValue;
+                                    else
+                                        if (typeCol.Equals(typeof(string)) == true)
+                                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = string.Empty;
+                                        else
+                                            throw new Exception(@"AdminTS::GetAdminValuesResponse () - неизвестный тип поля ...");
+                            }
                         }
-
-                        break;
                     }
                     else
                         ;
                 }
-
-                if (!(j < arTable[arIndexTables[1]].Rows.Count))
-                {//Не было найдено соответствия по дате ППБР и админ./данных
-                    for (k = 0; k < arTable[arIndexTables[1]].Columns.Count; k++)
-                    {
-                        if (k == 0) //Columns[k].ColumnName == DATE
-                            table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = table.Rows[i][k];
-                        else
-                        {
-                            typeCol = arTable[arIndexTables[1]].Columns[k].DataType;
-                            if (typeCol.IsPrimitive == true)
-                                table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = 0;
-                            else
-                            {
-                                if (typeCol.Equals (typeof(DateTime)) == true)
-                                    table.Rows[i][arTable[arIndexTables[1]].Columns[k].ColumnName] = DateTime.MinValue;
-                                else
-                                    throw new Exception (@"AdminTS::GetAdminValuesResponse () - неизвестный тип поля ...");
-                            }
-                        }
-                    }
-                }
-                else
-                    ;
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::GetAdminValuesResponse () - ...");
             }
 
             offsetPBRNumber = m_tableValuesResponse.Columns.IndexOf("PBR_NUMBER");
