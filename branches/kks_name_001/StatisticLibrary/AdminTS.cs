@@ -1264,7 +1264,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            Logging.Logg().Debug(@"Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_002);
+                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_002);
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
@@ -1304,16 +1304,11 @@ namespace StatisticCommon
                     switch (m_typeFields)
                     {
                         case AdminTS.TYPE_FIELDS.STATIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + serverTime.Date.ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + strPBRNumber +
-                                        @"', '" + m_sOwner_PBR +
-                                        @"', '" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', '" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', '" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"'),";
+                            ;
                             break;
                         case AdminTS.TYPE_FIELDS.DYNAMIC:
+                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + strPBRNumber, Logging.INDEX_MESSAGE.D_002);
+
                             if (!(m_curRDGValues[i].pbr < 0))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +

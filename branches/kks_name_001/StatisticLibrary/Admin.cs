@@ -116,6 +116,9 @@ namespace StatisticCommon
         /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
         /// </summary>
         protected int[,] m_arHaveDates;
+        /// <summary>
+        /// Номер ПБР в БД
+        /// </summary>
         protected int m_iHavePBR_Number;
 
         private static int m_iSeasonAction;
