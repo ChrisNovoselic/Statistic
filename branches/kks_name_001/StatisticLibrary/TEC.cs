@@ -211,7 +211,7 @@ namespace StatisticCommon
         /// <summary>
         /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
         /// </summary>
-        void OnUpdateIdLinkSource();
+        void OnUpdateIdLinkSourceTM();
         /// <summary>
         /// Установить наименования полей таблиц при обращении к БД с запросами для получения
         ///  административных значений, ПБР
@@ -389,7 +389,7 @@ namespace StatisticCommon
             return strRes;
         }
 
-        private volatile int m_IdSOTIASSOLinkSource;
+        private volatile int m_IdSOTIASSOLinkSourceTM;
         /// <summary>
         /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
         /// </summary>
@@ -397,10 +397,10 @@ namespace StatisticCommon
         /// <summary>
         /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
         /// </summary>
-        public void OnUpdateIdLinkSource ()
+        public void OnUpdateIdLinkSourceTM ()
         {
             //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
-            m_IdSOTIASSOLinkSource = EventGetTECIdLinkSource(m_id);
+            m_IdSOTIASSOLinkSourceTM = EventGetTECIdLinkSource(m_id);
         }
         /// <summary>
         /// Коструктор объекта (с параметрами)

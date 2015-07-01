@@ -10,14 +10,14 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public static void UpdateIdLinkSources ()
+        public static void UpdateIdLinkTMSources ()
         {
-            if (! (EventUpdateIdLinkSources == null))
-                EventUpdateIdLinkSources ();
+            if (! (EventUpdateIdLinkTMSources == null))
+                EventUpdateIdLinkTMSources ();
             else
                 ;
         }
-        public static event DelegateFunc EventUpdateIdLinkSources;
+        public static event DelegateFunc EventUpdateIdLinkTMSources;
 
         public enum PARAMETR_SETUP {    UNKNOWN = -1
                                         , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
@@ -34,8 +34,8 @@ namespace StatisticCommon
                                         , PANELQUICKDATA_LOGDEVIATIONEVAL
                                         //Продолжение параметров...
                                         , VALIDATE_TM_VALUE
-                                        //??? И где же универсальность
-                                        , ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+                                        ////??? И где же универсальность
+                                        //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
                                         , COUNT_PARAMETR_SETUP
                                     };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
@@ -52,8 +52,8 @@ namespace StatisticCommon
                                                             , @"ShowFactValues LogDevEVal"
                                                             //Продолжение параметров...
                                                             , @"Validate TM Value"
-                                                            //Идентификаторы прилинкованных активных источников СОТИАССО
-                                                            , @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
+                                                            ////Идентификаторы прилинкованных активных источников СОТИАССО
+                                                            //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
                                                             /*@"лог", */"сек", "сек",
@@ -117,12 +117,12 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");
 
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC, @"12");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2, @"22");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3, @"32");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4, @"42");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5, @"52");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC, @"63");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC, @"12");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2, @"22");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3, @"32");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4, @"42");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5, @"52");
+            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC, @"63");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 
@@ -222,36 +222,36 @@ namespace StatisticCommon
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
 
-        public int GetTECIdLinkSource (int id)
+        public int GetTECIdLinkSourceTM (int id)
         {
             int iRes = -1;
             PARAMETR_SETUP param = PARAMETR_SETUP.UNKNOWN;
 
-            switch (id)
-            {
-                case 1:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC;
-                    break;
-                case 2:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2;
-                    break;
-                case 3:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3;
-                    break;
-                case 4:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4;
-                    break;
-                case 5:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5;
-                    break;
-                case 6:
-                    param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC;
-                    break;
-                default:
-                    break;
-            }
+            //switch (id)
+            //{
+            //    case 1:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC;
+            //        break;
+            //    case 2:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2;
+            //        break;
+            //    case 3:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3;
+            //        break;
+            //    case 4:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4;
+            //        break;
+            //    case 5:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5;
+            //        break;
+            //    case 6:
+            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC;
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            iRes = Convert.ToInt32(m_arParametrSetup[(int)param]);
+            //iRes = Convert.ToInt32(m_arParametrSetup[(int)param]);
 
             return iRes;
         }
@@ -279,7 +279,15 @@ namespace StatisticCommon
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
             if (err == 0)
+            {
                 loadParam(false);
+
+                //???Прочитать обновляемые параметры для ТЭЦ
+
+                //???Прочитать обновляемые параметры ...
+
+                //???Куда размещать обновляемые параметры
+            }
             else
                 ;
 

@@ -247,8 +247,8 @@ namespace Statistic
 
                         foreach (TEC t in m_arPanelAdmin[i].m_list_tec)
                         {
-                            t.EventGetTECIdLinkSource += new IntDelegateIntFunc((formParameters as FormParameters_DB).GetTECIdLinkSource);
-                            t.OnUpdateIdLinkSource ();
+                            t.EventGetTECIdLinkSource += new IntDelegateIntFunc((formParameters as FormParameters_DB).GetTECIdLinkSourceTM);
+                            t.OnUpdateIdLinkSourceTM ();
                         }
                     }
 
@@ -395,7 +395,7 @@ namespace Statistic
             AdminAlarm.MSEC_ALARM_TIMERUPDATE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000;
             AdminAlarm.MSEC_ALARM_EVENTRETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
 
-            FormParameters.UpdateIdLinkSources();
+            FormParameters.UpdateIdLinkTMSources();
         }
 
         private void fTimerAppReset(object obj)
