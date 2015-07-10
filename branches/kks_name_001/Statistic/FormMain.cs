@@ -1304,7 +1304,7 @@ namespace Statistic
             настройкиСоединенияToolStripMenuItem_Click (sender, e, CONN_SETT_TYPE.LIST_SOURCE);
         }
 
-        private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
+        private void просмотрЖурналПрограммыToolStripMenuItem_Click(object sender, EventArgs e)
         {
             activateTabPage(tclTecViews.SelectedIndex, false);
 
@@ -1568,7 +1568,7 @@ namespace Statistic
 
             видToolStripMenuItem.Enabled =
             настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
-            текущееСостояниеПользовательToolStripMenuItem.Enabled =
+            просмотрЖурналПрограммыToolStripMenuItem.Enabled =
             изменитьПарольДиспетчераToolStripMenuItem.Enabled =
             изменитьПарольАдминистратораToolStripMenuItem.Enabled =
             изменитьПарольНССToolStripMenuItem.Enabled =

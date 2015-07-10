@@ -65,7 +65,7 @@ namespace Statistic
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДИсточникToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.текущееСостояниеПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.просмотрЖурналПрограммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -261,18 +261,18 @@ namespace Statistic
             // 
             // администрированиеПользовательToolStripMenuItem
             // 
-            this.текущееСостояниеПользовательToolStripMenuItem.Name = "текущееСостояниеПользовательToolStripMenuItem";
-            this.текущееСостояниеПользовательToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.текущееСостояниеПользовательToolStripMenuItem.Text = "Текущее состояние пользователей";
-            this.текущееСостояниеПользовательToolStripMenuItem.Click += new System.EventHandler(this.текущееСостояниеПользовательToolStripMenuItem_Click);
-            текущееСостояниеПользовательToolStripMenuItem.Enabled = false;
+            this.просмотрЖурналПрограммыToolStripMenuItem.Name = "просмотрЖурналПрограммыToolStripMenuItem";
+            this.просмотрЖурналПрограммыToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.просмотрЖурналПрограммыToolStripMenuItem.Text = "Просмотр журнала";
+            this.просмотрЖурналПрограммыToolStripMenuItem.Click += new System.EventHandler(this.просмотрЖурналПрограммыToolStripMenuItem_Click);
+            просмотрЖурналПрограммыToolStripMenuItem.Enabled = false;
             // 
             // администрированиеToolStripMenuItem
             // 
             this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.настройкиСоединенияБДКонфToolStripMenuItem,
             this.настройкиСоединенияБДИсточникToolStripMenuItem,
-            this.текущееСостояниеПользовательToolStripMenuItem,
+            this.просмотрЖурналПрограммыToolStripMenuItem,
             this.изменитьПарольДиспетчераToolStripMenuItem,
             this.изменитьПарольАдминистратораToolStripMenuItem,
             this.изменитьПарольНССToolStripMenuItem,
@@ -424,7 +424,7 @@ namespace Statistic
         private HTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem текущееСостояниеПользовательToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem просмотрЖурналПрограммыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
