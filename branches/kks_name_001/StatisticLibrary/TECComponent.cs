@@ -60,7 +60,7 @@ namespace StatisticCommon
         /// <summary>
         /// Перечисление - возможные состояния ТГ
         /// </summary>
-        public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
+        public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
         /// <summary>
         /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
         ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы

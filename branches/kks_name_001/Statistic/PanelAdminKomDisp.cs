@@ -267,6 +267,7 @@ namespace Statistic
             // m_panelLabelAlarm
             // 
             indx = (int)INDEX_CONTROL_UI.PANEL_ALARMSOURCES;
+            this.m_panelLabelAlarm.Dock = DockStyle.None;
             this.m_panelLabelAlarm.Enabled = false;
             this.m_panelLabelAlarm.Location = arRectControlUI[indx].Location;
             this.m_panelLabelAlarm.Size = arRectControlUI[indx].Size;
