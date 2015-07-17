@@ -115,6 +115,8 @@ namespace Statistic
             }
 
             initializeLayoutStyle(iCountSubColumns);
+
+            m_msecPeriodUpdate = 60 * 60 * 1000;
         }
 
         public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -149,7 +151,7 @@ namespace Statistic
             msecUpdate += 666666;
 
             m_evTimerCurrent = new ManualResetEvent(true);
-            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64)msecUpdate, m_msecPeriodUpdate - 1);
+            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64)msecUpdate, Timeout.Infinite);
             //Для отладки
             //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, m_msecPeriodUpdate - 1);
 
@@ -247,6 +249,11 @@ namespace Statistic
                     this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...", Logging.INDEX_MESSAGE.D_001);
+            else
+                ;
+
+            if (! (m_timerCurrent == null))
+                m_timerCurrent.Change (m_msecPeriodUpdate, Timeout.Infinite);
             else
                 ;
         }
