@@ -35,6 +35,7 @@ namespace StatisticCommon
             this.btnClose = new System.Windows.Forms.Button();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.m_lblProductVersion = new System.Windows.Forms.Label();
+            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,15 +53,15 @@ namespace StatisticCommon
             // 
             this.label1.Location = new System.Drawing.Point(66, 25);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(264, 48);
+            this.label1.Size = new System.Drawing.Size(264, 69);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\nразработчик: Качайло Михаил, e-mail" +
-    ": \r\nсоразработчик: Хряпин А.Н., e-mail:";
+            this.label1.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.\r\n\r\nразработчик: Качайло Михаил, e-ma" +
+    "il: \r\nсоразработчик: Ревякин Е.А., e-mail:\r\nсоразработчик: Хряпин А.Н., e-mail:";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(277, 36);
+            this.llblMailTo.Location = new System.Drawing.Point(277, 50);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -70,7 +71,7 @@ namespace StatisticCommon
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(161, 69);
+            this.btnClose.Location = new System.Drawing.Point(162, 97);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -81,12 +82,12 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(277, 49);
+            this.linkLabel1.Location = new System.Drawing.Point(277, 63);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(98, 13);
+            this.linkLabel1.Size = new System.Drawing.Size(81, 13);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "ChrjapinAN@itss.ru";
+            this.linkLabel1.Text = "real@tps-nsk.ru";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
             // m_lblProductVersion
@@ -99,11 +100,22 @@ namespace StatisticCommon
             this.m_lblProductVersion.TabIndex = 4;
             this.m_lblProductVersion.Text = "Product-Version";
             // 
+            // linkLabel2
+            // 
+            this.linkLabel2.AutoSize = true;
+            this.linkLabel2.Location = new System.Drawing.Point(277, 77);
+            this.linkLabel2.Name = "linkLabel2";
+            this.linkLabel2.Size = new System.Drawing.Size(98, 13);
+            this.linkLabel2.TabIndex = 5;
+            this.linkLabel2.TabStop = true;
+            this.linkLabel2.Text = "ChrjapinAN@itss.ru";
+            // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(393, 97);
+            this.ClientSize = new System.Drawing.Size(393, 126);
+            this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.m_lblProductVersion);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnClose);
@@ -130,5 +142,6 @@ namespace StatisticCommon
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.Label m_lblProductVersion;
+        private System.Windows.Forms.LinkLabel linkLabel2;
     }
 }

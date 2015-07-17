@@ -10,7 +10,37 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public class TecView : HAdmin
+    interface ITecView
+    {
+        bool Activate(bool active);
+        void ChangeState();
+        void ChangeState_SobstvNyzhdy();
+        void ClearValues();
+        void ClearValuesLastMinutesTM();
+        void CopyCurToPrevRDGValues();
+        int CountTG { get; }
+        event TecView.DelegateOnEventReg EventReg;
+        void getCurRDGValues(HAdmin source);
+        int GetIntervalOfTypeSourceData(TG.ID_TIME id_time);
+        void GetRDGValues(int mode, int indx, DateTime date);
+        void GetRetroHours();
+        void GetRetroMins();
+        void GetRetroMinTMGen();
+        void GetRetroValues();
+        void InitializeTECComponents();
+        void InitTEC(System.Collections.Generic.List<TEC> listTEC, HClassLibrary.HMark markQueries);
+        System.Collections.Generic.List<TG> listTG { get; }
+        int m_ID { get; }
+        TEC m_tec { get; }
+        void OnEventConfirm(int id_tg);
+        void Start();
+        void Stop();
+        void SuccessThreadRDGValues(int curHour, int curMinute);
+        bool WasChanged();
+        bool zedGraphHours_MouseUpEvent(int indx);
+    }
+
+    public class TecView : HAdmin, StatisticCommon.ITecView
     {
         public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, COUNT_TYPE_PANEL };
         TYPE_PANEL m_typePanel;
@@ -747,8 +777,8 @@ namespace StatisticCommon
         private int GetCurrentTMGenResponse(DataTable table)
         {
             int iRes = 0;
-            int i = -1,
-                id = -1;
+            int i = -1;
+            string kks_name = string.Empty;
             double value = -1;
             DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
                 , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
@@ -763,17 +793,14 @@ namespace StatisticCommon
                 }
             }
 
-            iRes = CheckNameFieldsOfTable(table, new string[] { @"ID", @"value", @"last_changed_at" }) == true ? 0 : -1;
+            iRes = CheckNameFieldsOfTable(table, new string[] { @"KKS_NAME", @"value", @"last_changed_at" }) == true ? 0 : -1;
             if (iRes == 0)
             {
                 for (i = 0; i < table.Rows.Count; i++)
                 {
-                    if (int.TryParse(table.Rows[i]["ID"].ToString(), out id) == false)
-                        return -1;
-                    else
-                        ;
+                    kks_name = table.Rows[i]["KKS_NAME"].ToString();
 
-                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
 
                     if (tgTmp == null)
                         return -1;
@@ -814,7 +841,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                     {
                         case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             break;
@@ -1265,7 +1292,7 @@ namespace StatisticCommon
             switch (state)
             {
                 case (int)StatesMachine.InitSensors:
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                         {
                             case StatisticCommon.TEC.TEC_TYPE.COMMON:
                             case StatisticCommon.TEC.TEC_TYPE.BIYSK:
@@ -2026,7 +2053,7 @@ namespace StatisticCommon
             else
                 ;
 
-            //switch (tec.type ()) {
+            //switch (tec.Type) {
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
@@ -3142,7 +3169,7 @@ namespace StatisticCommon
             //Цикл по ТГ 
             foreach (TG tg in listTG)
             {                
-                tgRows = table.Select(@"ID=" + tg.ids_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
+                tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
 
                 hour = -1;
                 offset_season = 0;
@@ -3201,7 +3228,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    switch (m_tec.type())
+                    switch (m_tec.Type)
                     {
                         case TEC.TEC_TYPE.COMMON:
                             break;
@@ -3439,7 +3466,7 @@ namespace StatisticCommon
 
             switch (TEC.s_SourceSOTIASSO) {
                 case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE", @"tmdelta", @"last_changed_at" };
                     break;
                 case TEC.SOURCE_SOTIASSO.AVERAGE:
                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
@@ -3560,7 +3587,7 @@ namespace StatisticCommon
             switch (TEC.s_SourceSOTIASSO)
             {
                 case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE", @"tmdelta", @"last_changed_at" };
                     break;
                 case TEC.SOURCE_SOTIASSO.AVERAGE:
                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
@@ -3758,11 +3785,11 @@ namespace StatisticCommon
 
             switch (TEC.s_SourceSOTIASSO) {
                 case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                    checkFields = new string[] { @"ID", @"value", @"tmdelta", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"value", @"tmdelta", @"last_changed_at" };
                     break;
                 case TEC.SOURCE_SOTIASSO.AVERAGE:
                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
-                    checkFields = new string[] { @"ID", @"VALUE", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE", @"last_changed_at" };
                     break;
                 default:
                     break;
@@ -3788,7 +3815,7 @@ namespace StatisticCommon
                                 //    tg.m_power_LastMinutesTM[i] = 0;
                                 //}
 
-                                tgRows = table_in.Select(@"[ID]=" + tg.id_tm);
+                                tgRows = table_in.Select(@"[KKS_NAME]='" + tg.m_strKKS_NAME_TM + @"'");
 
                                 for (i = 0; i < tgRows.Length; i++)
                                 {
@@ -3838,7 +3865,7 @@ namespace StatisticCommon
                             //    comp.m_listTG[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[ID]=" + comp.m_listTG[0].id_tm);
+                            tgRows = table_in.Select(@"[KKS_NAME]='" + comp.m_listTG[0].m_strKKS_NAME_TM + @"'");
 
                             for (i = 0; i < tgRows.Length; i++)
                             {
@@ -4164,7 +4191,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            switch (m_tec.type())
+                            switch (m_tec.Type)
                             {
                                 case TEC.TEC_TYPE.COMMON:
                                     break;
@@ -4284,6 +4311,7 @@ namespace StatisticCommon
             else {
                 for (i = 0; i < arEndInterval.Length; i++) arEndInterval[i] = DateTime.MinValue;
                 foreach (DataRow r in rowsPrevInterval) {
+                    //??? ID или KKS_NAME
                     strId = r[@"ID"].ToString();
                     if (Int32.TryParse(strId, out id) == false)
                     {
@@ -4349,8 +4377,8 @@ namespace StatisticCommon
                     for (i = 0; i < arBeginInterval.Length; i++) arBeginInterval [i] = DateTime.MaxValue;
                     for (i = 0; i < arEndInterval.Length; i++) { arEndInterval[i] = DateTime.MinValue; tgValuesEnd[i] = 0F; arDeltaEnd [i] = -1; }
 
-                    foreach (DataRow r in rowsCurInterval)
-                    {
+                    foreach (DataRow r in rowsCurInterval) {
+                        //??? ID или KKS_NAME
                         strId = r[@"ID"].ToString();
                         if (Int32.TryParse(strId, out id) == false)
                         {
@@ -4514,10 +4542,10 @@ namespace StatisticCommon
                 checkFields = new string[] { @"VALUE" };
             else
                 if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
-                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE", @"tmdelta", @"last_changed_at" };
                 else
                     if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
-                        checkFields = new string[] { @"ID", @"VALUE" };
+                        checkFields = new string[] { @"KKS_NAME", @"VALUE" };
                     else
                         ;
 
@@ -4558,12 +4586,11 @@ namespace StatisticCommon
                         else
                             if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
                             {
-                                int id = -1
-                                    ;
+                                string strId = string.Empty;
 
-                                foreach (DataRow r in table.Rows)
-                                {
-                                    if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
+                                foreach (DataRow r in table.Rows) {
+                                    //??? ID или KKS_NAME
+                                    if ((strId = r[@"ID"].ToString()).Equals (string.Empty) == true)
                                     {
                                         iRes = -31;
                                         break;
@@ -4615,10 +4642,10 @@ namespace StatisticCommon
 
             if ((TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
                 || (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE))
-                checkFields = new string[] { @"ID", @"VALUE", @"MINUTE" };
+                checkFields = new string[] { @"KKS_NAME", @"VALUE", @"MINUTE" };
             else
                 if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
-                    checkFields = new string[] { @"ID", @"VALUE", @"tmdelta", @"last_changed_at" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE", @"tmdelta", @"last_changed_at" };
                 else
                     ;
 
@@ -4646,7 +4673,7 @@ namespace StatisticCommon
 
                             foreach (string strId in listSensors)
                             {
-                                TG tg = m_tec.FindTGById (Int32.Parse (strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                                TG tg = m_tec.FindTGById (strId, TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
                                 if (tg == null) {
                                     //return -4;
                                     iRes = -4;
@@ -4685,20 +4712,14 @@ namespace StatisticCommon
                             break;
                         case TEC.SOURCE_SOTIASSO.AVERAGE:
                         case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:                        
-                            int id = -1;
+                            string kks_name = string.Empty;
                             int[] cntRecievedValues = new int[m_valuesMins.Length + 1];
                             TG tgTmp = null;
-                            Dictionary<int, TG> dictTGRecievedValues = new Dictionary<int, TG>();
+                            Dictionary<string, TG> dictTGRecievedValues = new Dictionary<string, TG>();
 
                             foreach (DataRow r in table.Rows)
                             {
-                                if (Int32.TryParse(r[@"ID"].ToString(), out id) == false)
-                                {
-                                    iRes = -31;
-                                    break;
-                                }
-                                else
-                                    ;
+                                kks_name = r[@"KKS_NAME"].ToString();
 
                                 if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
                                 {
@@ -4717,17 +4738,17 @@ namespace StatisticCommon
                                     ;
 
                                 tgTmp = null;
-                                if (dictTGRecievedValues.ContainsKey(id) == false)
+                                if (dictTGRecievedValues.ContainsKey(kks_name) == false)
                                 {
-                                    tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+                                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
 
                                     if (! (tgTmp == null))
-                                        dictTGRecievedValues.Add(id, tgTmp);
+                                        dictTGRecievedValues.Add(kks_name, tgTmp);
                                     else
                                         ;
                                 }
                                 else
-                                    tgTmp = dictTGRecievedValues[id];
+                                    tgTmp = dictTGRecievedValues[kks_name];
 
                                 if (tgTmp == null)
                                 {
@@ -4849,7 +4870,7 @@ namespace StatisticCommon
 
             switch (TEC.s_SourceSOTIASSO) {
                 case TEC.SOURCE_SOTIASSO.AVERAGE:
-                    checkFields = new string[] { @"ID", @"VALUE" };
+                    checkFields = new string[] { @"KKS_NAME", @"VALUE" };
                     break;
                 case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                     break;
@@ -4882,26 +4903,26 @@ namespace StatisticCommon
                     {
                         switch (TEC.s_SourceSOTIASSO) {
                             case TEC.SOURCE_SOTIASSO.AVERAGE:
-                                int id_tm = -1;
+                                string strIdTM = string.Empty;
                                 double val = -1F;
                                 TG tgTmp;
-                                Dictionary <int, TG> dictTGRecievedValues =  new Dictionary <int, TG> ();
+                                Dictionary <string, TG> dictTGRecievedValues =  new Dictionary <string, TG> ();
                                 
                                 foreach (DataRow r in table.Rows) {
-                                    id_tm = Int32.Parse (r[@"ID"].ToString ());
+                                    strIdTM = r[@"KKS_NAME"].ToString();
                                     
                                     tgTmp = null;
-                                    if (dictTGRecievedValues.ContainsKey(id_tm) == false)
+                                    if (dictTGRecievedValues.ContainsKey(strIdTM) == false)
                                     {
-                                        tgTmp = m_tec.FindTGById(id_tm, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+                                        tgTmp = m_tec.FindTGById(strIdTM, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
 
                                         if (! (tgTmp == null))
-                                            dictTGRecievedValues.Add(id_tm, tgTmp);
+                                            dictTGRecievedValues.Add(strIdTM, tgTmp);
                                         else
                                             ;
                                     }
                                     else
-                                        tgTmp = dictTGRecievedValues[id_tm];
+                                        tgTmp = dictTGRecievedValues[strIdTM];
 
                                     if (tgTmp == null)
                                     {

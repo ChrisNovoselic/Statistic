@@ -75,7 +75,7 @@ namespace update_pbr
                 if (arIds_TECNotUse.Contains<int>(t.m_id) == false)
                 {
                     //switch (t.m_id)
-                    switch (t.type())
+                    switch (t.Type)
                     {
                         //case 1:
                         //case 2:
@@ -97,38 +97,10 @@ namespace update_pbr
                     idListenerDB = DbSources.Sources().Register(t.connSetts[(int)CONN_SETT_TYPE.PBR], false, @"ТЭЦ=" + t.name_shr + @", DESC=" + i.ToString());
                     dbConn = DbSources.Sources().GetConnection(idListenerDB, out err);
 
-                    switch (t.type())
+                    switch (t.Type)
                     {
                         case TEC.TEC_TYPE.COMMON:
-                            query = @"UPDATE `techsite`.`PPBRvsPBRnew2014` SET ";
-
-                            for (i = 0; i < arPrefix.Length; i++)
-                            {
-                                //query += @"'" + t.prefix_pbr + @"_" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR] + @"'=";
-                                query += @"`" + t.prefix_pbr + @"_" + arPrefix[i] + @"`=";
-
-                                foreach (TECComponent tc in t.list_TECComponents)
-                                {
-                                    if ((tc.m_id > 100) && (tc.m_id < 500))
-                                    {
-                                        query += @"`" + t.NameFieldOfPBRRequest(tc) + @"_" + arPrefix[i];
-
-                                        query += @"`+";
-                                    }
-                                    else
-                                        ;
-                                }
-
-                                //Устранить лишний '+'
-                                query = query.Substring(0, query.Length - 1);
-
-                                query += @", ";
-                            }
-
-                            //Устранить лишние символы SPACE + ','
-                            query = query.Substring(0, query.Length - 2);
-
-                            query += @" WHERE `" + t.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @"`>'" + DateTime.Now.Date.ToString(@"yyyyMMdd") + @"'";
+                            throw new NotImplementedException();
 
                             Console.WriteLine(query);
                             Logging.Logg().Debug(query, Logging.INDEX_MESSAGE.NOT_SET);

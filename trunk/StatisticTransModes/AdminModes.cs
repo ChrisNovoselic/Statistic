@@ -53,6 +53,7 @@ namespace StatisticTransModes
                 m_curRDGValues[i].pmax = source.m_curRDGValues[i].pmax;
 
                 m_curRDGValues[i].pbr_number = source.m_curRDGValues[i].pbr_number;
+                m_curRDGValues[i].dtRecUpdate = source.m_curRDGValues[i].dtRecUpdate;
             }
         }
 
@@ -67,6 +68,7 @@ namespace StatisticTransModes
                 m_prevRDGValues[i].pmax = m_curRDGValues[i].pmax;
 
                 m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
+                m_prevRDGValues[i].dtRecUpdate = m_curRDGValues[i].dtRecUpdate;
             }
         }
 
@@ -80,6 +82,7 @@ namespace StatisticTransModes
             {
                 m_curRDGValues[i].pbr = m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 0.0;
                 m_curRDGValues[i].pbr_number = string.Empty;
+                m_curRDGValues[i].dtRecUpdate = DateTime.MinValue;
             }
 
             //CopyCurToPrevRDGValues();

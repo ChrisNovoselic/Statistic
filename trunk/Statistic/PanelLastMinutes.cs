@@ -567,8 +567,10 @@ namespace Statistic
                     ;
             }
 
-            public void Start()
+            public override void Start()
             {
+                base.Start ();
+
                 if (m_tecView.IsStarted == true)
                     return;
                 else
@@ -577,7 +579,7 @@ namespace Statistic
                 m_tecView.Start ();
             }
 
-            public void Stop()
+            public override void Stop()
             {
                 if (m_tecView.IsStarted == false)
                     return;
@@ -587,6 +589,8 @@ namespace Statistic
                 m_tecView.Stop();
 
                 m_tecView.ReportClear(true);
+
+                base.Stop ();
             }
 
             private void ChangeState()
@@ -597,8 +601,10 @@ namespace Statistic
                 m_tecView.ChangeState ();
             }
 
-            public void Activate(bool active)
+            public override bool Activate(bool active)
             {
+                bool bRes = base.Activate (active);
+
                 m_tecView.Activate(active);
 
                 if (m_tecView.Actived == true)
@@ -609,6 +615,8 @@ namespace Statistic
                 {
                     m_tecView.ClearStates ();
                 }
+
+                return bRes;
             }
 
             public void OnEventChangeDateTime (object obj) {

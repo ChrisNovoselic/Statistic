@@ -97,8 +97,8 @@ namespace Statistic
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
 
-            tclTecViews.OnClose += delegateOnCloseTab;
-            tclTecViews.OnFloat += delegateOnFloatTab;
+            tclTecViews.EventHTabCtrlExClose += delegateOnCloseTab;
+            tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;
         }
 
         private string GetINIParametersOfID(int id)
@@ -231,7 +231,7 @@ namespace Statistic
                         switch (i)
                         {
                             case (int)FormChangeMode.MANAGER.DISP:
-                                m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
+                                m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);                                
                                 //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
                                 ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
                                 break;
@@ -244,6 +244,12 @@ namespace Statistic
 
                         m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                         m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+
+                        foreach (TEC t in m_arPanelAdmin[i].m_list_tec)
+                        {
+                            t.EventGetTECIdLinkSource += new IntDelegateIntFunc((formParameters as FormParameters_DB).GetTECIdLinkSourceTM);
+                            t.OnUpdateIdLinkSourceTM ();
+                        }
                     }
 
                     m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
@@ -388,6 +394,8 @@ namespace Statistic
             //Параметрвы для ALARM...
             AdminAlarm.MSEC_ALARM_TIMERUPDATE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000;
             AdminAlarm.MSEC_ALARM_EVENTRETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
+
+            FormParameters.UpdateIdLinkTMSources();
         }
 
         private void fTimerAppReset(object obj)
@@ -937,6 +945,8 @@ namespace Statistic
 
             Stop ();
 
+            //??? Закрывыаются все вкладки
+            // , но 15 строк выше "админ"-ские закрываются СНОВА
             StopTabPages ();
 
             if (! (m_TCPServer == null)) {
@@ -1210,6 +1220,8 @@ namespace Statistic
             result = s_listFormConnectionSettings [(int)type].ShowDialog(this);
             if (result == DialogResult.Yes)
             {
+                //??? Закрывыаются все вкладки
+                // , но 7 строк ниже "админ"-ские закрываются СНОВА
                 StopTabPages ();
 
                 base.Stop();
@@ -1252,6 +1264,8 @@ namespace Statistic
                 {
                     StartWait();
 
+                    //??? Закрывыаются все вкладки
+                    // , но 8 строк ниже "админ"-ские закрываются СНОВА
                     StopTabPages();
 
                     if (!(m_listStandardTabs == null))
@@ -1290,7 +1304,7 @@ namespace Statistic
             настройкиСоединенияToolStripMenuItem_Click (sender, e, CONN_SETT_TYPE.LIST_SOURCE);
         }
 
-        private void текущееСостояниеПользовательToolStripMenuItem_Click(object sender, EventArgs e)
+        private void просмотрЖурналПрограммыToolStripMenuItem_Click(object sender, EventArgs e)
         {
             activateTabPage(tclTecViews.SelectedIndex, false);
 
@@ -1485,7 +1499,7 @@ namespace Statistic
                     {
                         //list_tecView_index_checked.Add(tecView_index);
 
-                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
                             parametrsTGBiysk++;
                         else
                             ;
@@ -1554,7 +1568,7 @@ namespace Statistic
 
             видToolStripMenuItem.Enabled =
             настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
-            текущееСостояниеПользовательToolStripMenuItem.Enabled =
+            просмотрЖурналПрограммыToolStripMenuItem.Enabled =
             изменитьПарольДиспетчераToolStripMenuItem.Enabled =
             изменитьПарольАдминистратораToolStripMenuItem.Enabled =
             изменитьПарольНССToolStripMenuItem.Enabled =
@@ -2091,7 +2105,7 @@ namespace Statistic
             if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 foreach (PanelTecViewBase tv in m_listStandardTabs)
-                    if (tv.m_tecView.m_tec.type() == StatisticCommon.TEC.TEC_TYPE.BIYSK)
+                    if (tv.m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
                         if (!(m_formParametersTG == null))
                             //tv.tec.parametersTGForm.ShowDialog(this);

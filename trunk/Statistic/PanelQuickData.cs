@@ -581,6 +581,7 @@ namespace Statistic
 
         //private List<System.Windows.Forms.Label> tgsName;
         private Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
+        private Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
 
         public System.Windows.Forms.Button btnSetNow;
         public DateTimePicker dtprDate;
@@ -791,6 +792,7 @@ namespace Statistic
             hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
             hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
             hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+            //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
             m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
 
             //positionYValue += 29;
@@ -837,7 +839,7 @@ namespace Statistic
         private void showTMValue(TG tg, ref double val, int min)
         {
             showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                                            , tg.id_tm
+                                            , tg.m_strKKS_NAME_TM
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes [min]
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
@@ -845,13 +847,13 @@ namespace Statistic
                                             , ref val);
         }
 
-        private void showTMValue(ref Label lbl, int tg_id, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
+        private void showTMValue(ref Label lbl, string tg_kksname, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
         {
             string text = string.Empty
                 , textNotValue = @"---";
             bool bValidateDateTime = false;
 
-            if (tg_id > 0)
+            if (tg_kksname.Length > 0)
             {
                 if (tg_val > 1)
                 {
@@ -1216,7 +1218,10 @@ namespace Statistic
                                     && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
                                     showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
                                 else
+                                {
                                     m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                    //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip (m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], @"Знач. недостоверно");
+                                }
 
                                 m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues ();
 

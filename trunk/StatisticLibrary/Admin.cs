@@ -1,21 +1,37 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-//using System.ComponentModel;
 using System.Data;
-//using System.Data.SqlClient;
-using System.Data.OleDb;
-using System.IO;
-//using MySql.Data.MySqlClient;
-using System.Threading;
 using System.Globalization;
-
+using System.Threading;
 using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public abstract class HAdmin : HHandlerDb
+    interface IHAdmin
+    {
+        void AbortThreadRDGValues(HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON reason);
+        void ClearStates();
+        void ClearValues();
+        void CopyCurToPrevRDGValues();
+        TECComponent FindTECComponent(int id);
+        void getCurRDGValues(HAdmin source);
+        string GetFmtDatetime(int h);
+        int GetPBRNumber(int indx = -1);
+        void GetRDGValues(int mode, int indx, DateTime date);
+        int GetSeasonHourOffset(int h);
+        void InitTEC(System.Collections.Generic.List<TEC> listTEC, HClassLibrary.HMark markQueries);
+        void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, HClassLibrary.TYPE_DATABASE_CFG typeCfg, HClassLibrary.HMark markQueries, bool bIgnoreTECInUse);
+        FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx);
+        void RemoveTEC(int id_tec);
+        void ResetRDGExcelValues();
+        void SetDelegateData(HClassLibrary.DelegateDateFunc s, HClassLibrary.DelegateFunc e);
+        void SetDelegateDatetime(HClassLibrary.DelegateDateFunc f);
+        void SetDelegateSaveComplete(HClassLibrary.DelegateFunc f);
+        void StartDbInterfaces();
+        bool WasChanged();
+    }
+    
+    public abstract class HAdmin : HHandlerDb, StatisticCommon.IHAdmin
     {
         public static int SEASON_BASE = 5;
         public enum seasonJumpE
@@ -58,6 +74,7 @@ namespace StatisticCommon
             public bool fc;
 
             public string pbr_number;
+            public DateTime dtRecUpdate;
         }
 
         public volatile RDGStruct[] m_prevRDGValues;
@@ -99,6 +116,9 @@ namespace StatisticCommon
         /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
         /// </summary>
         protected int[,] m_arHaveDates;
+        /// <summary>
+        /// Номер ПБР в БД
+        /// </summary>
         protected int m_iHavePBR_Number;
 
         private static int m_iSeasonAction;

@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-//using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-//using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 
 using HClassLibrary;
 using StatisticCommon;
@@ -161,8 +154,6 @@ namespace trans_gtp
                     string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
-                        string prefix_admin = @""
-                            , prefix_pbr = @"BiTEC";
                         int err = -1
                             , indx = -1
                             , indx_tec = -1;
@@ -179,9 +170,7 @@ namespace trans_gtp
                         if (! (indx_tec < 0))
                         {
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableAdminValues[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR";
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_admin = prefix_admin;
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].prefix_pbr = prefix_pbr;
+                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR"; //???
 
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
                                                 @"", //ADMIN_REC
@@ -192,28 +181,6 @@ namespace trans_gtp
                                                 @"PBR_number");
 
                             m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
-
-                            if (err == 0)
-                            {
-                                for (int c = 0; c < m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents.Count; c ++) {
-                                    if ((m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id > 100) && (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id < 500)) {
-                                        switch (m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].m_id) {
-                                            case 117:
-                                                prefix_pbr = @"TG1";
-                                                break;
-                                            case 118:
-                                                prefix_pbr = @"TG28";
-                                                break;
-                                            default:
-                                                break;
-                                        }
-                                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents [c].prefix_admin = prefix_admin;
-                                        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].list_TECComponents[c].prefix_pbr = prefix_pbr;
-                                    } else {
-                                    }
-                                }
-                            
-                            } else ; //Ошибка получения параметров соединений с БД
                         } else ;
                     } else ;
                 }
@@ -280,14 +247,14 @@ namespace trans_gtp
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr_number;
                             break;
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
-                            {
-                                //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
+                            //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
-                                valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
-                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation = value;
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation = value;
 
-                                break;
-                            }
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].dtRecUpdate;
+
+                            break;
                         case (int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD:
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value.ToString());
                             break;
@@ -320,11 +287,13 @@ namespace trans_gtp
             {
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number;
                 if (i > 0)
                     this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + m_arAdmin[indxDB].m_curRDGValues[i - 1].pbr) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
                 else
                     this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues_PBR_0) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate.ToString();
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc.ToString();
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent.ToString();
                 this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation.ToString("F2");

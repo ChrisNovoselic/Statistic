@@ -4,73 +4,127 @@ using System.Text;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// Класс для описания основного компонента ТЭЦ
+    /// </summary>
     public class TECComponentBase
     {
+        /// <summary>
+        /// Краткое наименовнаие компонента
+        /// </summary>
         public string name_shr;
+        /// <summary>
+        /// Нименование для использования в будущем (при расширении)
+        /// </summary>
         public string name_future;
+        /// <summary>
+        /// Идентификатор компонента (из БД конфигурации)
+        /// </summary>
         public int m_id;
+        /// <summary>
+        /// Индекс столбца в книге Excel со значениями РДГ для компонента (в настоящее время только для НТЭЦ-5)
+        /// </summary>
         public int m_indx_col_rdg_excel;
+        /// <summary>
+        /// Коэффициент для тонкой настройки алгоритма сигнализации
+        /// </summary>
         public decimal m_dcKoeffAlarmPcur;
 
         //Копия из 'class PanelStatisticView : PanelStatistic' - из 'PanelStatisticView' класса требуется исключть???
         public volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
         public volatile string m_SensorsString_SOTIASSO = string.Empty;        
-
+        /// <summary>
+        /// Коструктор - основной (без параметров)
+        /// </summary>
         public TECComponentBase()
         {
             m_dcKoeffAlarmPcur = -1;
         }
     }
-
+    /// <summary>
+    /// Класс для описания компонента ТЭЦ - ТГ
+    /// </summary>
     public class TG : TECComponentBase
     {
+        /// <summary>
+        /// Перечисление - идентификаторы периодов времени
+        /// </summary>
         public enum ID_TIME : int { UNKNOWN = -1, MINUTES, HOURS, COUNT_ID_TIME };
-        public enum INDEX_VALUE : int { FACT, TM, LABEL_DESC, COUNT_INDEX_VALUE };
-        public enum INDEX_TURNOnOff : int { OFF, UNKNOWN, ON };
-        
-        //public bool[] receivedMin;
-        //public bool[,] receivedHourHalf;
-        //public bool receivedHourHalf1Addon;
-        //public bool receivedHourHalf2Addon;
-
-        //public int id;
-        public int[] ids_fact; //Для особенной ТЭЦ (Бийск)
-        public int id_tm;
-        //public TECComponent m_owner;
+        /// <summary>
+        /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
+        /// </summary>
+        public enum INDEX_VALUE : int { FACT //факт.
+                                        , TM //телемеханика
+                                        , LABEL_DESC //описание (краткое наименование) ТГ
+                                        , COUNT_INDEX_VALUE }; //Количество индексов
+        /// <summary>
+        /// Перечисление - возможные состояния ТГ
+        /// </summary>
+        public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
+        /// <summary>
+        /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
+        ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
+        ///  для остальных - совпадают
+        /// </summary>
+        public int[] m_arIds_fact;
+        /// <summary>
+        /// Строковый идентификатор в СОТИАССО
+        /// </summary>
+        public string m_strKKS_NAME_TM;
+        /// <summary>
+        /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
+        /// </summary>
         public int m_id_owner_gtp,
                     m_id_owner_pc;
+        /// <summary>
+        /// Признак состояния ТГ
+        /// </summary>
         public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
-
-        //public TG(TECComponent comp)
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
         public TG()
         {
-            //m_powerMinutes = new double[21];
-
-            ids_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
+            m_arIds_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
 
             m_id_owner_gtp =
-            m_id_owner_pc = -1; //Неизвестный владелец
+            m_id_owner_pc =
+                //Неизвестный владелец
+                -1;
             m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
     }
-
+    /// <summary>
+    /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
+    /// </summary>
     public class TECComponent : TECComponentBase
     {
-        public string prefix_admin, prefix_pbr;
+        /// <summary>
+        /// Список идентификаторов в Модес-Центр
+        /// </summary>
         public List<int> m_listMCentreId;
+        /// <summary>
+        /// Список идентификаторов в Модес-Терминале
+        /// </summary>
         public List<int> m_listMTermId;
+        /// <summary>
+        /// Список ТГ
+        /// </summary>
         public List<TG> m_listTG;
+        /// <summary>
+        /// Объект ТЭЦ - "владелец" компонента
+        /// </summary>
         public TEC tec;
-
-        public TECComponent(TEC tec, string prefix_admin, string prefix_pbr)
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        public TECComponent(TEC tec)
         {
             this.tec = tec;
+
             m_listTG = new List<TG>();
             m_listMCentreId =
             m_listMTermId = null;
-
-            this.prefix_admin = prefix_admin;
-            this.prefix_pbr = prefix_pbr;
         }
     }
 }

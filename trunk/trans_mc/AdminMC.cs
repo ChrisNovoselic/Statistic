@@ -114,6 +114,7 @@ namespace trans_mc
                         if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
                         {
                             m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;
+                            m_curRDGValues[hour].dtRecUpdate = m_curRDGValues[hour - 1].dtRecUpdate;
 
                             m_curRDGValues[hour].pbr = m_curRDGValues[hour - 1].pbr;
 

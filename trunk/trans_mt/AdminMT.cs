@@ -113,6 +113,7 @@ namespace trans_mt
                                 m_curRDGValues[hour - 1].pmax = m_curRDGValues[hour - 2].pmax;
 
                                 m_curRDGValues[hour - 1].pbr_number = m_curRDGValues[hour - 2].pbr_number;
+                                m_curRDGValues[hour - 1].dtRecUpdate = m_curRDGValues[hour - 2].dtRecUpdate;
                             }
                             else {
                             }
@@ -163,6 +164,8 @@ namespace trans_mt
                         else
                             ; //m_curRDGValues[hour - 1].pbr_number = GetPBRNumber (hour);
 
+                        m_curRDGValues[hour - 1].dtRecUpdate = DateTime.MinValue;
+                        
                         m_curRDGValues[hour - 1].recomendation = 0;
                         m_curRDGValues[hour - 1].deviationPercent = false;
                         m_curRDGValues[hour - 1].deviation = 0;

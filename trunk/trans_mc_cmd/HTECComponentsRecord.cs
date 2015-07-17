@@ -72,11 +72,14 @@ namespace trans_mc_cmd
 
             if ((rec.Rows.Count == 1) && (err == 0))
             {
+                throw new NotImplementedException();
+
                 string prefix_comp = string.Empty;
 
                 foreach (KeyValuePair<int, double?[]> pair in m_srtlist_ppbr)
                 {
-                    prefix_comp = parent.GetPrefixOfId(pair.Key, false);
+                    //NotImplementedException
+                    //prefix_comp = parent.GetPrefixOfId(pair.Key, false);
 
                     for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
                     {
@@ -109,6 +112,8 @@ namespace trans_mc_cmd
 
             if (date_time > dtMskNow)
             {
+                throw new NotImplementedException ();
+
                 iId = parent.Insert48HalfHoursIfNeedAndGetId(date_time);
 
                 strRes = "UPDATE " + parent.m_strTableNamePPBR + " SET wr_date_time = '@wr_date_time', PBR_number = '@PBR_number'";
@@ -125,7 +130,8 @@ namespace trans_mc_cmd
                             bPrefixOwnerOnly = false;
                         else
                             ;
-                    prefix = parent.GetPrefixOfId(pair.Key, bPrefixOwnerOnly);
+                    //NotImplementedException
+                    //prefix = parent.GetPrefixOfId(pair.Key, bPrefixOwnerOnly);
 
                     for (MySQLtechsite.Params par = 0; par < MySQLtechsite.Params.COUNT_PARAMS; par++)
                     {

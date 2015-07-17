@@ -11,52 +11,320 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// Перечисление типов соединения с БД
+    /// </summary>
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
         DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 7
     };
-
-    public class TEC
+    /// <summary>
+    /// Интерфейс для описания ТЭЦ
+    /// </summary>
+    interface ITEC
     {
-        public enum INDEX_TYPE_SOURCE_DATA { COMMON, INDIVIDUAL, COUNT_TYPE_SOURCEDATA }; //Индивидуальные настройки для каждой ТЭЦ
-        public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA [(int)INDEX_TYPE_SOURCE_DATA.COUNT_TYPE_SOURCEDATA];
+        /// <summary>
+        /// Присвоить значения параметров соединения с источником данных
+        /// </summary>
+        /// <param name="source">Таблица со строкой с параметрами соединения</param>
+        /// <param name="type">Тип источника данных</param>
+        /// <returns>Признак результата выполнения</returns>
+        int connSettings(System.Data.DataTable source, int type);
+        /// <summary>
+        /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ
+        /// </summary>
+        /// <param name="sensors">Строка-перчисление (разделитель - запятая) идентификаторов</param>
+        /// <returns>Строка запроса</returns>
+        string currentTMRequest(string sensors);
+        /// <summary>
+        /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ (собственные нужды)
+        /// </summary>
+        /// <param name="sensors">Строка-перчисление (разделитель - запятая) идентификаторов</param>
+        /// <returns>Строка запроса</returns>
+        string currentTMSNRequest();
+        /// <summary>
+        /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
+        /// </summary>
+        event HClassLibrary.IntDelegateIntFunc EventGetTECIdLinkSource;
+        /// <summary>
+        /// Найти объект ТГ по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор ТГ в системах в соответствии с 'indxVal' и периода времени 'id_time_type'</param>
+        /// <param name="indxVal">Индекс элемента управления</param>
+        /// <param name="id_type">Период времени</param>
+        /// <returns>Объект ТГ</returns>
+        TG FindTGById(object id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_time_type);
+        /// <summary>
+        /// Возвратить содержание запроса для получения уже имеющихся административных значений
+        ///  (меток даты/времени для этих значений)
+        /// </summary>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <returns>Строка запроса</returns>
+        string GetAdminDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp);
+        /// <summary>
+        /// Возвратить содержание запроса для получения административных значений
+        /// </summary>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>        
+        /// <returns>Строка запроса</returns>
+        string GetAdminValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode);
+        /// <summary>
+        /// Возвратить содержание запроса для получения административных значений
+        /// </summary>
+        /// <param name="num_comp">Номер компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>        
+        /// <returns>Строка запроса</returns>
+        string GetAdminValueQuery(int num_comp, DateTime dt, AdminTS.TYPE_FIELDS mode);
+        /// <summary>
+        /// Возвратить содержание запроса для получения уже имеющихся значений ПБР
+        ///  (меток даты/времени для этих значений)
+        /// </summary>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <returns>Строка запроса</returns>
+        string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp);
+        /// <summary>
+        /// Возвратить содержание запроса для получения значений ПБР
+        /// </summary>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <returns>Строка запроса</returns>
+        string GetPBRValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode);
+        /// <summary>
+        /// Возвратить содержание запроса для получения значений ПБР
+        /// </summary>
+        /// <param name="num_comp">Номер компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <returns>Строка запроса</returns>
+        string GetPBRValueQuery(int num_comp, DateTime dt, AdminTS.TYPE_FIELDS mode);
+        /// <summary>
+        /// Возвратить строку-перечисление с идентификаторами
+        /// </summary>
+        /// <param name="indx">Индекс компонента (указать -1 для ТЭЦ в целом)</param>
+        /// <param name="connSettType">Тип соединения с БД</param>
+        /// <param name="indxTime">Индекс интервала времени</param>
+        /// <returns>Строка-перечисление с идентификаторами</returns>
+        string GetSensorsString(int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN);
+        /// <summary>
+        /// Возвратить содержание запроса для получения чпсовых значений АИИС КУЭ
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <returns>Строка запроса</returns>
+        string hoursFactRequest(DateTime usingDate, string sensors);
+        /// <summary>
+        /// Возвратить содержание запроса для получения часовых значений СОТИАССО
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала времени, основание при усреднении мгновенныхзначений</param>
+        /// <returns>Строка запроса</returns>
+        string hoursTMRequest(DateTime usingDate, string sensors, int interval);
+        /// <summary>
+        /// Возвратить содержание запроса для получения часовых значений СОТИАССО (собственные нужды)
+        /// </summary>
+        /// <param name="dtReq">Дата - начало интервала, запрашиваемых данных</param>
+        /// <returns>Строка запроса</returns>
+        string hoursTMSNPsumRequest(DateTime dtReq);
+        /// <summary>
+        /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="lastHour">Час в сутках для запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала времени, основание при усреднении мгновенныхзначений</param>
+        /// <returns>Строка запроса</returns>
+        string hourTMRequest(DateTime usingDate, int lastHour, string sensors, int interval);
+        /// <summary>
+        /// Инициализировать все строки-перечисдения с идентификаторами ТЭЦ
+        /// </summary>
+        void InitSensorsTEC();
+        /// <summary>
+        /// Возвратить содержание запроса для получения крайних усредненных значений СОТИАССО за каждый час в указанных сутках
+        /// </summary>
+        /// <param name="dt">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="cntHours">Количество часов в сутках</param>
+        /// <returns>Строка запроса</returns>
+        string lastMinutesTMRequest(DateTime dt, string sensors, int cntHours);
+        /// <summary>
+        /// Признак инициализации строки с идентификаторами ТГ
+        /// </summary>
+        bool m_bSensorsStrings { get; }
+        /// <summary>
+        /// Путь для размещения с файлом-книгой MS Excel
+        ///  со значениями РДГ на уровне ТГ (НСС)
+        /// </summary>
+        string m_path_rdg_excel { get; set; }
+        /// <summary>
+        /// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
+        /// </summary>
+        int m_timezone_offset_msc { get; set; }
+        /// <summary>
+        /// Возвратить содержание запроса к источнику данных для получения 3-х мин значений в АИИС КУЭ
+        /// </summary>
+        /// <param name="usingDate">Дата - начальная для интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час в сутках, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <returns>Строка запроса</returns>
+        string minsFactRequest(DateTime usingDate, int hour, string sensors);
+        /// <summary>
+        /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час за который требуется получить данные</param>
+        /// <param name="sensors">Строка-перечисление для </param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
+        string minsTMRequest(DateTime usingDate, int hour, string sensors, int interval);
+        /// <summary>
+        /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
+        ///  , усреденнеие производится СУБД
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час за который требуется получить данные</param>
+        /// <param name="min">Номер интервала усреднения</param>
+        /// <param name="sensors">Строка-перечисление для </param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
+        string minTMAverageRequest(DateTime usingDate, int hour, int min, string sensors, int interval);
+        /// <summary>
+        /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
+        ///  , усреднение производится в ~ от установленного режима
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="h">Час за который требуется получить данные</param>
+        /// <param name="m">Номер интервала усреднения</param>
+        /// <param name="sensors">Строка-перечисление для идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
+        string minTMRequest(DateTime usingDate, int h, int m, string sensors, int interval);
+        /// <summary>
+        /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
+        /// </summary>
+        void OnUpdateIdLinkSourceTM();
+        /// <summary>
+        /// Установить наименования полей таблиц при обращении к БД с запросами для получения
+        ///  административных значений, ПБР
+        /// </summary>
+        /// <param name="admin_datetime">Наименование поля с меткой даты/времени значения в таблице с административными значениями</param>
+        /// <param name="admin_rec">Наименование поля со значеними рекомендаций в таблице с административными значениями</param>
+        /// <param name="admin_is_per">Наименование поля признака процент/значение для поля отклонение в таблице с административными значениями</param>
+        /// <param name="admin_diviat">Наименование поля со значениями отклонений в таблице с административными значениями</param>
+        /// <param name="pbr_datetime">Наименование поля с меткой даты/времени значения в таблице с ПБР</param>
+        /// <param name="ppbr_vs_pbr">Наименование поля со значениями целевой величины в таблице с ПБР</param>
+        /// <param name="pbr_number">Наименование поля со значениями номеров ПБР в таблице с ПБР</param>
+        void SetNamesField(string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat, string pbr_datetime, string ppbr_vs_pbr, string pbr_number);
+        /// <summary>
+        /// Вернуть тип ТЭЦ
+        /// </summary>
+        /// <returns>Тип ТЭЦ</returns>
+        TEC.TEC_TYPE Type{ get; }
+    }
+    /// <summary>
+    /// Класс описания ТЭЦ
+    /// </summary>
+    public class TEC : StatisticCommon.ITEC
+    {
+        /// <summary>
+        /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
+        ///  только для АИИС КУЭ, СОТИАССО
+        /// </summary>
+        public enum INDEX_TYPE_SOURCE_DATA { COMMON, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA };
+        /// <summary>
+        /// Массив типов источников данных (только для АИИС КУЭ, СОТИАССО)
+        /// </summary>
+        public INDEX_TYPE_SOURCE_DATA[] m_arTypeSourceData = new INDEX_TYPE_SOURCE_DATA[(int)(CONN_SETT_TYPE.DATA_SOTIASSO - CONN_SETT_TYPE.DATA_AISKUE + 1)];
+        /// <summary>
+        /// Массив типов интерфейсов к источникам данных
+        ///  утратил актуальность при переходе к сборке
+        /// </summary>
         public DbInterface.DB_TSQL_INTERFACE_TYPE[] m_arInterfaceType = new DbInterface.DB_TSQL_INTERFACE_TYPE[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-
+        /// <summary>
+        /// Перечисление - индексы полей в результирующей таблице
+        ///  при обработке запроса ПБР, административных значений
+        /// </summary>
         public enum INDEX_NAME_FIELD { ADMIN_DATETIME, REC, IS_PER, DIVIAT,
                                         PBR_DATETIME, PBR, PBR_NUMBER, 
                                         COUNT_INDEX_NAME_FIELD};
+        /// <summary>
+        /// Перечисление - типы ТЭЦ
+        ///  Бийская ТЭЦ - "особенная" с отличными от других АИИС КУЭ, СОТИАССО
+        /// </summary>
         public enum TEC_TYPE { COMMON, BIYSK };
-
+        /// <summary>
+        /// Идентификатор ТЭЦ (из БД конфигурации)
+        /// </summary>
         public int m_id;
-        public string name_shr,
-                    prefix_admin, prefix_pbr;
+        /// <summary>
+        /// Краткое наименование
+        /// </summary>
+        public string name_shr;
+        /// <summary>
+        /// Массив наименований таблиц со значениями ПБР, административными значениями
+        /// </summary>
         public string [] m_arNameTableAdminValues, m_arNameTableUsedPPBRvsPBR;
+        /// <summary>
+        /// Список наименований полей
+        /// </summary>
         public List <string> m_strNamesField;
-
+        /// <summary>
+        /// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
+        /// </summary>
         public int m_timezone_offset_msc { get; set; }
+        /// <summary>
+        /// Путь для размещения с файлом-книгой MS Excel
+        ///  со значениями РДГ на уровне ТГ (НСС)
+        /// </summary>
         public string m_path_rdg_excel { get; set;}
+        /// <summary>
+        /// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
+        /// </summary>
         public string m_strTemplateNameSgnDataTM,
                     m_strTemplateNameSgnDataFact;
-
+        /// <summary>
+        /// Список компонентов для ТЭЦ
+        /// </summary>
         public List<TECComponent> list_TECComponents;
-
+        /// <summary>
+        /// Список ТГ для ТЭЦ
+        /// </summary>
         public List<TG> m_listTG;
+        /// <summary>
+        /// Строка-перечисление (разделитель - запятая) с идентификаторами ТГ в системе СОТИАССО
+        /// </summary>
         protected volatile string m_SensorsString_SOTIASSO = string.Empty;
-        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
-
+        /// <summary>
+        /// Массив строк-перечислений (разделитель - запятая) с идентификаторами ТГ в системе АИИС КУЭ
+        ///  массив для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
+        /// </summary>
+        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty };
+        /// <summary>
+        /// Перечисление - индексы возможных вариантов усреднения "мгновенных" значений
+        /// </summary>
         public enum SOURCE_SOTIASSO { AVERAGE, INSATANT_APP, INSATANT_TSQL };
+        /// <summary>
+        /// Вариант текущего усреднения "мгновенных" значений
+        /// </summary>
         public static SOURCE_SOTIASSO s_SourceSOTIASSO = SOURCE_SOTIASSO.AVERAGE;
-
-        public TEC_TYPE type() { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; }
-
+        /// <summary>
+        /// Вернуть тип ТЭЦ
+        /// </summary>
+        /// <returns>Тип ТЭЦ</returns>
+        public TEC_TYPE Type { get { if (name_shr.IndexOf("Бийск") > -1) return TEC_TYPE.BIYSK; else return TEC_TYPE.COMMON; } }
+        /// <summary>
+        /// Массив с параметрами соединения для источников данных
+        /// </summary>
         public ConnectionSettings [] connSetts;        
-
-        //private DbInterface [] m_arDBInterfaces; //Для данных (SQL сервер)
-
-        //public FormParametersTG parametersTGForm;
-
         /// <summary>
         /// Признак инициализации строки с идентификаторами ТГ
         /// </summary>
@@ -75,11 +343,17 @@ namespace StatisticCommon
                 return bRes;
             }
         }
-
+        /// <summary>
+        /// Возвратить строку-перечисление с идентификаторами
+        /// </summary>
+        /// <param name="indx">Индекс компонента (указать -1 для ТЭЦ в целом)</param>
+        /// <param name="connSettType">Тип соединения с БД</param>
+        /// <param name="indxTime">Индекс интервала времени</param>
+        /// <returns>Строка-перечисление с идентификаторами</returns>
         public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
             string strRes = string.Empty;
 
-            if (indx < 0) {
+            if (indx < 0) { // для ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -95,7 +369,7 @@ namespace StatisticCommon
                         break;
                 }
             }
-            else {
+            else { // для компонета ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -115,7 +389,28 @@ namespace StatisticCommon
             return strRes;
         }
 
-        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, string prefix_admin, string prefix_pbr, bool bUseData) {
+        private volatile int m_IdSOTIASSOLinkSourceTM;
+        /// <summary>
+        /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
+        /// </summary>
+        public event IntDelegateIntFunc EventGetTECIdLinkSource;
+        /// <summary>
+        /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
+        /// </summary>
+        public void OnUpdateIdLinkSourceTM ()
+        {
+            //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
+            m_IdSOTIASSOLinkSourceTM = EventGetTECIdLinkSource(m_id);
+        }
+        /// <summary>
+        /// Коструктор объекта (с параметрами)
+        /// </summary>
+        /// <param name="id">Идентификатр ТЭЦ</param>
+        /// <param name="name_shr">Краткое наименование</param>
+        /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
+        /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
+        /// <param name="bUseData">Признак создания объекта</param>
+        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
@@ -135,16 +430,22 @@ namespace StatisticCommon
             //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin;
             //this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
 
-            //Сохранить составные части наимнований полей
-            this.prefix_admin = prefix_admin; this.prefix_pbr = prefix_pbr;
-
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
-            for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
-            
+            for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);           
         }
-
+        /// <summary>
+        /// Установить наименования полей таблиц при обращении к БД с запросами для получения
+        ///  административных значений, ПБР
+        /// </summary>
+        /// <param name="admin_datetime">Наименование поля с меткой даты/времени значения в таблице с административными значениями</param>
+        /// <param name="admin_rec">Наименование поля со значеними рекомендаций в таблице с административными значениями</param>
+        /// <param name="admin_is_per">Наименование поля признака процент/значение для поля отклонение в таблице с административными значениями</param>
+        /// <param name="admin_diviat">Наименование поля со значениями отклонений в таблице с административными значениями</param>
+        /// <param name="pbr_datetime">Наименование поля с меткой даты/времени значения в таблице с ПБР</param>
+        /// <param name="ppbr_vs_pbr">Наименование поля со значениями целевой величины в таблице с ПБР</param>
+        /// <param name="pbr_number">Наименование поля со значениями номеров ПБР в таблице с ПБР</param>
         public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
                                     string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
             //INDEX_NAME_FIELD.ADMIN_DATETIME
@@ -158,46 +459,39 @@ namespace StatisticCommon
 
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
-
-        public static string AddSensor(string prevSensors, int sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
+        /// <summary>
+        /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ
+        /// </summary>
+        /// <param name="prevSensors">Строка-перечисление (разделитель - запятая)</param>
+        /// <param name="sensor">Идентификатор</param>
+        /// <param name="typeTEC">Тип ТЭЦ (Бийская ТЭЦ + остальные)</param>
+        /// <param name="typeSourceData">Тип источника данных</param>
+        /// <returns>Строка-перечисление с добавленным идентификатором</returns>
+        public static string AddSensor(string prevSensors, object sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
         {
             string strRes = prevSensors;
-
+            //Признак необходимости использовать кавычки для строковых идентификаторов
+            string strQuote = sensor.GetType().IsPrimitive == true ? string.Empty : @"'";
+            //Проверить наличие уже добавленных идентификаторов
             if (prevSensors.Equals(string.Empty) == false)
+                //При добавленных - установить перед очередным идентификатором разделитель (запятая, т.к. TSQL)
                 switch (typeSourceData)
                 {
                     case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
                         //Общий источник для всех ТЭЦ
                         strRes += @", "; //@" OR ";
                         break;
-                    case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                        //Источник для каждой ТЭЦ свой
-                        strRes += @" OR ";
-                        break;
                     default:
                         break;
                 }
             else
-                ;
-
+                ; //Ничего не выполнять
+            //Добавить идентификатор
             switch (typeSourceData)
             {
                 case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
-                    //Общий источник для всех ТЭЦ
-                    strRes += sensor.ToString();
-                    break;
-                case TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Источник для каждой ТЭЦ свой
-                    switch (typeTEC)
-                    {
-                        case TEC.TEC_TYPE.BIYSK:
-                            strRes += @"[dbo].[IZM_TII].[IDCHANNEL] = " + sensor.ToString();
-                            break;
-                        case TEC.TEC_TYPE.COMMON:
-                        default:
-                            strRes += @"[dbo].[SENSORS].[ID] = " + sensor.ToString();
-                            break;
-                    }
+                    //Общий источник для всех ТЭЦ                    
+                    strRes += strQuote + sensor.ToString() + strQuote;
                     break;
                 default:
                     break;
@@ -205,8 +499,14 @@ namespace StatisticCommon
 
             return strRes;
         }
-
-        public TG FindTGById(int id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_type)
+        /// <summary>
+        /// Найти объект ТГ по идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор ТГ в системах в соответствии с 'indxVal' и периода времени 'id_time_type'</param>
+        /// <param name="indxVal">Индекс элемента управления</param>
+        /// <param name="id_type">Период времени</param>
+        /// <returns>Объект ТГ</returns>
+        public TG FindTGById(object id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_time_type)
         {
             int i = -1;
             
@@ -215,13 +515,13 @@ namespace StatisticCommon
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if (list_TECComponents[i].m_listTG [0].ids_fact[(int)id_type] == id)
+                            if (list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)id_time_type] == (int)id)
                                 return list_TECComponents[i].m_listTG[0];
                             else
                                 ;
                             break;
                         case TG.INDEX_VALUE.TM:
-                            if (list_TECComponents[i].m_listTG[0].id_tm == id)
+                            if (list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM.Equals((string)id) == true)
                                 return list_TECComponents[i].m_listTG[0];
                             else
                                 ;
@@ -236,10 +536,13 @@ namespace StatisticCommon
 
             return null;
         }
-
+        /// <summary>
+        /// Инициализировать все строки-перечисдения с идентификаторами ТЭЦ
+        /// </summary>
         public void InitSensorsTEC () {
             int i = -1
                 , j = -1;
+            TEC_TYPE type = Type;
 
             if (m_listTG == null)
                 m_listTG = new List<TG> ();
@@ -252,31 +555,74 @@ namespace StatisticCommon
                 m_SensorsStrings_ASKUE [(int)TG.ID_TIME.HOURS] = m_SensorsStrings_ASKUE [(int)TG.ID_TIME.MINUTES] = string.Empty;
 
             m_SensorsString_SOTIASSO = string.Empty;
-
+            //Цикл по всем компонентам ТЭЦ
             for (i = 0; i < list_TECComponents.Count; i++) {
+                //Проверить тип компонента
                 if ((list_TECComponents [i].m_id > 1000) && (list_TECComponents [i].m_id < 10000)) {
+                    //Только для ТГ
                     m_listTG.Add(list_TECComponents[i].m_listTG[0]);
-
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[0].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[0].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
+                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                                                                    , type
+                                                                    , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
+                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
+                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                                                                    , type
+                                                                    , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
+                    m_SensorsString_SOTIASSO = AddSensor(m_SensorsString_SOTIASSO
+                                                        , list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM
+                                                        , type
+                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
+                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                                                                                                , type
+                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
+                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                                                                                                , type
+                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
+                    list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
+                                                                                , list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM
+                                                                                , type
+                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                 }
                 else
-                {
+                {//Для остальных (ГТП, Б(Гр)ЩУ) компонентов
+                    //Цикл по ТГ компонента
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.HOURS], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES], list_TECComponents[i].m_listTG[j].ids_fact[(int)TG.ID_TIME.MINUTES], type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO, list_TECComponents[i].m_listTG[j].id_tm, type(), m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    }
+                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
+                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                                                                                                        , type
+                                                                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = AddSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
+                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                                                                                                        , type
+                                                                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)
+                        list_TECComponents[i].m_SensorsString_SOTIASSO = AddSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
+                                                                                , list_TECComponents[i].m_listTG[j].m_strKKS_NAME_TM
+                                                                                , type
+                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                    } // - Цикл по ТГ компонента
                 }
-            }
+            } // - Цикл по всем компонентам ТЭЦ
         }
-
-        public int connSettings (DataTable source, int type) {
+        /// <summary>
+        /// Присвоить значения параметров соединения с источником данных
+        /// </summary>
+        /// <param name="source">Таблица со строкой с параметрами соединения</param>
+        /// <param name="type">Тип источника данных</param>
+        /// <returns>Признак результата выполнения</returns>
+        public int connSettings (DataTable source, int type)
+        {
             int iRes = 0;
 
             connSetts[type] = new ConnectionSettings(source.Rows[0], -1);
@@ -287,7 +633,7 @@ namespace StatisticCommon
                     m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
                 }
                 else
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.INDIVIDUAL;
+                    ; //??? throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...")
             else
                 ;
 
@@ -295,7 +641,11 @@ namespace StatisticCommon
 
             return iRes;
         }
-
+        /// <summary>
+        /// Возвратить строку-перечисление с идентификаторами для ТЭЦ в целом или ее компонентов
+        /// </summary>
+        /// <param name="num_comp">Номер (индекс) компонента (для ТЭЦ = -1)</param>
+        /// <returns></returns>
         private string idComponentValueQuery (int num_comp) {
             string strRes = string.Empty;
 
@@ -332,71 +682,20 @@ namespace StatisticCommon
 
             return strRes;
         }
-
-        //Вызывается только для БД со статическими полями (старый формат)
-        private string selectPBRValueQuery(TECComponent g)
-        {
-            string strRes = string.Empty;
-
-            if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
-                if (g.prefix_pbr.Length > 0)
-                {
-                    //selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                    //            strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmin";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + g.prefix_pbr + @"_" + "Pmax";
-                }
-                else
-                {
-                    //selectAdmin += strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                    //            strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                    strRes += m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + prefix_pbr + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR] + " AS PBR";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmin";
-                    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_pbr + @"_" + "Pmax";
-                }
-            else
-                ;
-
-            return strRes;
-        }
-
+        /// <summary>
+        /// Возврвтить содержание запроса для получения ПБР
+        /// </summary>
+        /// <param name="selectPBR">Перечисление-наименования полей (разделитель - точка с запятой)</param>
+        /// <param name="dt">Дата/время - начальное для интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей БД значений (в наст./время не актуальный - используется режим 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <returns>Строка с запросом</returns>
         private string pbrValueQuery(string selectPBR, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {//??? проблема с форматом строки дата/время. MS SQL: 'yyyyMMdd HH:mm:ss', MySql: 'yyyy-MM-dd HH:mm:ss'
             string strRes = string.Empty;
 
             switch (mode)
             {
-                case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT " +
-                        //strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
-                        m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR";
-
-                    if (selectPBR.Length > 0)
-                        strRes += @", " + selectPBR;
-                    else
-                        ; //Для Бийска нет ПБР
-
-                    //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR].Length > 0)
-                    //    strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-                    //else
-                    //    ;
-                    
-                    if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
-                        strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
-                    else
-                        ;
-                    strRes += @" " + @"FROM " +
-                        /*strUsedAdminValues*/ m_arNameTableUsedPPBRvsPBR[(int)mode] +
-                        @" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                        @" AND " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                        //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
-                        @" AND DATEPART(n," + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0" +
-                        //@" AND " + strUsedPPBRvsPBR + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " IS NULL" +
-                        @" ORDER BY DATE_PBR" +
-                        @" ASC";
+                case AdminTS.TYPE_FIELDS.STATIC:                    
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT " +
@@ -448,63 +747,12 @@ namespace StatisticCommon
 
             return strRes;
         }
-
-        //public string sensorsFactRequest()
-        //{
-        //    string request = string.Empty;
-
-        //    switch (s_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_ASKUE - (int)CONN_SETT_TYPE.DATA_ASKUE]) {
-        //        case INDEX_TYPE_SOURCE_DATA.COMMON:
-        //            request = @"SELECT [SENSORS_NAME] as NAME, [ID] FROM [dbo].[ID_PARAM_Piramida2000] WHERE [ID_TEC]=" + m_id;
-        //            break;
-        //        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-        //            request = @"SELECT DISTINCT SENSORS.NAME, SENSORS.ID " +
-        //                    @"FROM DEVICES " +
-        //                    @"INNER JOIN SENSORS ON " +
-        //                    @"DEVICES.ID = SENSORS.STATIONID " +
-        //                    @"INNER JOIN DATA ON " +
-        //                    @"DEVICES.CODE = DATA.OBJECT AND " +
-        //                    @"SENSORS.CODE = DATA.ITEM " +
-        //                    @"WHERE DATA.PARNUMBER = 12 AND " + //Можно и '2' употреблять
-        //                        //@"SENSORS.NAME LIKE 'ТГ%P%+'";
-        //                    @"SENSORS.NAME LIKE '" + m_strTemplateNameSgnDataFact + @"'";
-        //            break;
-        //        default:
-        //            break;
-        //    }
-
-        //    return request;
-        //}
-
-        //public string sensorsTMRequest()
-        //{
-        //    string query = string.Empty;
-        //    List <int> ids = new List<int> ();
-
-        //    switch (s_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT - (int)CONN_SETT_TYPE.DATA_ASKUE])
-        //    {
-        //        case INDEX_TYPE_SOURCE_DATA.COMMON:
-        //            //Общий источник для всех ТЭЦ
-        //            query = @"SELECT [name] as NAME, [TEMPLATE_NAME_SGN_DATA_TM] as TEMPLATE_NAME, [ID_IN_REALS_RV] as ID FROM [dbo].[v_ALL_PARAM_TG] WHERE [ID_TG] IN (";
-        //            foreach (TECComponent tc in list_TECComponents)
-        //            {
-        //                if ((tc.m_id > 1000) && (tc.m_id < 10000) && (ids.IndexOf(tc.m_id) < 0))
-        //                    query += tc.m_id + @", ";
-        //                else
-        //                    ;
-        //            }
-        //            query = query.Substring(0, query.Length - 2);
-        //            query += @")";
-        //            break;
-        //        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-        //            //Источник для каждой ТЭЦ свой
-        //            query = @"SELECT [NAME], [ID] FROM [dbo].[reals_rv] WHERE [NAME] LIKE '" + m_strTemplateNameSgnDataTM + @"'";
-        //            break;
-        //    }
-            
-        //    return query;
-        //}
-
+        /// <summary>
+        /// Возвратить содержание запроса к общему(центральному) источнику данных для получения 3-х мин значений в АИИС КУЭ
+        /// </summary>
+        /// <param name="dt">Дата/время - начальное для интервала, запрашиваемых данных</param>
+        /// <param name="sen">Строка-перечисление идентификаторов</param>
+        /// <returns>Строка запроса</returns>
         private string minsFactCommonRequest (DateTime dt, string sen) {
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 2 + @"," +
@@ -517,7 +765,13 @@ namespace StatisticCommon
                                 @")" +
                                 @" ORDER BY DATA_DATE";
         }
-        
+        /// <summary>
+        /// Возвратить содержание запроса к источнику данных для получения 3-х мин значений в АИИС КУЭ
+        /// </summary>
+        /// <param name="usingDate">Дата - начальная для интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час в сутках, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <returns>Строка запроса</returns>
         public string minsFactRequest(DateTime usingDate, int hour, string sensors)
         {
             if (hour == 24)
@@ -528,30 +782,13 @@ namespace StatisticCommon
             usingDate = usingDate.Date.AddHours(hour);
             string request = string.Empty;
 
-            switch (type())
+            switch (Type)
             {
                 case TEC.TEC_TYPE.COMMON:
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsFactCommonRequest (usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                            request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
-                                     @"FROM DEVICES " +
-                                     @"INNER JOIN SENSORS ON " +
-                                     @"DEVICES.ID = SENSORS.STATIONID " +
-                                     @"INNER JOIN DATA ON " +
-                                     @"DEVICES.CODE = DATA.OBJECT AND " +
-                                     @"SENSORS.CODE = DATA.ITEM AND " +
-                                     @"DATA.DATA_DATE >= '" + usingDate.ToString("yyyy.MM.dd HH:00:00") +
-                                     @"' AND " +
-                                     @"DATA.DATA_DATE <= '" + usingDate.AddHours(1).ToString("yyyy.MM.dd HH:00:00") +
-                                     @"' " +
-                                     @"WHERE DATA.PARNUMBER = 2 AND (" + sensors +
-                                     @") " +
-                                     @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                             break;
                         default:
                             break;
@@ -562,22 +799,6 @@ namespace StatisticCommon
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = minsFactCommonRequest(usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                                     @"FROM IZM_TII " +
-                                     @"INNER JOIN CHANNELS ON " +
-                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                                     @"INNER JOIN DEVICES ON " +
-                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                                     @"IZM_TII.TIME >= '" + usingDate.ToString("yyyyMMdd HH:00:00") +
-                                     @"' AND " +
-                                     @"IZM_TII.TIME <= '" + usingDate.AddHours(1).ToString("yyyyMMdd HH:00:00") +
-                                     @"' WHERE IZM_TII.PERIOD = 180 AND " +
-                                     @"IZM_TII.IDCHANNEL IN(" + sensors +
-                                     @") " +
-                                     @"ORDER BY IZM_TII.TIME";
                             break;
                         default:
                             break;
@@ -590,7 +811,16 @@ namespace StatisticCommon
 
             return request;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
+        ///  , усреденнеие производится СУБД
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час за который требуется получить данные</param>
+        /// <param name="min">Номер интервала усреднения</param>
+        /// <param name="sensors">Строка-перечисление для идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
         public string minTMAverageRequest(DateTime usingDate, int hour, int min, string sensors, int interval)
         {
             if (hour == 24)
@@ -602,16 +832,25 @@ namespace StatisticCommon
 
             DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes(interval * (min - 1));
 
-            return @"SELECT [ID], AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
-                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+            return @"SELECT [KKS_NAME], AVG([Value]) as [VALUE], COUNT (*) as [CNT]"
+                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0_KKS]"
+                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                         + @" AND [Value] > 1"
                                         //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                         + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
-                                    + @" GROUP BY [ID]";
+                                    + @" GROUP BY [KKS_NAME]";
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
+        ///  , усреднение производится в ~ от установленного режима
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="h">Час за который требуется получить данные</param>
+        /// <param name="m">Номер интервала усреднения</param>
+        /// <param name="sensors">Строка-перечисление для идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
         public string minTMRequest(DateTime usingDate, int h, int m, string sensors, int interval)
         {
             int hour= -1, min = -1;
@@ -640,39 +879,28 @@ namespace StatisticCommon
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
                             request =   
                                 //--Привести дату/время к МСК (добавить разность с UTC)
-                                @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-			                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
+                                @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                 ;
                         else
                             if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
-                                request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
+                                request = @"SELECT [KKS_NAME], SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
 	                                    + @" FROM ("
                                             //--Привести дату/время к МСК (добавить разность с UTC)
-                                            + @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-			                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" +  sensors + @")"
+                                            + @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                                 //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString (@"yyyyMMdd HH:mm:00.000") + @"')"
                                                 + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes (interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                             + @" ) as S0"
-                                        + @" GROUP BY S0.[ID]";
+                                        + @" GROUP BY S0.[KKS_NAME]";
                             else
                                 ;
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    switch (type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC_TYPE.BIYSK:
-                            break;
-                        default:
-                            break;
-                    }
                     break;
                 default:
                     break;
@@ -682,7 +910,14 @@ namespace StatisticCommon
 
             return request;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="hour">Час за который требуется получить данные</param>
+        /// <param name="sensors">Строка-перечисление для </param>
+        /// <param name="interval">Идентификатор интервала усреднения</param>
+        /// <returns>Строка запроса</returns>
         public string minsTMRequest(DateTime usingDate, int hour, string sensors, int interval)
         {
             if (hour == 24)
@@ -709,62 +944,51 @@ namespace StatisticCommon
                         //    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                         //        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                         //Вариант №2
-                        @"SELECT [ID] as [ID], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
+                        @"SELECT [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
 	                        + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
 	                        + @", (DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) / " + interval + @") as [MINUTE]"
                         + @" FROM ("
-	                        + @"SELECT [ID] as [ID], [Value] as [VALUE], [tmdelta] as [tmdelta]"
+                            + @"SELECT [KKS_NAME] as [KKS_NAME], [Value] as [VALUE], [tmdelta] as [tmdelta]"
 		                        + @", DATEADD (MINUTE, - DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) % " + interval + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [last_changed_at]"
-	                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+	                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0_KKS]"
+                            + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                 + @" AND [Value] > 1"
 		                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                      + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                         + @") t0"
-                        + @" GROUP BY [ID], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]), DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
-                        + @" ORDER BY [last_changed_at], [ID]"
+                        + @" GROUP BY [KKS_NAME], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]), DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
+                        + @" ORDER BY [last_changed_at], [KKS_NAME]"
                         ;
                     else
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
                             request = //--Привести дату/время к МСК (добавить разность с UTC)
-                                      @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                      + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-                                      + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                      @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                      + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                      + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                         //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                         + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                     ;
                         else
                             if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_TSQL)
-                                request = @"SELECT [ID]," +
+                                request = @"SELECT [KKS_NAME],"
                                             //--AVG ([value]) as VALUE
-                                            @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]" +
-                                            @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]" +
-                                            @" FROM (" +
-                                                    //--Привести дату/время к МСК (добавить разность с UTC)
-                                                @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
-                                                    @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
-                                                    @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
+                                            + @" SUM([Value]*[tmdelta])/SUM([tmdelta]) AS [Value]"
+                                            + @", (DATEPART(MINUTE, [last_changed_at])) as [MINUTE]"
+                                            + @" FROM ("
+                                                //--Привести дату/время к МСК (добавить разность с UTC)
+                                                + @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
-                                                    @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"')" +
-                                                        @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')" +
-                                            @") as S0" +
-                                            @" GROUP BY S0.[ID], DATEPART(MINUTE, S0.[last_changed_at])" +
-                                            @" ORDER BY [MINUTE]";
+                                                    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"')"
+                                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                            + @") as S0"
+                                            + @" GROUP BY S0.[KKS_NAME], DATEPART(MINUTE, S0.[last_changed_at])"
+                                            + @" ORDER BY [MINUTE]";
                             else
                                 ;
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    switch (type())
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC_TYPE.BIYSK:
-                            break;
-                        default:
-                            break;
-                    }
                     break;
                 default:
                     break;
@@ -783,35 +1007,23 @@ namespace StatisticCommon
                                 @")" +
                                 @" ORDER BY DATA_DATE";
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения чпсовых значений АИИС КУЭ
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <returns>Строка запроса</returns>
         public string hoursFactRequest(DateTime usingDate, string sensors)
         {
             string request = string.Empty;
 
-            switch (type())
+            switch (Type)
             {
                 case TEC.TEC_TYPE.COMMON:
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursFactCommonRequest(usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER, DATA.VALUE0, DATA.DATA_DATE, SENSORS.ID, DATA.SEASON " +
-                            request = @"SELECT SENSORS.ID, DATA.DATA_DATE, DATA.SEASON, DATA.VALUE0 " + //, DEVICES.NAME, DATA.OBJECT, SENSORS.NAME, DATA.ITEM, DATA.PARNUMBER " +
-                                        @"FROM DEVICES " +
-                                        @"INNER JOIN SENSORS ON " +
-                                        @"DEVICES.ID = SENSORS.STATIONID " +
-                                        @"INNER JOIN DATA ON " +
-                                        @"DEVICES.CODE = DATA.OBJECT AND " +
-                                        @"SENSORS.CODE = DATA.ITEM AND " +
-                                        @"DATA.DATA_DATE > '" + usingDate.ToString("yyyy.MM.dd") +
-                                        @"' AND " +
-                                        @"DATA.DATA_DATE <= '" + usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                                        @"' " +
-                                        @"WHERE DATA.PARNUMBER = 12 AND (" + sensors +
-                                        @") " +
-                                        @"ORDER BY DATA.DATA_DATE, DATA.SEASON";
                             break;
                         default:
                             break;
@@ -822,24 +1034,6 @@ namespace StatisticCommon
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
                             request = hoursFactCommonRequest(usingDate, sensors);
-                            break;
-                        case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                            //request = @"SELECT IZM_TII.IDCHANNEL, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME, IZM_TII.VALUE_UNIT, IZM_TII.TIME, IZM_TII.WINTER_SUMMER " +
-                            request = @"SELECT IZM_TII.IDCHANNEL AS ID, IZM_TII.TIME AS DATA_DATE, IZM_TII.WINTER_SUMMER AS SEASON, IZM_TII.VALUE_UNIT AS VALUE0 " + //, IZM_TII.PERIOD, DEVICES.NAME_DEVICE, CHANNELS.CHANNEL_NAME " +
-                                     @"FROM IZM_TII " +
-                                     @"INNER JOIN CHANNELS ON " +
-                                     @"IZM_TII.IDCHANNEL = CHANNELS.IDCHANNEL " +
-                                     @"INNER JOIN DEVICES ON " +
-                                     @"CHANNELS.IDDEVICE = DEVICES.IDDEVICE AND " +
-                                     @"IZM_TII.TIME > '" + usingDate.ToString("yyyyMMdd") +
-                                     @"' AND " +
-                                     @"IZM_TII.TIME <= '" + usingDate.AddDays(1).ToString("yyyyMMdd") +
-                                     @"' WHERE IZM_TII.PERIOD = 1800 AND " +
-                                     //@"IZM_TII.IDCHANNEL IN(" + sensors +
-                                     @"(" + sensors +
-                                     @") " +
-                                //@"ORDER BY IZM_TII.TIME";
-                                     @"ORDER BY IZM_TII.TIME, IZM_TII.WINTER_SUMMER";
                             break;
                         default:
                             break;
@@ -858,34 +1052,41 @@ namespace StatisticCommon
                 @"SELECT SUM([VALUE]) as [VALUE], COUNT (*) as [CNT], [HOUR]"
                 + @" FROM ("
                     + @"SELECT" 
-		                + @" [ID] as [ID], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
+		                + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
 		                + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
                     + @" FROM ("
                         + @"SELECT"
-                            + @" [ID] as [ID], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
+                            + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
                             + @", [last_changed_at]"
                             + @", (DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) / " + interval + @") as [MINUTE]"
                             + @" FROM ("
                                 + @"SELECT"
-                                    + @" [ID] as [ID], [Value] as [VALUE], [tmdelta] as [tmdelta]"
+                                    + @" [KKS_NAME] as [KKS_NAME], [Value] as [VALUE], [tmdelta] as [tmdelta]"
                                     + @", DATEADD (MINUTE, - DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) % " + interval + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                + @" WHERE [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0_KKS]"
+                                + @" WHERE [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                     + @" AND [Value] > 1"
 					                //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt1.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt2.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                             + @") t0"
-                        + @" GROUP BY [ID], [last_changed_at], DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
+                        + @" GROUP BY [KKS_NAME], [last_changed_at], DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]))"
                     + @") t1"
                     + @" GROUP BY "
-                        + @" [ID]"
+                        + @" [KKS_NAME]"
                         + @", DATEPART (HOUR, [last_changed_at])"
                 + @") t2"
                 + @" GROUP BY [HOUR]"
                 ;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="lastHour">Час в сутках для запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала времени, основание при усреднении мгновенныхзначений</param>
+        /// <returns>Строка запроса</returns>
         public string hourTMRequest(DateTime usingDate, int lastHour, string sensors, int interval)
         {
             string req = string.Empty;
@@ -918,11 +1119,11 @@ namespace StatisticCommon
                             //Запрос №4 по МСК, ответ по МСК - усреднение происходит "на клиенте"
                             dtReq = usingDate.Date;
                             dtReq = dtReq.AddHours(lastHour);
-                            req = @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+                            req = @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
                                     + @" WHERE"
                                     + @"[ID_TEC] = " + m_id
-                                    + @" AND [ID] IN (" + sensors + @")"
+                                    + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                         + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-3).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds (-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                 ;
@@ -931,17 +1132,17 @@ namespace StatisticCommon
                             //Запрос №1 по МСК, ответ по МСК - усреднение "на лету"
                             dtReq = usingDate.Date;
                             dtReq = dtReq.AddHours(lastHour);
-                            req = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]"
+                            req = @"SELECT [KKS_NAME], SUM([Value]*[tmdelta])/SUM([tmdelta]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]"
                                     + @" FROM ("
                                         + @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                            + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
+                                            + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
                                             + @" WHERE"
                                             + @"[ID_TEC] = " + m_id
-                                            + @" AND [ID] IN (" + sensors + @")"
+                                            + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                                 + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"')"
                                                     + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                     + @") as S0"
-                                    + @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])"
+                                    + @" GROUP BY S0.[KKS_NAME], DATEPART(hour, S0.[last_changed_at])"
                                 //+ @" ORDER BY [HOUR]"
                                 ;
                             break;
@@ -949,15 +1150,19 @@ namespace StatisticCommon
                             break;
                     }
                     break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    break;
                 default:
                     break;
             }
 
             return req;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения часовых значений СОТИАССО
+        /// </summary>
+        /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="interval">Идентификатор интервала времени, основание при усреднении мгновенныхзначений</param>
+        /// <returns>Строка запроса</returns>
         public string hoursTMRequest(DateTime usingDate, string sensors, int interval)
         {//usingDate - московское время
             string request = string.Empty;
@@ -987,9 +1192,9 @@ namespace StatisticCommon
                         case SOURCE_SOTIASSO.INSATANT_APP:
                             //Запрос №4 по МСК, ответ по МСК - усреднение происходит "на клиенте"
                             dtReq = usingDate.Date;
-                            request = @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-                                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")"
+                            request = @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                        + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                        + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                         + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(-1).ToString(@"yyyyMMdd") + @"')"
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date) - 1).AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.998") + @"')"
                                 ;
@@ -997,23 +1202,21 @@ namespace StatisticCommon
                         case SOURCE_SOTIASSO.INSATANT_TSQL:
                             //Запрос №3 по МСК, ответ по МСК - усреднение "на лету"
                             dtReq = usingDate.Date;
-                            request = @"SELECT [ID], SUM([Value]*[tmdelta])/SUM([tmdelta]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]" +
-                                        @" FROM (" +
-                                            @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]" +
-                                                @" FROM [dbo].[ALL_PARAM_SOTIASSO]" +
-                                                @" WHERE  [ID_TEC] = " + m_id + @" AND [ID] IN (" + sensors + @")" +
-                                                @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd") + @"')" +
-                                                    @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date) - 1).AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.998") + @"')" +
+                            request = @"SELECT [KKS_NAME], SUM([Value]*[tmdelta])/SUM([tmdelta]) as VALUE, (DATEPART(hour, [last_changed_at])) as [HOUR]"
+                                        + @" FROM ("
+                                            + @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                                + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource +
+                                                + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd") + @"')"
+                                                    + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(HAdmin.CountHoursOfDate(usingDate.Date) - 1).AddMinutes(59).ToString(@"yyyyMMdd HH:mm:59.998") + @"')" +
                                         @") as S0" +
-                                        @" GROUP BY S0.[ID], DATEPART(hour, S0.[last_changed_at])" +
+                                        @" GROUP BY S0.[KKS_NAME], DATEPART(hour, S0.[last_changed_at])" +
                                         @" ORDER BY [HOUR]"
                                 ;
                             break;
                         default:
                             break;
                     }
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
                     break;
                 default:
                     break;
@@ -1070,7 +1273,13 @@ namespace StatisticCommon
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения значений ПБР
+        /// </summary>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <returns>Строка запроса</returns>
         public string GetPBRValueQuery(int num_comp, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,
@@ -1079,34 +1288,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    if (num_comp < 0)
-                    {
-                        string strDelim = ", ",
-                                comp_selectPBRValueQuery = string.Empty;
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            comp_selectPBRValueQuery = string.Empty;
-                            if ((g.m_id > 100) && (g.m_id < 500))
-                            {
-                                comp_selectPBRValueQuery = selectPBRValueQuery(g);
-
-                                if (comp_selectPBRValueQuery.Length > 0)
-                                    selectPBR += (strDelim + comp_selectPBRValueQuery);
-                                else
-                                    ;
-                            }
-                            else
-                                ;
-                        }
-                        if (selectPBR.Length > strDelim.Length)
-                            selectPBR = selectPBR.Substring(strDelim.Length);
-                        else
-                            ;
-                    }
-                    else
-                    {
-                        selectPBR = selectPBRValueQuery(list_TECComponents[num_comp]);
-                    }
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(num_comp);
@@ -1119,7 +1301,13 @@ namespace StatisticCommon
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения значений ПБР
+        /// </summary>
+        /// <param name="num_comp">Номер компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <returns>Строка запроса</returns>
         public string GetPBRValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,
@@ -1128,10 +1316,10 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    selectPBR = selectPBRValueQuery(comp);
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = "PBR, Pmin, Pmax"; //Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
+                    selectPBR = "PBR, Pmin, Pmax"; //??? Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
 
                     selectPBR += ";";
 
@@ -1142,27 +1330,6 @@ namespace StatisticCommon
             }
 
             strRes = pbrValueQuery(selectPBR, dt, mode);
-
-            return strRes;
-        }
-
-        private string selectAdminValueQuery(TECComponent g)
-        {
-            string strRes = String.Empty;
-
-            if (g.prefix_admin.Length > 0)
-            {
-                strRes += m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + g.tec.prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + @"_" + g.prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
-            else {
-                strRes += m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.REC] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-                            m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] + @"." + prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-                //selectPBR += strUsedPPBRvsPBR + "." + namePBR + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.PBR];
-            }
 
             return strRes;
         }
@@ -1256,7 +1423,13 @@ namespace StatisticCommon
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения административных значений
+        /// </summary>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>        
+        /// <returns></returns>
         public string GetAdminValueQuery(TECComponent comp, DateTime dt, AdminTS.TYPE_FIELDS mode)
         {
             string strRes = string.Empty,
@@ -1265,7 +1438,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    selectAdmin = selectAdminValueQuery(comp);
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC] +
@@ -1274,6 +1447,7 @@ namespace StatisticCommon
                                     + ", " + @"[ID_COMPONENT]"
                                     + ", " + @"[SEASON]"
                                     + ", " + @"[FC]"
+                                    + ", " + @"[WR_DATE_TIME]"
                                 ;
 
                     selectAdmin += ";";
@@ -1288,7 +1462,11 @@ namespace StatisticCommon
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ (собственные нужды)
+        /// </summary>
+        /// <param name="sensors">Строка-перчисление (разделитель - запятая) идентификаторов</param>
+        /// <returns>Строка запроса</returns>
         public string currentTMSNRequest()
         {
             string query = string.Empty;
@@ -1304,7 +1482,11 @@ namespace StatisticCommon
 
             return query;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения часовых значений СОТИАССО (собственные нужды)
+        /// </summary>
+        /// <param name="dtReq">Дата - начало интервала, запрашиваемых данных</param>
+        /// <returns>Строка запроса</returns>
         public string hoursTMSNPsumRequest(DateTime dtReq)
         {
             string query = string.Empty;
@@ -1326,7 +1508,11 @@ namespace StatisticCommon
 
             return query;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ
+        /// </summary>
+        /// <param name="sensors">Строка-перчисление (разделитель - запятая) идентификаторов</param>
+        /// <returns>Строка запроса</returns>
         public string currentTMRequest(string sensors)
         {
             string query = string.Empty;
@@ -1335,23 +1521,11 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
-                    query = @"SELECT [ID_IN_SOTIASSO] as id, [last_changed_at], [Current_Value_SOTIASSO] as value " +
-                            @"FROM [dbo].[v_ALL_VALUE_SOTIASSO] " +
+                    query = @"SELECT [KKS_NAME] as KKS_NAME, [last_changed_at], [Current_Value_SOTIASSO] as value " +
+                            @"FROM [dbo].[v_ALL_VALUE_SOTIASSO_KKS] " +
                             @"WHERE [ID_TEC]=" + m_id + @" " +
-                            @"AND [ID_IN_SOTIASSO] IN (" + sensors + @")";
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Источник для каждой ТЭЦ свой
-                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[last_changed_at], [dbo].[NAME_TABLE].[value] " +
-                                    @"FROM [dbo].[NAME_TABLE] " +
-                                    @"INNER JOIN " +
-                                        @"(SELECT [id], MAX([last_changed_at]) AS last_changed_at " +
-                                        @"FROM [dbo].[NAME_TABLE] " +
-                                        @"GROUP BY [id]) AS t2 " +
-                                    @"ON ([dbo].[NAME_TABLE].[id] = t2.[id] AND [dbo].[NAME_TABLE].[last_changed_at] = t2.last_changed_at AND (" +
-                                    sensors +
-                                    @"))";
-                    query = query.Replace(@"NAME_TABLE", @"states_real_his");
+                            @"AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
+                            ;
                     break;
                 default:
                     break;
@@ -1359,7 +1533,13 @@ namespace StatisticCommon
 
             return query;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения крайних усредненных значений СОТИАССО за каждый час в указанных сутках
+        /// </summary>
+        /// <param name="dt">Дата - начало интервала, запрашиваемых данных</param>
+        /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="cntHours">Количество часов в сутках</param>
+        /// <returns>Строка запроса</returns>
         public string lastMinutesTMRequest(DateTime dt, string sensors, int cntHours)
         {
             string query = string.Empty;
@@ -1371,15 +1551,15 @@ namespace StatisticCommon
 
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
                         //Ваоиант №3.a (из усредненной таблицы)
-                        query = @"SELECT [ID], [Value], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
-                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0]"
-                                + @" WHERE [ID_TEC]=" + m_id + @" AND [ID] IN (" + sensors + @") "
+                        query = @"SELECT [KKS_NAME], [Value], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                + @" FROM [dbo].[ALL_PARAM_SOTIASSO_0_KKS]"
+                                + @" WHERE [ID_TEC]=" + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                     //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                     + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                     //-- только крайние минуты часа
                                     + @" AND DATEPART(MINUTE, [last_changed_at]) = 59"
-                                + @"ORDER BY [ID],[last_changed_at]"
+                                + @"ORDER BY [KKS_NAME],[last_changed_at]"
 
                         ////Ваоиант №3.б (из усредненной таблицы)
                         //query = @"SELECT SUM([Value]) as [VALUE], DATEPART (HOUR, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [HOUR], COUNT (*) as [CNT]"
@@ -1396,9 +1576,9 @@ namespace StatisticCommon
                         if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.INSATANT_APP)
                             //Вариант №6 - программное усреднение
                             query = //--Привести дату/время к МСК (добавить разность с UTC)
-                                    @"SELECT [ID], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                    @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
                                         + @" FROM [dbo].[ALL_PARAM_SOTIASSO]"
-                                        + @" WHERE  [ID_TEC] = " + m_id + " AND [ID] IN (" + sensors + @")"
+                                        + @" WHERE  [ID_TEC] = " + m_id + " AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
                                             //--Привести дату/время к UTC (уменьшить на разность с UTC)
                                             + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                                 + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
@@ -1407,26 +1587,6 @@ namespace StatisticCommon
                                         ;
                         else
                             ;
-                    break;
-                case INDEX_TYPE_SOURCE_DATA.INDIVIDUAL:
-                    //Если данные в БД по мск
-                    //dtQuery = DateTime.Now.Date.AddMinutes(-1 * (HAdmin.GetOffsetOfCurrentTimeZone()).TotalMinutes); 
-                    //Если данные в БД по ГринвичУ
-                    dt = dt.AddMinutes(-1 * (HAdmin.GetUTCOffsetOfMoscowTimeZone()).TotalMinutes);
-
-                    //Источник для каждой ТЭЦ свой - вариант №1
-                    //query =@"SELECT [dbo].[NAME_TABLE].[id], AVG([dbo].[NAME_TABLE].[value]) as value, DATEPART(hour, [last_changed_at]) as last_changed_at " +
-                    //        @"FROM [dbo].[NAME_TABLE] " +
-                    //        @"WHERE DATEPART(n, [last_changed_at]) = 59 AND [last_changed_at] between '" + dtQuery.Date.ToString(@"yyyy.MM.dd") + @"' AND '" + dtQuery.AddDays(1).Date.ToString(@"yyyy.MM.dd") + @"' " +
-                    //        @"AND (" + sensors + @") " +
-                    //        @"GROUP BY [id], , DATEPART(hour, [last_changed_at])";
-                    //query = query.Replace("NAME_TABLE", "states_real_his");
-                    //Источник для каждой ТЭЦ свой - вариант №2
-                    query = @"SELECT [dbo].[NAME_TABLE].[id], [dbo].[NAME_TABLE].[value] as value,  [dbo].[NAME_TABLE].[last_changed_at] " +
-                            @"FROM [dbo].[NAME_TABLE] " +
-                            @"WHERE DATEPART(n, [last_changed_at]) = 0 AND [last_changed_at] between '" + dt.ToString(@"yyyy.MM.dd HH:mm:ss") + @"' AND '" + dt.AddDays(1).ToString(@"yyyy.MM.dd HH:mm:ss") + @"' " +
-                                @"AND (" + sensors + @")";
-                    query = query.Replace("NAME_TABLE", "states_real_his_0");
                     break;
                 default:
                     break;
@@ -1450,26 +1610,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    if (num_comp < 0)
-                    {
-                        foreach (TECComponent g in list_TECComponents)
-                        {
-                            if ((g.m_id > 100) && (g.m_id < 500))
-                            {
-                                selectAdmin += ", ";
-                                //selectPBR += ", ";
-
-                                selectAdmin += selectAdminValueQuery(g);
-                            }
-                            else
-                                ;
-                        }
-                        selectAdmin = selectAdmin.Substring(2);
-                    }
-                    else
-                    {
-                        selectAdmin = selectAdminValueQuery(list_TECComponents[num_comp]);
-                    }
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     selectAdmin = idComponentValueQuery (num_comp);
@@ -1487,69 +1628,18 @@ namespace StatisticCommon
                     break;
             }
 
-            strRes = adminValueQuery(selectAdmin, dt, mode);
-
-            //switch (type())
-            //{
-            //    case TEC.TEC_TYPE.COMMON:
-
-            //        break;
-            //    case TEC.TEC_TYPE.BIYSK:
-            //        if (num_comp < 0)
-            //        {
-            //            foreach (TECComponent g in list_TECComponents)
-            //            {
-            //                selectAdmin += ", ";
-            //                //selectPBR += ", ";
-
-            //                if (g.prefix_admin.Length > 0)
-            //                {
-            //                    selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
-            //                                strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-            //                                strUsedAdminValues + "." + nameAdmin + @"_" + g.prefix_admin + "_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-            //                    //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + g.prefix_pbr;
-            //                }
-            //                else {
-            //                    selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
-            //                                    strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-            //                                    strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-            //                    //selectPBR += strUsedPPBRvsPBR + @"." + namePBR;
-            //                }
-            //            }
-            //            selectAdmin = selectAdmin.Substring(2);
-            //            //selectPBR = selectPBR.Substring(2);
-            //        }
-            //        else
-            //        {
-            //            TECComponent g = list_TECComponents[num_comp];
-            //            if (g.prefix_admin.Length > 0)
-            //            {
-            //                selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
-            //                            strUsedAdminValues + "." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-            //                            strUsedAdminValues + @"." + nameAdmin + @"_" + list_TECComponents[num_comp].prefix_admin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-            //                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR + list_TECComponents[num_comp].prefix_pbr;
-            //            }
-            //            else {
-            //                selectAdmin += strUsedAdminValues + @"." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.REC] + ", " +
-            //                                strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField [(int)INDEX_NAME_FIELD.IS_PER] + ", " +
-            //                                strUsedAdminValues + "." + nameAdmin + @"_" + m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT];
-            //                //selectPBR += strUsedPPBRvsPBR + @"." + namePBR;
-            //            }
-            //        }
-
-            //        strRes = @"SELECT " + strUsedAdminValues + @"." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + ", " + selectAdmin +
-            //                 @" FROM " + strUsedAdminValues + " " +
-            //                 @"WHERE " + strUsedAdminValues + @"." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-            //                 @"' AND " + strUsedAdminValues + @"." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-            //                 @"' ORDER BY DATE";
-            //        break;
-            //    default:
-            //        break;
-            //}
+            strRes = adminValueQuery(selectAdmin, dt, mode);            
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения уже имеющихся административных значений
+        ///  (меток даты/времени для этих значений)
+        /// </summary>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <returns>Строка запроса</returns>
         public string GetAdminDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
         {
             string strRes = string.Empty;
@@ -1557,10 +1647,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE, ID FROM " + m_arNameTableAdminValues[(int)mode] + " WHERE " +
-                          @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' ORDER BY DATE ASC";
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT DATE, ID, SEASON FROM " + m_arNameTableAdminValues[(int)mode] + " WHERE" +
@@ -1575,7 +1662,14 @@ namespace StatisticCommon
 
             return strRes;
         }
-
+        /// <summary>
+        /// Возвратить содержание запроса для получения уже имеющихся значений ПБР
+        ///  (меток даты/времени для этих значений)
+        /// </summary>
+        /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
+        /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
+        /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
+        /// <returns>Строка запроса</returns>
         public string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
         {
             string strRes = string.Empty,
@@ -1584,11 +1678,7 @@ namespace StatisticCommon
             switch (mode)
             {
                 case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT " + strNameFieldDateTime + @", ID FROM " + m_arNameTableUsedPPBRvsPBR[(int)mode] +
-                            @" WHERE " +
-                            strNameFieldDateTime + @" > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND " + strNameFieldDateTime + @"<= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' ORDER BY " + strNameFieldDateTime + @" ASC";
+                    ;
                     break;
                 case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT " + @"[DATE_TIME]" + @", [ID], [PBR_NUMBER] FROM [" + m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
@@ -1601,34 +1691,6 @@ namespace StatisticCommon
                 default:
                     break;
             }
-
-            return strRes;
-        }
-
-        public string NameFieldOfAdminRequest(TECComponent comp)
-        {
-            string strRes = @"" + this.prefix_admin;
-
-            if ((!(comp.prefix_admin == null)) && (comp.prefix_admin.Length > 0))
-            {
-                strRes += "_" + comp.prefix_admin;
-            }
-            else
-                ;
-
-            return strRes;
-        }
-
-        public string NameFieldOfPBRRequest(TECComponent comp)
-        {
-            string strRes = @"" + this.prefix_pbr;
-
-            if ((! (comp.prefix_pbr == null)) && (comp.prefix_pbr.Length > 0))
-            {
-                strRes += "_" + comp.prefix_pbr;
-            }
-            else
-                ;
 
             return strRes;
         }

@@ -250,7 +250,7 @@ namespace Statistic
             System.Windows.Forms.Label[] m_arLabel;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
 
-            bool isActive;
+            //bool isActive;
 
             public TecView m_tecView;
 
@@ -348,7 +348,7 @@ namespace Statistic
                 this.SetColumnSpan(m_zedGraphHours, this.ColumnCount);
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 90));
 
-                isActive = false;
+                //isActive = false;
             }
 
             public override void Start()
@@ -360,7 +360,7 @@ namespace Statistic
                 m_evTimerCurrent = new ManualResetEvent(true);
                 m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
 
-                isActive = false;
+                //isActive = false;
             }
 
             public override void Stop()
@@ -380,16 +380,16 @@ namespace Statistic
                 m_tecView.ChangeState ();
             }
 
-            public void Activate(bool active)
+            public override bool Activate(bool active)
             {
-                if (isActive == active)
-                    return;
+                bool bRes = base.Activate (active);
+
+                if (bRes == false)
+                    return false;
                 else
                     ;
 
-                isActive = active;
-
-                if (isActive == true)
+                if (Actived == true)
                 {
                     ChangeState();
                 }
@@ -397,6 +397,8 @@ namespace Statistic
                 {
                     m_tecView.ClearStates ();
                 }
+
+                return bRes;
             }
 
             private void showTMSNPower()
@@ -432,7 +434,7 @@ namespace Statistic
 
             private void TimerCurrent_Tick(Object stateInfo)
             {
-                if (isActive == true)
+                if (Actived == true)
                 {
                     ChangeState();
 

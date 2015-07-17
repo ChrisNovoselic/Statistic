@@ -242,7 +242,7 @@ namespace StatisticCommon
             //Поиск Бийской ТЭЦ
             int indx_tec = -1;
             foreach (TEC t in list_tec) {
-                if (t.type () == TEC.TEC_TYPE.BIYSK)
+                if (t.Type == TEC.TEC_TYPE.BIYSK)
                 {
                     indx_tec = list_tec.IndexOf (t);
                 } else { }                    
