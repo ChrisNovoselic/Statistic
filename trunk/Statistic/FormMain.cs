@@ -254,14 +254,14 @@ namespace Statistic
 
                     m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
 
-                    List <int> listIDs = null; // = new List <int> ();
+                    List <int> listIDs = new List <int> ();
                     //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
                     //if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true)
                     {
                         m_markPrevStatePanelAdmin.Set ((int)FormChangeMode.MANAGER.DISP, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs =  new List <int> (new int [] { FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP] });
+                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                     }
                     else
                         ;
