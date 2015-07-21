@@ -178,9 +178,9 @@ namespace Statistic
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                     PanelAdminKomDisp.ALARM_USE = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP); //True;
-                    if (!(HStatisticUsers.allTEC == 0))
-                        PanelAdminKomDisp.ALARM_USE = false;
-                    else ;
+                    //if (!(HStatisticUsers.allTEC == 0))
+                    //    PanelAdminKomDisp.ALARM_USE = false;
+                    //else ;
                     
                     //ИМгструмент администратора
                     параметрыToolStripMenuItem.Enabled =
@@ -254,14 +254,14 @@ namespace Statistic
 
                     m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
 
-                    string listIDs = string.Empty;
+                    List <int> listIDs = null; // = new List <int> ();
                     //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
                     //if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true)
                     {
                         m_markPrevStatePanelAdmin.Set ((int)FormChangeMode.MANAGER.DISP, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs += FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP].ToString ();
+                        listIDs =  new List <int> (new int [] { FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP] });
                     }
                     else
                         ;
@@ -270,16 +270,13 @@ namespace Statistic
                     //listIDs.Add(5); listIDs.Add(111);
                     if (m_bAutoActionTabs == true)
                     {
-                        string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
-                        if (ids.Equals (string.Empty) == false)
-                        {
-                            if (listIDs.Equals(string.Empty) == false)
-                                listIDs += @";" + ids;
-                            else
-                                ;
-
-                            listIDs += ids;
-                        }
+                        string []ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE).Split (';');
+                        if ((ids.Length > 0) && (ids[0].Equals (string.Empty) == false))
+                            foreach (string id in ids)
+                                if (listIDs.IndexOf (Int32.Parse (id)) < 0)
+                                    listIDs.Add (Int32.Parse (id));
+                                else
+                                    ;
                         else
                             ;
                     }
@@ -323,7 +320,9 @@ namespace Statistic
 
                         //сменитьРежимToolStripMenuItem_Click();
                         //formChangeMode.LoadProfile(@"116");
-                        Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + listIDs, Logging.INDEX_MESSAGE.NOT_SET);
+                        string strIDsToLog = string.Empty;
+                        listIDs.ForEach(id => strIDsToLog += id.ToString() + ';');
+                        Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + strIDsToLog, Logging.INDEX_MESSAGE.NOT_SET);
                         //С пустой строкой имитация нажатия "Ок"...
                         formChangeMode.LoadProfile(string.Empty);
 

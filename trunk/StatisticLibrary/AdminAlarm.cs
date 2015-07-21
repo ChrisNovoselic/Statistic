@@ -194,7 +194,7 @@ namespace StatisticCommon
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new TecView(TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
-                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new DelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
+                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].SuccessThreadRDGValues);
                     m_listTecView[m_listTecView.Count - 1].EventReg += new TecView.DelegateOnEventReg (OnAdminAlarm_EventReg);
 
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
@@ -239,20 +239,20 @@ namespace StatisticCommon
 
             //Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)
-                //Немедленный запуск ТОЛЬКО при 1-ой активации
-                if (m_iActiveCounter == 0)
+                ////Немедленный запуск ТОЛЬКО при 1-ой активации
+                //if (m_iActiveCounter == 0)
+                //    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
+                //else
+                //    if (m_iActiveCounter > 0)
+                //        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
+                //    else
+                //        ;
+
+                //Немедленный запуск ВСЕГДА
+                if (!(m_iActiveCounter < 0))
                     m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
                 else
-                    if (m_iActiveCounter > 0)
-                        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
-                    else
-                        ;
-
-                ////Немедленный запуск ВСЕГДА
-                //if (! (m_iActiveCounter < 0))
-                //    m_timerAlarm.Change(0, msecTimerUpdate);
-                //else
-                //    ;
+                    ;
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
 

@@ -388,7 +388,7 @@ namespace StatisticCommon
                 if (errRes == Errors.ParseError)
                     //Пропустить запись ГТП, разрешить переход к следующей
                     //Псевдо-закончена обработка всех событий
-                    completeHandleStates();
+                    completeHandleStates(INDEX_WAITHANDLE_REASON.SUCCESS);
                 else
                     ;
             }

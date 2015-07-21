@@ -581,7 +581,7 @@ namespace Statistic
 
             m_tecView.setDatetimeView = new DelegateFunc(setNowDate);
 
-            m_tecView.updateGUI_Fact = new DelegateIntIntFunc(updateGUI_Fact);
+            m_tecView.updateGUI_Fact = new IntDelegateIntIntFunc(updateGUI_Fact);
             m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
 
             this.m_pnlQuickData = new PanelQuickData(); //Предвосхищая вызов 'InitializeComponent'
@@ -800,12 +800,16 @@ namespace Statistic
             }
         }
 
-        private void updateGUI_Fact(int hour, int min)
+        private int updateGUI_Fact(int hour, int min)
         {
+            int iRes = (int)HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
+            
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
+
+            return iRes;
         }
 
         protected virtual void UpdateGUI_Fact(int hour, int min)

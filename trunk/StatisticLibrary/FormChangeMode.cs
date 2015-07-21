@@ -51,19 +51,13 @@ namespace StatisticCommon
 
         public HMark m_markTabAdminChecked;
 
-        public FormChangeMode(List<TEC> tec, string strIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
+        public FormChangeMode(List<TEC> tec, List<int> listIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
         {
             InitializeComponent();
             this.Text = @"Выбор режима";
 
-            List<int> listIDsProfileCheckedIndices = new List<int> ();
-            if (strIDsProfileCheckedIndices.Equals (string.Empty) == false)
+            if (listIDsProfileCheckedIndices.Count > 0)
             {
-                string [] ids = strIDsProfileCheckedIndices.Split (';');
-                foreach (string id in ids) {
-                    listIDsProfileCheckedIndices.Add (Int32.Parse (id));
-                }
-
                 if (!(m_MainFormContextMenuStripListTecViews == null))
                 {
                     m_MainFormContextMenuStripListTecViews.ItemClicked -= new ToolStripItemClickedEventHandler(MainFormContextMenuStripListTecViews_ItemClicked);

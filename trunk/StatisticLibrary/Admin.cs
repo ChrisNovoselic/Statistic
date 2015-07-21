@@ -9,7 +9,7 @@ namespace StatisticCommon
 {
     interface IHAdmin
     {
-        void AbortThreadRDGValues(HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON reason);
+        //void AbortThreadRDGValues(HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON reason);
         void ClearStates();
         void ClearValues();
         void CopyCurToPrevRDGValues();
@@ -658,10 +658,10 @@ namespace StatisticCommon
             //return bRes;
         }
 
-        public virtual void AbortThreadRDGValues(INDEX_WAITHANDLE_REASON reason)
-        {
-            abortThreadGetValues(reason);
-        }
+        //public virtual void AbortThreadRDGValues(INDEX_WAITHANDLE_REASON reason)
+        //{
+        //    abortThreadGetValues(reason);
+        //}
 
         protected bool IsHaveDates(CONN_SETT_TYPE type, int indx)
         {

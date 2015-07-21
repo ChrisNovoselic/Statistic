@@ -1670,7 +1670,7 @@ namespace StatisticCommon
 
                 strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
                                         , new string[] {
-                                            DateTime.Parse (r["DATE_TIME"].ToString ()).ToString (@"HH:mm:ss.fff")
+                                            ((DateTime)r["DATE_TIME"]).ToString (@"HH:mm:ss.fff")
                                             , r["TYPE"].ToString ()
                                             , r["MESSAGE"].ToString()
                                         }

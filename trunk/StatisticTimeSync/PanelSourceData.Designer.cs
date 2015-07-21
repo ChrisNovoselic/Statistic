@@ -91,8 +91,10 @@ namespace StatisticTimeSync
                 return 0;
             }
 
-            protected override void StateErrors(int state, int request, int result)
+            protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int request, int result)
             {
+                INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+                
                 string error = string.Empty,
                     reason = string.Empty,
                     waiting = string.Empty;
@@ -128,6 +130,8 @@ namespace StatisticTimeSync
                 //if (! (errorData == null)) errorData (); else ;
 
                 Logging.Logg().Error(@"HGetDate::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                return reasonRes;
             }
 
             protected override void StateWarnings(int /*StatesMachine*/ state, int request, int result)

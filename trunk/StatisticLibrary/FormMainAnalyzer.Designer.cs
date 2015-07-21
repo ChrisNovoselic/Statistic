@@ -50,7 +50,7 @@ namespace StatisticCommon
             this.MaximizeBox = false;
             this.Name = "FormMainAnalyzer";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormMainAnalyzer";
+            this.Text = "Просмотр сообщений журнала";
             //this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMainAnalyzer_FormClosed); //...после закрытия
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMainAnalyzer_FormClosed); //...перед закрытием
 

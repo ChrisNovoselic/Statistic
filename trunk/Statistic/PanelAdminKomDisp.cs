@@ -195,8 +195,8 @@ namespace Statistic
             // m_cbxAlarm
             // 
             indx = (int)INDEX_CONTROL_UI.CBX_ALARM;
-            this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
-            this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
+            this.m_cbxAlarm.Enabled = false ; //PanelAdminKomDisp.ALARM_USE;
+            this.m_cbxAlarm.Checked = false; //HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
 
             this.m_cbxAlarm.Location = arRectControlUI[indx].Location;
             this.m_cbxAlarm.Name = "cbxAlarm";
@@ -286,16 +286,16 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
-            //if (((HStatisticUsers.RoleIsKomDisp == true) || (HStatisticUsers.RoleIsAdmin == true)))
-            //if ((HStatisticUsers.RoleIsKomDisp == true))
-            //if ((HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP) == true)
-            if ((m_cbxAlarm.Checked == true)
-                && (ALARM_USE == true))
-            {
-                initAdminAlarm();
+            this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
+            this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
 
-                m_adminAlarm.Start();
-            } else ;
+            //if ((m_cbxAlarm.Checked == true)
+            //    && (ALARM_USE == true))
+            //{
+            //    initAdminAlarm();
+
+            //    m_adminAlarm.Start();
+            //} else ;
 
             this.m_nudnKoeffAlarmCurPower.ReadOnly = true;
             this.m_nudnKoeffAlarmCurPower.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
@@ -638,7 +638,7 @@ namespace Statistic
                     if (iRes == -1)
                     {
                         strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует установл./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
-                        MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                     }
                     else
                     {
@@ -646,7 +646,7 @@ namespace Statistic
                         if (iRes == -2)
                         {
                             strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}].{2}Продолжить?", (int)prop[1], curPBRNumber, Environment.NewLine);
-                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification) == DialogResult.Yes)
                             {
                                 iRes = 0;
                             }

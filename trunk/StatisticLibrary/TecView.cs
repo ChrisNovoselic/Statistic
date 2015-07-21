@@ -35,7 +35,7 @@ namespace StatisticCommon
         void OnEventConfirm(int id_tg);
         void Start();
         void Stop();
-        void SuccessThreadRDGValues(int curHour, int curMinute);
+        int SuccessThreadRDGValues(int curHour, int curMinute);
         bool WasChanged();
         bool zedGraphHours_MouseUpEvent(int indx);
     }
@@ -86,7 +86,7 @@ namespace StatisticCommon
         }
 
         public DelegateFunc setDatetimeView;
-        public DelegateIntIntFunc updateGUI_Fact;
+        public IntDelegateIntIntFunc updateGUI_Fact;
         public DelegateFunc updateGUI_TM_Gen
                             , updateGUI_TM_SN
                             , updateGUI_LastMinutes;
@@ -445,9 +445,10 @@ namespace StatisticCommon
             Run(@"TecView::GetRDGValues ()");
         }
 
-        public void SuccessThreadRDGValues(int curHour, int curMinute)
+        public int SuccessThreadRDGValues(int curHour, int curMinute)
         {
-            int iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - эмуляция
+            int iRes = (int)INDEX_WAITHANDLE_REASON.SUCCESS
+                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - эмуляция
 
             double TGTURNONOFF_VALUE = -1F, NOT_VALUE = -2F
                 , power_TM = NOT_VALUE;
@@ -562,18 +563,24 @@ namespace StatisticCommon
                     else
                         ; //Нет значений ИЛИ значения ограничены 1 МВт
                 else
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.BREAK);
+                    iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
 
                 Console.WriteLine ();
 
                 //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
                 //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
             }
+
+            return iRes;
         }
 
         private void threadGetRDGValues(object synch)
         {
             int indxEv = -1;
+
+            //if (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS].WaitOne (0, true) == false)
+                ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+            //else ;
 
             for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++)
                 ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
@@ -581,14 +588,19 @@ namespace StatisticCommon
             foreach (TECComponent tc in allTECComponents) {
                 if ((tc.m_id > 100) && (tc.m_id < 500)) {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS)
+                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                        break;
+                    else
                     {
+                        if (! (indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
+                            ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                        else
+                            ;
+
                         indxTECComponents = allTECComponents.IndexOf (tc);
 
                         getRDGValues();
                     }
-                    else
-                        break;
                 }
                 else
                     ; //Это не ГТП
@@ -991,8 +1003,10 @@ namespace StatisticCommon
             return strRes;
         }
 
-        protected override void StateErrors(int state, int request, int result)
+        protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int request, int result)
         {
+            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+            
             string reason = string.Empty,
                     waiting = string.Empty,
                     msg = string.Empty;
@@ -1002,7 +1016,8 @@ namespace StatisticCommon
                 case (int)StatesMachine.InitSensors:
                     reason = @"получения идентификаторов датчиков";
                     waiting = @"Переход в ожидание";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.CurrentTimeAdmin:
                 case (int)StatesMachine.CurrentTimeView:
@@ -1022,7 +1037,8 @@ namespace StatisticCommon
                 case (int)StatesMachine.Hours_Fact:
                     reason = @"получасовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.Hour_TM:
                     reason = @"усредн. за час телемеханики";
@@ -1031,12 +1047,14 @@ namespace StatisticCommon
                 case (int)StatesMachine.Hours_TM:
                     reason = @"часовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.CurrentMin_TM:
                     reason = @"усредн. за интервал телемеханики";
@@ -1045,7 +1063,8 @@ namespace StatisticCommon
                 case (int)StatesMachine.CurrentMins_TM:
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
@@ -1054,7 +1073,8 @@ namespace StatisticCommon
                 case (int)StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
@@ -1095,13 +1115,15 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.PPBRValues:
                     reason = @"данных плана";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case (int)StatesMachine.AdminDates:
                     break;
                 case (int)StatesMachine.AdminValues:
                     reason = @"административных значений";
-                    AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
+                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 default:
                     msg = @"Неизвестная команда...";
@@ -1127,6 +1149,8 @@ namespace StatisticCommon
 
             Logging.Logg().Error(@"TecView::StateErrors (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"]" + @")"
                                 + @" - ошибка " + reason + @". " + waiting + @".", Logging.INDEX_MESSAGE.NOT_SET);
+
+            return reasonRes;
         }
 
         protected override void StateWarnings(int /*StatesMachine*/ state, int request, int result)
@@ -1473,7 +1497,7 @@ namespace StatisticCommon
                         ComputeRecomendation(lastHour - 0);
                         adminValuesReceived = true;
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
-                        if (! (updateGUI_Fact == null)) updateGUI_Fact(lastHour, lastMin); else ;
+                        if (! (updateGUI_Fact == null)) iRes = updateGUI_Fact(lastHour, lastMin); else ;
                     }
                     else
                         ;

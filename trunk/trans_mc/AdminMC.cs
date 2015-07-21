@@ -266,8 +266,10 @@ namespace trans_mc
             return result;
         }
 
-        protected override void StateErrors(int /*StatesMachine*/ state, int request, int result)
+        protected override INDEX_WAITHANDLE_REASON StateErrors(int /*StatesMachine*/ state, int request, int result)
         {
+            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
             bool bClear = false;
 
             delegateStopWait();
@@ -319,6 +321,8 @@ namespace trans_mc
                 ;
 
             if (! (errorData == null)) errorData(); else ;
+
+            return reasonRes;
         }
 
         protected override void StateWarnings(int state, int request, int result)
