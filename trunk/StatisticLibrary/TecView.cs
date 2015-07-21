@@ -3638,14 +3638,14 @@ namespace StatisticCommon
                             foreach (DataRow r in table.Rows)
                             {
                                 if (Int32.TryParse(r[@"HOUR"].ToString(), out hour) == false) {
-                                    iRes = -1;
+                                    iRes = -22;
                                     break;
                                 }
                                 else
                                     ;
 
                                 if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
-                                    iRes = -1;
+                                    iRes = -21;
                                     break;
                                 }
                                 else
@@ -3663,16 +3663,26 @@ namespace StatisticCommon
             else
                 ;
 
-            switch (iRes)
+            switch (TEC.s_SourceSOTIASSO)
             {
-                case -12:
-                    iRes = 0;
+                case TEC.SOURCE_SOTIASSO.INSATANT_APP:
+                    switch (iRes)
+                    {
+                        case -12:
+                            iRes = 0;
+                            break;
+                        case -2:
+                            if (!(hour < serverTime.Hour))
+                                iRes = 0;
+                            else
+                                ;
+                            break;
+                        default:
+                            break;
+                    }
                     break;
-                case -2:
-                    if (! (hour < serverTime.Hour))
-                        iRes = 0;
-                    else
-                        ;
+                case TEC.SOURCE_SOTIASSO.AVERAGE:
+                case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
                     break;
                 default:
                     break;
