@@ -240,20 +240,25 @@ namespace StatisticCommon
 
             //Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)
-                ////Немедленный запуск ТОЛЬКО при 1-ой активации
-                //if (m_iActiveCounter == 0)
-                //    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
-                //else
-                //    if (m_iActiveCounter > 0)
-                //        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
-                //    else
-                //        ;
-
-                //Немедленный запуск ВСЕГДА
-                if (!(m_iActiveCounter < 0))
+            {
+                //Немедленный запуск ТОЛЬКО при 1-ой активации
+                //!!! если установить немедленный запуск всегда, ТО
+                //!!! сообщение об одном событии будет отображаться до тех пор, пока условия для него будут верны
+                //!!! т.к. при отображении сообщения последовательно выполняются: this.Activate(false) -> this.Activate(true)
+                if (m_iActiveCounter == 0)
                     m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
                 else
-                    ;
+                    if (m_iActiveCounter > 0)
+                        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
+                    else
+                        ;
+
+                ////Немедленный запуск ВСЕГДА
+                //if (!(m_iActiveCounter < 0))
+                //    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
+                //else
+                //    ;
+            }
             else
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
 

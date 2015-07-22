@@ -467,7 +467,7 @@ namespace Statistic
 
             lock (this)
             {
-                if (! (m_timerAlarmEvent == null))
+                if (m_timerAlarmEvent == null)
                 {
                     m_timerAlarmEvent = new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP); //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
                     m_iAlarmEventCounter = 1;

@@ -286,8 +286,10 @@ namespace Statistic
         public PanelAdminKomDisp(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.DISP, markQueries)
         {
+            //this.HandleCreated += new EventHandler(panelAdminKomDisp_HandleCreated);
+
             this.m_cbxAlarm.Enabled = PanelAdminKomDisp.ALARM_USE;
-            this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
+            this.m_cbxAlarm.Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP); //false; //PanelAdminKomDisp.ALARM_USE;
 
             //if ((m_cbxAlarm.Checked == true)
             //    && (ALARM_USE == true))
@@ -439,6 +441,10 @@ namespace Statistic
             EventGUIReg(msg);
         }
 
+        private void panelAdminKomDisp_HandleCreated (object obj, EventArgs ev)
+        {
+        }
+
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -446,11 +452,16 @@ namespace Statistic
                 this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
 
                 this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
-
-                toEventGUIReg(ev);
             }
-            else
+            else {
                 Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                EnabledButtonAlarm(ev.m_id_gtp, ev.m_id_tg);
+
+                AddLabelAlarm(ev.m_id_gtp, ev.m_id_tg);
+            }
+
+            toEventGUIReg(ev);
         }
 
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
