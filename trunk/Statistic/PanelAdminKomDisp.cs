@@ -638,7 +638,7 @@ namespace Statistic
                     if (iRes == -1)
                     {
                         strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует установл./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
-                        MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+                        MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
@@ -646,7 +646,7 @@ namespace Statistic
                         if (iRes == -2)
                         {
                             strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}].{2}Продолжить?", (int)prop[1], curPBRNumber, Environment.NewLine);
-                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification) == DialogResult.Yes)
+                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
                             {
                                 iRes = 0;
                             }

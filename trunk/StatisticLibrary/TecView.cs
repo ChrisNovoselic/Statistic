@@ -1147,6 +1147,11 @@ namespace StatisticCommon
             else
                 ;
 
+            if (waiting.Equals (string.Empty) == true)
+                waiting = @"Время ожидания неизвестно";
+            else
+                ;
+
             Logging.Logg().Error(@"TecView::StateErrors (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"]" + @")"
                                 + @" - ошибка " + reason + @". " + waiting + @".", Logging.INDEX_MESSAGE.NOT_SET);
 

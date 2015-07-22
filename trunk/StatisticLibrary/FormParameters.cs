@@ -21,8 +21,8 @@ namespace StatisticCommon
 
         public enum PARAMETR_SETUP {    UNKNOWN = -1
                                         , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
-                                        /*ALARM_USE, */ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY,
-                                        USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+                                        /*ALARM_USE, */ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP
+                                        , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
                                         , SEASON_DATETIME, SEASON_ACTION
                                         //, GRINVICH_OFFSET_DATETIME
                                         , APP_VERSION, APP_VERSION_QUERY_INTERVAL
@@ -38,9 +38,9 @@ namespace StatisticCommon
                                         //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
                                         , COUNT_PARAMETR_SETUP
                                     };
-        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource",
-                                                            /*@"Alarm Use", */@"Alarm Timer Update" , @"Alarm Event Retry",
-                                                            @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource"
+                                                            /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep"
+                                                            , @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                             , @"Season DateTime", @"Season Action"
                                                             //, @"Grinvich OffsetDateTime"
                                                             , @"App Version", @"App Version Query Interval"
@@ -56,8 +56,8 @@ namespace StatisticCommon
                                                             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
-                                                            /*@"лог", */"сек", "сек",
-                                                            @"стр", @"ном", @"ном"
+                                                            /*@"лог", */"сек", "сек", "сек"
+                                                            , @"стр", @"ном", @"ном"
                                                             , @"дата/время", @"ном"
                                                             //, "час"
                                                             , @"стр", @"мсек"
@@ -90,6 +90,7 @@ namespace StatisticCommon
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_USE, @"True");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_UPDATE, @"300");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_EVENT_RETRY, @"900");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_BEEP, @"16");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_DOMAIN_NAME, @"");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.USERS_ID_TEC, @"-1");

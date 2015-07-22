@@ -393,6 +393,7 @@ namespace Statistic
             //Параметрвы для ALARM...
             AdminAlarm.MSEC_ALARM_TIMERUPDATE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000;
             AdminAlarm.MSEC_ALARM_EVENTRETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
+            AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
 
             FormParameters.UpdateIdLinkTMSources();
         }
@@ -447,8 +448,16 @@ namespace Statistic
                     ; //DbSources.Sources().UnRegister(idListenerConfigDB);
             }
             else
-            {
-            }
+                ;
+        }
+
+        private int m_iAlarmEventCounter;
+        private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
+        private System.Threading.Timer m_timerAlarmEvent;
+
+        private void timerAlarmEvent (object obj)
+        {
+            System.Media.SystemSounds.Question.Play();
         }
 
         private void panelAdminKomDispEventGUIReg(string text)
@@ -456,8 +465,38 @@ namespace Statistic
             //Деактивация текущей вкладки
             activateTabPage(tclTecViews.SelectedIndex, false);
 
+            lock (this)
+            {
+                if (! (m_timerAlarmEvent == null))
+                {
+                    m_timerAlarmEvent = new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP); //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
+                    m_iAlarmEventCounter = 1;
+                }
+                else
+                    m_iAlarmEventCounter ++;
+            }
+
+            //Поверх остальных окон
+            bool bPrevTopMost = this.TopMost;
+            this.TopMost = true;
             //Диалоговое окно
-            MessageBox.Show(this, text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+            //Востановить значение по умолчанию
+            this.TopMost = bPrevTopMost;
+
+            lock (this)
+            {
+                m_iAlarmEventCounter --;
+
+                if (m_iAlarmEventCounter == 0)
+                {
+                    m_timerAlarmEvent.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    m_timerAlarmEvent.Dispose ();
+                    m_timerAlarmEvent = null;
+                }
+                else
+                    ;
+            }
 
             //Активация текущей вкладки
             activateTabPage(tclTecViews.SelectedIndex, true);

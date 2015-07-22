@@ -58,6 +58,7 @@ namespace StatisticCommon
         private System.Threading.Timer m_timerAlarm;
         public static volatile int MSEC_ALARM_TIMERUPDATE = -1;
         public static volatile int MSEC_ALARM_EVENTRETRY = -1;
+        public static volatile int MSEC_ALARM_TIMERBEEP = -1;
         //private Int32 m_msecTimerUpdate;
         //private Int32 m_msecEventRetry;
 
