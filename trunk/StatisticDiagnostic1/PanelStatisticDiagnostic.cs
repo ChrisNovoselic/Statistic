@@ -164,9 +164,10 @@ namespace StatisticDiagnostic1
                 return iRes;
             }
 
-            protected override void StateErrors(int state, int req, int res)
+            protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                throw new NotImplementedException();
+                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+                return iRes;
             }
 
             protected override void StateWarnings(int state, int req, int res)
