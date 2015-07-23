@@ -447,18 +447,25 @@ namespace Statistic
 
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
         {
-            if (IsHandleCreated/*InvokeRequired*/ == true)
+            try
             {
-                this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
+                if (IsHandleCreated/*InvokeRequired*/ == true)
+                {
+                    this.BeginInvoke(new DelegateIntIntFunc(EnabledButtonAlarm), ev.m_id_gtp, ev.m_id_tg);
 
-                this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
+                    this.BeginInvoke(new DelegateIntIntFunc(AddLabelAlarm), ev.m_id_gtp, ev.m_id_tg);
+                }
+                else {
+                    Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                    EnabledButtonAlarm(ev.m_id_gtp, ev.m_id_tg);
+
+                    AddLabelAlarm(ev.m_id_gtp, ev.m_id_tg);
+                }
             }
-            else {
-                Logging.Logg().Error(@"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ... BeginInvoke (EnabledButtonAlarm, AddLabelAlarm) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                EnabledButtonAlarm(ev.m_id_gtp, ev.m_id_tg);
-
-                AddLabelAlarm(ev.m_id_gtp, ev.m_id_tg);
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ...");
             }
 
             toEventGUIReg(ev);
