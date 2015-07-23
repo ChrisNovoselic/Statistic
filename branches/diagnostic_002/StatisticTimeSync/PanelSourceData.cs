@@ -582,7 +582,8 @@ namespace StatisticTimeSync
                 ;
         }
 
-        public override bool Activate (bool activated) {
+        public override bool Activate (bool activated) 
+        {
             bool bRes = base.Activate(activated);
             
             //Выбрать действие
@@ -609,3 +610,5 @@ namespace StatisticTimeSync
         }
     }
 }
+
+

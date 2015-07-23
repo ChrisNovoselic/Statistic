@@ -57,7 +57,6 @@
             //this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);
             this.Load += new System.EventHandler(this.FormDiagnostic_Load);            
             this.ResumeLayout(false);
-
         }
 
         #endregion      

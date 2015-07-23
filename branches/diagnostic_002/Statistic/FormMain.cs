@@ -97,8 +97,8 @@ namespace Statistic
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
 
-            tclTecViews.OnClose += delegateOnCloseTab;
-            tclTecViews.OnFloat += delegateOnFloatTab;
+            tclTecViews.EventHTabCtrlExClose += delegateOnCloseTab;
+            tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;
         }
 
         private string GetINIParametersOfID(int id)

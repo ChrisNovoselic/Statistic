@@ -58,7 +58,7 @@ namespace StatisticCommon
             else
                 ;
 
-            return RegisterListener(MC_ID, id, active, out err);
+            return registerListener(MC_ID, id, active, out err);
         }
     }
 }
