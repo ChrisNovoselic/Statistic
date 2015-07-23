@@ -164,9 +164,10 @@ namespace StatisticDiagnostic1
                 return iRes;
             }
 
-            protected override void StateErrors(int state, int req, int res)
+            protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                throw new NotImplementedException();
+                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+                return iRes;
             }
 
             protected override void StateWarnings(int state, int req, int res)
@@ -744,10 +745,6 @@ namespace StatisticDiagnostic1
               adapterTEC = new SqlDataAdapter("SELECT * FROM TEC_LIST", conn);
               adapterTASK = new SqlDataAdapter("SELECT * FROM TASK_LIST", conn);
               //adapterServer = new SqlDataAdapter("SELECT * FROM Source", conn);
-
-              //DataSet dataSet = new DataSet();
-              // Заполнение таблицы
-              //DataTable dttec = new DataTable();
               adapterTEC.Fill(arraySource);
               adapterTASK.Fill(arraySourceDataTask);
               //adapterServer.Fill(arraySourceServer);
