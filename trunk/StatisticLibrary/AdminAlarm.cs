@@ -236,7 +236,7 @@ namespace StatisticCommon
                 if (m_iActiveCounter > 1)
                     m_iActiveCounter--;
                 else
-                    return;
+                    ; //return;
 
             //Int32 msecTimerUpdate = m_msecTimerUpdate;
             if (active == true)

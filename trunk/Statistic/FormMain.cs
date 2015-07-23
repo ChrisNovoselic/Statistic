@@ -457,7 +457,8 @@ namespace Statistic
 
         private void timerAlarmEvent (object obj)
         {
-            System.Media.SystemSounds.Question.Play();
+            //System.Media.SystemSounds.Question.Play();
+            Console.Beep();
         }
 
         private void panelAdminKomDispEventGUIReg(string text)
