@@ -59,6 +59,7 @@ namespace StatisticCommon
         public static volatile int MSEC_ALARM_TIMERUPDATE = -1;
         public static volatile int MSEC_ALARM_EVENTRETRY = -1;
         public static volatile int MSEC_ALARM_TIMERBEEP = -1;
+        public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;
         //private Int32 m_msecTimerUpdate;
         //private Int32 m_msecEventRetry;
 

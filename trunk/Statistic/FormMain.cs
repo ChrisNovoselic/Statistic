@@ -10,6 +10,8 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
 using System.Data.Common; //fTimerAppReset () - ...
+using System.Media;
+using System.IO;
 
 using System.Net;
 
@@ -394,6 +396,7 @@ namespace Statistic
             AdminAlarm.MSEC_ALARM_TIMERUPDATE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000;
             AdminAlarm.MSEC_ALARM_EVENTRETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
             AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
+            AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_SYSTEMMEDIA_TIMERBEEP];
 
             FormParameters.UpdateIdLinkTMSources();
         }
@@ -453,57 +456,104 @@ namespace Statistic
 
         private int m_iAlarmEventCounter;
         private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
+        SoundPlayer m_sndAlarmEvent;
         private System.Threading.Timer m_timerAlarmEvent;
 
         private void timerAlarmEvent (object obj)
-        {
+        {            
             //System.Media.SystemSounds.Question.Play();
-            Console.Beep();
+            if (m_sndAlarmEvent == null)
+                Console.Beep();
+            else
+                m_sndAlarmEvent.Play();
+        }
+
+        private void messageBoxShow(object text)
+        {
+            ////Вариант №1
+            //MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //Вариант №2
+            MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+
+            this.BeginInvoke (new DelegateFunc (messageBoxHide));
+        }
+
+        private void messageBoxHide ()
+        {
+            //bool bContinue = false;
+
+            lock (this)
+            {
+                m_iAlarmEventCounter--;
+
+                if (m_iAlarmEventCounter == 0)
+                {
+                    m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    m_timerAlarmEvent.Dispose();
+                    m_timerAlarmEvent = null;
+
+                    if (! (m_sndAlarmEvent == null))
+                    {
+                        m_sndAlarmEvent.Stop();
+                        m_sndAlarmEvent.Dispose ();
+                        m_sndAlarmEvent = null;
+                    }
+                    else
+                        ;
+
+                    //bContinue = true;
+
+                    //Активация текущей вкладки
+                    activateTabPage(tclTecViews.SelectedIndex, true);
+
+                    //Продолжение работы ...
+                    ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
+                }
+                else
+                    ;
+            }
+
+            //if (bContinue == true)
+            //{
+            //    //Активация текущей вкладки
+            //    activateTabPage(tclTecViews.SelectedIndex, true);
+
+            //    //Продолжение работы ...
+            //    ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
+            //}
+            //else
+            //    ;
         }
 
         private void panelAdminKomDispEventGUIReg(string text)
         {
-            //Деактивация текущей вкладки
-            activateTabPage(tclTecViews.SelectedIndex, false);
-
             lock (this)
             {
                 if (m_timerAlarmEvent == null)
                 {
+                    //Деактивация текущей вкладки
+                    activateTabPage(tclTecViews.SelectedIndex, false);
+
+                    string strPathSnd = Environment.GetEnvironmentVariable("windir") + @"\Media\" + AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP;
+                    if (File.Exists (strPathSnd) == true)
+                        m_sndAlarmEvent = new SoundPlayer(strPathSnd);
+                    else
+                        ;
+
                     m_timerAlarmEvent = new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP); //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
                     m_iAlarmEventCounter = 1;
                 }
                 else
-                    m_iAlarmEventCounter ++;
+                    m_iAlarmEventCounter++;
             }
 
             //Поверх остальных окон
             bool bPrevTopMost = this.TopMost;
             this.TopMost = true;
             //Диалоговое окно
-            MessageBox.Show(text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+            new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
             //Востановить значение по умолчанию
             this.TopMost = bPrevTopMost;
-
-            lock (this)
-            {
-                m_iAlarmEventCounter --;
-
-                if (m_iAlarmEventCounter == 0)
-                {
-                    m_timerAlarmEvent.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    m_timerAlarmEvent.Dispose ();
-                    m_timerAlarmEvent = null;
-                }
-                else
-                    ;
-            }
-
-            //Активация текущей вкладки
-            activateTabPage(tclTecViews.SelectedIndex, true);
-
-            //Продолжение работы ...
-            ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
         }
 
         private void OnPanelAdminKomDispEventGUIReg(string text)

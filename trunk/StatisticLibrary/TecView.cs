@@ -471,7 +471,7 @@ namespace StatisticCommon
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    if (iDebug == 0)
+                    if (!(iDebug < 0))
                         Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
                     else
                         ;
@@ -511,7 +511,10 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                            Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
+                            if (!(iDebug < 0))
+                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
+                            else
+                                ;
                         }
                         else
                             ;
@@ -538,7 +541,7 @@ namespace StatisticCommon
                             ; //EventUnReg...
                     }
 
-                    if (iDebug == 0)
+                    if (!(iDebug < 0))
                         if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
                             Console.Write(@", ");
                         else
@@ -547,11 +550,18 @@ namespace StatisticCommon
                         ;
                 }
 
-                //Для отладки
-                //EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
-
                 if (!(power_TM == TGTURNONOFF_VALUE))
                     if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
+                    {
+                        //Для отладки
+                        if (!(iDebug < 0))
+                        {
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                            Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
+                        }
+                        else
+                            ;
+
                         if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
                             //EventReg(allTECComponents[indxTECComponents].m_id, -1);
                             if (power_TM < m_valuesHours[curHour].valuesUDGe)
@@ -560,12 +570,16 @@ namespace StatisticCommon
                                 EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
                         else
                             ; //EventUnReg...
+                    }
                     else
                         ; //Нет значений ИЛИ значения ограничены 1 МВт
                 else
                     iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
 
-                Console.WriteLine ();
+                if (!(iDebug < 0))
+                    Console.WriteLine ();
+                else
+                    ;
 
                 //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
                 //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
