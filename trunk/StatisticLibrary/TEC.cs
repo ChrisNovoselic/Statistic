@@ -1495,7 +1495,7 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR"
-                            + @" FROM [dbo].[P_SUMM_TSN]"
+                            + @" FROM [dbo].[P_SUMM_TSN_KKS]"
                             + @" WHERE [ID_TEC] = " + m_id
                                 + @" AND [LAST_UPDATE] BETWEEN '" + dtReq.Date.ToString(@"yyyyMMdd") + @"'"
                                     + @" AND '" + dtReq.Date.AddHours(HAdmin.CountHoursOfDate(dtReq)).ToString(@"yyyyMMdd HH:00:01") + @"'"

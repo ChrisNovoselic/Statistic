@@ -20,7 +20,7 @@
     <TargetFrameworkProfile />
     <PublishUrl>D:\Statistic2\</PublishUrl>
     <Install>false</Install>
-    <InstallFrom>Unc</InstallFrom>
+    <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateMode>Foreground</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
@@ -28,7 +28,6 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>\\ne1150\D%24\My Project%27s\Work%27s\C.Net\Staistic-2.X.X\Statistic\bin\Debug\</InstallUrl>
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
     <ApplicationRevision>9</ApplicationRevision>
