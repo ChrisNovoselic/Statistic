@@ -190,9 +190,9 @@
     <None Include="bin\Debug\connsett.ini" />
     <None Include="bin\Debug\setup.ini" />
     <None Include="ClassDiagram1.cd" />
-    <None Include="connsett.ini">
+    <Content Include="connsett.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
