@@ -1007,14 +1007,23 @@ namespace StatisticCommon
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
-
+        /// <summary>
+        /// Возвратить номер часа
+        /// </summary>
+        /// <param name="dt">Указанные дата/время</param>
+        /// <param name="type">Тип данных (ПБР, админ./значения)</param>
+        /// <returns>Номер часа</returns>
         private int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
             int iRes = -1;
 
+            //Вариант №1
             if (dt < serverTime.Date)
+                //При указанной дате раньше, чем дата на сервере (задним числом)
                 if (m_ignore_date == true)
+                    //В настройках указано - игнорировать дату/время сервера
                     iRes = 0;
                 else {
+                    //В настройках указано - учитывать дату/время сервера
                     int offset_days = (dt - serverTime.Date).Days;
                     if ((offset_days == -1) && (serverTime.Hour < 1)) //Исключительная ситуация
                         iRes = m_curRDGValues.Length;
@@ -1023,16 +1032,25 @@ namespace StatisticCommon
                 }
             else
                 if (dt == serverTime.Date)
-                    if (type == CONN_SETT_TYPE.ADMIN)
-                        //Возможность изменять рекомендации за тек./час
-                        iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1;
+                    //При текущей дате
+                    if (m_ignore_date == true)
+                        //В настройках указано - игнорировать дату/время сервера
+                        iRes = 0;
                     else
-                        if (type == CONN_SETT_TYPE.PBR)
-                            iRes = serverTime.Hour;
+                    {
+                        //В настройках указано - учитывать дату/время сервера                                        
+                        if (type == CONN_SETT_TYPE.ADMIN)
+                            //Возможность изменять рекомендации за тек./час только для админ./знач.
+                            iRes = serverTime.Hour == 0 ? serverTime.Hour : serverTime.Hour - 1;
                         else
-                            ;
+                            if (type == CONN_SETT_TYPE.PBR)
+                                iRes = serverTime.Hour;
+                            else
+                                ;
+                    }
                 else
                     if (dt > serverTime.Date)
+                        //При дате "в будущем"
                         iRes = 0;
                     else
                         ;
