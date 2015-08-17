@@ -15,17 +15,17 @@ namespace StatisticDiagnostic1
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
+            /*Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormDiagnostic());
-            PanelStatisticDiagnostic1 form = new PanelStatisticDiagnostic1();
+            PanelStatisticDiagnostic1 form = new PanelStatisticDiagnostic1();*/
 
             /*Thread thread = new Thread(form.ThreadFunction);
             //Запускаем поток
             thread.Priority = ThreadPriority.Highest;
             thread.Start();*/
 
-            /*
+            
               int iRes = 0;
 
               //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
@@ -67,7 +67,7 @@ namespace StatisticDiagnostic1
                   ProgramBase.Exit();
               }
               else
-                  ;*/
+                  ;
           }
 
         }

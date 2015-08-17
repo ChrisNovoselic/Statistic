@@ -21,7 +21,7 @@ namespace StatisticDiagnostic1
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
             panelMain.Start();
-            panelMain.Activate(true);
+            //panelMain.PingTimerThread();
         }
 
         public void FormDiagnostic_Close(object obj, EventArgs ev)
@@ -30,10 +30,12 @@ namespace StatisticDiagnostic1
             panelMain.Stop();
         }
 
-        /*private void FormDiagnostic_Activate(object obj, EventArgs ev)
+        private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
             panelMain.Activate(true);
-        }*/
+            //panelMain.TimerFillPanel();
+           
+        }
 
         /*private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
