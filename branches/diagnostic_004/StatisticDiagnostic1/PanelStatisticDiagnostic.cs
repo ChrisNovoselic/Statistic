@@ -745,6 +745,7 @@ namespace StatisticDiagnostic1
         {
             InitializeComponent();
             ConnTEC();
+           
         }
 
         /// <summary>
@@ -789,12 +790,13 @@ namespace StatisticDiagnostic1
                     System.Threading.Thread.Sleep(500);
         }
 
-        
         public void ConnTEC()
         {
-            Start();
+           
             GetCurrentData();
-            Create_arPanelTEC(arraySource); 
+            Create_arPanelTEC(arraySource);
+            Start();
+        
         }
 
         /// <summary>
@@ -826,7 +828,7 @@ namespace StatisticDiagnostic1
         /// <summary>
         /// Прикрепляет гриды к панеле ТЭЦ
         /// </summary>
-        public void FillPanel()
+        public void AddPanelTEC()
         {
             int i = -1;
             int indx = -1
@@ -923,7 +925,7 @@ namespace StatisticDiagnostic1
             SqlDataAdapter adapterTASK;
             SqlDataAdapter adapterDS;
             SqlDataAdapter adapterHT;
-            SqlDataAdapter adapterS;
+            //SqlDataAdapter adapterS;
 
             try
             {
@@ -932,13 +934,13 @@ namespace StatisticDiagnostic1
                 adapterTASK = new SqlDataAdapter("SELECT * FROM TASK_LIST", conn);
                 adapterDS = new SqlDataAdapter("SELECT * FROM Keys_Datasheet", conn);
                 adapterHT = new SqlDataAdapter("SELECT * FROM SOURCE", conn);
-                adapterS = new SqlDataAdapter("SELECT * FROM Host_Table", conn);
+                //adapterS = new SqlDataAdapter("SELECT * FROM Host_Table", conn);
 
                 adapterTASK.Fill(arraySourceDataTask);
                 adapterHT.Fill(arraySourceHT);
                 adapterDS.Fill(arraySourceDS);
                 adapterTEC.Fill(arraySource);
-                adapterS.Fill(arraySourceS);
+                //adapterS.Fill(arraySourceS);
 
                 //int i = arraySource.Rows.Count;
                 
@@ -989,7 +991,7 @@ namespace StatisticDiagnostic1
         {
             TextColumnTec();
             ColumTimeTEC();
-            FillPanel();
+            AddPanelTEC();
         }
 
         /// <summary>
@@ -1060,8 +1062,6 @@ namespace StatisticDiagnostic1
         {
             for (int k = 0; k < arraySource.Rows.Count; k++)
             {
-                //string text = arraySourceDS.Rows[k][@"DESCRIPTION"].ToString();
-
                 for (int j = 0; j < m_arPanelsTEC[k].TECDataGridView.Rows.Count; j++)
                 {
                     string text1;
@@ -1079,7 +1079,7 @@ namespace StatisticDiagnostic1
                     while (text1 != text2);
 
                     string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
-                    //MessageBox.Show("SOVPADENIE");
+
                     if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
                         m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));
 
