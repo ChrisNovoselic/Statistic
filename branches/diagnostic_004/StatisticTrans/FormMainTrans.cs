@@ -47,6 +47,8 @@ namespace StatisticTrans
 
         protected CheckBox m_checkboxModeMashine;
 
+        public Label m_labelTime;
+
         //protected HMark m_markQueries;
 
         protected bool m_bTransAuto {
@@ -244,6 +246,15 @@ namespace StatisticTrans
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false;;
 
+            //labelTime
+            this.m_labelTime = new Label();
+            this.m_labelTime.Name = "m_labelTime";
+            this.m_labelTime.Location = new System.Drawing.Point(150,516);
+            this.m_labelTime.Size = new System.Drawing.Size(580, 15);
+            this.m_labelTime.Text = "Время следующего обновления: ";
+            this.Controls.Add(this.m_labelTime);
+            this.m_labelTime.Visible = true;
+
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
@@ -251,6 +262,7 @@ namespace StatisticTrans
             string msg_throw = string.Empty;
             string [] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
+           
             if (argc > 1)
             {
                 if ((!(argc == 2)))
@@ -289,6 +301,9 @@ namespace StatisticTrans
                             else
                             {
                             }
+
+                            int argt = m_arg_interval;
+                            //TimeThread(argt);
                         }
                         else
                         {
@@ -688,6 +703,7 @@ namespace StatisticTrans
             this.Size = new System.Drawing.Size(849, 514);
 
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
+            this.m_labelTime.Location = new System.Drawing.Point(150, 437);
         }
 
         protected List<int> m_listID_TECNotUse;
@@ -888,6 +904,20 @@ namespace StatisticTrans
             {
                 updateDataGridViewAdmin (date);
             }
+        }
+
+        /// <summary>
+        /// Дата обновы
+        /// </summary>
+        public void DateUpdate(object x)
+        {
+            //DateTime tm = DateTime.Now;
+            int y = (int)x / 1000;
+            DateTime tm = DateTime.Now.AddSeconds(y);
+            //string str = tm.ToShortTimeString();
+            string str1 = tm.ToString();
+            m_labelTime.Text = "Время следующего обновления: " + str1;
+            m_labelTime.Update();
         }
 
         /// <summary>
@@ -1223,12 +1253,13 @@ namespace StatisticTrans
                         timerService.Interval = m_arg_interval;
 
                         FillComboBoxTECComponent();
+                        DateUpdate(m_arg_interval);
                     }
                     else
                         ;
 
                     dateTimePickerMain.Value = DateTime.Now;
-
+                    DateUpdate(m_arg_interval);
                     trans_auto_start();
                     break;
                 case MODE_MASHINE.TO_DATE:
@@ -1309,6 +1340,11 @@ namespace StatisticTrans
 
         protected abstract void getDataGridViewAdmin(int indxDB);
 
+        /// <summary>
+        /// Экспорт данных ихз источника
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
             if (!(comboBoxTECComponent.SelectedIndex < 0)) {
@@ -1317,6 +1353,8 @@ namespace StatisticTrans
 
                 //ClearTables();
 
+                DateTime time = DateTime.Now;
+                m_labelTime.Text = "Последний экспорт данных в "+ time;
                 SaveRDGValues (true);
             }
             else
@@ -1357,7 +1395,7 @@ namespace StatisticTrans
         private void InitializeTimerService () {
             if (timerService == null) {
                 timerService = new System.Windows.Forms.Timer(this.components);
-                timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Пеавый запуск
+                timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
             }
             else
