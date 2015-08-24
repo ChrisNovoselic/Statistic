@@ -57,7 +57,28 @@ namespace Statistic
                     indx = (int)((HLabel)ctrl).m_type;
                     if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
                     {
-                        if (textOfMaxLengths[indx].Length < ctrl.Text.Length) textOfMaxLengths[indx] = ctrl.Text; else ;
+                        if (textOfMaxLengths[indx].Length < ctrl.Text.Length)
+                        {
+                            switch (indx)
+                            {
+                                case (int)HLabel.TYPE_HLABEL.TG:
+                                    textOfMaxLengths[indx] = ctrl.Text;
+                                    break;
+                                case (int)HLabel.TYPE_HLABEL.TOTAL:
+                                    if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                        textOfMaxLengths[indx] = new string('8', ctrl.Text.Length + 3);
+                                    else
+                                        textOfMaxLengths[indx] = ctrl.Text;
+                                    break;
+                                case (int)HLabel.TYPE_HLABEL.TOTAL_ZOOM:
+                                    textOfMaxLengths[indx] = ctrl.Text;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                            ;
                         if ((szLabelOfMinSizes[indx].Height > ctrl.Height) || (szLabelOfMinSizes[indx].Width > ctrl.Width)) { szLabelOfMinSizes[indx].Height = ctrl.Height; szLabelOfMinSizes[indx].Width = ctrl.Width; } else ;
                     }
                     else
@@ -111,24 +132,29 @@ namespace Statistic
             return fonts;
         }
 
+        /// <summary>
+        /// Обработчик события изменеия размера панели
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         public void OnSizeChanged(object obj, EventArgs ev)
         {
             Font[] fonts = GetFontHLabel();
 
+            if (obj == null)
+                obj = this;
+            else
+                ;
+
             if (!(fonts == null))
                 foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
-                {
                     if (ctrl is HClassLibrary.HLabel)
-                    {
                         if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
                             ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
                         else
                             Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
                     else
-                    {
-                    }
-                }
+                        ;
             else
                 Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts=null", Logging.INDEX_MESSAGE.NOT_SET);
         }

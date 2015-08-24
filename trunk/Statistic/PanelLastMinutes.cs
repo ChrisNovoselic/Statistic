@@ -86,8 +86,9 @@ namespace Statistic
 
         public int m_msecPeriodUpdate;
 
-        //public bool m_bIsActive;
-
+        /// <summary>
+        /// Событие инициации процедуры изменения состояния
+        /// </summary>
         private event DelegateObjectFunc EventChangeDateTime;
 
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -293,6 +294,11 @@ namespace Statistic
                 //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
                 m_dtprDate.Value = HAdmin.ToMoscowTimeZone (DateTime.Now);
                 this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
+
+                this.m_btnUpdate = new Button ();
+                this.m_btnUpdate.Dock = DockStyle.Fill;
+                this.m_btnUpdate.Text = @"Обнов.";
+                this.m_btnUpdate.Click += new EventHandler(OnDateTimeValueChanged);
             }
 
             #endregion
@@ -302,6 +308,8 @@ namespace Statistic
         {
             public DateTimePicker m_dtprDate;
             private Dictionary<int, Label> m_dictLabelTime;
+
+            private Button m_btnUpdate;
 
             public PanelDateTime() : base ()
             {
@@ -329,9 +337,13 @@ namespace Statistic
                 //Добавить дату
                 //Label lblDate = HLabel.createLabel(dtNow.ToString (@"dd.MM.yyyy"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
                 this.Controls.Add(m_dtprDate, 0, 0);
-                this.SetRowSpan(m_dtprDate, COUNT_FIXED_ROWS);
+                //this.SetRowSpan(m_dtprDate, COUNT_FIXED_ROWS);
 
                 m_dictLabelTime = new Dictionary<int,Label> ();
+
+                //Добавить кнопку принудительного обновления
+                this.Controls.Add(this.m_btnUpdate, 0, 1);
+                //this.SetRowSpan(this.m_btnUpdate, COUNT_FIXED_ROWS);
 
                 initTableHourRows();
 
@@ -363,16 +375,16 @@ namespace Statistic
 
                 if (m_dictLabelTime.Count == 0)
                 {
+                    for (h = 0; h < (cntHours + COUNT_FIXED_ROWS - 0); h++)
+                    {
+                        this.RowStyles.Add(PanelLastMinutes.fRowStyle());
+                    }
+
                     for (h = 0; h < cntHours; h++)
                     {
                         m_dictLabelTime[h] = HLabel.createLabel(@"--:--", PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
                         this.Controls.Add(m_dictLabelTime[h], 0, (h) + COUNT_FIXED_ROWS);                        
-                    }
-
-                    for (h = 0; h < (cntHours + COUNT_FIXED_ROWS - 1); h++)
-                    {
-                        this.RowStyles.Add(PanelLastMinutes.fRowStyle());
-                    }
+                    }                    
 
                     bChangedCountRows = true;
                 }
@@ -625,7 +637,10 @@ namespace Statistic
 
                 return bRes;
             }
-
+            /// <summary>
+            /// Обработчие события - изменение значения свойства
+            /// </summary>
+            /// <param name="obj"></param>
             public void OnEventChangeDateTime (object obj) {
                 m_tecView.m_curDate = (DateTime)obj;
                 //m_tecView.m_curDate = new DateTime(((DateTime)obj).Year

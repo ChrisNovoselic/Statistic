@@ -194,6 +194,8 @@ namespace StatisticCommon
                     string [] idsInner = args[1].Split(',');
                     bool valid = false;
                     int idInner = -1;
+                    IList<PlanValueItem> listPVI = null;
+                    DateTime dateCurrent;
 
                     for (i = 0; i < idsInner.Length; i ++)
                     {
@@ -214,14 +216,28 @@ namespace StatisticCommon
                         if (!(igo == null)) {
                             result = true;
 
-                            IList<PlanValueItem> listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
+                            try
+                            {
+                                listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
+                            }
+                            catch (Exception e)
+                            {
+                                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DbMCInterface::GetData () - GetPlanValuesActual () ...");
+                                Console.WriteLine("    ОШИБКА получения значений!");
 
-                            DateTime dateCurrent;
+                                needReconnect = true;
 
-                            if (listPVI.Count == 0)
-                                Console.WriteLine("    Нет параметров генерации!");
+                                result = false;
+                            }
+
+                            if (result == true)
+                                if (listPVI.Count == 0)
+                                    Console.WriteLine("    Нет параметров генерации!");
+                                else
+                                    ;
                             else
-                                ;
+                                //ОШИБКА получения значений!
+                                break;
 
                             foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
                             {

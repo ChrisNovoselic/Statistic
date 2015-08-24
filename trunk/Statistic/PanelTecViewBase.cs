@@ -1160,7 +1160,7 @@ namespace Statistic
                         updateGraphicsRetro(markSourceData);
                     }
 
-                    //m_pnlQuickData.OnSizeChanged (null, EventArgs.Empty);
+                    m_pnlQuickData.OnSizeChanged(null, EventArgs.Empty);
 
                     m_timerCurrent.Change(0, 1000);
                 }
