@@ -20,7 +20,7 @@ namespace StatisticDiagnostic1
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            panelMain.Start();
+            //panelMain.Start();
             //panelMain.PingTimerThread();
         }
 
