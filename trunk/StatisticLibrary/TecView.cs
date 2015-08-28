@@ -4261,7 +4261,7 @@ namespace StatisticCommon
 
                             //Признак получения значения хотя бы за один интервал
                             if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
-                        }
+                        } //для for (j = 0; j < CountTG; j++, i++)
 
                         //if ((j < CountTG) && ((end == false) || (jump == false)))
                         if (! (iRes == 0))
@@ -4275,9 +4275,34 @@ namespace StatisticCommon
 
                             //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
 
+                            //Доработка 27.08.2015 г.
+                            // обработка ситуации, когда в БД отсутствуют значения
+                            // 1-го или более ТГ для компонента (ГТП, ЩУ, станция)
+                            // , НО есть значение хотя бы для 1-го
+                            // , И суммарное значение для интервала > 0
+                            bool bMinInc = false;
+                            //Проверить остались ли строки для обработки
                             if (end == false)
+                                //Установить признак увеличения индекса текущего 3-х мин интервала
+                                bMinInc = true;
+                            else
+                                if (end == true)
+                                //Строк для обработки - нет
+                                    //Проверить наличие значения хотя бы для 1-го из ТГ
+                                    // И значение для интервала > 0
+                                    if ((j > 0) && ((minuteVal / 1000) > 1))
+                                        //Установить признак увеличения индекса текущего 3-х мин интервала
+                                        bMinInc = true;
+                                    else
+                                        ;
+                                else
+                                    ; //true, false, ???
+                            //Проверить признак увеличения индекса текущего 3-х мин интервала
+                            if (bMinInc == true)
                             {
+                                //Сохранить значение для очередного интервала
                                 m_valuesMins[min].valuesFact = minuteVal / 1000;
+                                //Увеличить индекс
                                 lastMin = min + 1;
                             }
                             else
@@ -4285,7 +4310,7 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                    }
+                    } //для for (i = 0; (end == false) && (min < m_valuesMins.Length); min++)
 
                     /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
                     f2.ShowDialog();*/
