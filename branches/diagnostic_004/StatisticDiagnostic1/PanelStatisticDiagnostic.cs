@@ -38,6 +38,7 @@ namespace StatisticDiagnostic1
         public DataTable arraySourceHT = new DataTable();
         public DataTable tbTask = new DataTable();
         HDataSource m_DataSource;
+        int counter = -1;
         public DataTable table_task = new DataTable();
         private object m_lockTimerGetData;
         private object m_lockGetData;
@@ -920,9 +921,9 @@ namespace StatisticDiagnostic1
         /// <summary>
         /// 
         /// </summary>
-        public void MethodTask()
+        public void MethodTask(int x)
         {
-            TextColumnTask();
+            TextColumnTask(x);
             ColumTimeTask();
         }
 
@@ -1160,12 +1161,10 @@ namespace StatisticDiagnostic1
         /// <summary>
         ///  Функция перемеинования ячейки датагрид Task
         /// </summary>
-        public void TextColumnTask()
+        public void TextColumnTask(int indx)
         {
-            for (int j = 0; j < taskdb.TaskDataGridView.Rows.Count; j++)
-            {
                 string text1;
-                string text2 = taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value.ToString();
+                string text2 = taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value.ToString();
 
                 int s = 0;
 
@@ -1183,8 +1182,8 @@ namespace StatisticDiagnostic1
                 /*if (taskdb.TaskDataGridView.InvokeRequired)
                     taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));*/
 
-                taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString();
-            }
+                taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value = text.ToString();
+            
         }
 
         /// <summary>
@@ -1305,24 +1304,6 @@ namespace StatisticDiagnostic1
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="table"></param>
-        private void AddRow(DataTable table)
-        {
-            DataRowCollection rowCollection = table.Rows;
-
-
-            DataRow newRow = table.NewRow();
-
-
-
-            table.Rows.Add(newRow);
-        }
-
-
-
-        /// <summary>
         /// Событие для чекбокса
         /// </summary>
         public void TaskCheckedListBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -1330,61 +1311,62 @@ namespace StatisticDiagnostic1
             string curItem = taskdb.TaskCheckedListBox.SelectedItem.ToString();
             int index = taskdb.TaskCheckedListBox.SelectedIndex;
             string filter_task = "NAME_SHR = '" + curItem + "'";
-            string filter = "ID_Value = '28'";
-            table_task = tbTask.Clone();
-            DataTable table = new DataTable();
-            table = tbTask.Clone();
 
             if (taskdb.TaskCheckedListBox.GetItemChecked(taskdb.TaskCheckedListBox.SelectedIndex) == true)
             {
                 if (taskdb.TaskCheckedListBox.CheckedIndices.Count > 1)
                 {
-                    table_task.Clear();
-                    foreach (DataRow rowAdd in tbTask.Select(filter))
+                    foreach (DataRow rowTask in tbTask.Select(filter_task))
                     {
-                        table_task.ImportRow(rowAdd);
+                        table_task.ImportRow(rowTask);
                     }
 
-                    foreach (DataRow rowTask in table_task.Select(filter_task))
-                    {
-                        table.ImportRow(rowTask);
-                    }
-
-                    //DataRow newRow = table_task.NewRow();
-                    DataRow newRow = table.Rows[0];
-                    table_task.Rows.Add(newRow);
-             
                     taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
+                    counter++;
                 }
 
                 else
                 {
                     foreach (DataRow rowsTec in tbTask.Select(filter_task))
                     {
+                        counter++;
+                        table_task = tbTask.Clone();
                         table_task.ImportRow(rowsTec);
 
                         taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
-                        //table_task.Rows.Add(rowsTec);
-                        taskdb.TaskDataGridView.Update();
-                        MethodTask();
-                        HeaderTextTask();
 
-                        /*if (taskdb.TaskDataGridView.InvokeRequired)
-                            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Update()));*/
+                        taskdb.TaskDataGridView.Update();
                     }
+               
                 }
-            }
+                //MethodTask(counter);
+                HeaderTextTask();
+            }     
 
             else
             {
                 string curItemDel = taskdb.TaskCheckedListBox.SelectedItem.ToString();
                 int indexDel = taskdb.TaskCheckedListBox.SelectedIndex;
+                counter--;
 
-                table_task.Rows.RemoveAt(indexDel);
+                foreach (DataGridViewRow row in taskdb.TaskDataGridView.Rows)
+                {
+                    if (row.Cells[0].Value.Equals(curItemDel))
+                    {
+                        taskdb.TaskDataGridView.Rows.RemoveAt(row.Index);
+                        break;
+                    }
+                    else 
+                    {
+                        int a;
+                    }
+                }
 
-                taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
+                //table_task.Rows.Remove (;
+                taskdb.TaskDataGridView.Update();
+                taskdb.TaskDataGridView.Refresh();
+                //taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Update()));
             }
-
         }
 
         /// <summary>
