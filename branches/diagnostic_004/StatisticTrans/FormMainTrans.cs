@@ -261,7 +261,7 @@ namespace StatisticTrans
             this.m_labelTime.Name = "m_labelTime";
             this.m_labelTime.Location = new System.Drawing.Point(150,520);
             this.m_labelTime.Size = new System.Drawing.Size(580, 15);
-            this.m_labelTime.Text = "Время следующего обновления: ";
+            this.m_labelTime.Text = "";
             this.Controls.Add(this.m_labelTime);
             this.m_labelTime.Visible = true;
 

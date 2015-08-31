@@ -1,16 +1,18 @@
 ﻿using System.Windows.Forms; //TableLayoutPanel, DockStyle
 using System;
-
 using System.Globalization; //DaylightTime
-
 using System.Data; //DataTable
-
+using System.Threading; 
 using HClassLibrary; //HHandlerDb
 
 namespace StatisticTimeSync
 {
+    
     partial class PanelSourceData
     {
+        /// <summary>
+        /// Класс для работы с БД
+        /// </summary>
         class HGetDate : HHandlerDb
         {
             ConnectionSettings m_ConnSett;
@@ -189,6 +191,50 @@ namespace StatisticTimeSync
             }
         }
 
+        //PanelGetDate[] m_arPanels;
+
+        /// <summary>
+        /// Создание потоков для создания панелей
+        /// </summary>
+        public void Create_Panel()
+        {
+            m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
+            //ThreadMethod(0);
+            //m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+
+            for (int i = 0; i < m_arPanels.Length; i++)
+            {
+                ThreadMethod(i);
+            }
+        }
+
+        /// <summary>
+        /// Запуск потоков для создания панелей
+        /// </summary>
+        /// <param name="x"></param>
+        public void ThreadMethod(int x)
+        {
+            var thread = new System.Threading.Thread(Create_arPanel);
+            thread.Start(x);
+        }
+
+        /// <summary>
+        /// Функция создания новых панелей
+        /// </summary>
+        /// <param name="num"></param>
+        private void Create_arPanel(object num)
+        {
+                m_arPanels[(int)num] = new PanelGetDate();
+
+                EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[(int)num].OnEvtGetDate);
+                //EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[(int)num].OnEvtEtalonDate);
+        }
+
+        /*public void EvtTime(object num)
+        {
+          
+        }*/
+
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             initializeLayoutStyleEvenly (cols, rows);
@@ -214,10 +260,10 @@ namespace StatisticTimeSync
 
         #region Код, автоматически созданный конструктором компонентов
 
-        PanelGetDate[] m_arPanels;
+        //PanelGetDate[] m_arPanels;
 
         /// <summary>
-        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// Обязательный метод для поддержки конструктора - не изменяйте;;
         /// содержимое данного метода при помощи редактора кода.
         /// </summary>
         private void InitializeComponent()
@@ -230,10 +276,14 @@ namespace StatisticTimeSync
             for (i = 0; i < m_arPanels.Length; i++)
                 m_arPanels [i] = new PanelGetDate ();
 
+           // m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
+            //Create_Panel();
+            
             //Только для панели с эталонным серверои БД
-            m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+           m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
             //Для панелей с любыми серверами БД
-            for (i = 0; i < m_arPanels.Length; i++) {
+            for (i = 0; i < m_arPanels.Length; i++) 
+            {
                 EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[i].OnEvtGetDate);
                 EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[i].OnEvtEtalonDate);
             }
@@ -242,6 +292,8 @@ namespace StatisticTimeSync
 
             this.Dock = DockStyle.Fill;
             initializeLayoutStyle (3, 7);
+
+            //this.Invoke(new Action(() => this.Controls.Add(m_arPanels[0], 0, 0)));
 
             this.Controls.Add(m_arPanels[0], 0, 0);
 
@@ -257,12 +309,15 @@ namespace StatisticTimeSync
                 col = (int)(indx / this.RowCount);
                 row = indx % (this.RowCount - 0);
                 if (row == 0) row = 1; else ;
+                //this.Invoke(new Action(() => this.Controls.Add(m_arPanels[i], col, row)));
                 this.Controls.Add(m_arPanels[i], col, row); 
             }
 
+            //this.Invoke(new Action(() => this.ResumeLayout()));
             this.ResumeLayout();
         }
 
         #endregion
+        
     }
 }

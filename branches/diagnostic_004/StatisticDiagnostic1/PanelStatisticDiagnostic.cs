@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Timers;
 using System.Threading;
 using System.Windows.Forms; //TableLayoutPanel
 using System.Data; //DataTable
@@ -31,22 +32,24 @@ namespace StatisticDiagnostic1
                                       };
 
         public Modes[] m_arPanelsMODES;
+        public Tec[] m_arPanelsTEC;
+        public Task[] m_arPanelsTask;
+        string[,] massiveServ;
         public DataTable tbModes = new DataTable();
         public DataTable m_tableSourceData;
+        public DataTable table_task = new DataTable();
         public DataTable arraySourceDataTask = new DataTable();
         public DataTable arraySource = new DataTable();
         public DataTable arraySourceHT = new DataTable();
+        public DataTable arraySourceDS = new DataTable();
         public DataTable tbTask = new DataTable();
         HDataSource m_DataSource;
         int counter = -1;
-        public DataTable table_task = new DataTable();
         private object m_lockTimerGetData;
         private object m_lockGetData;
         ConnectionSettings m_connSett;
+        private System.Timers.Timer aTimer;
         public DataRow[] rows;
-        public Tec[] m_arPanelsTEC;
-        public Task[] m_arPanelsTask;
-        public DataTable arraySourceDS = new DataTable();
 
         public class HDataSource : HHandlerDb
         {
@@ -605,23 +608,6 @@ namespace StatisticDiagnostic1
             Conn();
         }
 
-        /*/// <summary>
-        /// versia 2.0???
-        /// </summary>
-        /// <param name="table"></param>
-        public void Create_Task(DataTable table)
-        {
-            DataRow[] rows_task;
-            rows_task = table.Select();
-
-            m_arPanelsTask = new Task[rows_task.Length];
-
-            for (int i = 0; i < rows.Length; i++)
-            {
-                m_arPanelsTask[i] = new Task();
-            }
-        }*/
-
         /// <summary>
         /// 
         /// </summary>
@@ -759,7 +745,7 @@ namespace StatisticDiagnostic1
             tbTask = (DataTable)table;
             start_TEC();
             start_MODES();
-            PingTimerThread();
+            TimerPing();
         }
 
         /// <summary>
@@ -1163,27 +1149,27 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void TextColumnTask(int indx)
         {
-                string text1;
-                string text2 = taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value.ToString();
+            string text1;
+            string text2 = taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value.ToString();
 
-                int s = 0;
+            int s = 0;
 
-                do
-                {
-                    text1 = arraySourceDS.Rows[s][@"ID"].ToString();
+            do
+            {
+                text1 = arraySourceDS.Rows[s][@"ID"].ToString();
 
-                    s++;
-                }
+                s++;
+            }
 
-                while (text1 != text2);
+            while (text1 != text2);
 
-                string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
+            string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
 
-                /*if (taskdb.TaskDataGridView.InvokeRequired)
-                    taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));*/
+            /*if (taskdb.TaskDataGridView.InvokeRequired)
+                taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));*/
 
-                taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value = text.ToString();
-            
+            taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value = text.ToString();
+
         }
 
         /// <summary>
@@ -1250,7 +1236,7 @@ namespace StatisticDiagnostic1
         {
             hosts.Sort();
 
-            foreach (DataRow row in arraySourceHT.Select("IP"))
+            foreach (DataRow row in arraySourceHT.Select())
             {
                 hosts.Add(row.ToString());
             }
@@ -1309,7 +1295,6 @@ namespace StatisticDiagnostic1
         public void TaskCheckedListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             string curItem = taskdb.TaskCheckedListBox.SelectedItem.ToString();
-            int index = taskdb.TaskCheckedListBox.SelectedIndex;
             string filter_task = "NAME_SHR = '" + curItem + "'";
 
             if (taskdb.TaskCheckedListBox.GetItemChecked(taskdb.TaskCheckedListBox.SelectedIndex) == true)
@@ -1337,35 +1322,26 @@ namespace StatisticDiagnostic1
 
                         taskdb.TaskDataGridView.Update();
                     }
-               
+
                 }
-                //MethodTask(counter);
+
+                MethodTask(counter);
                 HeaderTextTask();
-            }     
+            }
 
             else
             {
                 string curItemDel = taskdb.TaskCheckedListBox.SelectedItem.ToString();
-                int indexDel = taskdb.TaskCheckedListBox.SelectedIndex;
+                string filterDel = "NAME_SHR = '" + curItemDel + "'";
+                //int indexDel = taskdb.TaskCheckedListBox.SelectedIndex;
                 counter--;
 
-                foreach (DataGridViewRow row in taskdb.TaskDataGridView.Rows)
+                foreach (DataRow rowDel in table_task.Select(filterDel))
                 {
-                    if (row.Cells[0].Value.Equals(curItemDel))
-                    {
-                        taskdb.TaskDataGridView.Rows.RemoveAt(row.Index);
-                        break;
-                    }
-                    else 
-                    {
-                        int a;
-                    }
+                    table_task.Rows.Remove(rowDel);
                 }
 
-                //table_task.Rows.Remove (;
-                taskdb.TaskDataGridView.Update();
-                taskdb.TaskDataGridView.Refresh();
-                //taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Update()));
+                taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
             }
         }
 
@@ -1375,15 +1351,13 @@ namespace StatisticDiagnostic1
         /// <param name="x"></param>
         public void CellsPing(object x)
         {
-            string status;
-
             for (int k = 0; k < m_arPanelsTEC.Length; k++)
             {
                 for (int i = 0; i < m_arPanelsTEC[k].TECDataGridView.Rows.Count; i++)
                 {
                     int s = -1;
                     string text1;
-                    string text2 = m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[7].Value.ToString();
+                    string text2 = massiveServ[i,1];
 
                     do
                     {
@@ -1393,11 +1367,8 @@ namespace StatisticDiagnostic1
 
                     while (text1 != text2);
 
-                    string server = (string)arraySourceHT.Rows[s][@"IP"];
-                    status = PingSourceData(server);
-
                     if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
-                        m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[6].Value = status));
+                        m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[6].Value = massiveServ[i,0]));
                 }
             }
         }
@@ -1405,13 +1376,13 @@ namespace StatisticDiagnostic1
         /// <summary>
         /// Пропинговка ИД
         /// </summary>
-        public string PingSourceData(string server)
+        /// <param name="server"></param>
+        /// <returns></returns>
+        public string Ping(string server)
         {
             string str = null;
-
             Ping pingsender = new Ping();
 
-            //IPAddressCollection IpAdress
             IPStatus status = IPStatus.Unknown;
 
             try
@@ -1436,21 +1407,65 @@ namespace StatisticDiagnostic1
         }
 
         /// <summary>
-        /// Запуск таймера для пинговки ИД
+        /// Формирование списка ответов ip
         /// </summary>
-        public void PingTimerThread()
+        public void PingSourceData()
         {
-            var timer = new System.Threading.Timer(CellsPing, null, 0, 50000);
+            string server;
+            DataTable testTB = new DataTable();
+            string strokavst;
+            string[,] massiveServ = new string[arraySourceHT.Rows.Count,2];
+            string[] massive = new string[arraySourceHT.Rows.Count];
+            //GetHost();
+
+            for (int s = 0; s < arraySourceHT.Rows.Count; s++)
+            {
+                server = (string)arraySourceHT.Rows[s][@"IP"];
+                strokavst = Ping(server);
+                massive.SetValue(strokavst, s);
+            }
+
+            for (int c = 0; c < 2; c++)
+            {
+                if (c == 0)
+                {
+                    for (int r = 0; r < arraySourceHT.Rows.Count; r++)
+                    {
+                        massiveServ[r, c] = massive[r];
+                    }
+                }
+
+                else
+                {
+                    for (int r = 0; r < arraySourceHT.Rows.Count; r++)
+                    {
+                        massiveServ[r, c] = (string)arraySourceHT.Rows[r][@"NAME_SHR"];
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Создание потока таймера
+        /// 
         /// </summary>
-        /// <param name="x"></param>
-        public void ThreadPing()
+        public void TimerPing()
         {
-            Thread thread_ping = new Thread(CellsPing);
-            thread_ping.Start();
+          aTimer = new System.Timers.Timer(10000);
+          aTimer.Enabled = true;
+          aTimer.AutoReset = true;
+          aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+          aTimer.Interval = 300000;
+          GC.KeepAlive(aTimer);
+        }
+
+        /// <summary>
+        /// Событие таймера по пропинговки
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
+        public void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+           PingSourceData();
         }
 
         /// <summary>
