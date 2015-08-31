@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentTesting.cs" />
     <Compile Include="DbMCInterface.cs" />
     <Compile Include="DbMCSources.cs" />
     <Compile Include="FormMainTrans.cs">
