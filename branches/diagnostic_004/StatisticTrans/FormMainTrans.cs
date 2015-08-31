@@ -259,7 +259,7 @@ namespace StatisticTrans
             //labelTime
             this.m_labelTime = new Label();
             this.m_labelTime.Name = "m_labelTime";
-            this.m_labelTime.Location = new System.Drawing.Point(150,516);
+            this.m_labelTime.Location = new System.Drawing.Point(150,520);
             this.m_labelTime.Size = new System.Drawing.Size(580, 15);
             this.m_labelTime.Text = "Время следующего обновления: ";
             this.Controls.Add(this.m_labelTime);
@@ -1466,7 +1466,7 @@ namespace StatisticTrans
 
             catch 
             {
-                //CT;
+                
             }
         }
 
