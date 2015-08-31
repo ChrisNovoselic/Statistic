@@ -21,6 +21,15 @@ namespace StatisticTrans
 
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
 
+        /// <summary>
+        /// Экземпляр класса
+        /// </summary>
+        ComponentTesting CT = new ComponentTesting();
+        /// <summary>
+        /// счетчик иттераций ошибок
+        /// </summary>
+        public int IndexCount;
+
         protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE, UNKNOWN };
         public enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
@@ -47,6 +56,8 @@ namespace StatisticTrans
 
         protected CheckBox m_checkboxModeMashine;
 
+        public Label m_labelTime;
+
         //protected HMark m_markQueries;
 
         protected bool m_bTransAuto {
@@ -60,6 +71,7 @@ namespace StatisticTrans
                 return m_modeMashine == MODE_MASHINE.TO_DATE ? true : false;
             }
         }
+
         protected bool m_bEnabledUIControl = true;
 
         protected Int16 m_IndexDB
@@ -244,6 +256,15 @@ namespace StatisticTrans
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false;;
 
+            //labelTime
+            this.m_labelTime = new Label();
+            this.m_labelTime.Name = "m_labelTime";
+            this.m_labelTime.Location = new System.Drawing.Point(150,520);
+            this.m_labelTime.Size = new System.Drawing.Size(580, 15);
+            this.m_labelTime.Text = "";
+            this.Controls.Add(this.m_labelTime);
+            this.m_labelTime.Visible = true;
+
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
@@ -251,6 +272,7 @@ namespace StatisticTrans
             string msg_throw = string.Empty;
             string [] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
+           
             if (argc > 1)
             {
                 if ((!(argc == 2)))
@@ -289,6 +311,9 @@ namespace StatisticTrans
                             else
                             {
                             }
+
+                            int argt = m_arg_interval;
+                            //TimeThread(argt);
                         }
                         else
                         {
@@ -688,6 +713,7 @@ namespace StatisticTrans
             this.Size = new System.Drawing.Size(849, 514);
 
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
+            this.m_labelTime.Location = new System.Drawing.Point(150, 437);
         }
 
         protected List<int> m_listID_TECNotUse;
@@ -872,9 +898,17 @@ namespace StatisticTrans
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                //Копирование данных из массива одного объекта (SOURCE) в массив другого объекта (DEST)
-                m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
-                //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
+                try
+                {
+                    //Копирование данных из массива одного объекта (SOURCE) в массив другого объекта (DEST)
+                    m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
+                    //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
+                }
+
+                catch (Exception e)
+                {
+                    MessageBox.Show("Error");
+                }
 
                 //SaveRDGValues (false);
                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -891,12 +925,31 @@ namespace StatisticTrans
         }
 
         /// <summary>
+        /// Дата обновы
+        /// </summary>
+        public void Test()
+        {
+            DateTime tm = DateTime.Now;
+            string str1 = tm.ToString();
+            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentItter + " из " + CT.Itters + ""));
+           m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
+        }
+
+        /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
+            if (CT.currentItter == 10)
+                CT.currentItter = 0;
+            if (CT.currentItter>1)
+                CT.currentItter--;
+
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
+                //int num = comboBoxTECComponent.SelectedIndex;
+                CT.ErrorComp(CT.nameComponent);
+
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
@@ -931,6 +984,10 @@ namespace StatisticTrans
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
+                CT.SetItter(comboBoxTECComponent.Items.Count);
+                CT.CounterItter();
+                Test();
+                
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
@@ -1088,6 +1145,10 @@ namespace StatisticTrans
         //    this.BeginInvoke(new DelegateBoolFunc(enabledButtonSourceExport), true);
         //}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         protected override int UpdateStatusString()
         {
             int have_msg = -1;
@@ -1151,12 +1212,19 @@ namespace StatisticTrans
                 if (m_bTransAuto == true) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
-        protected void trans_auto_next () {
+        protected void trans_auto_next () 
+        {
             Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex, Logging.INDEX_MESSAGE.NOT_SET);
 
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
+                if (comboBoxTECComponent.SelectedIndex == -1)
+                    CT.currentItter = 0;
+               
+                Test();
+                //counter
                 comboBoxTECComponent.SelectedIndex ++;
+                CT.NameCurComponent((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
@@ -1180,7 +1248,8 @@ namespace StatisticTrans
                 }
         }
 
-        protected virtual bool IsTomorrow() {
+        protected virtual bool IsTomorrow()
+        {
             TimeSpan timeSpan= new TimeSpan (4, 5, 6);
             DateTime dateApp = dateTimePickerMain.Value.AddDays (1);
 
@@ -1195,7 +1264,7 @@ namespace StatisticTrans
             HAdmin.SeasonDateTime = DateTime.Parse (m_sFileINI.GetMainValueOfKey (keyPar));
             keyPar = @"Season Action";
             HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
-
+             
             if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
                 FillComboBoxTECComponent();
@@ -1223,12 +1292,15 @@ namespace StatisticTrans
                         timerService.Interval = m_arg_interval;
 
                         FillComboBoxTECComponent();
+                        //
+                        //DateUpdate(m_arg_interval);
                     }
                     else
                         ;
 
                     dateTimePickerMain.Value = DateTime.Now;
 
+                    //DateUpdate(m_arg_interval);
                     trans_auto_start();
                     break;
                 case MODE_MASHINE.TO_DATE:
@@ -1309,14 +1381,22 @@ namespace StatisticTrans
 
         protected abstract void getDataGridViewAdmin(int indxDB);
 
+        /// <summary>
+        /// Экспорт данных ихз источника
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
-            if (!(comboBoxTECComponent.SelectedIndex < 0)) {
+            if (!(comboBoxTECComponent.SelectedIndex < 0)) 
+            {
                 //Взять значения "с окна" в таблицу
                 getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
 
                 //ClearTables();
 
+                DateTime time = DateTime.Now;
+                m_labelTime.Text = "Последний экспорт данных в "+ time;
                 SaveRDGValues (true);
             }
             else
@@ -1357,7 +1437,7 @@ namespace StatisticTrans
         private void InitializeTimerService () {
             if (timerService == null) {
                 timerService = new System.Windows.Forms.Timer(this.components);
-                timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Пеавый запуск
+                timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
             }
             else
@@ -1377,11 +1457,21 @@ namespace StatisticTrans
             }
         };
 
-        private void saveRDGValues (object bCallback) {
-            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
+        private void saveRDGValues (object bCallback)
+        {
+            try
+            {
+                ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
+            }
+
+            catch 
+            {
+                
+            }
         }
 
-        protected virtual void SaveRDGValues (bool bCallback) {
+        protected virtual void SaveRDGValues (bool bCallback)
+        {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             new Thread(new ParameterizedThreadStart(saveRDGValues)).Start(paramToSaveRDGValues);
@@ -1413,7 +1503,10 @@ namespace StatisticTrans
         {
         }
 
-        // Перехват нажатия на кнопку свернуть
+        /// <summary>
+        /// Перехват нажатия на кнопку свернуть
+        /// </summary>
+        /// <param name="m"></param>
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == 0x112)

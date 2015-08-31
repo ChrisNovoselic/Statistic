@@ -2298,6 +2298,12 @@ namespace StatisticCommon
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indx"></param>
+        /// <param name="date"></param>
+        /// <param name="bCallback"></param>
         public virtual void SaveRDGValues(/*TYPE_FIELDS mode, */int indx, DateTime date, bool bCallback)
         {
             lock (m_lockState) //???

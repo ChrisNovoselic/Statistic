@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel; //BacgroundWorker
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -13,9 +13,17 @@ using StatisticCommon;
 
 namespace StatisticTimeSync
 {
+    /// <summary>
+    /// Главная панель класса
+    /// </summary>
     public partial class PanelSourceData : PanelStatistic
     {
-        private static int [] INDEX_SOURCE_GETDATE = {
+        public PanelGetDate[] m_arPanels;
+
+        /// <summary>
+        /// Массив значений
+        /// </summary>
+        private static int[] INDEX_SOURCE_GETDATE = {
             26 //Эталон - ne2844
             //Вариант №1
             , 1, 4, 7, 10, 13, /*16*/-1
@@ -26,27 +34,63 @@ namespace StatisticTimeSync
             //, -1, -1, -1, -1, -1, 17
             //, -1, -1, -1, -1, -1, -1
         };
-        
-        private partial class PanelGetDate : HPanelCommon
+
+        public void TimerThread()
         {
-            public enum ID_ASKED_DATAHOST { CONN_SETT
-                                            ,  }
-            private enum INDEX_DATETME { METKA, ETALON, SERVER
-                                        , INDEX_DATETME_COUNT }
+            var timer = new System.Threading.Timer(ShowTime, null, 0, 1000);
+        }
+
+        private void ShowTime(object x)
+        {
+            // Don't do anything if the form's handle hasn't been created 
+            // or the form has been disposed.
+            if (!this.IsHandleCreated && !this.IsDisposed) return;
+
+            // Invoke an anonymous method on the thread of the form.
+            this.Invoke((MethodInvoker)delegate
+            {
+                // Show the current time in the form's title bar.
+                this.Text = DateTime.Now.ToLongTimeString();
+            });
+        }
+
+        /// <summary>
+        /// Работа с компонентами панели
+        /// </summary>
+        public partial class PanelGetDate : HPanelCommon
+        {
+            public enum ID_ASKED_DATAHOST
+            {
+                CONN_SETT
+                ,
+            }
+            private enum INDEX_DATETME
+            {
+                METKA, ETALON,
+                SERVER
+                    , INDEX_DATETME_COUNT
+            }
 
             public event DelegateObjectFunc EvtAskedData;
             public DelegateDateFunc DelegateEtalonGetDate;
 
+            /// <summary>
+            /// Делегат при чеке
+            /// </summary>
+            public event DelegateIntFunc DelegateCheckPanel;
+
             private object m_lockGetDate;
             private HGetDate m_getDate;
-            private DateTime [] m_arDateTime;
+            private DateTime[] m_arDateTime;
 
-            public PanelGetDate() : base (-1, -1)
+            public PanelGetDate()
+                : base(-1, -1)
             {
-                initialize();                
+                initialize();
             }
 
-            public PanelGetDate(IContainer container) : base (container, -1, -1)
+            public PanelGetDate(IContainer container)
+                : base(container, -1, -1)
             {
                 container.Add(this);
 
@@ -70,17 +114,61 @@ namespace StatisticTimeSync
                 {
                     //Start
                     //Спросить параметры соединения
-                    IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
+                    int i;
+
+                    i = m_comboBoxSourceData.SelectedIndex;
+
+                    int myIndex = Array.IndexOf(INDEX_SOURCE_GETDATE, i);
+                    //PanelSourceData pn = new PanelSourceData();
+
+                    m_PanelGetDate_DelegateCheckPanel(myIndex);
+                    
+                    //IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
                 }
+
                 else
                 {
-                    Activate (false);
+                    Activate(false);
                 }
             }
 
-            private void queryConnSett()
+            /// <summary>
+            /// 
+            /// </summary>
+            public void FillBox(object num)
             {
-                EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object [] { this } ));
+                //m_arPanels[(int)num].m_labelDiff.Update();
+                //m_PanelGetDate.Invoke(new Action(() => m_PanelGetDate.queryConnSett()));
+                int i = (int)num;
+               queryConnSett();
+            }
+
+            /// <summary>
+            /// Создание и запуск потоков для заполнения "чёкнутого" бокса
+            /// </summary>
+            /// <param name="x">номер панели</param>
+            public void m_PanelGetDate_DelegateCheckPanel(int x)
+            {
+                var thread = new System.Threading.Thread(FillBox);
+                thread.Start(x);
+            }
+
+            /// <summary>
+            /// Запрос на связь с базой
+            /// </summary>
+            public void queryConnSett()
+            {
+                try
+                {
+                    //int i = (int)num;
+                    EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object[] { this }));
+                }
+
+                catch
+                {
+                    MessageBox.Show("ERROR");
+                    //Activate(false);
+                }
             }
 
             private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
@@ -91,13 +179,20 @@ namespace StatisticTimeSync
                     m_checkBoxTurnOn.Enabled = false;
             }
 
+            /// <summary>
+            /// Asyn func добавления значений в комбобокс
+            /// </summary>
+            /// <param name="desc"></param>
             public void AddSourceData(string desc)
             {
+                //m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.Items.Add(desc)));
                 m_comboBoxSourceData.Items.Add(desc);
+
             }
 
             public string GetSelectedSourceData()
             {
+               //return (string) m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.SelectedItem.ToString()));
                 return m_comboBoxSourceData.SelectedItem.ToString();
             }
 
@@ -107,7 +202,7 @@ namespace StatisticTimeSync
                 {
                     case (int)ID_ASKED_DATAHOST.CONN_SETT:
                         //Установить соедиение
-                        m_getDate = new HGetDate((ConnectionSettings)ev.par [0], recievedGetDate, errorGetDate);
+                        m_getDate = new HGetDate((ConnectionSettings)ev.par[0], recievedGetDate, errorGetDate);
                         //Запустить поток
                         m_getDate.StartDbInterfaces();
                         m_getDate.Start();
@@ -117,6 +212,10 @@ namespace StatisticTimeSync
                 }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="date"></param>
             private void recievedGetDate(DateTime date)
             {
                 //Console.WriteLine (date.Kind.ToString ());
@@ -124,7 +223,7 @@ namespace StatisticTimeSync
                 //Обновить время сервера БД
                 this.BeginInvoke(new DelegateFunc(updateGetDate));
                 //Если панель с ЭТАЛОНным сервером БД
-                if ((m_arDateTime[(int)INDEX_DATETME.SERVER].Equals (DateTime.MinValue) == false)
+                if ((m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
                     && (!(DelegateEtalonGetDate == null)))
                 {
                     DelegateEtalonGetDate(date);
@@ -133,6 +232,10 @@ namespace StatisticTimeSync
                     ;
             }
 
+            /// <summary>
+            /// Обновляет разницу времени сервера с БД
+            /// </summary>
+            /// <param name="date"></param>
             private void recievedEtalonDate(DateTime date)
             {
                 m_arDateTime[(int)INDEX_DATETME.ETALON] = date;
@@ -145,6 +248,9 @@ namespace StatisticTimeSync
                 //throw new NotImplementedException ();
             }
 
+            /// <summary>
+            /// run recievedGetDate
+            /// </summary>
             private void updateGetDate()
             {
                 string textTime = string.Empty;
@@ -162,31 +268,42 @@ namespace StatisticTimeSync
                     m_arDateTime[(int)INDEX_DATETME.ETALON] = DateTime.MinValue;
                     updateDiffDate();
                 }
-
                 m_labelTime.Text = textTime;
                 m_labelTime.Refresh();
+                /*PanelSourceData m_PanelSourceData = new PanelSourceData();
+                m_PanelSourceData.m_arPanels[i].m_labelTime.Text = textTime;
+                m_PanelSourceData.m_arPanels[i].m_labelTime.Refresh();*/
             }
 
-            private void updateDiffDate()
+            /// <summary>
+            /// run recievedEtalonDate
+            /// </summary>
+            public void updateDiffDate()
             {
                 string textDiff = string.Empty;
 
-                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals (DateTime.MinValue) == false)
-                    && m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false) {
+                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals(DateTime.MinValue) == false)
+                    && m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
+                {
                     double msecDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds;
                     if (Math.Abs(msecDiff) < (1 * 60 * 60 * 1000))
                         ;
                     else
-                        m_arDateTime[(int)INDEX_DATETME.SERVER] = m_arDateTime[(int)INDEX_DATETME.SERVER].AddHours (-3);
+                        m_arDateTime[(int)INDEX_DATETME.SERVER] = m_arDateTime[(int)INDEX_DATETME.SERVER].AddHours(-3);
 
-                    textDiff = ((m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds / 1000).ToString ();
-                   
-                } else
+                    textDiff = ((m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds / 1000).ToString();
+
+                }
+                else
                     //Признак останова (деактивации)
                     textDiff = @"--.---";
+                //Activate(false);
 
                 m_labelDiff.Text = textDiff;
                 m_labelDiff.Refresh();
+                /*PanelSourceData m_PanelSourceData = new PanelSourceData();
+                m_PanelSourceData.m_arPanels[i].m_labelDiff.Text = textDiff;
+               m_PanelSourceData.m_arPanels[i].m_labelDiff.Refresh();*/
             }
 
             /// <summary>
@@ -204,10 +321,17 @@ namespace StatisticTimeSync
                 else
                     ;
 
-                lock (m_lockGetDate) {
-                    if (! (m_getDate == null))
-                        m_getDate.GetDate ();
-                    else ;
+                lock (m_lockGetDate)
+                {
+                    if (!(m_getDate == null))
+                    {
+                        m_getDate.GetDate();
+                    }
+
+                    else
+                    {
+
+                    };
                 }
             }
 
@@ -220,13 +344,15 @@ namespace StatisticTimeSync
                 recievedEtalonDate(date);
             }
 
-            public override void Stop () {
-                stop ();
+            public override void Stop()
+            {
+                stop();
 
-                base.Stop ();
+                base.Stop();
             }
-            
-            private void stop () {
+
+            private void stop()
+            {
                 //Stop
                 //Разорвать соедиенние
                 lock (m_lockGetDate)
@@ -242,32 +368,54 @@ namespace StatisticTimeSync
                 }
             }
 
-            public void Activate (bool activated) {
-                if (activated == true) {
-                    if (m_checkBoxTurnOn.Checked == true) {
+            public void Activate(bool activated)
+            {
+                int myIndex;
+                int i;
+
+                i = m_comboBoxSourceData.SelectedIndex;
+
+                myIndex = Array.IndexOf(INDEX_SOURCE_GETDATE, i);
+
+                if (activated == true)
+                {
+                    if (m_checkBoxTurnOn.Checked == true)
+                    {                    
                         //Start
                         //Спросить параметры соединения
                         IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
-                    } else {
                     }
-                } else {
+                    else
+                    {
+                    }
+                }
+                else
+                {
                     //Stop
-                    stop ();
+                    stop();
 
                     //Признак деактивации
-                    recievedGetDate (DateTime.MinValue);
+                    recievedGetDate(DateTime.MinValue);
                     recievedEtalonDate(DateTime.MinValue);
+
                 }
             }
 
-            public void TurnOn (int indx) {
-                if (m_checkBoxTurnOn.Checked == false) {
-                    if (indx > 0) {
+            public void TurnOn(int indx)
+            {
+                if (m_checkBoxTurnOn.Checked == false)
+                {
+                    if (indx > 0)
+                    {
                         m_comboBoxSourceData.SelectedIndex = indx;
                         m_checkBoxTurnOn.Checked = true;
-                    } else {
                     }
-                } else {
+                    else
+                    {
+                    }
+                }
+                else
+                {
                     //Ничего не делаем...
                 }
             }
@@ -278,7 +426,8 @@ namespace StatisticTimeSync
                 {
                     m_checkBoxTurnOn.Checked = false;
 
-                    switch (indx) {
+                    switch (indx)
+                    {
                         case -1:
                             break;
                         default:
@@ -292,13 +441,20 @@ namespace StatisticTimeSync
                 }
             }
 
+            /// <summary>
+            /// Async func выбора значений в комбобоксе
+            /// </summary>
+            /// <param name="indx"></param>
             public void Select(int indx)
             {
                 if (m_checkBoxTurnOn.Checked == false)
                 {
                     if (indx > 0)
                     {
+                        //m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.SelectedIndex = indx));
                         m_comboBoxSourceData.SelectedIndex = indx;
+
+                        //m_comboBoxSourceData.SelectedIndex = indx;
                         //m_checkBoxTurnOn.Checked = true;
                     }
                     else
@@ -312,13 +468,16 @@ namespace StatisticTimeSync
             }
         }
 
+        /// <summary>
+        /// Инициализация компонентов панели
+        /// </summary>
         partial class PanelGetDate
         {
             protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
             {
-                initializeLayoutStyleEvenly (cols, rows);
+                initializeLayoutStyleEvenly(cols, rows);
             }
-            
+
             /// <summary>
             /// Требуется переменная конструктора.
             /// </summary>
@@ -347,15 +506,16 @@ namespace StatisticTimeSync
             {
                 this.Dock = System.Windows.Forms.DockStyle.Fill;
 
+
                 this.m_checkBoxTurnOn = new System.Windows.Forms.CheckBox();
                 this.m_comboBoxSourceData = new System.Windows.Forms.ComboBox();
                 this.m_labelTime = new System.Windows.Forms.Label();
                 this.m_labelDiff = new System.Windows.Forms.Label();
 
-                
+
                 this.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
 
-                initializeLayoutStyle (2, 2);
+                initializeLayoutStyle(2, 2);
 
                 this.Controls.Add(m_checkBoxTurnOn, 0, 1);
                 this.Controls.Add(m_comboBoxSourceData, 0, 0);
@@ -422,8 +582,8 @@ namespace StatisticTimeSync
 
             private System.Windows.Forms.CheckBox m_checkBoxTurnOn;
             private System.Windows.Forms.ComboBox m_comboBoxSourceData;
-            private System.Windows.Forms.Label m_labelTime;
-            private System.Windows.Forms.Label m_labelDiff;
+            public System.Windows.Forms.Label m_labelTime;
+            public System.Windows.Forms.Label m_labelDiff;
         }
 
         private object m_lockTimerGetDate;
@@ -448,6 +608,7 @@ namespace StatisticTimeSync
 
         private void initialize()
         {
+
             InitializeComponent();
 
             m_lockTimerGetDate = new object();
@@ -456,24 +617,31 @@ namespace StatisticTimeSync
         public void Start(ConnectionSettings connSett)
         {
             m_connSett = connSett;
-
+            
             start();
         }
 
         public override void Start()
         {
-            base.Start ();
-            
-            Start (new ConnectionSettings()
+            base.Start();
+
+            Start(new ConnectionSettings()
             {
                 id = -1
-                , name = @"DB_CONFIG"
-                , server = @"10.100.104.18"
-                , port = 1433
-                , dbName = @"techsite_cfg-2.X.X"
-                , userName = @"client"
-                , password = @"client"
-                , ignore = false
+                ,
+                name = @"DB_CONFIG"
+                ,
+                server = @"10.105.1.107"
+                ,
+                port = 1433
+                ,
+                dbName = @"techsite_cfg-2.X.X"
+                ,
+                userName = @"client1"
+                ,
+                password = @"client"
+                ,
+                ignore = false
             });
         }
 
@@ -497,7 +665,7 @@ namespace StatisticTimeSync
                     {
                         int i = -1
                             , j = -1;
-                        for (i = 0; i < m_arPanels.Length; i++)
+                        for (i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                         {
                             m_arPanels[i].EvtAskedData += new DelegateObjectFunc(onEvtQueryAskedData);
                             for (j = 0; j < m_tableSourceData.Rows.Count; j++)
@@ -519,26 +687,37 @@ namespace StatisticTimeSync
 
             DbSources.Sources().UnRegister(iListenerId);
 
-            for (int i = 0; i < m_arPanels.Length; i++)
+
+
+            for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                 //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
                 m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
         }
 
         private void onEvtQueryAskedData(object ev)
         {
-            switch (((EventArgsDataHost)ev).id)
+            try
             {
-                case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
-                    int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
-                        , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par [0]).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
-                        , err = -1;
-                    DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
-                    ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
-                    ((PanelGetDate)((EventArgsDataHost)ev).par [0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object [] { connSett } ));
-                    DbSources.Sources().UnRegister(iListenerId);
-                    break;
-                default:
-                    break;
+                switch (((EventArgsDataHost)ev).id)
+                {
+                    case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
+                        int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
+                            , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
+                            , err = -1;
+                        DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
+                        ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
+                        ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object[] { connSett }));
+                        DbSources.Sources().UnRegister(iListenerId);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            catch
+            {
+                //MessageBox.Show("Нет связи с БД");
+                //Activate(false);
             }
         }
 
@@ -549,11 +728,11 @@ namespace StatisticTimeSync
 
         private void fThreadGetDate(object obj)
         {
-            EvtGetDate (DateTime.UtcNow);
+            EvtGetDate(DateTime.UtcNow);
 
             lock (m_lockTimerGetDate)
             {
-                if (! (m_timerGetDate == null))
+                if (!(m_timerGetDate == null))
                     m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
                 else ;
             }
@@ -563,7 +742,7 @@ namespace StatisticTimeSync
         {
             stop();
 
-            for (int i = 0; i < m_arPanels.Length; i++)
+            for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
             {
                 m_arPanels[i].Stop();
             }
@@ -571,23 +750,25 @@ namespace StatisticTimeSync
             base.Stop();
         }
 
-        private void stop () {
+        private void stop()
+        {
             if (!(m_timerGetDate == null))
             {
                 m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                 m_timerGetDate.Dispose();
                 m_timerGetDate = null;
             }
-            else
-                ;
+
+            else;
         }
 
-        public override bool Activate (bool activated) 
+        public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
-            
+
             //Выбрать действие
-            lock (m_lockTimerGetDate) {
+            lock (m_lockTimerGetDate)
+            {
                 if (activated == true)
                 {//Запустить поток
                     if (m_timerGetDate == null)
@@ -596,17 +777,67 @@ namespace StatisticTimeSync
                         ;
 
                     m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
-                } else {
+                }
+                else
+                {
                     //Остановить поток
-                    stop ();
+                    stop();
                 }
             }
 
-            for (int i = 0; i < m_arPanels.Length; i ++) {
+            for (int i = 0; i < m_arPanels.Length; i++)
+            {
                 m_arPanels[i].Activate(activated);
             }
 
             return bRes;
+        }
+
+        /// <summary>
+        /// Проверка связи с БД
+        /// </summary>
+        public void Check_Conn()
+        {
+            int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
+                   , err = -1;
+
+            DbConnection dbConn = null;
+
+            dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
+
+            if (dbConn.State == ConnectionState.Open)
+            {
+                Console.WriteLine("SqlConnection Information:");
+                Console.WriteLine("  Connection State = " + dbConn.State);
+                Console.WriteLine("  Connection String = " + dbConn.ConnectionString);
+                Console.WriteLine("  Database Source = " + dbConn.DataSource);
+                Console.WriteLine("  Database = " + dbConn.Database);
+                Console.WriteLine("  Server Version = " + dbConn.ServerVersion);
+                //Console.WriteLine("  Workstation Id = " + dbConn.WorkstationId);
+                Console.WriteLine("  Timeout = " + dbConn.ConnectionTimeout);
+                //Console.WriteLine("  Packet Size = " + dbConn.PacketSize);
+            }
+            else
+            {
+                Activate(false);
+                Console.WriteLine("SqlConnection failed to open.");
+                Console.WriteLine("  Connection State = " + dbConn.State);
+
+                try
+                {
+                    dbConn.Open();
+                    Console.WriteLine("SqlConnection Information:");
+                    Console.WriteLine("  Connection State = " + dbConn.State);
+                    dbConn.Close();
+                    //return true;
+                }
+
+                catch
+                {
+
+                }
+            }
+
         }
     }
 }

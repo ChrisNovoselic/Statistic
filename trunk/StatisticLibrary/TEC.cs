@@ -115,7 +115,7 @@ namespace StatisticCommon
         /// <returns>Строка-перечисление с идентификаторами</returns>
         string GetSensorsString(int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN);
         /// <summary>
-        /// Возвратить содержание запроса для получения чпсовых значений АИИС КУЭ
+        /// Возвратить содержание запроса для получения часовых значений АИИС КУЭ
         /// </summary>
         /// <param name="usingDate">Дата - начало интервала, запрашиваемых данных</param>
         /// <param name="sensors">Строка-перечисление идентификаторов</param>

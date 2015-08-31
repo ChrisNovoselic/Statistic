@@ -332,11 +332,14 @@ namespace trans_gtp
                 ;
         }
 
-        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e) {
+        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e) 
+        {
+
         }
 
         protected override void setUIControlSourceState()
         {
+
         }
     }
 }

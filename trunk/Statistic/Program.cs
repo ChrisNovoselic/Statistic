@@ -21,7 +21,7 @@ namespace Statistic
         static void Main()
         {
             int iRes = 0;
-
+            
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
             Logging.s_mode = Logging.LOG_MODE.DB;
             //Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
