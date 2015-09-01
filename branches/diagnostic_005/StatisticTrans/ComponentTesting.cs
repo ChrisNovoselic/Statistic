@@ -57,8 +57,8 @@ namespace StatisticTrans
         {
             if (currentItter == 10)
             {
-                //currentItter = 0;
-                //currentItter++;
+                currentItter = 0;
+                currentItter++;
             }
 
             else

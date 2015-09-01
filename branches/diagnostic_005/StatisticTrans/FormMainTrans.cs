@@ -946,8 +946,7 @@ namespace StatisticTrans
                 CT.currentItter--;
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
-            {
-                //int num = comboBoxTECComponent.SelectedIndex;
+            { 
                 CT.ErrorComp(CT.nameComponent);
 
                 IAsyncResult asyncRes;
@@ -1218,9 +1217,7 @@ namespace StatisticTrans
 
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
-                if (comboBoxTECComponent.SelectedIndex == -1)
-                    CT.currentItter = 0;
-               
+                
                 Test();
                 //counter
                 comboBoxTECComponent.SelectedIndex ++;
