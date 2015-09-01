@@ -964,6 +964,10 @@ namespace StatisticTrans
                     Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
             }
             else
+
+            {
+
+            }
                 ;
         }
 

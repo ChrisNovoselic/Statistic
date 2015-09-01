@@ -82,6 +82,10 @@ namespace StatisticTrans
             Itters = i;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
         public void NameCurComponent(string x)
         {
             nameComponent = x;
