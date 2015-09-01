@@ -31,7 +31,7 @@ namespace StatisticTrans
         public int IndexCount;
 
         protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE, UNKNOWN };
-        public enum CONN_SETT_TYPE : short {SOURCE, DEST, COUNT_CONN_SETT_TYPE};
+        public enum CONN_SETT_TYPE : short { SOURCE, DEST, COUNT_CONN_SETT_TYPE };
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
         protected System.Windows.Forms.Control[,] m_arUIControls;
@@ -60,7 +60,8 @@ namespace StatisticTrans
 
         //protected HMark m_markQueries;
 
-        protected bool m_bTransAuto {
+        protected bool m_bTransAuto
+        {
             get
             {
                 //return WindowState == FormWindowState.Minimized ? true : false;
@@ -76,11 +77,12 @@ namespace StatisticTrans
 
         protected Int16 m_IndexDB
         {
-            get {
+            get
+            {
                 CONN_SETT_TYPE i;
                 for (i = CONN_SETT_TYPE.SOURCE; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
                 {
-                    if (m_arGroupBox [(Int16)i].BackColor == SystemColors.Info)
+                    if (m_arGroupBox[(Int16)i].BackColor == SystemColors.Info)
                         break;
                     else
                         ;
@@ -89,7 +91,8 @@ namespace StatisticTrans
                 return (Int16)i;
             }
 
-            set {
+            set
+            {
             }
         }
 
@@ -134,9 +137,9 @@ namespace StatisticTrans
             //Ошибка для отладки
             //System.Threading.Timer tm = null;
             //tm.Dispose ();
-            
+
             //Вариант №1
-            keyPar = @"iapp"; valDefPar = id_app.ToString ();
+            keyPar = @"iapp"; valDefPar = id_app.ToString();
             m_sFileINI.AddMainPar(keyPar, valDefPar);
             ProgramBase.s_iAppID = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
             //Вариант №2
@@ -173,7 +176,7 @@ namespace StatisticTrans
             m_sFileINI.AddMainPar(keyPar, false.ToString());
 
             keyPar = @"SetPBRQuery LogQuery";
-            m_sFileINI.AddMainPar(keyPar, false.ToString());            
+            m_sFileINI.AddMainPar(keyPar, false.ToString());
 
             this.Text =
             this.notifyIconMain.Text = @"Статистика: " + m_sFileINI.GetMainValueOfKey(@"ОкноНазначение");
@@ -182,7 +185,7 @@ namespace StatisticTrans
             string[] arStrID_TECNotUse = m_sFileINI.GetMainValueOfKey(@"ID_TECNotUse").Split(',');
             foreach (string str in arStrID_TECNotUse)
             {
-                if (str.Equals (string.Empty) == false)
+                if (str.Equals(string.Empty) == false)
                     m_listID_TECNotUse.Add(Int32.Parse(str));
                 else
                     ;
@@ -251,15 +254,15 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.Size = new System.Drawing.Size(123, 23);
             //this.m_checkboxModeMashine.CheckAlign = ContentAlignment.;
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
-            this.m_checkboxModeMashine.CheckedChanged +=new EventHandler(m_checkboxModeMashine_CheckedChanged);
+            this.m_checkboxModeMashine.CheckedChanged += new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
-            this.m_checkboxModeMashine.Enabled = false;;
+            this.m_checkboxModeMashine.Enabled = false; ;
 
             //labelTime
             this.m_labelTime = new Label();
             this.m_labelTime.Name = "m_labelTime";
-            this.m_labelTime.Location = new System.Drawing.Point(150,520);
+            this.m_labelTime.Location = new System.Drawing.Point(150, 520);
             this.m_labelTime.Size = new System.Drawing.Size(580, 15);
             this.m_labelTime.Text = "";
             this.Controls.Add(this.m_labelTime);
@@ -270,9 +273,9 @@ namespace StatisticTrans
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
             string msg_throw = string.Empty;
-            string [] args = Environment.GetCommandLineArgs();
+            string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
-           
+
             if (argc > 1)
             {
                 if ((!(argc == 2)))
@@ -330,7 +333,7 @@ namespace StatisticTrans
                 dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
-            {                
+            {
             }
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
@@ -346,7 +349,8 @@ namespace StatisticTrans
                     enabledUIControl(true);
         }
 
-        private void InitializeComponentTrans () {
+        private void InitializeComponentTrans()
+        {
             int i = -1;
 
             i = (Int16)INDX_UICONTROLS.PORT;
@@ -481,7 +485,7 @@ namespace StatisticTrans
             i = (Int16)INDX_UICONTROLS.PORT;
             ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i])).EndInit();
         }
-        
+
         protected void InitializeComponentTransDB()
         {
             int i = -1;
@@ -493,7 +497,7 @@ namespace StatisticTrans
             { new System.Windows.Forms.TextBox(), new System.Windows.Forms.NumericUpDown(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.MaskedTextBox(),
                 new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label() } };
 
-            InitializeComponentTrans ();
+            InitializeComponentTrans();
 
             i = (Int16)INDX_UICONTROLS.PORT;
             ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i])).BeginInit();
@@ -632,20 +636,20 @@ namespace StatisticTrans
 
         protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
 
-        protected override void UpdateActiveGui(int type) {}
+        protected override void UpdateActiveGui(int type) { }
         protected override void HideGraphicsSettings() { }
 
         protected void InitializeComponentTransSrc(string text)
         {
             int i = -1;
-            
+
             m_arUIControls = new System.Windows.Forms.Control[,]
             { { new System.Windows.Forms.TextBox(), new Button (), null, null, null,
                 new System.Windows.Forms.Label(), null, null, null, null },
             { new System.Windows.Forms.TextBox(), new System.Windows.Forms.NumericUpDown(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.TextBox(), new System.Windows.Forms.MaskedTextBox(),
                 new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label(), new System.Windows.Forms.Label() } };
 
-            InitializeComponentTrans ();
+            InitializeComponentTrans();
 
             for (i = 0; i < 2 * (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; i++)
             {
@@ -666,7 +670,7 @@ namespace StatisticTrans
             m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 20;
             m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = text;
 
-            i =  (Int16)INDX_UICONTROLS.SERVER_IP;
+            i = (Int16)INDX_UICONTROLS.SERVER_IP;
             // 
             // tbxSourcePathExcel
             // 
@@ -720,20 +724,23 @@ namespace StatisticTrans
 
         protected abstract void start();
 
-        protected override void Start() {
+        protected override void Start()
+        {
             initTableHourRows();
-            
-            base.Start ();
+
+            base.Start();
         }
 
-        protected void RemoveTEC (HAdmin admin) {
+        protected void RemoveTEC(HAdmin admin)
+        {
             foreach (int id in m_listID_TECNotUse)
             {
                 admin.RemoveTEC(id);
             }
         }
 
-        private void enabledUIControl (bool enabled) {
+        private void enabledUIControl(bool enabled)
+        {
             for (int i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 //m_arGroupBox[i].Enabled = enabled;
@@ -774,7 +781,7 @@ namespace StatisticTrans
                             break;
                         case (Int16)INDX_UICONTROLS.PORT:
                             //if (m_arUIControlDB[i, j].Enabled == true)
-                                ((NumericUpDown)m_arUIControls[i, j]).Text = connSett.port.ToString();
+                            ((NumericUpDown)m_arUIControls[i, j]).Text = connSett.port.ToString();
                             //else
                             //    ;
                             break;
@@ -811,12 +818,12 @@ namespace StatisticTrans
         protected void CreateFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
             bool bShowFormConnSett = false;
-            
-            s_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
-            s_listFormConnectionSettings = new List <FormConnectionSettings> ();
-            s_listFormConnectionSettings.Add (new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
 
-            if (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            s_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
+            s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+
+            if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 ;
             else
                 bShowFormConnSett = true;
@@ -846,7 +853,8 @@ namespace StatisticTrans
         /// <summary>
         /// Заполнение списка компонентов
         /// </summary>
-        protected virtual void FillComboBoxTECComponent () {
+        protected virtual void FillComboBoxTECComponent()
+        {
             if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
             {
                 comboBoxTECComponent.Items.Clear();
@@ -920,7 +928,7 @@ namespace StatisticTrans
             }
             else
             {
-                updateDataGridViewAdmin (date);
+                updateDataGridViewAdmin(date);
             }
         }
 
@@ -932,7 +940,7 @@ namespace StatisticTrans
             DateTime tm = DateTime.Now;
             string str1 = tm.ToString();
             m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentItter + " из " + CT.Itters + ""));
-           m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
+            m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         }
 
         /// <summary>
@@ -942,11 +950,11 @@ namespace StatisticTrans
         {
             if (CT.currentItter == 10)
                 CT.currentItter = 0;
-            if (CT.currentItter>1)
+            if (CT.currentItter > 1)
                 CT.currentItter--;
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
-            { 
+            {
                 CT.ErrorComp(CT.nameComponent);
 
                 IAsyncResult asyncRes;
@@ -959,17 +967,19 @@ namespace StatisticTrans
                 ;
         }
 
-        protected abstract void updateDataGridViewAdmin (DateTime date);
+        protected abstract void updateDataGridViewAdmin(DateTime date);
 
         protected void initTableHourRows(/*int indx = индекс для m_arAdmin*/)
         {
             for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
                 m_arAdmin[(int)type].m_curDate = dateTimePickerMain.Value;
 
-            if (dateTimePickerMain.Value.Date.Equals(HAdmin.SeasonDateTime.Date) == false) {
+            if (dateTimePickerMain.Value.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
+            {
                 m_dgwAdminTable.InitRows(24, false);
             }
-            else {
+            else
+            {
                 m_dgwAdminTable.InitRows(25, true);
             }
         }
@@ -979,19 +989,19 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void saveDataGridViewAdminComplete()
         {
-            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString() + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 CT.SetItter(comboBoxTECComponent.Items.Count);
                 CT.CounterItter();
                 Test();
-                
+
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
-                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 //else
-                    //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
+                //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
                 ////this.EndInvoke (asynchRes);
                 //////trans_auto_next ();
             }
@@ -1022,7 +1032,7 @@ namespace StatisticTrans
 
             for (int i = 0; (i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (!(m_arAdmin == null)); i++)
             {
-                if (!(m_arAdmin[i] == null)) 
+                if (!(m_arAdmin[i] == null))
                 {
                     m_arAdmin[i].Stop();
                     m_arAdmin[i] = null;
@@ -1038,23 +1048,26 @@ namespace StatisticTrans
         {
             Stop();
 
-            Close ();
+            Close();
         }
 
-        private void groupBoxFocus (GroupBox groupBox) {
+        private void groupBoxFocus(GroupBox groupBox)
+        {
             GroupBox groupBoxOther = null;
             bool bBackColorChange = false;
-            if (! (groupBox.BackColor == SystemColors.Info)) {
+            if (!(groupBox.BackColor == SystemColors.Info))
+            {
                 groupBox.BackColor = SystemColors.Info;
 
-                UpdateStatusString ();
+                UpdateStatusString();
 
                 bBackColorChange = true;
             }
             else
                 ;
 
-            switch (groupBox.Name) {
+            switch (groupBox.Name)
+            {
                 case "groupBoxSource":
                     groupBoxOther = groupBoxDest;
                     break;
@@ -1065,7 +1078,8 @@ namespace StatisticTrans
                     break;
             }
 
-            if (bBackColorChange) {
+            if (bBackColorChange)
+            {
                 groupBoxOther.BackColor = SystemColors.Control;
 
                 if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Count > 1)
@@ -1118,13 +1132,13 @@ namespace StatisticTrans
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormAbout formAbout = new FormAbout ();
+            FormAbout formAbout = new FormAbout();
             formAbout.ShowDialog(this);
         }
 
         //protected override void ErrorReport (string msg) {
         //    Logging.Logg().Error(@"FormMainTrans::ErrorReport () - сообщение: " + msg);
-            
+
         //    m_statusStripMain.BeginInvoke(delegateEvent);
 
         //    m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].AbortRDGExcelValues();
@@ -1156,7 +1170,7 @@ namespace StatisticTrans
             {
                 have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
 
-                if (((! (have_msg == 0)) || (m_report.actioned_state == true)) && (m_arAdmin[m_IndexDB].IsStarted == true))
+                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) && (m_arAdmin[m_IndexDB].IsStarted == true))
                 {
                     if (m_report.actioned_state == true)
                     {
@@ -1211,16 +1225,16 @@ namespace StatisticTrans
                 if (m_bTransAuto == true) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
-        protected void trans_auto_next () 
+        protected void trans_auto_next()
         {
             Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex, Logging.INDEX_MESSAGE.NOT_SET);
 
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
-                
+
                 Test();
                 //counter
-                comboBoxTECComponent.SelectedIndex ++;
+                comboBoxTECComponent.SelectedIndex++;
                 CT.NameCurComponent((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
@@ -1230,7 +1244,8 @@ namespace StatisticTrans
                     buttonClose.PerformClick();
                 else
                 {
-                    if (IsTomorrow () == false) {
+                    if (IsTomorrow() == false)
+                    {
                         dateTimePickerMain.Value = DateTime.Now;
 
                         //enabledUIControl(true);
@@ -1247,8 +1262,8 @@ namespace StatisticTrans
 
         protected virtual bool IsTomorrow()
         {
-            TimeSpan timeSpan= new TimeSpan (4, 5, 6);
-            DateTime dateApp = dateTimePickerMain.Value.AddDays (1);
+            TimeSpan timeSpan = new TimeSpan(4, 5, 6);
+            DateTime dateApp = dateTimePickerMain.Value.AddDays(1);
 
             return (((DateTime)dateApp.Date) - DateTime.Now) > timeSpan ? false : true;
         }
@@ -1258,10 +1273,10 @@ namespace StatisticTrans
             m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent);
 
             string keyPar = @"Season DateTime";
-            HAdmin.SeasonDateTime = DateTime.Parse (m_sFileINI.GetMainValueOfKey (keyPar));
+            HAdmin.SeasonDateTime = DateTime.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
             keyPar = @"Season Action";
             HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
-             
+
             if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
                 FillComboBoxTECComponent();
@@ -1275,44 +1290,45 @@ namespace StatisticTrans
                     m_checkboxModeMashine.Checked = true;
                 else
                     FillComboBoxTECComponent();
-        }        
+        }
 
         private void timerService_Tick(object sender, EventArgs e)
         {
             if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
-            switch (m_modeMashine) {
-                case MODE_MASHINE.SERVICE:
-                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    {
-                        //Первый запуск
-                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                        timerService.Interval = m_arg_interval;
+                switch (m_modeMashine)
+                {
+                    case MODE_MASHINE.SERVICE:
+                        if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                        {
+                            //Первый запуск
+                            if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                            timerService.Interval = m_arg_interval;
 
-                        FillComboBoxTECComponent();
-                        //
+                            FillComboBoxTECComponent();
+                            //
+                            //DateUpdate(m_arg_interval);
+                        }
+                        else
+                            ;
+
+                        dateTimePickerMain.Value = DateTime.Now;
+
                         //DateUpdate(m_arg_interval);
-                    }
-                    else
-                        ;
-
-                    dateTimePickerMain.Value = DateTime.Now;
-
-                    //DateUpdate(m_arg_interval);
-                    trans_auto_start();
-                    break;
-                case MODE_MASHINE.TO_DATE:
-                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    {
-                        //Первый запуск
-                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                        timerService.Interval = m_arg_interval;
-                    }
-                    else
-                        выходToolStripMenuItem.PerformClick ();
-                    break;
-                default:
-                    break;
-            }
+                        trans_auto_start();
+                        break;
+                    case MODE_MASHINE.TO_DATE:
+                        if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                        {
+                            //Первый запуск
+                            if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                            timerService.Interval = m_arg_interval;
+                        }
+                        else
+                            выходToolStripMenuItem.PerformClick();
+                        break;
+                    default:
+                        break;
+                }
         }
 
         //private void FormMain_Activated(object sender, EventArgs e)
@@ -1323,10 +1339,10 @@ namespace StatisticTrans
         protected virtual void buttonClear_Click(object sender, EventArgs e)
         {
             //m_IndexDB = только DEST
-            ((AdminTS)m_arAdmin [m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
+            ((AdminTS)m_arAdmin[m_IndexDB]).ClearRDGValues(dateTimePickerMain.Value.Date);
         }
 
-        protected /*virtual*/ void buttonDestSave_Click(object sender, EventArgs e) { throw new NotImplementedException (); }
+        protected /*virtual*/ void buttonDestSave_Click(object sender, EventArgs e) { throw new NotImplementedException(); }
 
         protected /*virtual*/ void buttonSourceSave_Click(object sender, EventArgs e) { throw new NotImplementedException(); }
 
@@ -1352,7 +1368,7 @@ namespace StatisticTrans
         protected bool IsCanSelectedIndexChanged()
         {
             bool bRes = false;
-            
+
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
                 (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
                 bRes = true;
@@ -1361,8 +1377,8 @@ namespace StatisticTrans
 
             return bRes;
         }
-        
-        protected abstract void comboBoxTECComponent_SelectedIndexChanged (object cbx, EventArgs ev);
+
+        protected abstract void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev);
 
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
@@ -1373,7 +1389,7 @@ namespace StatisticTrans
 
         public void ClearTables()
         {
-            m_dgwAdminTable.ClearTables ();
+            m_dgwAdminTable.ClearTables();
         }
 
         protected abstract void getDataGridViewAdmin(int indxDB);
@@ -1385,7 +1401,7 @@ namespace StatisticTrans
         /// <param name="e"></param>
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
-            if (!(comboBoxTECComponent.SelectedIndex < 0)) 
+            if (!(comboBoxTECComponent.SelectedIndex < 0))
             {
                 //Взять значения "с окна" в таблицу
                 getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
@@ -1393,8 +1409,8 @@ namespace StatisticTrans
                 //ClearTables();
 
                 DateTime time = DateTime.Now;
-                m_labelTime.Text = "Последний экспорт данных в "+ time;
-                SaveRDGValues (true);
+                m_labelTime.Text = "Последний экспорт данных в " + time;
+                SaveRDGValues(true);
             }
             else
                 ;
@@ -1431,8 +1447,10 @@ namespace StatisticTrans
             }
         }
 
-        private void InitializeTimerService () {
-            if (timerService == null) {
+        private void InitializeTimerService()
+        {
+            if (timerService == null)
+            {
                 timerService = new System.Windows.Forms.Timer(this.components);
                 timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
@@ -1447,27 +1465,28 @@ namespace StatisticTrans
             public DateTime date;
             public bool bCallback;
 
-            public PARAMToSaveRDGValues (int li, DateTime dt, bool cb) {
+            public PARAMToSaveRDGValues(int li, DateTime dt, bool cb)
+            {
                 listIndex = li;
                 date = dt;
                 bCallback = cb;
             }
         };
 
-        private void saveRDGValues (object bCallback)
+        private void saveRDGValues(object bCallback)
         {
             try
             {
                 ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
             }
 
-            catch 
+            catch
             {
-                
+
             }
         }
 
-        protected virtual void SaveRDGValues (bool bCallback)
+        protected virtual void SaveRDGValues(bool bCallback)
         {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
