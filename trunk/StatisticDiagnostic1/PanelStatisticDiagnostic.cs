@@ -642,8 +642,10 @@ namespace StatisticDiagnostic1
         public void Conn()
         {
             GetCurrentData();
+            TimerPing();
             Start();
             GetDataTask();
+           
         }
 
         /// <summary>
@@ -743,9 +745,9 @@ namespace StatisticDiagnostic1
         {
             m_tableSourceData = (DataTable)(table);
             tbTask = (DataTable)table;
-            start_TEC();
-            start_MODES();
-            TimerPing();
+            ThreadModes();
+            start_TEC();          
+            //start_MODES();
         }
 
         /// <summary>
@@ -893,6 +895,7 @@ namespace StatisticDiagnostic1
         {
             TextColumnTec();
             ColumTimeTEC();
+            CellsPingTEC();
         }
 
         /// <summary>
@@ -936,8 +939,8 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void ThreadModes()
         {
-            //Thread thread_MODES = new System.Threading.Thread(start_Modes);
-            //thread_MODES.Start();
+            Thread thread_MODES = new System.Threading.Thread(start_MODES);
+            thread_MODES.Start();
         }
 
         /// <summary>
@@ -1225,24 +1228,6 @@ namespace StatisticDiagnostic1
         }
 
         /// <summary>
-        /// Список адресов источников данных
-        /// </summary>
-        List<string> hosts = new List<string>();
-
-        /// <summary>
-        /// Функция заполнения списка адресами
-        /// </summary>
-        public void GetHost()
-        {
-            hosts.Sort();
-
-            foreach (DataRow row in arraySourceHT.Select())
-            {
-                hosts.Add(row.ToString());
-            }
-        }
-
-        /// <summary>
         /// Функция нахождения актуального времени
         /// </summary>
         public string DateTimeNow()
@@ -1348,8 +1333,7 @@ namespace StatisticDiagnostic1
         /// <summary>
         /// Добавление результата пропинговки в грид
         /// </summary>
-        /// <param name="x"></param>
-        public void CellsPing(object x)
+        public void CellsPingTEC()
         {
             for (int k = 0; k < m_arPanelsTEC.Length; k++)
             {
@@ -1412,7 +1396,6 @@ namespace StatisticDiagnostic1
         public void PingSourceData()
         {
             string server;
-            DataTable testTB = new DataTable();
             string strokavst;
             string[,] massiveServ = new string[arraySourceHT.Rows.Count,2];
             string[] massive = new string[arraySourceHT.Rows.Count];
