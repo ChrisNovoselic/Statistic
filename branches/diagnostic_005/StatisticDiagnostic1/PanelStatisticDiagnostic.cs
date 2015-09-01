@@ -614,10 +614,10 @@ namespace StatisticDiagnostic1
         private void InitializeBackgroundWorker()
         {
             backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
-            /*backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
-            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
+            //backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
+           //backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
             backgroundWorker1.WorkerReportsProgress = true;
-            backgroundWorker1.WorkerSupportsCancellation = true;*/
+            backgroundWorker1.WorkerSupportsCancellation = true;
         }
 
         public void Start_BGW()
