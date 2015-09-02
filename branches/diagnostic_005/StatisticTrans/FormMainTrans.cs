@@ -948,7 +948,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            if (CT.currentItter == 10)
+            if (CT.currentItter == CT.Itters)
                 CT.currentItter = 0;
             if (CT.currentItter > 1)
                 CT.currentItter--;
@@ -997,8 +997,9 @@ namespace StatisticTrans
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
+                CT.NextDay = IsTomorrow();
                 CT.SetItter(comboBoxTECComponent.Items.Count);
-                CT.CounterItter();
+                CT.CounterItter(CT.Itters);
                 Test();
 
                 IAsyncResult asyncRes;
@@ -1236,7 +1237,7 @@ namespace StatisticTrans
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
 
-                Test();
+                //Test();
                 //counter
                 comboBoxTECComponent.SelectedIndex++;
                 CT.NameCurComponent((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
@@ -1258,7 +1259,8 @@ namespace StatisticTrans
                     {
                         dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
                         comboBoxTECComponent.SelectedIndex = 0;
-
+                        
+                        Test();
                         comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
                     }
                 }

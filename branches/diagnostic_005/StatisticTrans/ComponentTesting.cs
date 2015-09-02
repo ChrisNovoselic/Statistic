@@ -38,6 +38,11 @@ namespace StatisticTrans
         string curentTime;
 
         /// <summary>
+        /// Счетчик нового дня
+        /// </summary>
+        public bool NextDay = false;
+
+        /// <summary>
         /// Кол-во ошибок
         /// </summary>
         int ErrorItter = 0;
@@ -53,9 +58,9 @@ namespace StatisticTrans
         /// <summary>
         /// Счетчик иттераций
         /// </summary>
-        public void CounterItter()
+        public void CounterItter(int num)
         {
-            if (currentItter == 10)
+            if (currentItter == num)
             {
                 currentItter = 0;
                 currentItter++;
@@ -79,7 +84,14 @@ namespace StatisticTrans
         /// </summary>
         public void SetItter(int i)
         {
-            Itters = i;
+            if (NextDay == true)
+            {
+                Itters = i * 2;
+            }
+            else
+            {
+                Itters = i;
+            }
         }
 
         /// <summary>
