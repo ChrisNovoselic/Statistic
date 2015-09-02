@@ -20,7 +20,8 @@ namespace StatisticCommon
         public static event DelegateFunc EventUpdateIdLinkTMSources;
 
         public enum PARAMETR_SETUP {    UNKNOWN = -1
-                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT, MAIN_DATASOURCE,
+                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
+                                        MAIN_DATASOURCE, MAIN_PRIORITY,
                                         /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
                                         , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
                                         , SEASON_DATETIME, SEASON_ACTION
@@ -38,7 +39,8 @@ namespace StatisticCommon
                                         //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
                                         , COUNT_PARAMETR_SETUP
                                     };
-        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count", @"Main DataSource"
+        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
+                                                            , @"Main DataSource", @"Main Priority"
                                                             /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep", @"Alarm SytemMedia FileNam"
                                                             , @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
                                                             , @"Season DateTime", @"Season Action"
@@ -55,7 +57,8 @@ namespace StatisticCommon
                                                             ////»дентификаторы прилинкованных активных источников —ќ“»ј——ќ
                                                             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
                                                     };
-        protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек", @"ном",
+        protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек",
+                                                            @"ном", @"стр",
                                                             /*@"лог", */"сек", "сек", "сек", @"стр"
                                                             , @"стр", @"ном", @"ном"
                                                             , @"дата/врем€", @"ном"
@@ -85,7 +88,9 @@ namespace StatisticCommon
             m_arParametrSetup.Add ((int)PARAMETR_SETUP.MAX_ATTEMPT, @"3");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_TIME, @"106");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"39");
+            
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_DATASOURCE, @"671");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_PRIORITY, @"ќсновной");
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_USE, @"True");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.ALARM_TIMER_UPDATE, @"300");
