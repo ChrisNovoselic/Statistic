@@ -42,7 +42,7 @@ namespace StatisticCommon
 
     public class TecView : HAdmin, StatisticCommon.ITecView
     {
-        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, COUNT_TYPE_PANEL };
+        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, COUNT_TYPE_PANEL };
         TYPE_PANEL m_typePanel;
 
         /* Из PanelTecViewBase....

@@ -150,6 +150,9 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelSOTIASSO.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelTecView.cs">
       <SubType>Component</SubType>
     </Compile>
