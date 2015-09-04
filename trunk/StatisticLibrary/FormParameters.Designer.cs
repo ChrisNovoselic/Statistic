@@ -70,7 +70,6 @@ namespace StatisticCommon
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Parameters_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

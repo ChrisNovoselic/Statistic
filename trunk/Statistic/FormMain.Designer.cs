@@ -60,6 +60,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -177,6 +178,7 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem
             });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
@@ -224,6 +226,10 @@ namespace Statistic
             // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
             // 
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.CheckedChanged += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияСОТИАССОToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОToolStripMenuItem_CheckedChanged);
             // 
             // настройкиToolStripMenuItem
             // 

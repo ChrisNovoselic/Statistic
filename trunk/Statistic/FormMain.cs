@@ -29,7 +29,8 @@ namespace Statistic
     {
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB { CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1, DATETIMESYNC_SOURCE_DATA
-                , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4,
+                , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4
+                , SOTIASSO
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -625,7 +626,10 @@ namespace Statistic
                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                             }
                                             else
-                                                ;
+                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
+                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
+                                                else
+                                                    ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -1146,34 +1150,35 @@ namespace Statistic
                 //strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", type=" + tclTecViews.TabPages[indx].Controls[0].GetType().ToString();
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", name=" + tclTecViews.TabPages[indx].Text;
 
-                if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
-                    ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                else
-                    ////В работе постоянно
-                    if (tclTecViews.TabPages[indx].Controls[0] is PanelCurPower)
-                        ((PanelCurPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                    else
-                        if (tclTecViews.TabPages[indx].Controls[0] is PanelTMSNPower)
-                            ((PanelTMSNPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                        else
-                            if (tclTecViews.TabPages[indx].Controls[0] is PanelLastMinutes)
-                                ((PanelLastMinutes)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                            else
-                                if (tclTecViews.TabPages[indx].Controls[0] is PanelSobstvNyzhdy)
-                                    ((PanelSobstvNyzhdy)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                                else
-                                    if (tclTecViews.TabPages[indx].Controls[0] is PanelCustomTecView)
-                                        ((PanelCustomTecView)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                                    else
-                                        if (tclTecViews.TabPages[indx].Controls[0] is PanelAdmin)
-                                            ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                                        else
-                                            if (tclTecViews.TabPages[indx].Controls[0] is PanelSourceData)
-                                            {
-                                                ((PanelSourceData)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
-                                            }
-                                            else
-                                                ;
+                //if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
+                //    ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //else
+                //    ////В работе постоянно
+                //    if (tclTecViews.TabPages[indx].Controls[0] is PanelCurPower)
+                //        ((PanelCurPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //    else
+                //        if (tclTecViews.TabPages[indx].Controls[0] is PanelTMSNPower)
+                //            ((PanelTMSNPower)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //        else
+                //            if (tclTecViews.TabPages[indx].Controls[0] is PanelLastMinutes)
+                //                ((PanelLastMinutes)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //            else
+                //                if (tclTecViews.TabPages[indx].Controls[0] is PanelSobstvNyzhdy)
+                //                    ((PanelSobstvNyzhdy)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //                else
+                //                    if (tclTecViews.TabPages[indx].Controls[0] is PanelCustomTecView)
+                //                        ((PanelCustomTecView)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //                    else
+                //                        if (tclTecViews.TabPages[indx].Controls[0] is PanelAdmin)
+                //                            ((PanelAdmin)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //                        else
+                //                            if (tclTecViews.TabPages[indx].Controls[0] is PanelSourceData)
+                //                            {
+                //                                ((PanelSourceData)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                //                            }
+                //                            else
+                //                                ;
+                ((HPanelCommon)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
             }
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
@@ -2087,6 +2092,17 @@ namespace Statistic
 
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
                 , new bool [] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+
+        private void значенияСОТИАССОToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel == null)
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel = new PanelSOTIASSO();
+            else
+                ;
+
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel, "Значения СОТИАССО"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
         private void видSubToolStripMenuItem_CheckedChanged(PanelStatistic obj, string nameTab, bool [] arCheckedStoped)

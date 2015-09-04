@@ -229,6 +229,8 @@ namespace Statistic
                 int hour = m_tecView.lastHour;
                 if (hour == 24)
                     hour = 23;
+                else
+                    ;
 
                 sf.CheckPathExists = true;
                 sf.DefaultExt = ".xls";
@@ -249,7 +251,7 @@ namespace Statistic
                     //    strSheetName += @"(" + m_ZedGraphHours.ContextMenuStrip.Items[indxItemMenuStrip].Text + @")";
                     //else
                     //    ;
-                    
+
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add(strSheetName);
                     ExcelWorksheet ws = ef.Worksheets[0];
