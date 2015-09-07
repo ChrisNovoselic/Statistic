@@ -10,7 +10,8 @@ namespace StatisticCommon
 {
     public abstract class PanelStatistic : HPanelCommon
     {
-        public PanelStatistic () : base (-1, -1)
+        public PanelStatistic(int cCols = -1, int cRows = -1)
+            : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =

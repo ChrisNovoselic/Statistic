@@ -252,6 +252,10 @@ namespace StatisticCommon
             //countTG = 0;
             List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
 
+            //07.09.2015 Для новой возможности (PanelSOSTIASSO) - реинициализации во время выполнения
+            m_localTECComponents.Clear ();
+            m_dictValuesTG.Clear ();
+
             if (indxTECComponents < 0) // значит этот view будет суммарным для всех ГТП
             {                
                 foreach (TECComponent c in m_tec.list_TECComponents)
@@ -635,6 +639,24 @@ namespace StatisticCommon
             AddState((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
+        public void ChangeState_SOTIASSO()
+        {
+            ClearStates();
+
+            ClearValues();
+
+            if (m_tec.m_bSensorsStrings == false)
+                AddState((int)StatesMachine.InitSensors);
+            else ;
+
+            //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
+            AddState((int)TecView.StatesMachine.Hour_TM);
+            //AddState((int)TecView.StatesMachine.);
+
+            AddState((int)TecView.StatesMachine.PPBRValues);
+            AddState((int)TecView.StatesMachine.AdminValues);
+        }
+
         private void ChangeState_AdminAlarm () {
             new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
         }
@@ -674,6 +696,13 @@ namespace StatisticCommon
             InitializeTECComponents ();
         }
 
+        public void InitTEC(StatisticCommon.TEC tec, int indx, HMark markQueries)
+        {
+            indxTECComponents = indx;
+
+            InitTEC (new List<TEC> () { tec }, markQueries);
+        }
+
         public override bool WasChanged()
         {
             bool bRes = false;
@@ -693,13 +722,20 @@ namespace StatisticCommon
 
         public void ClearValuesLastMinutesTM()
         {
-            if (!(m_dictValuesTECComponent.Length - m_valuesHours.Length == 1))
+            try
             {
-                m_dictValuesTECComponent = null;
-                m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[m_valuesHours.Length + 1];
+                if (!(m_dictValuesTECComponent.Length - m_valuesHours.Length == 1))
+                {
+                    m_dictValuesTECComponent = null;
+                    m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[m_valuesHours.Length + 1];
+                }
+                else
+                    ;
             }
-            else
-                ;
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ClearValuesLastMinutesTM ()- ...");
+            }
 
             for (int i = 0; i < (m_valuesHours.Length + 1); i++)
             {
@@ -1663,6 +1699,9 @@ namespace StatisticCommon
                         break;
                     case TecView.TYPE_PANEL.SOBSTV_NYZHDY:
                         ChangeState_SobstvNyzhdy();
+                        break;
+                    case TYPE_PANEL.SOTIASSO:
+                        ChangeState_SOTIASSO();
                         break;
                     default:
                         break;
