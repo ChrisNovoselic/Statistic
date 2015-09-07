@@ -95,10 +95,6 @@ namespace Statistic
         {
             InitializeComponent();
 
-            this.Dock = DockStyle.Fill;
-
-            this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-
             this.ColumnCount = listTec.Count + 1;
             this.RowCount = 1;
 
