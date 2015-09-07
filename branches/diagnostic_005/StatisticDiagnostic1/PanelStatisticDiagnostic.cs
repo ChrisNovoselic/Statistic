@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Timers;
@@ -13,44 +12,99 @@ using System.Data; //DataTable
 using System.Data.Common; //DbConnection
 using HClassLibrary;
 using StatisticCommon;
-using System.Data.SqlClient;
 
 namespace StatisticDiagnostic1
 {
     public class PanelStatisticDiagnostic1 : PanelStatistic
     {
-        private static int[] INDEX_SOURCE_GETDATA = {
-            26 //Эталон - ne2844
-            //Вариант №1
-            , 1, 4, 7, 10, 13, /*16*/-1
-            , 2, 5, 8, 11, 14, 17
-            , 3, 6, 9, 12, 15, -1
-            ////Вариант №2
-            //, -1, -1, -1, -1, -1, /*16*/-1
-            //, -1, -1, -1, -1, -1, 17
-            //, -1, -1, -1, -1, -1, -1
-                                      };
-
-        public Modes[] m_arPanelsMODES;
-        public Tec[] m_arPanelsTEC;
-        public Task[] m_arPanelsTask;
-        string[,] massiveServ;
-        public DataTable tbModes = new DataTable();
-        public DataTable m_tableSourceData;
+        static string[,] massiveServ;
+        static Modes[] m_arPanelsMODES;
+        static Tec[] m_arPanelsTEC;
+        static DataTable tbModes = new DataTable();
+        static DataTable m_tableSourceData;
         public DataTable table_task = new DataTable();
         public DataTable arraySourceDataTask = new DataTable();
-        public DataTable arraySource = new DataTable();
-        public DataTable arraySourceHT = new DataTable();
-        public DataTable arraySourceDS = new DataTable();
-        public DataTable tbTask = new DataTable();
-        HDataSource m_DataSource;
+        static DataTable arraySource = new DataTable();
+        static DataTable arraySourceTEC = new DataTable();
+        static DataTable arrayKeys_DataSheet = new DataTable();
+        static HDataSource m_DataSource;
         int counter = -1;
-        private object m_lockTimerGetData;
-        private object m_lockGetData;
-        ConnectionSettings m_connSett;
         private System.Timers.Timer aTimer;
-        public DataRow[] rows;
+        static System.Timers.Timer UpdateTimer;
+        private System.Object lockThis = new System.Object();
+        ConnectionSettings m_connSett;
 
+
+        FormWait fw = new FormWait();
+        Task taskdb = new Task();
+        static Modes modesdb = new Modes();
+        static Tec tecdb = new Tec();
+
+        /// <summary>
+        /// Класс для передачи данных в классы
+        /// </summary>
+        public static class TransferData
+        {
+            public delegate void MyEvent(object data);
+            public static MyEvent EventHandler;
+            public delegate void Event(object data);
+            public static Event EventHandler1;
+        }
+
+        /// <summary>
+        /// Класс для обновления данных
+        /// </summary>
+        public class UpdateSource
+        {
+            PanelStatisticDiagnostic1 Pd1 = new PanelStatisticDiagnostic1();
+
+            //home get home
+            public UpdateSource()
+            {
+
+            }
+
+            /// <summary>
+            /// Перегрузка информации из бд
+            /// </summary>
+            public void RefreshDataSource()
+            {
+                //m_DataSource.EvtRecievedTable+=new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+                Pd1.collection_data();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Grids()
+            {
+                tecdb.AddItemTec();
+                modesdb.AddItemModes();
+            }
+
+            /// <summary>
+            /// ТАймер для пинга
+            /// </summary>
+            public void TimerPing()
+            {
+                UpdateTimer = new System.Timers.Timer(10000);
+                UpdateTimer.Enabled = true;
+                UpdateTimer.AutoReset = true;
+                UpdateTimer.Elapsed +=new ElapsedEventHandler(UpdateTimer_Elapsed);
+                //aTimer.Interval = 300000;
+                GC.KeepAlive(UpdateTimer);
+            }
+
+           public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
+            {
+
+            }
+
+        }
+
+        /// <summary>
+        /// класс для обращения к БД 
+        /// </summary>
         public class HDataSource : HHandlerDb
         {
             PanelStatisticDiagnostic1 Parent;
@@ -154,7 +208,7 @@ namespace StatisticDiagnostic1
                 {
                     case (int)State.Command:
                         EvtRecievedTable(table);
-                        //TaskTable(table);
+                        // m_DataSource_EvtRecievedTable(table);
                         break;
                     default:
                         break;
@@ -174,14 +228,10 @@ namespace StatisticDiagnostic1
             }
         }
 
-        //Tec tecdb = new Tec();
-        //Modes modesdb;
-        Task taskdb = new Task();
-
         /// <summary>
         /// Класс ТЭЦ
         /// </summary>
-        public class Tec : HPanelCommon
+        public partial class Tec : HPanelCommon
         {
             public DataGridView TECDataGridView = new DataGridView();
             public Label LabelTec = new Label();
@@ -248,18 +298,21 @@ namespace StatisticDiagnostic1
                 this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
                 this.TECDataGridView.AllowUserToAddRows = false;
                 this.TECDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-                this.TECDataGridView.RowHeadersVisible = false;
-                //this.TECDataGridView.AutoGenerateColumns = false;                  
+                this.TECDataGridView.RowHeadersVisible = false;               
                 this.TECDataGridView.Name = "TECDataGridView";
                 this.TECDataGridView.TabIndex = 0;
+                this.TECDataGridView.ColumnCount = 8;
+                this.TECDataGridView.Columns[0].Name = "ТЭЦ";
+                this.TECDataGridView.Columns[1].Name = "Источник данных";
+                this.TECDataGridView.Columns[2].Name = "Время проверки";
+                this.TECDataGridView.Columns[3].Name = "Крайнее значение";
+                this.TECDataGridView.Columns[4].Name = "Связь";
 
                 this.LabelTec.AutoSize = true;
-                //this.LabelTec.Size = new System.Drawing.Size(1, 5);
-                //this.LabelTec.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.LabelTec.Name = "LabelTec";
                 this.LabelTec.TabIndex = 0;
                 this.LabelTec.Text = "Unknow_TEC";
-                //this.LabelTec.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+
                 this.LabelTec.TextAlign = System.Drawing.ContentAlignment.TopCenter;
 
                 this.ResumeLayout(false);
@@ -268,10 +321,230 @@ namespace StatisticDiagnostic1
             #endregion
         }
 
+        partial class Tec
+        {
+            public DataRow[] rows;
+
+            /// <summary>
+            /// Старт TEC
+            /// </summary>
+            public void start_TEC()
+            {
+                Create_PanelTEC();
+                AddItemTec();
+            }
+
+            /// <summary>
+            /// Создание панелей ТЭЦ
+            /// </summary>
+            public void Create_PanelTEC()
+            {
+                rows = arraySourceTEC.Select();
+
+                m_arPanelsTEC = new Tec[rows.Length];
+
+                for (int i = 0; i < rows.Length; i++)
+                {
+                    m_arPanelsTEC[i] = new Tec();
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void MethodTEC()
+            {
+                TextColumnTec();
+                ColumTimeTEC();
+                CellsPingTEC();
+            }
+
+            /// <summary>
+            /// Функция заполнения гридов
+            /// </summary>
+            public void AddItemTec()
+            {
+                for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                {
+                    string filter = "ID_EXT = " + Convert.ToInt32(rows[i][0]);
+
+                    //проверка на пустоту(ибо рано срабатывает)
+                    while (m_tableSourceData == null)
+                    {
+
+                    }
+
+                    int d = 0;
+
+                    foreach (DataRow row in m_tableSourceData.Select(filter))
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.Rows.Add();
+
+                        for (int c = 0; c < row.ItemArray.Length; c++)
+                        {
+                            m_arPanelsTEC[i].TECDataGridView.Rows[d].Cells[c].Value = row.ItemArray[c]; 
+                        }
+
+                        d++;
+                    }
+
+                    /*if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.DataSource = cloneTable));
+                    }
+                    else
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.DataSource = cloneTable;
+                    }*/
+                }
+
+                MethodTEC();
+            }
+
+            /// <summary>
+            /// Функция изменения заголовков грида Tec
+            /// </summary>
+            public void HeaderGridTEC()
+            {
+                for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                {
+                    string str = arraySourceTEC.Rows[i][@"NAME_SHR"].ToString();
+
+                    if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns["NAME_SHR"].HeaderText = "ТЭЦ"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns["ID"].Visible = false));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[1].HeaderText = "Источник данных"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[2].HeaderText = "Крайнее значение"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[3].Visible = false));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[6].HeaderText = "Связь"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[4].HeaderText = "Время проверки"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[7].DisplayIndex = 0));
+                    }
+                    else
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.Columns[7].HeaderText = "ТЭЦ";
+                        m_arPanelsTEC[i].TECDataGridView.Columns[1].HeaderText = "Источник данных";
+                        m_arPanelsTEC[i].TECDataGridView.Columns[2].HeaderText = "Крайнее значение";
+                        m_arPanelsTEC[i].TECDataGridView.Columns[0].Visible = false;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[3].Visible = false;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[4].HeaderText = "Время проверки";
+                        m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[6].HeaderText = "Связь";
+                        m_arPanelsTEC[i].TECDataGridView.Columns[7].DisplayIndex = 0;
+                    }
+
+                    if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    {
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Update()));
+                    }
+                    else
+                    {
+                        m_arPanelsTEC[i].LabelTec.Text = str;
+                    }
+                }
+
+            }
+
+            /// <summary>
+            /// Функция перемеинования ячейки датагрид TEC
+            /// </summary>
+            public void TextColumnTec()
+            {
+                for (int k = 0; k < arraySourceTEC.Rows.Count; k++)
+                {
+                    for (int j = 0; j < m_arPanelsTEC[k].TECDataGridView.Rows.Count; j++)
+                    {
+                        string text1;
+                        string text2 = m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[1].Value.ToString();
+
+                        int s = 0;
+
+                        do
+                        {
+                            text1 = arrayKeys_DataSheet.Rows[s][@"ID"].ToString();
+
+                            s++;
+                        }
+
+                        while (text1 != text2);
+
+                        string text = arrayKeys_DataSheet.Rows[s - 1][@"DESCRIPTION"].ToString();
+
+                        if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
+                            m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));
+                        else
+                        {
+                            m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[1].Value = text.ToString();
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Функция заполнения ячеек грида ТЭЦ верменем
+            /// </summary>
+            /// <param name="table"></param>
+            public void ColumTimeTEC()
+            {
+                string text = DateTime.Now.ToString();
+
+                for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                {
+                    for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.Rows.Count; j++)
+                    {
+                        if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString()));
+                        else
+                        {
+                            m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[4].Value = text.ToString();
+                        }
+                    }
+                }
+                HeaderGridTEC();
+            }
+
+            /// <summary>
+            /// Добавление результата пропинговки в грид
+            /// </summary>
+            /// <param name="x"></param>
+            public void CellsPingTEC()
+            {
+                for (int k = 0; k < m_arPanelsTEC.Length; k++)
+                {
+                    for (int i = 0; i < m_arPanelsTEC[k].TECDataGridView.Rows.Count; i++)
+                    {
+                        int s = -1;
+                        string text1;
+                        string text2 = massiveServ[i, 1];
+
+                        do
+                        {
+                            s++;
+                            text1 = arraySource.Rows[s][@"NAME_SHR"].ToString();
+                        }
+
+                        while (text1 != text2);
+
+                        if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
+                        {
+                            m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[6].Value = massiveServ[i, 0]));
+                        }
+                        else
+                        {
+                            m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[6].Value = massiveServ[i, 0];
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Класс МОДЕС
         /// </summary>
-        public class Modes : HPanelCommon
+        public partial class Modes : HPanelCommon
         {
             public Modes()
                 : base(-1, -1)
@@ -343,6 +616,12 @@ namespace StatisticDiagnostic1
                 this.ModesDataGridView.RowHeadersVisible = false;
                 this.ModesDataGridView.Name = "ModesDataGridView";
                 this.ModesDataGridView.TabIndex = 0;
+                this.ModesDataGridView.ColumnCount = 8;
+                this.ModesDataGridView.Columns[0].Name = "ТЭЦ";
+                this.ModesDataGridView.Columns[1].Name = "Источник данных";
+                this.ModesDataGridView.Columns[2].Name = "Время проверки";
+                this.ModesDataGridView.Columns[3].Name = "Крайнее значение";
+                this.ModesDataGridView.Columns[4].Name = "Связь";
 
                 this.LabelModes.AutoSize = true;
                 this.LabelModes.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -353,18 +632,237 @@ namespace StatisticDiagnostic1
                 this.LabelModes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
                 this.ResumeLayout(false);
+
             }
             #endregion
-            public System.Windows.Forms.TableLayoutPanel MODESTableLayoutPanel;
+        }
+
+        partial class Modes
+        {
+            DataRow[] rows_modes;
+
+            /// <summary>
+            /// Старт MODES
+            /// </summary>
+            public void start_MODES()
+            {
+                Create_Modes();
+            }
+
+            /// <summary>
+            /// Создание панелей Модес
+            /// </summary>
+            /// <param name="table"></param>
+            public void Create_Modes()
+            {
+                rows_modes = tbModes.Select();
+                m_arPanelsMODES = new Modes[rows_modes.Length];
+
+                for (int i = 0; i < rows_modes.Length; i++)
+                {
+                    m_arPanelsMODES[i] = new Modes();
+                }
+
+                AddItemModes();
+                //HeaderTextModes();
+            }
+
+            /// <summary>
+            /// Функция Заполнения панелей Модес
+            /// </summary>
+            public void AddItemModes()
+            {
+                for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                {
+                    string filter = "ID_EXT = " + Convert.ToInt32(rows_modes[i][0]);
+
+                    //проверка на пустоту
+                    while (m_tableSourceData == null)
+                    {
+
+                    }
+
+                    int d = 0;
+           
+                    foreach (DataRow row in m_tableSourceData.Select(filter))
+                    {
+                        m_arPanelsMODES[i].ModesDataGridView.Rows.Add();
+
+                        for (int c = 0; c < row.ItemArray.Length; c++)
+                        {
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[d].Cells[c].Value = row.ItemArray[c];
+                        }
+
+                        d++;
+                    }
+
+                    //m_arPanelsMODES[i].ModesDataGridView.Rows.Add((DataRow)massivetb[i]);
+                    /*for (int num = 0; num < d; num++)
+                    {
+                        if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
+                        {
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows.Add(massivetb[num,0])));
+                        }
+
+                        else
+                        {
+                            m_arPanelsMODES[i].ModesDataGridView.Rows.Add((DataRow)massivetb[num,0]);
+                        }
+                    }*/
+                }
+
+                HeaderTextModes();
+                MethodModes();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void MethodModes()
+            {
+                TextColumnModes();
+                TimeModes();
+                CellsPingMODES();
+            }
+
+            /// <summary>
+            /// Функция изменения заголовков грида Modes
+            /// </summary>
+            public void HeaderTextModes()
+            {
+                for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                {
+                    string str = tbModes.Rows[i][@"NAME_SHR"].ToString();
+                    if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
+                    {
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[7].HeaderText = "ТЭЦ"));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[0].Visible = false));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[1].HeaderText = "Источник данных"));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[2].HeaderText = "Крайнее значение"));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[3].Visible = false));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[6].HeaderText = "Связь"));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[5].Visible = false));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[4].HeaderText = "Время проверки"));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[7].DisplayIndex = 0));
+                    }
+                    else
+                    {
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[7].Name = "ТЭЦ";
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[0].Visible = false;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[1].HeaderText = "Источник данных";
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[2].HeaderText = "Крайнее значение";
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[3].Visible = false;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[6].HeaderText = "Связь";
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[5].Visible = false;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[4].HeaderText = "Время проверки";
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[7].DisplayIndex = 0;
+
+                    }
+
+                    if (m_arPanelsMODES[i].LabelModes.InvokeRequired)
+                        m_arPanelsMODES[i].LabelModes.Invoke(new Action(() => m_arPanelsMODES[i].LabelModes.Text = str));
+                    else
+                    {
+                        m_arPanelsMODES[i].LabelModes.Text = str;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Функция перемеинования ячейки датагрид Modes
+            /// </summary>
+            public void TextColumnModes()
+            {
+                for (int k = 0; k < m_arPanelsMODES.Length; k++)
+                {
+                    for (int j = 0; j < m_arPanelsMODES[k].ModesDataGridView.Rows.Count; j++)
+                    {
+                        string text1;
+                        string text2 = m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[1].Value.ToString();
+
+                        int s = 0;
+
+                        do
+                        {
+                            text1 = arrayKeys_DataSheet.Rows[s][@"ID"].ToString();
+
+                            s++;
+                        }
+
+                        while (text1 != text2);
+
+                        string text = arrayKeys_DataSheet.Rows[s - 1][@"DESCRIPTION"].ToString();
+
+                        if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
+                            m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[1].Value = text.ToString()));
+                        else
+                        {
+                            m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[1].Value = text.ToString();
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Добавление результата пропинговки в грид MODES
+            /// </summary>
+            /// <param name="x"></param>
+            public void CellsPingMODES()
+            {
+                for (int k = 0; k < m_arPanelsMODES.Length; k++)
+                {
+                    for (int i = 0; i < m_arPanelsMODES[k].ModesDataGridView.Rows.Count; i++)
+                    {
+                        int s = -1;
+                        string text1;
+
+                        string text2 = tbModes.Rows[k][@"NAME_SHR"].ToString();
+
+                        do
+                        {
+                            s++;
+                            text1 = massiveServ[s, 1];
+                        }
+
+                        while (text1 != text2);
+
+                        if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
+                            m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[6].Value = massiveServ[s, 0]));
+                        else
+                        {
+                            m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[6].Value = massiveServ[s, 0];
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Функция заполнения ячеек грида MODES верменем
+            /// </summary>
+            public void TimeModes()
+            {
+                string text = DateTime.Now.ToString();
+
+                for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                {
+                    for (int j = 0; j < m_arPanelsMODES[i].ModesDataGridView.Rows.Count; j++)
+                    {
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[j].Cells[4].Value = text.ToString();
+                        /* if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString()));*/
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Класс Задачи 
         /// </summary>
-        public class Task : HPanelCommon
+        public partial class Task : HPanelCommon
         {
             public DataGridView TaskDataGridView = new DataGridView();
             public CheckedListBox TaskCheckedListBox = new CheckedListBox();
+            DataTable table = new DataTable();
 
             public Task()
                 : base(-1, -1)
@@ -449,10 +947,97 @@ namespace StatisticDiagnostic1
                 this.TaskDataGridView.AllowUserToAddRows = false;
 
                 this.ResumeLayout();
+
             }
             #endregion;
 
             public System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel;
+        }
+
+        partial class Task
+        {
+            /// <summary>
+            /// Выборка из таблицы задачи
+            /// </summary>
+            public void GetDataTask(DataTable table)
+            {
+                for (int j = 0; j < table.Rows.Count; j++)
+                {
+                    AddSourceDataTask(table.Rows[j][@"NAME_SHR"].ToString());
+                }
+            }
+
+            /// <summary>
+            /// Фукнция заполнения чекбокса задачи
+            /// </summary>
+            public void AddSourceDataTask(string desc)
+            {
+                TaskCheckedListBox.Items.Add(desc);
+            }
+
+            /// <summary>
+            /// Функция заполнения ячеек грида Task верменем
+            /// </summary>
+            public void ColumTimeTask()
+            {
+                string text = DateTime.Now.ToString();
+
+                for (int j = 0; j < TaskDataGridView.Rows.Count; j++)
+                {
+                    TaskDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString();
+                }
+            }
+
+            /// <summary>
+            ///  Функция перемеинования ячейки датагрид Task
+            /// </summary>
+            public void TextColumnTask(int indx, DataTable table)
+            {
+                string text1;
+                string text2 = TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value.ToString();
+
+                int s = 0;
+
+                do
+                {
+                    text1 = table.Rows[s][@"ID"].ToString();
+                    s++;
+                }
+
+                while (text1 != text2);
+
+                string text = table.Rows[s - 1][@"DESCRIPTION"].ToString();
+
+                /*if (taskdb.TaskDataGridView.InvokeRequired)
+                    taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));*/
+
+                TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value = text.ToString();
+            }
+
+            /// <summary>
+            /// Функция изменения заголовков грида Task
+            /// </summary>
+            public void HeaderTextTask()
+            {
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[7].HeaderText = "Имя задачи"));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[0].Visible = false));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[1].HeaderText = "Тип"));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[2].HeaderText = "Крайнее значение(сек)"));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[3].Visible = false));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[6].Visible = false));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[5].Visible = false));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].HeaderText = "Время проверки"));
+                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[7].DisplayIndex = 0));
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void MethodTask(int x, DataTable table)
+            {
+                TextColumnTask(x, table);
+                ColumTimeTask();
+            }
         }
 
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -502,17 +1087,6 @@ namespace StatisticDiagnostic1
             this.TecTableLayoutPanel.RowCount = 2;
             this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-
-            /*this.TaskTableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.TaskTableLayoutPanel1.Dock = DockStyle.Fill;
-            this.TaskTableLayoutPanel1.AutoSize = true;
-            this.TaskTableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            this.TaskTableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.TaskTableLayoutPanel1.ColumnCount = 2;
-            this.TaskTableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30.74641F));
-            this.TaskTableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70.25359F));
-            this.TaskTableLayoutPanel1.RowCount = 1;
-            this.TaskTableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));*/
 
             this.ModesTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.ModesTableLayoutPanel.Dock = DockStyle.Fill;
@@ -581,9 +1155,8 @@ namespace StatisticDiagnostic1
         private System.Windows.Forms.Label TEClabel;
         private System.Windows.Forms.Label Modeslabel;
         private System.Windows.Forms.TableLayoutPanel TecTableLayoutPanel;
-        // private System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel1;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.TableLayoutPanel ModesTableLayoutPanel;
+        public System.Windows.Forms.TableLayoutPanel ModesTableLayoutPanel;
 
         public PanelStatisticDiagnostic1()
         {
@@ -602,20 +1175,27 @@ namespace StatisticDiagnostic1
         private void initialize()
         {
             InitializeComponent();
-            m_lockTimerGetData = new object();
-            m_lockGetData = new object();
-
-            Conn();
+            collection_data();
         }
 
         /// <summary>
         /// 
         /// </summary>
+        public void AddPanel()
+        {
+            AddPanelModes();
+            AddPanelTEC();
+            fw.StopWaitForm();
+        }
+
+        /// <summary>
+        /// инициализация Бэкграунда
+        /// </summary>
         private void InitializeBackgroundWorker()
         {
             backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
-            //backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
-           //backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
+            backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
+            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
             backgroundWorker1.WorkerReportsProgress = true;
             backgroundWorker1.WorkerSupportsCancellation = true;
         }
@@ -629,6 +1209,37 @@ namespace StatisticDiagnostic1
             }
         }
 
+        /// <summary>
+        /// This event handler updates the progress.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void backgroundWorker1_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+        {
+            //result.Text = (e.ProgressPercentage.ToString() + "%");
+        }
+
+        /// <summary>
+        /// This event handler deals with the results of the background operation.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void backgroundWorker1_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled == true)
+            {
+                //result.Text = "Canceled!";
+            }
+            else if (e.Error != null)
+            {
+                //result.Text = "Error: " + e.Error.Message;
+            }
+            else
+            {
+                //result.Text = "Done!";
+            }
+        }
+
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
@@ -639,113 +1250,30 @@ namespace StatisticDiagnostic1
         /// <summary>
         /// 
         /// </summary>
-        public void Conn()
+        public void start()
+        {
+            PingSourceData();
+            StartModes();
+            StartPanelTec();
+            AddPanel();
+        }
+
+        /// <summary>
+        /// функция ожидания загрузки всех данных на форму
+        /// </summary>
+        public void WaitFunc()
+        {
+            fw.StartPosition = FormStartPosition.CenterScreen;
+            fw.StartWaitForm();
+        }
+
+        /// <summary>
+        /// Сбор информации с источников данных
+        /// </summary>
+        public void collection_data()
         {
             GetCurrentData();
             Start();
-            GetDataTask();
-        }
-
-        /// <summary>
-        /// Прикрепляет гриды к панеле Задачи
-        /// </summary>
-        /* public void AddPanelTask()
-         {
-             int i = -1;
-             int indx = -1
-                , col = -1
-                , row = -1;
-
-             for (i = 0; i < m_arPanelsTask.Length; i++)
-             {
-                 indx = i;
-                 if (!(indx < this.RowCount))
-                     indx += (int)(indx / TaskTableLayoutPanel1.RowCount);
-                 //else ;
-
-                 col = (int)(indx / TaskTableLayoutPanel1.RowCount);
-                 row = indx % (TaskTableLayoutPanel1.RowCount - 0);
-                 //if (row == 0) row = 1; else ;
-                 if (TaskTableLayoutPanel1.InvokeRequired)
-                     TaskTableLayoutPanel1.Invoke(new Action(() => TaskTableLayoutPanel1.Controls.Add(m_arPanelsTEC[i], col, row)));
-                 //TaskTableLayoutPanel1.Controls.Add(m_arPanelsTask[i], col, row);
-             }
-         }*/
-
-        /// <summary>
-        /// Прикрепляет гриды к панеле ТЭЦ
-        /// </summary>
-        public void AddPanelTEC()
-        {
-            int i = -1;
-            int indx = -1
-               , col = -1
-               , row = -1;
-
-            for (i = 0; i < m_arPanelsTEC.Length; i++)
-            {
-                indx = i;
-                if (!(indx < this.RowCount))
-                    indx += (int)(indx / TecTableLayoutPanel.RowCount);
-                //else ;
-
-                col = (int)(indx / TecTableLayoutPanel.RowCount);
-                row = indx % (TecTableLayoutPanel.RowCount - 0);
-                //if (row == 0) row = 1; else ;
-                if (TecTableLayoutPanel.InvokeRequired)
-                    TecTableLayoutPanel.Invoke(new Action(() => TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row)));
-                //TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row);
-            }
-        }
-
-        /// <summary>
-        /// Прикрепляет гриды к панеле МОДЕС
-        /// </summary>
-        public void AddPanelModes()
-        {
-            int i = -1;
-            int indx = -1
-               , col = -1
-               , row = -1;
-
-            for (i = 0; i < m_arPanelsMODES.Length; i++)
-            {
-                if (ModesTableLayoutPanel.RowCount * ModesTableLayoutPanel.ColumnCount < m_arPanelsMODES.Length)
-                {
-                    ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.RowCount++));
-                    ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F))));
-                }
-
-                indx = i;
-                if (!(indx < this.RowCount))
-                {
-                    //indx += (int)(indx / ModesTableLayoutPanel.RowCount);
-
-                }
-                //else ;
-
-                col = (int)(indx / ModesTableLayoutPanel.RowCount);
-                row = indx % (ModesTableLayoutPanel.RowCount - 0);
-                //if (row == 0) row = 1; else ;
-                //row = 5 / 1;
-                if (ModesTableLayoutPanel.InvokeRequired)
-                    ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.Controls.Add(m_arPanelsMODES[i], col, row)));
-                ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.AutoScroll = true));
-                //ModesTableLayoutPanel.Controls.Add(m_arPanelsMODES[i], col, row);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="table"></param>
-        private void dataSource_TableTec(object table)
-        {
-            m_tableSourceData = (DataTable)(table);
-            tbTask = (DataTable)table;
-            start_TEC();
-            start_MODES();
-            TimerPing();
         }
 
         /// <summary>
@@ -756,13 +1284,12 @@ namespace StatisticDiagnostic1
         {
             m_connSett = connSett;
             m_DataSource = new HDataSource((ConnectionSettings)m_connSett);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(dataSource_TableTec);
-            //m_DataSource.TaskTable += new DelegateObjectFunc(dataSource_TaskTable);
-            taskdb.TaskCheckedListBox.SelectedIndexChanged += new EventHandler(TaskCheckedListBox_SelectedIndexChanged);
             m_DataSource.StartDbInterfaces();
             m_DataSource.Start();
             m_DataSource.Command();
-            //m_lockTimerGetData = new object();
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            taskdb.GetDataTask(arraySourceDataTask);
+            taskdb.TaskCheckedListBox.SelectedIndexChanged += new EventHandler(TaskCheckedListBox_SelectedIndexChanged);
         }
 
         /// <summary>
@@ -793,491 +1320,152 @@ namespace StatisticDiagnostic1
         }
 
         /// <summary>
-        /// Старт TEC
-        /// </summary>
-        public void start_TEC()
-        {
-            Create_PanelTEC();
-        }
-
-        /// <summary>
-        /// Старт MODES
-        /// </summary>
-        public void start_MODES()
-        {
-            Create_Modes();
-        }
-
-        /// <summary>
         /// Функция взятия информации из конф.БД
         /// </summary>
         public void GetCurrentData()
         {
-            string connstr = "Data Source=ITC288; Initial Catalog=techsite_cfg-2.X.X;User ID=client1;Pwd=client; ";
-            SqlConnection conn;
-            conn = new SqlConnection(connstr);
-            SqlDataAdapter adapterTEC;
-            SqlDataAdapter adapterTASK;
-            SqlDataAdapter adapterDS;
-            SqlDataAdapter adapterHT;
-            SqlDataAdapter adapterModes;
-
-            try
+            ConnectionSettings CS = new ConnectionSettings
             {
-                conn.Open();
-                adapterTEC = new SqlDataAdapter("SELECT * FROM TEC_LIST", conn);
-                adapterTASK = new SqlDataAdapter("SELECT * FROM TASK_LIST", conn);
-                adapterDS = new SqlDataAdapter("SELECT * FROM Keys_Datasheet", conn);
-                adapterHT = new SqlDataAdapter("SELECT * FROM SOURCE", conn);
-                adapterModes = new SqlDataAdapter("SELECT * FROM Modes_List", conn);
+                id = -1
+                ,
+                name = @"DB_CONFIG"
+                ,
+                server = @"10.105.1.107"
+                ,
+                port = 1433
+                ,
+                dbName = @"techsite_cfg-2.X.X"
+                ,
+                userName = @"client1"
+                ,
+                password = @"client"
+                ,
+                ignore = false
+            };
 
-                adapterTASK.Fill(arraySourceDataTask);
-                adapterHT.Fill(arraySourceHT);
-                adapterDS.Fill(arraySourceDS);
-                adapterTEC.Fill(arraySource);
-                adapterModes.Fill(tbModes);
-            }
+            int ListenerId = DbSources.Sources().Register(CS, false, CS.name)
+                , err = -1; ;
 
-            catch (Exception e)
+            DbConnection dbconn = null;
+            dbconn = DbSources.Sources().GetConnection(ListenerId, out err);
+
+            if ((err == 0) && (!(dbconn == null)))
             {
-                Console.WriteLine(e.ToString());
+                arraySourceDataTask = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM TASK_LIST", null, null, out err);
+                arrayKeys_DataSheet = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM Keys_Datasheet", null, null, out err);
+                tbModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM Modes_List", null, null, out err);
+                arraySource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
+                arraySourceTEC = InitTEC_200.getListTEC(ref dbconn, false, out err);
             }
+            else
+                throw new Exception(@"Нет соединения с БД");
 
-            finally
-            {
-                conn.Close();
-            }
+            DbSources.Sources().UnRegister(ListenerId);
         }
 
         /// <summary>
-        /// Создание панелей ТЭЦ
-        /// </summary>
-        public void Create_PanelTEC()
-        {
-            rows = arraySource.Select();
-
-            m_arPanelsTEC = new Tec[rows.Length];
-
-            for (int i = 0; i < rows.Length; i++)
-            {
-                m_arPanelsTEC[i] = new Tec();
-            }
-            AddPanelTEC();
-            AddItemTec();
-        }
-
-        /// <summary>
-        /// Создание панелей Модес
+        /// 
         /// </summary>
         /// <param name="table"></param>
-        public void Create_Modes()
+        static void m_DataSource_EvtRecievedTable(object table)
         {
-            DataRow[] rows_modes;
-            rows_modes = tbModes.Select();
-
-            m_arPanelsMODES = new Modes[rows_modes.Length];
-
-            for (int i = 0; i < rows_modes.Length; i++)
-            {
-                m_arPanelsMODES[i] = new Modes();
-            }
-
-            AddPanelModes();
-            AddItemModes();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void MethodTEC()
-        {
-            TextColumnTec();
-            ColumTimeTEC();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void MethodModes()
-        {
-            TextColumnModes();
-            TimeModes();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void MethodTask(int x)
-        {
-            TextColumnTask(x);
-            ColumTimeTask();
+            m_tableSourceData = (DataTable)table;
         }
 
         /// <summary>
         /// Запуск потока для панели TEC
         /// </summary>
-        public void ThreadStartPanelTec()
+        public void StartPanelTec()
         {
-            var thread_TEC = new System.Threading.Thread(start_TEC);
-            thread_TEC.Start();
-        }
-
-        /// <summary>
-        /// Запуск потока для панели Task
-        /// </summary>
-        public void ThreadTASK()
-        {
-            //Thread thread_TASK = new System.Threading.Thread(start);
-            //thread_TASK.Start();
+            tecdb.start_TEC();
         }
 
         /// <summary>
         /// Запуск потока для панели MODES
         /// </summary>
-        public void ThreadModes()
+        public void StartModes()
         {
-            //Thread thread_MODES = new System.Threading.Thread(start_Modes);
-            //thread_MODES.Start();
+            modesdb.start_MODES();
         }
 
         /// <summary>
-        /// Таймер обновления панелей
+        /// Прикрепляет гриды к панеле МОДЕС
         /// </summary>
-        public void TimerFillPanel()
+        public void AddPanelModes()
         {
-            //var timerTEC = new System.Threading.Timer(, null, 5000, 5000);
-        }
+            // int i = -1;
+            int indx = -1
+               , col = -1
+               , row = -1;
 
-        /// <summary>
-        /// Функция Заполнения панелей Модес
-        /// </summary>
-        public void AddItemModes()
-        {
             for (int i = 0; i < m_arPanelsMODES.Length; i++)
             {
-                string filter = "ID_EXT = " + Convert.ToInt32(tbModes.Rows[i][0]);
-
-                DataTable cloneTable = new DataTable();
-                cloneTable = m_tableSourceData.Clone();
-
-                foreach (DataRow row in m_tableSourceData.Select(filter))
+                if (ModesTableLayoutPanel.RowCount * ModesTableLayoutPanel.ColumnCount < m_arPanelsMODES.Length)
                 {
-                    cloneTable.ImportRow(row);
-                }
-
-                if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
-                {
-                    m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.DataSource = cloneTable));
-                }
-            }
-
-            HeaderTextModes();
-            MethodModes();
-        }
-
-        /// <summary>
-        /// Функция заполнения гридов
-        /// </summary>
-        public void AddItemTec()
-        {
-            for (int i = 0; i < m_arPanelsTEC.Length; i++)
-            {
-                string filter = "ID_EXT = " + Convert.ToInt32(rows[i][0]);
-                //string str = arraySource.Rows[i][@"NAME_SHR"].ToString();
-
-                DataTable cloneTable = new DataTable();
-                cloneTable = m_tableSourceData.Clone();
-
-                foreach (DataRow row in m_tableSourceData.Select(filter))
-                {
-                    cloneTable.ImportRow(row);
-                }
-
-                BindingSource bs = new BindingSource();
-                bs.DataSource = cloneTable;
-
-                if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                {
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.DataSource = cloneTable));
-                    //m_arPanelsTEC[i].TECDataGridView.DataSource = bs;
-                }
-                int a = m_arPanelsTEC[i].TECDataGridView.Rows.Count;
-                int c = cloneTable.Rows.Count;
-            }
-            MethodTEC();
-        }
-
-        /// <summary>
-        /// Функция изменения заголовков грида Tec
-        /// </summary>
-        public void HeaderGridTEC()
-        {
-            for (int i = 0; i < m_arPanelsTEC.Length; i++)
-            {
-                string str = arraySource.Rows[i][@"NAME_SHR"].ToString();
-
-                if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                {
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns["NAME_SHR"].HeaderText = "ТЭЦ"));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns["ID"].Visible = false));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[1].HeaderText = "Источник данных"));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[2].HeaderText = "Крайнее значение"));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[3].Visible = false));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[6].HeaderText = "Связь"));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[4].HeaderText = "Время проверки"));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[7].DisplayIndex = 0));
-                }
-
-                m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
-
-                if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Update()));
-
-            }
-
-        }
-
-        /// <summary>
-        /// Функция изменения заголовков грида Modes
-        /// </summary>
-        public void HeaderTextModes()
-        {
-            for (int i = 0; i < m_arPanelsMODES.Length; i++)
-            {
-                string str = tbModes.Rows[i][@"NAME_SHR"].ToString();
-
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[7].HeaderText = "ТЭЦ"));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[0].Visible = false));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[1].HeaderText = "Источник данных"));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[2].HeaderText = "Крайнее значение"));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[3].Visible = false));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[6].HeaderText = "Связь"));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[5].Visible = false));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[4].HeaderText = "Время проверки"));
-                m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns[7].DisplayIndex = 0));
-
-                if (m_arPanelsMODES[i].LabelModes.InvokeRequired)
-                    m_arPanelsMODES[i].LabelModes.Invoke(new Action(() => m_arPanelsMODES[i].LabelModes.Text = str));
-            }
-        }
-
-        /// <summary>
-        /// Функция изменения заголовков грида Task
-        /// </summary>
-        public void HeaderTextTask()
-        {
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[7].HeaderText = "Имя задачи"));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[0].Visible = false));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[1].HeaderText = "Тип"));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[2].HeaderText = "Крайнее значение(сек)"));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[3].Visible = false));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[6].Visible = false));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[5].Visible = false));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[4].HeaderText = "Время проверки"));
-            taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Columns[7].DisplayIndex = 0));
-        }
-
-        /// <summary>
-        /// Функция перемеинования ячейки датагрид TEC
-        /// </summary>
-        public void TextColumnTec()
-        {
-            for (int k = 0; k < arraySource.Rows.Count; k++)
-            {
-                for (int j = 0; j < m_arPanelsTEC[k].TECDataGridView.Rows.Count; j++)
-                {
-                    string text1;
-                    string text2 = m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[@"ID_Value"].Value.ToString();
-
-                    int s = 0;
-
-                    do
+                    if (ModesTableLayoutPanel.InvokeRequired)
                     {
-                        text1 = arraySourceDS.Rows[s][@"ID"].ToString();
-
-                        s++;
+                        ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.RowCount++));
+                        ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F))));
                     }
-
-                    while (text1 != text2);
-
-                    string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
-
-                    if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
-                        m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));
-
-                    //m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Функция перемеинования ячейки датагрид Modes
-        /// </summary>
-        public void TextColumnModes()
-        {
-            for (int k = 0; k < m_arPanelsMODES.Length; k++)
-            {
-                for (int j = 0; j < m_arPanelsMODES[k].ModesDataGridView.Rows.Count; j++)
-                {
-                    string text1;
-                    string text2 = m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[@"ID_Value"].Value.ToString();
-
-                    int s = 0;
-
-                    do
+                    else
                     {
-                        text1 = arraySourceDS.Rows[s][@"ID"].ToString();
-
-                        s++;
+                        ModesTableLayoutPanel.RowCount++;
+                        ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
                     }
-
-                    while (text1 != text2);
-
-                    string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
-
-                    if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
-                        m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));
-
-                    //m_arPanelsMODES[k].ModesDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString();
                 }
-            }
-        }
 
-        /// <summary>
-        ///  Функция перемеинования ячейки датагрид Task
-        /// </summary>
-        public void TextColumnTask(int indx)
-        {
-            string text1;
-            string text2 = taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value.ToString();
-
-            int s = 0;
-
-            do
-            {
-                text1 = arraySourceDS.Rows[s][@"ID"].ToString();
-
-                s++;
-            }
-
-            while (text1 != text2);
-
-            string text = arraySourceDS.Rows[s - 1][@"DESCRIPTION"].ToString();
-
-            /*if (taskdb.TaskDataGridView.InvokeRequired)
-                taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.Rows[j].Cells[@"ID_Value"].Value = text.ToString()));*/
-
-            taskdb.TaskDataGridView.Rows[indx].Cells[@"ID_Value"].Value = text.ToString();
-
-        }
-
-        /// <summary>
-        /// Функция заполнения ячеек грида ТЭЦ верменем
-        /// </summary>
-        /// <param name="table"></param>
-        public void ColumTimeTEC()
-        {
-            string text = DateTimeNow();
-
-            for (int i = 0; i < m_arPanelsTEC.Length; i++)
-            {
-                for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.Rows.Count; j++)
+                indx = i;
+                if (!(indx < this.RowCount))
                 {
-                    //m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString();
-                    if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString()));
+                    //indx += (int)(indx / ModesTableLayoutPanel.RowCount);
+
                 }
-            }
+                //else ;
 
-            HeaderGridTEC();
-        }
-
-        /// <summary>
-        /// Функция заполнения ячеек грида Task верменем
-        /// </summary>
-        public void ColumTimeTask()
-        {
-            string text = DateTimeNow();
-
-            for (int j = 0; j < taskdb.TaskDataGridView.Rows.Count; j++)
-            {
-                taskdb.TaskDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Функция заполнения ячеек грида MODES верменем
-        /// </summary>
-        public void TimeModes()
-        {
-            string text = DateTimeNow();
-
-            for (int i = 0; i < m_arPanelsMODES.Length; i++)
-            {
-                for (int j = 0; j < m_arPanelsMODES[i].ModesDataGridView.Rows.Count; j++)
+                col = (int)(indx / ModesTableLayoutPanel.RowCount);
+                row = indx % (ModesTableLayoutPanel.RowCount - 0);
+                //if (row == 0) row = 1; else ;
+                //row = 5 / 1;
+                if (ModesTableLayoutPanel.InvokeRequired)
                 {
-                    m_arPanelsMODES[i].ModesDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString();
-                    /* if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[@"UPDATEDATETIME"].Value = text.ToString()));*/
+                    ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.Controls.Add(m_arPanelsMODES[i], col, row)));
+                    ModesTableLayoutPanel.Invoke(new Action(() => ModesTableLayoutPanel.AutoScroll = true));
+                }
+                else
+                {
+                    ModesTableLayoutPanel.Controls.Add(m_arPanelsMODES[i], col, row);
+                    ModesTableLayoutPanel.AutoScroll = true;
                 }
             }
         }
 
         /// <summary>
-        /// Список адресов источников данных
+        /// Прикрепляет гриды к панеле ТЭЦ
         /// </summary>
-        List<string> hosts = new List<string>();
-
-        /// <summary>
-        /// Функция заполнения списка адресами
-        /// </summary>
-        public void GetHost()
+        public void AddPanelTEC()
         {
-            hosts.Sort();
+            int i = -1;
+            int indx = -1
+               , col = -1
+               , row = -1;
 
-            foreach (DataRow row in arraySourceHT.Select())
+            for (i = 0; i < m_arPanelsTEC.Length; i++)
             {
-                hosts.Add(row.ToString());
-            }
-        }
+                indx = i;
+                if (!(indx < this.RowCount))
+                    indx += (int)(indx / TecTableLayoutPanel.RowCount);
+                //else ;
 
-        /// <summary>
-        /// Функция нахождения актуального времени
-        /// </summary>
-        public string DateTimeNow()
-        {
-            string time_now;
-            //string timeutc_now = DateTimeOffset.UtcNow.UtcDateTime.ToString();
-            return time_now = DateTime.Now.ToString();
-        }
+                col = (int)(indx / TecTableLayoutPanel.RowCount);
+                row = indx % (TecTableLayoutPanel.RowCount - 0);
+                //if (row == 0) row = 1; else ;
 
-        /// <summary>
-        /// Выборка из таблицы задачи
-        /// </summary>
-        public void GetDataTask()
-        {
-            for (int j = 0; j < arraySourceDataTask.Rows.Count; j++)
-            {
-                AddSourceDataTask(arraySourceDataTask.Rows[j][@"NAME_SHR"].ToString());
-            }
-
-
-        }
-
-        /// <summary>
-        /// Обновление гридов
-        /// </summary>
-        public void RefreshPanel()
-        {
-            //ConnTEC();
-
-            for (int i = 0; i < m_arPanelsTEC.Length; i++)
-            {
-                if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Refresh()));
-
-                //m_arPanelsTEC[i].TECDataGridView.Refresh();
+                if (TecTableLayoutPanel.InvokeRequired)
+                    TecTableLayoutPanel.Invoke(new Action(() => TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row)));
+                else
+                {
+                    TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row);
+                }
             }
         }
 
@@ -1301,7 +1489,7 @@ namespace StatisticDiagnostic1
             {
                 if (taskdb.TaskCheckedListBox.CheckedIndices.Count > 1)
                 {
-                    foreach (DataRow rowTask in tbTask.Select(filter_task))
+                    foreach (DataRow rowTask in m_tableSourceData.Select(filter_task))
                     {
                         table_task.ImportRow(rowTask);
                     }
@@ -1312,28 +1500,26 @@ namespace StatisticDiagnostic1
 
                 else
                 {
-                    foreach (DataRow rowsTec in tbTask.Select(filter_task))
+                    foreach (DataRow rowsTec in m_tableSourceData.Select(filter_task))
                     {
                         counter++;
-                        table_task = tbTask.Clone();
+                        table_task = m_tableSourceData.Clone();
                         table_task.ImportRow(rowsTec);
 
                         taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
 
                         taskdb.TaskDataGridView.Update();
                     }
-
                 }
 
-                MethodTask(counter);
-                HeaderTextTask();
+                taskdb.MethodTask(counter, arrayKeys_DataSheet);
+                taskdb.HeaderTextTask();
             }
 
             else
             {
                 string curItemDel = taskdb.TaskCheckedListBox.SelectedItem.ToString();
                 string filterDel = "NAME_SHR = '" + curItemDel + "'";
-                //int indexDel = taskdb.TaskCheckedListBox.SelectedIndex;
                 counter--;
 
                 foreach (DataRow rowDel in table_task.Select(filterDel))
@@ -1342,34 +1528,6 @@ namespace StatisticDiagnostic1
                 }
 
                 taskdb.TaskDataGridView.Invoke(new Action(() => taskdb.TaskDataGridView.DataSource = table_task));
-            }
-        }
-
-        /// <summary>
-        /// Добавление результата пропинговки в грид
-        /// </summary>
-        /// <param name="x"></param>
-        public void CellsPing(object x)
-        {
-            for (int k = 0; k < m_arPanelsTEC.Length; k++)
-            {
-                for (int i = 0; i < m_arPanelsTEC[k].TECDataGridView.Rows.Count; i++)
-                {
-                    int s = -1;
-                    string text1;
-                    string text2 = massiveServ[i,1];
-
-                    do
-                    {
-                        s++;
-                        text1 = arraySourceHT.Rows[s][@"NAME_SHR"].ToString();
-                    }
-
-                    while (text1 != text2);
-
-                    if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
-                        m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[6].Value = massiveServ[i,0]));
-                }
             }
         }
 
@@ -1387,7 +1545,7 @@ namespace StatisticDiagnostic1
 
             try
             {
-                status = pingsender.Send(server).Status;
+                status = pingsender.Send(server, 100).Status;
 
                 if (status == IPStatus.Success)
                 {
@@ -1412,15 +1570,13 @@ namespace StatisticDiagnostic1
         public void PingSourceData()
         {
             string server;
-            DataTable testTB = new DataTable();
             string strokavst;
-            string[,] massiveServ = new string[arraySourceHT.Rows.Count,2];
-            string[] massive = new string[arraySourceHT.Rows.Count];
-            //GetHost();
+            massiveServ = new string[arraySource.Rows.Count, 2];
+            string[] massive = new string[arraySource.Rows.Count];
 
-            for (int s = 0; s < arraySourceHT.Rows.Count; s++)
+            for (int s = 0; s < arraySource.Rows.Count; s++)
             {
-                server = (string)arraySourceHT.Rows[s][@"IP"];
+                server = (string)arraySource.Rows[s][@"IP"];
                 strokavst = Ping(server);
                 massive.SetValue(strokavst, s);
             }
@@ -1429,7 +1585,7 @@ namespace StatisticDiagnostic1
             {
                 if (c == 0)
                 {
-                    for (int r = 0; r < arraySourceHT.Rows.Count; r++)
+                    for (int r = 0; r < arraySource.Rows.Count; r++)
                     {
                         massiveServ[r, c] = massive[r];
                     }
@@ -1437,116 +1593,36 @@ namespace StatisticDiagnostic1
 
                 else
                 {
-                    for (int r = 0; r < arraySourceHT.Rows.Count; r++)
+                    for (int r = 0; r < arraySource.Rows.Count; r++)
                     {
-                        massiveServ[r, c] = (string)arraySourceHT.Rows[r][@"NAME_SHR"];
+                        massiveServ[r, c] = (string)arraySource.Rows[r][@"NAME_SHR"];
                     }
                 }
             }
+            //return massiveServ[,];
         }
 
         /// <summary>
-        /// 
+        /// ТАймер для пинга
         /// </summary>
         public void TimerPing()
         {
-          aTimer = new System.Timers.Timer(10000);
-          aTimer.Enabled = true;
-          aTimer.AutoReset = true;
-          aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-          aTimer.Interval = 300000;
-          GC.KeepAlive(aTimer);
+            aTimer = new System.Timers.Timer(10000);
+            aTimer.Enabled = true;
+            aTimer.AutoReset = true;
+            aTimer.Elapsed += new ElapsedEventHandler(OnElapsed_PingSourceData);
+            //aTimer.Interval = 300000;
+            GC.KeepAlive(aTimer);
         }
 
         /// <summary>
-        /// Событие таймера по пропинговки
+        /// Обработка события
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        public void OnTimedEvent(object source, ElapsedEventArgs e)
+        public void OnElapsed_PingSourceData(object source, ElapsedEventArgs e)
         {
-           PingSourceData();
-        }
-
-        /// <summary>
-        /// Фукнция заполнения чекбокса задачи
-        /// </summary>
-        public void AddSourceDataTask(string desc)
-        {
-            /*if (taskdb.TaskCheckedListBox.InvokeRequired)
-                taskdb.TaskCheckedListBox.Invoke(new Action(() =>
-            taskdb.TaskCheckedListBox.Items.Add(desc)));*/
-
-            taskdb.TaskCheckedListBox.Items.Add(desc);
-        }
-
-        /// <summary>
-        /// Класс пропинговки источников данных
-        /// </summary>
-        class MultiplePing
-        {
-            readonly int _repeat;
-            static byte[] defaultPingData;
-            const int TIMEOUT = 5000;
-
-            static MultiplePing()
-            {
-                defaultPingData = new byte[32];
-                for (int i = 0; i < defaultPingData.Length; i++)
-                    defaultPingData[i] = (byte)(97 + i % 23);
-            }
-
-            public MultiplePing(int repeat = 4)
-            {
-                if (repeat < 1) throw new ArgumentOutOfRangeException("repeat", "repeat must be greater than zero");
-
-                _repeat = repeat;
-            }
-
-            public MultiplePingReply Send(string hostNameOrAddress)
-            {
-                using (var ping = new Ping())
-                {
-                    int countSuccess = 0, countFailure = 0;
-                    for (int i = 0; i < _repeat; i++)
-                    {
-                        try
-                        {
-                            PingReply reply = ping.Send(hostNameOrAddress, TIMEOUT, defaultPingData);
-                            if (reply.Status == IPStatus.Success) countSuccess++;
-                            else countFailure++;
-                        }
-                        catch (PingException)
-                        {
-                            countFailure++;
-                        }
-                    }
-
-                    Debug.Assert(countSuccess + countFailure == _repeat);
-
-                    return new MultiplePingReply(countSuccess, countFailure);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Класс для повтора пинга источников данных
-        /// </summary>
-        class MultiplePingReply
-        {
-            int _countSuccess, _countFailure;
-            public MultiplePingReply(int success, int failure)
-            {
-                if (success < 0) throw new ArgumentOutOfRangeException("success", "HAPPY");
-                if (failure < 0) throw new ArgumentOutOfRangeException("failure", "failure must be positive number or zero");
-                if (success == 0 && failure == 0) throw new ArgumentException("success and failure cannot be both zero");
-
-                _countSuccess = success;
-                _countFailure = failure;
-            }
-
-            public bool AllSuccess { get { return _countFailure == 0; } }
-            public bool AllFailed { get { return _countSuccess == 0; } }
+            PingSourceData();
         }
     }
 }
