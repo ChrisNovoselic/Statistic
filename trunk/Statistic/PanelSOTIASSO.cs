@@ -62,6 +62,7 @@ namespace Statistic
             m_tecView.SetDelegateDatetime(panelManagement_OnEvtDatetimeHourChanged);
 
             m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);
+            m_tecView.updateGUI_Fact
 
             initializeComponent ();
 
