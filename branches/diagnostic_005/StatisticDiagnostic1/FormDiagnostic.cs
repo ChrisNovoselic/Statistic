@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Threading;
 using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using HClassLibrary;
@@ -20,8 +19,11 @@ namespace StatisticDiagnostic1
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            //panelMain.Start();
-            //panelMain.PingTimerThread();
+            
+            Thread thread = new Thread(panelMain.start);
+            thread.Start();
+            panelMain.WaitFunc();
+            //panelMain.start();
         }
 
         public void FormDiagnostic_Close(object obj, EventArgs ev)
@@ -32,9 +34,7 @@ namespace StatisticDiagnostic1
 
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
-            panelMain.Activate(true);
-            //panelMain.TimerFillPanel();
-           
+            panelMain.Activate(true);          
         }
 
         /*private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
