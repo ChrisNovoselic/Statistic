@@ -649,9 +649,11 @@ namespace StatisticCommon
                 AddState((int)StatesMachine.InitSensors);
             else ;
 
+            AddState((int)TecView.StatesMachine.CurrentTimeView);
             //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
+            AddState((int)TecView.StatesMachine.CurrentMins_TM);
+            AddState((int)TecView.StatesMachine.CurrentMin_TM);
             AddState((int)TecView.StatesMachine.Hour_TM);
-            //AddState((int)TecView.StatesMachine.);
 
             AddState((int)TecView.StatesMachine.PPBRValues);
             AddState((int)TecView.StatesMachine.AdminValues);

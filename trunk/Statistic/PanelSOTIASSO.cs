@@ -45,28 +45,30 @@ namespace Statistic
             : base()
         {
             m_listTEC = listTec;
-
+            //Создать объект с признаками обработки тех типов значений
+            // , которые будут использоваться фактически
             m_markQueries = new HMark();
             m_markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
             m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
-
+            //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
             m_tecView = new TecView(TecView.TYPE_PANEL.SOTIASSO, 0, 0);
-
+            //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
-
+            //Установить тип значений
             m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
             m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
-
-            m_tecView.SetDelegateDatetime(panelManagement_OnEvtDatetimeHourChanged);
-
-            m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);
-            m_tecView.updateGUI_Fact
-
+            //Делегат для установки текущего времени на панели 'PanelManagement'
+            //m_tecView.SetDelegateDatetime(...);
+            //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
+            m_tecView.updateGUI_Fact = new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+            //Создать, разместить дочерние элементы управления
             initializeComponent ();
-
+            //Назначить обработчики события - создание дескриптора панели
             this.HandleCreated += new EventHandler(OnHandleCreated);
+            // сообщить дочернему элементу, что дескриптор родительской панели создан
+            this.HandleCreated += new EventHandler(m_panelManagement.Parent_OnHandleCreated);
         }
         /// <summary>
         /// Конструктор - вспомогательный (с параметрами)
@@ -162,7 +164,7 @@ namespace Statistic
                 //Инициализировать равномерные высоту/ширину столбцов/строк
                 initializeLayoutStyleEvenly ();
 
-                initializeComponent ();
+                initializeComponent ();                
             }
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
@@ -201,6 +203,7 @@ namespace Statistic
                 (ctrl as DateTimePicker).DropDownAlign = LeftRightAlignment.Right;
                 (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
                 (ctrl as DateTimePicker).CustomFormat = @"HH-й час, dd MMMM, yyyy";
+                //(ctrl as DateTimePicker).Value = HAdmin.ToMoscowTimeZone((ctrl as DateTimePicker).Value); //.GetUTCOffsetOfMoscowTimeZone ();
                 (ctrl as DateTimePicker).ValueChanged += new EventHandler(OnDatetimeHourValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели календарь
@@ -274,6 +277,19 @@ namespace Statistic
                 this.PerformLayout();
             }
 
+            private void initDatetimeHourValue ()
+            {
+                DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true)[0] as DateTimePicker;
+                DateTime curDatetimeHour = dtpCurDatetimeHour.Value;
+                curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
+                dtpCurDatetimeHour.Value = curDatetimeHour;
+            }
+
+            public void Parent_OnHandleCreated (object obj, EventArgs ev)
+            {
+                initDatetimeHourValue ();
+            }
+
             public void InitializeGTPList (List <string> listGTPNameShr)
             {
                 ComboBox cbxGTP = (this.Controls.Find (KEY_CONTROLS.CB_GTP.ToString (), true))[0] as ComboBox;
@@ -305,7 +321,8 @@ namespace Statistic
 
             private void OnDatetimeHourValueChanged (object obj, EventArgs ev)
             {
-                EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
+                //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
+                EvtDatetimeHourChanged((obj as DateTimePicker).Value);
             }
         }
 
@@ -432,7 +449,7 @@ namespace Statistic
                 else
                     ;
 
-                m_tecView = null;
+                //m_tecView = null;
             }
             else
                 ;
@@ -478,25 +495,32 @@ namespace Statistic
         /// <param name="ev">Аргумент события</param>        
         private void OnHandleCreated (object obj, EventArgs ev)
         {
+            //Список строк - наименований ГТП
+            // для передачи дочерней панели на отображение
             List <string> listGTPNameShr = new List<string> ();
-            
+            //Сформировать список строк - наименований
             foreach (TEC t in m_listTEC)
                 foreach (TECComponent tc in t.list_TECComponents)
                     if ((tc.m_id > 100) && (tc.m_id < 500))
+                        //Наименование ТЭЦ + наименование ГТП
                         listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
                     else
                         ;
-
+            //Добавить строки на дочернюю панель
             m_panelManagement.InitializeGTPList(listGTPNameShr);
-
-            panelManagement_OnEvtDatetimeHourChanged (DateTime.Now);
         }
-
+        /// <summary>
+        /// Метод обратного вызова для таймера 'm_timerCurrent'
+        /// </summary>
+        /// <param name="obj">Параметр при вызове метода</param>
         private void TimerCurrent_Tick (object obj)
         {
             if (m_tecView.Actived == true)
             {
-                m_tecView.ChangeState ();
+                if (m_tecView.currHour == true)
+                    m_tecView.ChangeState ();
+                else
+                    ;
 
                 m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
             }
@@ -509,40 +533,44 @@ namespace Statistic
             //Передать информацию 'PanelManagement' для заполнения списка ТГ
             List <string> listTGNameShr = new List<string> ();
             int indxTEC = -1
+                , indxGTP = -1
                 , indxTECComponent = -1
-                , indxTECComponents = -1;
+                ;
 
             indxTEC =
-            indxTECComponent =
-            indxTECComponents =
+            indxGTP =
                 0;
             foreach (TEC t in m_listTEC)
             {
                 indxTECComponent = 0;
-                
+
                 foreach (TECComponent tc in t.list_TECComponents)
+                {
                     if ((tc.m_id > 100) && (tc.m_id < 500))
                     {
-                        if (indxTECComponents == indx)
+                        if (indxGTP == indx)
                         {
                             foreach (TG tg in tc.m_listTG)
                                 listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
 
-                            indxTECComponents = -1; //Признак завершения внешнего цикла
+                            indxGTP = -1; //Признак завершения внешнего цикла
                             break;
                         }
                         else
                             ;
 
-                        indxTECComponent++;
-                        indxTECComponents ++;
+                        indxGTP++;                        
                     }
                     else
                         ;
 
-                if (indxTECComponents < 0)
+                    indxTECComponent++;
+                }
+                //Проверить признак прекращения выполнения цикла
+                if (indxGTP < 0)
                 {
-                    indxTECComponents = indx; //Возвратить найденное значение
+                    indxGTP = indx; //Возвратить найденное значение
+                    // прекратить выполнение цикла
                     break;
                 }
                 else
@@ -562,19 +590,14 @@ namespace Statistic
                     m_tecView.Stop ();
 
                     //m_tecView = null;
+
+                    m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
+
+                    m_tecView.Start();
+                    m_tecView.Activate(true);
                 }
                 else
                     ;
-            }
-            else
-                ;
-
-            if (m_tecView.IsStarted == false)
-            {
-                m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
-
-                m_tecView.Start ();
-                m_tecView.Activate(true);
             }
             else
                 ;
@@ -583,6 +606,25 @@ namespace Statistic
         private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
         {
             m_tecView.m_curDate = dtNew.Date;
+            m_tecView.lastHour = dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone ().TotalHours - 3;
+            if (m_tecView.lastHour < 0)
+            {
+                m_tecView.m_curDate = m_tecView.m_curDate.AddDays (-1);
+                m_tecView.lastHour += 24;
+            }
+            else
+                ;
+        }
+
+        private int onEvtHandlerStatesCompleted (int hour, int min)
+        {
+            int iRes = 0;
+
+            string msg = @"PanelSOTIASSO::updateGUI_Fact () - lastHour=" + hour + @", lastMin=" + min + @" ...";
+            Console.WriteLine (msg);
+            Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
+
+            return iRes;
         }
 
         private void showTMGenPower ()
