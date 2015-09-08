@@ -71,6 +71,8 @@ namespace trans_mt
                             for (i = 0; i < hourRows.Length; i ++) {
                                 if (!(PBRNumber > Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString())))
                                 {
+                                    //??? номер ПБР назначается для всех 3-х типов значений (P, Pmin, Pmax)
+                                    // , но номер ПБР индивидуален для КАЖДого из них
                                     PBRNumber = Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString());
 
                                     for (j = 0; j < hourRows [i].Table.Columns.Count; j ++) {
@@ -143,6 +145,8 @@ namespace trans_mt
 
                             int hh = -1;
                             for (hh = hour; hh > 0; hh --) {
+                                //??? Необходима ИНДИВИДуальная проверка номера ПБР
+                                // для каждогоо типа значений (P, Pmin, Pmax)
                                 if (m_curRDGValues[hh - 1].pbr_number.Equals (string.Empty) == false)
                                     if (PBRNumber < Int32.Parse(m_curRDGValues[hh - 1].pbr_number.Substring (3)))
                                     {
