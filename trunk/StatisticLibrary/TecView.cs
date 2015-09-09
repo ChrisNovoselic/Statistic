@@ -4670,78 +4670,85 @@ namespace StatisticCommon
 
             int iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1;
 
-            if (iRes == 0)
-            {
-                iRes = table.Rows.Count > 0 ? 0 : -10;
+            int min = -1;
+            double val = -1F;
 
+            try
+            {
                 if (iRes == 0)
                 {
-                    int min = -1;
-                    //???
-                    if (lastMin == 0) min = lastMin + 1; else min = lastMin;
+                    iRes = table.Rows.Count > 0 ? 0 : -10;
 
-                    double val = -1F;
-
-                    if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
+                    if (iRes == 0)
                     {
-                        if (double.TryParse (table.Rows [0][@"VALUE"].ToString (), out val) == true)
-                            m_valuesMins[min].valuesFact = val;
-                        else
-                            iRes = -32;
-                    }
-                    else
-                        if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
-                        {
-                            int hour = lastHour - GetSeasonHourOffset(lastHour)
-                                ;                                
+                        //???
+                        if (lastMin == 0) min = lastMin + 1; else min = lastMin;
 
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
-                            m_valuesMins[min].valuesFact = avgInterval(table
-                                                                , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
-                                                                , 180
-                                                                , listSensors
-                                                                , out iRes)[listSensors.Count];
+                        if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.AVERAGE)
+                        {
+                            if (double.TryParse (table.Rows [0][@"VALUE"].ToString (), out val) == true)
+                                m_valuesMins[min].valuesFact = val;
+                            else
+                                iRes = -32;
                         }
                         else
-                            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
+                            if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                             {
-                                string strId = string.Empty;
+                                int hour = lastHour - GetSeasonHourOffset(lastHour)
+                                    ;                                
 
-                                foreach (DataRow r in table.Rows) {
-                                    //??? ID или KKS_NAME
-                                    if ((strId = r[@"ID"].ToString()).Equals (string.Empty) == true)
-                                    {
-                                        iRes = -31;
-                                        break;
-                                    }
-                                    else
-                                        ;
-
-                                    if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
-                                    {
-                                        iRes = -32;
-                                        break;
-                                    }
-                                    else
-                                        ;
-
-                                    //Отладка ???
-                                    if (!(val > 0))
-                                        val = 0F;
-                                    else
-                                        ;
-
-                                    m_valuesMins[min].valuesFact += val;
-                                }
+                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                                m_valuesMins[min].valuesFact = avgInterval(table
+                                                                    , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
+                                                                    , 180
+                                                                    , listSensors
+                                                                    , out iRes)[listSensors.Count];
                             }
                             else
-                                ;
+                                if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_TSQL)
+                                {
+                                    string strId = string.Empty;
+
+                                    foreach (DataRow r in table.Rows) {
+                                        //??? ID или KKS_NAME
+                                        if ((strId = r[@"ID"].ToString()).Equals (string.Empty) == true)
+                                        {
+                                            iRes = -31;
+                                            break;
+                                        }
+                                        else
+                                            ;
+
+                                        if (double.TryParse(r[@"VALUE"].ToString(), out val) == false)
+                                        {
+                                            iRes = -32;
+                                            break;
+                                        }
+                                        else
+                                            ;
+
+                                        //Отладка ???
+                                        if (!(val > 0))
+                                            val = 0F;
+                                        else
+                                            ;
+
+                                        m_valuesMins[min].valuesFact += val;
+                                    }
+                                }
+                                else
+                                    ;
+                    }
+                    else
+                        ; //Нет строк во вХодной таблице
                 }
                 else
-                    ; //Нет строк во вХодной таблице
+                    ; //-1 Нет требуемых полей во входной таблице
             }
-            else
-                ; //-1 Нет требуемых полей во входной таблице
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::GetMinTMResponse () - ...");
+            }
 
             ////???
             //if (bRes == false)

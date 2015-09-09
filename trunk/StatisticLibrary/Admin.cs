@@ -45,7 +45,7 @@ namespace StatisticCommon
             int iRes = SEASON_BASE;
 
             if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == true) {
-                    
+
             } else {
                 if (m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) < 0) {
                     //ДО перехода
@@ -58,7 +58,7 @@ namespace StatisticCommon
 
             return iRes;
         }
-        
+
         /// <summary>
         /// структура дл яхранения данных элемента (час) расписания диспетчерского графика (РДГ)
         /// </summary>

@@ -34,6 +34,8 @@ namespace Statistic
         private ManualResetEvent m_evTimerCurrent;
         private System.Threading.Timer m_timerCurrent;
 
+        private event DelegateObjectFunc EvtValuesMins;
+
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -57,8 +59,8 @@ namespace Statistic
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
             //Установить тип значений
-            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO;
-            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
+            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
+            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
             //Делегат для установки текущего времени на панели 'PanelManagement'
             //m_tecView.SetDelegateDatetime(...);
             //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
@@ -276,7 +278,9 @@ namespace Statistic
                 //Принудительное применение логики макета
                 this.PerformLayout();
             }
-
+            /// <summary>
+            /// Присвоить исходные дату/номер часа
+            /// </summary>
             private void initDatetimeHourValue ()
             {
                 DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true)[0] as DateTimePicker;
@@ -284,7 +288,11 @@ namespace Statistic
                 curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
                 dtpCurDatetimeHour.Value = curDatetimeHour;
             }
-
+            /// <summary>
+            /// Обработчик события - дескриптор элемента управления создан
+            /// </summary>
+            /// <param name="obj">Объект, инициировавший событие</param>
+            /// <param name="ev">Аргумент события</param>
             public void Parent_OnHandleCreated (object obj, EventArgs ev)
             {
                 initDatetimeHourValue ();
@@ -324,12 +332,75 @@ namespace Statistic
                 //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
                 EvtDatetimeHourChanged((obj as DateTimePicker).Value);
             }
-        }
+            /// <summary>
+            /// Обработчик события - отобразить полученные значения
+            /// </summary>
+            /// <param name="valuesMins">Массив значений для отображения</param>
+            public void Parent_OnEvtValuesMins(object obj)
+            {
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true)
+                        this.BeginInvoke(new DelegateObjectFunc  (onEvtValuesMins), new object [] { obj });
+                    else
+                        onEvtValuesMins(obj);
+                else
+                    ;
+            }
 
+            private void onEvtValuesMins(object obj)
+            {
+                TecView.valuesTEC [] valuesMins = obj as TecView.valuesTEC [];
+                DataGridViewGTP dgvGTP = this.Controls.Find (KEY_CONTROLS.DGV_GTP_VALUE.ToString (), true)[0] as DataGridViewGTP;
+
+                for (int i = 1; i < valuesMins.Length; i++)
+                    dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString (@"F3");
+                                        
+            }
+        }
+        /// <summary>
+        /// Класс для отображения в графическом представлении
+        ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
+        /// </summary>
         private class HZEdGraph_GTP : ZedGraph.ZedGraphControl
         {
-        }
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public HZEdGraph_GTP () : base ()
+            {
+            }
+            /// <summary>
+            /// Конструктор - вспомогательный (с параметрами)
+            /// </summary>
+            /// <param name="container">Владелец объекта</param>
+            public HZEdGraph_GTP(IContainer container)
+                : this()
+            {
+                container.Add (this);
+            }            
+            /// <summary>
+            /// Обработчик события - отобразить полученные значения
+            /// </summary>
+            /// <param name="valuesMins">Массив значений для отображения</param>
+            public void Parent_OnEvtValuesMins(object obj)
+            {
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true)
+                        this.BeginInvoke(new DelegateObjectFunc(onEvtValuesMins), new object[] { obj });
+                    else
+                        onEvtValuesMins(obj);
+                else
+                    ;
+            }
 
+            private void onEvtValuesMins(object obj)
+            {
+            }
+        }
+        /// <summary>
+        /// Класс для отображения в графическом представлении
+        ///  значений за указанную (дата/номер часа/номер минуты) 1 мин для выбранных ТГ, выбранного ГТП
+        /// </summary>
         private class HZEdGraph_TG : ZedGraph.ZedGraphControl
         {
         }
@@ -378,6 +449,10 @@ namespace Statistic
                 this.Columns[0].Frozen = true;
                 this.Columns[1].Frozen = true;
                 this.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+                //Добавить строки по числу мин. в часе
+                for (int i = 0; i < 60; i ++)
+                    this.Rows.Add (new object [] { i });
             }
         }
 
@@ -418,6 +493,10 @@ namespace Statistic
                 this.MultiSelect = false;
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
+
+                //Добавить строки по числу сек. в мин.
+                for (int i = 0; i < 60; i++)
+                    this.Rows.Add(new object[] { i });
             }
         }
         /// <summary>
@@ -437,14 +516,17 @@ namespace Statistic
         /// </summary>
         public override void Stop()
         {
+            //Проверить актуальность объекта обработки запросов
             if (! (m_tecView == null))
             {
                 if (m_tecView.Actived == true)
+                    //Если активен - деактивировать
                     m_tecView.Activate(false);
                 else
                     ;
 
                 if (m_tecView.IsStarted == true)
+                    //Если выполняется - остановить
                     m_tecView.Stop();
                 else
                     ;
@@ -453,21 +535,23 @@ namespace Statistic
             }
             else
                 ;
-
+            //Проверить актуальность объекта синхронизации таймера
             if (!(m_evTimerCurrent == null))
+                //Сбросить флаг ожидания
                 m_evTimerCurrent.Reset();
             else
                 ;
-
+            //Проверить актуальность объекта таймера
             if (! (m_timerCurrent ==null))
             {
+                //Освободить ресурсы таймера
                 m_timerCurrent.Dispose();
 
                 m_timerCurrent = null;
             }
             else
                 ;
-
+            //Остановить базовый объект
             base.Stop ();
         }
         /// <summary>
@@ -498,7 +582,7 @@ namespace Statistic
             //Список строк - наименований ГТП
             // для передачи дочерней панели на отображение
             List <string> listGTPNameShr = new List<string> ();
-            //Сформировать список строк - наименований
+            //Сформировать список строк - наименований ГТП
             foreach (TEC t in m_listTEC)
                 foreach (TECComponent tc in t.list_TECComponents)
                     if ((tc.m_id > 100) && (tc.m_id < 500))
@@ -508,6 +592,9 @@ namespace Statistic
                         ;
             //Добавить строки на дочернюю панель
             m_panelManagement.InitializeGTPList(listGTPNameShr);
+
+            EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
+            EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins);
         }
         /// <summary>
         /// Метод обратного вызова для таймера 'm_timerCurrent'
@@ -527,14 +614,17 @@ namespace Statistic
             else
                 ;
         }
-
+        /// <summary>
+        /// Обработчик события - выбор компонента ТЭЦ (ГТП) на панели с управляющими элементами
+        /// </summary>
+        /// <param name="indx"></param>
         private void panelManagement_OnEvtGTPSelectionIndexChanged (int indx)
         {
             //Передать информацию 'PanelManagement' для заполнения списка ТГ
             List <string> listTGNameShr = new List<string> ();
-            int indxTEC = -1
-                , indxGTP = -1
-                , indxTECComponent = -1
+            int indxTEC = -1 //Индекс ТЭЦ в списке из БД конфигурации
+                , indxGTP = -1 //Индекс ГТП сквозной
+                , indxTECComponent = -1 //Индекс компонента ТЭЦ (ГТП) - локальный в пределах ТЭЦ
                 ;
 
             indxTEC =
@@ -542,12 +632,15 @@ namespace Statistic
                 0;
             foreach (TEC t in m_listTEC)
             {
+                //В каждой ТЭЦ индекс локальный - обнулить
                 indxTECComponent = 0;
-
+                //Цикл для поиска выбранного пользователем компонента ТЭЦ (ГТП)
+                // заполнения списка наименований подчиненных (ТГ) элементов
                 foreach (TECComponent tc in t.list_TECComponents)
                 {
+                    //Определить тип компонента (по диапазону идентификатора)
                     if ((tc.m_id > 100) && (tc.m_id < 500))
-                    {
+                    {//Только ГТП
                         if (indxGTP == indx)
                         {
                             foreach (TG tg in tc.m_listTG)
@@ -558,11 +651,11 @@ namespace Statistic
                         }
                         else
                             ;
-
+                        //Увеличить индекс ГТП сквозной
                         indxGTP++;                        
                     }
                     else
-                        ;
+                        ; // не ГТП
 
                     indxTECComponent++;
                 }
@@ -578,35 +671,41 @@ namespace Statistic
 
                 indxTEC ++;
             }
-
+            //Инициализировать элементами список с наименованиями ТГ
             m_panelManagement.InitializeTGList(listTGNameShr);
-
+            //Проверить актуальность объекта обработки запросов
             if (! (m_tecView == null))
-            {
+                //Проверить наличие изменений при новом выборе компонента ТЭЦ
                 if ((!(m_tecView.m_indx_TEC == indxTEC))
                     || (!(m_tecView.indxTECComponents == indxTECComponent)))
-                {
+                {//Только, если есть изменения
+                    //Деактивация/останов объекта обработки запросов
                     m_tecView.Activate (false);
                     m_tecView.Stop ();
 
                     //m_tecView = null;
-
+                    
+                    //Инициализация объекта обработки запросов еовым компонентом
                     m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
-
+                    //Запуск/активация объекта обработки запросов
                     m_tecView.Start();
                     m_tecView.Activate(true);
                 }
                 else
                     ;
-            }
             else
                 ;
         }
-
+        /// <summary>
+        /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
+        /// </summary>
+        /// <param name="dtNew">Новые дата/номер часа</param>
         private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
         {
             m_tecView.m_curDate = dtNew.Date;
-            m_tecView.lastHour = dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone ().TotalHours - 3;
+            m_tecView.lastHour =
+                dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone ().TotalHours //- 3
+                ;
             if (m_tecView.lastHour < 0)
             {
                 m_tecView.m_curDate = m_tecView.m_curDate.AddDays (-1);
@@ -615,7 +714,12 @@ namespace Statistic
             else
                 ;
         }
-
+        /// <summary>
+        /// Обработчик события - все состояния '' обработаны
+        /// </summary>
+        /// <param name="hour">Номер часа в запросе</param>
+        /// <param name="min">Номер минуты в звпросе</param>
+        /// <returns>Признак выполнения функции</returns>
         private int onEvtHandlerStatesCompleted (int hour, int min)
         {
             int iRes = 0;
@@ -624,11 +728,9 @@ namespace Statistic
             Console.WriteLine (msg);
             Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
 
-            return iRes;
-        }
+            EvtValuesMins (m_tecView.m_valuesMins);
 
-        private void showTMGenPower ()
-        {
+            return iRes;
         }
     }
 }
