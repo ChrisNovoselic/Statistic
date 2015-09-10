@@ -73,13 +73,13 @@ namespace Statistic
         {
             InitializeComponent();
 
-            this.Dock = DockStyle.Fill;
+            //this.Dock = DockStyle.Fill;
 
-            //this.Location = new System.Drawing.Point(40, 58);
-            //this.Name = "pnlView";
-            //this.Size = new System.Drawing.Size(705, 747);
+            ////this.Location = new System.Drawing.Point(40, 58);
+            ////this.Name = "pnlView";
+            ////this.Size = new System.Drawing.Size(705, 747);
 
-            this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
+            //this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
 
             PanelTecSobstvNyzhdy ptcp;
 

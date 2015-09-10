@@ -364,7 +364,7 @@ namespace Statistic
             initializeLayoutStyleEvenly ();
         }
     }
-    
+
     public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
     {
         public event DelegateFunc EventContentChanged;

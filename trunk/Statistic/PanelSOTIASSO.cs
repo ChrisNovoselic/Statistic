@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.ComponentModel; //IContainer
 using System.Threading; //ManualResetEvent
+using System.Drawing; //Color
+
+using ZedGraph;
 
 using HClassLibrary;
 using StatisticCommon;
@@ -36,6 +39,8 @@ namespace Statistic
 
         private event DelegateObjectFunc EvtValuesMins;
 
+        private List <int> m_listIndexTGAdvised;
+
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -65,6 +70,9 @@ namespace Statistic
             //m_tecView.SetDelegateDatetime(...);
             //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
             m_tecView.updateGUI_Fact = new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+
+            m_listIndexTGAdvised = new List<int> ();
+
             //Создать, разместить дочерние элементы управления
             initializeComponent ();
             //Назначить обработчики события - создание дескриптора панели
@@ -102,14 +110,14 @@ namespace Statistic
         /// </summary>
         private void initializeComponent ()
         {
-            Control ctrl = null;
             //Создать дочерние элементы управления
             m_panelManagement = new PanelManagement (); // панель для размещения элементов управления
-            m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtGTPSelectionIndexChanged);
             m_panelManagement.EvtDatetimeHourChanged += new DelegateDateFunc(panelManagement_OnEvtDatetimeHourChanged);
-            m_zGraph_GTP = new HZEdGraph_GTP(); // графическая панель для отображения значений ГТП
+            m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtGTPSelectionIndexChanged);
+            m_panelManagement.EvtTGItemChecked += new DelegateIntFunc(panelManagement_OnEvtTGItemChecked);
+            m_zGraph_GTP = new HZEdGraphControlGTP(); // графическая панель для отображения значений ГТП
             m_zGraph_GTP.Name = KEY_CONTROLS.ZGRAPH_GTP.ToString ();
-            m_zGraph_TG = new HZEdGraph_TG(); // графическая панель для отображения значений ТГ
+            m_zGraph_TG = new HZEdGraphControlTG(); // графическая панель для отображения значений ТГ
             m_zGraph_TG.Name = KEY_CONTROLS.ZGRAPH_TG.ToString();
 
             //Создать сплиттеры
@@ -151,13 +159,17 @@ namespace Statistic
         private class PanelManagement : HPanelCommon
         {
             /// <summary>
+            /// Событие изменения текущих даты, номера часа
+            /// </summary>
+            public event DelegateDateFunc EvtDatetimeHourChanged;
+            /// <summary>
             /// Событие изменения текущего индекса ГТП
             /// </summary>
             public event DelegateIntFunc EvtGTPSelectionIndexChanged;
             /// <summary>
-            /// Событие изменения текущих даты, номера часа
+            /// Событие изменения перечня ТГ для отображения выбранного ГТП
             /// </summary>
-            public event DelegateDateFunc EvtDatetimeHourChanged;
+            public event DelegateIntFunc EvtTGItemChecked;
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -206,7 +218,7 @@ namespace Statistic
                 (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
                 (ctrl as DateTimePicker).CustomFormat = @"HH-й час, dd MMMM, yyyy";
                 //(ctrl as DateTimePicker).Value = HAdmin.ToMoscowTimeZone((ctrl as DateTimePicker).Value); //.GetUTCOffsetOfMoscowTimeZone ();
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(OnDatetimeHourValueChanged);
+                (ctrl as DateTimePicker).ValueChanged += new EventHandler(onDatetimeHourValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели календарь
                 this.Controls.Add(ctrl, 0, 0);
@@ -216,14 +228,14 @@ namespace Statistic
                 ctrl = new ComboBox ();
                 ctrl.Name = KEY_CONTROLS.CB_GTP.ToString ();
                 (ctrl as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
-                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler (OnGTPSelectionIndexChanged);
+                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler (onGTPSelectionIndexChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список ГТП
                 this.Controls.Add(ctrl, 0, 1);
                 this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
 
                 // коэффициент для текущего ГТП
-                ctrl = new Label();
+                ctrl = new System.Windows.Forms.Label();
                 ctrl.Text = @"Текущий коэфф-т:";
                 ctrl.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top);
                 this.Controls.Add(ctrl, 0, 2);
@@ -255,6 +267,8 @@ namespace Statistic
                 // список для выбора ТГ
                 ctrl = new CheckedListBox();
                 ctrl.Name = KEY_CONTROLS.CLB_TG.ToString ();
+                (ctrl as CheckedListBox).CheckOnClick = true;
+                (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(onTGItemCheck);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список для выбора ТГ
                 this.Controls.Add(ctrl, 0, 13);
@@ -317,20 +331,25 @@ namespace Statistic
                 clbTG.Items.Clear ();
                 clbTG.Items.AddRange(listTGNameShr.ToArray());
             }
+
+            private void onDatetimeHourValueChanged(object obj, EventArgs ev)
+            {
+                //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
+                EvtDatetimeHourChanged((obj as DateTimePicker).Value);
+            }
             /// <summary>
             /// Обработчик события - изменение выбранного элемента 'ComboBox' - текущий ГТП
             /// </summary>
             /// <param name="obj">Объект, инициировавший событие</param>
             /// <param name="ev">Аргумент события</param>
-            private void OnGTPSelectionIndexChanged(object obj, EventArgs ev)
+            private void onGTPSelectionIndexChanged(object obj, EventArgs ev)
             {
                 EvtGTPSelectionIndexChanged (((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedIndex);
             }
 
-            private void OnDatetimeHourValueChanged (object obj, EventArgs ev)
+            private void onTGItemCheck (object obj, ItemCheckEventArgs ev)
             {
-                //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
-                EvtDatetimeHourChanged((obj as DateTimePicker).Value);
+                EvtTGItemChecked (ev.Index);
             }
             /// <summary>
             /// Обработчик события - отобразить полученные значения
@@ -357,51 +376,116 @@ namespace Statistic
                                         
             }
         }
-        /// <summary>
-        /// Класс для отображения в графическом представлении
-        ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
-        /// </summary>
-        private class HZEdGraph_GTP : ZedGraph.ZedGraphControl
+
+        private class HZEdGraphControl : ZedGraph.ZedGraphControl
         {
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public HZEdGraph_GTP () : base ()
+            public HZEdGraphControl () : base ()
             {
+                initializeComponent ();
             }
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец объекта</param>
-            public HZEdGraph_GTP(IContainer container)
+            public HZEdGraphControl(IContainer container)
                 : this()
             {
                 container.Add (this);
-            }            
-            /// <summary>
-            /// Обработчик события - отобразить полученные значения
-            /// </summary>
-            /// <param name="valuesMins">Массив значений для отображения</param>
-            public void Parent_OnEvtValuesMins(object obj)
-            {
-                if (IsHandleCreated == true)
-                    if (InvokeRequired == true)
-                        this.BeginInvoke(new DelegateObjectFunc(onEvtValuesMins), new object[] { obj });
-                    else
-                        onEvtValuesMins(obj);
-                else
-                    ;
             }
 
-            private void onEvtValuesMins(object obj)
+            private void initializeComponent ()
+            {
+                this.ScrollGrace = 0;
+                this.ScrollMaxX = 0;
+                this.ScrollMaxY = 0;
+                this.ScrollMaxY2 = 0;
+                this.ScrollMinX = 0;
+                this.ScrollMinY = 0;
+                this.ScrollMinY2 = 0;
+                //this.Size = arPlacement[(int)CONTROLS.zedGraphMins].sz;
+                this.TabIndex = 0;
+                this.IsEnableHEdit = false;
+                this.IsEnableHPan = false;
+                this.IsEnableHZoom = false;
+                this.IsEnableSelection = false;
+                this.IsEnableVEdit = false;
+                this.IsEnableVPan = false;
+                this.IsEnableVZoom = false;
+                this.IsShowPointValues = true;
+
+                this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
+                this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
+            }
+
+            private string onPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
+            {
+                return curve[iPt].Y.ToString("F2");
+            }
+
+            private bool onDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
+            {
+                FormMain.formGraphicsSettings.SetScale();
+
+                return true;
+            }
+        }
+        /// <summary>
+        /// Класс для отображения в графическом представлении
+        ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
+        /// </summary>
+        private class HZEdGraphControlGTP : HZEdGraphControl
+        {
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public HZEdGraphControlGTP () : base ()
+            {
+                initializeComponent ();
+            }
+            /// <summary>
+            /// Конструктор - вспомогательный (с параметрами)
+            /// </summary>
+            /// <param name="container">Владелец объекта</param>
+            public HZEdGraphControlGTP(IContainer container)
+                : this()
+            {
+                container.Add (this);
+            }
+
+            private void initializeComponent ()
             {
             }
+
+            ///// <summary>
+            ///// Обработчик события - отобразить полученные значения
+            ///// </summary>
+            ///// <param name="obj">Массив значений для отображения</param>
+            //public void Parent_OnEvtValuesMins(object obj)
+            //{
+            //    if (IsHandleCreated == true)
+            //        if (InvokeRequired == true)
+            //            this.BeginInvoke(new DelegateObjectFunc(onEvtValuesMins), new object[] { obj });
+            //        else
+            //            onEvtValuesMins(obj);
+            //    else
+            //        ;
+            //}
+            ///// <summary>
+            ///// Делегат для отображения значений
+            ///// </summary>
+            ///// <param name="obj">Массив значений для отображения</param>
+            //private void onEvtValuesMins(object obj)
+            //{
+            //}
         }
         /// <summary>
         /// Класс для отображения в графическом представлении
         ///  значений за указанную (дата/номер часа/номер минуты) 1 мин для выбранных ТГ, выбранного ГТП
         /// </summary>
-        private class HZEdGraph_TG : ZedGraph.ZedGraphControl
+        private class HZEdGraphControlTG : HZEdGraphControl
         {
         }
 
@@ -452,7 +536,7 @@ namespace Statistic
 
                 //Добавить строки по числу мин. в часе
                 for (int i = 0; i < 60; i ++)
-                    this.Rows.Add (new object [] { i });
+                    this.Rows.Add (new object [] { i + 1 });
             }
         }
 
@@ -560,15 +644,21 @@ namespace Statistic
         public override bool Activate(bool active)
         {
             bool bRes = false;
+            int dueTime = System.Threading.Timeout.Infinite;
 
             bRes = base.Activate(active);
 
             m_tecView.Activate(active);
 
             if (m_tecView.Actived == true)
-                m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
-            else
+                dueTime = 0;
+            else   
                 m_tecView.ReportClear(true);
+
+            if (! (m_timerCurrent == null))
+                m_timerCurrent.Change(dueTime, System.Threading.Timeout.Infinite);
+            else
+                ;
 
             return bRes;
         }
@@ -594,7 +684,7 @@ namespace Statistic
             m_panelManagement.InitializeGTPList(listGTPNameShr);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
-            EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins);
+            //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
         }
         /// <summary>
         /// Метод обратного вызова для таймера 'm_timerCurrent'
@@ -611,6 +701,29 @@ namespace Statistic
 
                 m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
             }
+            else
+                ;
+        }
+        /// <summary>
+        /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
+        /// </summary>
+        /// <param name="dtNew">Новые дата/номер часа</param>
+        private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
+        {
+            m_tecView.m_curDate = dtNew.Date;
+            m_tecView.lastHour =
+                dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
+                ;
+            if (m_tecView.lastHour < 0)
+            {
+                m_tecView.m_curDate = m_tecView.m_curDate.AddDays(-1);
+                m_tecView.lastHour += 24;
+            }
+            else
+                ;
+
+            if (! (m_timerCurrent == null))
+                m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
             else
                 ;
         }
@@ -673,6 +786,8 @@ namespace Statistic
             }
             //Инициализировать элементами список с наименованиями ТГ
             m_panelManagement.InitializeTGList(listTGNameShr);
+            //Очистить список с отмеченными ТГ для отображения
+            m_listIndexTGAdvised.Clear ();
             //Проверить актуальность объекта обработки запросов
             if (! (m_tecView == null))
                 //Проверить наличие изменений при новом выборе компонента ТЭЦ
@@ -690,36 +805,34 @@ namespace Statistic
                     //Запуск/активация объекта обработки запросов
                     m_tecView.Start();
                     m_tecView.Activate(true);
+
+                    //???при 1-й активации некорректно повторный вызов
+                    if (! (m_timerCurrent == null))
+                        m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                    else
+                        ;
                 }
                 else
                     ;
             else
                 ;
         }
-        /// <summary>
-        /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
-        /// </summary>
-        /// <param name="dtNew">Новые дата/номер часа</param>
-        private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
+
+        private void panelManagement_OnEvtTGItemChecked (int indx)
         {
-            m_tecView.m_curDate = dtNew.Date;
-            m_tecView.lastHour =
-                dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone ().TotalHours //- 3
-                ;
-            if (m_tecView.lastHour < 0)
-            {
-                m_tecView.m_curDate = m_tecView.m_curDate.AddDays (-1);
-                m_tecView.lastHour += 24;
-            }
+            if (m_listIndexTGAdvised.IndexOf (indx) < 0)
+                m_listIndexTGAdvised.Add (indx);
             else
-                ;
+                m_listIndexTGAdvised.Remove (indx);
+
+            drawGraphMinDetail ();
         }
         /// <summary>
-        /// Обработчик события - все состояния '' обработаны
+        /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
         /// </summary>
         /// <param name="hour">Номер часа в запросе</param>
         /// <param name="min">Номер минуты в звпросе</param>
-        /// <returns>Признак выполнения функции</returns>
+        /// <returns>Признак результата выполнения функции</returns>
         private int onEvtHandlerStatesCompleted (int hour, int min)
         {
             int iRes = 0;
@@ -730,7 +843,410 @@ namespace Statistic
 
             EvtValuesMins (m_tecView.m_valuesMins);
 
+            drawGraphMins ();
+            drawGraphMinDetail();
+
             return iRes;
+        }
+
+        private void getColorZEDGraph(out Color colChart, out Color colP)
+        {
+            //Значения по умолчанию
+            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
+            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+        }
+
+        private void drawGraphMins ()
+        {
+            double [] valsMins = null
+                , valsUDGe = null
+                , valsOAlarm = null
+                , valsPAlarm = null;
+            int itemscount = -1;
+            string[] names = null;
+            double minimum
+                , minimum_scale
+                , maximum
+                , maximum_scale;
+            bool noValues = false;
+
+            itemscount = m_tecView.m_valuesMins.Length - 1;
+
+            names = new string[itemscount];
+
+            valsMins = new double[itemscount];
+            valsUDGe = new double[itemscount];
+            valsOAlarm = new double[itemscount];
+            valsPAlarm = new double[itemscount];
+
+            minimum = double.MaxValue;
+            maximum = 0;
+            noValues = true;
+
+            for (int i = 0; i < itemscount; i++)
+            {
+                names[i] = (i + 1).ToString();
+
+                valsMins[i] = m_tecView.m_valuesMins[i + 1].valuesFact;
+                valsPAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe + m_tecView.m_valuesMins[i + 1].valuesDiviation;
+                valsOAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe - m_tecView.m_valuesMins[i + 1].valuesDiviation;
+                valsUDGe[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe;                
+
+                if ((minimum > valsPAlarm[i]) && (!(valsPAlarm[i] == 0)))
+                {
+                    minimum = valsPAlarm[i];
+                    noValues = false;
+                }
+
+                if ((minimum > valsOAlarm[i]) && (!(valsOAlarm[i] == 0)))
+                {
+                    minimum = valsOAlarm[i];
+                    noValues = false;
+                }
+
+                if ((minimum > valsUDGe[i]) && (!(valsUDGe[i] == 0)))
+                {
+                    minimum = valsUDGe[i];
+                    noValues = false;
+                }
+
+                if ((minimum > valsMins[i]) && (!(valsMins[i] == 0)))
+                {
+                    minimum = valsMins[i];
+                    noValues = false;
+                }
+
+                if (maximum < valsPAlarm[i])
+                    maximum = valsPAlarm[i];
+                else
+                    ;
+
+                if (maximum < valsOAlarm[i])
+                    maximum = valsOAlarm[i];
+                else
+                    ;
+
+                if (maximum < valsUDGe[i])
+                    maximum = valsUDGe[i];
+                else
+                    ;
+
+                if (maximum < valsMins[i])
+                    maximum = valsMins[i];
+                else
+                    ;
+            }
+
+            if (!(FormMain.formGraphicsSettings.scale == true))
+                minimum = 0;
+            else
+                ;
+
+            if (noValues)
+            {
+                minimum_scale = 0;
+                maximum_scale = 10;
+            }
+            else
+            {
+                if (minimum != maximum)
+                {
+                    minimum_scale = minimum - (maximum - minimum) * 0.2;
+                    if (minimum_scale < 0)
+                        minimum_scale = 0;
+                    maximum_scale = maximum + (maximum - minimum) * 0.2;
+                }
+                else
+                {
+                    minimum_scale = minimum - minimum * 0.2;
+                    maximum_scale = maximum + maximum * 0.2;
+                }
+            }
+
+            Color colorChart = Color.Empty
+                , colorPCurve = Color.Empty;
+            getColorZEDGraph(out colorChart, out colorPCurve);
+
+            GraphPane pane = m_zGraph_GTP.GraphPane;
+            pane.CurveList.Clear();
+            pane.Chart.Fill = new Fill(colorChart);
+
+            //LineItem
+            pane.AddCurve("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+            //LineItem
+            pane.AddCurve("", null, valsOAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            //LineItem
+            pane.AddCurve("Граница для сигнализации", null, valsPAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+
+            if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+            { 
+                pane.AddBar("Мощность", null, valsMins, colorPCurve);
+            }
+            else
+                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                {
+                    ////Вариант №1
+                    //double[] valuesFactLinear = new double[itemscount];
+                    //for (int i = 0; i < itemscount; i++)
+                    //    valuesFactLinear[i] = valsMins[i];
+                    //Вариант №2
+                    PointPairList ppl = new PointPairList ();
+                    for (int i = 0; i < itemscount; i++)
+                        if (valsMins[i] > 0)
+                            ppl.Add(i, valsMins[i]);
+                        else
+                            ;
+                    //LineItem
+                    pane.AddCurve("Мощность"
+                                    ////Вариант №1
+                                    //, null, valuesFactLinear
+                                    //Вариант №2
+                                    , ppl
+                                    , colorPCurve);
+                }
+                else
+                    ;
+
+            //Для размещения в одной позиции ОДНого значения
+            pane.BarSettings.Type = BarType.Overlay;
+
+            //...из minutes
+            pane.XAxis.Scale.Min = 0.5;
+            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
+            pane.XAxis.Scale.MinorStep = 1;
+            pane.XAxis.Scale.MajorStep = itemscount / 20;
+
+            pane.XAxis.Type = AxisType.Linear; //...из minutes
+            //pane.XAxis.Type = AxisType.Text;
+            pane.XAxis.Title.Text = "t, мин";
+            pane.YAxis.Title.Text = "P, МВт";
+            pane.Title.Text = @"СОТИАССО";
+            pane.Title.Text += new string(' ', 29);
+            pane.Title.Text += m_tecView.m_curDate.ToShortDateString() + @", " + m_tecView.m_curDate.Hour + @"-й ч";
+
+            pane.XAxis.Scale.TextLabels = names;
+            pane.XAxis.Scale.IsPreventLabelOverlap = false;
+
+            // Включаем отображение сетки напротив крупных рисок по оси X
+            pane.XAxis.MajorGrid.IsVisible = true;
+            // Задаем вид пунктирной линии для крупных рисок по оси X:
+            // Длина штрихов равна 10 пикселям, ... 
+            pane.XAxis.MajorGrid.DashOn = 10;
+            // затем 5 пикселей - пропуск
+            pane.XAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.XAxis.MajorGrid.PenWidth = 0.1F;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Включаем отображение сетки напротив крупных рисок по оси Y
+            pane.YAxis.MajorGrid.IsVisible = true;
+            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
+            pane.YAxis.MajorGrid.DashOn = 10;
+            pane.YAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.YAxis.MajorGrid.PenWidth = 0.1F;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Включаем отображение сетки напротив мелких рисок по оси Y
+            pane.YAxis.MinorGrid.IsVisible = true;
+            // Длина штрихов равна одному пикселю, ... 
+            pane.YAxis.MinorGrid.DashOn = 1;
+            pane.YAxis.MinorGrid.DashOff = 2;
+            // толщина линий
+            pane.YAxis.MinorGrid.PenWidth = 0.1F;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Устанавливаем интересующий нас интервал по оси Y
+            pane.YAxis.Scale.Min = minimum_scale;
+            pane.YAxis.Scale.Max = maximum_scale;
+
+            m_zGraph_GTP.AxisChange ();
+
+            m_zGraph_GTP.Invalidate();
+        }
+
+        private void drawGraphMinDetail()
+        {
+            double[,] valsSecs = null;
+            //double[] valsUDGe = null
+            //    , valsOAlarm = null
+            //    , valsPAlarm = null;
+            int tgcount = -1
+                , itemscount = -1
+                , min = -1;
+            string[] names = null;
+            double minimum
+                , minimum_scale
+                , maximum
+                , maximum_scale;
+            bool noValues = false;
+
+            tgcount = m_tecView.m_localTECComponents.Count;
+            itemscount = 60;
+
+            names = new string[itemscount];
+
+            valsSecs = new double[tgcount, itemscount];
+            //valsUDGe = new double[itemscount];
+            //valsOAlarm = new double[itemscount];
+            //valsPAlarm = new double[itemscount];
+
+            minimum = double.MaxValue;
+            maximum = 0;
+            noValues = true;
+
+            min = m_tecView.lastMin < itemscount ? m_tecView.lastMin : itemscount;
+
+            for (int i = 0; i < itemscount; i++)
+            {
+                names[i] = (i + 1).ToString();
+
+                for (int j = 0; j < tgcount; j ++)
+                {
+                    if (! (m_listIndexTGAdvised.IndexOf (j) < 0))
+                    {
+                        valsSecs[j, i] = m_tecView.m_dictValuesTG[m_tecView.m_localTECComponents[j].m_id].m_powerSeconds[i];
+                        if (valsSecs[j, i] < 0)
+                            valsSecs[j, i] = 0;
+                        else
+                            ;
+
+                        if ((minimum > valsSecs[j, i]) && (valsSecs[j, i] > 0))
+                        {
+                            minimum = valsSecs[j, i];
+                            noValues = false;
+                        }
+                        else
+                            ;
+ 
+                        if (maximum < valsSecs[j, i])
+                            maximum = valsSecs[j, i];
+                        else
+                            ;
+                    }
+                }
+            }
+
+            if (!(FormMain.formGraphicsSettings.scale == true))
+                minimum = 0;
+            else
+                ;
+
+            if (noValues)
+            {
+                minimum_scale = 0;
+                maximum_scale = 10;
+            }
+            else
+            {
+                if (minimum != maximum)
+                {
+                    minimum_scale = minimum - (maximum - minimum) * 0.2;
+                    if (minimum_scale < 0)
+                        minimum_scale = 0;
+                    maximum_scale = maximum + (maximum - minimum) * 0.2;
+                }
+                else
+                {
+                    minimum_scale = minimum - minimum * 0.2;
+                    maximum_scale = maximum + maximum * 0.2;
+                }
+            }
+
+            Color colorChart = Color.Empty
+                , colorPCurve = Color.Empty;
+            getColorZEDGraph(out colorChart, out colorPCurve);
+
+            GraphPane pane = m_zGraph_TG.GraphPane;
+            pane.CurveList.Clear();
+            pane.Chart.Fill = new Fill(colorChart);
+
+            ////LineItem
+            //pane.AddCurve("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+            ////LineItem
+            //pane.AddCurve("", null, valsOAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            ////LineItem
+            //pane.AddCurve("Граница для сигнализации", null, valsPAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+
+            PointPairList[] ppl = new PointPairList[tgcount];
+            for (int j = 0; j < tgcount; j ++)
+                if (! (m_listIndexTGAdvised.IndexOf (j) < 0))
+                {
+                    ppl[j] = new PointPairList();
+
+                    for (int i = 0; i < itemscount; i++)
+                        if (valsSecs[j, i] > 0)
+                            ppl[j].Add(i + 1, valsSecs[j, i]);
+                        else
+                            ;
+                    //LineItem
+                    pane.AddCurve(m_tecView.m_localTECComponents[j].name_shr, ppl[j], colorPCurve);
+                }
+                else
+                    ;
+
+            //Для размещения в одной позиции ОДНого значения
+            pane.BarSettings.Type = BarType.Overlay;
+
+            //...из minutes
+            pane.XAxis.Scale.Min = 0.5;
+            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
+            pane.XAxis.Scale.MinorStep = 1;
+            pane.XAxis.Scale.MajorStep = itemscount / 20;
+
+            pane.XAxis.Type = AxisType.Linear; //...из minutes
+            //pane.XAxis.Type = AxisType.Text;
+            pane.XAxis.Title.Text = "t, сек";
+            pane.YAxis.Title.Text = "P, МВт";
+            pane.Title.Text = @"СОТИАССО";
+            pane.Title.Text += new string(' ', 29);
+            pane.Title.Text += m_tecView.m_curDate.Hour + @"-й ч" + @", " + m_tecView.lastMin + @"-я мин";
+
+            pane.XAxis.Scale.TextLabels = names;
+            pane.XAxis.Scale.IsPreventLabelOverlap = false;
+
+            // Включаем отображение сетки напротив крупных рисок по оси X
+            pane.XAxis.MajorGrid.IsVisible = true;
+            // Задаем вид пунктирной линии для крупных рисок по оси X:
+            // Длина штрихов равна 10 пикселям, ... 
+            pane.XAxis.MajorGrid.DashOn = 10;
+            // затем 5 пикселей - пропуск
+            pane.XAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.XAxis.MajorGrid.PenWidth = 0.1F;
+            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Включаем отображение сетки напротив крупных рисок по оси Y
+            pane.YAxis.MajorGrid.IsVisible = true;
+            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
+            pane.YAxis.MajorGrid.DashOn = 10;
+            pane.YAxis.MajorGrid.DashOff = 5;
+            // толщина линий
+            pane.YAxis.MajorGrid.PenWidth = 0.1F;
+            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Включаем отображение сетки напротив мелких рисок по оси Y
+            pane.YAxis.MinorGrid.IsVisible = true;
+            // Длина штрихов равна одному пикселю, ... 
+            pane.YAxis.MinorGrid.DashOn = 1;
+            pane.YAxis.MinorGrid.DashOff = 2;
+            // толщина линий
+            pane.YAxis.MinorGrid.PenWidth = 0.1F;
+            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+            // Устанавливаем интересующий нас интервал по оси Y
+            pane.YAxis.Scale.Min = minimum_scale;
+            pane.YAxis.Scale.Max = maximum_scale;
+
+            m_zGraph_TG.AxisChange();
+
+            m_zGraph_TG.Invalidate();
+        }
+
+        public void UpdateGraphicsCurrent(int type)
+        {
+            drawGraphMins();
+            drawGraphMinDetail();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace StatisticCommon
     public enum CONN_SETT_TYPE
     {
         CONFIG_DB = 0, LIST_SOURCE,
-        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
+        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АИСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 7
     };
     /// <summary>
@@ -907,6 +907,38 @@ namespace StatisticCommon
             }
 
             //Logging.Logg().Debug(@"TEC::minTMRequest (hour=" + hour + @", min=" + min + @") - dtReq=" + dtReq.ToString(@"yyyyMMdd HH:mm:00"));
+
+            return request;
+        }
+        
+        public string minTMDetailRequest(DateTime usingDate, int h, int m, string sensors, int interval)
+        {
+            int hour = -1, min = -1;
+
+            if (h == 24)
+                hour = 23;
+            else
+                hour = h;
+
+            if (m == 0) min = 1; else min = m;
+
+            DateTime dtReq = usingDate.Date.AddHours(hour).AddMinutes(interval * (min - 1));
+            string request = string.Empty;
+
+            switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
+            {
+                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                    request = @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                                    + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                                    + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" //+ @" AND ID_SOURCE=" + m_IdSOTIASSOLinkSource
+                                        //--Привести дату/время к UTC (уменьшить на разность с UTC)
+                                        + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
+                                        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
+                                        ;
+                    break;
+                default:
+                    break;
+            }
 
             return request;
         }

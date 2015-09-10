@@ -137,7 +137,7 @@ namespace Statistic
             this.groupBoxSourceData.Size = new System.Drawing.Size(173, 114);
             this.groupBoxSourceData.TabIndex = 8;
             this.groupBoxSourceData.TabStop = false;
-            this.groupBoxSourceData.Text = "Источники данных графиков";
+            this.groupBoxSourceData.Text = "Типы значений графиков";
             
             int indx = -1
                 , yPos = -1

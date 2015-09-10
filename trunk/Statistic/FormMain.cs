@@ -2166,7 +2166,10 @@ namespace Statistic
                         if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelCustomTecView)
                             ((PanelCustomTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
                         else
-                            ;
+                            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSOTIASSO)
+                                ((PanelSOTIASSO)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+                            else
+                                ;
             else
                 ;
         }

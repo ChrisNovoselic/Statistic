@@ -255,22 +255,22 @@ namespace Statistic
                     this.Items[indx].Text = "Распечатать";
 
                     // 
-                    // источникАСКУЭиСОТИАССОToolStripMenuItem
+                    // источникАИСКУЭиСОТИАССОToolStripMenuItem
                     // 
                     indx = (int)INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO;
-                    this.Items[indx].Name = "источникАСКУЭиСОТИАССОToolStripMenuItem";
+                    this.Items[indx].Name = "источникАИСКУЭиСОТИАССОToolStripMenuItem";
                     this.Items[indx].Size = new System.Drawing.Size(197, 22);
                     this.Items[indx].Text = @"АИСКУЭ+СОТИАССО"; //"Источник: БД АИСКУЭ+СОТИАССО - 3 мин";
                     ((ToolStripMenuItem)this.Items[indx]).Checked = false;
                     this.Items[indx].Enabled = false; //HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO) == true;
                     // 
-                    // источникАСКУЭToolStripMenuItem
+                    // источникАИСКУЭToolStripMenuItem
                     // 
                     indx = (int)INDEX_CONTEXTMENU_ITEM.AISKUE;
-                    this.Items[indx].Name = "источникАСКУЭToolStripMenuItem";
+                    this.Items[indx].Name = "источникАИСКУЭToolStripMenuItem";
                     this.Items[indx].Size = new System.Drawing.Size(197, 22);
                     //Установлено в конструкторе "родителя"
-                    //this.источникАСКУЭToolStripMenuItem.Text = "Источник: БД АСКУЭ - 3 мин";
+                    //this.источникАИСКУЭToolStripMenuItem.Text = "Источник: БД АИСКУЭ - 3 мин";
                     ((ToolStripMenuItem)this.Items[indx]).Checked = true;
                     this.Items[indx].Enabled = false;
                     // 
@@ -1468,7 +1468,7 @@ namespace Statistic
                         }
 
                         //BarItem
-                        pane.AddBar("Мощность(АСКУЭ)", null, valuesFact, colorPCurve);
+                        pane.AddBar("Мощность(АИСКУЭ)", null, valuesFact, colorPCurve);
                         if (order == true)
                         {
                             //BarItem
@@ -1572,7 +1572,7 @@ namespace Statistic
                                 break;
                         }
 
-                        pane.AddCurve("Мощность(АСКУЭ)", listValuesAISKUE, colorPCurve);
+                        pane.AddCurve("Мощность(АИСКУЭ)", listValuesAISKUE, colorPCurve);
                         pane.AddCurve("Мощность(СОТИАССО)", listValuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
                         pane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
                     }
@@ -1815,7 +1815,6 @@ namespace Statistic
                 }
             }
             else
-            {
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
                     if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
@@ -1849,7 +1848,6 @@ namespace Statistic
                         pane.AddCurve("Мощность(СОТИАССО)", valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
                     }
                 }
-            }
 
             //Для размещения в одной позиции ОДНого значения
             pane.BarSettings.Type = BarType.Overlay;

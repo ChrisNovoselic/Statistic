@@ -22,6 +22,11 @@ namespace StatisticCommon
             , ERROR_DELAY = -1;
     }
 
+    //public interface IPanelStatisticWithTableHourRows
+    //{
+    //    void initTableHourRows();
+    //}
+
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic
     {
         protected abstract void initTableHourRows();
