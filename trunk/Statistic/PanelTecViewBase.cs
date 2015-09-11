@@ -2019,7 +2019,6 @@ namespace Statistic
                 menu.Items[indx].Enabled =
                     false;
         }
-
         /// <summary>
         /// Обновление компонентов вкладки с проверкой изменения источника данных
         /// </summary>

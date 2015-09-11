@@ -20,9 +20,12 @@ namespace Statistic
     public class PanelSOTIASSO : PanelStatistic
     {
         private enum KEY_CONTROLS { UNKNOWN = -1
-            , CUR_DATETIME_HOUR
-            , CB_GTP, DGV_GTP_VALUE, TB_GTP_KOEFF, ZGRAPH_GTP
-            , CLB_TG, DGV_TG_VALUE, ZGRAPH_TG
+            , DTP_CUR_DATE_HOUR
+            /*, LABEL_CUR_TIME*/, BTN_SET_NOWHOUR
+            , CB_GTP, LABEL_GTP_KOEFF
+            , DGV_GTP_VALUE, ZGRAPH_GTP
+            , CLB_TG
+            , DGV_TG_VALUE, ZGRAPH_TG
             , COUNT_KEY_CONTROLS }
 
         private HMark m_markQueries;
@@ -40,6 +43,9 @@ namespace Statistic
         private event DelegateObjectFunc EvtValuesMins;
 
         private List <int> m_listIndexTGAdvised;
+
+        private event DelegateDateFunc EvtSetDatetimeHour;
+        private DelegateDateFunc delegateSetDatetimeHour;
 
         /// <summary>
         /// Панель для активных элементов управления
@@ -79,6 +85,11 @@ namespace Statistic
             this.HandleCreated += new EventHandler(OnHandleCreated);
             // сообщить дочернему элементу, что дескриптор родительской панели создан
             this.HandleCreated += new EventHandler(m_panelManagement.Parent_OnHandleCreated);
+
+            EvtSetDatetimeHour += new DelegateDateFunc(m_panelManagement.Parent_OnEvtSetDatetimeHour);
+            delegateSetDatetimeHour = new DelegateDateFunc (setDatetimeHour);
+
+            this.m_zGraph_GTP.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
         }
         /// <summary>
         /// Конструктор - вспомогательный (с параметрами)
@@ -115,6 +126,7 @@ namespace Statistic
             m_panelManagement.EvtDatetimeHourChanged += new DelegateDateFunc(panelManagement_OnEvtDatetimeHourChanged);
             m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtGTPSelectionIndexChanged);
             m_panelManagement.EvtTGItemChecked += new DelegateIntFunc(panelManagement_OnEvtTGItemChecked);
+            //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
             m_zGraph_GTP = new HZEdGraphControlGTP(); // графическая панель для отображения значений ГТП
             m_zGraph_GTP.Name = KEY_CONTROLS.ZGRAPH_GTP.ToString ();
             m_zGraph_TG = new HZEdGraphControlTG(); // графическая панель для отображения значений ТГ
@@ -144,7 +156,7 @@ namespace Statistic
             stctrMain.Panel2.Controls.Add(stctrView);
 
             //stctrMain.FixedPanel = FixedPanel.Panel1;
-            stctrMain.SplitterDistance = 40;
+            stctrMain.SplitterDistance = 43;
 
             //Добавить к текущей панели единственный дочерний (прямой) элемент управления - главный контейнер-сплиттер
             this.Controls.Add(stctrMain);
@@ -170,6 +182,8 @@ namespace Statistic
             /// Событие изменения перечня ТГ для отображения выбранного ГТП
             /// </summary>
             public event DelegateIntFunc EvtTGItemChecked;
+
+            //public event DelegateFunc EvtSetNowHour;
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -213,37 +227,56 @@ namespace Statistic
                 //Создать дочерние элементы управления
                 // календарь для установки текущих даты, номера часа
                 ctrl = new DateTimePicker();
-                ctrl.Name = KEY_CONTROLS.CUR_DATETIME_HOUR.ToString ();
+                ctrl.Name = KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString();
                 (ctrl as DateTimePicker).DropDownAlign = LeftRightAlignment.Right;
                 (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
                 (ctrl as DateTimePicker).CustomFormat = @"HH-й час, dd MMMM, yyyy";
-                //(ctrl as DateTimePicker).Value = HAdmin.ToMoscowTimeZone((ctrl as DateTimePicker).Value); //.GetUTCOffsetOfMoscowTimeZone ();
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(onDatetimeHourValueChanged);
+                //(ctrl as DateTimePicker).Value = ((ctrl as DateTimePicker).Value - HAdmin.GetUTCOffsetOfMoscowTimeZone()).AddHours (1);
+                (ctrl as DateTimePicker).ValueChanged += new EventHandler(onDatetimeHour_ValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели календарь
                 this.Controls.Add(ctrl, 0, 0);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
+                this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
+
+                //// подпись текущего времени
+                //ctrl = new System.Windows.Forms.Label ();
+                //(ctrl as System.Windows.Forms.Label).BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+                //(ctrl as System.Windows.Forms.Label).TextAlign = ContentAlignment.MiddleCenter;
+                //(ctrl as System.Windows.Forms.Label).Text = @"--:--:--";
+                //ctrl.Name = KEY_CONTROLS.LABEL_CUR_TIME.ToString ();
+                //ctrl.Dock = DockStyle.Fill;
+                ////Добавить к текущей панели подпись
+                //this.Controls.Add(ctrl, 0, 1);
+                //this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
+                // кнопка перехода к актуальному часу
+                ctrl = new System.Windows.Forms.Button();
+                ctrl.Name = KEY_CONTROLS.BTN_SET_NOWHOUR.ToString();
+                ctrl.Text = @"Тек./час";
+                (ctrl as Button).Click += new EventHandler(onSetNowHour_Click);
+                ctrl.Dock = DockStyle.Fill;
+                //Добавить к текущей панели кнопку
+                this.Controls.Add(ctrl, 2, 0);
+                this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // раскрывающийся список для выбора ГТП
                 ctrl = new ComboBox ();
                 ctrl.Name = KEY_CONTROLS.CB_GTP.ToString ();
                 (ctrl as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
-                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler (onGTPSelectionIndexChanged);
+                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler (onGTP_SelectionIndexChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список ГТП
                 this.Controls.Add(ctrl, 0, 1);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
+                this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // коэффициент для текущего ГТП
                 ctrl = new System.Windows.Forms.Label();
-                ctrl.Text = @"Текущий коэфф-т:";
-                ctrl.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top);
-                this.Controls.Add(ctrl, 0, 2);
-                this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
-                ctrl = new TextBox();
-                ctrl.Name = KEY_CONTROLS.TB_GTP_KOEFF.ToString();
-                ctrl.Anchor = (AnchorStyles)(AnchorStyles.Right | AnchorStyles.Top);
-                this.Controls.Add(ctrl, 2, 2);
+                ctrl.Name = KEY_CONTROLS.LABEL_GTP_KOEFF.ToString ();
+                (ctrl as System.Windows.Forms.Label).BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+                (ctrl as System.Windows.Forms.Label).TextAlign = ContentAlignment.MiddleCenter;
+                ctrl.Text = @"Коэфф-т: -1";
+                //ctrl.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top);
+                ctrl.Dock = DockStyle.Fill;
+                this.Controls.Add(ctrl, 2, 1);
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // таблица для отображения значений ГТП
@@ -253,7 +286,7 @@ namespace Statistic
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
                 //ctrl.Height = 240; // RowSpan = ...                
                 //Добавить к текущей панели таблицу значений ГТП
-                this.Controls.Add(ctrl, 0, 3);
+                this.Controls.Add(ctrl, 0, 2);
                 this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 9);
 
                 // разделительная линия
@@ -261,17 +294,17 @@ namespace Statistic
                 ctrl.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Right);
                 ctrl.Height = 3;
                 //Добавить к текущей панели раздел./линию
-                this.Controls.Add(ctrl, 0, 12);
+                this.Controls.Add(ctrl, 0, 11);
                 this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
                 
                 // список для выбора ТГ
                 ctrl = new CheckedListBox();
                 ctrl.Name = KEY_CONTROLS.CLB_TG.ToString ();
                 (ctrl as CheckedListBox).CheckOnClick = true;
-                (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(onTGItemCheck);
+                (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(onTG_ItemCheck);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список для выбора ТГ
-                this.Controls.Add(ctrl, 0, 13);
+                this.Controls.Add(ctrl, 0, 12);
                 this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 3);
                 
                 // таблица для отображения значений ГТП
@@ -281,8 +314,8 @@ namespace Statistic
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
                 //ctrl.Height = 240; // RowSpan = ...                
                 //Добавить к текущей панели таблицу значений ГТП
-                this.Controls.Add(ctrl, 0, 16);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 8);
+                this.Controls.Add(ctrl, 0, 15);
+                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 9);
 
                 ////Приостановить прорисовку текущей панели
                 //this.SuspendLayout();
@@ -292,14 +325,24 @@ namespace Statistic
                 //Принудительное применение логики макета
                 this.PerformLayout();
             }
+            ///// <summary>
+            ///// Присвоить исходные дату/номер часа
+            ///// </summary>
+            //private void initDatetimeHourValue ()
+            //{
+            //    DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker;
+            //    DateTime curDatetimeHour = dtpCurDatetimeHour.Value;
+            //    curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
+            //    dtpCurDatetimeHour.Value = curDatetimeHour;
+            //}
             /// <summary>
-            /// Присвоить исходные дату/номер часа
+            /// Изменить дату/номер часа
             /// </summary>
-            private void initDatetimeHourValue ()
+            private void initDatetimeHourValue(DateTime dtVal)
             {
-                DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true)[0] as DateTimePicker;
-                DateTime curDatetimeHour = dtpCurDatetimeHour.Value;
-                curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
+                DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker;
+                DateTime curDatetimeHour;
+                curDatetimeHour = dtVal.AddMilliseconds(-1 * (dtVal.Minute * 60 * 1000 + dtVal.Second * 1000 + dtVal.Millisecond));
                 dtpCurDatetimeHour.Value = curDatetimeHour;
             }
             /// <summary>
@@ -309,7 +352,7 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             public void Parent_OnHandleCreated (object obj, EventArgs ev)
             {
-                initDatetimeHourValue ();
+                initDatetimeHourValue((DateTime.Now - HAdmin.GetUTCOffsetOfMoscowTimeZone())/*.AddHours(1)*/);
             }
 
             public void InitializeGTPList (List <string> listGTPNameShr)
@@ -332,24 +375,36 @@ namespace Statistic
                 clbTG.Items.AddRange(listTGNameShr.ToArray());
             }
 
-            private void onDatetimeHourValueChanged(object obj, EventArgs ev)
+            private void onDatetimeHour_ValueChanged(object obj, EventArgs ev)
             {
                 //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
                 EvtDatetimeHourChanged((obj as DateTimePicker).Value);
             }
+
+            public void Parent_OnEvtSetDatetimeHour (DateTime dtVal)
+            {
+                initDatetimeHourValue(dtVal/*.AddHours (1)*/);
+            }
+
             /// <summary>
             /// Обработчик события - изменение выбранного элемента 'ComboBox' - текущий ГТП
             /// </summary>
             /// <param name="obj">Объект, инициировавший событие</param>
             /// <param name="ev">Аргумент события</param>
-            private void onGTPSelectionIndexChanged(object obj, EventArgs ev)
+            private void onGTP_SelectionIndexChanged(object obj, EventArgs ev)
             {
                 EvtGTPSelectionIndexChanged (((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedIndex);
             }
 
-            private void onTGItemCheck (object obj, ItemCheckEventArgs ev)
+            private void onTG_ItemCheck (object obj, ItemCheckEventArgs ev)
             {
                 EvtTGItemChecked (ev.Index);
+            }
+
+            private void onSetNowHour_Click(object obj, EventArgs ev)
+            {
+                //EvtSetNowHour();
+                initDatetimeHourValue((DateTime.Now - HAdmin.GetUTCOffsetOfMoscowTimeZone())/*.AddHours(1)*/);
             }
             /// <summary>
             /// Обработчик события - отобразить полученные значения
@@ -526,6 +581,7 @@ namespace Statistic
                 this.AllowUserToAddRows =
                 this.AllowUserToDeleteRows =
                 this.AllowUserToOrderColumns =
+                this.AllowUserToResizeRows =
                     false;
                 this.MultiSelect = false;
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -573,6 +629,7 @@ namespace Statistic
                 this.AllowUserToAddRows =
                 this.AllowUserToDeleteRows =
                 this.AllowUserToOrderColumns =
+                this.AllowUserToResizeRows =
                     false;
                 this.MultiSelect = false;
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -651,9 +708,13 @@ namespace Statistic
             m_tecView.Activate(active);
 
             if (m_tecView.Actived == true)
+            {
                 dueTime = 0;
-            else   
+            }
+            else
+            {
                 m_tecView.ReportClear(true);
+            }
 
             if (! (m_timerCurrent == null))
                 m_timerCurrent.Change(dueTime, System.Threading.Timeout.Infinite);
@@ -686,6 +747,11 @@ namespace Statistic
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
         }
+
+        private void setDatetimeHour(DateTime val)
+        {
+            EvtSetDatetimeHour (val);
+        }
         /// <summary>
         /// Метод обратного вызова для таймера 'm_timerCurrent'
         /// </summary>
@@ -695,11 +761,24 @@ namespace Statistic
             if (m_tecView.Actived == true)
             {
                 if (m_tecView.currHour == true)
-                    m_tecView.ChangeState ();
-                else
-                    ;
+                {
+                    if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
+                        && ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 1)))
+                    {
+                        if (IsHandleCreated/*InvokeRequired*/ == true)
+                            Invoke(delegateSetDatetimeHour, m_tecView.serverTime);
+                        else
+                            return;
+                    }
+                    else
+                    {
+                        m_tecView.ChangeState();
 
-                m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                        m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                    }
+                }
+                else
+                    ; //m_tecView.ChangeState();
             }
             else
                 ;
@@ -710,9 +789,9 @@ namespace Statistic
         /// <param name="dtNew">Новые дата/номер часа</param>
         private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
         {
-            m_tecView.m_curDate = dtNew.Date;
+            m_tecView.m_curDate = dtNew;
             m_tecView.lastHour =
-                dtNew.Hour - (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
+                dtNew.Hour// - 1; //- (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
                 ;
             if (m_tecView.lastHour < 0)
             {
@@ -722,8 +801,24 @@ namespace Statistic
             else
                 ;
 
-            if (! (m_timerCurrent == null))
-                m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+            if (m_tecView.serverTime.Equals(DateTime.MinValue) == false)
+                if ((m_tecView.m_curDate.Date.Equals (m_tecView.serverTime.Date) == true)
+                    && (m_tecView.lastHour.Equals (m_tecView.serverTime.Hour) == true))
+                {
+                    m_tecView.adminValuesReceived = false; //Чтобы не выполнилась ветвь - переход к след./часу
+                    m_tecView.currHour = true;
+
+                    if (! (m_timerCurrent == null))
+                        m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                    else
+                        ;
+                }
+                else
+                {
+                    m_tecView.currHour = false;
+
+                    m_tecView.ChangeState ();
+                }
             else
                 ;
         }
@@ -827,6 +922,11 @@ namespace Statistic
 
             drawGraphMinDetail ();
         }
+
+        //private void panelManagement_OnEvtSetNowHour ()
+        //{
+        //    //m_tecView.currHour = true;
+        //}
         /// <summary>
         /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
         /// </summary>
@@ -837,9 +937,9 @@ namespace Statistic
         {
             int iRes = 0;
 
-            string msg = @"PanelSOTIASSO::updateGUI_Fact () - lastHour=" + hour + @", lastMin=" + min + @" ...";
-            Console.WriteLine (msg);
-            Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
+            //string msg = @"PanelSOTIASSO::updateGUI_Fact () - lastHour=" + hour + @", lastMin=" + min + @" ...";
+            //Console.WriteLine (msg);
+            //Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
 
             EvtValuesMins (m_tecView.m_valuesMins);
 
@@ -1022,7 +1122,11 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += m_tecView.m_curDate.ToShortDateString() + @", " + m_tecView.m_curDate.Hour + @"-й ч";
+            pane.Title.Text += m_tecView.m_curDate.ToShortDateString() + @", "
+                //+ ((m_tecView.lastMin > 60) ? m_tecView.m_curDate.Hour : (m_tecView.m_curDate.Hour + 1))
+                //+ (m_tecView.m_curDate.Hour + 1)
+                + ((m_tecView.lastMin < 60) ? (m_tecView.m_curDate.Hour + 1) : (m_tecView.m_curDate.Hour))
+                + @"-й ч";
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1200,7 +1304,8 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += m_tecView.m_curDate.Hour + @"-й ч" + @", " + m_tecView.lastMin + @"-я мин";
+            pane.Title.Text += ((m_tecView.lastMin < 60) ? (m_tecView.m_curDate.Hour + 1) : (m_tecView.m_curDate.Hour)) + @"-й ч"
+                + @", " + ((m_tecView.lastMin > 60) ? m_tecView.lastMin - 60 : m_tecView.lastMin) + @"-я мин";
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1247,6 +1352,38 @@ namespace Statistic
         {
             drawGraphMins();
             drawGraphMinDetail();
+        }
+
+        private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return true;
+
+            object obj;
+            PointF p = new PointF(e.X, e.Y);
+            bool found;
+            int index;
+
+            found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+
+            if (!(obj is BarItem) && !(obj is LineItem))
+                return true;
+
+            if ((!(m_tecView == null)) && (found == true))
+            {
+                //if (!(delegateStartWait == null)) delegateStartWait(); else ;
+
+                bool bRetroValues = m_tecView.zedGraphMins_MouseUpEvent(index);
+
+                if (bRetroValues == true)
+                    ;
+                else
+                    (this.Controls.Find (KEY_CONTROLS.BTN_SET_NOWHOUR.ToString (), true)[0] as System.Windows.Forms.Button).PerformClick ();
+
+                //if (!(delegateStopWait == null)) delegateStopWait(); else ;
+            }
+
+            return true;
         }
     }
 }

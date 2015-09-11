@@ -68,7 +68,8 @@ namespace StatisticCommon
             Hour_TM, //текущий час, СОТИАССО
             Hours_Fact, //указанные сутки, АИСКУЭ
             CurrentMin_TM, //текущий интервальный отрезок (3 или 1мин), СОТИАССО - усредненный
-            CurrentMinDetail_TM, //текущий интервальный отрезок (3 или 1мин), СОТИАССО
+            CurrentMinDetail_TM, //текущий интервальный отрезок (1мин!), СОТИАССО
+            RetroMinDetail_TM, //ретроспективный интервальный отрезок (1мин!), СОТИАССО
             CurrentMins_Fact, //текущие сутки/час, АИСКУЭ
             Hours_TM, //указанные сутки, СОТИАССО
             CurrentMins_TM, //текущие сутки/час, СОТИАССО
@@ -655,7 +656,7 @@ namespace StatisticCommon
             //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             AddState((int)TecView.StatesMachine.CurrentMins_TM);
             AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
-            AddState((int)TecView.StatesMachine.Hour_TM);
+            //AddState((int)TecView.StatesMachine.Hour_TM);
 
             AddState((int)TecView.StatesMachine.PPBRValues);
             AddState((int)TecView.StatesMachine.AdminValues);
@@ -1014,6 +1015,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.CurrentMins_Fact:
                 case (int)StatesMachine.CurrentMin_TM:
                 case (int)StatesMachine.CurrentMinDetail_TM:
+                case (int)StatesMachine.RetroMinDetail_TM:
                 case (int)StatesMachine.CurrentMins_TM:
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
                 case (int)StatesMachine.LastValue_TM_Gen:
@@ -1116,6 +1118,7 @@ namespace StatisticCommon
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
                 case (int)StatesMachine.CurrentMinDetail_TM:
+                case (int)StatesMachine.RetroMinDetail_TM:
                     reason = @"мгновенные за интервал телемеханики";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
@@ -1308,6 +1311,7 @@ namespace StatisticCommon
                     GetMinTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
                 case (int)StatesMachine.CurrentMinDetail_TM:
+                case (int)StatesMachine.RetroMinDetail_TM:
                     msg = @"усредн. за интервал телемеханики";
                     GetMinDetailTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
@@ -1459,6 +1463,10 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.CurrentMinDetail_TM:
                     iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
+                    break;
+                case (int)StatesMachine.RetroMinDetail_TM:
+                    iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
+                    updateGUI_Fact (lastHour, lastMin);
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
@@ -1902,11 +1910,44 @@ namespace StatisticCommon
             }
         }
 
+        private void getRetroMinDetail(int indxMin)
+        {
+            lock (m_lockValue)
+            {
+                currHour = false;
+
+                //Отладка ???
+                if (indxMin < 0)
+                {
+                    string strMes = @"TecView::getRetroMinDetail (indxMin = " + indxMin + @") - ...";
+                    //Logging.Logg().Error(strMes);
+                    //throw new Exception(strMes);
+                }
+                else ;
+                lastMin = indxMin + 1;
+
+                foreach (TECComponent comp in m_localTECComponents)
+                    foreach (TG tg in comp.m_listTG)
+                        clearTGValuesSecs (m_dictValuesTG[tg.m_id]);
+
+                ClearStates();
+
+                AddState((int)StatesMachine.RetroMinDetail_TM);
+
+                Run(@"TecView::getRetroMinDetail ()");
+            }
+        }
+
         public void GetRetroMins()
         {
             getRetroMins(lastHour);
         }
-
+        /// <summary>
+        /// Вызов из обработчика события - восстановление исходного состояния кнопки мыши, при нажатии ее над 'ZedGraph'-часы
+        ///  для панелей стандартного вида (сутки-в-часах, часы-в-минутах)
+        /// </summary>
+        /// <param name="indx">Индекс значения</param>
+        /// <returns>Признак - является ли значение ретроспективным</returns>
         public bool zedGraphHours_MouseUpEvent (int indx) {
             bool bRes = true;
 
@@ -1914,6 +1955,27 @@ namespace StatisticCommon
                 bRes = false;
             else
                 getRetroMins(indx);
+
+            return bRes;
+        }
+        /// <summary>
+        /// Вызов из обработчика события - восстановление исходного состояния кнопки мыши, при нажатии ее над 'ZedGraph'-минуты
+        ///  только для 'PanelSOTIASSO' (час-в-минутах, минуты-в-секундах)
+        /// </summary>
+        /// <param name="indx">Индекс значения</param>
+        /// <returns>Признак - является ли значение ретроспективным</returns>
+        public bool zedGraphMins_MouseUpEvent(int indx)
+        {
+            bool bRes = true;
+
+            if ((! (indx < (serverTime.Minute - 1)))
+                && (m_curDate.Hour.Equals(serverTime.Hour) == true)
+                && (m_curDate.Date.Equals(serverTime.Date) == true)
+                && (serverTime.Minute > 2)
+                )
+                bRes = false;
+            else
+                getRetroMinDetail(indx);
 
             return bRes;
         }
@@ -2001,16 +2063,8 @@ namespace StatisticCommon
                     {
                         m_dictValuesTG[tg.m_id].m_powerMinutes[i] = -1; //Признак НЕполучения данных
                     }
-                    //Выделить память (при необходимости) для мгнов. значений в течении мин
-                    if (m_dictValuesTG[tg.m_id].m_powerSeconds == null)
-                        m_dictValuesTG[tg.m_id].m_powerSeconds = new double[60]; //!!! В минуте всегда 60 сек
-                    else
-                        ;
-                    //Инициализировать все элементы массива мгнов. значений в течении мин
-                    for (int i = 0; i < m_dictValuesTG[tg.m_id].m_powerSeconds.Length; i++)
-                    {
-                        m_dictValuesTG[tg.m_id].m_powerSeconds[i] = -1; //Признак НЕполучения данных
-                    }
+
+                    clearTGValuesSecs(m_dictValuesTG[tg.m_id]);
                 }
             }
 
@@ -2019,6 +2073,20 @@ namespace StatisticCommon
             m_dtLastChangedAt_TM_Gen = DateTime.MaxValue;
             m_arValueCurrentTM_Gen [(int)TG.ID_TIME.MINUTES] = -1F;
             m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
+        }
+
+        private void clearTGValuesSecs (valuesTG vals)
+        {
+            //Выделить память (при необходимости) для мгнов. значений в течении мин
+            if (vals.m_powerSeconds == null)
+                vals.m_powerSeconds = new double[60]; //!!! В минуте всегда 60 сек
+            else
+                ;
+            //Инициализировать все элементы массива мгнов. значений в течении мин
+            for (int i = 0; i < vals.m_powerSeconds.Length; i++)
+            {
+                vals.m_powerSeconds[i] = -1; //Признак НЕполучения данных
+            }
         }
 
         //protected void ClearValuesHours(int cnt = -1)
@@ -4867,7 +4935,7 @@ namespace StatisticCommon
                                 m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] = (m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] + val) / 2;
                         }
 
-                        Console.WriteLine(@"TecView::GetMinDetailTMResponse () - кол-во строк=" + table.Rows.Count);
+                        //Console.WriteLine(@"TecView::GetMinDetailTMResponse () - кол-во строк=" + table.Rows.Count);
                     }
                     else
                         ; //Нет строк во вХодной таблице
