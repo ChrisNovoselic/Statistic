@@ -1445,7 +1445,7 @@ namespace Statistic
 
         private string CurrHourFormat
         {
-            get { return ((m_tecView.lastMin < 60) ? (CurrDateHour.Hour + 1) : (CurrDateHour.Hour)) + @"-й ч"; }
+            get { return ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 1 : )) + @"-й ч"; }
         }
 
         private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
