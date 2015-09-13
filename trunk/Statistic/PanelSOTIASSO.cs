@@ -41,11 +41,14 @@ namespace Statistic
         private System.Threading.Timer m_timerCurrent;
 
         private event DelegateObjectFunc EvtValuesMins;
+        private event DelegateObjectFunc EvtValuesSecs;
 
         private List <int> m_listIndexTGAdvised;
 
         private event DelegateDateFunc EvtSetDatetimeHour;
         private DelegateDateFunc delegateSetDatetimeHour;
+
+        private decimal m_dcGTPKoeffAlarmPcur;
 
         /// <summary>
         /// Панель для активных элементов управления
@@ -325,6 +328,11 @@ namespace Statistic
                 //Принудительное применение логики макета
                 this.PerformLayout();
             }
+
+            public DateTime GetCurrDateHour()
+            {
+                return (this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker).Value;
+            }
             ///// <summary>
             ///// Присвоить исходные дату/номер часа
             ///// </summary>
@@ -352,7 +360,7 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             public void Parent_OnHandleCreated (object obj, EventArgs ev)
             {
-                initDatetimeHourValue((DateTime.Now - HAdmin.GetUTCOffsetOfMoscowTimeZone())/*.AddHours(1)*/);
+                initDatetimeHourValue(HAdmin.ToMoscowTimeZone());
             }
 
             public void InitializeGTPList (List <string> listGTPNameShr)
@@ -367,12 +375,32 @@ namespace Statistic
                     ;
             }
 
+            public void InitializeKoeffAlarmPcur(decimal koeff)
+            {
+                System.Windows.Forms.Label lblKoeff =
+                    (this.Controls.Find(KEY_CONTROLS.LABEL_GTP_KOEFF.ToString(), true))[0] as System.Windows.Forms.Label;
+
+                lblKoeff.Text = lblKoeff.Text.Remove(lblKoeff.Text.LastIndexOfAny(new char[] { ' ' }) + 1);
+                lblKoeff.Text += koeff.ToString();
+            }
+
             public void InitializeTGList(List<string> listTGNameShr)
             {
                 CheckedListBox clbTG = (this.Controls.Find(KEY_CONTROLS.CLB_TG.ToString(), true))[0] as CheckedListBox;
 
                 clbTG.Items.Clear ();
                 clbTG.Items.AddRange(listTGNameShr.ToArray());
+
+                DataGridViewTG dgv = (this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true))[0] as DataGridViewTG;
+                while (dgv.Columns.Count > 1)
+                    dgv.Columns.RemoveAt(dgv.Columns.Count - 1);
+                for (int i = 0; i < listTGNameShr.Count; i++)
+                {
+                    dgv.Columns.Add(new DataGridViewTextBoxColumn ());
+                    dgv.Columns[i + 1].HeaderText = listTGNameShr[i];                    
+                    //dgv.Columns[i + 1].Width = ((dgv.Width - dgv.Columns[0].Width) / listTGNameShr.Count) - (listTGNameShr.Count + 1);
+                    dgv.Columns[i + 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                }
             }
 
             private void onDatetimeHour_ValueChanged(object obj, EventArgs ev)
@@ -404,7 +432,7 @@ namespace Statistic
             private void onSetNowHour_Click(object obj, EventArgs ev)
             {
                 //EvtSetNowHour();
-                initDatetimeHourValue((DateTime.Now - HAdmin.GetUTCOffsetOfMoscowTimeZone())/*.AddHours(1)*/);
+                initDatetimeHourValue(HAdmin.ToMoscowTimeZone ());
             }
             /// <summary>
             /// Обработчик события - отобразить полученные значения
@@ -421,6 +449,17 @@ namespace Statistic
                     ;
             }
 
+            public void Parent_OnEvtValuesSecs(object obj)
+            {
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true)
+                        this.BeginInvoke(new DelegateObjectFunc(onEvtValuesSecs), new object[] { obj });
+                    else
+                        onEvtValuesSecs(obj);
+                else
+                    ;
+            }
+
             private void onEvtValuesMins(object obj)
             {
                 TecView.valuesTEC [] valuesMins = obj as TecView.valuesTEC [];
@@ -429,6 +468,38 @@ namespace Statistic
                 for (int i = 1; i < valuesMins.Length; i++)
                     dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString (@"F3");
                                         
+            }
+
+            private void onEvtValuesSecs(object obj)
+            {
+                Dictionary<int, TecView.valuesTG> dictValuesTG = obj as Dictionary<int, TecView.valuesTG>;
+                DataGridViewTG dgvTG = this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true)[0] as DataGridViewTG;
+
+                int i = -1;
+                bool bRowVisible = false;
+                for (int j = 0; j < 60; j++)
+                {
+                    i = 0;
+                    bRowVisible = false;
+                    foreach (int id in dictValuesTG.Keys)
+                    {
+                        i++;
+                        if (!(dictValuesTG[id].m_powerSeconds[j] < 0))
+                        {
+                            dgvTG.Rows[j].Cells[i].Value = dictValuesTG[id].m_powerSeconds[j].ToString(@"F3");
+
+                            if (bRowVisible == false)
+                                bRowVisible = true;
+                            else
+                                ;
+                        }
+                        else
+                            dgvTG.Rows[j].Cells[i].Value = string.Empty;
+                    }
+
+                    dgvTG.Rows[j].Visible = bRowVisible;
+                }
+
             }
         }
 
@@ -587,7 +658,7 @@ namespace Statistic
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
                 this.Columns[0].Frozen = true;
-                this.Columns[1].Frozen = true;
+                this.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 this.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 //Добавить строки по числу мин. в часе
@@ -637,7 +708,7 @@ namespace Statistic
 
                 //Добавить строки по числу сек. в мин.
                 for (int i = 0; i < 60; i++)
-                    this.Rows.Add(new object[] { i });
+                    this.Rows.Add(new object[] { i + 1 });
             }
         }
         /// <summary>
@@ -745,6 +816,7 @@ namespace Statistic
             m_panelManagement.InitializeGTPList(listGTPNameShr);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
+            EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
         }
 
@@ -783,11 +855,8 @@ namespace Statistic
             else
                 ;
         }
-        /// <summary>
-        /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
-        /// </summary>
-        /// <param name="dtNew">Новые дата/номер часа</param>
-        private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
+
+        private void setCurrDateHour(DateTime dtNew)
         {
             m_tecView.m_curDate = dtNew;
             m_tecView.lastHour =
@@ -800,6 +869,14 @@ namespace Statistic
             }
             else
                 ;
+        }
+        /// <summary>
+        /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
+        /// </summary>
+        /// <param name="dtNew">Новые дата/номер часа</param>
+        private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
+        {
+            setCurrDateHour(dtNew);
 
             if (m_tecView.serverTime.Equals(DateTime.MinValue) == false)
                 if ((m_tecView.m_curDate.Date.Equals (m_tecView.serverTime.Date) == true)
@@ -854,6 +931,7 @@ namespace Statistic
                             foreach (TG tg in tc.m_listTG)
                                 listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
 
+                            m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
                             indxGTP = -1; //Признак завершения внешнего цикла
                             break;
                         }
@@ -879,7 +957,10 @@ namespace Statistic
 
                 indxTEC ++;
             }
-            //Инициализировать элементами список с наименованиями ТГ
+            //Инициализировать значение коэффициента для выполнения условия сигнализации
+            // по мгновенному значению ГТП
+            m_panelManagement.InitializeKoeffAlarmPcur(m_dcGTPKoeffAlarmPcur);
+            //Инициализировать элементами список с наименованиями ТГ            
             m_panelManagement.InitializeTGList(listTGNameShr);
             //Очистить список с отмеченными ТГ для отображения
             m_listIndexTGAdvised.Clear ();
@@ -942,6 +1023,7 @@ namespace Statistic
             //Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
 
             EvtValuesMins (m_tecView.m_valuesMins);
+            EvtValuesSecs(m_tecView.m_dictValuesTG);
 
             drawGraphMins ();
             drawGraphMinDetail();
@@ -967,7 +1049,8 @@ namespace Statistic
             double minimum
                 , minimum_scale
                 , maximum
-                , maximum_scale;
+                , maximum_scale
+                , diviation;
             bool noValues = false;
 
             itemscount = m_tecView.m_valuesMins.Length - 1;
@@ -988,8 +1071,9 @@ namespace Statistic
                 names[i] = (i + 1).ToString();
 
                 valsMins[i] = m_tecView.m_valuesMins[i + 1].valuesFact;
-                valsPAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe + m_tecView.m_valuesMins[i + 1].valuesDiviation;
-                valsOAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe - m_tecView.m_valuesMins[i + 1].valuesDiviation;
+                diviation = m_tecView.m_valuesMins[i + 1].valuesUDGe / 100 * (double)m_dcGTPKoeffAlarmPcur;
+                valsPAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe + diviation; //m_tecView.m_valuesMins[i + 1].valuesDiviation;
+                valsOAlarm[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe - diviation; //m_tecView.m_valuesMins[i + 1].valuesDiviation;
                 valsUDGe[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe;                
 
                 if ((minimum > valsPAlarm[i]) && (!(valsPAlarm[i] == 0)))
@@ -1122,11 +1206,11 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += m_tecView.m_curDate.ToShortDateString() + @", "
+            pane.Title.Text += CurrDateHour.ToShortDateString() + @", "
                 //+ ((m_tecView.lastMin > 60) ? m_tecView.m_curDate.Hour : (m_tecView.m_curDate.Hour + 1))
                 //+ (m_tecView.m_curDate.Hour + 1)
-                + ((m_tecView.lastMin < 60) ? (m_tecView.m_curDate.Hour + 1) : (m_tecView.m_curDate.Hour))
-                + @"-й ч";
+                + CurrHourFormat
+                ;
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1304,7 +1388,7 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += ((m_tecView.lastMin < 60) ? (m_tecView.m_curDate.Hour + 1) : (m_tecView.m_curDate.Hour)) + @"-й ч"
+            pane.Title.Text += CurrHourFormat
                 + @", " + ((m_tecView.lastMin > 60) ? m_tecView.lastMin - 60 : m_tecView.lastMin) + @"-я мин";
 
             pane.XAxis.Scale.TextLabels = names;
@@ -1354,6 +1438,16 @@ namespace Statistic
             drawGraphMinDetail();
         }
 
+        private DateTime CurrDateHour
+        {
+            get { return m_panelManagement.GetCurrDateHour(); }
+        }
+
+        private string CurrHourFormat
+        {
+            get { return ((m_tecView.lastMin < 60) ? (CurrDateHour.Hour + 1) : (CurrDateHour.Hour)) + @"-й ч"; }
+        }
+
         private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left)
@@ -1372,6 +1466,8 @@ namespace Statistic
             if ((!(m_tecView == null)) && (found == true))
             {
                 //if (!(delegateStartWait == null)) delegateStartWait(); else ;
+
+                setCurrDateHour(CurrDateHour);
 
                 bool bRetroValues = m_tecView.zedGraphMins_MouseUpEvent(index);
 

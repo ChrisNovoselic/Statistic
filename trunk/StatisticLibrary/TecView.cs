@@ -1951,7 +1951,10 @@ namespace StatisticCommon
         public bool zedGraphHours_MouseUpEvent (int indx) {
             bool bRes = true;
 
-            if ((indx == serverTime.Hour) && (m_curDate.Date.Equals (serverTime.Date) == true) && (serverTime.Minute > 2))
+            if ((indx == serverTime.Hour)
+                && (m_curDate.Date.Equals (serverTime.Date) == true)
+                && (serverTime.Minute > 2)
+                )
                 bRes = false;
             else
                 getRetroMins(indx);
@@ -1971,7 +1974,7 @@ namespace StatisticCommon
             if ((! (indx < (serverTime.Minute - 1)))
                 && (m_curDate.Hour.Equals(serverTime.Hour) == true)
                 && (m_curDate.Date.Equals(serverTime.Date) == true)
-                && (serverTime.Minute > 2)
+                //&& (serverTime.Minute > 2)
                 )
                 bRes = false;
             else
@@ -5400,7 +5403,7 @@ namespace StatisticCommon
             int interval = 1; //GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm > 60 ? 60 : lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
             else ;
         }
 
