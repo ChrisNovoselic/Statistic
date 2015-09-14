@@ -20,8 +20,8 @@ namespace Statistic
     public class PanelSOTIASSO : PanelStatistic
     {
         private enum KEY_CONTROLS { UNKNOWN = -1
-            , DTP_CUR_DATE_HOUR
-            /*, LABEL_CUR_TIME*/, BTN_SET_NOWHOUR
+            , NUD_CUR_HOUR, DTP_CUR_DATE
+            /*, LABEL_CUR_TIME*/, BTN_SET_NOWDATEHOUR
             , CB_GTP, LABEL_GTP_KOEFF
             , DGV_GTP_VALUE, ZGRAPH_GTP
             , CLB_TG
@@ -173,6 +173,34 @@ namespace Statistic
         /// </summary>
         private class PanelManagement : HPanelCommon
         {
+            private class HDateTimePicker : DateTimePicker
+            {
+                public HDateTimePicker () : base ()
+                {
+                    //this.SetStyle(ControlStyles.UserPaint, true);
+                }
+
+                //protected override void OnPaint(System.Windows.Forms.PaintEventArgs e)
+                //{
+                //    Graphics g = e.Graphics;
+                //    Rectangle rectText =
+                //        new Rectangle(0, 0, ClientRectangle.Width - 17, 16);
+
+                //    TextRenderer.DrawText(
+                //        g, @"Мой текст", Font,
+                //        rectText, Color.Black,
+                //        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+
+                //    //base.OnPaint (e);
+                //}
+
+                //[Browsable(true), Description ("Описание ...")]
+                //public override Color BackColor
+                //{
+                //    get { return base.BackColor; }
+                //    set { base.BackColor = value; }
+                //}
+            }
             /// <summary>
             /// Событие изменения текущих даты, номера часа
             /// </summary>
@@ -190,7 +218,7 @@ namespace Statistic
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public PanelManagement() : base (4, 24)
+            public PanelManagement() : base (6, 24)
             {
                 //Инициализировать равномерные высоту/ширину столбцов/строк
                 initializeLayoutStyleEvenly ();
@@ -228,17 +256,41 @@ namespace Statistic
                 this.SuspendLayout();
 
                 //Создать дочерние элементы управления
+                // поле для ввода номера часа
+                ctrl = new NumericUpDown();
+                ctrl.Name = KEY_CONTROLS.NUD_CUR_HOUR.ToString ();
+                //(ctrl as NumericUpDown).Minimum = 1;
+                //(ctrl as NumericUpDown).Maximum = 24;
+                (ctrl as NumericUpDown).ReadOnly = true;
+                //(ctrl as NumericUpDown).Value = HAdmin.ToMoscowTimeZone ().Hour + 1;
+                (ctrl as NumericUpDown).ValueChanged += new EventHandler(onNumericUpDownCurHour_ValueChanged);
+                ctrl.Dock = DockStyle.Fill;
+                //Добавить к текущей панели поле для ввода номера часа
+                this.Controls.Add(ctrl, 0, 0);
+                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
+                // подпись для поля ввода номера часа
+                ctrl = new System.Windows.Forms.Label();
+                ctrl.Text = @"-й час";
+                (ctrl as System.Windows.Forms.Label).TextAlign = ContentAlignment.MiddleLeft;
+                ctrl.Dock = DockStyle.Fill;
+                //Добавить к текущей панели поле для ввода номера часа
+                this.Controls.Add(ctrl, 1, 0);
+                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
+
                 // календарь для установки текущих даты, номера часа
-                ctrl = new DateTimePicker();
-                ctrl.Name = KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString();
-                (ctrl as DateTimePicker).DropDownAlign = LeftRightAlignment.Right;
-                (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
-                (ctrl as DateTimePicker).CustomFormat = @"HH-й час, dd MMMM, yyyy";
-                //(ctrl as DateTimePicker).Value = ((ctrl as DateTimePicker).Value - HAdmin.GetUTCOffsetOfMoscowTimeZone()).AddHours (1);
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(onDatetimeHour_ValueChanged);
+                ctrl = new HDateTimePicker();
+                ctrl.Name = KEY_CONTROLS.DTP_CUR_DATE.ToString();
+                //(ctrl as HDateTimePicker).SetStyle(ControlStyles.UserPaint, true);
+                (ctrl as HDateTimePicker).DropDownAlign = LeftRightAlignment.Right;
+                (ctrl as HDateTimePicker).Format = DateTimePickerFormat.Custom;
+                //(ctrl as HDateTimePicker).FormatEx = HDateTimePicker.dtpCustomExtensions.dtpLongTime24Hour;
+                (ctrl as HDateTimePicker).CustomFormat = "dd MMM, yyyy";
+                //(ctrl as HDateTimePicker).Value = ((ctrl as HDateTimePicker).Value - HAdmin.GetUTCOffsetOfMoscowTimeZone()).AddHours (1);
+                //(ctrl as HDateTimePicker).TextChanged += new EventHandler(onDatetimeHour_TextChanged);
+                (ctrl as HDateTimePicker).ValueChanged += new EventHandler(onCurDatetime_ValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели календарь
-                this.Controls.Add(ctrl, 0, 0);
+                this.Controls.Add(ctrl, 2, 0);
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 //// подпись текущего времени
@@ -253,12 +305,12 @@ namespace Statistic
                 //this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
                 // кнопка перехода к актуальному часу
                 ctrl = new System.Windows.Forms.Button();
-                ctrl.Name = KEY_CONTROLS.BTN_SET_NOWHOUR.ToString();
+                ctrl.Name = KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString();
                 ctrl.Text = @"Тек./час";
                 (ctrl as Button).Click += new EventHandler(onSetNowHour_Click);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели кнопку
-                this.Controls.Add(ctrl, 2, 0);
+                this.Controls.Add(ctrl, 4, 0);
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // раскрывающийся список для выбора ГТП
@@ -269,7 +321,7 @@ namespace Statistic
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список ГТП
                 this.Controls.Add(ctrl, 0, 1);
-                this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
+                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
 
                 // коэффициент для текущего ГТП
                 ctrl = new System.Windows.Forms.Label();
@@ -279,7 +331,7 @@ namespace Statistic
                 ctrl.Text = @"Коэфф-т: -1";
                 //ctrl.Anchor = (AnchorStyles)(AnchorStyles.Left | AnchorStyles.Top);
                 ctrl.Dock = DockStyle.Fill;
-                this.Controls.Add(ctrl, 2, 1);
+                this.Controls.Add(ctrl, 4, 1);
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // таблица для отображения значений ГТП
@@ -290,7 +342,7 @@ namespace Statistic
                 //ctrl.Height = 240; // RowSpan = ...                
                 //Добавить к текущей панели таблицу значений ГТП
                 this.Controls.Add(ctrl, 0, 2);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 9);
+                this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 9);
 
                 // разделительная линия
                 ctrl = new GroupBox ();
@@ -298,7 +350,7 @@ namespace Statistic
                 ctrl.Height = 3;
                 //Добавить к текущей панели раздел./линию
                 this.Controls.Add(ctrl, 0, 11);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 1);
+                this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 1);
                 
                 // список для выбора ТГ
                 ctrl = new CheckedListBox();
@@ -308,7 +360,7 @@ namespace Statistic
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список для выбора ТГ
                 this.Controls.Add(ctrl, 0, 12);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 3);
+                this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 3);
                 
                 // таблица для отображения значений ГТП
                 ctrl = new PanelSOTIASSO.DataGridViewTG();
@@ -318,7 +370,7 @@ namespace Statistic
                 //ctrl.Height = 240; // RowSpan = ...                
                 //Добавить к текущей панели таблицу значений ГТП
                 this.Controls.Add(ctrl, 0, 15);
-                this.SetColumnSpan(ctrl, 4); this.SetRowSpan(ctrl, 9);
+                this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 9);
 
                 ////Приостановить прорисовку текущей панели
                 //this.SuspendLayout();
@@ -331,14 +383,14 @@ namespace Statistic
 
             public DateTime GetCurrDateHour()
             {
-                return (this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker).Value;
+                return (this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE.ToString(), true)[0] as HDateTimePicker).Value;
             }
             ///// <summary>
             ///// Присвоить исходные дату/номер часа
             ///// </summary>
             //private void initDatetimeHourValue ()
             //{
-            //    DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker;
+            //    HDateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as HDateTimePicker;
             //    DateTime curDatetimeHour = dtpCurDatetimeHour.Value;
             //    curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
             //    dtpCurDatetimeHour.Value = curDatetimeHour;
@@ -348,10 +400,12 @@ namespace Statistic
             /// </summary>
             private void initDatetimeHourValue(DateTime dtVal)
             {
-                DateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE_HOUR.ToString(), true)[0] as DateTimePicker;
+                HDateTimePicker dtpCurDatetimeHour = this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE.ToString(), true)[0] as HDateTimePicker;
                 DateTime curDatetimeHour;
                 curDatetimeHour = dtVal.AddMilliseconds(-1 * (dtVal.Minute * 60 * 1000 + dtVal.Second * 1000 + dtVal.Millisecond));
                 dtpCurDatetimeHour.Value = curDatetimeHour;
+
+                setNumericUpDownValue (dtpCurDatetimeHour.Value.Hour + 1);
             }
             /// <summary>
             /// Обработчик события - дескриптор элемента управления создан
@@ -403,10 +457,51 @@ namespace Statistic
                 }
             }
 
-            private void onDatetimeHour_ValueChanged(object obj, EventArgs ev)
+            private void onCurDatetime_ValueChanged(object obj, EventArgs ev)
             {
-                //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as DateTimePicker).Value);
-                EvtDatetimeHourChanged((obj as DateTimePicker).Value);
+                //EvtDatetimeHourChanged (((this.Controls.Find(KEY_CONTROLS.CUR_DATETIME_HOUR.ToString(), true))[0] as HDateTimePicker).Value);
+                EvtDatetimeHourChanged((obj as HDateTimePicker).Value);
+            }
+
+            private void setNumericUpDownValue (int val)
+            {
+                NumericUpDown nudCurHour = this.Controls.Find(KEY_CONTROLS.NUD_CUR_HOUR.ToString(), true)[0] as NumericUpDown;
+                nudCurHour.ValueChanged -= onNumericUpDownCurHour_ValueChanged;
+                nudCurHour.Value = val;
+                nudCurHour.ValueChanged += onNumericUpDownCurHour_ValueChanged;
+            }
+
+            private void onNumericUpDownCurHour_ValueChanged(object obj, EventArgs ev)
+            {
+                DateTimePicker dtpCurDate = this.Controls.Find (KEY_CONTROLS.DTP_CUR_DATE.ToString (), true)[0] as DateTimePicker;
+                NumericUpDown nudCurHour = obj as NumericUpDown;
+                int curHour = (int)nudCurHour.Value;
+                dtpCurDate.Value = dtpCurDate.Value.AddHours(curHour - dtpCurDate.Value.Hour - 1);
+
+                int iRes = 0
+                    , iHour = -1;
+                if (curHour == 0)
+                    iRes = -1;
+                else
+                    if (curHour == 25)
+                        iRes = 1;
+                    else
+                        ;
+
+                if (! (iRes == 0))
+                {
+                    nudCurHour.ValueChanged -= onNumericUpDownCurHour_ValueChanged;
+                    if (iRes < 0)
+                        iHour = 24;
+                    else
+                        if (iRes > 0)
+                            iHour = 1;
+                        else
+                            ;
+                    setNumericUpDownValue (iHour);
+                }
+                else
+                    ;
             }
 
             public void Parent_OnEvtSetDatetimeHour (DateTime dtVal)
@@ -431,7 +526,6 @@ namespace Statistic
 
             private void onSetNowHour_Click(object obj, EventArgs ev)
             {
-                //EvtSetNowHour();
                 initDatetimeHourValue(HAdmin.ToMoscowTimeZone ());
             }
             /// <summary>
@@ -466,7 +560,15 @@ namespace Statistic
                 DataGridViewGTP dgvGTP = this.Controls.Find (KEY_CONTROLS.DGV_GTP_VALUE.ToString (), true)[0] as DataGridViewGTP;
 
                 for (int i = 1; i < valuesMins.Length; i++)
+                {
+                    //Значения
                     dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString (@"F3");
+                    //Отклонения
+                    if (valuesMins[i].valuesFact > 0)
+                        dgvGTP.Rows[i - 1].Cells[2].Value = (valuesMins[i].valuesFact - valuesMins[i].valuesUDGe).ToString(@"F3");
+                    else
+                        dgvGTP.Rows[i - 1].Cells[2].Value = valuesMins[i].valuesFact.ToString(@"F3");
+                }
                                         
             }
 
@@ -1209,7 +1311,7 @@ namespace Statistic
             pane.Title.Text += CurrDateHour.ToShortDateString() + @", "
                 //+ ((m_tecView.lastMin > 60) ? m_tecView.m_curDate.Hour : (m_tecView.m_curDate.Hour + 1))
                 //+ (m_tecView.m_curDate.Hour + 1)
-                + CurrHourFormat
+                + (CurrDateHour.Hour + 1) + @"-й ч"
                 ;
 
             pane.XAxis.Scale.TextLabels = names;
@@ -1342,7 +1444,11 @@ namespace Statistic
             }
 
             Color colorChart = Color.Empty
-                , colorPCurve = Color.Empty;
+                , colorPCurve = Color.Empty
+                //, colorPCurveBase = Color.Empty
+                ;
+            int r = -1, g = -1, b = -1
+                , diffRGB = 255 / tgcount;
             getColorZEDGraph(out colorChart, out colorPCurve);
 
             GraphPane pane = m_zGraph_TG.GraphPane;
@@ -1367,6 +1473,50 @@ namespace Statistic
                             ppl[j].Add(i + 1, valsSecs[j, i]);
                         else
                             ;
+                    //Вариант №1
+                    r = colorPCurve.R;
+                    g = colorPCurve.G;
+                    b = colorPCurve.B;
+                    ////Вариант №2
+                    //switch (j % 3)
+                    //{
+                    //    case 0:
+                    //        r = colorPCurve.R + diffRGB;
+                    //        if (r > 255)
+                    //        {
+                    //            g += (r - 255);
+                    //            r -= (r - 255);
+                    //        }
+                    //        else
+                    //            g = colorPCurve.G;
+                    //        b = colorPCurve.B;
+                    //        break;
+                    //    case 1:
+                    //        r = colorPCurve.R;
+                    //        g = colorPCurve.G + diffRGB;
+                    //        if (g > 255)
+                    //        {
+                    //            b += (g - 255);
+                    //            g -= (g - 255);
+                    //        }
+                    //        else
+                    //            b = colorPCurve.B;
+                    //        break;
+                    //    case 2:                            
+                    //        g = colorPCurve.G;
+                    //        b = colorPCurve.B + diffRGB;
+                    //        if (b > 255)
+                    //        {
+                    //            r += (b - 255);
+                    //            b -= (b - 255);
+                    //        }
+                    //        else
+                    //            r = colorPCurve.R;
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
+                    colorPCurve = Color.FromArgb (r, g, b);
                     //LineItem
                     pane.AddCurve(m_tecView.m_localTECComponents[j].name_shr, ppl[j], colorPCurve);
                 }
@@ -1388,8 +1538,8 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += CurrHourFormat
-                + @", " + ((m_tecView.lastMin > 60) ? m_tecView.lastMin - 60 : m_tecView.lastMin) + @"-я мин";
+            pane.Title.Text += ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 2 : CurrDateHour.Hour + 1)) + @"-й ч"
+                + @", " + ((m_tecView.lastMin < 61) ? m_tecView.lastMin : (m_tecView.currHour == true ? m_tecView.lastMin - 60 : 60)) + @"-я мин";
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1443,11 +1593,6 @@ namespace Statistic
             get { return m_panelManagement.GetCurrDateHour(); }
         }
 
-        private string CurrHourFormat
-        {
-            get { return ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 1 : )) + @"-й ч"; }
-        }
-
         private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left)
@@ -1474,7 +1619,7 @@ namespace Statistic
                 if (bRetroValues == true)
                     ;
                 else
-                    (this.Controls.Find (KEY_CONTROLS.BTN_SET_NOWHOUR.ToString (), true)[0] as System.Windows.Forms.Button).PerformClick ();
+                    (this.Controls.Find (KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString (), true)[0] as System.Windows.Forms.Button).PerformClick ();
 
                 //if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }

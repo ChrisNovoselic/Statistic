@@ -652,7 +652,9 @@ namespace StatisticCommon
                 AddState((int)StatesMachine.InitSensors);
             else ;
 
-            AddState((int)TecView.StatesMachine.CurrentTimeView);
+            using_date = false;
+
+            AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
             //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             AddState((int)TecView.StatesMachine.CurrentMins_TM);
             AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
